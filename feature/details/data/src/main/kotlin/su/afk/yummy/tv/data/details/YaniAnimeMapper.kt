@@ -1,0 +1,120 @@
+package su.afk.yummy.tv.data.details
+
+import su.afk.yummy.tv.domain.anime.AnimeDetails
+import su.afk.yummy.tv.domain.anime.AnimeEpisodes
+import su.afk.yummy.tv.domain.anime.AnimeGenre
+import su.afk.yummy.tv.domain.anime.AnimePerson
+import su.afk.yummy.tv.domain.anime.AnimePoster
+import su.afk.yummy.tv.domain.anime.AnimeRating
+import su.afk.yummy.tv.domain.anime.AnimeRecommendation
+import su.afk.yummy.tv.domain.anime.AnimeScreenshot
+import su.afk.yummy.tv.domain.anime.AnimeStudio
+import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.AnimeViewingOrderItem
+
+internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
+    val source = response
+    return AnimeDetails(
+        id = source.animeId ?: 0,
+        title = source.title,
+        description = source.description,
+        poster = source.poster?.toAnimePoster(),
+        rating = source.rating.toAnimeRating(),
+        genres = source.genres.mapNotNull { it.toGenre() },
+        year = source.year?.takeIf { it > 0 },
+        ageRating = source.minAge?.titleLong ?: source.minAge?.title,
+        views = source.views,
+        status = source.animeStatus?.title,
+        type = source.type?.name ?: source.type?.shortname,
+        episodes = source.episodes?.toAnimeEpisodes(),
+        otherTitles = source.otherTitles.filter { it.isNotBlank() },
+        creators = source.creators.mapNotNull { it.toPerson() },
+        studios = source.studios.mapNotNull { it.toStudio() },
+        viewingOrder = source.viewingOrder.mapNotNull { it.toViewingOrderItem() },
+        screenshots = source.randomScreenshots.map { it.toAnimeScreenshot() },
+    )
+}
+
+private fun YaniAnimePosterDto.toAnimePoster(): AnimePoster = AnimePoster(
+    small = small?.toHttpsUrl(),
+    medium = medium?.toHttpsUrl(),
+    big = big?.toHttpsUrl(),
+    fullsize = fullsize?.toHttpsUrl(),
+    mega = mega?.toHttpsUrl(),
+)
+
+private fun YaniAnimeRatingDto.toAnimeRating(): AnimeRating = AnimeRating(
+    average = average?.takeIf { it > 0.0 },
+    counters = counters,
+    kinopoisk = kinopoisk?.takeIf { it > 0.0 },
+    shikimori = shikimori?.takeIf { it > 0.0 },
+    myAnimeList = myAnimeList?.takeIf { it > 0.0 },
+)
+
+private fun YaniNamedDto.toGenre(): AnimeGenre? =
+    title.takeIf { it.isNotBlank() }?.let { AnimeGenre(id = id, title = it) }
+
+private fun YaniNamedDto.toPerson(): AnimePerson? =
+    title.takeIf { it.isNotBlank() }?.let { AnimePerson(id = id, title = it) }
+
+private fun YaniNamedDto.toStudio(): AnimeStudio? =
+    title.takeIf { it.isNotBlank() }?.let { AnimeStudio(id = id, title = it) }
+
+private fun YaniEpisodesDto.toAnimeEpisodes(): AnimeEpisodes = AnimeEpisodes(
+    count = count,
+    aired = aired,
+    nextDateEpochSeconds = nextDate?.takeIf { it > 0 },
+    prevDateEpochSeconds = prevDate?.takeIf { it > 0 },
+)
+
+private fun YaniViewingOrderItemDto.toViewingOrderItem(): AnimeViewingOrderItem? {
+    val id = animeId ?: return null
+    val safeTitle = title.takeIf { it.isNotBlank() } ?: return null
+
+    return AnimeViewingOrderItem(
+        animeId = id,
+        title = safeTitle,
+        relation = data?.text?.takeIf { it.isNotBlank() },
+        type = type?.name?.takeIf { it.isNotBlank() } ?: type?.shortname?.takeIf { it.isNotBlank() },
+        episodesCount = type?.value?.takeIf { it > 0 },
+        poster = poster?.toAnimePoster(),
+        year = year?.takeIf { it > 0 },
+        rating = rating?.takeIf { it > 0.0 },
+    )
+}
+
+private fun YaniScreenshotDto.toAnimeScreenshot(): AnimeScreenshot = AnimeScreenshot(
+    id = id,
+    episode = episode,
+    small = sizes.small?.toHttpsUrl(),
+    full = sizes.full?.toHttpsUrl(),
+)
+
+internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
+    id = videoId,
+    episode = number,
+    dubbing = data.dubbing,
+    player = data.player,
+    iframeUrl = iframeUrl.toHttpsUrl(),
+    durationSeconds = duration,
+    views = views,
+)
+
+internal fun YaniRecommendationItemDto.toAnimeRecommendation(): AnimeRecommendation? {
+    val id = animeId ?: return null
+    val safeTitle = title.takeIf { it.isNotBlank() } ?: return null
+    return AnimeRecommendation(
+        animeId = id,
+        title = safeTitle,
+        poster = poster?.toAnimePoster(),
+        rating = rating.average?.takeIf { it > 0.0 },
+        type = type?.name?.takeIf { it.isNotBlank() } ?: type?.shortname?.takeIf { it.isNotBlank() },
+        year = year?.takeIf { it > 0 },
+    )
+}
+
+internal fun String.toHttpsUrl(): String = when {
+    startsWith("//") -> "https:$this"
+    startsWith("http://") -> replaceFirst("http://", "https://")
+    else -> this
+}

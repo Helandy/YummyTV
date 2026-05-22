@@ -1,0 +1,129 @@
+package su.afk.yummy.tv.feature.home.view
+
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.feature.home.R
+
+@Composable
+internal fun ContinueWatchingSection(
+    items: List<WatchProgressEntry>,
+    onItemSelected: (WatchProgressEntry) -> Unit,
+    rowFocusRequester: FocusRequester? = null,
+    upFocusRequester: FocusRequester? = null,
+    downFocusRequester: FocusRequester? = null,
+    onMoveUp: (() -> Unit)? = null,
+    onMoveDown: (() -> Unit)? = null,
+) {
+    if (items.isEmpty()) return
+
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val rowHasFocus = remember { mutableStateOf(false) }
+    val isRestoring = remember { mutableStateOf(false) }
+    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+
+    Column {
+        Text(
+            text = stringResource(R.string.continue_watching),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal),
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        LazyRow(
+            state = listState,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = TvScreenPadding.Horizontal, vertical = 8.dp),
+            modifier = Modifier
+                .then(if (rowFocusRequester != null) Modifier.focusRequester(rowFocusRequester) else Modifier)
+                .focusProperties {
+                    (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                    downFocusRequester?.let { down = it }
+                }
+                .onFocusChanged { state ->
+                    val hadFocus = rowHasFocus.value
+                    rowHasFocus.value = state.hasFocus
+                    if (!state.hasFocus) isRestoring.value = false
+                    if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                        isRestoring.value = true
+                        scope.launch {
+                            val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+                            listState.scrollToItem(target)
+                            runCatching { focusRequesters[target].requestFocus() }
+                            isRestoring.value = false
+                        }
+                    }
+                }
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when (event.key) {
+                        Key.DirectionLeft -> lastFocusedIndex <= 0
+                        Key.DirectionRight -> lastFocusedIndex >= items.lastIndex
+                        Key.DirectionUp -> {
+                            onMoveUp?.invoke()
+                            onMoveUp != null
+                        }
+                        Key.DirectionDown -> {
+                            onMoveDown?.invoke()
+                            onMoveDown != null
+                        }
+                        else -> false
+                    }
+                }
+                .focusGroup(),
+        ) {
+            itemsIndexed(items = items, key = { _, e -> e.episodeUrl }) { index, entry ->
+                ContinueWatchingCard(
+                    entry = entry,
+                    onFocused = {
+                        if (rowHasFocus.value && !isRestoring.value) lastFocusedIndex = index
+                    },
+                    onClick = {
+                        onItemSelected(entry)
+                    },
+                    modifier = Modifier.focusRequester(focusRequesters[index]),
+                    upFocusRequester = upFocusRequester ?: topBarFocusRequester,
+                    downFocusRequester = downFocusRequester,
+                )
+            }
+        }
+    }
+}

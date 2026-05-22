@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_screenshots_empty">Скриншоты не найдены</string>
+    <string name="details_screenshots_title">Скриншоты</string>
+    <string name="details_episode_content_description">Серия %1$s</string>
+    <string name="details_previous">Предыдущий</string>
+    <string name="details_next">Следующий</string>
+    <string name="details_viewing_order_empty">Порядок просмотра не найден</string>
+    <string name="details_unsupported">не поддерживается</string>
+    <string name="details_close">Закрыть</string>
+    <string name="details_error_title">Не удалось загрузить</string>
+    <string name="retry">Повторить</string>
+    <string name="details_balancer_title">Серия %1$s · Балансер</string>
+    <string name="details_balancer_unsupported_hint">Будет доступен позже</string>
+    <string name="details_balancer_open">Открыть</string>
+    <string name="details_player_prefix">Плеер </string>
+    <string name="details_loading_episodes">Загружаем серии...</string>
+    <string name="details_episodes">Серии</string>
+    <string name="details_frames">Кадры</string>
+    <string name="details_similar_empty">Похожее аниме не найдено</string>
+    <string name="details_similar_users">От пользователей</string>
+    <string name="details_similar_ai">От нейросети</string>
+    <string name="details_trailer_empty">Трейлер не найден</string>
+    <string name="details_trailers">Трейлеры</string>
+    <string name="details_trailer_number">Трейлер %1$d</string>
+    <string name="details_watch_youtube">Смотреть в YouTube</string>
+    <string name="details_episode_number">Серия %1$s</string>
+    <string name="details_aired">Вышло: %1$s</string>
+    <string name="details_total">Всего: %1$d</string>
+    <string name="details_director_prefix">Реж.: %1$s</string>
+    <string name="details_kinopoisk_rating">КП %1$s</string>
+    <string name="details_episodes_count_short">%1$d эп.</string>
+    <string name="details_continue_episode">▶  Продолжить · Серия %1$s</string>
+    <string name="details_watch">▶  Смотреть</string>
+    <string name="details_in_library">★  В списке</string>
+    <string name="details_add_library">☆  В список</string>
+    <string name="details_similar">Похожее</string>
+    <string name="details_viewing_order">Порядок</string>
+    <string name="details_viewing_order_title">Порядок просмотра</string>
+    <string name="details_viewing_order_description">Связанные тайтлы в рекомендуемой последовательности</string>
+    <string name="details_views_millions">%1$s млн</string>
+    <string name="details_views_thousands">%1$d к</string>
+</resources>

@@ -1,0 +1,16 @@
+package su.afk.yummy.tv.feature.commonscreen.navigator
+
+import androidx.navigation3.runtime.NavKey
+
+interface IImageViewNavigator {
+    operator fun invoke(
+        imageUrl: String,
+        imageUrls: List<String> = emptyList(),
+        selectedIndex: Int? = null,
+        service: String? = null,
+        creatorName: String? = null,
+        postId: String? = null,
+        postTitle: String? = null,
+        thumbnailUrls: Map<String, String> = emptyMap(),
+    ): NavKey
+}
