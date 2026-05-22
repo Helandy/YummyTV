@@ -69,6 +69,7 @@ internal fun HomeCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (HomeFeedItem) -> Unit,
     onItemFocused: (displayId: Int, animeId: Int?) -> Unit,
+    onItemVisible: (displayId: Int) -> Unit,
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
     animePreviews: Map<Int, AnimePreview>,
@@ -85,6 +86,9 @@ internal fun HomeCarousel(
     if (items.size == 1) {
         val item = items[0]
         val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(item.id) {
+            onItemVisible(item.id)
+        }
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -110,7 +114,7 @@ internal fun HomeCarousel(
                 preview = if (item.id == focusedItemId) {
                     focusedPreview ?: item.animeId?.let(animePreviews::get)
                 } else {
-                    null
+                    item.animeId?.let(animePreviews::get)
                 },
                 onClick = { onItemSelected(item) },
                 focusRequester = rowFocusRequester ?: focusRequester,
@@ -141,6 +145,12 @@ internal fun HomeCarousel(
         val focusedPage = items.indexOfFirst { it.id == focusedItemId }
         if (!isCarouselFocused && focusedPage >= 0 && focusedPage != pagerState.currentPage) {
             pagerState.scrollToPage(focusedPage)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage, items) {
+        items.getOrNull(pagerState.currentPage)?.let { item ->
+            onItemVisible(item.id)
         }
     }
 

@@ -24,6 +24,7 @@ class HomeState {
         data class VideoSelected(val videoId: Int) : Event
         data class CollectionSelected(val collectionId: Int) : Event
         data class ItemFocused(val displayId: Int, val animeId: Int?) : Event
+        data class HeroItemVisible(val displayId: Int) : Event
         data class ContinueWatchingSelected(val entry: WatchProgressEntry) : Event
         data object RetrySelected : Event
     }

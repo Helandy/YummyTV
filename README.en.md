@@ -13,6 +13,12 @@
   <a href="README.md">Русский</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/Helandy/YummyTV/releases"><img alt="Download YummyTV APK" src="https://img.shields.io/badge/Download-APK-2ea44f?style=for-the-badge"></a>
+  <a href="https://github.com/Helandy/YummyTV"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Helandy/YummyTV?style=for-the-badge"></a>
+  <a href="https://github.com/Helandy/YummyTV/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Helandy/YummyTV?style=for-the-badge"></a>
+</p>
+
 ---
 
 ## What is YummyTV

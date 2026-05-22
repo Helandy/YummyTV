@@ -27,6 +27,9 @@ fun HomeTvScreen(
     val onItemFocused: (Int, Int?) -> Unit = remember(onEvent) {
         { displayId, animeId -> onEvent(HomeState.Event.ItemFocused(displayId, animeId)) }
     }
+    val onHeroItemVisible: (Int) -> Unit = remember(onEvent) {
+        { displayId -> onEvent(HomeState.Event.HeroItemVisible(displayId)) }
+    }
 
     val error = state.error
     val feed = state.feed
@@ -45,6 +48,7 @@ fun HomeTvScreen(
             },
             onItemSelected = onItemSelected,
             onItemFocused = onItemFocused,
+            onHeroItemVisible = onHeroItemVisible,
             focusedItemId = state.focusedItemId,
             focusedPreview = state.focusedPreview,
             animePreviews = state.animePreviews,

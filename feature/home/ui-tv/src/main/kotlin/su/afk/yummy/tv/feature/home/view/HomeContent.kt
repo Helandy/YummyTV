@@ -43,6 +43,7 @@ internal fun HomeContent(
     onContinueWatchingSelected: (WatchProgressEntry) -> Unit,
     onItemSelected: (HomeFeedItem) -> Unit,
     onItemFocused: (displayId: Int, animeId: Int?) -> Unit,
+    onHeroItemVisible: (displayId: Int) -> Unit,
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
     animePreviews: Map<Int, AnimePreview>,
@@ -217,7 +218,11 @@ internal fun HomeContent(
                         onItemSelected = onContinueWatchingSelected,
                         rowFocusRequester = continueWatchingFocusRequester,
                         downFocusRequester = nextRowFocusRequester(0),
-                        onMoveDown = { requestRowFocus(1) },
+                        onMoveDown = if (totalLazyItems > 1) {
+                            { requestRowFocus(1) }
+                        } else {
+                            null
+                        },
                     )
                 }
             }
@@ -260,6 +265,7 @@ internal fun HomeContent(
                         items = feed.heroItems,
                         onItemSelected = onItemSelected,
                         onItemFocused = onItemFocused,
+                        onItemVisible = onHeroItemVisible,
                         focusedItemId = focusedItemId,
                         focusedPreview = focusedPreview,
                         animePreviews = animePreviews,
@@ -270,11 +276,15 @@ internal fun HomeContent(
                             lastFocusedLazyIndex = heroLazyIdx
                             pinHeroWhileFocused()
                         },
-                        onMoveUp = {
-                            if (heroLazyIdx > 0) requestRowFocus(heroLazyIdx - 1)
+                        onMoveUp = if (heroLazyIdx > 0) {
+                            { requestRowFocus(heroLazyIdx - 1) }
+                        } else {
+                            null
                         },
-                        onMoveDown = {
-                            if (heroLazyIdx < totalLazyItems - 1) requestRowFocus(heroLazyIdx + 1)
+                        onMoveDown = if (heroLazyIdx < totalLazyItems - 1) {
+                            { requestRowFocus(heroLazyIdx + 1) }
+                        } else {
+                            null
                         },
                     )
                 }
@@ -301,11 +311,15 @@ internal fun HomeContent(
                     upFocusRequester = previousRowFocusRequester(lazyIdx),
                     downFocusRequester = nextRowFocusRequester(lazyIdx),
                     bottomPadding = if (index == feed.sections.lastIndex) 56.dp else 20.dp,
-                    onMoveUp = {
-                        if (lazyIdx > 0) requestRowFocus(lazyIdx - 1)
+                    onMoveUp = if (lazyIdx > 0) {
+                        { requestRowFocus(lazyIdx - 1) }
+                    } else {
+                        null
                     },
-                    onMoveDown = {
-                        if (lazyIdx < totalLazyItems - 1) requestRowFocus(lazyIdx + 1)
+                    onMoveDown = if (lazyIdx < totalLazyItems - 1) {
+                        { requestRowFocus(lazyIdx + 1) }
+                    } else {
+                        null
                     },
                 )
             }

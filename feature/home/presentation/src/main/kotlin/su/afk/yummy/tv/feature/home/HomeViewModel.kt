@@ -16,6 +16,7 @@ import su.afk.yummy.tv.domain.anime.AnimePreview
 import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.GetHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.HomeFeed
 import su.afk.yummy.tv.domain.home.HomeFeedItem
 import su.afk.yummy.tv.domain.home.HomeFeedItemAction
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -75,13 +76,14 @@ class HomeViewModel @Inject constructor(
             is HomeState.Event.ContinueWatchingSelected -> launchContinueWatching(event.entry)
             HomeState.Event.RetrySelected -> load()
             is HomeState.Event.ItemFocused -> onItemFocused(event.displayId, event.animeId)
+            is HomeState.Event.HeroItemVisible -> prefetchHeroPreviewWindow(event.displayId)
         }
     }
 
     private fun onItemFocused(displayId: Int, animeId: Int?) {
         if (currentState.focusedItemId == displayId) return
         previewJob?.cancel()
-        prefetchAdjacentHeroPreviews(displayId)
+        prefetchHeroPreviewWindow(displayId)
         if (animeId == null) {
             setState { copy(focusedItemId = displayId, focusedPreview = null) }
             return
@@ -102,13 +104,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun prefetchAdjacentHeroPreviews(displayId: Int) {
+    private fun prefetchHeroPreviewWindow(displayId: Int) {
         val heroItems = currentState.feed?.heroItems.orEmpty()
         val currentIndex = heroItems.indexOfFirst { it.id == displayId }
         if (currentIndex == -1) return
-        listOf(currentIndex - 1, currentIndex + 1)
-            .mapNotNull { index -> heroItems.getOrNull(index)?.animeId }
-            .forEach { animeId -> prefetchPreview(animeId) }
+        heroItems.getOrNull(currentIndex)?.animeId?.let(::prefetchPreview)
+        heroItems.getOrNull(currentIndex + 1)?.animeId?.let(::prefetchPreview)
     }
 
     private fun prefetchPreview(animeId: Int) {
@@ -164,11 +165,21 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             runCatching { getHomeFeed() }.fold(
-                onSuccess = { feed -> setState { copy(isLoading = false, feed = feed) } },
+                onSuccess = { feed ->
+                    setState { copy(isLoading = false, feed = feed) }
+                    prefetchInitialHeroPreviews(feed)
+                },
                 onFailure = { e ->
                     setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.home_load_error)) }
                 },
             )
         }
+    }
+
+    private fun prefetchInitialHeroPreviews(feed: HomeFeed) {
+        feed.heroItems
+            .take(2)
+            .mapNotNull { it.animeId }
+            .forEach(::prefetchPreview)
     }
 }
