@@ -37,9 +37,39 @@ The app is not an official yummyani.me client. It does not host video or distrib
 - Top-100 and collections
 - Local library and watch history
 
+## Screenshots
+
+| Home | Details |
+| --- | --- |
+| <img src="dock/Home.webp" alt="Home" /> | <img src="dock/Details.webp" alt="Details" /> |
+
+| Top100 | Series |
+| --- | --- |
+| <img src="dock/Top100.webp" alt="Top100" /> | <img src="dock/Series.webp" alt="Series" /> |
+
+| ContinueWatching | Similar |
+| --- | --- |
+| <img src="dock/ContinueWatching.webp" alt="ContinueWatching" /> | <img src="dock/Similar.webp" alt="Similar" /> |
+
+| Player |
+| --- |
+| <img src="dock/Player.webp" alt="Player" /> |
+
+| PlayerQuality | SelectBalancer |
+| --- | --- |
+| <img src="dock/PlayerQuality.webp" alt="PlayerQuality" /> | <img src="dock/SelectBalancer.webp" alt="SelectBalancer" /> |
+
+| PlayerVoice | PlayerBalancer |
+| --- | --- |
+| <img src="dock/PlayerVoice.webp" alt="PlayerVoice" /> | <img src="dock/PlayerBalancer.webp" alt="PlayerBalancer" /> |
+
 ## Download
 
 Install the Android TV APK from [GitHub Releases](https://github.com/3n3my3/yummytv/releases). Open the latest release, download the APK, and install it on your Android TV or Android TV box.
+
+## How to send the APK to your TV
+
+If the APK is on your phone or computer, you can send it to Android TV with [LocalSend](https://localsend.org/). Install LocalSend on both devices, connect them to the same Wi-Fi network, select the APK on your phone or computer, and send it to the TV. After receiving it, open the file on the TV and allow installation from that source if Android asks for confirmation.
 
 ## Limitations
 
