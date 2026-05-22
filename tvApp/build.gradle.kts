@@ -45,6 +45,17 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val fileName = "YummyTv-${variant.flavorName?.takeIf { it.isNotEmpty() }?.let { "$it-" } ?: ""}" +
+                "${output.versionName.orNull ?: "1.0"}-${variant.buildType}.apk"
+            (output as? com.android.build.api.variant.impl.VariantOutputImpl)?.outputFileName?.set(fileName)
+        }
+    }
 }
 
 dependencies {
