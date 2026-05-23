@@ -8,5 +8,6 @@
     <string name="update_downloading">Загрузка обновления...</string>
     <string name="update_installing">Установка...</string>
     <string name="update_error_title">Ошибка обновления</string>
+    <string name="update_retry">Повторить</string>
     <string name="update_close">Закрыть</string>
 </resources>

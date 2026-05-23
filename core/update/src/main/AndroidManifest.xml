@@ -3,7 +3,7 @@
 
     <application>
         <receiver
-            android:name="su.afk.yummy.tv.core.update.ApkInstallReceiver"
+            android:name="su.afk.yummy.tv.core.update.apk.ApkInstallReceiver"
             android:exported="false" />
     </application>
 

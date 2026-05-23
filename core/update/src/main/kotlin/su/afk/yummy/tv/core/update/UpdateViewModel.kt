@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.update.apk.ApkDownloader
 import su.afk.yummy.tv.core.update.apk.ApkInstaller
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +21,8 @@ class UpdateViewModel @Inject constructor(
     private val apkInstaller: ApkInstaller,
     private val stringProvider: StringProvider,
 ) : BaseViewModelNew<UpdateState.State, UpdateState.Event, UpdateState.Effect>(savedStateHandle) {
+
+    private var downloadedApk: File? = null
 
     override fun createInitialState() = UpdateState.State()
 
@@ -44,6 +47,7 @@ class UpdateViewModel @Inject constructor(
                 setEffect(UpdateState.Effect.NavigateBack)
             }
             is UpdateState.Event.ConfirmUpdate -> downloadAndInstall(event.apkUrl)
+            is UpdateState.Event.RetryUpdate -> retryInstall(event.apkUrl)
         }
     }
 
@@ -54,11 +58,41 @@ class UpdateViewModel @Inject constructor(
                 val file = apkDownloader.download(apkUrl) { progress ->
                     setState { copy(status = UpdateState.State.Status.Downloading(progress)) }
                 }
+                downloadedApk = file
                 setState { copy(status = UpdateState.State.Status.Installing) }
                 apkInstaller.install(file)
             }.onFailure { e ->
                 setState {
-                    copy(status = UpdateState.State.Status.Error(e.message ?: stringProvider.get(R.string.update_error_title)))
+                    copy(
+                        status = UpdateState.State.Status.Error(
+                            message = e.message ?: stringProvider.get(R.string.update_error_title),
+                            apkUrl = apkUrl,
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun retryInstall(apkUrl: String) {
+        val file = downloadedApk
+        if (file == null || !file.exists()) {
+            downloadAndInstall(apkUrl)
+            return
+        }
+
+        viewModelScope.launch {
+            setState { copy(status = UpdateState.State.Status.Installing) }
+            runCatching {
+                apkInstaller.install(file)
+            }.onFailure { e ->
+                setState {
+                    copy(
+                        status = UpdateState.State.Status.Error(
+                            message = e.message ?: stringProvider.get(R.string.update_error_title),
+                            apkUrl = apkUrl,
+                        )
+                    )
                 }
             }
         }

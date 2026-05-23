@@ -19,13 +19,17 @@ object UpdateState {
             ) : Status()
             data class Downloading(val progress: Float) : Status()
             data object Installing : Status()
-            data class Error(val message: String) : Status()
+            data class Error(
+                val message: String,
+                val apkUrl: String? = null,
+            ) : Status()
         }
     }
 
     sealed class Event : UiEvent {
         data object Dismiss : Event()
         data class ConfirmUpdate(val apkUrl: String) : Event()
+        data class RetryUpdate(val apkUrl: String) : Event()
     }
 
     sealed class Effect : UiEffect {

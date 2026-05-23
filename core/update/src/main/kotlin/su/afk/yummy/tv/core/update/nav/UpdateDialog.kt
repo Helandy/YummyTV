@@ -184,8 +184,13 @@ private fun ErrorContent(
     status: UpdateState.State.Status.Error,
     onEvent: (UpdateState.Event) -> Unit,
 ) {
+    val retryFocus = remember { FocusRequester() }
     val closeFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { closeFocus.requestFocus() } }
+    LaunchedEffect(status.apkUrl) {
+        runCatching {
+            if (status.apkUrl != null) retryFocus.requestFocus() else closeFocus.requestFocus()
+        }
+    }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -201,18 +206,37 @@ private fun ErrorContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(20.dp))
-        Box(
-            modifier = Modifier
-                .focusRequester(closeFocus)
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.update_close),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelLarge,
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            status.apkUrl?.let { apkUrl ->
+                Box(
+                    modifier = Modifier
+                        .focusRequester(retryFocus)
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                        .tvFocusableClick(onClick = { onEvent(UpdateState.Event.RetryUpdate(apkUrl)) })
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.update_retry),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .focusRequester(closeFocus)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                    .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.update_close),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }
