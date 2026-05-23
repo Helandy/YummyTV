@@ -96,25 +96,25 @@ fun <T> TvMainScaffold(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+    CompositionLocalProvider(
+        LocalTopBarFocusRequester provides topBarFocusRequester,
+        LocalContentFocusRequester provides contentFocusRequester,
     ) {
-        if (showTopBar) {
-            TvTopBar(
-                selectedDestination = selectedDestination,
-                menuItems = menuItems,
-                onDestinationSelected = onDestinationSelected,
-                onSettingsClick = onSettingsClick,
-                selectedTabFocusRequester = topBarFocusRequester,
-                onFocusChanged = { topBarHasFocus = it },
-            )
-        }
-        CompositionLocalProvider(
-            LocalTopBarFocusRequester provides topBarFocusRequester,
-            LocalContentFocusRequester provides contentFocusRequester,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
         ) {
+            if (showTopBar) {
+                TvTopBar(
+                    selectedDestination = selectedDestination,
+                    menuItems = menuItems,
+                    onDestinationSelected = onDestinationSelected,
+                    onSettingsClick = onSettingsClick,
+                    selectedTabFocusRequester = topBarFocusRequester,
+                    onFocusChanged = { topBarHasFocus = it },
+                )
+            }
             Box(
                 modifier = Modifier
                     .focusRequester(contentFocusRequester)

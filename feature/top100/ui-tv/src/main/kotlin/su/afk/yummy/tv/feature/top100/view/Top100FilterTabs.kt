@@ -14,12 +14,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -39,22 +41,28 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusReques
 import su.afk.yummy.tv.domain.top100.AnimeTopType
 import su.afk.yummy.tv.feature.top100.R
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun Top100FilterSidePanel(
     selectedType: AnimeTopType,
     onTypeSelected: (AnimeTopType) -> Unit,
     contentFocusRequester: FocusRequester,
+    typeFocusRequesters: List<FocusRequester>,
     onFocusChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var focusedIndex by remember { mutableIntStateOf(AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0)) }
-    val itemFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
+    val selectedIndex = AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0)
+    var focusedIndex by remember { mutableIntStateOf(selectedIndex) }
     val panelWidth by animateDpAsState(
         targetValue = if (expanded) 148.dp else 52.dp,
         animationSpec = tween(durationMillis = 200),
         label = "side_panel_width",
     )
+
+    LaunchedEffect(selectedIndex) {
+        focusedIndex = selectedIndex
+    }
 
     Column(
         modifier = modifier
@@ -70,20 +78,25 @@ internal fun Top100FilterSidePanel(
                     Key.DirectionUp -> {
                         if (focusedIndex > 0) {
                             focusedIndex -= 1
-                            itemFocusRequesters[focusedIndex].requestFocus()
+                            typeFocusRequesters[focusedIndex].requestFocus()
                             true
                         } else {
                             false
                         }
                     }
                     Key.DirectionDown -> {
-                        if (focusedIndex < itemFocusRequesters.lastIndex) {
+                        if (focusedIndex < typeFocusRequesters.lastIndex) {
                             focusedIndex += 1
-                            itemFocusRequesters[focusedIndex].requestFocus()
+                            typeFocusRequesters[focusedIndex].requestFocus()
                         }
                         true
                     }
                     else -> false
+                }
+            }
+            .focusProperties {
+                onEnter = {
+                    typeFocusRequesters.getOrNull(selectedIndex)?.requestFocus()
                 }
             }
             .focusGroup()
@@ -103,9 +116,9 @@ internal fun Top100FilterSidePanel(
                 expanded = expanded,
                 onSelected = { onTypeSelected(type) },
                 contentFocusRequester = contentFocusRequester,
-                focusRequester = itemFocusRequesters[index],
-                upFocusRequester = itemFocusRequesters.getOrNull(index - 1),
-                downFocusRequester = itemFocusRequesters.getOrNull(index + 1) ?: FocusRequester.Cancel,
+                focusRequester = typeFocusRequesters[index],
+                upFocusRequester = typeFocusRequesters.getOrNull(index - 1),
+                downFocusRequester = typeFocusRequesters.getOrNull(index + 1) ?: FocusRequester.Cancel,
                 onFocused = { focusedIndex = index },
             )
         }
