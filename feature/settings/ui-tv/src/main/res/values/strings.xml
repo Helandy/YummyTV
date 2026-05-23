@@ -5,6 +5,7 @@
     <string name="settings_tab_player">Плеер</string>
     <string name="settings_tab_cache">Кэш</string>
     <string name="settings_tab_tv_home">TV Home</string>
+    <string name="settings_tab_about">О приложении</string>
     <string name="settings_show_screenshots_label">Скрины при фокусе</string>
     <string name="settings_show_screenshots_hint">Показывать скриншоты тайтла при выборе карточки</string>
     <string name="settings_preview_channel_label">Новинки</string>
@@ -39,4 +40,8 @@
     <string name="settings_cache_size_200">200 МБ</string>
     <string name="settings_cache_size_max">Максимальный</string>
     <string name="settings_cache_size_300">300 МБ</string>
+    <string name="settings_version_label">Версия</string>
+    <string name="settings_version_name">1.0</string>
+    <string name="settings_feedback_label">Вопросы/Идеи/Предложения</string>
+    <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
 </resources>
