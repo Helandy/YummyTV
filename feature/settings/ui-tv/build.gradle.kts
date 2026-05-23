@@ -9,10 +9,16 @@ plugins {
 android {
     namespace = "su.afk.yummy.tv.feature.settings"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        buildConfigField("String", "VERSION_NAME", "\"${libs.versions.appVersionName.get()}\"")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 

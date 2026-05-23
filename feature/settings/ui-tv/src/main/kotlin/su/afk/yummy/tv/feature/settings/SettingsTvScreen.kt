@@ -231,7 +231,7 @@ fun SettingsTvScreen(
 
                             AboutRow(
                                 label = stringResource(R.string.settings_version_label),
-                                hint = stringResource(R.string.settings_version_name),
+                                hint = BuildConfig.VERSION_NAME,
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
