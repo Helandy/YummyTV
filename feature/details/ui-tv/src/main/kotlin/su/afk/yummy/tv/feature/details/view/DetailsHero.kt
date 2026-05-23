@@ -53,6 +53,7 @@ internal fun DetailsHero(
     details: AnimeDetails,
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
+    isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
@@ -131,6 +132,7 @@ internal fun DetailsHero(
                 DetailsButtonBar(
                     details = details,
                     isInLibrary = isInLibrary,
+                    isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,

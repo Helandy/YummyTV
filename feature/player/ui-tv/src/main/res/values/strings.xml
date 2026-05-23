@@ -26,6 +26,8 @@
     <string name="player_balancer_meta">Балансер воспроизведения</string>
     <string name="player_speed_meta">Темп воспроизведения</string>
     <string name="player_skip_segment">Пропустить</string>
+    <string name="player_opening_skipped">Опенинг пропущен %1$s - %2$s</string>
+    <string name="player_ending_skipped">Эндинг пропущен %1$s - %2$s</string>
     <string name="player_next_episode_prompt">Следующая серия?</string>
     <string name="player_watch_next">Смотреть</string>
     <string name="player_stay">Остаться</string>

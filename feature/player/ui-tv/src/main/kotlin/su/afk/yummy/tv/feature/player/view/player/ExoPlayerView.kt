@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.view.player
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -108,6 +110,7 @@ internal fun ExoPlayerView(
     var showSpeedPanel by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
+    var skipSnackbarText by remember(streamUrl) { mutableStateOf<String?>(null) }
     val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
 
     val playFocusRequester = remember { FocusRequester() }
@@ -120,6 +123,7 @@ internal fun ExoPlayerView(
     val nextEpisodeFocusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
+    var skipSnackbarJob by remember { mutableStateOf<Job?>(null) }
 
     fun scheduleHide() {
         hideJob?.cancel()
@@ -189,6 +193,17 @@ internal fun ExoPlayerView(
         val skip = activeSkip ?: return
         if (skip.key !in dismissedSkipKeys) dismissedSkipKeys += skip.key
         highlightedSkipKey = null
+        val message = context.getString(
+            skip.type.skippedMessageRes,
+            formatTime(skip.segment.startMs),
+            formatTime(skip.segment.endMs),
+        )
+        skipSnackbarText = message
+        skipSnackbarJob?.cancel()
+        skipSnackbarJob = coroutineScope.launch {
+            delay(3_000)
+            if (skipSnackbarText == message) skipSnackbarText = null
+        }
         seekTo(skip.segment.endMs)
         onInteraction()
     }
@@ -230,6 +245,7 @@ internal fun ExoPlayerView(
         if (wantsPlay) scheduleHide() else hideJob?.cancel()
         onDispose {
             hideJob?.cancel()
+            skipSnackbarJob?.cancel()
             exoPlayer.removeListener(listener)
             if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
             exoPlayer.release()
@@ -509,6 +525,24 @@ internal fun ExoPlayerView(
             }
         }
 
+        AnimatedVisibility(
+            visible = skipSnackbarText != null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = if (controllerVisible) 136.dp else 36.dp),
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Text(
+                text = skipSnackbarText.orEmpty(),
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.White,
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.82f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            )
+        }
+
         if (showNextEpisodePrompt && hasNextEpisode) {
             Box(
                 modifier = Modifier
@@ -558,8 +592,14 @@ internal fun Float.speedLabel(): String =
 
 private data class ActiveSkip(
     val key: String,
+    val type: ActiveSkipType,
     val segment: PlayerSkipSegment,
 )
+
+private enum class ActiveSkipType(@param:StringRes val skippedMessageRes: Int) {
+    Opening(R.string.player_opening_skipped),
+    Ending(R.string.player_ending_skipped),
+}
 
 private fun currentSkip(
     skips: PlayerSkips,
@@ -567,8 +607,8 @@ private fun currentSkip(
     dismissedKeys: List<String>,
 ): ActiveSkip? =
     listOfNotNull(
-        skips.opening?.let { ActiveSkip("opening:${it.startMs}:${it.endMs}", it) },
-        skips.ending?.let { ActiveSkip("ending:${it.startMs}:${it.endMs}", it) },
+        skips.opening?.let { ActiveSkip("opening:${it.startMs}:${it.endMs}", ActiveSkipType.Opening, it) },
+        skips.ending?.let { ActiveSkip("ending:${it.startMs}:${it.endMs}", ActiveSkipType.Ending, it) },
     ).firstOrNull { skip ->
         skip.key !in dismissedKeys && positionMs in skip.segment.startMs..skip.segment.endMs
     }

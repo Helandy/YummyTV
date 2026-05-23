@@ -74,8 +74,8 @@ class DetailsViewModel @AssistedInject constructor(
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
             DetailsState.Event.RetrySelected -> load()
+            DetailsState.Event.WatchSelected -> onWatchSelected()
             is DetailsState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
-            is DetailsState.Event.VideoSelected -> showBalancerPicker(event.video)
             is DetailsState.Event.BalancerConfirmed -> {
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
@@ -128,8 +128,11 @@ class DetailsViewModel @AssistedInject constructor(
         runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 setState { copy(videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos)) }
+                if (currentState.isWatchLaunchPending) {
+                    openInitialVideo(videos)
+                }
             },
-            onFailure = { setState { copy(videosState = VideosUiState.Empty) } },
+            onFailure = { setState { copy(videosState = VideosUiState.Empty, isWatchLaunchPending = false) } },
         )
     }
 
@@ -147,6 +150,46 @@ class DetailsViewModel @AssistedInject constructor(
             PreferredPlayer.ALLOHA -> iframeUrl.contains("alloha", ignoreCase = true)
             PreferredPlayer.CVH -> iframeUrl.contains("iframeCVH", ignoreCase = true)
         }
+
+    private fun onWatchSelected() {
+        when (val videosState = currentState.videosState) {
+            is VideosUiState.Content -> openInitialVideo(videosState.videos)
+            VideosUiState.Empty -> {
+                setState { copy(isWatchLaunchPending = true) }
+                viewModelScope.launch { loadVideos() }
+            }
+            VideosUiState.Loading -> setState { copy(isWatchLaunchPending = true) }
+        }
+    }
+
+    private fun openInitialVideo(videos: List<AnimeVideo>) {
+        val video = selectInitialVideo(videos)
+        setState { copy(isWatchLaunchPending = false) }
+        if (video != null) {
+            showBalancerPicker(video)
+        }
+    }
+
+    private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
+        val resumeEntry = currentState.watchProgress.values
+            .filter { it.animeId == animeId && it.positionMs > 0 }
+            .maxByOrNull { it.updatedAt }
+        val resumeVideo = resumeEntry?.let { entry ->
+            videos.firstOrNull { it.iframeUrl == entry.episodeUrl }
+        }
+        if (resumeVideo != null) return resumeVideo
+
+        val kodikVideos = videos.filter {
+            it.player.contains("kodik", ignoreCase = true) || it.iframeUrl.contains("kodik", ignoreCase = true)
+        }
+        val supportedVideos = videos.filter { isSupportedPlayer(it.iframeUrl) }
+        val source = kodikVideos.ifEmpty { supportedVideos.ifEmpty { videos } }
+        return source.groupBy { it.dubbing }
+            .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
+            ?.value
+            ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+            ?: source.firstOrNull()
+    }
 
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
@@ -172,10 +215,10 @@ class DetailsViewModel @AssistedInject constructor(
             }
         }
 
-        if (supportedOptions.size <= 1) {
-            navigateToPlayer(video)
-        } else {
-            setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
+        when (supportedOptions.size) {
+            0 -> navigateToPlayer(video)
+            1 -> navigateToPlayer(supportedOptions.first().video)
+            else -> setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
         }
     }
 

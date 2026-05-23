@@ -10,12 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.AnimeDetails
-import su.afk.yummy.tv.feature.details.VideosUiState
 
 @Composable
 internal fun DetailsContent(
     details: AnimeDetails,
-    videosState: VideosUiState,
+    isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     isInLibrary: Boolean,
     onWatchSelected: () -> Unit,
@@ -37,6 +36,7 @@ internal fun DetailsContent(
             details = details,
             downFocusRequester = barFocusRequester,
             isInLibrary = isInLibrary,
+            isWatchLoading = isWatchLoading,
             watchProgress = watchProgress,
             onWatchSelected = onWatchSelected,
             onLibraryToggle = onLibraryToggle,

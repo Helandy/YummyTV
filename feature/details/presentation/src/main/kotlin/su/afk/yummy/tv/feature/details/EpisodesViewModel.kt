@@ -139,10 +139,10 @@ class EpisodesViewModel @AssistedInject constructor(
             }
         }
 
-        if (supportedOptions.size <= 1) {
-            navigateToPlayer(video)
-        } else {
-            setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
+        when (supportedOptions.size) {
+            0 -> navigateToPlayer(video)
+            1 -> navigateToPlayer(supportedOptions.first().video)
+            else -> setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
         }
     }
 

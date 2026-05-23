@@ -21,13 +21,14 @@ class DetailsState {
         val showPosterFullscreen: Boolean = false,
         val watchProgress: Map<String, WatchProgressEntry> = emptyMap(),
         val pendingBalancerSelection: BalancerPickerState? = null,
+        val isWatchLaunchPending: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
         data object BackSelected : Event
         data object RetrySelected : Event
+        data object WatchSelected : Event
         data class AnimeSelected(val seriesId: Int) : Event
-        data class VideoSelected(val video: AnimeVideo) : Event
         data object FullDetailsSelected : Event
         data object EpisodesSelected : Event
         data object TrailersSelected : Event

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.details
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class YaniAnimeDetailsDto(
@@ -135,8 +136,8 @@ data class YaniVideoDataDto(
 
 @Serializable
 data class YaniVideoSkipsDto(
-    val opening: List<Int>? = null,
-    val ending: List<Int>? = null,
+    val opening: JsonElement? = null,
+    val ending: JsonElement? = null,
 )
 
 @Serializable

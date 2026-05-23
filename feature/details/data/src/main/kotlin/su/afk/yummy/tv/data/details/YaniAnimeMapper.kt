@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.data.details
 
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.domain.anime.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.AnimeGenre
@@ -108,9 +113,20 @@ private fun YaniVideoSkipsDto?.toAnimeVideoSkips(): AnimeVideoSkips = AnimeVideo
     ending = this?.ending.toAnimeVideoSkipSegment(),
 )
 
-private fun List<Int>?.toAnimeVideoSkipSegment(): AnimeVideoSkipSegment? {
-    val start = this?.getOrNull(0)?.takeIf { it >= 0 } ?: return null
-    val end = getOrNull(1)?.takeIf { it > start } ?: return null
+private fun JsonElement?.toAnimeVideoSkipSegment(): AnimeVideoSkipSegment? {
+    val (start, end) = when (this) {
+        is JsonObject -> {
+            val start = this["time"]?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
+            val length = this["length"]?.jsonPrimitive?.intOrNull?.takeIf { it > 0 } ?: return null
+            start to start + length
+        }
+        is JsonArray -> {
+            val start = getOrNull(0)?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
+            val end = getOrNull(1)?.jsonPrimitive?.intOrNull?.takeIf { it > start } ?: return null
+            start to end
+        }
+        else -> return null
+    }
     return AnimeVideoSkipSegment(
         startMs = start * 1_000L,
         endMs = end * 1_000L,

@@ -56,6 +56,7 @@ private data class ButtonData(
 internal fun DetailsButtonBar(
     details: AnimeDetails,
     isInLibrary: Boolean,
+    isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
@@ -72,10 +73,11 @@ internal fun DetailsButtonBar(
     val resumeEntry = watchProgress.values
         .filter { it.animeId == details.id && it.positionMs > 0 }
         .maxByOrNull { it.updatedAt }
-    val watchLabel = if (resumeEntry != null && resumeEntry.episode.isNotBlank()) {
-        stringResource(R.string.details_continue_episode, resumeEntry.episode)
-    } else {
-        stringResource(R.string.details_watch)
+    val watchLabel = when {
+        isWatchLoading -> stringResource(R.string.details_loading_episodes)
+        resumeEntry != null && resumeEntry.episode.isNotBlank() ->
+            stringResource(R.string.details_continue_episode, resumeEntry.episode)
+        else -> stringResource(R.string.details_watch)
     }
 
     val buttons = listOf(

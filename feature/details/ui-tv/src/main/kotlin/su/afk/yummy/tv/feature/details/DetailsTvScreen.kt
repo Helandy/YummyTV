@@ -116,28 +116,10 @@ fun DetailsTvScreen(
             )
             details != null -> DetailsContent(
                 details = details,
-                videosState = state.videosState,
+                isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
                 watchProgress = state.watchProgress,
                 isInLibrary = state.isInLibrary,
-                onWatchSelected = {
-                    val videos = (state.videosState as? VideosUiState.Content)?.videos.orEmpty()
-                    val resumeEntry = state.watchProgress.values
-                        .filter { it.animeId == details.id && it.positionMs > 0 }
-                        .maxByOrNull { it.updatedAt }
-                    val resumeVideo = resumeEntry?.let { entry ->
-                        videos.firstOrNull { it.iframeUrl == entry.episodeUrl }
-                    }
-                    val pick = resumeVideo ?: run {
-                        val kodikVideos = videos.filter { it.player.contains("kodik", ignoreCase = true) }
-                        val source = kodikVideos.ifEmpty { videos }
-                        source.groupBy { it.dubbing }
-                            .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
-                            ?.value
-                            ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                            ?: source.firstOrNull()
-                    }
-                    if (pick != null) onEvent(DetailsState.Event.VideoSelected(pick))
-                },
+                onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
                 onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                 onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
