@@ -32,7 +32,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -58,12 +60,14 @@ internal fun DetailsButtonBar(
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
+    onDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
     onSimilarSelected: () -> Unit,
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
     modifier: Modifier = Modifier,
+    height: Dp = 150.dp,
 ) {
     val resumeEntry = watchProgress.values
         .filter { it.animeId == details.id && it.positionMs > 0 }
@@ -85,6 +89,7 @@ internal fun DetailsButtonBar(
             style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
             onClick = onLibraryToggle,
         ),
+        ButtonData(stringResource(R.string.details_full_details), ButtonStyle.Normal, onDetailsSelected),
         ButtonData(stringResource(R.string.details_episodes), ButtonStyle.Normal, onEpisodesSelected),
         ButtonData(stringResource(R.string.details_trailers), ButtonStyle.Normal, onTrailersSelected),
         ButtonData(stringResource(R.string.details_similar), ButtonStyle.Normal, onSimilarSelected),
@@ -129,15 +134,15 @@ internal fun DetailsButtonBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(168.dp),
+            .height(height),
     ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(168.dp),
+                .height(height),
             contentPadding = PaddingValues(horizontal = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             itemsIndexed(
                 items = buttons,
@@ -152,7 +157,7 @@ internal fun DetailsButtonBar(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .height(40.dp)
                         .padding(horizontal = 2.dp),
                 ) {
                     ActionButton(
@@ -207,12 +212,12 @@ private fun ActionButton(
             .fillMaxWidth()
             .tvFocusableClick(onClick = onClick, shape = shape)
             .background(bgColor.copy(alpha = bgColor.alpha * alpha), shape)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
             fontWeight = FontWeight.Bold,
             color = textColor.copy(alpha = textColor.alpha * alpha),
             maxLines = 1,

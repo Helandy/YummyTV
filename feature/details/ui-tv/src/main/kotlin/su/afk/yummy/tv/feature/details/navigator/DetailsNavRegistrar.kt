@@ -10,6 +10,8 @@ import su.afk.yummy.tv.feature.details.DetailsTvScreen
 import su.afk.yummy.tv.feature.details.DetailsViewModel
 import su.afk.yummy.tv.feature.details.EpisodesTvScreen
 import su.afk.yummy.tv.feature.details.EpisodesViewModel
+import su.afk.yummy.tv.feature.details.FullDetailsTvScreen
+import su.afk.yummy.tv.feature.details.FullDetailsViewModel
 import su.afk.yummy.tv.feature.details.ScreenshotsTvScreen
 import su.afk.yummy.tv.feature.details.ScreenshotsViewModel
 import su.afk.yummy.tv.feature.details.SimilarTvScreen
@@ -31,6 +33,16 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     DetailsTvScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+
+            entry<DetailsFullDestination> { dest ->
+                val viewModel = hiltViewModel<FullDetailsViewModel, FullDetailsViewModel.Factory>(
+                    key = "full-details-${dest.animeId}",
+                    creationCallback = { factory -> factory.create(dest.animeId) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    FullDetailsTvScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
 

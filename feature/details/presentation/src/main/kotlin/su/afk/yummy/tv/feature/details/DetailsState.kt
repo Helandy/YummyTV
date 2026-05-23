@@ -28,6 +28,7 @@ class DetailsState {
         data object RetrySelected : Event
         data class AnimeSelected(val seriesId: Int) : Event
         data class VideoSelected(val video: AnimeVideo) : Event
+        data object FullDetailsSelected : Event
         data object EpisodesSelected : Event
         data object TrailersSelected : Event
         data object SimilarSelected : Event

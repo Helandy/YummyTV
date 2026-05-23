@@ -139,6 +139,7 @@ fun DetailsTvScreen(
                     if (pick != null) onEvent(DetailsState.Event.VideoSelected(pick))
                 },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                 onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                 onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
                 onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },

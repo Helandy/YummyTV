@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 
 interface IDetailsNavigator {
     fun getDetailsDest(animeId: Int): NavKey
+    fun getFullDetailsDest(animeId: Int): NavKey
     fun getEpisodesDest(animeId: Int): NavKey
     fun getTrailersDest(animeId: Int): NavKey
     fun getSimilarDest(animeId: Int): NavKey

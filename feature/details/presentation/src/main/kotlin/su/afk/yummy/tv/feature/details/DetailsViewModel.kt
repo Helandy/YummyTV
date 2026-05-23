@@ -77,6 +77,7 @@ class DetailsViewModel @AssistedInject constructor(
                 navigateToPlayer(event.video)
             }
             DetailsState.Event.BalancerPickerDismissed -> setState { copy(pendingBalancerSelection = null) }
+            DetailsState.Event.FullDetailsSelected -> nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
             DetailsState.Event.EpisodesSelected -> nav.navigate(detailsNavigator.getEpisodesDest(animeId))
             DetailsState.Event.TrailersSelected -> nav.navigate(detailsNavigator.getTrailersDest(animeId))
             DetailsState.Event.SimilarSelected -> nav.navigate(detailsNavigator.getSimilarDest(animeId))

@@ -25,7 +25,10 @@ fun MarqueeTitleText(
     minLines: Int = 2,
     maxLines: Int = 2,
     isFocused: Boolean = false,
+    marqueeWhenOverflow: Boolean = false,
 ) {
+    val shouldMarquee = isFocused || marqueeWhenOverflow
+
     // Single-line variant: marquee the whole line on overflow
     if (maxLines == 1) {
         var overflows by remember(text) { mutableStateOf(false) }
@@ -35,8 +38,8 @@ fun MarqueeTitleText(
             fontWeight = fontWeight,
             minLines = minLines,
             maxLines = 1,
-            overflow = if (overflows && isFocused) TextOverflow.Clip else TextOverflow.Ellipsis,
-            modifier = modifier.then(if (overflows && isFocused) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
+            overflow = if (overflows && shouldMarquee) TextOverflow.Clip else TextOverflow.Ellipsis,
+            modifier = modifier.then(if (overflows && shouldMarquee) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
             onTextLayout = { if (!overflows && it.hasVisualOverflow) overflows = true },
         )
         return
@@ -65,8 +68,8 @@ fun MarqueeTitleText(
                 style = style,
                 fontWeight = fontWeight,
                 maxLines = 1,
-                overflow = if (isFocused) TextOverflow.Clip else TextOverflow.Ellipsis,
-                modifier = if (isFocused) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier,
+                overflow = if (shouldMarquee) TextOverflow.Clip else TextOverflow.Ellipsis,
+                modifier = if (shouldMarquee) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier,
             )
         }
     } else {

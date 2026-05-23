@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 data class DetailsDestination(val animeId: Int) : NavKey
 
 @Serializable
+data class DetailsFullDestination(val animeId: Int) : NavKey
+
+@Serializable
 data class DetailsEpisodesDestination(val animeId: Int) : NavKey
 
 @Serializable

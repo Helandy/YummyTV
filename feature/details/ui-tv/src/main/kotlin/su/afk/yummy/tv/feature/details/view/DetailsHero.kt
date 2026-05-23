@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +34,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +54,7 @@ internal fun DetailsHero(
     watchProgress: Map<String, WatchProgressEntry>,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
+    onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
     onSimilarSelected: () -> Unit,
@@ -66,24 +65,35 @@ internal fun DetailsHero(
 
     var titleFocused by remember { mutableStateOf(false) }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
+        val isCompactHeight = maxHeight < 560.dp
+        val horizontalPadding = 24.dp
+        val verticalPadding = when {
+            isCompactHeight -> 24.dp
+            else -> 40.dp
+        }
+        val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
+        val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
+        val titleMaxLines = 3
+        val descriptionMaxLines = 3
+        val posterWidth = if (isCompactHeight) 260.dp else 300.dp
+        val buttonBarHeight = if (isCompactHeight) 124.dp else 150.dp
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 40.dp),
-            horizontalArrangement = Arrangement.spacedBy(48.dp),
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+            horizontalArrangement = Arrangement.spacedBy(rowSpacing),
             verticalAlignment = Alignment.Top,
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(columnSpacing),
             ) {
-                HeroRatingRow(details)
-
                 MarqueeTitleText(
                     text = details.title,
                     style = MaterialTheme.typography.displaySmall.copy(
@@ -92,8 +102,9 @@ internal fun DetailsHero(
                     ),
                     fontWeight = FontWeight.ExtraBold,
                     minLines = 1,
-                    maxLines = 3,
+                    maxLines = titleMaxLines,
                     isFocused = titleFocused,
+                    marqueeWhenOverflow = true,
                     modifier = Modifier
                         .focusRequester(titleFocusRequester)
                         .focusProperties { down = downFocusRequester }
@@ -101,64 +112,14 @@ internal fun DetailsHero(
                         .onFocusChanged { fs -> titleFocused = fs.isFocused },
                 )
 
-                if (details.otherTitles.isNotEmpty()) {
-                    Text(
-                        text = details.otherTitles.take(3).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
                 HeroMetaRow(details)
-
-                if (details.genres.isNotEmpty()) {
-                    Text(
-                        text = details.genres.take(4).joinToString(" · ") { it.title },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.60f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
-                details.episodes?.let { ep ->
-                    val line = buildList {
-                        ep.aired?.let { add(stringResource(R.string.details_aired, it)) }
-                        ep.count?.takeIf { it > 0 }?.let { add(stringResource(R.string.details_total, it)) }
-                    }.joinToString(" · ")
-                    if (line.isNotBlank()) {
-                        Text(
-                            text = line,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                        )
-                    }
-                }
 
                 if (details.description.isNotBlank()) {
                     Text(
                         text = details.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.80f),
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
-                val creditLine = buildList {
-                    if (details.studios.isNotEmpty()) add(details.studios.take(2).joinToString { it.title })
-                    if (details.creators.isNotEmpty()) {
-                        add(stringResource(R.string.details_director_prefix, details.creators.take(2).joinToString { it.title }))
-                    }
-                }.joinToString(" · ")
-                if (creditLine.isNotBlank()) {
-                    Text(
-                        text = creditLine,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                        maxLines = 1,
+                        maxLines = descriptionMaxLines,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -170,30 +131,39 @@ internal fun DetailsHero(
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,
                     onLibraryToggle = onLibraryToggle,
+                    onDetailsSelected = onFullDetailsSelected,
                     onEpisodesSelected = onEpisodesSelected,
                     onTrailersSelected = onTrailersSelected,
                     onSimilarSelected = onSimilarSelected,
                     onViewingOrderSelected = onViewingOrderSelected,
                     onScreenshotsSelected = onScreenshotsSelected,
                     modifier = Modifier.padding(top = 8.dp),
+                    height = buttonBarHeight,
                 )
             }
 
-            Card(
-                modifier = Modifier
-                    .width(300.dp)
-                    .aspectRatio(2f / 3f),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
+            Column(
+                modifier = Modifier.width(posterWidth),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                AsyncImage(
-                    model = details.poster?.bestUrl,
-                    contentDescription = details.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                HeroRatingRow(details)
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(2f / 3f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                ) {
+                    AsyncImage(
+                        model = details.poster?.bestUrl,
+                        contentDescription = details.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }
@@ -209,30 +179,25 @@ private fun HeroRatingRow(details: AnimeDetails) {
         details.rating.myAnimeList?.let { add("MAL ${it.formatRating()}") }
     }
     if (ratings.isEmpty()) return
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
         ratings.forEach { label ->
-            Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 5.dp, vertical = 2.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.height(10.dp).width(10.dp),
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                )
-            }
+            RatingLabel(label)
         }
     }
+}
+
+@Composable
+private fun RatingLabel(label: String) {
+    Text(
+        text = label,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
