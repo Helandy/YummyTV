@@ -26,11 +26,15 @@ class PlayerNavigator @Inject constructor() : IPlayerNavigator {
         allBalancerDubbingNames: List<List<String>>,
         allBalancerEpisodeUrls: List<List<List<String>>>,
         allBalancerEpisodeNumbers: List<List<List<String>>>,
+        episodeSkips: List<su.afk.yummy.tv.feature.player.PlayerSkips>,
+        allDubbingEpisodeSkips: List<List<su.afk.yummy.tv.feature.player.PlayerSkips>>,
+        allBalancerEpisodeSkips: List<List<List<su.afk.yummy.tv.feature.player.PlayerSkips>>>,
     ): NavKey = PlayerDestination(
         iframeUrl, animeTitle, episode, playerName, dubbing,
         episodeUrls, episodeNumbers, currentEpisodeIndex, screenshotUrls, animeId, posterUrl,
         allDubbingNames, currentDubbingIndex, allDubbingEpisodeUrls, allDubbingEpisodeNumbers,
         allBalancerNames, currentBalancerIndex, allBalancerDubbingNames,
         allBalancerEpisodeUrls, allBalancerEpisodeNumbers,
+        episodeSkips, allDubbingEpisodeSkips, allBalancerEpisodeSkips,
     )
 }

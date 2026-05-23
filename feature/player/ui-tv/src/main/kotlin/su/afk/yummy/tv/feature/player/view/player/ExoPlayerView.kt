@@ -10,15 +10,20 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,6 +57,8 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.feature.player.PlayerSkipSegment
+import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.R
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 
@@ -78,10 +85,14 @@ internal fun ExoPlayerView(
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
     streamHeaders: Map<String, String> = emptyMap(),
     qualityOverrides: LinkedHashMap<String, String>? = null,
+    skips: PlayerSkips = PlayerSkips.Empty,
+    autoSkipOpeningsEndings: Boolean = false,
 ) {
     val context = LocalContext.current
     val qualities = remember(streamUrl, qualityOverrides) { qualityOverrides ?: deriveQualityUrls(streamUrl) }
+    val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
     var selectedQuality by remember(streamUrl, qualityOverrides) { mutableStateOf(qualities.keys.last()) }
+    var selectedSpeed by remember { mutableFloatStateOf(1f) }
     var seekOnSwitch by remember(streamUrl) { mutableLongStateOf(resumeFromMs) }
     var lastSaveTime by remember { mutableLongStateOf(0L) }
     var wantsPlay by remember { mutableStateOf(true) }
@@ -94,12 +105,19 @@ internal fun ExoPlayerView(
     var showQualityPanel by remember { mutableStateOf(false) }
     var showDubbingPanel by remember { mutableStateOf(false) }
     var showBalancerPanel by remember { mutableStateOf(false) }
+    var showSpeedPanel by remember { mutableStateOf(false) }
+    var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
+    val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
 
     val playFocusRequester = remember { FocusRequester() }
     val overlayFocusRequester = remember { FocusRequester() }
     val selectedQualityFocusRequester = remember { FocusRequester() }
     val selectedDubbingFocusRequester = remember { FocusRequester() }
     val selectedBalancerFocusRequester = remember { FocusRequester() }
+    val selectedSpeedFocusRequester = remember { FocusRequester() }
+    val skipFocusRequester = remember { FocusRequester() }
+    val nextEpisodeFocusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
 
@@ -107,7 +125,7 @@ internal fun ExoPlayerView(
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
             delay(4_000)
-            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel) {
+            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showNextEpisodePrompt) {
                 controllerVisible = false
             }
         }
@@ -116,7 +134,7 @@ internal fun ExoPlayerView(
     fun onInteraction() {
         controllerVisible = true
         when {
-            showDubbingPanel || showQualityPanel || showBalancerPanel -> hideJob?.cancel()
+            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt -> hideJob?.cancel()
             wantsPlay -> scheduleHide()
             else -> hideJob?.cancel()
         }
@@ -134,6 +152,7 @@ internal fun ExoPlayerView(
         ExoPlayer.Builder(context)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
                 setMediaItem(MediaItem.fromUri(currentUrl))
@@ -147,6 +166,31 @@ internal fun ExoPlayerView(
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
+    }
+
+    fun closePanels() {
+        showQualityPanel = false
+        showDubbingPanel = false
+        showBalancerPanel = false
+        showSpeedPanel = false
+    }
+
+    fun playNextEpisode() {
+        if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
+        showNextEpisodePrompt = false
+        closePanels()
+        onNextEpisode()
+    }
+
+    val activeSkip = currentSkip(skips, currentPosition, dismissedSkipKeys)
+    val activeSkipKey = activeSkip?.key
+
+    fun skipActiveSegment() {
+        val skip = activeSkip ?: return
+        if (skip.key !in dismissedSkipKeys) dismissedSkipKeys += skip.key
+        highlightedSkipKey = null
+        seekTo(skip.segment.endMs)
+        onInteraction()
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -169,6 +213,18 @@ internal fun ExoPlayerView(
                 wantsPlay = pwr
                 if (pwr) scheduleHide() else hideJob?.cancel()
             }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
+                    if (hasNextEpisode) {
+                        showNextEpisodePrompt = true
+                        controllerVisible = true
+                        closePanels()
+                        hideJob?.cancel()
+                    }
+                }
+            }
         }
         exoPlayer.addListener(listener)
         if (wantsPlay) scheduleHide() else hideJob?.cancel()
@@ -178,6 +234,10 @@ internal fun ExoPlayerView(
             if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
             exoPlayer.release()
         }
+    }
+
+    LaunchedEffect(exoPlayer, selectedSpeed) {
+        exoPlayer.setPlaybackSpeed(selectedSpeed)
     }
 
     LaunchedEffect(exoPlayer) {
@@ -197,8 +257,11 @@ internal fun ExoPlayerView(
         }
     }
 
-    LaunchedEffect(controllerVisible, showQualityPanel, showDubbingPanel) {
-        if (controllerVisible && !showQualityPanel && !showDubbingPanel) {
+    LaunchedEffect(controllerVisible, showQualityPanel, showDubbingPanel, showBalancerPanel, showSpeedPanel, showNextEpisodePrompt) {
+        if (showNextEpisodePrompt) {
+            delay(50)
+            try { nextEpisodeFocusRequester.requestFocus() } catch (_: Exception) {}
+        } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel) {
             try { playFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (!controllerVisible) {
             try { overlayFocusRequester.requestFocus() } catch (_: Exception) {}
@@ -214,13 +277,29 @@ internal fun ExoPlayerView(
     LaunchedEffect(showBalancerPanel) {
         if (showBalancerPanel) { delay(50); try { selectedBalancerFocusRequester.requestFocus() } catch (_: Exception) {} }
     }
+    LaunchedEffect(showSpeedPanel) {
+        if (showSpeedPanel) { delay(50); try { selectedSpeedFocusRequester.requestFocus() } catch (_: Exception) {} }
+    }
+    LaunchedEffect(activeSkipKey, autoSkipOpeningsEndings) {
+        val skip = activeSkip ?: return@LaunchedEffect
+        if (autoSkipOpeningsEndings) {
+            skipActiveSegment()
+        } else {
+            highlightedSkipKey = skip.key
+            controllerVisible = true
+            hideJob?.cancel()
+            delay(50)
+            try { skipFocusRequester.requestFocus() } catch (_: Exception) {}
+            delay(10_000)
+            if (highlightedSkipKey == skip.key) highlightedSkipKey = null
+        }
+    }
 
     val displayTime = if (isSeeking) (seekProgress * duration).toLong() else currentPosition
 
-    BackHandler(enabled = showQualityPanel || showDubbingPanel || showBalancerPanel) {
-        showQualityPanel = false
-        showDubbingPanel = false
-        showBalancerPanel = false
+    BackHandler(enabled = showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt) {
+        showNextEpisodePrompt = false
+        closePanels()
         onInteraction()
     }
 
@@ -320,19 +399,30 @@ internal fun ExoPlayerView(
                             showQualityPanel = !showQualityPanel
                             showDubbingPanel = false
                             showBalancerPanel = false
+                            showSpeedPanel = false
                             if (showQualityPanel) hideJob?.cancel() else onInteraction()
                         },
                         onToggleDubbing = {
                             showDubbingPanel = !showDubbingPanel
                             showQualityPanel = false
                             showBalancerPanel = false
+                            showSpeedPanel = false
                             if (showDubbingPanel) hideJob?.cancel() else onInteraction()
                         },
                         onToggleBalancer = {
                             showBalancerPanel = !showBalancerPanel
                             showDubbingPanel = false
                             showQualityPanel = false
+                            showSpeedPanel = false
                             if (showBalancerPanel) hideJob?.cancel() else onInteraction()
+                        },
+                        currentSpeedLabel = selectedSpeed.speedLabel(),
+                        onToggleSpeed = {
+                            showSpeedPanel = !showSpeedPanel
+                            showBalancerPanel = false
+                            showDubbingPanel = false
+                            showQualityPanel = false
+                            if (showSpeedPanel) hideJob?.cancel() else onInteraction()
                         },
                     )
                 }
@@ -353,7 +443,7 @@ internal fun ExoPlayerView(
                     seekOnSwitch = exoPlayer.currentPosition
                     selectedQuality = quality
                 }
-                showQualityPanel = false
+                closePanels()
                 onInteraction()
             },
         )
@@ -368,7 +458,7 @@ internal fun ExoPlayerView(
             itemMeta = { stringResource(R.string.player_dubbing_meta) },
             onItemSelected = { idx ->
                 onDubbingSelected(idx, exoPlayer.currentPosition)
-                showDubbingPanel = false
+                closePanels()
                 onInteraction()
             },
         )
@@ -383,10 +473,78 @@ internal fun ExoPlayerView(
             itemMeta = { stringResource(R.string.player_balancer_meta) },
             onItemSelected = { idx ->
                 onBalancerSelected(idx, exoPlayer.currentPosition)
-                showBalancerPanel = false
+                closePanels()
                 onInteraction()
             },
         )
+
+        PlayerSelectionPanel(
+            visible = showSpeedPanel,
+            title = stringResource(R.string.player_speed_title),
+            items = speeds.map { it.speedLabel() },
+            selectedIndex = speeds.indexOf(selectedSpeed).coerceAtLeast(0),
+            selectedFocusRequester = selectedSpeedFocusRequester,
+            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 48.dp, bottom = 72.dp),
+            itemMeta = { stringResource(R.string.player_speed_meta) },
+            onItemSelected = { idx ->
+                selectedSpeed = speeds[idx]
+                closePanels()
+                onInteraction()
+            },
+        )
+
+        if (activeSkip != null && !autoSkipOpeningsEndings) {
+            ControlButton(
+                onClick = ::skipActiveSegment,
+                onFocused = ::onInteraction,
+                focusRequester = skipFocusRequester,
+                primary = highlightedSkipKey == activeSkip.key,
+                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 56.dp),
+            ) { color ->
+                Text(
+                    text = stringResource(R.string.player_skip_segment),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = color,
+                )
+            }
+        }
+
+        if (showNextEpisodePrompt && hasNextEpisode) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(Color.Black.copy(alpha = 0.78f))
+                    .padding(horizontal = 28.dp, vertical = 22.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.player_next_episode_prompt),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        ControlButton(
+                            onClick = ::playNextEpisode,
+                            onFocused = ::onInteraction,
+                            focusRequester = nextEpisodeFocusRequester,
+                            primary = true,
+                        ) { color ->
+                            Text(stringResource(R.string.player_watch_next), style = MaterialTheme.typography.labelLarge, color = color)
+                        }
+                        ControlButton(
+                            onClick = {
+                                showNextEpisodePrompt = false
+                                onInteraction()
+                            },
+                            onFocused = ::onInteraction,
+                            modifier = Modifier.width(120.dp),
+                        ) { color ->
+                            Text(stringResource(R.string.player_stay), style = MaterialTheme.typography.labelLarge, color = color)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -394,3 +552,23 @@ internal fun formatTime(ms: Long): String {
     val totalSec = ms / 1000
     return "%d:%02d".format(totalSec / 60, totalSec % 60)
 }
+
+internal fun Float.speedLabel(): String =
+    if (this % 1f == 0f) "${toInt()}x" else "${this}x"
+
+private data class ActiveSkip(
+    val key: String,
+    val segment: PlayerSkipSegment,
+)
+
+private fun currentSkip(
+    skips: PlayerSkips,
+    positionMs: Long,
+    dismissedKeys: List<String>,
+): ActiveSkip? =
+    listOfNotNull(
+        skips.opening?.let { ActiveSkip("opening:${it.startMs}:${it.endMs}", it) },
+        skips.ending?.let { ActiveSkip("ending:${it.startMs}:${it.endMs}", it) },
+    ).firstOrNull { skip ->
+        skip.key !in dismissedKeys && positionMs in skip.segment.startMs..skip.segment.endMs
+    }

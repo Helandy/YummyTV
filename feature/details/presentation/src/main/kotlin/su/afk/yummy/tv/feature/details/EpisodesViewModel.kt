@@ -18,9 +18,13 @@ import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.PlayerSkipSegment
+import su.afk.yummy.tv.feature.player.PlayerSkips
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject constructor(
@@ -178,6 +182,13 @@ class EpisodesViewModel @AssistedInject constructor(
                     .map { it.episode }
             }
         }
+        val allBalancerEpisodeSkips = supportedBalancers.mapIndexed { bIdx, bName ->
+            allBalancerDubbingNames[bIdx].map { dName ->
+                allVideos.filter { it.player == bName && it.dubbing == dName }
+                    .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+                    .map { it.skips.toPlayerSkips() }
+            }
+        }
 
         nav.navigate(
             playerNavigator.getPlayerDest(
@@ -201,7 +212,18 @@ class EpisodesViewModel @AssistedInject constructor(
                 allBalancerDubbingNames = allBalancerDubbingNames,
                 allBalancerEpisodeUrls = allBalancerEpisodeUrls,
                 allBalancerEpisodeNumbers = allBalancerEpisodeNumbers,
+                episodeSkips = group.map { it.skips.toPlayerSkips() },
+                allDubbingEpisodeSkips = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.skips.toPlayerSkips() } },
+                allBalancerEpisodeSkips = allBalancerEpisodeSkips,
             )
         )
     }
 }
+
+private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
+    opening = opening.toPlayerSkipSegment(),
+    ending = ending.toPlayerSkipSegment(),
+)
+
+private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
+    this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }

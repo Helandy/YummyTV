@@ -23,6 +23,9 @@ class PlayerState {
         val allBalancerDubbingNames: List<List<String>> = emptyList(),
         val allBalancerEpisodeUrls: List<List<List<String>>> = emptyList(),
         val allBalancerEpisodeNumbers: List<List<List<String>>> = emptyList(),
+        val episodeSkips: List<PlayerSkips> = emptyList(),
+        val allDubbingEpisodeSkips: List<List<PlayerSkips>> = emptyList(),
+        val allBalancerEpisodeSkips: List<List<List<PlayerSkips>>> = emptyList(),
         val balancerIndex: Int = 0,
         val dubbingIndex: Int = 0,
         val episodeIndex: Int = 0,
@@ -35,6 +38,7 @@ class PlayerState {
         val playerError: String? = null,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
+        val autoSkipOpeningsEndings: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {

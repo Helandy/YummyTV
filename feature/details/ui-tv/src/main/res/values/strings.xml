@@ -26,6 +26,7 @@
     <string name="details_watch_youtube">Смотреть в YouTube</string>
     <string name="details_episode_number">Серия %1$s</string>
     <string name="details_aired">Вышло: %1$s</string>
+    <string name="details_unknown_count">?</string>
     <string name="details_total">Всего: %1$d</string>
     <string name="details_director_prefix">Реж.: %1$s</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
@@ -43,6 +44,7 @@
     <string name="details_full_studio">Студия</string>
     <string name="details_full_director">Режиссёр</string>
     <string name="details_full_episodes_aired">Вышло серий</string>
+    <string name="details_full_episodes_progress">Вышло</string>
     <string name="details_full_episodes_total">Всего серий</string>
     <string name="details_full_next_episode">Следующая серия</string>
     <string name="details_full_description">Описание</string>

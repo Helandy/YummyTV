@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.details.view
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.domain.anime.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.AnimePoster
 import su.afk.yummy.tv.domain.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
@@ -16,6 +17,13 @@ internal fun Int.formatViews(): String = when {
     this >= 1_000_000 -> stringResource(R.string.details_views_millions, "%.1f".format(this / 1_000_000f))
     this >= 1_000 -> stringResource(R.string.details_views_thousands, this / 1_000)
     else -> toString()
+}
+
+@Composable
+internal fun AnimeEpisodes.formatAiredProgress(): String? {
+    val airedCount = aired ?: return null
+    val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
+    return stringResource(R.string.details_aired, "$airedCount из $totalCount")
 }
 
 internal fun Int.formatDuration(): String {

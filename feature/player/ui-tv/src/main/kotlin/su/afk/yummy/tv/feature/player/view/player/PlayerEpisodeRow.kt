@@ -27,17 +27,15 @@ internal fun PlayerEpisodeRow(
     playerName: String,
     dubbing: String,
     currentQualityLabel: String,
+    currentSpeedLabel: String,
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
+    onToggleSpeed: () -> Unit,
 ) {
-    val showRow = hasPrevEpisode || hasNextEpisode || qualityCount > 1 ||
-                  allDubbingNames.size > 1 || allBalancerNames.size > 1
-    if (!showRow) return
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -97,7 +95,23 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (hasNextEpisode) Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
+        }
+        ControlButton(
+            onClick = onToggleSpeed,
+            onFocused = onInteraction,
+            modifier = Modifier.widthIn(min = 76.dp),
+        ) { color ->
+            Text(
+                text = currentSpeedLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = color,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (hasNextEpisode) {
+            Spacer(Modifier.width(8.dp))
         }
         if (hasNextEpisode) {
             ControlButton(onClick = onNextEpisode, onFocused = onInteraction) { color ->

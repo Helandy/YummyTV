@@ -166,18 +166,34 @@ fun SettingsTvScreen(
                             onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
                         )
 
-                        SettingsTab.PLAYER -> PreferredPlayer.entries.forEachIndexed { index, player ->
-                            QualityRow(
-                                label = player.label(),
-                                hint = player.hint(),
-                                selected = player == state.preferredPlayer,
-                                onClick = { onEvent(SettingsState.Event.PreferredPlayerSelected(player)) },
+                        SettingsTab.PLAYER -> {
+                            ToggleRow(
+                                label = stringResource(R.string.settings_auto_skip_label),
+                                hint = if (state.autoSkipOpeningsEndings) {
+                                    stringResource(R.string.settings_auto_skip_enabled)
+                                } else {
+                                    stringResource(R.string.settings_disabled)
+                                },
+                                enabled = state.autoSkipOpeningsEndings,
+                                onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
                             )
-                            if (index < PreferredPlayer.entries.lastIndex) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            )
+                            PreferredPlayer.entries.forEachIndexed { index, player ->
+                                QualityRow(
+                                    label = player.label(),
+                                    hint = player.hint(),
+                                    selected = player == state.preferredPlayer,
+                                    onClick = { onEvent(SettingsState.Event.PreferredPlayerSelected(player)) },
                                 )
+                                if (index < PreferredPlayer.entries.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                    )
+                                }
                             }
                         }
 

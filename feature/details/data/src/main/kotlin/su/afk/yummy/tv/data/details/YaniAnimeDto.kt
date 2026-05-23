@@ -123,6 +123,7 @@ data class YaniAnimeVideoDto(
     @SerialName("iframe_url") val iframeUrl: String = "",
     val duration: Int? = null,
     val views: Int? = null,
+    val skips: YaniVideoSkipsDto? = null,
 )
 
 @Serializable
@@ -130,6 +131,12 @@ data class YaniVideoDataDto(
     val player: String = "",
     val dubbing: String = "",
     @SerialName("player_id") val playerId: Int? = null,
+)
+
+@Serializable
+data class YaniVideoSkipsDto(
+    val opening: List<Int>? = null,
+    val ending: List<Int>? = null,
 )
 
 @Serializable

@@ -10,6 +10,8 @@ import su.afk.yummy.tv.domain.anime.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.AnimeScreenshot
 import su.afk.yummy.tv.domain.anime.AnimeStudio
 import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.AnimeViewingOrderItem
 
 internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
@@ -22,10 +24,10 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         rating = source.rating.toAnimeRating(),
         genres = source.genres.mapNotNull { it.toGenre() },
         year = source.year?.takeIf { it > 0 },
-        ageRating = source.minAge?.titleLong ?: source.minAge?.title,
+        ageRating = source.minAge?.titleLong.knownText() ?: source.minAge?.title.knownText(),
         views = source.views,
-        status = source.animeStatus?.title,
-        type = source.type?.name ?: source.type?.shortname,
+        status = source.animeStatus?.title.knownText(),
+        type = source.type?.name.knownText() ?: source.type?.shortname.knownText(),
         episodes = source.episodes?.toAnimeEpisodes(),
         otherTitles = source.otherTitles.filter { it.isNotBlank() },
         creators = source.creators.mapNotNull { it.toPerson() },
@@ -52,17 +54,17 @@ private fun YaniAnimeRatingDto.toAnimeRating(): AnimeRating = AnimeRating(
 )
 
 private fun YaniNamedDto.toGenre(): AnimeGenre? =
-    title.takeIf { it.isNotBlank() }?.let { AnimeGenre(id = id, title = it) }
+    title.knownText()?.let { AnimeGenre(id = id, title = it) }
 
 private fun YaniNamedDto.toPerson(): AnimePerson? =
-    title.takeIf { it.isNotBlank() }?.let { AnimePerson(id = id, title = it) }
+    title.knownText()?.let { AnimePerson(id = id, title = it) }
 
 private fun YaniNamedDto.toStudio(): AnimeStudio? =
-    title.takeIf { it.isNotBlank() }?.let { AnimeStudio(id = id, title = it) }
+    title.knownText()?.let { AnimeStudio(id = id, title = it) }
 
 private fun YaniEpisodesDto.toAnimeEpisodes(): AnimeEpisodes = AnimeEpisodes(
-    count = count,
-    aired = aired,
+    count = count?.takeIf { it > 0 },
+    aired = aired?.takeIf { it > 0 },
     nextDateEpochSeconds = nextDate?.takeIf { it > 0 },
     prevDateEpochSeconds = prevDate?.takeIf { it > 0 },
 )
@@ -74,8 +76,8 @@ private fun YaniViewingOrderItemDto.toViewingOrderItem(): AnimeViewingOrderItem?
     return AnimeViewingOrderItem(
         animeId = id,
         title = safeTitle,
-        relation = data?.text?.takeIf { it.isNotBlank() },
-        type = type?.name?.takeIf { it.isNotBlank() } ?: type?.shortname?.takeIf { it.isNotBlank() },
+        relation = data?.text.knownText(),
+        type = type?.name.knownText() ?: type?.shortname.knownText(),
         episodesCount = type?.value?.takeIf { it > 0 },
         poster = poster?.toAnimePoster(),
         year = year?.takeIf { it > 0 },
@@ -98,7 +100,22 @@ internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
     iframeUrl = iframeUrl.toHttpsUrl(),
     durationSeconds = duration,
     views = views,
+    skips = skips.toAnimeVideoSkips(),
 )
+
+private fun YaniVideoSkipsDto?.toAnimeVideoSkips(): AnimeVideoSkips = AnimeVideoSkips(
+    opening = this?.opening.toAnimeVideoSkipSegment(),
+    ending = this?.ending.toAnimeVideoSkipSegment(),
+)
+
+private fun List<Int>?.toAnimeVideoSkipSegment(): AnimeVideoSkipSegment? {
+    val start = this?.getOrNull(0)?.takeIf { it >= 0 } ?: return null
+    val end = getOrNull(1)?.takeIf { it > start } ?: return null
+    return AnimeVideoSkipSegment(
+        startMs = start * 1_000L,
+        endMs = end * 1_000L,
+    )
+}
 
 internal fun YaniRecommendationItemDto.toAnimeRecommendation(): AnimeRecommendation? {
     val id = animeId ?: return null
@@ -108,7 +125,7 @@ internal fun YaniRecommendationItemDto.toAnimeRecommendation(): AnimeRecommendat
         title = safeTitle,
         poster = poster?.toAnimePoster(),
         rating = rating.average?.takeIf { it > 0.0 },
-        type = type?.name?.takeIf { it.isNotBlank() } ?: type?.shortname?.takeIf { it.isNotBlank() },
+        type = type?.name.knownText() ?: type?.shortname.knownText(),
         year = year?.takeIf { it > 0 },
     )
 }
@@ -117,4 +134,13 @@ internal fun String.toHttpsUrl(): String = when {
     startsWith("//") -> "https:$this"
     startsWith("http://") -> replaceFirst("http://", "https://")
     else -> this
+}
+
+private fun String?.knownText(): String? {
+    val value = this?.trim().orEmpty()
+    return value.takeIf {
+        it.isNotBlank() &&
+                !it.equals("unknown", ignoreCase = true) &&
+                !it.equals("unknow", ignoreCase = true)
+    }
 }

@@ -21,6 +21,7 @@ class SettingsStore(private val context: Context) {
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
+    private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
         prefs[posterQualityKey]?.let { name ->
@@ -47,6 +48,10 @@ class SettingsStore(private val context: Context) {
         PreviewCacheSize.entries.firstOrNull { it.megabytes == mb } ?: PreviewCacheSize.MB_100
     }
 
+    val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[autoSkipOpeningsEndingsKey] ?: false
+    }
+
     suspend fun setPosterQuality(quality: PosterQuality) {
         context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
     }
@@ -65,5 +70,9 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPreviewCacheSize(size: PreviewCacheSize) {
         context.dataStore.edit { prefs -> prefs[previewCacheSizeKey] = size.megabytes }
+    }
+
+    suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
     }
 }

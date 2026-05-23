@@ -42,6 +42,9 @@ class SettingsViewModel @Inject constructor(
         settingsStore.previewCacheSize
             .onEach { setState { copy(previewCacheSize = it) } }
             .launchIn(viewModelScope)
+        settingsStore.autoSkipOpeningsEndings
+            .onEach { setState { copy(autoSkipOpeningsEndings = it) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: SettingsState.Event) {
@@ -63,6 +66,9 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsState.Event.PreviewCacheSizeSelected -> viewModelScope.launch {
                 settingsStore.setPreviewCacheSize(event.size)
+            }
+            SettingsState.Event.AutoSkipOpeningsEndingsToggled -> viewModelScope.launch {
+                settingsStore.setAutoSkipOpeningsEndings(!currentState.autoSkipOpeningsEndings)
             }
         }
     }

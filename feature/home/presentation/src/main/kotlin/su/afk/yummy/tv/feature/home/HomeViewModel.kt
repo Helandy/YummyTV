@@ -13,6 +13,8 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.AnimePreview
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.GetHomeFeedUseCase
@@ -23,6 +25,8 @@ import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.PlayerSkipSegment
+import su.afk.yummy.tv.feature.player.PlayerSkips
 import javax.inject.Inject
 
 @HiltViewModel
@@ -141,6 +145,7 @@ class HomeViewModel @Inject constructor(
 
             val urls = episodeGroup.map { it.iframeUrl }.ifEmpty { listOf(iframeUrl) }
             val numbers = episodeGroup.map { it.episode }.ifEmpty { listOf(entry.episode) }
+            val skips = episodeGroup.map { it.skips.toPlayerSkips() }.ifEmpty { listOf(PlayerSkips.Empty) }
             val idx = urls.indexOf(iframeUrl).coerceAtLeast(0)
 
             nav.navigate(playerNavigator.getPlayerDest(
@@ -152,6 +157,7 @@ class HomeViewModel @Inject constructor(
                 episodeUrls = urls,
                 episodeNumbers = numbers,
                 currentEpisodeIndex = idx,
+                episodeSkips = skips,
                 animeId = entry.animeId,
                 posterUrl = entry.posterUrl,
             ))
@@ -183,3 +189,11 @@ class HomeViewModel @Inject constructor(
             .forEach(::prefetchPreview)
     }
 }
+
+private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
+    opening = opening.toPlayerSkipSegment(),
+    ending = ending.toPlayerSkipSegment(),
+)
+
+private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
+    this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }

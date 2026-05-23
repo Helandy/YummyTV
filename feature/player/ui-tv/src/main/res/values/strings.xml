@@ -20,7 +20,13 @@
     <string name="player_quality_title">Качество</string>
     <string name="player_dubbing_title">Озвучка</string>
     <string name="player_balancer_title">Плеер</string>
+    <string name="player_speed_title">Скорость</string>
     <string name="player_quality_meta">Поток видео</string>
     <string name="player_dubbing_meta">Дорожка озвучки</string>
     <string name="player_balancer_meta">Балансер воспроизведения</string>
+    <string name="player_speed_meta">Темп воспроизведения</string>
+    <string name="player_skip_segment">Пропустить</string>
+    <string name="player_next_episode_prompt">Следующая серия?</string>
+    <string name="player_watch_next">Смотреть</string>
+    <string name="player_stay">Остаться</string>
 </resources>

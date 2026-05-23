@@ -62,11 +62,17 @@ fun PlayerTvScreen(
         state.allBalancerEpisodeNumbers.getOrElse(state.balancerIndex) { state.allDubbingEpisodeNumbers }
     else state.allDubbingEpisodeNumbers
 
+    val activeAllEpisodeSkips = if (state.allBalancerEpisodeSkips.isNotEmpty())
+        state.allBalancerEpisodeSkips.getOrElse(state.balancerIndex) { state.allDubbingEpisodeSkips }
+    else state.allDubbingEpisodeSkips
+
     val activeDubbingUrls = activeAllEpisodeUrls.getOrElse(state.dubbingIndex) { state.episodeUrls }
     val activeEpisodeNumbers = activeAllEpisodeNumbers.getOrElse(state.dubbingIndex) { state.episodeNumbers }
+    val activeEpisodeSkips = activeAllEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
     val activeDubbing = activeAllDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
     val activeIframeUrl = activeDubbingUrls.getOrElse(state.episodeIndex) { state.iframeUrl }
     val activeEpisode = activeEpisodeNumbers.getOrElse(state.episodeIndex) { state.episode }
+    val activeSkips = activeEpisodeSkips.getOrElse(state.episodeIndex) { su.afk.yummy.tv.feature.player.PlayerSkips.Empty }
     val activeBalancerName = if (state.allBalancerNames.isNotEmpty())
         state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName }
     else state.playerName
@@ -103,6 +109,8 @@ fun PlayerTvScreen(
             onBalancerSelected = { newIdx, currentPosMs ->
                 onEvent(PlayerState.Event.BalancerSelected(newIdx, currentPosMs))
             },
+            skips = activeSkips,
+            autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
         )
         state.youtubeWebViewFallback -> YouTubeTrailerView(
             iframeUrl = activeIframeUrl,

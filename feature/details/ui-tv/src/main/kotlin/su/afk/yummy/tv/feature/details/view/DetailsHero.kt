@@ -71,10 +71,10 @@ internal fun DetailsHero(
             .background(MaterialTheme.colorScheme.surface),
     ) {
         val isCompactHeight = maxHeight < 560.dp
-        val horizontalPadding = 24.dp
+        val horizontalPadding = 20.dp
         val verticalPadding = when {
-            isCompactHeight -> 24.dp
-            else -> 40.dp
+            isCompactHeight -> 20.dp
+            else -> 32.dp
         }
         val rowSpacing = if (isCompactHeight) 28.dp else 48.dp
         val columnSpacing = if (isCompactHeight) 8.dp else 12.dp
@@ -113,6 +113,8 @@ internal fun DetailsHero(
                 )
 
                 HeroMetaRow(details)
+                HeroGenresRow(details)
+                HeroEpisodesRow(details)
 
                 if (details.description.isNotBlank()) {
                     Text(
@@ -247,4 +249,29 @@ private fun HeroMetaRow(details: AnimeDetails) {
             }
         }
     }
+}
+
+@Composable
+private fun HeroGenresRow(details: AnimeDetails) {
+    val genres = details.genres.take(3).joinToString(" • ") { it.title }
+    if (genres.isBlank()) return
+    Text(
+        text = genres,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+@Composable
+private fun HeroEpisodesRow(details: AnimeDetails) {
+    val episodeProgress = details.episodes?.formatAiredProgress() ?: return
+    Text(
+        text = episodeProgress,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
+    )
 }

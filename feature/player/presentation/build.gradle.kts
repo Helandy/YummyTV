@@ -17,6 +17,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
+    implementation(project(":feature:player:api"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 }

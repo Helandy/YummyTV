@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.navigator
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import su.afk.yummy.tv.feature.player.PlayerSkips
 
 @Serializable
 data class PlayerDestination(
@@ -25,4 +26,7 @@ data class PlayerDestination(
     val allBalancerDubbingNames: List<List<String>> = emptyList(),
     val allBalancerEpisodeUrls: List<List<List<String>>> = emptyList(),
     val allBalancerEpisodeNumbers: List<List<List<String>>> = emptyList(),
+    val episodeSkips: List<PlayerSkips> = emptyList(),
+    val allDubbingEpisodeSkips: List<List<PlayerSkips>> = emptyList(),
+    val allBalancerEpisodeSkips: List<List<List<PlayerSkips>>> = emptyList(),
 ) : NavKey

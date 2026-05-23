@@ -8,11 +8,14 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
 import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
@@ -31,6 +34,7 @@ class PlayerViewModel @AssistedInject constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val watchProgressStore: WatchProgressStore,
+    private val settingsStore: SettingsStore,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -62,6 +66,9 @@ class PlayerViewModel @AssistedInject constructor(
                 allBalancerDubbingNames = newDest.allBalancerDubbingNames,
                 allBalancerEpisodeUrls = newDest.allBalancerEpisodeUrls,
                 allBalancerEpisodeNumbers = newDest.allBalancerEpisodeNumbers,
+                episodeSkips = newDest.episodeSkips,
+                allDubbingEpisodeSkips = newDest.allDubbingEpisodeSkips,
+                allBalancerEpisodeSkips = newDest.allBalancerEpisodeSkips,
                 balancerIndex = newDest.currentBalancerIndex,
                 dubbingIndex = newDest.currentDubbingIndex,
                 episodeIndex = newDest.currentEpisodeIndex,
@@ -88,6 +95,9 @@ class PlayerViewModel @AssistedInject constructor(
         allBalancerDubbingNames = dest.allBalancerDubbingNames,
         allBalancerEpisodeUrls = dest.allBalancerEpisodeUrls,
         allBalancerEpisodeNumbers = dest.allBalancerEpisodeNumbers,
+        episodeSkips = dest.episodeSkips,
+        allDubbingEpisodeSkips = dest.allDubbingEpisodeSkips,
+        allBalancerEpisodeSkips = dest.allBalancerEpisodeSkips,
         balancerIndex = dest.currentBalancerIndex,
         dubbingIndex = dest.currentDubbingIndex,
         episodeIndex = dest.currentEpisodeIndex,
@@ -96,6 +106,9 @@ class PlayerViewModel @AssistedInject constructor(
     private var extractionJob: Job? = null
 
     init {
+        settingsStore.autoSkipOpeningsEndings
+            .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
+            .launchIn(viewModelScope)
         loadStream()
     }
 
@@ -295,11 +308,19 @@ class PlayerViewModel @AssistedInject constructor(
             s.allBalancerEpisodeNumbers.getOrElse(s.balancerIndex) { s.allDubbingEpisodeNumbers }
         else s.allDubbingEpisodeNumbers
 
+    private fun activeAllEpisodeSkips(s: PlayerState.State) =
+        if (s.allBalancerEpisodeSkips.isNotEmpty())
+            s.allBalancerEpisodeSkips.getOrElse(s.balancerIndex) { s.allDubbingEpisodeSkips }
+        else s.allDubbingEpisodeSkips
+
     private fun activeDubbingUrls(s: PlayerState.State) =
         activeAllEpisodeUrls(s).getOrElse(s.dubbingIndex) { s.episodeUrls }
 
     private fun activeEpisodeNumbers(s: PlayerState.State) =
         activeAllEpisodeNumbers(s).getOrElse(s.dubbingIndex) { s.episodeNumbers }
+
+    private fun activeEpisodeSkipsList(s: PlayerState.State) =
+        activeAllEpisodeSkips(s).getOrElse(s.dubbingIndex) { s.episodeSkips }
 
     private fun activeIframeUrl(s: PlayerState.State) =
         activeDubbingUrls(s).getOrElse(s.episodeIndex) { s.iframeUrl }

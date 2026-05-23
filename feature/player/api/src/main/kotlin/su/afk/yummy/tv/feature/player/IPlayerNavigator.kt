@@ -24,5 +24,8 @@ interface IPlayerNavigator {
         allBalancerDubbingNames: List<List<String>> = emptyList(),
         allBalancerEpisodeUrls: List<List<List<String>>> = emptyList(),
         allBalancerEpisodeNumbers: List<List<List<String>>> = emptyList(),
+        episodeSkips: List<PlayerSkips> = emptyList(),
+        allDubbingEpisodeSkips: List<List<PlayerSkips>> = emptyList(),
+        allBalancerEpisodeSkips: List<List<List<PlayerSkips>>> = emptyList(),
     ): NavKey
 }

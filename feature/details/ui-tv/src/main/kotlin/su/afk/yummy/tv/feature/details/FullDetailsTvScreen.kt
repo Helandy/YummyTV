@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.view.DetailsError
+import su.afk.yummy.tv.feature.details.view.formatAiredProgress
 import su.afk.yummy.tv.feature.details.view.formatRating
 import su.afk.yummy.tv.feature.details.view.formatViews
 import java.text.SimpleDateFormat
@@ -73,6 +74,7 @@ fun FullDetailsTvScreen(
 private fun FullDetailsContent(details: AnimeDetails) {
     val listState = rememberLazyListState()
     val firstFocusRequester = remember { FocusRequester() }
+    val episodeProgress = details.episodes?.formatAiredProgress()
     var itemIndex = 0
 
     LaunchedEffect(details.id) {
@@ -186,17 +188,10 @@ private fun FullDetailsContent(details: AnimeDetails) {
                 }
             }
         }
-        details.episodes?.aired?.let {
+        episodeProgress?.let {
             item {
                 FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_episodes_aired), it.toString())
-                }
-            }
-        }
-        details.episodes?.count?.let {
-            item {
-                FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(stringResource(R.string.details_full_episodes_total), it.toString())
+                    FullDetailsTextRow(stringResource(R.string.details_full_episodes_progress), it)
                 }
             }
         }
