@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -174,18 +176,21 @@ internal fun DetailsHero(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HeroRatingRow(details: AnimeDetails) {
+    val yaniRating = details.rating.average
     val ratings = buildList {
-        details.rating.average?.let { add("Yani ${it.formatRating()}") }
         details.rating.kinopoisk?.let { add(stringResource(R.string.details_kinopoisk_rating, it.formatRating())) }
         details.rating.shikimori?.let { add("Shikimori ${it.formatRating()}") }
         details.rating.myAnimeList?.let { add("MAL ${it.formatRating()}") }
     }
-    if (ratings.isEmpty()) return
+    if (yaniRating == null && ratings.isEmpty()) return
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        yaniRating?.let { rating ->
+            YaniRatingLabel(rating)
+        }
         ratings.forEach { label ->
             RatingLabel(label)
         }
@@ -200,6 +205,28 @@ private fun RatingLabel(label: String) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
     )
+}
+
+@Composable
+private fun YaniRatingLabel(rating: Double) {
+    val color = rating.toYaniRatingColor()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier
+                .height(13.dp)
+                .width(13.dp),
+        )
+        Spacer(modifier = Modifier.width(3.dp))
+        Text(
+            text = rating.formatRating(),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = color,
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -253,7 +280,7 @@ private fun HeroMetaRow(details: AnimeDetails) {
 
 @Composable
 private fun HeroGenresRow(details: AnimeDetails) {
-    val genres = details.genres.take(3).joinToString(" • ") { it.title }
+    val genres = details.genres.take(5).joinToString(" • ") { it.title }
     if (genres.isBlank()) return
     Text(
         text = genres,
@@ -274,4 +301,10 @@ private fun HeroEpisodesRow(details: AnimeDetails) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
     )
+}
+
+private fun Double.toYaniRatingColor(): Color = when {
+    this < 7.0 -> Color(0xFFE53935)
+    this <= 9.0 -> Color(0xFFFFC857)
+    else -> Color(0xFF69F0AE)
 }

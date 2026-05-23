@@ -9,14 +9,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -246,19 +252,21 @@ private fun FocusableDetailsItem(
 @Composable
 private fun FullRatingRow(details: AnimeDetails) {
     val ratings = buildList {
-        details.rating.average?.let { add(stringResource(R.string.details_full_rating_yani, it.formatRating())) }
         details.views?.let { add(stringResource(R.string.details_full_views, it.formatViews())) }
         details.rating.counters?.let { add(stringResource(R.string.details_full_rating_votes, it)) }
         details.rating.myAnimeList?.let { add("MAL ${it.formatRating()}") }
         details.rating.kinopoisk?.let { add(stringResource(R.string.details_kinopoisk_rating, it.formatRating())) }
         details.rating.shikimori?.let { add("Shikimori ${it.formatRating()}") }
     }
-    if (ratings.isEmpty()) return
+    if (details.rating.average == null && ratings.isEmpty()) return
 
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        details.rating.average?.let { rating ->
+            FullYaniRatingLabel(rating)
+        }
         ratings.forEach { rating ->
             Text(
                 text = rating,
@@ -267,6 +275,28 @@ private fun FullRatingRow(details: AnimeDetails) {
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.70f),
             )
         }
+    }
+}
+
+@Composable
+private fun FullYaniRatingLabel(rating: Double) {
+    val color = rating.toYaniRatingColor()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier
+                .height(21.dp)
+                .width(21.dp),
+        )
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(
+            text = rating.formatRating(),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+            color = color,
+        )
     }
 }
 
@@ -324,4 +354,10 @@ private fun FullDetailsChip(label: String) {
 private fun Long.formatEpochSeconds(): String {
     val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     return formatter.format(Date(this * 1000))
+}
+
+private fun Double.toYaniRatingColor(): Color = when {
+    this < 7.0 -> Color(0xFFE53935)
+    this <= 9.0 -> Color(0xFFFFC857)
+    else -> Color(0xFF69F0AE)
 }
