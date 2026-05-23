@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="collection_views">%1$d просмотров</string>
-    <string name="retry">Повторить</string>
+    <string name="collection_views">%1$d views</string>
+    <string name="retry">Retry</string>
 </resources>

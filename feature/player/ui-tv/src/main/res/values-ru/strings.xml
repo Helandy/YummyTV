@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_press_back_again">Для выхода нажмите ещё раз</string>
+    <string name="player_previous_episode">← Серия</string>
+    <string name="player_next_episode">Серия →</string>
+    <string name="player_name_prefix">Плеер </string>
+    <string name="player_episode">Серия</string>
+    <string name="player_episode_number">Серия %1$s</string>
+    <string name="player_info_title_episode">%1$s • Серия %2$s</string>
+    <string name="player_loading_stream">Получаем поток...</string>
+    <string name="player_kodik_error_title">Кодик вернул ошибку</string>
+    <string name="player_quoted_message">«%1$s»</string>
+    <string name="player_retry">Повторить</string>
+    <string name="player_stream_error">Не удалось получить поток</string>
+    <string name="player_unsupported">Плеер не поддерживается</string>
+    <string name="player_kodik_blocked">Просмотр заблокирован</string>
+    <string name="player_server_error">Ошибка сервера (%1$d)</string>
+    <string name="player_quality_auto">авто</string>
+    <string name="player_selected">Сейчас</string>
+    <string name="player_quality_title">Качество</string>
+    <string name="player_dubbing_title">Озвучка</string>
+    <string name="player_balancer_title">Плеер</string>
+    <string name="player_speed_title">Скорость</string>
+    <string name="player_quality_meta">Поток видео</string>
+    <string name="player_dubbing_meta">Дорожка озвучки</string>
+    <string name="player_balancer_meta">Балансер воспроизведения</string>
+    <string name="player_speed_meta">Темп воспроизведения</string>
+    <string name="player_skip_segment">Пропустить</string>
+    <string name="player_opening_skipped">Опенинг пропущен %1$s - %2$s</string>
+    <string name="player_ending_skipped">Эндинг пропущен %1$s - %2$s</string>
+    <string name="player_next_episode_prompt">Следующая серия?</string>
+    <string name="player_watch_next">Смотреть</string>
+    <string name="player_stay">Остаться</string>
+</resources>

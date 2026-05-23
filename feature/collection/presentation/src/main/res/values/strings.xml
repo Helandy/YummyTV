@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="collection_load_error">Не удалось загрузить коллекцию</string>
+    <string name="collection_load_error">Could not load collection</string>
 </resources>

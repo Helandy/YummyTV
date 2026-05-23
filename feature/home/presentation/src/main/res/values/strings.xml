@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_load_error">Не удалось загрузить главную страницу</string>
+    <string name="home_load_error">Could not load the home page</string>
 </resources>

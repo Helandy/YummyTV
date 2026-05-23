@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_tab_search">Поиск</string>
-    <string name="main_tab_home">Главная</string>
-    <string name="main_tab_top100">Топ 100</string>
-    <string name="main_tab_library">Библиотека</string>
-    <string name="main_settings_content_description">Настройки</string>
+    <string name="main_tab_search">Search</string>
+    <string name="main_tab_home">Home</string>
+    <string name="main_tab_top100">Top 100</string>
+    <string name="main_tab_library">Library</string>
+    <string name="main_settings_content_description">Settings</string>
 </resources>

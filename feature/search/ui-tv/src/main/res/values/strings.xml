@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="search_placeholder">Поиск аниме...</string>
-    <string name="search_empty">Ничего не найдено</string>
+    <string name="search_placeholder">Search anime...</string>
+    <string name="search_empty">Nothing found</string>
 </resources>

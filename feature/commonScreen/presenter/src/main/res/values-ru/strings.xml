@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Назад</string>
+    <string name="previous">Предыдущее</string>
+    <string name="next">Следующее</string>
+</resources>

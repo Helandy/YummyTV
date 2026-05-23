@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_empty_continue_watching">Нет незавершённых просмотров</string>
-    <string name="library_empty_list">Список пуст</string>
-    <string name="library_episode">Серия</string>
-    <string name="library_episode_number">Серия %1$s</string>
-    <string name="library_delete">Удалить</string>
-    <string name="library_tab_list">Список</string>
-    <string name="library_tab_list_short">Сп</string>
-    <string name="library_tab_continue_watching">Продолжить</string>
-    <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_empty_continue_watching">No unfinished watches</string>
+    <string name="library_empty_list">The list is empty</string>
+    <string name="library_episode">Episode</string>
+    <string name="library_episode_number">Episode %1$s</string>
+    <string name="library_delete">Delete</string>
+    <string name="library_tab_list">List</string>
+    <string name="library_tab_list_short">Li</string>
+    <string name="library_tab_continue_watching">Continue</string>
+    <string name="library_tab_continue_watching_short">Co</string>
 </resources>
