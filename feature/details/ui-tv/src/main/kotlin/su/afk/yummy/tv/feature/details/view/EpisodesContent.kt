@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.view
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,18 +9,29 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
-import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
@@ -69,17 +81,49 @@ internal fun EpisodesContent(
             .sortedBy { it.key.toIntOrNull() ?: 0 }
     }
 
-    val episodesRestorerState = rememberFocusRestorerState()
+    val episodeKeys = remember(episodeGroups) { episodeGroups.map { it.key } }
+    var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val gridState = rememberLazyGridState(initialFirstVisibleItemIndex = (lastFocusedIndex + 1).coerceAtLeast(0))
+    val focusRequesters = remember(episodeKeys) { List(episodeGroups.size) { FocusRequester() } }
+    val scope = rememberCoroutineScope()
+    var gridHasFocus by remember { mutableStateOf(false) }
+    var isRestoringFocus by remember { mutableStateOf(false) }
+
+    fun requestEpisodeFocus(index: Int) {
+        if (episodeGroups.isEmpty()) return
+        val target = index.coerceIn(0, episodeGroups.lastIndex)
+        lastFocusedIndex = target
+        isRestoringFocus = true
+        scope.launch {
+            val gridIndex = target + 1
+            gridState.scrollToItem(gridIndex)
+            snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
+                .first { it }
+            runCatching { focusRequesters[target].requestFocus() }
+            isRestoringFocus = false
+        }
+    }
+
     LaunchedEffect(restoreFocusRequest) {
         if (restoreFocusRequest > 0) {
             withFrameNanos { }
-            episodesRestorerState.restoreFocus()
+            requestEpisodeFocus(lastFocusedIndex)
         }
     }
 
     LazyVerticalGrid(
+        state = gridState,
         columns = GridCells.Adaptive(minSize = 220.dp),
-        modifier = modifier,
+        modifier = modifier
+            .onFocusChanged { state ->
+                val hadFocus = gridHasFocus
+                gridHasFocus = state.hasFocus
+                if (!state.hasFocus) isRestoringFocus = false
+                if (state.hasFocus && !hadFocus && episodeGroups.isNotEmpty()) {
+                    requestEpisodeFocus(lastFocusedIndex)
+                }
+            }
+            .focusGroup(),
         contentPadding = PaddingValues(
             start = TvScreenPadding.Horizontal,
             top = TvScreenPadding.Vertical,
@@ -116,7 +160,13 @@ internal fun EpisodesContent(
                         ?: groupVideos.first()
                     onVideoSelected(pick)
                 },
-                modifier = Modifier.focusRestorerItem(index, episodesRestorerState),
+                modifier = Modifier
+                    .focusRequester(focusRequesters[index])
+                    .onFocusChanged {
+                        if (it.hasFocus && !isRestoringFocus) {
+                            lastFocusedIndex = index
+                        }
+                    },
             )
         }
     }

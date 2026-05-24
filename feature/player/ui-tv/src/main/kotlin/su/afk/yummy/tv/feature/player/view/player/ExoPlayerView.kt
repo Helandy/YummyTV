@@ -169,11 +169,19 @@ internal fun ExoPlayerView(
             }
     }
 
+    fun saveProgressIfReady(positionMs: Long = currentPosition) {
+        if (episodeKey.isNotBlank() && duration > 0) {
+            onSaveProgress(positionMs, duration)
+            lastSaveTime = System.currentTimeMillis()
+        }
+    }
+
     fun seekTo(positionMs: Long) {
         val clamped = positionMs.coerceAtLeast(0)
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
+        saveProgressIfReady(clamped)
     }
 
     fun closePanels() {
@@ -184,7 +192,7 @@ internal fun ExoPlayerView(
     }
 
     fun playNextEpisode() {
-        if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
+        saveProgressIfReady()
         showNextEpisodePrompt = false
         showRateTitlePrompt = false
         closePanels()
@@ -242,7 +250,7 @@ internal fun ExoPlayerView(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
-                    if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
+                    saveProgressIfReady()
                     if (hasNextEpisode) {
                         showNextEpisodePrompt = true
                         controllerVisible = true
@@ -263,7 +271,7 @@ internal fun ExoPlayerView(
             hideJob?.cancel()
             skipSnackbarJob?.cancel()
             exoPlayer.removeListener(listener)
-            if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
+            saveProgressIfReady()
             exoPlayer.release()
         }
     }
@@ -282,8 +290,7 @@ internal fun ExoPlayerView(
             if (dur > 0) duration = dur
             val now = System.currentTimeMillis()
             if (episodeKey.isNotBlank() && duration > 0 && now - lastSaveTime > 10_000L) {
-                onSaveProgress(currentPosition, duration)
-                lastSaveTime = now
+                saveProgressIfReady()
             }
             delay(500)
         }
@@ -417,10 +424,11 @@ internal fun ExoPlayerView(
                         },
                         onInteraction = ::onInteraction,
                     )
-                    PlayerEpisodeRow(
-                        hasPrevEpisode = hasPrevEpisode,
-                        hasNextEpisode = hasNextEpisode,
-                        qualityCount = qualities.size,
+                        PlayerEpisodeRow(
+                            hasPrevEpisode = hasPrevEpisode,
+                            hasNextEpisode = hasNextEpisode,
+                            canRateTitle = canRateTitleOnEnd && !hasNextEpisode,
+                            qualityCount = qualities.size,
                         allDubbingNames = allDubbingNames,
                         currentDubbingIndex = currentDubbingIndex,
                         allBalancerNames = allBalancerNames,
@@ -428,10 +436,11 @@ internal fun ExoPlayerView(
                         playerName = playerName,
                         dubbing = dubbing,
                         currentQualityLabel = selectedQuality,
-                        onInteraction = ::onInteraction,
-                        onPrevEpisode = onPrevEpisode,
-                        onNextEpisode = onNextEpisode,
-                        onToggleQuality = {
+                            onInteraction = ::onInteraction,
+                            onPrevEpisode = onPrevEpisode,
+                            onNextEpisode = onNextEpisode,
+                            onRateTitle = ::rateTitle,
+                            onToggleQuality = {
                             showQualityPanel = !showQualityPanel
                             showDubbingPanel = false
                             showBalancerPanel = false

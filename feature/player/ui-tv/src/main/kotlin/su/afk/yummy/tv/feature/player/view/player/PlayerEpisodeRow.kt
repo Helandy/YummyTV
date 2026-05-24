@@ -19,6 +19,7 @@ import su.afk.yummy.tv.feature.player.R
 internal fun PlayerEpisodeRow(
     hasPrevEpisode: Boolean,
     hasNextEpisode: Boolean,
+    canRateTitle: Boolean,
     qualityCount: Int,
     allDubbingNames: List<String>,
     currentDubbingIndex: Int,
@@ -31,6 +32,7 @@ internal fun PlayerEpisodeRow(
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
+    onRateTitle: () -> Unit,
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
@@ -62,7 +64,7 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (allDubbingNames.size > 1 || qualityCount > 1 || hasNextEpisode) Spacer(Modifier.width(8.dp))
+            if (allDubbingNames.size > 1 || qualityCount > 1 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
         }
         if (allDubbingNames.size > 1) {
             val label = allDubbingNames.getOrElse(currentDubbingIndex) { dubbing }
@@ -79,7 +81,7 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (qualityCount > 1 || hasNextEpisode) Spacer(Modifier.width(8.dp))
+            if (qualityCount > 1 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
         }
         if (qualityCount > 1) {
             ControlButton(
@@ -110,12 +112,16 @@ internal fun PlayerEpisodeRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (hasNextEpisode) {
+        if (hasNextEpisode || canRateTitle) {
             Spacer(Modifier.width(8.dp))
         }
         if (hasNextEpisode) {
             ControlButton(onClick = onNextEpisode, onFocused = onInteraction) { color ->
                 Text(stringResource(R.string.player_next_episode), style = MaterialTheme.typography.labelLarge, color = color)
+            }
+        } else if (canRateTitle) {
+            ControlButton(onClick = onRateTitle, onFocused = onInteraction) { color ->
+                Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
             }
         }
     }
