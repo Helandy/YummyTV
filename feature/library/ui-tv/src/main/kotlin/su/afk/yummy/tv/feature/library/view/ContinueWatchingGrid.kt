@@ -53,6 +53,7 @@ internal fun ContinueWatchingGrid(
     focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
     sidePanelFocusRequester: FocusRequester,
+    restoreFirstItemToken: Int,
     onEntrySelected: (WatchProgressEntry) -> Unit,
     onItemFocused: (Int) -> Unit,
     onRemoveWatchProgress: (Int) -> Unit,
@@ -60,7 +61,8 @@ internal fun ContinueWatchingGrid(
 ) {
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val focusRequesters = remember(entries.size) { List(entries.size) { FocusRequester() } }
+    val entryIds = remember(entries) { entries.map { it.animeId } }
+    val focusRequesters = remember(entryIds) { List(entries.size) { FocusRequester() } }
     val topBarFocusRequester = LocalTopBarFocusRequester.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var gridHasFocus by remember { mutableStateOf(false) }
@@ -78,6 +80,24 @@ internal fun ContinueWatchingGrid(
                 visibleItems.filter { it.offset.x == minX }.map { it.index }.toSet()
             }
         }.collect { leftEdgeIndexes = it }
+    }
+
+    LaunchedEffect(focusedItemId, entries) {
+        val focusedIndex = entries.indexOfFirst { it.animeId == focusedItemId }
+        if (focusedIndex >= 0) {
+            lastFocusedIndex = focusedIndex
+        }
+    }
+
+    LaunchedEffect(restoreFirstItemToken, entries) {
+        if (restoreFirstItemToken <= 0 || entries.isEmpty()) return@LaunchedEffect
+        isRestoringFocus = true
+        lastFocusedIndex = 0
+        gridState.scrollToItem(0)
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == 0 } }
+            .first { it }
+        runCatching { focusRequesters.firstOrNull()?.requestFocus() }
+        isRestoringFocus = false
     }
 
     LaunchedEffect(entries.size, pendingFocusAfterDeleteIndex) {

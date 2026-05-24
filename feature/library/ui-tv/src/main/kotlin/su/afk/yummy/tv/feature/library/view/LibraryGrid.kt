@@ -76,6 +76,13 @@ internal fun LibraryGrid(
         }.collect { leftEdgeIndexes = it }
     }
 
+    LaunchedEffect(focusedItemId, items) {
+        val focusedIndex = items.indexOfFirst { it.animeId == focusedItemId }
+        if (focusedIndex >= 0) {
+            lastFocusedIndex = focusedIndex
+        }
+    }
+
     LaunchedEffect(items.size, pendingFocusAfterDeleteIndex) {
         val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
         isRestoringFocus = true
