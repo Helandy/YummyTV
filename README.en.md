@@ -6,77 +6,97 @@
 
 <p align="center">
   Unofficial Android TV client for <a href="https://yummyani.me">yummyani.me</a><br/>
-  Anime on the big screen: remote control, D-pad navigation, and no browser required.
+  Watch anime on the big screen with remote-friendly navigation and a high-performance player.
 </p>
 
 <p align="center">
-  <a href="README.md">Русский</a>
+  <a href="README.md">Русский README</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Helandy/YummyTV/releases"><img alt="Download YummyTV APK" src="https://img.shields.io/badge/Download-APK-2ea44f?style=for-the-badge"></a>
-  <a href="https://github.com/Helandy/YummyTV"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Helandy/YummyTV?style=for-the-badge"></a>
-  <a href="https://github.com/Helandy/YummyTV/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Helandy/YummyTV?style=for-the-badge"></a>
+  <a href="https://github.com/Helandy/yummytv/releases">
+    <img alt="Download YummyTV APK" src="https://img.shields.io/badge/Download-APK-2ea44f?style=for-the-badge">
+  </a>
+  <a href="https://github.com/Helandy/yummytv">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/Helandy/yummytv?style=for-the-badge">
+  </a>
+  <a href="https://github.com/Helandy/yummytv/releases">
+    <img alt="Latest release" src="https://img.shields.io/github/v/release/Helandy/yummytv?style=for-the-badge">
+  </a>
 </p>
 
----
+## Android TV client for YummyAni
 
-## What is YummyTV
+YummyTV is a native Android TV app that makes watching anime from yummyani.me more comfortable on a TV:
 
-YummyTV is a native Android TV app for watching anime from yummyani.me directly on your television. The interface is built for the big screen, remote control navigation, and Android TV focus behavior, so you do not have to open the website in a browser or fight with a cursor.
-
-The app is not an official yummyani.me client. It does not host video or distribute content; it works as a TV-friendly viewing shell for Android TV devices.
+- remote control navigation without a cursor or browser;
+- interface optimized for large screens;
+- catalog search;
+- quick access to titles, episodes, and continue watching;
+- built-in player with quality, voiceover, and balancer selection.
 
 ## Features
 
-- Full anime playback on TV
-- Remote control, D-pad, and Android TV focus navigation
-- Anime search across the yummyani.me catalog
-- Home screen with curated sections and continue watching
-- Details screen with description, episodes, trailers, and similar titles
-- Top-100 and collections
-- Local library and watch history
+- 📺 Android TV interface
+- 🎮 Remote control and D-pad navigation
+- 🔎 Anime search across the yummyani.me catalog
+- 🏠 Home screen with collections
+- ▶️ Continue watching
+- 📄 Title details with description, episodes, and trailers
+- 🎞️ Similar titles
+- 🏆 Top 100 and collections
+- 📚 Local library
+- 🕘 Watch history
+- ⚙️ Quality, voiceover, and video balancer selection
 
 ## Screenshots
 
-| Home | Details |
-| --- | --- |
-| <img src="dock/Home.webp" alt="Home" /> | <img src="dock/Details.webp" alt="Details" /> |
+| Home | Details | Top 100 |
+|:---:|:---:|:---:|
+| <img src="dock/Home.webp" width="320" alt="Home" /> | <img src="dock/Details.webp" width="320" alt="Details" /> | <img src="dock/Top100.webp" width="320" alt="Top 100" /> |
 
-| Top100 | Series |
-| --- | --- |
-| <img src="dock/Top100.webp" alt="Top100" /> | <img src="dock/Series.webp" alt="Series" /> |
+| Series | Continue Watching | Similar |
+|:---:|:---:|:---:|
+| <img src="dock/Series.webp" width="320" alt="Series" /> | <img src="dock/ContinueWatching.webp" width="320" alt="Continue Watching" /> | <img src="dock/Similar.webp" width="320" alt="Similar" /> |
 
-| ContinueWatching | Similar |
-| --- | --- |
-| <img src="dock/ContinueWatching.webp" alt="ContinueWatching" /> | <img src="dock/Similar.webp" alt="Similar" /> |
+| Player | Quality | Voice |
+|:---:|:---:|:---:|
+| <img src="dock/Player.webp" width="320" alt="Player" /> | <img src="dock/PlayerQuality.webp" width="320" alt="Player Quality" /> | <img src="dock/PlayerVoice.webp" width="320" alt="Player Voice" /> |
 
-| Player |
-| --- |
-| <img src="dock/Player.webp" alt="Player" /> |
-
-| PlayerQuality | SelectBalancer |
-| --- | --- |
-| <img src="dock/PlayerQuality.webp" alt="PlayerQuality" /> | <img src="dock/SelectBalancer.webp" alt="SelectBalancer" /> |
-
-| PlayerVoice | PlayerBalancer |
-| --- | --- |
-| <img src="dock/PlayerVoice.webp" alt="PlayerVoice" /> | <img src="dock/PlayerBalancer.webp" alt="PlayerBalancer" /> |
+| Select Balancer | Player Balancer |
+|:---:|:---:|
+| <img src="dock/SelectBalancer.webp" width="420" alt="Select Balancer" /> | <img src="dock/PlayerBalancer.webp" width="420" alt="Player Balancer" /> |
 
 ## Download
 
-Install the Android TV APK from [GitHub Releases](https://github.com/3n3my3/yummytv/releases). Open the latest release, download the APK, and install it on your Android TV or Android TV box.
+Install the latest APK from [GitHub Releases](https://github.com/Helandy/yummytv/releases).
 
-## How to send the APK to your TV
+Download the APK, transfer it to your TV or Android TV box, and open the file to install it.
 
-If the APK is on your phone or computer, you can send it to Android TV with [LocalSend](https://localsend.org/). Install LocalSend on both devices, connect them to the same Wi-Fi network, select the APK on your phone or computer, and send it to the TV. After receiving it, open the file on the TV and allow installation from that source if Android asks for confirmation.
+## How to install on Android TV
+
+The easiest way to transfer the APK to your TV is with [LocalSend](https://localsend.org/):
+
+1. Install LocalSend on your phone or computer.
+2. Install LocalSend on your Android TV.
+3. Connect both devices to the same Wi-Fi network.
+4. Send the APK to your TV.
+5. Open the APK on your TV and allow installation from this source if Android asks for confirmation.
 
 ## Limitations
 
-> **CIS users only.** The video balancers used by yummyani.me may not work with European or American IP addresses. If you are outside the CIS region, video playback may be unavailable.
+YummyTV depends on the availability of yummyani.me and third-party video balancers. If the website, player, or source is temporarily unavailable, video playback may not work.
 
-YummyTV depends on the availability of yummyani.me and third-party video balancers. If the website, a specific player, or a source is temporarily unavailable, the app may not be able to play the video either.
+For users outside the CIS region, some video balancers may be unavailable due to regional restrictions or IP blocks.
 
-## Project status
+## Support
 
-The project is under active development. Feedback, bug reports, and ideas are welcome: open an issue in the repository or reach out directly.
+- ⭐ Star the repository
+- 🐞 Open an issue if you find a bug
+- 💡 Suggest improvements via Issues
+
+## Disclaimer
+
+- YummyTV is an unofficial client.
+- The app does not host or distribute any content.
+- All rights belong to their respective owners.
