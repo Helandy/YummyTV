@@ -42,6 +42,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -256,6 +261,7 @@ private fun TvNavTab(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = focusRequesterModifier
+            .moveFocusDownOnKey(downFocusRequester)
             .focusProperties {
                 down = downFocusRequester
             }
@@ -308,6 +314,7 @@ private fun TvSettingsButton(
     Box(
         modifier = modifier
             .size(44.dp)
+            .moveFocusDownOnKey(downFocusRequester)
             .focusProperties {
                 down = downFocusRequester
             }
@@ -350,6 +357,7 @@ private fun TvAccountButton(
     Row(
         modifier = modifier
             .focusRequester(focusRequester)
+            .moveFocusDownOnKey(downFocusRequester)
             .focusProperties {
                 down = downFocusRequester
             }
@@ -379,3 +387,13 @@ private fun TvAccountButton(
         )
     }
 }
+
+private fun Modifier.moveFocusDownOnKey(focusRequester: FocusRequester): Modifier =
+    onPreviewKeyEvent { event ->
+        if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
+            runCatching { focusRequester.requestFocus() }
+            true
+        } else {
+            false
+        }
+    }

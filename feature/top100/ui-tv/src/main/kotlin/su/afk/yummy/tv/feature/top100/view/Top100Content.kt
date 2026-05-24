@@ -16,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.domain.anime.AnimePreview
 import su.afk.yummy.tv.domain.top100.AnimeTopItem
@@ -70,6 +72,7 @@ internal fun Top100Content(
     val gridState = rememberLazyGridState()
     val gridFocusRequester = remember { FocusRequester() }
     val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
 
@@ -78,6 +81,7 @@ internal fun Top100Content(
     var gridHasFocus by remember { mutableStateOf(false) }
     var sidePanelHasFocus by remember { mutableStateOf(false) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val preferredContentFocusRequester = focusRequesters.firstOrNull()
     val selectedTypeFocusRequester =
         typeFocusRequesters.getOrNull(AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0))
     val requestCardFocus = { index: Int ->
@@ -127,6 +131,11 @@ internal fun Top100Content(
                     onLoadMore()
                 }
             }
+    }
+
+    DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
+        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
     Box(

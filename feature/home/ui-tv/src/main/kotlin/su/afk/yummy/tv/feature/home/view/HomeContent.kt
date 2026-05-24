@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.AnimePreview
 import su.afk.yummy.tv.domain.home.HomeFeed
@@ -81,6 +83,7 @@ internal fun HomeContent(
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
     val continueWatchingFocusRequester = remember { FocusRequester() }
     val heroFocusRequester = remember { FocusRequester() }
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val sectionFocusRequesters = remember(feed.sections.map { it.title }) {
         feed.sections.associate { section -> section.title to FocusRequester() }
     }
@@ -163,6 +166,14 @@ internal fun HomeContent(
             }.first { it }
             runCatching { focusRequesterForLazyIndex(target).requestFocus() }
         }
+    }
+
+    val preferredContentFocusRequester =
+        if (totalLazyItems > 0) focusRequesterForLazyIndex(topBarEnterIndex()) else null
+
+    DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
+        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
     LazyColumn(
