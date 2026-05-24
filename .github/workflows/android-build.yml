@@ -38,8 +38,8 @@ jobs:
 
       - name: Install Android SDK platform
         run: |
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install "platforms;android-37"
+          (yes || true) | sdkmanager --licenses >/dev/null
+          sdkmanager --install "platforms;android-36"
 
       - name: Build debug APK
         run: ./gradlew :tvApp:assembleDebug --stacktrace
