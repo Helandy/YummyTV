@@ -1,6 +1,12 @@
 package su.afk.yummy.tv.domain.search
 
 interface SearchRepository {
-    suspend fun search(query: String, filters: SearchFilters, limit: Int, offset: Int): List<SearchItem>
+    suspend fun search(query: String, filters: SearchFilters, limit: Int, offset: Int): SearchPage
     suspend fun getFilterOptions(): SearchFilterOptions
 }
+
+data class SearchPage(
+    val items: List<SearchItem>,
+    val nextOffset: Int,
+    val canLoadMore: Boolean,
+)

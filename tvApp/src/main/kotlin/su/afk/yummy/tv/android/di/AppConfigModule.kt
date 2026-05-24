@@ -12,6 +12,6 @@ import javax.inject.Named
 object AppConfigModule {
 
     @Provides
-    @Named("blockedTimeoutEnabled")
-    fun provideBlockedTimeoutEnabled(): Boolean = BuildConfig.BLOCKED_TIMEOUT
+    @Named("hideRegionBlocked")
+    fun provideHideRegionBlocked(): Boolean = BuildConfig.HIDE_REGION_BLOCKED
 }

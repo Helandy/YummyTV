@@ -25,11 +25,6 @@ class YummyTvApplication : Application() {
                 deleteDownloadedUpdateApk()
             }
         }
-        if (BuildConfig.BLOCKED_TIMEOUT) {
-            applicationScope.launch {
-                settingsStore.ensureFirstLaunchAt()
-            }
-        }
     }
 
     private fun deleteDownloadedUpdateApk() {

@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.search.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.SearchFilters
+import su.afk.yummy.tv.domain.search.SearchPage
 import su.afk.yummy.tv.domain.search.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.search.presentation.R
@@ -175,14 +176,14 @@ class SearchViewModel @Inject constructor(
 
     private suspend fun load(query: String, filters: SearchFilters, offset: Int, replace: Boolean) {
         setState { if (replace) copy(isLoading = true, error = null) else copy(isLoading = true) }
-        runCatching { search(query, filters, PAGE_SIZE, offset) }.fold(
-            onSuccess = { newItems ->
+        runCatching { loadVisiblePage(query, filters, offset) }.fold(
+            onSuccess = { page ->
                 setState {
                     copy(
                         isLoading = false,
-                        items = if (replace) newItems else items + newItems,
-                        offset = offset + newItems.size,
-                        canLoadMore = newItems.size >= PAGE_SIZE,
+                        items = if (replace) page.items else items + page.items,
+                        offset = page.nextOffset,
+                        canLoadMore = page.canLoadMore,
                     )
                 }
             },
@@ -190,6 +191,23 @@ class SearchViewModel @Inject constructor(
                 setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.search_error)) }
             },
         )
+    }
+
+    private suspend fun loadVisiblePage(
+        query: String,
+        filters: SearchFilters,
+        offset: Int,
+    ): SearchPage {
+        var page = search(query, filters, PAGE_SIZE, offset)
+        while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > offset) {
+            val nextPage = search(query, filters, PAGE_SIZE, page.nextOffset)
+            page = page.copy(
+                items = nextPage.items,
+                nextOffset = nextPage.nextOffset,
+                canLoadMore = nextPage.canLoadMore,
+            )
+        }
+        return page
     }
 
     private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.top100.YaniAnimeTopRepository
 import su.afk.yummy.tv.domain.top100.AnimeTopRepository
 import su.afk.yummy.tv.domain.top100.GetAnimeTopUseCase
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -22,5 +23,8 @@ object Top100DataModule {
         YaniAnimeTopRepository(client, cache, json)
 
     @Provides
-    fun provideGetAnimeTopUseCase(repo: AnimeTopRepository) = GetAnimeTopUseCase(repo)
+    fun provideGetAnimeTopUseCase(
+        repo: AnimeTopRepository,
+        @Named("hideRegionBlocked") hideRegionBlocked: Boolean,
+    ) = GetAnimeTopUseCase(repo, hideRegionBlocked)
 }

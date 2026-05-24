@@ -19,7 +19,7 @@ android {
         versionName = libs.versions.appVersionName.get()
         versionCode = libs.versions.appVersionCode.get().toInt()
 
-        buildConfigField("Boolean", "BLOCKED_TIMEOUT", "false")
+        buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "false")
     }
 
     buildTypes {
@@ -32,7 +32,7 @@ android {
         create("debugRu") {
             initWith(getByName("debug"))
             matchingFallbacks += listOf("debug")
-            buildConfigField("Boolean", "BLOCKED_TIMEOUT", "true")
+            buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "true")
         }
 
         release {
@@ -49,7 +49,7 @@ android {
         create("releaseRu") {
             initWith(getByName("release"))
             matchingFallbacks += listOf("release")
-            buildConfigField("Boolean", "BLOCKED_TIMEOUT", "true")
+            buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "true")
         }
     }
     compileOptions {

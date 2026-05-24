@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.AnimeTopPage
 import su.afk.yummy.tv.domain.top100.AnimeTopRepository
 import su.afk.yummy.tv.domain.top100.AnimeTopType
 
@@ -21,9 +21,9 @@ class YaniAnimeTopRepository(
     private val json: Json,
 ) : AnimeTopRepository {
 
-    override suspend fun getTopAnime(type: AnimeTopType, limit: Int, offset: Int): List<AnimeTopItem> =
+    override suspend fun getTopAnime(type: AnimeTopType, limit: Int, offset: Int): AnimeTopPage =
         withContext(Dispatchers.IO) {
-            cache.getOrFetch(
+            val response = cache.getOrFetch(
                 key = "anime_top_${type.apiValue}_${limit}_$offset",
                 ttlMs = ANIME_TOP_TTL_MS,
                 serialize = { dto: YaniAnimeTopListDto -> json.encodeToString(dto) },
@@ -38,6 +38,11 @@ class YaniAnimeTopRepository(
                         parameter("from_year", 1900)
                     }.body<YaniAnimeTopListDto>()
                 },
-            ).response.mapNotNull { it.toAnimeTopItem() }
+            ).response
+            AnimeTopPage(
+                items = response.mapNotNull { it.toAnimeTopItem() },
+                nextOffset = offset + response.size,
+                canLoadMore = response.size >= limit,
+            )
         }
 }

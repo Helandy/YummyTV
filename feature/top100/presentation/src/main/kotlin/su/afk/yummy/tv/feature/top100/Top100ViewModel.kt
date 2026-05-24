@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.top100.AnimeTopPage
 import su.afk.yummy.tv.domain.top100.AnimeTopType
 import su.afk.yummy.tv.domain.top100.GetAnimeTopUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -80,15 +81,15 @@ class Top100ViewModel @Inject constructor(
             } else {
                 setState { copy(isLoadingMore = true) }
             }
-            runCatching { getAnimeTop(type, PAGE_SIZE, offset) }.fold(
-                onSuccess = { newItems ->
+            runCatching { loadVisiblePage(type, offset) }.fold(
+                onSuccess = { page ->
                     setState {
                         copy(
                             isLoading = false,
                             isLoadingMore = false,
-                            items = if (replace) newItems else items + newItems,
-                            offset = offset + newItems.size,
-                            canLoadMore = newItems.size >= PAGE_SIZE,
+                            items = if (replace) page.items else items + page.items,
+                            offset = page.nextOffset,
+                            canLoadMore = page.canLoadMore,
                         )
                     }
                 },
@@ -103,5 +104,21 @@ class Top100ViewModel @Inject constructor(
                 },
             )
         }
+    }
+
+    private suspend fun loadVisiblePage(
+        type: AnimeTopType,
+        offset: Int,
+    ): AnimeTopPage {
+        var page = getAnimeTop(type, PAGE_SIZE, offset)
+        while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > offset) {
+            val nextPage = getAnimeTop(type, PAGE_SIZE, page.nextOffset)
+            page = page.copy(
+                items = nextPage.items,
+                nextOffset = nextPage.nextOffset,
+                canLoadMore = nextPage.canLoadMore,
+            )
+        }
+        return page
     }
 }

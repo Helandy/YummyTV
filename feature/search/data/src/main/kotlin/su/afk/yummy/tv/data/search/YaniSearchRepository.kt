@@ -15,6 +15,7 @@ import su.afk.yummy.tv.domain.search.SearchFilters
 import su.afk.yummy.tv.domain.search.SearchGenre
 import su.afk.yummy.tv.domain.search.SearchGenreGroup
 import su.afk.yummy.tv.domain.search.SearchItem
+import su.afk.yummy.tv.domain.search.SearchPage
 import su.afk.yummy.tv.domain.search.SearchRepository
 
 class YaniSearchRepository(
@@ -25,8 +26,8 @@ class YaniSearchRepository(
         filters: SearchFilters,
         limit: Int,
         offset: Int,
-    ): List<SearchItem> = withContext(Dispatchers.IO) {
-        client.get("$YANI_BASE_URL/anime") {
+    ): SearchPage = withContext(Dispatchers.IO) {
+        val response = client.get("$YANI_BASE_URL/anime") {
             query.takeIf { it.isNotBlank() }?.let { parameter("q", it) }
             filters.genres.forEach { parameter("genres", it) }
             filters.excludedGenres.forEach { parameter("exclude_genres", it) }
@@ -43,7 +44,11 @@ class YaniSearchRepository(
         }
             .body<YaniSearchResponseDto>()
             .response
-            .mapNotNull { it.toSearchItem() }
+        SearchPage(
+            items = response.mapNotNull { it.toSearchItem() },
+            nextOffset = offset + response.size,
+            canLoadMore = response.size >= limit,
+        )
     }
 
     override suspend fun getFilterOptions(): SearchFilterOptions = withContext(Dispatchers.IO) {
@@ -77,6 +82,7 @@ private fun YaniSearchItemDto.toSearchItem(): SearchItem? {
         title = title,
         posterUrl = poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
         rating = rating?.average,
+        blockedIn = blockedIn.filter { it.isNotBlank() },
     )
 }
 
