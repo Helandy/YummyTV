@@ -39,11 +39,12 @@ fun Modifier.tvFocusableClick(
     shape: Shape = RoundedCornerShape(8.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onLongClick: (() -> Unit)? = null,
+    focusedScale: Float = 1.04f,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (focused) 1.04f else 1f,
+        targetValue = if (focused) focusedScale else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium,

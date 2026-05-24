@@ -84,7 +84,7 @@ private fun YaniCollectionDto.toCollectionItem(): HomeFeedItem? {
     val safeTitle = title.takeIf { it.isNotBlank() } ?: return null
 
     return HomeFeedItem(
-        id = id,
+        id = id.toCollectionDisplayId(),
         title = safeTitle,
         description = description,
         poster = posterPreviews.firstOrNull()?.toHomePoster(),
@@ -106,3 +106,5 @@ internal fun String.toHttpsUrl(): String = when {
     startsWith("http://") -> replaceFirst("http://", "https://")
     else -> this
 }
+
+private fun Int.toCollectionDisplayId(): Int = -this

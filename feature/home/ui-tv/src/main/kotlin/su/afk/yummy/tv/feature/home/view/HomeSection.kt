@@ -38,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.domain.anime.AnimePreview
 import su.afk.yummy.tv.domain.home.HomeFeedItem
+import su.afk.yummy.tv.domain.home.HomeFeedItemAction
 
 @Composable
 internal fun HomeSection(
@@ -51,6 +52,7 @@ internal fun HomeSection(
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     bottomPadding: Dp = 20.dp,
+    focusedCardScale: Float = 1.04f,
     onMoveUp: (() -> Unit)? = null,
     onMoveDown: (() -> Unit)? = null,
 ) {
@@ -97,8 +99,13 @@ internal fun HomeSection(
                         scope.launch {
                             val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
                             listState.scrollToItem(target)
-                            runCatching { focusRequesters[target].requestFocus() }
+                            val focusRestored = runCatching { focusRequesters[target].requestFocus() }.isSuccess
                             isRestoringFocusState.value = false
+                            if (focusRestored) {
+                                lastFocusedIndex = target
+                                val focusedItem = items[target]
+                                onItemFocused(focusedItem.id, focusedItem.animeId)
+                            }
                         }
                     }
                 }
@@ -124,10 +131,12 @@ internal fun HomeSection(
                 val stableClick = remember(item.id) { { onItemSelected(item) } }
                 val wrappedOnFocused = remember(index, item.id) {
                     { displayId: Int, animeId: Int? ->
-                        if (rowHasFocusState.value && !isRestoringFocusState.value) {
-                            lastFocusedIndex = index
+                        if (!isRestoringFocusState.value) {
+                            if (rowHasFocusState.value) {
+                                lastFocusedIndex = index
+                            }
+                            onItemFocused(displayId, animeId)
                         }
-                        onItemFocused(displayId, animeId)
                     }
                 }
                 HomeFeedCard(
@@ -138,8 +147,12 @@ internal fun HomeSection(
                     onFocused = wrappedOnFocused,
                     upFocusRequester = upFocusRequester ?: topBarFocusRequester,
                     downFocusRequester = downFocusRequester,
+                    focusedScale = focusedCardScale,
                 )
             }
         }
     }
 }
+
+private val HomeFeedItem.animeId: Int?
+    get() = (action as? HomeFeedItemAction.OpenSeries)?.seriesId

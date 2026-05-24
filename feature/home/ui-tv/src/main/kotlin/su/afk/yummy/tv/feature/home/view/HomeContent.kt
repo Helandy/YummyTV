@@ -203,7 +203,7 @@ internal fun HomeContent(
                 }
             }
             .focusGroup(),
-        contentPadding = PaddingValues(bottom = 140.dp),
+        contentPadding = PaddingValues(bottom = 520.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         if (hasContinueWatching) {
@@ -310,7 +310,8 @@ internal fun HomeContent(
                     rowFocusRequester = sectionFocusRequesters.getValue(section.title),
                     upFocusRequester = previousRowFocusRequester(lazyIdx),
                     downFocusRequester = nextRowFocusRequester(lazyIdx),
-                    bottomPadding = if (index == feed.sections.lastIndex) 56.dp else 20.dp,
+                    bottomPadding = if (index == feed.sections.lastIndex) 96.dp else 20.dp,
+                    focusedCardScale = 1f,
                     onMoveUp = if (lazyIdx > 0) {
                         { requestRowFocus(lazyIdx - 1) }
                     } else {

@@ -58,6 +58,7 @@ internal fun HomeFeedCard(
     modifier: Modifier = Modifier,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
+    focusedScale: Float = 1.04f,
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val showScreenshots = LocalShowScreenshotsOnFocus.current
@@ -91,7 +92,7 @@ internal fun HomeFeedCard(
                 upFocusRequester?.let { up = it }
                 downFocusRequester?.let { down = it }
             }
-            .tvFocusableClick(onClick = onClick, shape = shape),
+            .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale),
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,

@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -124,6 +125,7 @@ private fun ScheduleContent(
     var selectedEpochDay by rememberSaveable { mutableLongStateOf(initialEpochDay) }
     var focusedReleaseKey by rememberSaveable { mutableStateOf<String?>(null) }
     var focusedReleaseEpochDay by rememberSaveable { mutableStateOf<Long?>(null) }
+    var contentHasFocus by remember { mutableStateOf(false) }
     val selectedGroup = dayGroups.firstOrNull { it.date.toEpochDay() == selectedEpochDay } ?: dayGroups.first()
     val selectedChipFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
@@ -143,14 +145,16 @@ private fun ScheduleContent(
         }
     }
 
-    LaunchedEffect(focusedReleaseKey, selectedEpochDay, selectedGroup.items) {
+    LaunchedEffect(focusedReleaseKey, selectedEpochDay, selectedGroup.items, contentHasFocus) {
         val releaseKey = focusedReleaseKey ?: return@LaunchedEffect
         val releaseIndex = selectedGroup.items.indexOfFirst { it.focusKey == releaseKey }
         if (releaseIndex < 0) return@LaunchedEffect
 
         listState.scrollToItem(releaseIndex)
         delay(50)
-        runCatching { releaseFocusRequesters[releaseKey]?.requestFocus() }
+        if (contentHasFocus) {
+            runCatching { releaseFocusRequesters[releaseKey]?.requestFocus() }
+        }
     }
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
@@ -161,6 +165,8 @@ private fun ScheduleContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .onFocusChanged { contentHasFocus = it.hasFocus }
+            .focusGroup()
             .padding(
                 start = TvScreenPadding.Horizontal,
                 end = TvScreenPadding.Horizontal,
