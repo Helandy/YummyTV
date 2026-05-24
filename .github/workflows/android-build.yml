@@ -33,10 +33,13 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android SDK platform
         run: |
           yes | sdkmanager --licenses >/dev/null
-          sdkmanager "platforms;android-37"
+          sdkmanager --install "platforms;android-37"
 
       - name: Build debug APK
         run: ./gradlew :tvApp:assembleDebug --stacktrace
