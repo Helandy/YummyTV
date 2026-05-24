@@ -1,5 +1,5 @@
 [versions]
-android-compileSdk = "37"
+android-compileSdk = "36"
 android-minSdk = "28"
 
 # --- App versioning
