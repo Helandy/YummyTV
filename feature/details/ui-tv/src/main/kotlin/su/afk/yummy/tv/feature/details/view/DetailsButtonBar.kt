@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
 
@@ -56,6 +57,7 @@ private data class ButtonData(
 internal fun DetailsButtonBar(
     details: AnimeDetails,
     isInLibrary: Boolean,
+    libraryList: UserAnimeList?,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     firstFocusRequester: FocusRequester,
@@ -67,6 +69,7 @@ internal fun DetailsButtonBar(
     onSimilarSelected: () -> Unit,
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
+    onRatingSelected: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 150.dp,
 ) {
@@ -84,7 +87,7 @@ internal fun DetailsButtonBar(
         ButtonData(watchLabel, ButtonStyle.Filled, onWatchSelected),
         ButtonData(
             label = if (isInLibrary) {
-                stringResource(R.string.details_in_library)
+                (libraryList ?: UserAnimeList.WATCHING).label()
             } else {
                 stringResource(R.string.details_add_library)
             },
@@ -96,6 +99,7 @@ internal fun DetailsButtonBar(
         ButtonData(stringResource(R.string.details_trailers), ButtonStyle.Normal, onTrailersSelected),
         ButtonData(stringResource(R.string.details_similar), ButtonStyle.Normal, onSimilarSelected),
         ButtonData(stringResource(R.string.details_viewing_order), ButtonStyle.Normal, onViewingOrderSelected),
+        ButtonData(stringResource(R.string.details_rating_button), ButtonStyle.Normal, onRatingSelected),
     ) + if (details.screenshots.isNotEmpty()) {
         listOf(ButtonData(stringResource(R.string.details_screenshots_title), ButtonStyle.Normal, onScreenshotsSelected))
     } else {
@@ -188,6 +192,17 @@ internal fun DetailsButtonBar(
         }
     }
 }
+
+@Composable
+private fun UserAnimeList.label(): String = stringResource(
+    when (this) {
+        UserAnimeList.WATCHING -> R.string.details_library_list_watching
+        UserAnimeList.PLANNED -> R.string.details_library_list_planned
+        UserAnimeList.COMPLETED -> R.string.details_library_list_completed
+        UserAnimeList.POSTPONED -> R.string.details_library_list_postponed
+        UserAnimeList.DROPPED -> R.string.details_library_list_dropped
+    }
+)
 
 @Composable
 private fun ActionButton(

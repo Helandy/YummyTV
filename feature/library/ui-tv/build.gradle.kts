@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":feature:library:presentation"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:account:domain"))
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)

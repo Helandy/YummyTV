@@ -39,6 +39,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.details.view.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.DetailsContent
 import su.afk.yummy.tv.feature.details.view.DetailsError
+import su.afk.yummy.tv.feature.details.view.DetailsRatingScreen
+import su.afk.yummy.tv.feature.details.view.LibraryListPickerOverlay
 
 @Composable
 private fun BalancerOptionItem(
@@ -119,6 +121,10 @@ fun DetailsTvScreen(
                 isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
                 watchProgress = state.watchProgress,
                 isInLibrary = state.isInLibrary,
+                libraryList = state.libraryList,
+                ratingSummary = state.ratingSummary,
+                collections = state.collections,
+                selectedUserRating = state.selectedUserRating,
                 onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
                 onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
@@ -127,8 +133,22 @@ fun DetailsTvScreen(
                 onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
                 onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
                 onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
+                onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                onCollectionSelected = { collectionId -> onEvent(DetailsState.Event.CollectionSelected(collectionId)) },
             )
             else -> TvLoadingScreen()
+        }
+
+        if (state.showRatingScreen) {
+            BackHandler { onEvent(DetailsState.Event.RatingScreenDismissed) }
+            DetailsRatingScreen(
+                ratingSummary = state.ratingSummary,
+                listStats = state.listStats,
+                selectedUserRating = state.selectedUserRating,
+                onRatingSelected = { rating -> onEvent(DetailsState.Event.RatingSelected(rating)) },
+                onRatingDeleted = { onEvent(DetailsState.Event.RatingDeleted) },
+                onBack = { onEvent(DetailsState.Event.RatingScreenDismissed) },
+            )
         }
 
         if (state.showPosterFullscreen && details != null) {
@@ -178,6 +198,16 @@ fun DetailsTvScreen(
                 picker = balancerPicker,
                 onConfirmed = { option -> onEvent(DetailsState.Event.BalancerConfirmed(option.video)) },
                 onDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
+            )
+        }
+
+        BackHandler(enabled = state.showLibraryListPicker) {
+            onEvent(DetailsState.Event.LibraryListPickerDismissed)
+        }
+        if (state.showLibraryListPicker) {
+            LibraryListPickerOverlay(
+                onConfirmed = { list -> onEvent(DetailsState.Event.LibraryListSelected(list)) },
+                onDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
             )
         }
     }

@@ -44,7 +44,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
 
@@ -53,8 +57,12 @@ internal fun DetailsHero(
     details: AnimeDetails,
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
+    libraryList: UserAnimeList?,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
+    ratingSummary: AnimeRatingSummary,
+    collections: List<AnimeCollectionSummary>,
+    selectedUserRating: Int?,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFullDetailsSelected: () -> Unit,
@@ -63,6 +71,8 @@ internal fun DetailsHero(
     onSimilarSelected: () -> Unit,
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
+    onRatingScreenSelected: () -> Unit,
+    onCollectionSelected: (Int) -> Unit,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -132,6 +142,7 @@ internal fun DetailsHero(
                 DetailsButtonBar(
                     details = details,
                     isInLibrary = isInLibrary,
+                    libraryList = libraryList,
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     firstFocusRequester = downFocusRequester,
@@ -143,8 +154,15 @@ internal fun DetailsHero(
                     onSimilarSelected = onSimilarSelected,
                     onViewingOrderSelected = onViewingOrderSelected,
                     onScreenshotsSelected = onScreenshotsSelected,
+                    onRatingSelected = onRatingScreenSelected,
                     modifier = Modifier.padding(top = 8.dp),
                     height = buttonBarHeight,
+                )
+
+                DetailsAccountExtras(
+                    ratingSummary = ratingSummary,
+                    collections = collections,
+                    onCollectionSelected = onCollectionSelected,
                 )
             }
 
@@ -173,6 +191,53 @@ internal fun DetailsHero(
             }
         }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DetailsAccountExtras(
+    ratingSummary: AnimeRatingSummary,
+    collections: List<AnimeCollectionSummary>,
+    onCollectionSelected: (Int) -> Unit,
+) {
+    if (collections.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.details_collections_title),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f),
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            collections.take(3).forEach { collection ->
+                ExtraPill(
+                    label = collection.title,
+                    onClick = { onCollectionSelected(collection.id) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExtraPill(label: String, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(6.dp)
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .tvFocusableClick(onClick = onClick, shape = shape)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f), shape)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

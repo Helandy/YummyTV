@@ -17,6 +17,8 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.account.VideoSubscriptionRepository
+import su.afk.yummy.tv.domain.account.VideoWatchesRepository
 import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
 import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
 import su.afk.yummy.tv.feature.player.extractor.CvhExtractor
@@ -35,6 +37,8 @@ class PlayerViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
+    private val videoWatchesRepository: VideoWatchesRepository,
+    private val videoSubscriptionRepository: VideoSubscriptionRepository,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -56,16 +60,19 @@ class PlayerViewModel @AssistedInject constructor(
                 dubbing = newDest.dubbing,
                 episodeUrls = newDest.episodeUrls,
                 episodeNumbers = newDest.episodeNumbers,
+                episodeVideoIds = newDest.episodeVideoIds,
                 screenshotUrls = newDest.screenshotUrls,
                 animeId = newDest.animeId,
                 posterUrl = newDest.posterUrl,
                 allDubbingNames = newDest.allDubbingNames,
                 allDubbingEpisodeUrls = newDest.allDubbingEpisodeUrls,
                 allDubbingEpisodeNumbers = newDest.allDubbingEpisodeNumbers,
+                allDubbingEpisodeVideoIds = newDest.allDubbingEpisodeVideoIds,
                 allBalancerNames = newDest.allBalancerNames,
                 allBalancerDubbingNames = newDest.allBalancerDubbingNames,
                 allBalancerEpisodeUrls = newDest.allBalancerEpisodeUrls,
                 allBalancerEpisodeNumbers = newDest.allBalancerEpisodeNumbers,
+                allBalancerEpisodeVideoIds = newDest.allBalancerEpisodeVideoIds,
                 episodeSkips = newDest.episodeSkips,
                 allDubbingEpisodeSkips = newDest.allDubbingEpisodeSkips,
                 allBalancerEpisodeSkips = newDest.allBalancerEpisodeSkips,
@@ -85,16 +92,19 @@ class PlayerViewModel @AssistedInject constructor(
         dubbing = dest.dubbing,
         episodeUrls = dest.episodeUrls,
         episodeNumbers = dest.episodeNumbers,
+        episodeVideoIds = dest.episodeVideoIds,
         screenshotUrls = dest.screenshotUrls,
         animeId = dest.animeId,
         posterUrl = dest.posterUrl,
         allDubbingNames = dest.allDubbingNames,
         allDubbingEpisodeUrls = dest.allDubbingEpisodeUrls,
         allDubbingEpisodeNumbers = dest.allDubbingEpisodeNumbers,
+        allDubbingEpisodeVideoIds = dest.allDubbingEpisodeVideoIds,
         allBalancerNames = dest.allBalancerNames,
         allBalancerDubbingNames = dest.allBalancerDubbingNames,
         allBalancerEpisodeUrls = dest.allBalancerEpisodeUrls,
         allBalancerEpisodeNumbers = dest.allBalancerEpisodeNumbers,
+        allBalancerEpisodeVideoIds = dest.allBalancerEpisodeVideoIds,
         episodeSkips = dest.episodeSkips,
         allDubbingEpisodeSkips = dest.allDubbingEpisodeSkips,
         allBalancerEpisodeSkips = dest.allBalancerEpisodeSkips,
@@ -108,6 +118,9 @@ class PlayerViewModel @AssistedInject constructor(
     init {
         settingsStore.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
+            .launchIn(viewModelScope)
+        settingsStore.yaniAccessToken
+            .onEach { token -> setState { copy(isSignedIn = token.isNotBlank()) } }
             .launchIn(viewModelScope)
         loadStream()
     }
@@ -177,6 +190,7 @@ class PlayerViewModel @AssistedInject constructor(
                     watchProgressStore.save(
                         animeId = s.animeId,
                         episode = episode,
+                        videoId = activeVideoId(s),
                         episodeUrl = activeIframeUrl(s),
                         positionMs = event.posMs,
                         durationMs = event.durMs,
@@ -186,7 +200,32 @@ class PlayerViewModel @AssistedInject constructor(
                         dubbing = activeDubbing(s),
                         screenshotUrl = activeScreenshotUrl(s),
                     )
+                    val videoId = activeVideoId(s)
+                    val watchedEnough = videoId > 0 && event.durMs > 0 && event.posMs.toDouble() / event.durMs >= 0.9
+                    if (watchedEnough) {
+                        runCatching {
+                            videoWatchesRepository.markWatched(
+                                videoId = videoId,
+                                timeSeconds = (event.posMs / 1000L).toInt(),
+                                durationSeconds = (event.durMs / 1000L).toInt(),
+                            )
+                        }
+                    }
                 }
+            }
+            is PlayerState.Event.ToggleSubscription -> toggleSubscription(event.videoId)
+        }
+    }
+
+    private fun toggleSubscription(videoId: Int) {
+        if (videoId <= 0 || !currentState.isSignedIn) return
+        val wasSubscribed = videoId in currentState.subscribedVideoIds
+        val next = if (wasSubscribed) currentState.subscribedVideoIds - videoId else currentState.subscribedVideoIds + videoId
+        setState { copy(subscribedVideoIds = next) }
+        viewModelScope.launch {
+            val result = runCatching { videoSubscriptionRepository.setSubscribed(videoId, !wasSubscribed) }
+            if (result.isFailure) {
+                setState { copy(subscribedVideoIds = if (wasSubscribed) subscribedVideoIds + videoId else subscribedVideoIds - videoId) }
             }
         }
     }
@@ -308,6 +347,11 @@ class PlayerViewModel @AssistedInject constructor(
             s.allBalancerEpisodeNumbers.getOrElse(s.balancerIndex) { s.allDubbingEpisodeNumbers }
         else s.allDubbingEpisodeNumbers
 
+    private fun activeAllEpisodeVideoIds(s: PlayerState.State) =
+        if (s.allBalancerEpisodeVideoIds.isNotEmpty())
+            s.allBalancerEpisodeVideoIds.getOrElse(s.balancerIndex) { s.allDubbingEpisodeVideoIds }
+        else s.allDubbingEpisodeVideoIds
+
     private fun activeAllEpisodeSkips(s: PlayerState.State) =
         if (s.allBalancerEpisodeSkips.isNotEmpty())
             s.allBalancerEpisodeSkips.getOrElse(s.balancerIndex) { s.allDubbingEpisodeSkips }
@@ -322,11 +366,17 @@ class PlayerViewModel @AssistedInject constructor(
     private fun activeEpisodeSkipsList(s: PlayerState.State) =
         activeAllEpisodeSkips(s).getOrElse(s.dubbingIndex) { s.episodeSkips }
 
+    private fun activeEpisodeVideoIds(s: PlayerState.State) =
+        activeAllEpisodeVideoIds(s).getOrElse(s.dubbingIndex) { s.episodeVideoIds }
+
     private fun activeIframeUrl(s: PlayerState.State) =
         activeDubbingUrls(s).getOrElse(s.episodeIndex) { s.iframeUrl }
 
     private fun activeEpisode(s: PlayerState.State) =
         activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { s.episode }
+
+    private fun activeVideoId(s: PlayerState.State) =
+        activeEpisodeVideoIds(s).getOrElse(s.episodeIndex) { 0 }
 
     private fun activeDubbing(s: PlayerState.State) =
         activeAllDubbingNames(s).getOrElse(s.dubbingIndex) { s.dubbing }

@@ -6,6 +6,7 @@ import androidx.room.Entity
 data class WatchProgressEntry(
     val animeId: Int,
     val episode: String,
+    val videoId: Int = 0,
     val episodeUrl: String,
     val positionMs: Long,
     val durationMs: Long,

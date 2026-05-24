@@ -5,8 +5,16 @@
     <string name="library_episode">Episode</string>
     <string name="library_episode_number">Episode %1$s</string>
     <string name="library_delete">Delete</string>
-    <string name="library_tab_list">List</string>
-    <string name="library_tab_list_short">Li</string>
     <string name="library_tab_continue_watching">Continue</string>
     <string name="library_tab_continue_watching_short">Co</string>
+    <string name="library_tab_watching">Watching</string>
+    <string name="library_tab_watching_short">Wa</string>
+    <string name="library_tab_planned">Planned</string>
+    <string name="library_tab_planned_short">Pl</string>
+    <string name="library_tab_completed">Completed</string>
+    <string name="library_tab_completed_short">Do</string>
+    <string name="library_tab_postponed">Postponed</string>
+    <string name="library_tab_postponed_short">Po</string>
+    <string name="library_tab_dropped">Dropped</string>
+    <string name="library_tab_dropped_short">Dr</string>
 </resources>

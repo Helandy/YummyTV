@@ -48,6 +48,7 @@ internal fun LibraryGrid(
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
+    sidePanelFocusRequester: FocusRequester,
     onAnimeSelected: (Int) -> Unit,
     onItemFocused: (Int) -> Unit,
     onRemoveLibraryEntry: (Int) -> Unit,
@@ -61,6 +62,19 @@ internal fun LibraryGrid(
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
+    var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
+
+    LaunchedEffect(gridState, items.size) {
+        snapshotFlow {
+            val visibleItems = gridState.layoutInfo.visibleItemsInfo
+            val minX = visibleItems.minOfOrNull { it.offset.x }
+            if (minX == null) {
+                emptySet()
+            } else {
+                visibleItems.filter { it.offset.x == minX }.map { it.index }.toSet()
+            }
+        }.collect { leftEdgeIndexes = it }
+    }
 
     LaunchedEffect(items.size, pendingFocusAfterDeleteIndex) {
         val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
@@ -152,7 +166,11 @@ internal fun LibraryGrid(
                     onFocused = stableOnFocused,
                     screenshotUrls = if (item.animeId == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
                     modifier = Modifier.focusProperties {
-                        focusRequesters.getOrNull(index - 1)?.let { left = it }
+                        if (index == 0 || index in leftEdgeIndexes) {
+                            left = sidePanelFocusRequester
+                        } else {
+                            focusRequesters.getOrNull(index - 1)?.let { left = it }
+                        }
                         focusRequesters.getOrNull(index + 1)?.let { right = it }
                     },
                 )
@@ -162,7 +180,11 @@ internal fun LibraryGrid(
                         modifier = Modifier
                             .width(TvPosterCardDefaults.Width)
                             .focusProperties {
-                                focusRequesters.getOrNull(index - 1)?.let { left = it }
+                                if (index == 0 || index in leftEdgeIndexes) {
+                                    left = sidePanelFocusRequester
+                                } else {
+                                    focusRequesters.getOrNull(index - 1)?.let { left = it }
+                                }
                                 focusRequesters.getOrNull(index + 1)?.let { right = it }
                                 up = focusRequesters[index]
                             },

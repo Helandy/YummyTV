@@ -62,16 +62,22 @@ fun PlayerTvScreen(
         state.allBalancerEpisodeNumbers.getOrElse(state.balancerIndex) { state.allDubbingEpisodeNumbers }
     else state.allDubbingEpisodeNumbers
 
+    val activeAllEpisodeVideoIds = if (state.allBalancerEpisodeVideoIds.isNotEmpty())
+        state.allBalancerEpisodeVideoIds.getOrElse(state.balancerIndex) { state.allDubbingEpisodeVideoIds }
+    else state.allDubbingEpisodeVideoIds
+
     val activeAllEpisodeSkips = if (state.allBalancerEpisodeSkips.isNotEmpty())
         state.allBalancerEpisodeSkips.getOrElse(state.balancerIndex) { state.allDubbingEpisodeSkips }
     else state.allDubbingEpisodeSkips
 
     val activeDubbingUrls = activeAllEpisodeUrls.getOrElse(state.dubbingIndex) { state.episodeUrls }
     val activeEpisodeNumbers = activeAllEpisodeNumbers.getOrElse(state.dubbingIndex) { state.episodeNumbers }
+    val activeEpisodeVideoIds = activeAllEpisodeVideoIds.getOrElse(state.dubbingIndex) { state.episodeVideoIds }
     val activeEpisodeSkips = activeAllEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
     val activeDubbing = activeAllDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
     val activeIframeUrl = activeDubbingUrls.getOrElse(state.episodeIndex) { state.iframeUrl }
     val activeEpisode = activeEpisodeNumbers.getOrElse(state.episodeIndex) { state.episode }
+    val activeVideoId = activeEpisodeVideoIds.getOrElse(state.episodeIndex) { 0 }
     val activeSkips = activeEpisodeSkips.getOrElse(state.episodeIndex) { su.afk.yummy.tv.feature.player.PlayerSkips.Empty }
     val activeBalancerName = if (state.allBalancerNames.isNotEmpty())
         state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName }
@@ -111,6 +117,9 @@ fun PlayerTvScreen(
             },
             skips = activeSkips,
             autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+            canSubscribe = state.isSignedIn && activeVideoId > 0,
+            isSubscribed = activeVideoId in state.subscribedVideoIds,
+            onToggleSubscription = { onEvent(PlayerState.Event.ToggleSubscription(activeVideoId)) },
         )
         state.youtubeWebViewFallback -> YouTubeTrailerView(
             iframeUrl = activeIframeUrl,

@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.storage.settings.SettingsStore
 const val YANI_BASE_URL = "https://api.yani.tv"
 private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"
+private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 
 fun buildYaniHttpClient(settingsStore: SettingsStore): HttpClient = HttpClient {
     install(HttpTimeout) {
@@ -40,13 +41,18 @@ fun buildYaniHttpClient(settingsStore: SettingsStore): HttpClient = HttpClient {
                     request.headers.remove(YANI_APPLICATION_HEADER)
                     request.headers.append(YANI_APPLICATION_HEADER, token)
                 }
+                val accessToken = settingsStore.yaniAccessToken.first()
+                if (accessToken.isNotBlank()) {
+                    request.headers.remove(HttpHeaders.Authorization)
+                    request.headers.append(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + accessToken)
+                }
             }
         }
     })
     if (BuildConfig.DEBUG) {
         install(Logging) {
             logger = Logger.ANDROID
-            level = LogLevel.ALL
+            level = LogLevel.HEADERS
             sanitizeHeader { header ->
                 header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
                     header.equals(HttpHeaders.Cookie, ignoreCase = true) ||

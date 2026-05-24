@@ -23,6 +23,11 @@ class SettingsStore(private val context: Context) {
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
     private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
+    private val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
+    private val yaniUserIdKey = intPreferencesKey("yani_user_id")
+    private val yaniNicknameKey = stringPreferencesKey("yani_nickname")
+    private val yaniAvatarUrlKey = stringPreferencesKey("yani_avatar_url")
+    private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
         prefs[posterQualityKey]?.let { name ->
@@ -57,6 +62,26 @@ class SettingsStore(private val context: Context) {
         prefs[yaniApplicationTokenKey].orEmpty()
     }
 
+    val yaniAccessToken: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[yaniAccessTokenKey].orEmpty()
+    }
+
+    val yaniUserId: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[yaniUserIdKey] ?: 0
+    }
+
+    val yaniNickname: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[yaniNicknameKey].orEmpty()
+    }
+
+    val yaniAvatarUrl: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[yaniAvatarUrlKey].orEmpty()
+    }
+
+    val yaniTokenRefreshAt: Flow<Long> = context.dataStore.data.map { prefs ->
+        prefs[yaniTokenRefreshAtKey]?.toLongOrNull() ?: 0L
+    }
+
     suspend fun setPosterQuality(quality: PosterQuality) {
         context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
     }
@@ -89,6 +114,36 @@ class SettingsStore(private val context: Context) {
             } else {
                 prefs[yaniApplicationTokenKey] = trimmedToken
             }
+        }
+    }
+
+    suspend fun setYaniAccount(
+        accessToken: String,
+        userId: Int,
+        nickname: String,
+        avatarUrl: String?,
+        refreshedAt: Long = System.currentTimeMillis(),
+    ) {
+        context.dataStore.edit { prefs ->
+            prefs[yaniAccessTokenKey] = accessToken.trim()
+            prefs[yaniUserIdKey] = userId
+            prefs[yaniNicknameKey] = nickname
+            prefs[yaniTokenRefreshAtKey] = refreshedAt.toString()
+            if (avatarUrl.isNullOrBlank()) {
+                prefs.remove(yaniAvatarUrlKey)
+            } else {
+                prefs[yaniAvatarUrlKey] = avatarUrl
+            }
+        }
+    }
+
+    suspend fun clearYaniAccount() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(yaniAccessTokenKey)
+            prefs.remove(yaniUserIdKey)
+            prefs.remove(yaniNicknameKey)
+            prefs.remove(yaniAvatarUrlKey)
+            prefs.remove(yaniTokenRefreshAtKey)
         }
     }
 }

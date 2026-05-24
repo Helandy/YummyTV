@@ -25,8 +25,10 @@ dependencies {
     implementation(project(":core:update"))
 
     implementation(project(":feature:settings:api"))
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:home:ui-tv"))
     implementation(project(":feature:search:ui-tv"))
+    implementation(project(":feature:schedule:ui-tv"))
     implementation(project(":feature:top100:ui-tv"))
     implementation(project(":feature:library:ui-tv"))
 

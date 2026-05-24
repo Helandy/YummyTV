@@ -8,11 +8,19 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 
+enum class TopBarFocusTarget {
+    SELECTED_TAB,
+    TRAILING_ACTION,
+}
+
 class NavigationManager(
     val roots: Map<SideTab, NavKey>,
     initialTab: SideTab,
 ) {
     var currentTab: SideTab by mutableStateOf(initialTab)
+        private set
+
+    var pendingTopBarFocusTarget: TopBarFocusTarget? by mutableStateOf(null)
         private set
 
     private var stacks: Map<SideTab, MutableList<NavKey>> by mutableStateOf(
@@ -57,6 +65,14 @@ class NavigationManager(
 
     fun navigate(dest: NavKey) {
         backStack += dest
+    }
+
+    fun requestTopBarFocus(target: TopBarFocusTarget) {
+        pendingTopBarFocusTarget = target
+    }
+
+    fun clearTopBarFocusRequest(target: TopBarFocusTarget?) {
+        if (pendingTopBarFocusTarget == target) pendingTopBarFocusTarget = null
     }
 
     fun replace(dest: NavKey) {

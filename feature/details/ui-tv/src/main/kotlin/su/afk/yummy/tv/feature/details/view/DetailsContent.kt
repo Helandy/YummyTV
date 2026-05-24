@@ -9,6 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 
 @Composable
@@ -17,6 +20,10 @@ internal fun DetailsContent(
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     isInLibrary: Boolean,
+    libraryList: UserAnimeList?,
+    ratingSummary: AnimeRatingSummary,
+    collections: List<AnimeCollectionSummary>,
+    selectedUserRating: Int?,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
     onFullDetailsSelected: () -> Unit,
@@ -25,6 +32,8 @@ internal fun DetailsContent(
     onSimilarSelected: () -> Unit,
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
+    onRatingScreenSelected: () -> Unit,
+    onCollectionSelected: (Int) -> Unit,
 ) {
     val barFocusRequester = remember { FocusRequester() }
     Box(
@@ -36,8 +45,12 @@ internal fun DetailsContent(
             details = details,
             downFocusRequester = barFocusRequester,
             isInLibrary = isInLibrary,
+            libraryList = libraryList,
             isWatchLoading = isWatchLoading,
             watchProgress = watchProgress,
+            ratingSummary = ratingSummary,
+            collections = collections,
+            selectedUserRating = selectedUserRating,
             onWatchSelected = onWatchSelected,
             onLibraryToggle = onLibraryToggle,
             onFullDetailsSelected = onFullDetailsSelected,
@@ -46,6 +59,8 @@ internal fun DetailsContent(
             onSimilarSelected = onSimilarSelected,
             onViewingOrderSelected = onViewingOrderSelected,
             onScreenshotsSelected = onScreenshotsSelected,
+            onRatingScreenSelected = onRatingScreenSelected,
+            onCollectionSelected = onCollectionSelected,
         )
     }
 }

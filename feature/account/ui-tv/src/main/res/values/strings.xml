@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_title">Yani account</string>
+    <string name="account_back">Back</string>
+    <string name="account_signed_in">Signed in</string>
+    <string name="account_signed_out">Sign in to sync library, ratings, and subscriptions</string>
+    <string name="account_unknown_user">Unknown user</string>
+    <string name="account_refresh">Refresh profile</string>
+    <string name="account_refresh_hint">Update account data from Yani</string>
+    <string name="account_logout">Log out</string>
+    <string name="account_logout_hint">Keep local library and progress on this device</string>
+    <string name="account_login">Sign in</string>
+    <string name="account_login_hint">Use email or nickname and password</string>
+    <string name="account_login_placeholder">Email or nickname</string>
+    <string name="account_password_placeholder">Password</string>
+    <string name="account_loading">Loading...</string>
+    <string name="account_captcha_hint">If Yani requires captcha, sign in on the website first. Manual app-token settings remain in Settings.</string>
+</resources>

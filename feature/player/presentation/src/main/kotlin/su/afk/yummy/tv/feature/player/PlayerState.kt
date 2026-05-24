@@ -13,16 +13,19 @@ class PlayerState {
         val dubbing: String = "",
         val episodeUrls: List<String> = emptyList(),
         val episodeNumbers: List<String> = emptyList(),
+        val episodeVideoIds: List<Int> = emptyList(),
         val screenshotUrls: List<String> = emptyList(),
         val animeId: Int = 0,
         val posterUrl: String = "",
         val allDubbingNames: List<String> = emptyList(),
         val allDubbingEpisodeUrls: List<List<String>> = emptyList(),
         val allDubbingEpisodeNumbers: List<List<String>> = emptyList(),
+        val allDubbingEpisodeVideoIds: List<List<Int>> = emptyList(),
         val allBalancerNames: List<String> = emptyList(),
         val allBalancerDubbingNames: List<List<String>> = emptyList(),
         val allBalancerEpisodeUrls: List<List<List<String>>> = emptyList(),
         val allBalancerEpisodeNumbers: List<List<List<String>>> = emptyList(),
+        val allBalancerEpisodeVideoIds: List<List<List<Int>>> = emptyList(),
         val episodeSkips: List<PlayerSkips> = emptyList(),
         val allDubbingEpisodeSkips: List<List<PlayerSkips>> = emptyList(),
         val allBalancerEpisodeSkips: List<List<List<PlayerSkips>>> = emptyList(),
@@ -39,6 +42,8 @@ class PlayerState {
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
+        val isSignedIn: Boolean = false,
+        val subscribedVideoIds: Set<Int> = emptySet(),
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -48,6 +53,7 @@ class PlayerState {
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class SaveProgress(val posMs: Long, val durMs: Long) : Event
+        data class ToggleSubscription(val videoId: Int) : Event
         data object RetryStream : Event
     }
 

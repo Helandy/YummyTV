@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,16 +37,25 @@ internal fun LibrarySidePanel(
     selectedTab: LibraryTab,
     onTabSelected: (LibraryTab) -> Unit,
     contentFocusRequester: FocusRequester,
+    selectedTabFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var focusedIndex by remember { mutableIntStateOf(LibraryTab.entries.indexOf(selectedTab).coerceAtLeast(0)) }
+    val selectedIndex = LibraryTab.entries.indexOf(selectedTab).coerceAtLeast(0)
+    var focusedIndex by remember { mutableIntStateOf(selectedIndex) }
     val itemFocusRequesters = remember { List(LibraryTab.entries.size) { FocusRequester() } }
+    val effectiveFocusRequesters = LibraryTab.entries.mapIndexed { index, _ ->
+        if (index == selectedIndex) selectedTabFocusRequester else itemFocusRequesters[index]
+    }
     val panelWidth by animateDpAsState(
         targetValue = if (expanded) 148.dp else 52.dp,
         animationSpec = tween(durationMillis = 200),
         label = "library_panel_width",
     )
+
+    LaunchedEffect(selectedIndex) {
+        focusedIndex = selectedIndex
+    }
 
     Column(
         modifier = modifier
@@ -58,16 +68,16 @@ internal fun LibrarySidePanel(
                     Key.DirectionUp -> {
                         if (focusedIndex > 0) {
                             focusedIndex -= 1
-                            itemFocusRequesters[focusedIndex].requestFocus()
+                            effectiveFocusRequesters[focusedIndex].requestFocus()
                             true
                         } else {
                             false
                         }
                     }
                     Key.DirectionDown -> {
-                        if (focusedIndex < itemFocusRequesters.lastIndex) {
+                        if (focusedIndex < effectiveFocusRequesters.lastIndex) {
                             focusedIndex += 1
-                            itemFocusRequesters[focusedIndex].requestFocus()
+                            effectiveFocusRequesters[focusedIndex].requestFocus()
                         }
                         true
                     }
@@ -91,9 +101,9 @@ internal fun LibrarySidePanel(
                 expanded = expanded,
                 onSelected = { onTabSelected(tab) },
                 contentFocusRequester = contentFocusRequester,
-                focusRequester = itemFocusRequesters[index],
-                upFocusRequester = itemFocusRequesters.getOrNull(index - 1),
-                downFocusRequester = itemFocusRequesters.getOrNull(index + 1) ?: FocusRequester.Cancel,
+                focusRequester = effectiveFocusRequesters[index],
+                upFocusRequester = effectiveFocusRequesters.getOrNull(index - 1),
+                downFocusRequester = effectiveFocusRequesters.getOrNull(index + 1) ?: FocusRequester.Cancel,
                 onFocused = { focusedIndex = index },
             )
         }
@@ -103,15 +113,23 @@ internal fun LibrarySidePanel(
 @Composable
 private fun LibraryTab.label(): String = stringResource(
     when (this) {
-        LibraryTab.LIST -> R.string.library_tab_list
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching
+        LibraryTab.WATCHING -> R.string.library_tab_watching
+        LibraryTab.PLANNED -> R.string.library_tab_planned
+        LibraryTab.COMPLETED -> R.string.library_tab_completed
+        LibraryTab.POSTPONED -> R.string.library_tab_postponed
+        LibraryTab.DROPPED -> R.string.library_tab_dropped
     },
 )
 
 @Composable
 private fun LibraryTab.shortLabel(): String = stringResource(
     when (this) {
-        LibraryTab.LIST -> R.string.library_tab_list_short
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching_short
+        LibraryTab.WATCHING -> R.string.library_tab_watching_short
+        LibraryTab.PLANNED -> R.string.library_tab_planned_short
+        LibraryTab.COMPLETED -> R.string.library_tab_completed_short
+        LibraryTab.POSTPONED -> R.string.library_tab_postponed_short
+        LibraryTab.DROPPED -> R.string.library_tab_dropped_short
     },
 )

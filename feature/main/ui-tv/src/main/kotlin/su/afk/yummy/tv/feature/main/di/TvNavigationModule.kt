@@ -8,6 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import su.afk.yummy.tv.feature.library.navigator.LibraryDestination
+import su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination
 import su.afk.yummy.tv.feature.search.navigator.SearchDestination
 import su.afk.yummy.tv.feature.top100.navigator.Top100Destination
 
@@ -19,6 +20,7 @@ object TvNavigationModule {
     fun provideTabRoots(): @JvmSuppressWildcards Map<SideTab, NavKey> = mapOf(
         SideTab.HOME to HomeDestination,
         SideTab.SEARCH to SearchDestination,
+        SideTab.SCHEDULE to ScheduleDestination,
         SideTab.TOP100 to Top100Destination,
         SideTab.LIBRARY to LibraryDestination,
     )

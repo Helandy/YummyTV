@@ -71,12 +71,16 @@ dependencies {
     implementation(project(":feature:top100:data"))
     implementation(project(":feature:search:data"))
     implementation(project(":feature:collection:data"))
+    implementation(project(":feature:account:data"))
+    implementation(project(":feature:account:ui-tv"))
+    implementation(project(":feature:schedule:data"))
 
     implementation(project(":feature:commonScreen:presenter"))
     implementation(project(":feature:details:ui-tv"))
     implementation(project(":feature:player:ui-tv"))
     implementation(project(":feature:settings:ui-tv"))
     implementation(project(":feature:collection:ui-tv"))
+    implementation(project(":feature:schedule:ui-tv"))
     implementation(project(":feature:home:domain"))
 
     implementation(libs.hilt.android)

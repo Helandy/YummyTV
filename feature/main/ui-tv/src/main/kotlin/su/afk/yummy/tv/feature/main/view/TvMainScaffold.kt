@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.navigation.TopBarFocusTarget
 import su.afk.yummy.tv.feature.main.R
 
 data class TvMenuItem<T>(
@@ -61,13 +64,21 @@ fun <T> TvMainScaffold(
     menuItems: List<TvMenuItem<T>>,
     onDestinationSelected: (T) -> Unit,
     onSettingsClick: () -> Unit = {},
+    accountLabel: String? = null,
+    onAccountClick: () -> Unit = {},
     showTopBar: Boolean = true,
+    requestedTopBarFocusTarget: TopBarFocusTarget? = null,
+    onTopBarFocusRequestHandled: (TopBarFocusTarget?) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val topBarFocusRequester = remember { FocusRequester() }
+    val accountFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
+    var preferredContentFocusRequester by remember { mutableStateOf<FocusRequester?>(null) }
     var hasInitialisedFocus by remember { mutableStateOf(false) }
     var topBarHasFocus by remember { mutableStateOf(false) }
+    var skipNextContentRedirect by remember { mutableStateOf(false) }
+    val topBarDownFocusRequester = preferredContentFocusRequester ?: contentFocusRequester
 
     // The top bar is removed from composition while a nested screen (e.g. details) is open
     // and re-added on the way back. On the very first launch we hand focus to the top bar.
@@ -75,11 +86,33 @@ fun <T> TvMainScaffold(
     // bar (settings) instead of the content. Watch for that for a short window after the
     // return and pull focus back into the content so the screen can restore its card. We only
     // act while focus is actually on the top bar, so a correct content focus is never disturbed.
-    LaunchedEffect(showTopBar) {
+    LaunchedEffect(showTopBar, requestedTopBarFocusTarget) {
         if (!showTopBar) return@LaunchedEffect
+        when (requestedTopBarFocusTarget) {
+            TopBarFocusTarget.TRAILING_ACTION -> {
+                hasInitialisedFocus = true
+                skipNextContentRedirect = true
+                kotlinx.coroutines.delay(40)
+                runCatching { accountFocusRequester.requestFocus() }
+                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                return@LaunchedEffect
+            }
+            TopBarFocusTarget.SELECTED_TAB -> {
+                hasInitialisedFocus = true
+                skipNextContentRedirect = true
+                kotlinx.coroutines.delay(40)
+                runCatching { topBarFocusRequester.requestFocus() }
+                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                return@LaunchedEffect
+            }
+            null -> Unit
+        }
+
         if (!hasInitialisedFocus) {
             hasInitialisedFocus = true
             runCatching { topBarFocusRequester.requestFocus() }
+        } else if (skipNextContentRedirect) {
+            skipNextContentRedirect = false
         } else {
             var attempts = 0
             var redirected = false
@@ -99,6 +132,7 @@ fun <T> TvMainScaffold(
     CompositionLocalProvider(
         LocalTopBarFocusRequester provides topBarFocusRequester,
         LocalContentFocusRequester provides contentFocusRequester,
+        LocalPreferredContentFocusRequester provides { preferredContentFocusRequester = it },
     ) {
         Column(
             modifier = Modifier
@@ -111,7 +145,11 @@ fun <T> TvMainScaffold(
                     menuItems = menuItems,
                     onDestinationSelected = onDestinationSelected,
                     onSettingsClick = onSettingsClick,
+                    accountLabel = accountLabel,
+                    onAccountClick = onAccountClick,
                     selectedTabFocusRequester = topBarFocusRequester,
+                    accountFocusRequester = accountFocusRequester,
+                    downFocusRequester = topBarDownFocusRequester,
                     onFocusChanged = { topBarHasFocus = it },
                 )
             }
@@ -134,7 +172,11 @@ private fun <T> TvTopBar(
     menuItems: List<TvMenuItem<T>>,
     onDestinationSelected: (T) -> Unit,
     onSettingsClick: () -> Unit,
+    accountLabel: String?,
+    onAccountClick: () -> Unit,
     selectedTabFocusRequester: FocusRequester,
+    accountFocusRequester: FocusRequester,
+    downFocusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
 ) {
     val initialFocusRequester = selectedTabFocusRequester
@@ -148,7 +190,10 @@ private fun <T> TvTopBar(
             .padding(horizontal = TvScreenPadding.Horizontal, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TvSettingsButton(onClick = onSettingsClick)
+        TvSettingsButton(
+            downFocusRequester = downFocusRequester,
+            onClick = onSettingsClick,
+        )
 
         Row(
             modifier = Modifier.weight(1f).focusGroup(),
@@ -163,9 +208,18 @@ private fun <T> TvTopBar(
                     selected = isSelected,
                     onSelected = { onDestinationSelected(item.destination) },
                     focusRequester = if (isSelected) initialFocusRequester else null,
+                    downFocusRequester = downFocusRequester,
                 )
             }
         }
+
+        TvAccountButton(
+            label = accountLabel?.ifBlank { null } ?: stringResource(R.string.main_account_sign_in),
+            signedIn = !accountLabel.isNullOrBlank(),
+            focusRequester = accountFocusRequester,
+            downFocusRequester = downFocusRequester,
+            onClick = onAccountClick,
+        )
     }
 }
 
@@ -176,10 +230,10 @@ private fun TvNavTab(
     selected: Boolean,
     onSelected: () -> Unit,
     focusRequester: FocusRequester?,
+    downFocusRequester: FocusRequester,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val contentFocusRequester = LocalContentFocusRequester.current
 
     val contentColor = when {
         focused -> MaterialTheme.colorScheme.primary
@@ -203,7 +257,7 @@ private fun TvNavTab(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = focusRequesterModifier
             .focusProperties {
-                contentFocusRequester?.let { down = it }
+                down = downFocusRequester
             }
             .onFocusChanged { if (it.isFocused) onSelected() }
             .background(
@@ -244,18 +298,18 @@ private fun TvNavTab(
 
 @Composable
 private fun TvSettingsButton(
+    downFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val contentFocusRequester = LocalContentFocusRequester.current
 
     Box(
         modifier = modifier
             .size(44.dp)
             .focusProperties {
-                contentFocusRequester?.let { down = it }
+                down = downFocusRequester
             }
             .border(
                 width = if (focused) 2.dp else 0.dp,
@@ -270,6 +324,58 @@ private fun TvSettingsButton(
             contentDescription = stringResource(R.string.main_settings_content_description),
             modifier = Modifier.size(24.dp),
             tint = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun TvAccountButton(
+    label: String,
+    signedIn: Boolean,
+    focusRequester: FocusRequester,
+    downFocusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(22.dp)
+    val background = when {
+        focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+        signedIn -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
+        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+    }
+    val contentColor = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Row(
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .focusProperties {
+                down = downFocusRequester
+            }
+            .border(
+                width = if (focused) 2.dp else 0.dp,
+                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            )
+            .background(background, shape)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = stringResource(R.string.main_account_content_description),
+            modifier = Modifier.size(24.dp),
+            tint = contentColor,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (focused) FontWeight.Bold else FontWeight.SemiBold,
+            color = contentColor,
+            maxLines = 1,
         )
     }
 }

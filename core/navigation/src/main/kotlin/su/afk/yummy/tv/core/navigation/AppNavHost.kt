@@ -27,6 +27,9 @@ fun AppNavHost(
     val searchBackStack = key(SideTab.SEARCH) {
         rememberNavBackStack(navManager.roots.getValue(SideTab.SEARCH))
     }
+    val scheduleBackStack = key(SideTab.SCHEDULE) {
+        rememberNavBackStack(navManager.roots.getValue(SideTab.SCHEDULE))
+    }
     val top100BackStack = key(SideTab.TOP100) {
         rememberNavBackStack(navManager.roots.getValue(SideTab.TOP100))
     }
@@ -34,16 +37,17 @@ fun AppNavHost(
         rememberNavBackStack(navManager.roots.getValue(SideTab.LIBRARY))
     }
 
-    val tabStacks = remember(homeBackStack, searchBackStack, top100BackStack, libraryBackStack) {
+    val tabStacks = remember(homeBackStack, searchBackStack, scheduleBackStack, top100BackStack, libraryBackStack) {
         mapOf(
             SideTab.HOME to homeBackStack,
             SideTab.SEARCH to searchBackStack,
+            SideTab.SCHEDULE to scheduleBackStack,
             SideTab.TOP100 to top100BackStack,
             SideTab.LIBRARY to libraryBackStack,
         )
     }
 
-    LaunchedEffect(homeBackStack, searchBackStack, top100BackStack, libraryBackStack) {
+    LaunchedEffect(homeBackStack, searchBackStack, scheduleBackStack, top100BackStack, libraryBackStack) {
         navManager.attachBackStacks(tabStacks)
     }
 
@@ -83,6 +87,16 @@ fun AppNavHost(
             entryProvider = provider,
         )
     }
+    val scheduleEntries = key(SideTab.SCHEDULE) {
+        rememberDecoratedNavEntries(
+            backStack = scheduleBackStack,
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            entryProvider = provider,
+        )
+    }
     val libraryEntries = key(SideTab.LIBRARY) {
         rememberDecoratedNavEntries(
             backStack = libraryBackStack,
@@ -97,6 +111,7 @@ fun AppNavHost(
     val entriesToShow: List<NavEntry<NavKey>> = when (navManager.currentTab) {
         SideTab.HOME -> homeEntries
         SideTab.SEARCH -> homeEntries + searchEntries
+        SideTab.SCHEDULE -> homeEntries + scheduleEntries
         SideTab.TOP100 -> homeEntries + top100Entries
         SideTab.LIBRARY -> homeEntries + libraryEntries
     }

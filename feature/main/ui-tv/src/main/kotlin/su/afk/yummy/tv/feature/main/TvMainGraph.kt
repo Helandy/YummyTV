@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.main
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -25,6 +26,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
+import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.ITvMainGraph
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
 import su.afk.yummy.tv.feature.main.view.TvMenuItem
@@ -36,12 +38,14 @@ import javax.inject.Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: NavigationManager,
     private val settingsNavigator: ISettingsNavigator,
+    private val accountNavigator: IAccountNavigator,
     private val registrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : ITvMainGraph {
 
     private val menuItems = listOf(
         TvMenuItem(R.string.main_tab_search, SideTab.SEARCH, Icons.Default.Search),
         TvMenuItem(R.string.main_tab_home, SideTab.HOME, Icons.Default.Home),
+        TvMenuItem(R.string.main_tab_schedule, SideTab.SCHEDULE, Icons.Default.DateRange),
         TvMenuItem(R.string.main_tab_top100, SideTab.TOP100, Icons.Default.Star),
         TvMenuItem(R.string.main_tab_library, SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
     )
@@ -83,7 +87,11 @@ class TvMainGraph @Inject constructor(
                         menuItems = menuItems,
                         onDestinationSelected = { navManager.switchTab(it) },
                         onSettingsClick = { navManager.navigate(settingsNavigator.getSettingsDest()) },
+                        accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null,
+                        onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
                         showTopBar = atTabRoot,
+                        requestedTopBarFocusTarget = navManager.pendingTopBarFocusTarget,
+                        onTopBarFocusRequestHandled = { navManager.clearTopBarFocusRequest(it) },
                     ) {
                         AppNavHost(
                             navManager = navManager,

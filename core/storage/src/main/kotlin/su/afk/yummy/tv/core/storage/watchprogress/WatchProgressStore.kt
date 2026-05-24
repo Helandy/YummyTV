@@ -11,6 +11,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun save(
         animeId: Int,
         episode: String,
+        videoId: Int = 0,
         episodeUrl: String,
         positionMs: Long,
         durationMs: Long,
@@ -19,7 +20,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         playerName: String = "",
         dubbing: String = "",
         screenshotUrl: String = "",
-    ) = dao.save(WatchProgressEntry(animeId = animeId, episode = episode, episodeUrl = episodeUrl, positionMs = positionMs, durationMs = durationMs, animeTitle = animeTitle, posterUrl = posterUrl, playerName = playerName, dubbing = dubbing, screenshotUrl = screenshotUrl))
+    ) = dao.save(WatchProgressEntry(animeId = animeId, episode = episode, videoId = videoId, episodeUrl = episodeUrl, positionMs = positionMs, durationMs = durationMs, animeTitle = animeTitle, posterUrl = posterUrl, playerName = playerName, dubbing = dubbing, screenshotUrl = screenshotUrl))
 
     suspend fun delete(animeId: Int, episode: String) = dao.delete(animeId, episode)
 

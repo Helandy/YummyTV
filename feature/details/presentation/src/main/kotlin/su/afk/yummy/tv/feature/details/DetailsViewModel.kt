@@ -20,11 +20,15 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.account.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.UserAnimeList
+import su.afk.yummy.tv.domain.account.UserListsRepository
 import su.afk.yummy.tv.domain.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
@@ -38,12 +42,15 @@ class DetailsViewModel @AssistedInject constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
+    private val collectionNavigator: ICollectionNavigator,
     private val playerNavigator: IPlayerNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
+    private val animeExtrasRepository: AnimeExtrasRepository,
+    private val userListsRepository: UserListsRepository,
     private val stringProvider: StringProvider,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
@@ -87,30 +94,76 @@ class DetailsViewModel @AssistedInject constructor(
             DetailsState.Event.SimilarSelected -> nav.navigate(detailsNavigator.getSimilarDest(animeId))
             DetailsState.Event.ViewingOrderSelected -> nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
             DetailsState.Event.ScreenshotsSelected -> nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
+            DetailsState.Event.RatingScreenSelected -> setState { copy(showRatingScreen = true) }
+            DetailsState.Event.RatingScreenDismissed -> setState { copy(showRatingScreen = false) }
             DetailsState.Event.LibraryToggled -> viewModelScope.launch { toggleLibrary() }
+            DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
+            is DetailsState.Event.LibraryListSelected -> viewModelScope.launch { addToLibrary(event.list) }
             DetailsState.Event.PosterClicked -> setState { copy(showPosterFullscreen = true) }
             DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
+            is DetailsState.Event.RatingSelected -> setRating(event.rating)
+            DetailsState.Event.RatingDeleted -> deleteRating()
+            is DetailsState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
         }
     }
 
     private suspend fun toggleLibrary() {
-        val details = currentState.details ?: return
+        currentState.details ?: return
         if (currentState.isInLibrary) {
             libraryStore.remove(animeId)
+            setState { copy(libraryList = null) }
+            runCatching { userListsRepository.removeAnimeList(animeId) }
         } else {
-            libraryStore.add(
-                LibraryEntry(
-                    animeId = details.id,
-                    title = details.title,
-                    posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small },
-                )
-            )
+            setState { copy(showLibraryListPicker = true) }
         }
+    }
+
+    private suspend fun addToLibrary(list: UserAnimeList) {
+        val details = currentState.details ?: return
+        setState { copy(showLibraryListPicker = false, libraryList = list) }
+        libraryStore.add(
+            LibraryEntry(
+                animeId = details.id,
+                title = details.title,
+                posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small },
+            )
+        )
+        runCatching { userListsRepository.setAnimeList(animeId, list) }
     }
 
     private fun load() {
         viewModelScope.launch { loadDetails() }
         viewModelScope.launch { loadVideos() }
+        viewModelScope.launch { loadExtras() }
+    }
+
+    private suspend fun loadExtras() {
+        runCatching { animeExtrasRepository.getRatingSummary(animeId) }
+            .onSuccess { setState { copy(ratingSummary = it) } }
+        runCatching { animeExtrasRepository.getListStats(animeId) }
+            .onSuccess { setState { copy(listStats = it) } }
+        runCatching { animeExtrasRepository.getCollections(animeId) }
+            .onSuccess { setState { copy(collections = it) } }
+        runCatching { userListsRepository.getAnimeListState(animeId) }
+            .onSuccess { setState { copy(selectedUserRating = it?.rating?.toInt(), libraryList = it?.list) } }
+    }
+
+    private fun setRating(rating: Int) {
+        val previous = currentState.selectedUserRating
+        setState { copy(selectedUserRating = rating) }
+        viewModelScope.launch {
+            val result = runCatching { animeExtrasRepository.setRating(animeId, rating) }
+            if (result.isFailure) setState { copy(selectedUserRating = previous) }
+        }
+    }
+
+    private fun deleteRating() {
+        val previous = currentState.selectedUserRating
+        setState { copy(selectedUserRating = null) }
+        viewModelScope.launch {
+            val result = runCatching { animeExtrasRepository.deleteRating(animeId) }
+            if (result.isFailure) setState { copy(selectedUserRating = previous) }
+        }
     }
 
     private suspend fun loadDetails() {
@@ -279,6 +332,7 @@ class DetailsViewModel @AssistedInject constructor(
                 dubbing = selectedDubbing,
                 episodeUrls = group.map { it.iframeUrl },
                 episodeNumbers = group.map { it.episode },
+                episodeVideoIds = group.map { it.id },
                 currentEpisodeIndex = idx,
                 screenshotUrls = screenshotUrls,
                 animeId = animeId,
@@ -287,11 +341,19 @@ class DetailsViewModel @AssistedInject constructor(
                 currentDubbingIndex = currentDubbingIdx,
                 allDubbingEpisodeUrls = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.iframeUrl } },
                 allDubbingEpisodeNumbers = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.episode } },
+                allDubbingEpisodeVideoIds = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.id } },
                 allBalancerNames = supportedBalancers,
                 currentBalancerIndex = currentBalancerIdx,
                 allBalancerDubbingNames = allBalancerDubbingNames,
                 allBalancerEpisodeUrls = allBalancerEpisodeUrls,
                 allBalancerEpisodeNumbers = allBalancerEpisodeNumbers,
+                allBalancerEpisodeVideoIds = supportedBalancers.mapIndexed { bIdx, bName ->
+                    allBalancerDubbingNames[bIdx].map { dName ->
+                        allVideos.filter { it.player == bName && it.dubbing == dName }
+                            .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+                            .map { it.id }
+                    }
+                },
                 episodeSkips = group.map { it.skips.toPlayerSkips() },
                 allDubbingEpisodeSkips = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.skips.toPlayerSkips() } },
                 allBalancerEpisodeSkips = allBalancerEpisodeSkips,

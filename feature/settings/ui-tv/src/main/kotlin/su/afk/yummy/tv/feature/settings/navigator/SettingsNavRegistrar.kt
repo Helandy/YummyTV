@@ -13,7 +13,7 @@ import javax.inject.Inject
 class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
     override fun register(builder: EntryProviderScope<NavKey>, nav: NavigationManager) =
         with(builder) {
-            entry<SettingsDestination> { _ ->
+            entry<SettingsDestination> {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     SettingsTvScreen(state = state, effect = effect, onEvent = onEvent)

@@ -5,8 +5,16 @@
     <string name="library_episode">Серия</string>
     <string name="library_episode_number">Серия %1$s</string>
     <string name="library_delete">Удалить</string>
-    <string name="library_tab_list">Список</string>
-    <string name="library_tab_list_short">Сп</string>
     <string name="library_tab_continue_watching">Продолжить</string>
     <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_tab_watching">Смотрю</string>
+    <string name="library_tab_watching_short">См</string>
+    <string name="library_tab_planned">В планах</string>
+    <string name="library_tab_planned_short">Пл</string>
+    <string name="library_tab_completed">Просмотрено</string>
+    <string name="library_tab_completed_short">Го</string>
+    <string name="library_tab_postponed">Отложено</string>
+    <string name="library_tab_postponed_short">От</string>
+    <string name="library_tab_dropped">Брошено</string>
+    <string name="library_tab_dropped_short">Бр</string>
 </resources>

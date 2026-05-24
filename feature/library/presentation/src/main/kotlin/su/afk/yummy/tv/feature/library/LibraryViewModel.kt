@@ -13,8 +13,12 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.library.LibraryStore
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.account.UserAnimeList
+import su.afk.yummy.tv.domain.account.UserListsRepository
+import su.afk.yummy.tv.domain.account.VideoWatchesRepository
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
@@ -32,6 +36,9 @@ class LibraryViewModel @Inject constructor(
     override val retryStorage: RetryStorage,
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
+    private val settingsStore: SettingsStore,
+    private val userListsRepository: UserListsRepository,
+    private val videoWatchesRepository: VideoWatchesRepository,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val playerNavigator: IPlayerNavigator,
@@ -59,11 +66,19 @@ class LibraryViewModel @Inject constructor(
             }
             .onEach { entries -> setState { copy(continueWatching = entries) } }
             .launchIn(viewModelScope)
+        settingsStore.yaniUserId
+            .onEach { userId ->
+                setState { copy(isSignedIn = userId > 0) }
+                if (userId > 0) loadRemoteLists(userId)
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: LibraryState.Event) {
         when (event) {
             is LibraryState.Event.AnimeSelected ->
+                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            is LibraryState.Event.RemoteAnimeSelected ->
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             is LibraryState.Event.ContinueWatchingSelected ->
                 launchContinueWatching(event.entry)
@@ -74,7 +89,45 @@ class LibraryViewModel @Inject constructor(
             is LibraryState.Event.RemoveLibraryEntry ->
                 viewModelScope.launch { libraryStore.remove(event.animeId) }
             is LibraryState.Event.RemoveWatchProgress ->
-                viewModelScope.launch { watchProgressStore.deleteByAnimeId(event.animeId) }
+                viewModelScope.launch {
+                    val entries = currentState.continueWatching.filter { it.animeId == event.animeId }
+                    watchProgressStore.deleteByAnimeId(event.animeId)
+                    entries.mapNotNull { it.videoId.takeIf { id -> id > 0 } }.distinct().forEach { videoId ->
+                        runCatching { videoWatchesRepository.removeWatched(videoId) }
+                    }
+                }
+            is LibraryState.Event.RemoveRemoteEntry -> removeRemoteEntry(event)
+        }
+    }
+
+    private fun loadRemoteLists(userId: Int) {
+        viewModelScope.launch {
+            runCatching {
+                mapOf(
+                    LibraryTab.WATCHING to userListsRepository.getUserList(userId, UserAnimeList.WATCHING),
+                    LibraryTab.PLANNED to userListsRepository.getUserList(userId, UserAnimeList.PLANNED),
+                    LibraryTab.COMPLETED to userListsRepository.getUserList(userId, UserAnimeList.COMPLETED),
+                    LibraryTab.POSTPONED to userListsRepository.getUserList(userId, UserAnimeList.POSTPONED),
+                    LibraryTab.DROPPED to userListsRepository.getUserList(userId, UserAnimeList.DROPPED),
+                )
+            }.fold(
+                onSuccess = { remote -> setState { copy(remoteItems = remote, remoteError = null) } },
+                onFailure = { setState { copy(remoteError = it.message) } },
+            )
+        }
+    }
+
+    private fun removeRemoteEntry(event: LibraryState.Event.RemoveRemoteEntry) {
+        val previous = currentState.remoteItems
+        val tab = currentState.selectedTab
+        setState {
+            copy(remoteItems = remoteItems + (tab to remoteItems[tab].orEmpty().filterNot { it.animeId == event.animeId }))
+        }
+        viewModelScope.launch {
+            val result = runCatching {
+                if (event.favorite) userListsRepository.setFavorite(event.animeId, false) else userListsRepository.removeAnimeList(event.animeId)
+            }
+            if (result.isFailure) setState { copy(remoteItems = previous, remoteError = result.exceptionOrNull()?.message) }
         }
     }
 
@@ -120,6 +173,7 @@ class LibraryViewModel @Inject constructor(
                     dubbing = resolvedDubbing,
                     episodeUrls = urls,
                     episodeNumbers = numbers,
+                    episodeVideoIds = episodeGroup.map { it.id }.ifEmpty { listOf(entry.videoId) },
                     currentEpisodeIndex = idx,
                     episodeSkips = skips,
                     animeId = entry.animeId,

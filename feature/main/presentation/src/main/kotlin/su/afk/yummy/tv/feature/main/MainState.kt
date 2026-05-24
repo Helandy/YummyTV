@@ -10,6 +10,8 @@ object MainState {
     data class State(
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val showScreenshotsOnFocus: Boolean = false,
+        val yaniNickname: String = "",
+        val isYaniSignedIn: Boolean = false,
     ) : UiState
 
     sealed class Event : UiEvent

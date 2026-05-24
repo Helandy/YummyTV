@@ -89,6 +89,9 @@ internal fun ExoPlayerView(
     qualityOverrides: LinkedHashMap<String, String>? = null,
     skips: PlayerSkips = PlayerSkips.Empty,
     autoSkipOpeningsEndings: Boolean = false,
+    canSubscribe: Boolean = false,
+    isSubscribed: Boolean = false,
+    onToggleSubscription: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val qualities = remember(streamUrl, qualityOverrides) { qualityOverrides ?: deriveQualityUrls(streamUrl) }
@@ -391,6 +394,9 @@ internal fun ExoPlayerView(
                         currentPosition = currentPosition,
                         playFocusRequester = playFocusRequester,
                         onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
+                        canSubscribe = canSubscribe,
+                        isSubscribed = isSubscribed,
+                        onToggleSubscription = onToggleSubscription,
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
                             if (isSeeking) { seekTo((seekProgress * duration).toLong()); isSeeking = false }

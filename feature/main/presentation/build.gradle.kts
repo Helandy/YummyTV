@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
     implementation(project(":core:update"))
+    implementation(project(":feature:account:domain"))
     implementation(libs.compose.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.android)

@@ -4,6 +4,10 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.AnimeListStats
+import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.domain.anime.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.AnimeVideo
@@ -18,10 +22,17 @@ class DetailsState {
         val videosState: VideosUiState = VideosUiState.Loading,
         val error: String? = null,
         val isInLibrary: Boolean = false,
+        val libraryList: UserAnimeList? = null,
         val showPosterFullscreen: Boolean = false,
         val watchProgress: Map<String, WatchProgressEntry> = emptyMap(),
         val pendingBalancerSelection: BalancerPickerState? = null,
+        val showLibraryListPicker: Boolean = false,
         val isWatchLaunchPending: Boolean = false,
+        val showRatingScreen: Boolean = false,
+        val ratingSummary: AnimeRatingSummary = AnimeRatingSummary(),
+        val listStats: AnimeListStats = AnimeListStats(),
+        val collections: List<AnimeCollectionSummary> = emptyList(),
+        val selectedUserRating: Int? = null,
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -35,11 +46,18 @@ class DetailsState {
         data object SimilarSelected : Event
         data object ViewingOrderSelected : Event
         data object ScreenshotsSelected : Event
+        data object RatingScreenSelected : Event
+        data object RatingScreenDismissed : Event
         data object LibraryToggled : Event
+        data object LibraryListPickerDismissed : Event
+        data class LibraryListSelected(val list: UserAnimeList) : Event
         data object PosterClicked : Event
         data object PosterDismissed : Event
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event
+        data class RatingSelected(val rating: Int) : Event
+        data object RatingDeleted : Event
+        data class CollectionSelected(val collectionId: Int) : Event
     }
 
     sealed interface Effect : UiEffect

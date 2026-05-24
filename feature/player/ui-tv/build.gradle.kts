@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:account:domain"))
     implementation(project(":feature:player:presentation"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.compose.runtime)

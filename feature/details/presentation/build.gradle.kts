@@ -23,6 +23,8 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
+    implementation(project(":feature:collection:api"))
+    implementation(project(":feature:account:domain"))
     implementation(libs.compose.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.android)

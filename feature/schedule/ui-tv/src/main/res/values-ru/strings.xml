@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="schedule_loading">Загружаем расписание</string>
+    <string name="schedule_empty">Расписание пустое</string>
+    <string name="schedule_aired">вышло: %1$d</string>
+    <string name="schedule_total">всего: %1$d</string>
+</resources>

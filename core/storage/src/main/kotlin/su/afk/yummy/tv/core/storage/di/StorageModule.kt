@@ -2,6 +2,8 @@ package su.afk.yummy.tv.core.storage.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +20,17 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object StorageModule {
 
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE watch_progress ADD COLUMN videoId INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "yummy_cache.db")
+            .addMigrations(MIGRATION_7_8)
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
 
