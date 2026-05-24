@@ -5,8 +5,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.AnimeListStats
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.domain.anime.AnimeRecommendation
@@ -28,11 +26,10 @@ class DetailsState {
         val pendingBalancerSelection: BalancerPickerState? = null,
         val showLibraryListPicker: Boolean = false,
         val isWatchLaunchPending: Boolean = false,
-        val showRatingScreen: Boolean = false,
-        val ratingSummary: AnimeRatingSummary = AnimeRatingSummary(),
-        val listStats: AnimeListStats = AnimeListStats(),
         val collections: List<AnimeCollectionSummary> = emptyList(),
-        val selectedUserRating: Int? = null,
+        val isSignedIn: Boolean = false,
+        val subscriptionVideoId: Int = 0,
+        val isSubscribed: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -47,7 +44,6 @@ class DetailsState {
         data object ViewingOrderSelected : Event
         data object ScreenshotsSelected : Event
         data object RatingScreenSelected : Event
-        data object RatingScreenDismissed : Event
         data object LibraryToggled : Event
         data object LibraryListPickerDismissed : Event
         data class LibraryListSelected(val list: UserAnimeList) : Event
@@ -55,9 +51,8 @@ class DetailsState {
         data object PosterDismissed : Event
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event
-        data class RatingSelected(val rating: Int) : Event
-        data object RatingDeleted : Event
         data class CollectionSelected(val collectionId: Int) : Event
+        data object SubscriptionToggled : Event
     }
 
     sealed interface Effect : UiEffect

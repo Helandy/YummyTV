@@ -22,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +41,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.details.view.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.DetailsContent
 import su.afk.yummy.tv.feature.details.view.DetailsError
-import su.afk.yummy.tv.feature.details.view.DetailsRatingScreen
 import su.afk.yummy.tv.feature.details.view.LibraryListPickerOverlay
 
 @Composable
@@ -107,6 +108,19 @@ fun DetailsTvScreen(
     effect: Flow<DetailsState.Effect>,
     onEvent: (DetailsState.Event) -> Unit,
 ) {
+    var restoreButtonFocusRequest by remember { mutableIntStateOf(0) }
+    fun restoreButtonFocus() {
+        restoreButtonFocusRequest += 1
+    }
+    fun dismissBalancerPicker() {
+        onEvent(DetailsState.Event.BalancerPickerDismissed)
+        restoreButtonFocus()
+    }
+    fun dismissLibraryListPicker() {
+        onEvent(DetailsState.Event.LibraryListPickerDismissed)
+        restoreButtonFocus()
+    }
+
     val error = state.error
     val details = state.details
     Box(modifier = Modifier.fillMaxSize()) {
@@ -123,11 +137,13 @@ fun DetailsTvScreen(
                 watchProgress = state.watchProgress,
                 isInLibrary = state.isInLibrary,
                 libraryList = state.libraryList,
-                ratingSummary = state.ratingSummary,
                 collections = state.collections,
-                selectedUserRating = state.selectedUserRating,
+                canSubscribe = state.isSignedIn && state.subscriptionVideoId > 0,
+                isSubscribed = state.isSubscribed,
+                restoreButtonFocusRequest = restoreButtonFocusRequest,
                 onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled) },
                 onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                 onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                 onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
@@ -138,18 +154,6 @@ fun DetailsTvScreen(
                 onCollectionSelected = { collectionId -> onEvent(DetailsState.Event.CollectionSelected(collectionId)) },
             )
             else -> TvLoadingScreen()
-        }
-
-        if (state.showRatingScreen) {
-            BackHandler { onEvent(DetailsState.Event.RatingScreenDismissed) }
-            DetailsRatingScreen(
-                ratingSummary = state.ratingSummary,
-                listStats = state.listStats,
-                selectedUserRating = state.selectedUserRating,
-                onRatingSelected = { rating -> onEvent(DetailsState.Event.RatingSelected(rating)) },
-                onRatingDeleted = { onEvent(DetailsState.Event.RatingDeleted) },
-                onBack = { onEvent(DetailsState.Event.RatingScreenDismissed) },
-            )
         }
 
         if (state.showPosterFullscreen && details != null) {
@@ -192,23 +196,26 @@ fun DetailsTvScreen(
 
         val balancerPicker = state.pendingBalancerSelection
         BackHandler(enabled = balancerPicker != null) {
-            onEvent(DetailsState.Event.BalancerPickerDismissed)
+            dismissBalancerPicker()
         }
         if (balancerPicker != null) {
             BalancerPickerOverlay(
                 picker = balancerPicker,
                 onConfirmed = { option -> onEvent(DetailsState.Event.BalancerConfirmed(option.video)) },
-                onDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
+                onDismiss = ::dismissBalancerPicker,
             )
         }
 
         BackHandler(enabled = state.showLibraryListPicker) {
-            onEvent(DetailsState.Event.LibraryListPickerDismissed)
+            dismissLibraryListPicker()
         }
         if (state.showLibraryListPicker) {
             LibraryListPickerOverlay(
-                onConfirmed = { list -> onEvent(DetailsState.Event.LibraryListSelected(list)) },
-                onDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
+                onConfirmed = { list ->
+                    onEvent(DetailsState.Event.LibraryListSelected(list))
+                    restoreButtonFocus()
+                },
+                onDismiss = ::dismissLibraryListPicker,
             )
         }
     }

@@ -29,6 +29,8 @@
     <string name="player_opening_skipped">Opening skipped %1$s - %2$s</string>
     <string name="player_ending_skipped">Ending skipped %1$s - %2$s</string>
     <string name="player_next_episode_prompt">Next episode?</string>
+    <string name="player_rate_title_prompt">Rate this title?</string>
+    <string name="player_rate_title">Rate</string>
     <string name="player_watch_next">Watch</string>
     <string name="player_stay">Stay</string>
 </resources>

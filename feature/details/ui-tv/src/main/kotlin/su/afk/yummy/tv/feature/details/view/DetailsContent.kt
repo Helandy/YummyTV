@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.VideosUiState
@@ -23,11 +22,13 @@ internal fun DetailsContent(
     watchProgress: Map<String, WatchProgressEntry>,
     isInLibrary: Boolean,
     libraryList: UserAnimeList?,
-    ratingSummary: AnimeRatingSummary,
     collections: List<AnimeCollectionSummary>,
-    selectedUserRating: Int?,
+    canSubscribe: Boolean,
+    isSubscribed: Boolean,
+    restoreButtonFocusRequest: Int,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
+    onSubscriptionToggle: () -> Unit,
     onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -51,11 +52,13 @@ internal fun DetailsContent(
             videosState = videosState,
             isWatchLoading = isWatchLoading,
             watchProgress = watchProgress,
-            ratingSummary = ratingSummary,
             collections = collections,
-            selectedUserRating = selectedUserRating,
+            canSubscribe = canSubscribe,
+            isSubscribed = isSubscribed,
+            restoreButtonFocusRequest = restoreButtonFocusRequest,
             onWatchSelected = onWatchSelected,
             onLibraryToggle = onLibraryToggle,
+            onSubscriptionToggle = onSubscriptionToggle,
             onFullDetailsSelected = onFullDetailsSelected,
             onEpisodesSelected = onEpisodesSelected,
             onTrailersSelected = onTrailersSelected,

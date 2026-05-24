@@ -11,7 +11,9 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,7 @@ private fun bestWatchStatus(groupVideos: List<AnimeVideo>, watchProgress: Map<St
 internal fun EpisodesContent(
     videos: List<AnimeVideo>,
     watchProgress: Map<String, WatchProgressEntry>,
+    restoreFocusRequest: Int,
     onVideoSelected: (AnimeVideo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,6 +70,12 @@ internal fun EpisodesContent(
     }
 
     val episodesRestorerState = rememberFocusRestorerState()
+    LaunchedEffect(restoreFocusRequest) {
+        if (restoreFocusRequest > 0) {
+            withFrameNanos { }
+            episodesRestorerState.restoreFocus()
+        }
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 220.dp),

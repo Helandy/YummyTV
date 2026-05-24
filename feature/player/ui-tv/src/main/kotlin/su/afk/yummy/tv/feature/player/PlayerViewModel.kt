@@ -17,8 +17,8 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.VideoSubscriptionRepository
 import su.afk.yummy.tv.domain.account.VideoWatchesRepository
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
 import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
 import su.afk.yummy.tv.feature.player.extractor.CvhExtractor
@@ -38,7 +38,7 @@ class PlayerViewModel @AssistedInject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val videoWatchesRepository: VideoWatchesRepository,
-    private val videoSubscriptionRepository: VideoSubscriptionRepository,
+    private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -119,9 +119,6 @@ class PlayerViewModel @AssistedInject constructor(
         settingsStore.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
-        settingsStore.yaniAccessToken
-            .onEach { token -> setState { copy(isSignedIn = token.isNotBlank()) } }
-            .launchIn(viewModelScope)
         loadStream()
     }
 
@@ -131,6 +128,10 @@ class PlayerViewModel @AssistedInject constructor(
             PlayerState.Event.RetryStream -> {
                 setState { copy(retryKey = retryKey + 1) }
                 loadStream()
+            }
+            PlayerState.Event.RateTitle -> {
+                val animeId = currentState.animeId
+                if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
             PlayerState.Event.PrevEpisode -> {
                 val idx = currentState.episodeIndex
@@ -212,20 +213,6 @@ class PlayerViewModel @AssistedInject constructor(
                         }
                     }
                 }
-            }
-            is PlayerState.Event.ToggleSubscription -> toggleSubscription(event.videoId)
-        }
-    }
-
-    private fun toggleSubscription(videoId: Int) {
-        if (videoId <= 0 || !currentState.isSignedIn) return
-        val wasSubscribed = videoId in currentState.subscribedVideoIds
-        val next = if (wasSubscribed) currentState.subscribedVideoIds - videoId else currentState.subscribedVideoIds + videoId
-        setState { copy(subscribedVideoIds = next) }
-        viewModelScope.launch {
-            val result = runCatching { videoSubscriptionRepository.setSubscribed(videoId, !wasSubscribed) }
-            if (result.isFailure) {
-                setState { copy(subscribedVideoIds = if (wasSubscribed) subscribedVideoIds + videoId else subscribedVideoIds - videoId) }
             }
         }
     }

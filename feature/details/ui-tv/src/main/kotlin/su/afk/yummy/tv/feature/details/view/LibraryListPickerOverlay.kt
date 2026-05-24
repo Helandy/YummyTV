@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,10 +40,13 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.feature.details.R
 
@@ -51,6 +55,7 @@ internal fun LibraryListPickerOverlay(
     onConfirmed: (UserAnimeList) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
     val options = remember {
         listOf(
             UserAnimeList.WATCHING,
@@ -64,52 +69,61 @@ internal fun LibraryListPickerOverlay(
     var focusedOptionIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
-        firstFocusRequester.requestFocus()
+        focusManager.clearFocus(force = true)
+        withFrameNanos { }
+        runCatching { firstFocusRequester.requestFocus() }
+        withFrameNanos { }
+        runCatching { firstFocusRequester.requestFocus() }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.82f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onDismiss,
-            ),
-        contentAlignment = Alignment.Center,
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .wrapContentSize()
-                .width(440.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xF21B1B1F))
-                .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
-                .focusGroup()
-                .onPreviewKeyEvent { event ->
-                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                    when (event.key) {
-                        Key.DirectionUp -> focusedOptionIndex == 0
-                        Key.DirectionDown -> focusedOptionIndex == options.lastIndex
-                        else -> false
-                    }
-                }
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.82f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss,
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = stringResource(R.string.details_library_picker_title),
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.White.copy(alpha = 0.70f),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-            )
-            options.forEachIndexed { index, list ->
-                LibraryListOptionItem(
-                    label = list.label(),
-                    focusRequester = if (index == 0) firstFocusRequester else null,
-                    onFocused = { focusedOptionIndex = index },
-                    onClick = { onConfirmed(list) },
+            Column(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .width(440.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xF21B1B1F))
+                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                    .focusGroup()
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        when (event.key) {
+                            Key.DirectionUp -> focusedOptionIndex == 0
+                            Key.DirectionDown -> focusedOptionIndex == options.lastIndex
+                            else -> false
+                        }
+                    }
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.details_library_picker_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White.copy(alpha = 0.70f),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                 )
+                options.forEachIndexed { index, list ->
+                    LibraryListOptionItem(
+                        label = list.label(),
+                        focusRequester = if (index == 0) firstFocusRequester else null,
+                        onFocused = { focusedOptionIndex = index },
+                        onClick = { onConfirmed(list) },
+                    )
+                }
             }
         }
     }

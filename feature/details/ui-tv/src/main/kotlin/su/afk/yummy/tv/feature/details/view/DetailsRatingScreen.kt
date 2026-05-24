@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,7 +39,6 @@ import su.afk.yummy.tv.domain.account.AnimeRatingBucket
 import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.feature.details.R
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DetailsRatingScreen(
     ratingSummary: AnimeRatingSummary,
@@ -45,10 +46,12 @@ internal fun DetailsRatingScreen(
     selectedUserRating: Int?,
     onRatingSelected: (Int) -> Unit,
     onRatingDeleted: () -> Unit,
-    onBack: () -> Unit,
 ) {
-    val closeFocusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { closeFocusRequester.requestFocus() }
+    val ratingFocusRequesters = remember { List(10) { FocusRequester() } }
+    LaunchedEffect(selectedUserRating) {
+        val focusIndex = ((selectedUserRating ?: 10) - 1).coerceIn(0, 9)
+        runCatching { ratingFocusRequesters[focusIndex].requestFocus() }
+    }
 
     Box(
         modifier = Modifier
@@ -56,15 +59,6 @@ internal fun DetailsRatingScreen(
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.98f))
             .padding(horizontal = TvScreenPadding.Horizontal, vertical = TvScreenPadding.Vertical),
     ) {
-        RatingAction(
-            label = stringResource(R.string.details_close),
-            onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .focusRequester(closeFocusRequester),
-            icon = { Icon(Icons.Filled.Close, contentDescription = null) },
-        )
-
         Column(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -88,15 +82,19 @@ internal fun DetailsRatingScreen(
                 } ?: RatingSummaryPill(stringResource(R.string.details_rating_not_set))
             }
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                (10 downTo 1).forEach { rating ->
+                (1..10).forEach { rating ->
                     RatingAction(
                         label = rating.toString(),
                         onClick = { onRatingSelected(rating) },
                         selected = selectedUserRating == rating,
+                        focusRequester = ratingFocusRequesters[rating - 1],
+                        modifier = Modifier.weight(1f),
+                        compact = true,
                         icon = { Icon(Icons.Filled.Star, contentDescription = null) },
                     )
                 }
@@ -175,6 +173,8 @@ private fun RatingAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    focusRequester: FocusRequester? = null,
+    compact: Boolean = false,
     icon: (@Composable () -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -182,13 +182,27 @@ private fun RatingAction(
     val color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Row(
         modifier = modifier
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                        onClick()
+                        true
+                    }
+                    else -> false
+                }
+            }
             .tvFocusableClick(onClick = onClick, shape = shape)
             .background(background, shape)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = if (compact) 8.dp else 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        icon?.invoke()
+        icon?.let {
+            it()
+            if (!compact) androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+        }
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,

@@ -77,8 +77,10 @@ internal fun ExoPlayerView(
     dubbing: String = "",
     hasPrevEpisode: Boolean = false,
     hasNextEpisode: Boolean = false,
+    canRateTitleOnEnd: Boolean = false,
     onPrevEpisode: () -> Unit = {},
     onNextEpisode: () -> Unit = {},
+    onRateTitle: () -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
     currentDubbingIndex: Int = 0,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
@@ -89,9 +91,6 @@ internal fun ExoPlayerView(
     qualityOverrides: LinkedHashMap<String, String>? = null,
     skips: PlayerSkips = PlayerSkips.Empty,
     autoSkipOpeningsEndings: Boolean = false,
-    canSubscribe: Boolean = false,
-    isSubscribed: Boolean = false,
-    onToggleSubscription: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val qualities = remember(streamUrl, qualityOverrides) { qualityOverrides ?: deriveQualityUrls(streamUrl) }
@@ -112,6 +111,7 @@ internal fun ExoPlayerView(
     var showBalancerPanel by remember { mutableStateOf(false) }
     var showSpeedPanel by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var showRateTitlePrompt by remember { mutableStateOf(false) }
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
     var skipSnackbarText by remember(streamUrl) { mutableStateOf<String?>(null) }
     val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
@@ -124,6 +124,7 @@ internal fun ExoPlayerView(
     val selectedSpeedFocusRequester = remember { FocusRequester() }
     val skipFocusRequester = remember { FocusRequester() }
     val nextEpisodeFocusRequester = remember { FocusRequester() }
+    val rateTitleFocusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var skipSnackbarJob by remember { mutableStateOf<Job?>(null) }
@@ -132,7 +133,7 @@ internal fun ExoPlayerView(
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
             delay(4_000)
-            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showNextEpisodePrompt) {
+            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showNextEpisodePrompt && !showRateTitlePrompt) {
                 controllerVisible = false
             }
         }
@@ -141,7 +142,7 @@ internal fun ExoPlayerView(
     fun onInteraction() {
         controllerVisible = true
         when {
-            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt -> hideJob?.cancel()
+            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt -> hideJob?.cancel()
             wantsPlay -> scheduleHide()
             else -> hideJob?.cancel()
         }
@@ -185,8 +186,15 @@ internal fun ExoPlayerView(
     fun playNextEpisode() {
         if (episodeKey.isNotBlank() && duration > 0) onSaveProgress(currentPosition, duration)
         showNextEpisodePrompt = false
+        showRateTitlePrompt = false
         closePanels()
         onNextEpisode()
+    }
+
+    fun rateTitle() {
+        showRateTitlePrompt = false
+        closePanels()
+        onRateTitle()
     }
 
     val activeSkip = currentSkip(skips, currentPosition, dismissedSkipKeys)
@@ -240,6 +248,11 @@ internal fun ExoPlayerView(
                         controllerVisible = true
                         closePanels()
                         hideJob?.cancel()
+                    } else if (canRateTitleOnEnd) {
+                        showRateTitlePrompt = true
+                        controllerVisible = true
+                        closePanels()
+                        hideJob?.cancel()
                     }
                 }
             }
@@ -276,10 +289,13 @@ internal fun ExoPlayerView(
         }
     }
 
-    LaunchedEffect(controllerVisible, showQualityPanel, showDubbingPanel, showBalancerPanel, showSpeedPanel, showNextEpisodePrompt) {
+    LaunchedEffect(controllerVisible, showQualityPanel, showDubbingPanel, showBalancerPanel, showSpeedPanel, showNextEpisodePrompt, showRateTitlePrompt) {
         if (showNextEpisodePrompt) {
             delay(50)
             try { nextEpisodeFocusRequester.requestFocus() } catch (_: Exception) {}
+        } else if (showRateTitlePrompt) {
+            delay(50)
+            try { rateTitleFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel) {
             try { playFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (!controllerVisible) {
@@ -316,8 +332,9 @@ internal fun ExoPlayerView(
 
     val displayTime = if (isSeeking) (seekProgress * duration).toLong() else currentPosition
 
-    BackHandler(enabled = showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt) {
+    BackHandler(enabled = showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt) {
         showNextEpisodePrompt = false
+        showRateTitlePrompt = false
         closePanels()
         onInteraction()
     }
@@ -394,9 +411,6 @@ internal fun ExoPlayerView(
                         currentPosition = currentPosition,
                         playFocusRequester = playFocusRequester,
                         onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
-                        canSubscribe = canSubscribe,
-                        isSubscribed = isSubscribed,
-                        onToggleSubscription = onToggleSubscription,
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
                             if (isSeeking) { seekTo((seekProgress * duration).toLong()); isSeeking = false }
@@ -574,6 +588,43 @@ internal fun ExoPlayerView(
                         ControlButton(
                             onClick = {
                                 showNextEpisodePrompt = false
+                                onInteraction()
+                            },
+                            onFocused = ::onInteraction,
+                            modifier = Modifier.width(120.dp),
+                        ) { color ->
+                            Text(stringResource(R.string.player_stay), style = MaterialTheme.typography.labelLarge, color = color)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (showRateTitlePrompt) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(Color.Black.copy(alpha = 0.78f))
+                    .padding(horizontal = 28.dp, vertical = 22.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.player_rate_title_prompt),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        ControlButton(
+                            onClick = ::rateTitle,
+                            onFocused = ::onInteraction,
+                            focusRequester = rateTitleFocusRequester,
+                            primary = true,
+                        ) { color ->
+                            Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
+                        }
+                        ControlButton(
+                            onClick = {
+                                showRateTitlePrompt = false
                                 onInteraction()
                             },
                             onFocused = ::onInteraction,

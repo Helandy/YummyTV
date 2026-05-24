@@ -47,7 +47,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
@@ -62,11 +61,13 @@ internal fun DetailsHero(
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
-    ratingSummary: AnimeRatingSummary,
     collections: List<AnimeCollectionSummary>,
-    selectedUserRating: Int?,
+    canSubscribe: Boolean,
+    isSubscribed: Boolean,
+    restoreButtonFocusRequest: Int,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
+    onSubscriptionToggle: () -> Unit,
     onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -148,9 +149,13 @@ internal fun DetailsHero(
                     videosState = videosState,
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
+                    canSubscribe = canSubscribe,
+                    isSubscribed = isSubscribed,
+                    restoreFocusRequest = restoreButtonFocusRequest,
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,
                     onLibraryToggle = onLibraryToggle,
+                    onSubscriptionToggle = onSubscriptionToggle,
                     onDetailsSelected = onFullDetailsSelected,
                     onEpisodesSelected = onEpisodesSelected,
                     onTrailersSelected = onTrailersSelected,
@@ -163,7 +168,6 @@ internal fun DetailsHero(
                 )
 
                 DetailsAccountExtras(
-                    ratingSummary = ratingSummary,
                     collections = collections,
                     onCollectionSelected = onCollectionSelected,
                 )
@@ -199,7 +203,6 @@ internal fun DetailsHero(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailsAccountExtras(
-    ratingSummary: AnimeRatingSummary,
     collections: List<AnimeCollectionSummary>,
     onCollectionSelected: (Int) -> Unit,
 ) {

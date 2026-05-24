@@ -36,6 +36,8 @@
     <string name="details_watch_not_found">Video not found</string>
     <string name="details_in_library">★  In library</string>
     <string name="details_add_library">☆  Add to library</string>
+    <string name="details_subscribe_updates">Subscribe to new episodes</string>
+    <string name="details_unsubscribe_updates">Unsubscribe from new episodes</string>
     <string name="details_library_picker_title">Add to list</string>
     <string name="details_library_picker_add">Add</string>
     <string name="details_library_list_watching">Watching</string>

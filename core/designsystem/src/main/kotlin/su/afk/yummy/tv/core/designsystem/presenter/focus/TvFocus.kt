@@ -104,7 +104,7 @@ class FocusRestorerState internal constructor(private val savedIndex: androidx.c
         savedIndex.intValue = index
     }
 
-    internal fun tryRestoreFocus() {
+    fun restoreFocus() {
         if (focusRequesters.isEmpty()) return
         val target = savedIndex.intValue
         val closest = focusRequesters.entries.minByOrNull { kotlin.math.abs(it.key - target) }

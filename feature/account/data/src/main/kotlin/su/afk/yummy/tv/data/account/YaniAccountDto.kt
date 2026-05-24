@@ -123,6 +123,16 @@ data class YaniAnimeListStateDto(
 )
 
 @Serializable
+data class YaniAnimeUserRatingResponseDto(
+    val response: YaniAnimeUserRatingDto = YaniAnimeUserRatingDto(),
+)
+
+@Serializable
+data class YaniAnimeUserRatingDto(
+    val user: YaniAnimeUserDto? = null,
+)
+
+@Serializable
 data class YaniSetListBodyDto(
     val list: Int,
     val date: Long = System.currentTimeMillis() / 1000L,

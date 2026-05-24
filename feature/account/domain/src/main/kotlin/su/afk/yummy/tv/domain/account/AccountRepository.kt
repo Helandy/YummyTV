@@ -23,6 +23,7 @@ interface VideoWatchesRepository {
 
 interface AnimeExtrasRepository {
     suspend fun getRatingSummary(animeId: Int): AnimeRatingSummary
+    suspend fun getUserRating(animeId: Int): Int?
     suspend fun setRating(animeId: Int, rating: Int)
     suspend fun deleteRating(animeId: Int)
     suspend fun getListStats(animeId: Int): AnimeListStats

@@ -182,8 +182,20 @@ class YaniAnimeExtrasRepository(
             userRating = null,
         )
 
+    override suspend fun getUserRating(animeId: Int): Int? =
+        client.get("$YANI_BASE_URL/anime/$animeId")
+            .body<YaniAnimeUserRatingResponseDto>()
+            .response
+            .user
+            ?.rating
+            ?.toInt()
+            ?.takeIf { it in 1..10 }
+
     override suspend fun setRating(animeId: Int, rating: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/rate") { setBody(YaniRateBodyDto(rating.coerceIn(1, 10))) }
+        client.put("$YANI_BASE_URL/anime/$animeId/rate") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniRateBodyDto(rating.coerceIn(1, 10)))
+        }
     }
 
     override suspend fun deleteRating(animeId: Int) {

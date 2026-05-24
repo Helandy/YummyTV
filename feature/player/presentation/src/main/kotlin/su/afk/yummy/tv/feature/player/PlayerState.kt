@@ -42,8 +42,6 @@ class PlayerState {
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
-        val isSignedIn: Boolean = false,
-        val subscribedVideoIds: Set<Int> = emptySet(),
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -53,8 +51,8 @@ class PlayerState {
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class SaveProgress(val posMs: Long, val durMs: Long) : Event
-        data class ToggleSubscription(val videoId: Int) : Event
         data object RetryStream : Event
+        data object RateTitle : Event
     }
 
     sealed interface Effect : UiEffect

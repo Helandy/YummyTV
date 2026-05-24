@@ -62,26 +62,21 @@ fun PlayerTvScreen(
         state.allBalancerEpisodeNumbers.getOrElse(state.balancerIndex) { state.allDubbingEpisodeNumbers }
     else state.allDubbingEpisodeNumbers
 
-    val activeAllEpisodeVideoIds = if (state.allBalancerEpisodeVideoIds.isNotEmpty())
-        state.allBalancerEpisodeVideoIds.getOrElse(state.balancerIndex) { state.allDubbingEpisodeVideoIds }
-    else state.allDubbingEpisodeVideoIds
-
     val activeAllEpisodeSkips = if (state.allBalancerEpisodeSkips.isNotEmpty())
         state.allBalancerEpisodeSkips.getOrElse(state.balancerIndex) { state.allDubbingEpisodeSkips }
     else state.allDubbingEpisodeSkips
 
     val activeDubbingUrls = activeAllEpisodeUrls.getOrElse(state.dubbingIndex) { state.episodeUrls }
     val activeEpisodeNumbers = activeAllEpisodeNumbers.getOrElse(state.dubbingIndex) { state.episodeNumbers }
-    val activeEpisodeVideoIds = activeAllEpisodeVideoIds.getOrElse(state.dubbingIndex) { state.episodeVideoIds }
     val activeEpisodeSkips = activeAllEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
     val activeDubbing = activeAllDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
     val activeIframeUrl = activeDubbingUrls.getOrElse(state.episodeIndex) { state.iframeUrl }
     val activeEpisode = activeEpisodeNumbers.getOrElse(state.episodeIndex) { state.episode }
-    val activeVideoId = activeEpisodeVideoIds.getOrElse(state.episodeIndex) { 0 }
     val activeSkips = activeEpisodeSkips.getOrElse(state.episodeIndex) { su.afk.yummy.tv.feature.player.PlayerSkips.Empty }
     val activeBalancerName = if (state.allBalancerNames.isNotEmpty())
         state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName }
     else state.playerName
+    val isFinalEpisode = state.isFinalAvailableEpisode(activeEpisode, activeDubbingUrls.size)
 
     val streamUrl = state.streamUrl
     val kodikBlockedError = state.kodikBlockedError
@@ -103,8 +98,10 @@ fun PlayerTvScreen(
             dubbing = activeDubbing,
             hasPrevEpisode = state.episodeIndex > 0,
             hasNextEpisode = state.episodeIndex < activeDubbingUrls.size - 1,
+            canRateTitleOnEnd = isFinalEpisode && state.animeId > 0,
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
+            onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
             allDubbingNames = activeAllDubbingNames,
             currentDubbingIndex = state.dubbingIndex,
             onDubbingSelected = { newIdx, currentPosMs ->
@@ -117,9 +114,6 @@ fun PlayerTvScreen(
             },
             skips = activeSkips,
             autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
-            canSubscribe = state.isSignedIn && activeVideoId > 0,
-            isSubscribed = activeVideoId in state.subscribedVideoIds,
-            onToggleSubscription = { onEvent(PlayerState.Event.ToggleSubscription(activeVideoId)) },
         )
         state.youtubeWebViewFallback -> YouTubeTrailerView(
             iframeUrl = activeIframeUrl,
@@ -146,4 +140,17 @@ fun PlayerTvScreen(
         }
         else -> StreamLoadingView()
     }
+}
+
+private fun PlayerState.State.isFinalAvailableEpisode(activeEpisode: String, activeDubbingSize: Int): Boolean {
+    val currentNumber = activeEpisode.toIntOrNull()
+    if (currentNumber == null) return episodeIndex >= activeDubbingSize - 1
+    val maxNumber = buildList {
+        addAll(episodeNumbers.mapNotNull { it.toIntOrNull() })
+        allDubbingEpisodeNumbers.forEach { episodes -> addAll(episodes.mapNotNull { it.toIntOrNull() }) }
+        allBalancerEpisodeNumbers.forEach { balancer ->
+            balancer.forEach { episodes -> addAll(episodes.mapNotNull { it.toIntOrNull() }) }
+        }
+    }.maxOrNull()
+    return maxNumber == null || currentNumber >= maxNumber
 }

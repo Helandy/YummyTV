@@ -23,6 +23,7 @@ import su.afk.yummy.tv.feature.details.VideosUiState
 internal fun EpisodesSection(
     state: VideosUiState,
     watchProgress: Map<String, WatchProgressEntry>,
+    restoreFocusRequest: Int,
     onVideoSelected: (AnimeVideo) -> Unit,
 ) {
     when (state) {
@@ -49,6 +50,7 @@ internal fun EpisodesSection(
         is VideosUiState.Content -> EpisodesContent(
             videos = state.videos,
             watchProgress = watchProgress,
+            restoreFocusRequest = restoreFocusRequest,
             onVideoSelected = onVideoSelected,
             modifier = Modifier.fillMaxSize(),
         )

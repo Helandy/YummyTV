@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -62,9 +63,13 @@ internal fun DetailsButtonBar(
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
+    canSubscribe: Boolean,
+    isSubscribed: Boolean,
+    restoreFocusRequest: Int,
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
+    onSubscriptionToggle: () -> Unit,
     onDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -97,6 +102,20 @@ internal fun DetailsButtonBar(
             style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
             onClick = onLibraryToggle,
         ),
+    ) + if (canSubscribe) {
+        listOf(
+            ButtonData(
+                label = stringResource(
+                    if (isSubscribed) R.string.details_unsubscribe_updates
+                    else R.string.details_subscribe_updates,
+                ),
+                style = if (isSubscribed) ButtonStyle.Outlined else ButtonStyle.Normal,
+                onClick = onSubscriptionToggle,
+            )
+        )
+    } else {
+        emptyList()
+    } + listOf(
         ButtonData(stringResource(R.string.details_full_details), ButtonStyle.Normal, onDetailsSelected),
         ButtonData(stringResource(R.string.details_episodes), ButtonStyle.Normal, onEpisodesSelected),
         ButtonData(stringResource(R.string.details_trailers), ButtonStyle.Normal, onTrailersSelected),
@@ -128,6 +147,13 @@ internal fun DetailsButtonBar(
 
     LaunchedEffect(buttons.size) {
         requestFocusedButton()
+    }
+
+    LaunchedEffect(restoreFocusRequest) {
+        if (restoreFocusRequest > 0) {
+            withFrameNanos { }
+            requestFocusedButton()
+        }
     }
 
     DisposableEffect(lifecycleOwner, buttons.size, focusedIndex) {

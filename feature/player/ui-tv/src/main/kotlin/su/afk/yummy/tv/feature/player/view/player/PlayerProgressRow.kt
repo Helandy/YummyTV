@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
@@ -42,9 +40,6 @@ internal fun PlayerProgressRow(
     currentPosition: Long,
     playFocusRequester: FocusRequester,
     onPlayPause: () -> Unit,
-    canSubscribe: Boolean,
-    isSubscribed: Boolean,
-    onToggleSubscription: () -> Unit,
     onSeekChange: (Float) -> Unit,
     onSeekFinished: () -> Unit,
     onInteraction: () -> Unit,
@@ -77,19 +72,6 @@ internal fun PlayerProgressRow(
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
         )
-        if (canSubscribe) {
-            ControlButton(
-                onClick = { onToggleSubscription(); onInteraction() },
-                onFocused = onInteraction,
-                primary = isSubscribed,
-            ) { color ->
-                Icon(
-                    imageVector = if (isSubscribed) Icons.Filled.NotificationsOff else Icons.Filled.Notifications,
-                    contentDescription = null,
-                    tint = color,
-                )
-            }
-        }
         Slider(
             value = when {
                 isSeeking -> seekProgress

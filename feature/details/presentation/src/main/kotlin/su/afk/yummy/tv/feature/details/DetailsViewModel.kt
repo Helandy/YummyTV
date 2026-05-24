@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.account.UserListsRepository
+import su.afk.yummy.tv.domain.account.VideoSubscriptionRepository
 import su.afk.yummy.tv.domain.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
@@ -51,6 +52,7 @@ class DetailsViewModel @AssistedInject constructor(
     private val settingsStore: SettingsStore,
     private val animeExtrasRepository: AnimeExtrasRepository,
     private val userListsRepository: UserListsRepository,
+    private val videoSubscriptionRepository: VideoSubscriptionRepository,
     private val stringProvider: StringProvider,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
@@ -75,6 +77,16 @@ class DetailsViewModel @AssistedInject constructor(
         watchProgressStore.observeAll()
             .onEach { entries -> setState { copy(watchProgress = entries.associateBy { it.episodeUrl }) } }
             .launchIn(viewModelScope)
+        settingsStore.yaniAccessToken
+            .onEach { token ->
+                setState {
+                    copy(
+                        isSignedIn = token.isNotBlank(),
+                        isSubscribed = if (token.isBlank()) false else isSubscribed,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: DetailsState.Event) {
@@ -94,16 +106,14 @@ class DetailsViewModel @AssistedInject constructor(
             DetailsState.Event.SimilarSelected -> nav.navigate(detailsNavigator.getSimilarDest(animeId))
             DetailsState.Event.ViewingOrderSelected -> nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
             DetailsState.Event.ScreenshotsSelected -> nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
-            DetailsState.Event.RatingScreenSelected -> setState { copy(showRatingScreen = true) }
-            DetailsState.Event.RatingScreenDismissed -> setState { copy(showRatingScreen = false) }
+            DetailsState.Event.RatingScreenSelected -> nav.navigate(detailsNavigator.getRatingDest(animeId))
             DetailsState.Event.LibraryToggled -> viewModelScope.launch { toggleLibrary() }
             DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
             is DetailsState.Event.LibraryListSelected -> viewModelScope.launch { addToLibrary(event.list) }
             DetailsState.Event.PosterClicked -> setState { copy(showPosterFullscreen = true) }
             DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
-            is DetailsState.Event.RatingSelected -> setRating(event.rating)
-            DetailsState.Event.RatingDeleted -> deleteRating()
             is DetailsState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            DetailsState.Event.SubscriptionToggled -> toggleSubscription()
         }
     }
 
@@ -138,32 +148,10 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private suspend fun loadExtras() {
-        runCatching { animeExtrasRepository.getRatingSummary(animeId) }
-            .onSuccess { setState { copy(ratingSummary = it) } }
-        runCatching { animeExtrasRepository.getListStats(animeId) }
-            .onSuccess { setState { copy(listStats = it) } }
         runCatching { animeExtrasRepository.getCollections(animeId) }
             .onSuccess { setState { copy(collections = it) } }
         runCatching { userListsRepository.getAnimeListState(animeId) }
-            .onSuccess { setState { copy(selectedUserRating = it?.rating?.toInt(), libraryList = it?.list) } }
-    }
-
-    private fun setRating(rating: Int) {
-        val previous = currentState.selectedUserRating
-        setState { copy(selectedUserRating = rating) }
-        viewModelScope.launch {
-            val result = runCatching { animeExtrasRepository.setRating(animeId, rating) }
-            if (result.isFailure) setState { copy(selectedUserRating = previous) }
-        }
-    }
-
-    private fun deleteRating() {
-        val previous = currentState.selectedUserRating
-        setState { copy(selectedUserRating = null) }
-        viewModelScope.launch {
-            val result = runCatching { animeExtrasRepository.deleteRating(animeId) }
-            if (result.isFailure) setState { copy(selectedUserRating = previous) }
-        }
+            .onSuccess { setState { copy(libraryList = it?.list) } }
     }
 
     private suspend fun loadDetails() {
@@ -180,7 +168,12 @@ class DetailsViewModel @AssistedInject constructor(
         setState { copy(videosState = VideosUiState.Loading) }
         runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
-                setState { copy(videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos)) }
+                setState {
+                    copy(
+                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos),
+                        subscriptionVideoId = videos.subscriptionVideoId(),
+                    )
+                }
                 if (currentState.isWatchLaunchPending) {
                     openInitialVideo(videos)
                 }
@@ -242,6 +235,17 @@ class DetailsViewModel @AssistedInject constructor(
             ?.value
             ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
             ?: source.firstOrNull()
+    }
+
+    private fun toggleSubscription() {
+        val videoId = currentState.subscriptionVideoId
+        if (videoId <= 0 || !currentState.isSignedIn) return
+        val wasSubscribed = currentState.isSubscribed
+        setState { copy(isSubscribed = !wasSubscribed) }
+        viewModelScope.launch {
+            val result = runCatching { videoSubscriptionRepository.setSubscribed(videoId, !wasSubscribed) }
+            if (result.isFailure) setState { copy(isSubscribed = wasSubscribed) }
+        }
     }
 
     private fun showBalancerPicker(video: AnimeVideo) {
@@ -369,3 +373,12 @@ private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
 
 private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
     this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }
+
+private fun List<AnimeVideo>.subscriptionVideoId(): Int =
+    filter { it.id > 0 }
+        .maxWithOrNull(
+            compareBy<AnimeVideo> { it.episode.toIntOrNull() ?: 0 }
+                .thenBy { it.iframeUrl.contains("kodik", ignoreCase = true) || it.player.contains("kodik", ignoreCase = true) }
+                .thenBy { it.views ?: 0 }
+        )
+        ?.id ?: 0

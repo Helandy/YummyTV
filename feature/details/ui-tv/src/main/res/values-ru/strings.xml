@@ -36,6 +36,8 @@
     <string name="details_watch_not_found">Видео не найдено</string>
     <string name="details_in_library">★  В списке</string>
     <string name="details_add_library">☆  В список</string>
+    <string name="details_subscribe_updates">Подписаться на новые серии</string>
+    <string name="details_unsubscribe_updates">Отписаться от новых серий</string>
     <string name="details_library_picker_title">Добавить в список</string>
     <string name="details_library_picker_add">Добавить</string>
     <string name="details_library_list_watching">Смотрю</string>
