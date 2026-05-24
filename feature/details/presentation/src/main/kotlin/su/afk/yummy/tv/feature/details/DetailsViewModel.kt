@@ -138,6 +138,7 @@ class DetailsViewModel @AssistedInject constructor(
                 animeId = details.id,
                 title = details.title,
                 posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small },
+                listId = list.id,
             )
         )
         runCatching { userListsRepository.setAnimeList(animeId, list) }

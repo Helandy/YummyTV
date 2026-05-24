@@ -12,6 +12,9 @@ interface LibraryDao {
     @Query("SELECT * FROM library ORDER BY addedAt DESC")
     fun observeAll(): Flow<List<LibraryEntry>>
 
+    @Query("SELECT * FROM library ORDER BY addedAt DESC")
+    suspend fun getAll(): List<LibraryEntry>
+
     @Query("SELECT EXISTS(SELECT 1 FROM library WHERE animeId = :animeId)")
     fun observeIsInLibrary(animeId: Int): Flow<Boolean>
 

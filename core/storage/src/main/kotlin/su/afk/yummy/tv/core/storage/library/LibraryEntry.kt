@@ -9,4 +9,5 @@ data class LibraryEntry(
     val title: String,
     val posterUrl: String?,
     val addedAt: Long = System.currentTimeMillis(),
+    val listId: Int = 0,
 )

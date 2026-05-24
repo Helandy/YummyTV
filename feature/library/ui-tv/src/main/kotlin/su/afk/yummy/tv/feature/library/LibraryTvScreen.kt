@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
+import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
 import su.afk.yummy.tv.feature.library.view.LibrarySidePanel
@@ -49,15 +50,16 @@ fun LibraryTvScreen(
     var continueWatchingRestoreFirstToken by rememberSaveable { mutableIntStateOf(0) }
     val hasFocusableGridContent = when (state.selectedTab) {
         LibraryTab.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
-        LibraryTab.WATCHING -> if (!state.isSignedIn) {
-            state.items.isNotEmpty()
-        } else {
-            state.remoteItems[state.selectedTab].orEmpty().isNotEmpty()
-        }
         LibraryTab.PLANNED,
         LibraryTab.COMPLETED,
+        LibraryTab.DROPPED,
         LibraryTab.POSTPONED,
-        LibraryTab.DROPPED -> state.remoteItems[state.selectedTab].orEmpty().isNotEmpty()
+        LibraryTab.WATCHING -> if (state.isSignedIn) {
+            state.remoteItems[state.selectedTab].orEmpty().isNotEmpty()
+        } else {
+            val localListId = state.selectedTab.userAnimeListId()
+            localListId != null && state.items.any { it.listId == localListId }
+        }
     }
 
     DisposableEffect(gridFocusRequester, hasFocusableGridContent, registerPreferredContentFocusRequester) {
@@ -110,9 +112,10 @@ fun LibraryTvScreen(
             LibraryTab.COMPLETED,
             LibraryTab.POSTPONED,
             LibraryTab.DROPPED -> {
-                if (!state.isSignedIn && state.selectedTab == LibraryTab.WATCHING) {
+                if (!state.isSignedIn) {
+                    val localListId = state.selectedTab.userAnimeListId()
                     LibraryGrid(
-                        items = state.items,
+                        items = state.items.filter { it.listId == localListId },
                         focusedItemId = state.focusedItemId,
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
@@ -158,4 +161,13 @@ fun LibraryTvScreen(
             )
         }
     }
+}
+
+private fun LibraryTab.userAnimeListId(): Int? = when (this) {
+    LibraryTab.CONTINUE_WATCHING -> null
+    LibraryTab.WATCHING -> UserAnimeList.WATCHING.id
+    LibraryTab.PLANNED -> UserAnimeList.PLANNED.id
+    LibraryTab.COMPLETED -> UserAnimeList.COMPLETED.id
+    LibraryTab.POSTPONED -> UserAnimeList.POSTPONED.id
+    LibraryTab.DROPPED -> UserAnimeList.DROPPED.id
 }

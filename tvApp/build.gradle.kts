@@ -29,6 +29,12 @@ android {
             isShrinkResources = false
         }
 
+        create("debugRu") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+            buildConfigField("Boolean", "BLOCKED_TIMEOUT", "true")
+        }
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true

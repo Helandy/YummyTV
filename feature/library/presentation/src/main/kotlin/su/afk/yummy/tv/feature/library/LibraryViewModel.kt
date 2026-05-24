@@ -12,11 +12,13 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.UserAnimeList
+import su.afk.yummy.tv.domain.account.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.UserListsRepository
 import su.afk.yummy.tv.domain.account.VideoWatchesRepository
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
@@ -103,18 +105,45 @@ class LibraryViewModel @Inject constructor(
     private fun loadRemoteLists(userId: Int) {
         viewModelScope.launch {
             runCatching {
-                mapOf(
-                    LibraryTab.WATCHING to userListsRepository.getUserList(userId, UserAnimeList.WATCHING),
-                    LibraryTab.PLANNED to userListsRepository.getUserList(userId, UserAnimeList.PLANNED),
-                    LibraryTab.COMPLETED to userListsRepository.getUserList(userId, UserAnimeList.COMPLETED),
-                    LibraryTab.POSTPONED to userListsRepository.getUserList(userId, UserAnimeList.POSTPONED),
-                    LibraryTab.DROPPED to userListsRepository.getUserList(userId, UserAnimeList.DROPPED),
-                )
+                val remote = fetchRemoteLists(userId)
+                val syncResult = syncLocalMissingToRemote(remote)
+                val currentRemote = if (syncResult.syncedAny) fetchRemoteLists(userId) else remote
+                currentRemote to syncResult.error
             }.fold(
-                onSuccess = { remote -> setState { copy(remoteItems = remote, remoteError = null) } },
+                onSuccess = { (remote, syncError) -> setState { copy(remoteItems = remote, remoteError = syncError) } },
                 onFailure = { setState { copy(remoteError = it.message) } },
             )
         }
+    }
+
+    private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> =
+        mapOf(
+            LibraryTab.WATCHING to userListsRepository.getUserList(userId, UserAnimeList.WATCHING),
+            LibraryTab.PLANNED to userListsRepository.getUserList(userId, UserAnimeList.PLANNED),
+            LibraryTab.COMPLETED to userListsRepository.getUserList(userId, UserAnimeList.COMPLETED),
+            LibraryTab.POSTPONED to userListsRepository.getUserList(userId, UserAnimeList.POSTPONED),
+            LibraryTab.DROPPED to userListsRepository.getUserList(userId, UserAnimeList.DROPPED),
+        )
+
+    private suspend fun syncLocalMissingToRemote(
+        remote: Map<LibraryTab, List<UserAnimeListItem>>,
+    ): LocalLibrarySyncResult {
+        val remoteAnimeIds = remote.values.flatten().map { it.animeId }.toSet()
+        val localMissing = libraryStore.getAll().filterNot { it.animeId in remoteAnimeIds }
+        var syncedAny = false
+        var firstError: String? = null
+
+        localMissing.forEach { entry ->
+            val list = entry.userAnimeList()
+            runCatching {
+                userListsRepository.setAnimeList(entry.animeId, list)
+            }.fold(
+                onSuccess = { syncedAny = true },
+                onFailure = { if (firstError == null) firstError = it.message },
+            )
+        }
+
+        return LocalLibrarySyncResult(syncedAny = syncedAny, error = firstError)
     }
 
     private fun removeRemoteEntry(event: LibraryState.Event.RemoveRemoteEntry) {
@@ -183,6 +212,14 @@ class LibraryViewModel @Inject constructor(
         }
     }
 }
+
+private data class LocalLibrarySyncResult(
+    val syncedAny: Boolean,
+    val error: String?,
+)
+
+private fun LibraryEntry.userAnimeList(): UserAnimeList =
+    UserAnimeList.entries.firstOrNull { it.id == listId } ?: UserAnimeList.WATCHING
 
 private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
     opening = opening.toPlayerSkipSegment(),
