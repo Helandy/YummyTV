@@ -30,4 +30,5 @@ data class YaniScheduleEpisodesDto(
     val aired: Int? = null,
     val count: Int? = null,
     @SerialName("next_date") val nextDate: Long? = null,
+    @SerialName("prev_date") val prevDate: Long? = null,
 )

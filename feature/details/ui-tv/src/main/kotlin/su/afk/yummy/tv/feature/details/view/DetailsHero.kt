@@ -51,6 +51,7 @@ import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.VideosUiState
 
 @Composable
 internal fun DetailsHero(
@@ -58,6 +59,7 @@ internal fun DetailsHero(
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
     libraryList: UserAnimeList?,
+    videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     ratingSummary: AnimeRatingSummary,
@@ -143,6 +145,7 @@ internal fun DetailsHero(
                     details = details,
                     isInLibrary = isInLibrary,
                     libraryList = libraryList,
+                    videosState = videosState,
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     firstFocusRequester = downFocusRequester,

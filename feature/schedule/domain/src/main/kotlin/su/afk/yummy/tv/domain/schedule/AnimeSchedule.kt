@@ -12,6 +12,7 @@ data class AnimeScheduleItem(
     val nextDateEpochSeconds: Long?,
     val airedEpisodes: Int?,
     val totalEpisodes: Int?,
+    val previousDateEpochSeconds: Long? = null,
 )
 
 interface AnimeScheduleRepository {

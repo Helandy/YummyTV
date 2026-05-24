@@ -24,7 +24,7 @@ class YaniScheduleRepository(
 
     override suspend fun getSchedule(): List<AnimeScheduleDay> =
         cache.getOrFetch(
-            key = "anime_schedule",
+            key = "anime_schedule_v2",
             ttlMs = SCHEDULE_TTL_MS,
             serialize = { dto: YaniScheduleResponseDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
@@ -42,6 +42,7 @@ private fun YaniScheduleAnimeDto.toScheduleItem(): AnimeScheduleItem? {
         title = title,
         posterUrl = poster?.mega?.toHttpsUrl() ?: poster?.big?.toHttpsUrl() ?: poster?.medium?.toHttpsUrl() ?: poster?.fullsize?.toHttpsUrl() ?: poster?.small?.toHttpsUrl(),
         nextDateEpochSeconds = episodes?.nextDate?.takeIf { it > 0 },
+        previousDateEpochSeconds = episodes?.prevDate?.takeIf { it > 0 },
         airedEpisodes = episodes?.aired?.takeIf { it > 0 },
         totalEpisodes = episodes?.count?.takeIf { it > 0 },
     )

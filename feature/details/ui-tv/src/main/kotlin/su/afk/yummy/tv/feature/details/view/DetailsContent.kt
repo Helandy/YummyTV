@@ -13,10 +13,12 @@ import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
+import su.afk.yummy.tv.feature.details.VideosUiState
 
 @Composable
 internal fun DetailsContent(
     details: AnimeDetails,
+    videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     isInLibrary: Boolean,
@@ -46,6 +48,7 @@ internal fun DetailsContent(
             downFocusRequester = barFocusRequester,
             isInLibrary = isInLibrary,
             libraryList = libraryList,
+            videosState = videosState,
             isWatchLoading = isWatchLoading,
             watchProgress = watchProgress,
             ratingSummary = ratingSummary,

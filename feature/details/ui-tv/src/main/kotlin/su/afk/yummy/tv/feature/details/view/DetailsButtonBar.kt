@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.UserAnimeList
 import su.afk.yummy.tv.domain.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.VideosUiState
 
 private enum class ButtonStyle { Filled, Outlined, Normal }
 
@@ -58,6 +59,7 @@ internal fun DetailsButtonBar(
     details: AnimeDetails,
     isInLibrary: Boolean,
     libraryList: UserAnimeList?,
+    videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     firstFocusRequester: FocusRequester,
@@ -78,6 +80,7 @@ internal fun DetailsButtonBar(
         .maxByOrNull { it.updatedAt }
     val watchLabel = when {
         isWatchLoading -> stringResource(R.string.details_loading_episodes)
+        videosState is VideosUiState.Empty -> stringResource(R.string.details_watch_not_found)
         resumeEntry != null && resumeEntry.episode.isNotBlank() ->
             stringResource(R.string.details_continue_episode, resumeEntry.episode)
         else -> stringResource(R.string.details_watch)

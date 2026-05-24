@@ -2,6 +2,6 @@
 <resources>
     <string name="schedule_loading">Загружаем расписание</string>
     <string name="schedule_empty">Расписание пустое</string>
-    <string name="schedule_aired">вышло: %1$d</string>
-    <string name="schedule_total">всего: %1$d</string>
+    <string name="schedule_episode_aired">%1$d серия уже вышла</string>
+    <string name="schedule_episode_future">%1$d серия выйдет через %2$s</string>
 </resources>

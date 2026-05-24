@@ -33,6 +33,7 @@
     <string name="details_episodes_count_short">%1$d ep.</string>
     <string name="details_continue_episode">▶  Continue · Episode %1$s</string>
     <string name="details_watch">▶  Watch</string>
+    <string name="details_watch_not_found">Video not found</string>
     <string name="details_in_library">★  In library</string>
     <string name="details_add_library">☆  Add to library</string>
     <string name="details_library_picker_title">Add to list</string>

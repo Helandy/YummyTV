@@ -118,6 +118,7 @@ fun DetailsTvScreen(
             )
             details != null -> DetailsContent(
                 details = details,
+                videosState = state.videosState,
                 isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
                 watchProgress = state.watchProgress,
                 isInLibrary = state.isInLibrary,
