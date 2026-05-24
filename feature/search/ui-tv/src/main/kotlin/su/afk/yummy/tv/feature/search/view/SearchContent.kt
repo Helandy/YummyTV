@@ -1,21 +1,31 @@
 package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -32,10 +42,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +65,11 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.domain.anime.AnimePreview
+import su.afk.yummy.tv.domain.search.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.SearchFilters
+import su.afk.yummy.tv.domain.search.SearchGenre
 import su.afk.yummy.tv.domain.search.SearchItem
+import su.afk.yummy.tv.domain.search.SearchSort
 import su.afk.yummy.tv.feature.search.R
 
 @Composable
@@ -60,11 +80,30 @@ internal fun SearchContent(
     canLoadMore: Boolean,
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
+    filters: SearchFilters,
+    draftFilters: SearchFilters,
+    filterOptions: SearchFilterOptions,
+    isFilterPanelOpen: Boolean,
+    isLoadingFilterOptions: Boolean,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
     onItemSelected: (SearchItem) -> Unit,
     onItemFocused: (Int) -> Unit,
     onLoadMore: () -> Unit,
+    onOpenFilters: () -> Unit,
+    onCloseFilters: () -> Unit,
+    onApplyFilters: () -> Unit,
+    onResetFilters: () -> Unit,
+    onGenreToggled: (String) -> Unit,
+    onExcludedGenreToggled: (String) -> Unit,
+    onTypeToggled: (String) -> Unit,
+    onStatusToggled: (String) -> Unit,
+    onSeasonToggled: (String) -> Unit,
+    onAgeRatingToggled: (Int) -> Unit,
+    onFromYearChanged: (Int?) -> Unit,
+    onToYearChanged: (Int?) -> Unit,
+    onSortSelected: (SearchSort) -> Unit,
+    onSortDirectionToggled: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -86,6 +125,7 @@ internal fun SearchContent(
         val idx = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }?.coerceAtLeast(0) ?: 0
         mutableIntStateOf(idx)
     }
+    var searchEditing by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
 
@@ -99,26 +139,86 @@ internal fun SearchContent(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChanged,
-            placeholder = { Text(stringResource(R.string.search_placeholder)) },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {
-                keyboardController?.hide()
-                onSearchSubmitted()
-            }),
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = TvScreenPadding.Horizontal, vertical = 12.dp),
-        )
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChanged,
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                readOnly = !searchEditing,
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = {
+                    keyboardController?.hide()
+                    searchEditing = false
+                    onSearchSubmitted()
+                }),
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged { if (!it.isFocused) searchEditing = false }
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        when (event.key) {
+                            Key.DirectionCenter,
+                            Key.Enter,
+                            Key.NumPadEnter,
+                            -> {
+                                if (!searchEditing) {
+                                    searchEditing = true
+                                    keyboardController?.show()
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            Key.Back -> {
+                                if (searchEditing) {
+                                    keyboardController?.hide()
+                                    searchEditing = false
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            else -> false
+                        }
+                    },
+            )
+            FilterButton(
+                activeCount = filters.activeCount,
+                onClick = onOpenFilters,
+            )
+        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
+                isFilterPanelOpen -> FilterPanel(
+                    draftFilters = draftFilters,
+                    filterOptions = filterOptions,
+                    isLoadingFilterOptions = isLoadingFilterOptions,
+                    onClose = onCloseFilters,
+                    onApply = onApplyFilters,
+                    onReset = onResetFilters,
+                    onGenreToggled = onGenreToggled,
+                    onExcludedGenreToggled = onExcludedGenreToggled,
+                    onTypeToggled = onTypeToggled,
+                    onStatusToggled = onStatusToggled,
+                    onSeasonToggled = onSeasonToggled,
+                    onAgeRatingToggled = onAgeRatingToggled,
+                    onFromYearChanged = onFromYearChanged,
+                    onToYearChanged = onToYearChanged,
+                    onSortSelected = onSortSelected,
+                    onSortDirectionToggled = onSortDirectionToggled,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
                 items.isEmpty() && isLoading -> TvLoadingScreen()
-                items.isEmpty() && query.isNotBlank() -> {
+                items.isEmpty() && (query.isNotBlank() || !filters.isEmpty) -> {
                     Text(
                         text = stringResource(R.string.search_empty),
                         style = MaterialTheme.typography.bodyLarge,
@@ -209,4 +309,535 @@ internal fun SearchContent(
             }
         }
     }
+}
+
+@Composable
+private fun FilterButton(
+    activeCount: Int,
+    onClick: () -> Unit,
+) {
+    val label = if (activeCount > 0) {
+        stringResource(R.string.search_filters_with_count, activeCount)
+    } else {
+        stringResource(R.string.search_filters)
+    }
+    SelectableRow(
+        label = label,
+        selected = activeCount > 0,
+        onClick = onClick,
+        modifier = Modifier.widthIn(min = 148.dp),
+    )
+}
+
+@Composable
+private fun FilterPanel(
+    draftFilters: SearchFilters,
+    filterOptions: SearchFilterOptions,
+    isLoadingFilterOptions: Boolean,
+    onClose: () -> Unit,
+    onApply: () -> Unit,
+    onReset: () -> Unit,
+    onGenreToggled: (String) -> Unit,
+    onExcludedGenreToggled: (String) -> Unit,
+    onTypeToggled: (String) -> Unit,
+    onStatusToggled: (String) -> Unit,
+    onSeasonToggled: (String) -> Unit,
+    onAgeRatingToggled: (Int) -> Unit,
+    onFromYearChanged: (Int?) -> Unit,
+    onToYearChanged: (Int?) -> Unit,
+    onSortSelected: (SearchSort) -> Unit,
+    onSortDirectionToggled: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var genrePickerMode by remember { mutableStateOf<GenrePickerMode?>(null) }
+    var restoreGenreButtonMode by remember { mutableStateOf<GenrePickerMode?>(null) }
+    val currentGenrePickerMode = genrePickerMode
+    val includeGenresFocusRequester = remember { FocusRequester() }
+    val excludeGenresFocusRequester = remember { FocusRequester() }
+    val genreBackFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(currentGenrePickerMode, restoreGenreButtonMode) {
+        val pickerMode = currentGenrePickerMode
+        if (pickerMode != null) {
+            runCatching { genreBackFocusRequester.requestFocus() }
+            return@LaunchedEffect
+        }
+
+        when (restoreGenreButtonMode) {
+            GenrePickerMode.INCLUDE -> runCatching { includeGenresFocusRequester.requestFocus() }
+            GenrePickerMode.EXCLUDE -> runCatching { excludeGenresFocusRequester.requestFocus() }
+            null -> Unit
+        }
+        restoreGenreButtonMode = null
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .widthIn(max = 920.dp)
+            .padding(horizontal = TvScreenPadding.Horizontal, vertical = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(18.dp),
+            )
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f))
+            .padding(horizontal = 24.dp, vertical = 20.dp)
+            .verticalScroll(rememberScrollState())
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown || event.key != Key.Back) {
+                    return@onPreviewKeyEvent false
+                }
+                if (currentGenrePickerMode != null) {
+                    restoreGenreButtonMode = currentGenrePickerMode
+                    genrePickerMode = null
+                } else {
+                    onClose()
+                }
+                true
+            }
+            .focusGroup(),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        if (currentGenrePickerMode != null) {
+            GenrePickerScreen(
+                title = when (currentGenrePickerMode) {
+                    GenrePickerMode.INCLUDE -> stringResource(R.string.search_filter_genres)
+                    GenrePickerMode.EXCLUDE -> stringResource(R.string.search_filter_exclude_genres)
+                },
+                selectedIds = when (currentGenrePickerMode) {
+                    GenrePickerMode.INCLUDE -> draftFilters.genres
+                    GenrePickerMode.EXCLUDE -> draftFilters.excludedGenres
+                },
+                filterOptions = filterOptions,
+                onGenreToggled = when (currentGenrePickerMode) {
+                    GenrePickerMode.INCLUDE -> onGenreToggled
+                    GenrePickerMode.EXCLUDE -> onExcludedGenreToggled
+                },
+                backFocusRequester = genreBackFocusRequester,
+                onBack = {
+                    restoreGenreButtonMode = currentGenrePickerMode
+                    genrePickerMode = null
+                },
+            )
+            return@Column
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.search_filters),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                SelectableRow(
+                    label = stringResource(R.string.search_filters_reset),
+                    selected = false,
+                    onClick = onReset,
+                )
+                SelectableRow(
+                    label = stringResource(R.string.search_filters_apply),
+                    selected = true,
+                    onClick = onApply,
+                )
+                SelectableRow(
+                    label = stringResource(R.string.search_filters_close),
+                    selected = false,
+                    onClick = onClose,
+                )
+            }
+        }
+
+        if (isLoadingFilterOptions) {
+            Text(
+                text = stringResource(R.string.search_filters_loading),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_sort)) {
+            ChipFlow {
+                SearchSort.entries.forEach { sort ->
+                    SelectableRow(
+                        label = sort.label(),
+                        selected = draftFilters.sort == sort,
+                        onClick = { onSortSelected(sort) },
+                    )
+                }
+                SelectableRow(
+                    label = if (draftFilters.sortForward) {
+                        stringResource(R.string.search_filter_sort_forward)
+                    } else {
+                        stringResource(R.string.search_filter_sort_backward)
+                    },
+                    selected = !draftFilters.sortForward,
+                    onClick = onSortDirectionToggled,
+                )
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_year)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                YearField(
+                    label = stringResource(R.string.search_filter_year_from),
+                    value = draftFilters.fromYear,
+                    onValueChanged = onFromYearChanged,
+                    modifier = Modifier.weight(1f),
+                )
+                YearField(
+                    label = stringResource(R.string.search_filter_year_to),
+                    value = draftFilters.toYear,
+                    onValueChanged = onToYearChanged,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_type)) {
+            ChipFlow {
+                filterOptions.types.forEach { type ->
+                    SelectableRow(
+                        label = type.title,
+                        selected = type.id in draftFilters.types,
+                        onClick = { onTypeToggled(type.id) },
+                    )
+                }
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_status)) {
+            ChipFlow {
+                statusOptions().forEach { option ->
+                    SelectableRow(
+                        label = option.label,
+                        selected = option.value in draftFilters.statuses,
+                        onClick = { onStatusToggled(option.value) },
+                    )
+                }
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_season)) {
+            ChipFlow {
+                seasonOptions().forEach { option ->
+                    SelectableRow(
+                        label = option.label,
+                        selected = option.value in draftFilters.seasons,
+                        onClick = { onSeasonToggled(option.value) },
+                    )
+                }
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_age)) {
+            ChipFlow {
+                ageOptions().forEach { option ->
+                    SelectableRow(
+                        label = option.label,
+                        selected = option.value in draftFilters.ageRatings,
+                        onClick = { onAgeRatingToggled(option.value) },
+                    )
+                }
+            }
+        }
+
+        FilterSection(title = stringResource(R.string.search_filter_genre_screen_title)) {
+            ChipFlow {
+                SelectableRow(
+                    label = stringResource(R.string.search_filter_open_genres, draftFilters.genres.size),
+                    selected = draftFilters.genres.isNotEmpty(),
+                    onClick = { genrePickerMode = GenrePickerMode.INCLUDE },
+                    modifier = Modifier.focusRequester(includeGenresFocusRequester),
+                )
+                SelectableRow(
+                    label = stringResource(R.string.search_filter_open_exclude_genres, draftFilters.excludedGenres.size),
+                    selected = draftFilters.excludedGenres.isNotEmpty(),
+                    onClick = { genrePickerMode = GenrePickerMode.EXCLUDE },
+                    modifier = Modifier.focusRequester(excludeGenresFocusRequester),
+                )
+            }
+        }
+    }
+}
+
+private enum class GenrePickerMode {
+    INCLUDE,
+    EXCLUDE,
+}
+
+@Composable
+private fun FilterSection(
+    title: String,
+    content: @Composable () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        content()
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+    }
+}
+
+@Composable
+private fun ChipFlow(content: @Composable () -> Unit) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun GenresSection(
+    title: String,
+    selectedIds: Set<String>,
+    filterOptions: SearchFilterOptions,
+    onGenreToggled: (String) -> Unit,
+) {
+    FilterSection(title = title) {
+        val genresByGroup = filterOptions.genres.groupBy { it.groupId }
+        filterOptions.genreGroups.forEach { group ->
+            val genres = genresByGroup[group.id].orEmpty()
+            if (genres.isNotEmpty()) {
+                Text(
+                    text = group.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                ChipFlow {
+                    genres.forEach { genre ->
+                        GenreRow(
+                            genre = genre,
+                            selected = genre.id in selectedIds,
+                            onClick = { onGenreToggled(genre.id) },
+                        )
+                    }
+                }
+            }
+        }
+        val ungroupedGenres = filterOptions.genres
+            .filter { genre -> filterOptions.genreGroups.none { it.id == genre.groupId } }
+        if (ungroupedGenres.isNotEmpty()) {
+            ChipFlow {
+                ungroupedGenres.forEach { genre ->
+                    GenreRow(
+                        genre = genre,
+                        selected = genre.id in selectedIds,
+                        onClick = { onGenreToggled(genre.id) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GenrePickerScreen(
+    title: String,
+    selectedIds: Set<String>,
+    filterOptions: SearchFilterOptions,
+    onGenreToggled: (String) -> Unit,
+    backFocusRequester: FocusRequester,
+    onBack: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.search_filter_selected_count, selectedIds.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        SelectableRow(
+            label = stringResource(R.string.search_filters_back),
+            selected = false,
+            onClick = onBack,
+            modifier = Modifier.focusRequester(backFocusRequester),
+        )
+    }
+    GenresSection(
+        title = stringResource(R.string.search_filter_genre_screen_title),
+        selectedIds = selectedIds,
+        filterOptions = filterOptions,
+        onGenreToggled = onGenreToggled,
+    )
+}
+
+@Composable
+private fun GenreRow(
+    genre: SearchGenre,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    SelectableRow(
+        label = genre.title,
+        selected = selected,
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun YearField(
+    label: String,
+    value: Int?,
+    onValueChanged: (Int?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var editing by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = value?.toString().orEmpty(),
+        onValueChange = { text ->
+            onValueChanged(text.filter { it.isDigit() }.take(4).toIntOrNull())
+        },
+        label = { Text(label) },
+        readOnly = !editing,
+        singleLine = true,
+        shape = RoundedCornerShape(10.dp),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        modifier = modifier
+            .onFocusChanged { if (!it.isFocused) editing = false }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionCenter,
+                    Key.Enter,
+                    Key.NumPadEnter,
+                    -> {
+                        if (!editing) {
+                            editing = true
+                            keyboardController?.show()
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    Key.Back -> {
+                        if (editing) {
+                            keyboardController?.hide()
+                            editing = false
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    else -> false
+                }
+            },
+    )
+}
+
+@Composable
+private fun SelectableRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(10.dp)
+    val borderColor = when {
+        focused -> MaterialTheme.colorScheme.primary
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+        else -> Color.Transparent
+    }
+    val backgroundColor = when {
+        selected && focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+        focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+        else -> Color.Transparent
+    }
+
+    Row(
+        modifier = modifier
+            .clip(shape)
+            .border(width = 2.dp, color = borderColor, shape = shape)
+            .background(backgroundColor, shape)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = if (selected) stringResource(R.string.search_filter_selected, label) else label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+        )
+    }
+}
+
+private data class StringOption(
+    val value: String,
+    val label: String,
+)
+
+private data class IntOption(
+    val value: Int,
+    val label: String,
+)
+
+@Composable
+private fun statusOptions(): List<StringOption> = listOf(
+    StringOption("released", stringResource(R.string.search_filter_status_released)),
+    StringOption("ongoing", stringResource(R.string.search_filter_status_ongoing)),
+    StringOption("announcement", stringResource(R.string.search_filter_status_announcement)),
+)
+
+@Composable
+private fun seasonOptions(): List<StringOption> = listOf(
+    StringOption("winter", stringResource(R.string.search_filter_season_winter)),
+    StringOption("spring", stringResource(R.string.search_filter_season_spring)),
+    StringOption("summer", stringResource(R.string.search_filter_season_summer)),
+    StringOption("fall", stringResource(R.string.search_filter_season_fall)),
+)
+
+@Composable
+private fun ageOptions(): List<IntOption> = listOf(
+    IntOption(1, stringResource(R.string.search_filter_age_pg)),
+    IntOption(2, stringResource(R.string.search_filter_age_pg13)),
+    IntOption(3, stringResource(R.string.search_filter_age_r17)),
+    IntOption(4, stringResource(R.string.search_filter_age_r)),
+    IntOption(5, stringResource(R.string.search_filter_age_rx)),
+)
+
+@Composable
+private fun SearchSort.label(): String = when (this) {
+    SearchSort.RELEVANCE -> stringResource(R.string.search_filter_sort_relevance)
+    SearchSort.TITLE -> stringResource(R.string.search_filter_sort_title)
+    SearchSort.YEAR -> stringResource(R.string.search_filter_sort_year)
+    SearchSort.RATING -> stringResource(R.string.search_filter_sort_rating)
+    SearchSort.RATING_COUNTERS -> stringResource(R.string.search_filter_sort_rating_counters)
+    SearchSort.VIEWS -> stringResource(R.string.search_filter_sort_views)
+    SearchSort.TOP -> stringResource(R.string.search_filter_sort_top)
+    SearchSort.RANDOM -> stringResource(R.string.search_filter_sort_random)
+    SearchSort.ID -> stringResource(R.string.search_filter_sort_id)
 }

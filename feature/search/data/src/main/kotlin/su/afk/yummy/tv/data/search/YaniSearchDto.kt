@@ -17,6 +17,52 @@ data class YaniSearchItemDto(
 )
 
 @Serializable
+data class YaniSearchGenresResponseDto(
+    val response: YaniSearchGenresDto = YaniSearchGenresDto(),
+)
+
+@Serializable
+data class YaniSearchGenresDto(
+    val genres: List<YaniSearchGenreDto> = emptyList(),
+    val groups: List<YaniSearchGenreGroupDto> = emptyList(),
+)
+
+@Serializable
+data class YaniSearchGenreDto(
+    val title: String = "",
+    val value: Int? = null,
+    @SerialName("group_id") val groupId: Int? = null,
+)
+
+@Serializable
+data class YaniSearchGenreGroupDto(
+    val title: String = "",
+    val id: Int? = null,
+)
+
+@Serializable
+data class YaniSearchCatalogResponseDto(
+    val response: YaniSearchCatalogDto = YaniSearchCatalogDto(),
+)
+
+@Serializable
+data class YaniSearchCatalogDto(
+    val types: List<YaniSearchTypeCountDto> = emptyList(),
+)
+
+@Serializable
+data class YaniSearchTypeCountDto(
+    val type: YaniSearchTypeDto? = null,
+)
+
+@Serializable
+data class YaniSearchTypeDto(
+    val name: String = "",
+    val alias: String? = null,
+    val value: Int? = null,
+)
+
+@Serializable
 data class YaniSearchPosterDto(
     val small: String? = null,
     val medium: String? = null,
