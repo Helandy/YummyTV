@@ -10,6 +10,8 @@
     <string name="details_close">Close</string>
     <string name="details_error_title">Could not load</string>
     <string name="retry">Retry</string>
+    <string name="details_back">Back</string>
+    <string name="details_region_blocked">Content is unavailable in your region</string>
     <string name="details_balancer_title">Episode %1$s · Balancer</string>
     <string name="details_balancer_unsupported_hint">Will be available later</string>
     <string name="details_balancer_open">Open</string>

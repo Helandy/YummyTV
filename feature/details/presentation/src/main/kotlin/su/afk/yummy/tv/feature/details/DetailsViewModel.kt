@@ -29,6 +29,7 @@ import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.IsAnimeRegionBlockedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -47,6 +48,7 @@ class DetailsViewModel @AssistedInject constructor(
     private val playerNavigator: IPlayerNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val isAnimeRegionBlocked: IsAnimeRegionBlockedUseCase,
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
@@ -143,7 +145,6 @@ class DetailsViewModel @AssistedInject constructor(
 
     private fun load() {
         viewModelScope.launch { loadDetails() }
-        viewModelScope.launch { loadVideos() }
         viewModelScope.launch { loadExtras() }
     }
 
@@ -155,11 +156,32 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private suspend fun loadDetails() {
-        setState { copy(isLoading = true, error = null) }
+        setState { copy(isLoading = true, error = null, isRegionBlocked = false) }
         runCatching { getAnimeDetails(animeId) }.fold(
-            onSuccess = { details -> setState { copy(isLoading = false, details = details) } },
+            onSuccess = { details ->
+                if (isAnimeRegionBlocked(details)) {
+                    setState {
+                        copy(
+                            isLoading = false,
+                            details = null,
+                            isRegionBlocked = true,
+                            isWatchLaunchPending = false,
+                            videosState = VideosUiState.Empty,
+                        )
+                    }
+                } else {
+                    setState { copy(isLoading = false, details = details, isRegionBlocked = false) }
+                    loadVideos()
+                }
+            },
             onFailure = { e ->
-                setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.details_load_error)) }
+                setState {
+                    copy(
+                        isLoading = false,
+                        isRegionBlocked = false,
+                        error = e.message ?: stringProvider.get(R.string.details_load_error),
+                    )
+                }
             },
         )
     }
@@ -198,6 +220,7 @@ class DetailsViewModel @AssistedInject constructor(
         }
 
     private fun onWatchSelected() {
+        if (currentState.isRegionBlocked) return
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
             VideosUiState.Empty -> {

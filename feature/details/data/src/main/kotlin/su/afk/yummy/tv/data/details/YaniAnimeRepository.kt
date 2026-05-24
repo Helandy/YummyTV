@@ -26,7 +26,7 @@ class YaniAnimeRepository(
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
         cache.getOrFetch(
-            key = "anime_details_$animeId",
+            key = "anime_details_v2_$animeId",
             ttlMs = ANIME_DETAILS_TTL_MS,
             serialize = { dto: YaniAnimeDetailsDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },

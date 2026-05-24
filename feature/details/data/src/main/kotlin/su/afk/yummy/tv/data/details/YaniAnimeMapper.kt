@@ -39,6 +39,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         studios = source.studios.mapNotNull { it.toStudio() },
         viewingOrder = source.viewingOrder.mapNotNull { it.toViewingOrderItem() },
         screenshots = source.randomScreenshots.map { it.toAnimeScreenshot() },
+        blockedIn = source.blockedIn.filter { it.isNotBlank() },
     )
 }
 

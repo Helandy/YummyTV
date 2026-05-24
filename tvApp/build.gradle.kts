@@ -18,6 +18,8 @@ android {
 
         versionName = libs.versions.appVersionName.get()
         versionCode = libs.versions.appVersionCode.get().toInt()
+
+        buildConfigField("Boolean", "BLOCKED_TIMEOUT", "false")
     }
 
     buildTypes {
@@ -36,6 +38,12 @@ android {
             )
 
             isDebuggable = false
+        }
+
+        create("releaseRu") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+            buildConfigField("Boolean", "BLOCKED_TIMEOUT", "true")
         }
     }
     compileOptions {
