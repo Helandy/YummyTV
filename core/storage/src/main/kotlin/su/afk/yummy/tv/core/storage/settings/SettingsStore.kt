@@ -22,6 +22,7 @@ class SettingsStore(private val context: Context) {
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
         prefs[posterQualityKey]?.let { name ->
@@ -52,6 +53,10 @@ class SettingsStore(private val context: Context) {
         prefs[autoSkipOpeningsEndingsKey] ?: false
     }
 
+    val yaniApplicationToken: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[yaniApplicationTokenKey].orEmpty()
+    }
+
     suspend fun setPosterQuality(quality: PosterQuality) {
         context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
     }
@@ -74,5 +79,16 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
+    }
+
+    suspend fun setYaniApplicationToken(token: String) {
+        context.dataStore.edit { prefs ->
+            val trimmedToken = token.trim()
+            if (trimmedToken.isBlank()) {
+                prefs.remove(yaniApplicationTokenKey)
+            } else {
+                prefs[yaniApplicationTokenKey] = trimmedToken
+            }
+        }
     }
 }

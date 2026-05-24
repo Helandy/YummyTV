@@ -16,6 +16,7 @@ class SettingsState {
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
+        val yaniApplicationToken: String = "",
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -26,6 +27,7 @@ class SettingsState {
         data object WatchNextToggled : Event
         data class PreviewCacheSizeSelected(val size: PreviewCacheSize) : Event
         data object AutoSkipOpeningsEndingsToggled : Event
+        data class YaniApplicationTokenChanged(val token: String) : Event
     }
 
     sealed interface Effect : UiEffect

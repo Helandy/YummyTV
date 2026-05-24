@@ -45,6 +45,9 @@ class SettingsViewModel @Inject constructor(
         settingsStore.autoSkipOpeningsEndings
             .onEach { setState { copy(autoSkipOpeningsEndings = it) } }
             .launchIn(viewModelScope)
+        settingsStore.yaniApplicationToken
+            .onEach { setState { copy(yaniApplicationToken = it) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: SettingsState.Event) {
@@ -69,6 +72,12 @@ class SettingsViewModel @Inject constructor(
             }
             SettingsState.Event.AutoSkipOpeningsEndingsToggled -> viewModelScope.launch {
                 settingsStore.setAutoSkipOpeningsEndings(!currentState.autoSkipOpeningsEndings)
+            }
+            is SettingsState.Event.YaniApplicationTokenChanged -> {
+                setState { copy(yaniApplicationToken = event.token) }
+                viewModelScope.launch {
+                    settingsStore.setYaniApplicationToken(event.token)
+                }
             }
         }
     }

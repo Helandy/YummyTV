@@ -4,6 +4,7 @@
     <string name="settings_tab_cards">Cards</string>
     <string name="settings_tab_player">Player</string>
     <string name="settings_tab_cache">Cache</string>
+    <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">About</string>
     <string name="settings_show_screenshots_label">Screens on focus</string>
@@ -42,6 +43,9 @@
     <string name="settings_cache_size_200">200 MB</string>
     <string name="settings_cache_size_max">Maximum</string>
     <string name="settings_cache_size_300">300 MB</string>
+    <string name="settings_yani_application_token_label">X-Application</string>
+    <string name="settings_yani_application_token_placeholder">Application token</string>
+    <string name="settings_yani_application_token_hint">Required for full and stable API access; added to requests sent to api.yani.tv</string>
     <string name="settings_version_label">Version</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>

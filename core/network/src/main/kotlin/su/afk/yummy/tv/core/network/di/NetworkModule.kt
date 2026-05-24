@@ -7,6 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.network.buildYaniHttpClient
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import javax.inject.Singleton
 
 @Module
@@ -19,5 +20,5 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHttpClient(): HttpClient = buildYaniHttpClient()
+    fun provideHttpClient(settingsStore: SettingsStore): HttpClient = buildYaniHttpClient(settingsStore)
 }

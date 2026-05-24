@@ -2,6 +2,7 @@ package su.afk.yummy.tv.core.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
@@ -9,11 +10,15 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 
 const val YANI_BASE_URL = "https://api.yani.tv"
+private const val YANI_API_HOST = "api.yani.tv"
+private const val YANI_APPLICATION_HEADER = "X-Application"
 
-fun buildYaniHttpClient(): HttpClient = HttpClient {
+fun buildYaniHttpClient(settingsStore: SettingsStore): HttpClient = HttpClient {
     install(HttpTimeout) {
         connectTimeoutMillis = 10_000
         requestTimeoutMillis = 20_000
@@ -27,6 +32,17 @@ fun buildYaniHttpClient(): HttpClient = HttpClient {
             },
         )
     }
+    install(createClientPlugin("YaniApplicationHeader") {
+        onRequest { request, _ ->
+            if (request.url.host == YANI_API_HOST) {
+                val token = settingsStore.yaniApplicationToken.first()
+                if (token.isNotBlank()) {
+                    request.headers.remove(YANI_APPLICATION_HEADER)
+                    request.headers.append(YANI_APPLICATION_HEADER, token)
+                }
+            }
+        }
+    })
     if (BuildConfig.DEBUG) {
         install(Logging) {
             logger = Logger.ANDROID
@@ -34,7 +50,8 @@ fun buildYaniHttpClient(): HttpClient = HttpClient {
             sanitizeHeader { header ->
                 header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
                     header.equals(HttpHeaders.Cookie, ignoreCase = true) ||
-                    header.equals(HttpHeaders.SetCookie, ignoreCase = true)
+                    header.equals(HttpHeaders.SetCookie, ignoreCase = true) ||
+                    header.equals(YANI_APPLICATION_HEADER, ignoreCase = true)
             }
         }
     }
