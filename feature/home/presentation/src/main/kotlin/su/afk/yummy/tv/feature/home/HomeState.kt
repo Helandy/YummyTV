@@ -4,8 +4,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.home.HomeFeed
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.home.model.HomeFeed
 
 class HomeState {
     data class State(

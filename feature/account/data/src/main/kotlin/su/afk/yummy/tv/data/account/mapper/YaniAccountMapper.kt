@@ -4,10 +4,10 @@ import su.afk.yummy.tv.data.account.dto.YaniAccountPosterDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
-import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.UserAnimeList
-import su.afk.yummy.tv.domain.account.UserAnimeListItem
-import su.afk.yummy.tv.domain.account.YaniAccount
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.domain.account.model.YaniAccount
 
 internal fun YaniProfileDto.toAccount(): YaniAccount =
     YaniAccount(

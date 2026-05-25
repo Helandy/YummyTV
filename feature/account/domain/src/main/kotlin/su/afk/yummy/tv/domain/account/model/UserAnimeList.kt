@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.model
 
 enum class UserAnimeList(val id: Int) {
     WATCHING(0),

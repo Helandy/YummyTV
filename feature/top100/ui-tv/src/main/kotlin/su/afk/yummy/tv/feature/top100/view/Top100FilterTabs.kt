@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 import su.afk.yummy.tv.feature.top100.R
 
 @OptIn(ExperimentalComposeUiApi::class)

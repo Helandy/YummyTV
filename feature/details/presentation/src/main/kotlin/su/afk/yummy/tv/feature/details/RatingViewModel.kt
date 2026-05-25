@@ -11,11 +11,11 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.account.DeleteAnimeRatingUseCase
-import su.afk.yummy.tv.domain.account.GetAnimeListStatsUseCase
-import su.afk.yummy.tv.domain.account.GetAnimeRatingSummaryUseCase
-import su.afk.yummy.tv.domain.account.GetAnimeUserRatingUseCase
-import su.afk.yummy.tv.domain.account.SetAnimeRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @HiltViewModel(assistedFactory = RatingViewModel.Factory::class)

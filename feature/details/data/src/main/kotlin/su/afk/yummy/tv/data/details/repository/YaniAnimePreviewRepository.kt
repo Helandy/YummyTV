@@ -7,8 +7,8 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.mapper.toAnimePreview
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.anime.AnimePreviewRepository
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.anime.repository.AnimePreviewRepository
 
 private const val ANIME_PREVIEW_TTL_MS = 24 * 60 * 60 * 1000L
 

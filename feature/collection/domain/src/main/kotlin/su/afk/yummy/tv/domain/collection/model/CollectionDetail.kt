@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.collection
+package su.afk.yummy.tv.domain.collection.model
 
 data class CollectionDetail(
     val id: Int,

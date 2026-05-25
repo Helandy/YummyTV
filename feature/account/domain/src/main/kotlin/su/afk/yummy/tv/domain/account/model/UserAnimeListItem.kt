@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.model
 
 data class UserAnimeListItem(
     val animeId: Int,

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerContainer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
-import su.afk.yummy.tv.domain.anime.AnimeScreenshot
+import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.R
 
 @Composable

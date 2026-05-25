@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.home.HomeFeedItem
-import su.afk.yummy.tv.domain.home.HomeFeedItemAction
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
 @Composable
 internal fun HomeSection(

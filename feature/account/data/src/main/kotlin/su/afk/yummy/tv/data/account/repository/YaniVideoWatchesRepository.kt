@@ -2,8 +2,8 @@ package su.afk.yummy.tv.data.account.repository
 
 import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
-import su.afk.yummy.tv.domain.account.RemoteWatchState
-import su.afk.yummy.tv.domain.account.VideoWatchesRepository
+import su.afk.yummy.tv.domain.account.model.RemoteWatchState
+import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 
 class YaniVideoWatchesRepository(
     private val api: YaniAccountApi,

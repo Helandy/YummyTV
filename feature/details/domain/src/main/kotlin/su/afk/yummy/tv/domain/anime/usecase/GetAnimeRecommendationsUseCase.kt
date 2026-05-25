@@ -1,4 +1,7 @@
-package su.afk.yummy.tv.domain.anime
+package su.afk.yummy.tv.domain.anime.usecase
+
+import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
+import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 
 /** Loads anime recommendations for the selected title. */
 class GetAnimeRecommendationsUseCase(private val repo: AnimeRepository) {

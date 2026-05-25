@@ -4,7 +4,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 
 class EpisodesState {
     data class State(

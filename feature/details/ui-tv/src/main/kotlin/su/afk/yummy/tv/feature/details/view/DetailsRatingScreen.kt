@@ -34,9 +34,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.domain.account.AnimeListStats
-import su.afk.yummy.tv.domain.account.AnimeRatingBucket
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.model.AnimeListStats
+import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
+import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.feature.details.R
 
 @Composable

@@ -41,7 +41,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaul
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.AnimePreview
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.CollapsedPanelWidth
 import su.afk.yummy.tv.feature.library.InProgressColor
 import su.afk.yummy.tv.feature.library.R

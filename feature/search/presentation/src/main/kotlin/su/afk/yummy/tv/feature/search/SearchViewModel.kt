@@ -10,11 +10,11 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.search.GetSearchFilterOptionsUseCase
-import su.afk.yummy.tv.domain.search.SearchFilters
-import su.afk.yummy.tv.domain.search.SearchPage
-import su.afk.yummy.tv.domain.search.SearchUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchPage
+import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.search.presentation.R
 import javax.inject.Inject

@@ -1,4 +1,6 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.repository
+
+import su.afk.yummy.tv.domain.account.model.*
 
 interface UserListsRepository {
     suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem>

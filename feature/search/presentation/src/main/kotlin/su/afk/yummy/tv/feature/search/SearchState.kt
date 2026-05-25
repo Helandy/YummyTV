@@ -3,11 +3,11 @@ package su.afk.yummy.tv.feature.search
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.search.SearchFilterOptions
-import su.afk.yummy.tv.domain.search.SearchFilters
-import su.afk.yummy.tv.domain.search.SearchItem
-import su.afk.yummy.tv.domain.search.SearchSort
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchSort
 
 class SearchState {
     data class State(

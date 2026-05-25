@@ -3,8 +3,8 @@ package su.afk.yummy.tv.data.collection.mapper
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionAnimeDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
-import su.afk.yummy.tv.domain.collection.CollectionAnimeItem
-import su.afk.yummy.tv.domain.collection.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
+import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 
 internal fun YaniCollectionDetailDto.toDomain(): CollectionDetail {
     val resolvedId = id ?: 0

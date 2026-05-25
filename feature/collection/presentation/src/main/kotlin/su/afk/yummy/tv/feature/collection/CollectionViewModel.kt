@@ -13,8 +13,8 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.collection.GetCollectionUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 

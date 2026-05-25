@@ -17,11 +17,11 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.anime.AnimeVideo
-import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
-import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
+import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips

@@ -40,7 +40,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerContainer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.domain.anime.AnimeTrailer
+import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.feature.details.R
 
 @Composable

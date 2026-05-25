@@ -10,10 +10,10 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.top100.AnimeTopPage
-import su.afk.yummy.tv.domain.top100.AnimeTopType
-import su.afk.yummy.tv.domain.top100.GetAnimeTopUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.top100.model.AnimeTopPage
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
+import su.afk.yummy.tv.domain.top100.usecase.GetAnimeTopUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.top100.presentation.R
 import javax.inject.Inject

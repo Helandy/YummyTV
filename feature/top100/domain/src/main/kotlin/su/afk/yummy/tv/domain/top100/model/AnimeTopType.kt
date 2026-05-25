@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.top100
+package su.afk.yummy.tv.domain.top100.model
 
 enum class AnimeTopType(val apiValue: String) {
     TV("tv"),

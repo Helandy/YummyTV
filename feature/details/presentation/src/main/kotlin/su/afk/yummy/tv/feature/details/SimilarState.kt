@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.AnimePreview
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
 
 class SimilarState {
     data class State(

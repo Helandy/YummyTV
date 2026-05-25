@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.home
+package su.afk.yummy.tv.domain.home.model
 
 data class HomePoster(
     val small: String?,

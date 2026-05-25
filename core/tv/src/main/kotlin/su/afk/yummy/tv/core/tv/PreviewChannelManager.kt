@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import su.afk.yummy.tv.domain.home.HomeFeedItem
-import su.afk.yummy.tv.domain.home.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import javax.inject.Inject
 import javax.inject.Singleton
 

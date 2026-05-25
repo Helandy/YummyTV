@@ -5,8 +5,8 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.schedule.dto.YaniScheduleResponseDto
 import su.afk.yummy.tv.data.schedule.mapper.toScheduleDays
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleDay
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleRepository
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
+import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
 
 private const val SCHEDULE_TTL_MS = 60 * 60 * 1000L
 

@@ -1,4 +1,8 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.repository
+
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.model.AnimeListStats
+import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 
 interface AnimeExtrasRepository {
     suspend fun getRatingSummary(animeId: Int): AnimeRatingSummary

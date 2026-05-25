@@ -11,11 +11,11 @@ import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
 import su.afk.yummy.tv.data.details.mapper.toAnimeVideo
 import su.afk.yummy.tv.data.details.mapper.toHttpsUrl
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
-import su.afk.yummy.tv.domain.anime.AnimeDetails
-import su.afk.yummy.tv.domain.anime.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.AnimeRepository
-import su.afk.yummy.tv.domain.anime.AnimeTrailer
-import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
+import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 60 * 60 * 1000L

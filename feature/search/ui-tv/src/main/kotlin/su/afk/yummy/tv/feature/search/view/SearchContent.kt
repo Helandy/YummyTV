@@ -64,12 +64,12 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.search.SearchFilterOptions
-import su.afk.yummy.tv.domain.search.SearchFilters
-import su.afk.yummy.tv.domain.search.SearchGenre
-import su.afk.yummy.tv.domain.search.SearchItem
-import su.afk.yummy.tv.domain.search.SearchSort
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchGenre
+import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchSort
 import su.afk.yummy.tv.feature.search.R
 
 @Composable

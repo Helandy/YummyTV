@@ -7,9 +7,9 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.top100.dto.YaniAnimeTopListDto
 import su.afk.yummy.tv.data.top100.mapper.toAnimeTopItem
 import su.afk.yummy.tv.data.top100.network.YaniAnimeTopApi
-import su.afk.yummy.tv.domain.top100.AnimeTopPage
-import su.afk.yummy.tv.domain.top100.AnimeTopRepository
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.top100.model.AnimeTopPage
+import su.afk.yummy.tv.domain.top100.repository.AnimeTopRepository
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 
 private const val ANIME_TOP_TTL_MS = 6 * 60 * 60 * 1000L
 

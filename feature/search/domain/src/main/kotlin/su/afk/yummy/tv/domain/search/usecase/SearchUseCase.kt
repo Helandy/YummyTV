@@ -1,4 +1,7 @@
-package su.afk.yummy.tv.domain.search
+package su.afk.yummy.tv.domain.search.usecase
+
+import su.afk.yummy.tv.domain.search.model.*
+import su.afk.yummy.tv.domain.search.repository.*
 
 /** Searches anime with the selected query, filters, and paging. */
 class SearchUseCase(private val repository: SearchRepository) {

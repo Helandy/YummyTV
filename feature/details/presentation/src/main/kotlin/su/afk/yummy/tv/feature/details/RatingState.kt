@@ -3,8 +3,8 @@ package su.afk.yummy.tv.feature.details
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.account.AnimeListStats
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.model.AnimeListStats
+import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 
 class RatingState {
     data class State(

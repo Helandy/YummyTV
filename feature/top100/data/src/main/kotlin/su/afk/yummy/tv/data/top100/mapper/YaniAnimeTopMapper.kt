@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.top100.mapper
 
 import su.afk.yummy.tv.data.top100.dto.YaniAnimeTopItemDto
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
 
 internal fun YaniAnimeTopItemDto.toAnimeTopItem(): AnimeTopItem? {
     val id = animeId ?: return null

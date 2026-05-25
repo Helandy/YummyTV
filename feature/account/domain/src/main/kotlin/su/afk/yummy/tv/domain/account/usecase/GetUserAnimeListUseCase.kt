@@ -1,4 +1,8 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.usecase
+
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 
 /** Loads a user's anime list for the selected Yani list category. */
 class GetUserAnimeListUseCase(private val repository: UserListsRepository) {

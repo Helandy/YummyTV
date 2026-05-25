@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.anime
+package su.afk.yummy.tv.domain.anime.model
 
 private val youtubeEmbedRegex = Regex("youtube\\.com/embed/([a-zA-Z0-9_-]+)")
 

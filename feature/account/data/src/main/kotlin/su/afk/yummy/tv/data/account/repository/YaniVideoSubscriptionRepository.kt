@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.account.repository
 
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
-import su.afk.yummy.tv.domain.account.VideoSubscriptionRepository
+import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
 
 class YaniVideoSubscriptionRepository(
     private val api: YaniAccountApi,

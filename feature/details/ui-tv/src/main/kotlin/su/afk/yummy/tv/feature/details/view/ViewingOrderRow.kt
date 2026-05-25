@@ -21,7 +21,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.domain.anime.AnimeViewingOrderItem
+import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 import su.afk.yummy.tv.feature.details.R
 
 private val RelatedCardWidth = 188.dp

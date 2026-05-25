@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
 
 @Composable
 internal fun Top100AnimeCard(

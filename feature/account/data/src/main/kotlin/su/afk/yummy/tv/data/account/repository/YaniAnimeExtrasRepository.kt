@@ -2,11 +2,11 @@ package su.afk.yummy.tv.data.account.repository
 
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
-import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.AnimeExtrasRepository
-import su.afk.yummy.tv.domain.account.AnimeListStats
-import su.afk.yummy.tv.domain.account.AnimeRatingBucket
-import su.afk.yummy.tv.domain.account.AnimeRatingSummary
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.model.AnimeListStats
+import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
+import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 
 class YaniAnimeExtrasRepository(
     private val api: YaniAccountApi,

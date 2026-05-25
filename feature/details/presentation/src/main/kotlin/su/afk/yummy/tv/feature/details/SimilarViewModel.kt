@@ -12,8 +12,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimeRecommendationsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
 
 @HiltViewModel(assistedFactory = SimilarViewModel.Factory::class)
 class SimilarViewModel @AssistedInject constructor(

@@ -1,4 +1,6 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.repository
+
+import su.afk.yummy.tv.domain.account.model.*
 
 interface VideoWatchesRepository {
     suspend fun markWatched(videoId: Int, timeSeconds: Int, durationSeconds: Int): Boolean

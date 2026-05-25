@@ -67,8 +67,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleDay
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleItem
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleItem
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate

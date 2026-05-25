@@ -3,9 +3,9 @@ package su.afk.yummy.tv.data.account.repository
 import su.afk.yummy.tv.data.account.mapper.toUserAnimeList
 import su.afk.yummy.tv.data.account.mapper.toUserListItem
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
-import su.afk.yummy.tv.domain.account.UserAnimeList
-import su.afk.yummy.tv.domain.account.UserAnimeListItem
-import su.afk.yummy.tv.domain.account.UserListsRepository
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 
 class YaniUserListsRepository(
     private val api: YaniAccountApi,

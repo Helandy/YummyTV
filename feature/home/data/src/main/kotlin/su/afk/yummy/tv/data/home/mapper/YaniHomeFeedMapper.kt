@@ -7,11 +7,11 @@ import su.afk.yummy.tv.data.home.dto.YaniCollectionDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.dto.YaniPosterDto
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
-import su.afk.yummy.tv.domain.home.HomeFeed
-import su.afk.yummy.tv.domain.home.HomeFeedItem
-import su.afk.yummy.tv.domain.home.HomeFeedItemAction
-import su.afk.yummy.tv.domain.home.HomeFeedSection
-import su.afk.yummy.tv.domain.home.HomePoster
+import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedSection
+import su.afk.yummy.tv.domain.home.model.HomePoster
 
 internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
     val heroItems = response.topCarousel.items.mapNotNull { it.toSeriesItem() }

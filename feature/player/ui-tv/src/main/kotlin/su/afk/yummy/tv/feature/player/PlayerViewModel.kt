@@ -17,7 +17,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.MarkVideoWatchedUseCase
+import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
 import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor

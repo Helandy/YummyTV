@@ -46,9 +46,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 
 private val CollapsedPanelWidth = 52.dp
 

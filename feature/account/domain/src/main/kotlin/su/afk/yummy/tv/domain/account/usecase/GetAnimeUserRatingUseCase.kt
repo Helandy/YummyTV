@@ -1,4 +1,6 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.usecase
+
+import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 
 /** Loads the current user's rating for an anime when it exists. */
 class GetAnimeUserRatingUseCase(private val repository: AnimeExtrasRepository) {

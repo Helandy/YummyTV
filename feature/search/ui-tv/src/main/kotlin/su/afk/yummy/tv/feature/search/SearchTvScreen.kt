@@ -3,8 +3,8 @@ package su.afk.yummy.tv.feature.search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.domain.search.SearchItem
-import su.afk.yummy.tv.domain.search.SearchSort
+import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchSort
 import su.afk.yummy.tv.feature.search.view.SearchContent
 
 @Composable

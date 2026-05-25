@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.home
+package su.afk.yummy.tv.domain.home.model
 
 sealed interface HomeFeedItemAction {
     data class OpenSeries(val seriesId: Int) : HomeFeedItemAction

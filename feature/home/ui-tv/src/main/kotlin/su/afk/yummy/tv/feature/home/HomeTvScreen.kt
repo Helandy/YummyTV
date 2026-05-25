@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
-import su.afk.yummy.tv.domain.home.HomeFeedItem
-import su.afk.yummy.tv.domain.home.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.feature.home.view.HomeContent
 import su.afk.yummy.tv.feature.home.view.HomeError
 

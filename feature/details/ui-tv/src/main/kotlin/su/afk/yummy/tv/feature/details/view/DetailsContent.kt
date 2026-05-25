@@ -9,9 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.AnimeCollectionSummary
-import su.afk.yummy.tv.domain.account.UserAnimeList
-import su.afk.yummy.tv.domain.anime.AnimeDetails
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.VideosUiState
 
 @Composable

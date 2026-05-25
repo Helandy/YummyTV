@@ -10,13 +10,13 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimePreviewRepository
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
-import su.afk.yummy.tv.domain.anime.AnimePreviewRepository
-import su.afk.yummy.tv.domain.anime.AnimeRepository
-import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimeRecommendationsUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimeTrailersUseCase
-import su.afk.yummy.tv.domain.anime.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.repository.AnimePreviewRepository
+import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import javax.inject.Singleton
 
 @Module

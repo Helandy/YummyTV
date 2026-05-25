@@ -9,8 +9,8 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.data.collection.repository.YaniCollectionDetailRepository
-import su.afk.yummy.tv.domain.collection.CollectionRepository
-import su.afk.yummy.tv.domain.collection.GetCollectionUseCase
+import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
+import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import javax.inject.Singleton
 
 @Module

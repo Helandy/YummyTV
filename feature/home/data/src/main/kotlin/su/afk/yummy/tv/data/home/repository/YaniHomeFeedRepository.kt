@@ -8,8 +8,8 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.mapper.toHomeFeed
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
-import su.afk.yummy.tv.domain.home.HomeFeed
-import su.afk.yummy.tv.domain.home.HomeFeedRepository
+import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 
 private const val FEED_TTL_MS = 60 * 60 * 1000L
 

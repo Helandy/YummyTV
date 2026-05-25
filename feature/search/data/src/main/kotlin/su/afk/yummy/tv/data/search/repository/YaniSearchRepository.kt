@@ -9,10 +9,10 @@ import su.afk.yummy.tv.data.search.mapper.toSearchGenre
 import su.afk.yummy.tv.data.search.mapper.toSearchGenreGroup
 import su.afk.yummy.tv.data.search.mapper.toSearchItem
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
-import su.afk.yummy.tv.domain.search.SearchFilterOptions
-import su.afk.yummy.tv.domain.search.SearchFilters
-import su.afk.yummy.tv.domain.search.SearchPage
-import su.afk.yummy.tv.domain.search.SearchRepository
+import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchPage
+import su.afk.yummy.tv.domain.search.repository.SearchRepository
 
 class YaniSearchRepository(
     private val api: YaniSearchApi,

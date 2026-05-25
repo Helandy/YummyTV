@@ -9,7 +9,7 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
-import su.afk.yummy.tv.domain.account.RefreshAccountUseCase
+import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.feature.main.utils.isNewer
 import javax.inject.Inject
 import javax.inject.Named

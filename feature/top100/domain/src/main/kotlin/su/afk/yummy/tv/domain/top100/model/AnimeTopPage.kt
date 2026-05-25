@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.top100
+package su.afk.yummy.tv.domain.top100.model
 
 data class AnimeTopPage(
     val items: List<AnimeTopItem>,

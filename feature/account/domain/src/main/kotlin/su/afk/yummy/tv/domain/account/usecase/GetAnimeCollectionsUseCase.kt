@@ -1,4 +1,7 @@
-package su.afk.yummy.tv.domain.account
+package su.afk.yummy.tv.domain.account.usecase
+
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 
 /** Loads collection summaries that contain the selected anime. */
 class GetAnimeCollectionsUseCase(private val repository: AnimeExtrasRepository) {

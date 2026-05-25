@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.search
+package su.afk.yummy.tv.domain.search.model
 
 enum class SearchSort(val apiValue: String?) {
     RELEVANCE(null),

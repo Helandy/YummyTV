@@ -9,8 +9,8 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
 import su.afk.yummy.tv.data.schedule.repository.YaniScheduleRepository
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleRepository
-import su.afk.yummy.tv.domain.schedule.GetAnimeScheduleUseCase
+import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
+import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import javax.inject.Singleton
 
 @Module

@@ -16,20 +16,20 @@ import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniScreenshotDto
 import su.afk.yummy.tv.data.details.dto.YaniVideoSkipsDto
 import su.afk.yummy.tv.data.details.dto.YaniViewingOrderItemDto
-import su.afk.yummy.tv.domain.anime.AnimeDetails
-import su.afk.yummy.tv.domain.anime.AnimeEpisodes
-import su.afk.yummy.tv.domain.anime.AnimeGenre
-import su.afk.yummy.tv.domain.anime.AnimePerson
-import su.afk.yummy.tv.domain.anime.AnimePoster
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.anime.AnimeRating
-import su.afk.yummy.tv.domain.anime.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.AnimeScreenshot
-import su.afk.yummy.tv.domain.anime.AnimeStudio
-import su.afk.yummy.tv.domain.anime.AnimeVideo
-import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
-import su.afk.yummy.tv.domain.anime.AnimeViewingOrderItem
+import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
+import su.afk.yummy.tv.domain.anime.model.AnimeGenre
+import su.afk.yummy.tv.domain.anime.model.AnimePerson
+import su.afk.yummy.tv.domain.anime.model.AnimePoster
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.anime.model.AnimeRating
+import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
+import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
+import su.afk.yummy.tv.domain.anime.model.AnimeStudio
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
+import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
+import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 
 internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
     val source = response

@@ -9,8 +9,8 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.top100.network.YaniAnimeTopApi
 import su.afk.yummy.tv.data.top100.repository.YaniAnimeTopRepository
-import su.afk.yummy.tv.domain.top100.AnimeTopRepository
-import su.afk.yummy.tv.domain.top100.GetAnimeTopUseCase
+import su.afk.yummy.tv.domain.top100.repository.AnimeTopRepository
+import su.afk.yummy.tv.domain.top100.usecase.GetAnimeTopUseCase
 import javax.inject.Singleton
 
 @Module

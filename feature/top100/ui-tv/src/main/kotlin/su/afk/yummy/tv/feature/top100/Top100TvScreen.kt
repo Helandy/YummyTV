@@ -3,8 +3,8 @@ package su.afk.yummy.tv.feature.top100
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 import su.afk.yummy.tv.feature.top100.view.Top100Content
 
 @Composable

@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.schedule
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleDay
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 
 class ScheduleState {
     data class State(

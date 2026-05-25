@@ -1,4 +1,8 @@
-package su.afk.yummy.tv.domain.top100
+package su.afk.yummy.tv.domain.top100.usecase
+
+import su.afk.yummy.tv.domain.top100.model.AnimeTopPage
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
+import su.afk.yummy.tv.domain.top100.repository.AnimeTopRepository
 
 /** Loads a paged top anime list for the selected ranking type. */
 class GetAnimeTopUseCase(

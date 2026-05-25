@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.data.schedule.mapper
 
 import su.afk.yummy.tv.data.schedule.dto.YaniScheduleAnimeDto
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleDay
-import su.afk.yummy.tv.domain.schedule.AnimeScheduleItem
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
+import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleItem
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.TextStyle

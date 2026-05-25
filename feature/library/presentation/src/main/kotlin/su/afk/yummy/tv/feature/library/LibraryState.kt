@@ -5,9 +5,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.UserAnimeList
-import su.afk.yummy.tv.domain.account.UserAnimeListItem
-import su.afk.yummy.tv.domain.anime.AnimePreview
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
 
 enum class LibraryTab {
     CONTINUE_WATCHING,

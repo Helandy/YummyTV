@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.search
+package su.afk.yummy.tv.domain.search.model
 
 data class SearchGenre(
     val id: String,

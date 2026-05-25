@@ -4,10 +4,10 @@ import su.afk.yummy.tv.data.search.dto.YaniSearchGenreDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenreGroupDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchItemDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchTypeCountDto
-import su.afk.yummy.tv.domain.search.SearchAnimeType
-import su.afk.yummy.tv.domain.search.SearchGenre
-import su.afk.yummy.tv.domain.search.SearchGenreGroup
-import su.afk.yummy.tv.domain.search.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchAnimeType
+import su.afk.yummy.tv.domain.search.model.SearchGenre
+import su.afk.yummy.tv.domain.search.model.SearchGenreGroup
+import su.afk.yummy.tv.domain.search.model.SearchItem
 
 internal fun YaniSearchItemDto.toSearchItem(): SearchItem? {
     val id = animeId ?: return null

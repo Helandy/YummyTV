@@ -12,9 +12,9 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.TopBarFocusTarget
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
-import su.afk.yummy.tv.domain.account.LoginUseCase
-import su.afk.yummy.tv.domain.account.LogoutUseCase
-import su.afk.yummy.tv.domain.account.RefreshAccountUseCase
+import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
+import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
+import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import javax.inject.Inject
 
 @HiltViewModel

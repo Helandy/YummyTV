@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.schedule
+package su.afk.yummy.tv.domain.schedule.model
 
 data class AnimeScheduleItem(
     val animeId: Int,

@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
-import su.afk.yummy.tv.domain.collection.CollectionAnimeItem
+import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 
 @Composable
 internal fun CollectionAnimeCard(

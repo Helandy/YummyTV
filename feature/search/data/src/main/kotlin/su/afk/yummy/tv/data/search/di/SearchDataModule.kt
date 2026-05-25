@@ -7,9 +7,9 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.data.search.repository.YaniSearchRepository
-import su.afk.yummy.tv.domain.search.GetSearchFilterOptionsUseCase
-import su.afk.yummy.tv.domain.search.SearchRepository
-import su.afk.yummy.tv.domain.search.SearchUseCase
+import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
+import su.afk.yummy.tv.domain.search.repository.SearchRepository
+import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import javax.inject.Singleton
 
 @Module

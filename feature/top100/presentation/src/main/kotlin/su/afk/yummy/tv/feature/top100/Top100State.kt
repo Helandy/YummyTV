@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.top100
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.AnimePreview
-import su.afk.yummy.tv.domain.top100.AnimeTopItem
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.anime.model.AnimePreview
+import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 
 class Top100State {
     data class State(

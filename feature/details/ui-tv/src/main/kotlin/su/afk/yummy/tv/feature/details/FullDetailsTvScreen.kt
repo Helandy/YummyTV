@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
-import su.afk.yummy.tv.domain.anime.AnimeDetails
+import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.view.DetailsError
 import su.afk.yummy.tv.feature.details.view.formatAiredProgress
 import su.afk.yummy.tv.feature.details.view.formatRating

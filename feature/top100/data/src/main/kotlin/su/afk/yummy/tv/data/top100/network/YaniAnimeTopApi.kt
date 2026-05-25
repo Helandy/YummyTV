@@ -6,7 +6,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.data.top100.dto.YaniAnimeTopListDto
-import su.afk.yummy.tv.domain.top100.AnimeTopType
+import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 
 class YaniAnimeTopApi(
     private val client: HttpClient,

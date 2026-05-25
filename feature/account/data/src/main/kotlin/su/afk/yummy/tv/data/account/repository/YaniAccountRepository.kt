@@ -3,8 +3,8 @@ package su.afk.yummy.tv.data.account.repository
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
-import su.afk.yummy.tv.domain.account.AccountRepository
-import su.afk.yummy.tv.domain.account.YaniAccount
+import su.afk.yummy.tv.domain.account.repository.AccountRepository
+import su.afk.yummy.tv.domain.account.model.YaniAccount
 
 class YaniAccountRepository(
     private val api: YaniAccountApi,

@@ -2,9 +2,9 @@ package su.afk.yummy.tv.feature.details.view
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.domain.anime.AnimeEpisodes
-import su.afk.yummy.tv.domain.anime.AnimePoster
-import su.afk.yummy.tv.domain.anime.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
+import su.afk.yummy.tv.domain.anime.model.AnimePoster
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
 
 internal fun Double.formatRating(): String {
