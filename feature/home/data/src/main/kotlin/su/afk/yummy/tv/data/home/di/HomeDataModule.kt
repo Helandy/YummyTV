@@ -8,7 +8,8 @@ import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.home.YaniHomeFeedRepository
+import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
 import su.afk.yummy.tv.domain.home.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.HomeFeedRepository
 import javax.inject.Singleton
@@ -19,13 +20,17 @@ object HomeDataModule {
 
     @Provides
     @Singleton
+    fun provideYaniHomeApi(client: HttpClient): YaniHomeApi = YaniHomeApi(client)
+
+    @Provides
+    @Singleton
     fun provideHomeFeedRepository(
-        client: HttpClient,
+        api: YaniHomeApi,
         cache: CacheStore,
         json: Json,
         stringProvider: StringProvider,
     ): HomeFeedRepository =
-        YaniHomeFeedRepository(client, cache, json, stringProvider)
+        YaniHomeFeedRepository(api, cache, json, stringProvider)
 
     @Provides
     fun provideGetHomeFeedUseCase(repo: HomeFeedRepository) = GetHomeFeedUseCase(repo)

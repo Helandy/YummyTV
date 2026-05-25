@@ -7,7 +7,8 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.schedule.YaniScheduleRepository
+import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
+import su.afk.yummy.tv.data.schedule.repository.YaniScheduleRepository
 import su.afk.yummy.tv.domain.schedule.AnimeScheduleRepository
 import su.afk.yummy.tv.domain.schedule.GetAnimeScheduleUseCase
 import javax.inject.Singleton
@@ -17,8 +18,12 @@ import javax.inject.Singleton
 object ScheduleDataModule {
     @Provides
     @Singleton
-    fun provideScheduleRepository(client: HttpClient, cache: CacheStore, json: Json): AnimeScheduleRepository =
-        YaniScheduleRepository(client, cache, json)
+    fun provideYaniScheduleApi(client: HttpClient): YaniScheduleApi = YaniScheduleApi(client)
+
+    @Provides
+    @Singleton
+    fun provideScheduleRepository(api: YaniScheduleApi, cache: CacheStore, json: Json): AnimeScheduleRepository =
+        YaniScheduleRepository(api, cache, json)
 
     @Provides
     fun provideGetAnimeScheduleUseCase(repository: AnimeScheduleRepository) = GetAnimeScheduleUseCase(repository)

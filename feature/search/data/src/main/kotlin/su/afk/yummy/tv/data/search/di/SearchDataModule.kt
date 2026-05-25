@@ -5,7 +5,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
-import su.afk.yummy.tv.data.search.YaniSearchRepository
+import su.afk.yummy.tv.data.search.network.YaniSearchApi
+import su.afk.yummy.tv.data.search.repository.YaniSearchRepository
 import su.afk.yummy.tv.domain.search.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.SearchRepository
 import su.afk.yummy.tv.domain.search.SearchUseCase
@@ -17,7 +18,11 @@ object SearchDataModule {
 
     @Provides
     @Singleton
-    fun provideSearchRepository(client: HttpClient): SearchRepository = YaniSearchRepository(client)
+    fun provideYaniSearchApi(client: HttpClient): YaniSearchApi = YaniSearchApi(client)
+
+    @Provides
+    @Singleton
+    fun provideSearchRepository(api: YaniSearchApi): SearchRepository = YaniSearchRepository(api)
 
     @Provides
     fun provideSearchUseCase(repo: SearchRepository) = SearchUseCase(repo)

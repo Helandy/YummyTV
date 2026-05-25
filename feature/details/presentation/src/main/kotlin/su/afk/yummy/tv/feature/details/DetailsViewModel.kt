@@ -20,10 +20,12 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.GetAnimeCollectionsUseCase
+import su.afk.yummy.tv.domain.account.GetAnimeListStateUseCase
+import su.afk.yummy.tv.domain.account.RemoveAnimeListUseCase
+import su.afk.yummy.tv.domain.account.SetAnimeListUseCase
+import su.afk.yummy.tv.domain.account.SetVideoSubscriptionUseCase
 import su.afk.yummy.tv.domain.account.UserAnimeList
-import su.afk.yummy.tv.domain.account.UserListsRepository
-import su.afk.yummy.tv.domain.account.VideoSubscriptionRepository
 import su.afk.yummy.tv.domain.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.AnimeVideoSkips
@@ -50,9 +52,11 @@ class DetailsViewModel @AssistedInject constructor(
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
-    private val animeExtrasRepository: AnimeExtrasRepository,
-    private val userListsRepository: UserListsRepository,
-    private val videoSubscriptionRepository: VideoSubscriptionRepository,
+    private val getAnimeCollections: GetAnimeCollectionsUseCase,
+    private val getAnimeListState: GetAnimeListStateUseCase,
+    private val setAnimeList: SetAnimeListUseCase,
+    private val removeAnimeList: RemoveAnimeListUseCase,
+    private val setVideoSubscription: SetVideoSubscriptionUseCase,
     private val stringProvider: StringProvider,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
@@ -122,7 +126,7 @@ class DetailsViewModel @AssistedInject constructor(
         if (currentState.isInLibrary) {
             libraryStore.remove(animeId)
             setState { copy(libraryList = null) }
-            runCatching { userListsRepository.removeAnimeList(animeId) }
+            runCatching { removeAnimeList(animeId) }
         } else {
             setState { copy(showLibraryListPicker = true) }
         }
@@ -139,7 +143,7 @@ class DetailsViewModel @AssistedInject constructor(
                 listId = list.id,
             )
         )
-        runCatching { userListsRepository.setAnimeList(animeId, list) }
+        runCatching { setAnimeList(animeId, list) }
     }
 
     private fun load() {
@@ -148,9 +152,9 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private suspend fun loadExtras() {
-        runCatching { animeExtrasRepository.getCollections(animeId) }
+        runCatching { getAnimeCollections(animeId) }
             .onSuccess { setState { copy(collections = it) } }
-        runCatching { userListsRepository.getAnimeListState(animeId) }
+        runCatching { getAnimeListState(animeId) }
             .onSuccess { setState { copy(libraryList = it?.list) } }
     }
 
@@ -251,7 +255,7 @@ class DetailsViewModel @AssistedInject constructor(
         val wasSubscribed = currentState.isSubscribed
         setState { copy(isSubscribed = !wasSubscribed) }
         viewModelScope.launch {
-            val result = runCatching { videoSubscriptionRepository.setSubscribed(videoId, !wasSubscribed) }
+            val result = runCatching { setVideoSubscription(videoId, !wasSubscribed) }
             if (result.isFailure) setState { copy(isSubscribed = wasSubscribed) }
         }
     }

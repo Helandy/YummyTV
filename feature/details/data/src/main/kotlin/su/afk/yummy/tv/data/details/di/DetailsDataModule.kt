@@ -7,8 +7,9 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.details.YaniAnimePreviewRepository
-import su.afk.yummy.tv.data.details.YaniAnimeRepository
+import su.afk.yummy.tv.data.details.network.YaniAnimeApi
+import su.afk.yummy.tv.data.details.repository.YaniAnimePreviewRepository
+import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
 import su.afk.yummy.tv.domain.anime.AnimePreviewRepository
 import su.afk.yummy.tv.domain.anime.AnimeRepository
 import su.afk.yummy.tv.domain.anime.GetAnimeDetailsUseCase
@@ -24,13 +25,17 @@ object DetailsDataModule {
 
     @Provides
     @Singleton
-    fun provideAnimeRepository(client: HttpClient, cache: CacheStore, json: Json): AnimeRepository =
-        YaniAnimeRepository(client, cache, json)
+    fun provideYaniAnimeApi(client: HttpClient): YaniAnimeApi = YaniAnimeApi(client)
 
     @Provides
     @Singleton
-    fun provideAnimePreviewRepository(client: HttpClient, cache: CacheStore, json: Json): AnimePreviewRepository =
-        YaniAnimePreviewRepository(client, cache, json)
+    fun provideAnimeRepository(api: YaniAnimeApi, cache: CacheStore, json: Json): AnimeRepository =
+        YaniAnimeRepository(api, cache, json)
+
+    @Provides
+    @Singleton
+    fun provideAnimePreviewRepository(api: YaniAnimeApi, cache: CacheStore, json: Json): AnimePreviewRepository =
+        YaniAnimePreviewRepository(api, cache, json)
 
     @Provides
     fun provideGetAnimeDetailsUseCase(repo: AnimeRepository) = GetAnimeDetailsUseCase(repo)

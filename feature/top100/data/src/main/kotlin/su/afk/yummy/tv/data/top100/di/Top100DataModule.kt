@@ -7,7 +7,8 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.top100.YaniAnimeTopRepository
+import su.afk.yummy.tv.data.top100.network.YaniAnimeTopApi
+import su.afk.yummy.tv.data.top100.repository.YaniAnimeTopRepository
 import su.afk.yummy.tv.domain.top100.AnimeTopRepository
 import su.afk.yummy.tv.domain.top100.GetAnimeTopUseCase
 import javax.inject.Singleton
@@ -18,8 +19,12 @@ object Top100DataModule {
 
     @Provides
     @Singleton
-    fun provideAnimeTopRepository(client: HttpClient, cache: CacheStore, json: Json): AnimeTopRepository =
-        YaniAnimeTopRepository(client, cache, json)
+    fun provideYaniAnimeTopApi(client: HttpClient): YaniAnimeTopApi = YaniAnimeTopApi(client)
+
+    @Provides
+    @Singleton
+    fun provideAnimeTopRepository(api: YaniAnimeTopApi, cache: CacheStore, json: Json): AnimeTopRepository =
+        YaniAnimeTopRepository(api, cache, json)
 
     @Provides
     fun provideGetAnimeTopUseCase(repo: AnimeTopRepository) = GetAnimeTopUseCase(repo)

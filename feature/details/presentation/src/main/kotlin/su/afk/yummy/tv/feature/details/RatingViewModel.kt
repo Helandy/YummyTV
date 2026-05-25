@@ -11,7 +11,11 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.account.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.DeleteAnimeRatingUseCase
+import su.afk.yummy.tv.domain.account.GetAnimeListStatsUseCase
+import su.afk.yummy.tv.domain.account.GetAnimeRatingSummaryUseCase
+import su.afk.yummy.tv.domain.account.GetAnimeUserRatingUseCase
+import su.afk.yummy.tv.domain.account.SetAnimeRatingUseCase
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @HiltViewModel(assistedFactory = RatingViewModel.Factory::class)
@@ -21,7 +25,11 @@ class RatingViewModel @AssistedInject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
-    private val animeExtrasRepository: AnimeExtrasRepository,
+    private val getAnimeRatingSummary: GetAnimeRatingSummaryUseCase,
+    private val getAnimeListStats: GetAnimeListStatsUseCase,
+    private val getAnimeUserRating: GetAnimeUserRatingUseCase,
+    private val setAnimeRating: SetAnimeRatingUseCase,
+    private val deleteAnimeRating: DeleteAnimeRatingUseCase,
     private val stringProvider: StringProvider,
 ) : BaseViewModelNew<RatingState.State, RatingState.Event, RatingState.Effect>(savedStateHandle) {
 
@@ -48,9 +56,9 @@ class RatingViewModel @AssistedInject constructor(
     private fun load() {
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
-            val rating = runCatching { animeExtrasRepository.getRatingSummary(animeId) }
-            val stats = runCatching { animeExtrasRepository.getListStats(animeId) }
-            val userRating = runCatching { animeExtrasRepository.getUserRating(animeId) }
+            val rating = runCatching { getAnimeRatingSummary(animeId) }
+            val stats = runCatching { getAnimeListStats(animeId) }
+            val userRating = runCatching { getAnimeUserRating(animeId) }
 
             if (rating.isFailure && stats.isFailure && userRating.isFailure) {
                 setState {
@@ -81,7 +89,7 @@ class RatingViewModel @AssistedInject constructor(
         val previous = currentState.selectedUserRating
         setState { copy(selectedUserRating = rating) }
         viewModelScope.launch {
-            val result = runCatching { animeExtrasRepository.setRating(animeId, rating) }
+            val result = runCatching { setAnimeRating(animeId, rating) }
             if (result.isFailure) {
                 setState { copy(selectedUserRating = previous) }
             } else {
@@ -94,7 +102,7 @@ class RatingViewModel @AssistedInject constructor(
         val previous = currentState.selectedUserRating
         setState { copy(selectedUserRating = null) }
         viewModelScope.launch {
-            val result = runCatching { animeExtrasRepository.deleteRating(animeId) }
+            val result = runCatching { deleteAnimeRating(animeId) }
             if (result.isFailure) {
                 setState { copy(selectedUserRating = previous) }
             } else {
@@ -104,7 +112,7 @@ class RatingViewModel @AssistedInject constructor(
     }
 
     private suspend fun refreshRatingSummary() {
-        runCatching { animeExtrasRepository.getRatingSummary(animeId) }
+        runCatching { getAnimeRatingSummary(animeId) }
             .onSuccess { summary -> setState { copy(ratingSummary = summary) } }
     }
 }

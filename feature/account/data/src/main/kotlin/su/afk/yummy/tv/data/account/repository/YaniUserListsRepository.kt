@@ -1,0 +1,45 @@
+package su.afk.yummy.tv.data.account.repository
+
+import su.afk.yummy.tv.data.account.mapper.toUserAnimeList
+import su.afk.yummy.tv.data.account.mapper.toUserListItem
+import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.domain.account.UserAnimeList
+import su.afk.yummy.tv.domain.account.UserAnimeListItem
+import su.afk.yummy.tv.domain.account.UserListsRepository
+
+class YaniUserListsRepository(
+    private val api: YaniAccountApi,
+) : UserListsRepository {
+
+    override suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
+        api.getUserList(userId, list.id).mapNotNull { it.toUserListItem() }
+
+    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? {
+        val state = api.getAnimeListState(animeId)
+        return UserAnimeListItem(
+            animeId = animeId,
+            title = "",
+            posterUrl = null,
+            rating = null,
+            year = null,
+            list = state.list.toUserAnimeList(),
+            isFavorite = state.isFavorite,
+        )
+    }
+
+    override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) {
+        api.setAnimeList(animeId, list.id)
+    }
+
+    override suspend fun removeAnimeList(animeId: Int) {
+        api.removeAnimeList(animeId)
+    }
+
+    override suspend fun setFavorite(animeId: Int, favorite: Boolean) {
+        if (favorite) {
+            api.setFavorite(animeId)
+        } else {
+            api.removeFavorite(animeId)
+        }
+    }
+}

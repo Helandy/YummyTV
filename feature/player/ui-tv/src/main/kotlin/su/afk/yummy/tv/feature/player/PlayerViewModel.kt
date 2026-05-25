@@ -17,7 +17,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.VideoWatchesRepository
+import su.afk.yummy.tv.domain.account.MarkVideoWatchedUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
 import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
@@ -37,7 +37,7 @@ class PlayerViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
-    private val videoWatchesRepository: VideoWatchesRepository,
+    private val markVideoWatched: MarkVideoWatchedUseCase,
     private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
@@ -205,7 +205,7 @@ class PlayerViewModel @AssistedInject constructor(
                     val watchedEnough = videoId > 0 && event.durMs > 0 && event.posMs.toDouble() / event.durMs >= 0.9
                     if (watchedEnough) {
                         runCatching {
-                            videoWatchesRepository.markWatched(
+                            markVideoWatched(
                                 videoId = videoId,
                                 timeSeconds = (event.posMs / 1000L).toInt(),
                                 durationSeconds = (event.durMs / 1000L).toInt(),
