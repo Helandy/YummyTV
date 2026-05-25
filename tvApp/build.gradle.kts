@@ -19,7 +19,6 @@ android {
         versionName = libs.versions.appVersionName.get()
         versionCode = libs.versions.appVersionCode.get().toInt()
 
-        buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "false")
     }
 
     buildTypes {
@@ -27,12 +26,6 @@ android {
             applicationIdSuffix = ".debug"
             isMinifyEnabled = false
             isShrinkResources = false
-        }
-
-        create("debugRu") {
-            initWith(getByName("debug"))
-            matchingFallbacks += listOf("debug")
-            buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "true")
         }
 
         release {
@@ -44,12 +37,6 @@ android {
             )
 
             isDebuggable = false
-        }
-
-        create("releaseRu") {
-            initWith(getByName("release"))
-            matchingFallbacks += listOf("release")
-            buildConfigField("Boolean", "HIDE_REGION_BLOCKED", "true")
         }
     }
     compileOptions {

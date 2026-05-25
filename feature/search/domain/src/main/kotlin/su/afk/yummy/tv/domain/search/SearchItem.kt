@@ -5,5 +5,4 @@ data class SearchItem(
     val title: String,
     val posterUrl: String?,
     val rating: Double?,
-    val blockedIn: List<String>,
 )

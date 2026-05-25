@@ -30,7 +30,6 @@ class DetailsState {
         val isSignedIn: Boolean = false,
         val subscriptionVideoId: Int = 0,
         val isSubscribed: Boolean = false,
-        val isRegionBlocked: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {

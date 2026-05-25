@@ -9,7 +9,6 @@ internal fun YaniAnimeTopItemDto.toAnimeTopItem(): AnimeTopItem? {
         title = title,
         posterUrl = poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
         rating = rating?.average,
-        blockedIn = blockedIn.filter { it.isNotBlank() },
     )
 }
 

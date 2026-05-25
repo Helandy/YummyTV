@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +28,6 @@ class SettingsStore(private val context: Context) {
     private val yaniNicknameKey = stringPreferencesKey("yani_nickname")
     private val yaniAvatarUrlKey = stringPreferencesKey("yani_avatar_url")
     private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
-    private val firstLaunchAtKey = longPreferencesKey("first_launch_at")
     private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
@@ -83,10 +81,6 @@ class SettingsStore(private val context: Context) {
 
     val yaniTokenRefreshAt: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[yaniTokenRefreshAtKey]?.toLongOrNull() ?: 0L
-    }
-
-    val firstLaunchAt: Flow<Long> = context.dataStore.data.map { prefs ->
-        prefs[firstLaunchAtKey] ?: 0L
     }
 
     suspend fun setPosterQuality(quality: PosterQuality) {
@@ -152,18 +146,6 @@ class SettingsStore(private val context: Context) {
             prefs.remove(yaniAvatarUrlKey)
             prefs.remove(yaniTokenRefreshAtKey)
         }
-    }
-
-    suspend fun ensureFirstLaunchAt(now: Long = System.currentTimeMillis()): Long {
-        var firstLaunchAt = now
-        context.dataStore.edit { prefs ->
-            val saved = prefs[firstLaunchAtKey]?.takeIf { it > 0L }
-            firstLaunchAt = saved ?: now
-            if (saved == null) {
-                prefs[firstLaunchAtKey] = now
-            }
-        }
-        return firstLaunchAt
     }
 
     suspend fun markStartedVersion(versionCode: Int): Boolean {

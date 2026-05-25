@@ -11,7 +11,6 @@
     <string name="details_error_title">Не удалось загрузить</string>
     <string name="retry">Повторить</string>
     <string name="details_back">Назад</string>
-    <string name="details_region_blocked">Контент недоступен в вашем регионе</string>
     <string name="details_balancer_title">Серия %1$s · Балансер</string>
     <string name="details_balancer_unsupported_hint">Будет доступен позже</string>
     <string name="details_balancer_open">Открыть</string>

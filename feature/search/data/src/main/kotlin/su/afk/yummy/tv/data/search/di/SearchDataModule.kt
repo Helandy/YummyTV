@@ -9,7 +9,6 @@ import su.afk.yummy.tv.data.search.YaniSearchRepository
 import su.afk.yummy.tv.domain.search.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.SearchRepository
 import su.afk.yummy.tv.domain.search.SearchUseCase
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -21,10 +20,7 @@ object SearchDataModule {
     fun provideSearchRepository(client: HttpClient): SearchRepository = YaniSearchRepository(client)
 
     @Provides
-    fun provideSearchUseCase(
-        repo: SearchRepository,
-        @Named("hideRegionBlocked") hideRegionBlocked: Boolean,
-    ) = SearchUseCase(repo, hideRegionBlocked)
+    fun provideSearchUseCase(repo: SearchRepository) = SearchUseCase(repo)
 
     @Provides
     fun provideGetSearchFilterOptionsUseCase(repo: SearchRepository) = GetSearchFilterOptionsUseCase(repo)

@@ -18,7 +18,6 @@ data class AnimeDetails(
     val studios: List<AnimeStudio>,
     val viewingOrder: List<AnimeViewingOrderItem>,
     val screenshots: List<AnimeScreenshot>,
-    val blockedIn: List<String>,
 )
 
 data class AnimePoster(

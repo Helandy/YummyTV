@@ -5,7 +5,6 @@ data class AnimeTopItem(
     val title: String,
     val posterUrl: String?,
     val rating: Double?,
-    val blockedIn: List<String>,
 )
 
 enum class AnimeTopType(val apiValue: String) {

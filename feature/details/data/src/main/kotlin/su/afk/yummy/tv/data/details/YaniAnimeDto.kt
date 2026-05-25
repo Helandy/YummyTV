@@ -29,7 +29,6 @@ data class YaniAnimeResponseDto(
     val studios: List<YaniNamedDto> = emptyList(),
     @SerialName("viewing_order") val viewingOrder: List<YaniViewingOrderItemDto> = emptyList(),
     @SerialName("random_screenshots") val randomScreenshots: List<YaniScreenshotDto> = emptyList(),
-    @SerialName("blocked_in") val blockedIn: List<String> = emptyList(),
 )
 
 @Serializable

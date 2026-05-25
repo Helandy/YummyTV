@@ -14,7 +14,6 @@ data class YaniSearchItemDto(
     val title: String = "",
     val poster: YaniSearchPosterDto? = null,
     val rating: YaniSearchRatingDto? = null,
-    @SerialName("blocked_in") val blockedIn: List<String> = emptyList(),
 )
 
 @Serializable

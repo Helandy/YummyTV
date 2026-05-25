@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.details.view.BalancerPickerOverlay
-import su.afk.yummy.tv.feature.details.view.DetailsBlocked
 import su.afk.yummy.tv.feature.details.view.DetailsContent
 import su.afk.yummy.tv.feature.details.view.DetailsError
 import su.afk.yummy.tv.feature.details.view.LibraryListPickerOverlay
@@ -126,9 +125,6 @@ fun DetailsTvScreen(
     val details = state.details
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            state.isRegionBlocked -> DetailsBlocked(
-                onBack = { onEvent(DetailsState.Event.BackSelected) },
-            )
             state.isLoading && details == null -> TvLoadingScreen()
             error != null && details == null -> DetailsError(
                 message = error,
@@ -158,10 +154,6 @@ fun DetailsTvScreen(
                 onCollectionSelected = { collectionId -> onEvent(DetailsState.Event.CollectionSelected(collectionId)) },
             )
             else -> TvLoadingScreen()
-        }
-
-        BackHandler(enabled = state.isRegionBlocked) {
-            onEvent(DetailsState.Event.BackSelected)
         }
 
         if (state.showPosterFullscreen && details != null) {
