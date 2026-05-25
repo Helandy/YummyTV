@@ -37,6 +37,16 @@
     <string name="details_watch_not_found">Video not found</string>
     <string name="details_in_library">★  In library</string>
     <string name="details_add_library">☆  Add to library</string>
+    <string name="details_add_favorite">☆  Favorite</string>
+    <string name="details_remove_favorite">★  Favorite</string>
+    <string name="details_subscriptions">Subscriptions</string>
+    <string name="details_subscriptions_loading">Loading subscriptions...</string>
+    <string name="details_subscriptions_empty">No dubbings found</string>
+    <string name="details_subscription_dubbing">Dubbing: %1$s</string>
+    <string name="details_subscription_player">Player: %1$s</string>
+    <string name="details_subscription_episodes">%1$d episodes</string>
+    <string name="details_subscription_subscribe">Subscribe</string>
+    <string name="details_subscription_unsubscribe">Unsubscribe</string>
     <string name="details_subscribe_updates">Subscribe to new episodes</string>
     <string name="details_unsubscribe_updates">Unsubscribe from new episodes</string>
     <string name="details_library_picker_title">Add to list</string>
@@ -71,7 +81,10 @@
     <string name="details_rating_empty">No Yani ratings yet</string>
     <string name="details_rating_votes_short">%1$d user ratings</string>
     <string name="details_list_stats">Watching %1$d · Planned %2$d · Completed %3$d</string>
+    <string name="details_collections_button">Collections</string>
     <string name="details_collections_title">Collections with this title</string>
+    <string name="details_collections_empty">No collections found</string>
+    <string name="details_collection_views">%1$d views</string>
     <string name="details_similar">Similar</string>
     <string name="details_viewing_order">Order</string>
     <string name="details_viewing_order_title">Viewing order</string>

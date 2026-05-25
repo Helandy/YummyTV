@@ -129,6 +129,7 @@ internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
     episode = number,
     dubbing = data.dubbing,
     player = data.player,
+    playerId = data.playerId,
     iframeUrl = iframeUrl.toHttpsUrl(),
     durationSeconds = duration,
     views = views,

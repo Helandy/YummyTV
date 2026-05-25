@@ -13,4 +13,5 @@ class DetailsNavigator @Inject constructor() : IDetailsNavigator {
     override fun getViewingOrderDest(animeId: Int): NavKey = DetailsViewingOrderDestination(animeId)
     override fun getScreenshotsDest(animeId: Int): NavKey = DetailsScreenshotsDestination(animeId)
     override fun getRatingDest(animeId: Int): NavKey = DetailsRatingDestination(animeId)
+    override fun getCollectionsDest(animeId: Int): NavKey = DetailsCollectionsDestination(animeId)
 }

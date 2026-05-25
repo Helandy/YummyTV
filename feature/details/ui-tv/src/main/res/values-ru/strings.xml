@@ -37,6 +37,16 @@
     <string name="details_watch_not_found">Видео не найдено</string>
     <string name="details_in_library">★  В списке</string>
     <string name="details_add_library">☆  В список</string>
+    <string name="details_add_favorite">☆  Любимые</string>
+    <string name="details_remove_favorite">★  Любимые</string>
+    <string name="details_subscriptions">Подписки</string>
+    <string name="details_subscriptions_loading">Загружаем подписки...</string>
+    <string name="details_subscriptions_empty">Озвучки не найдены</string>
+    <string name="details_subscription_dubbing">Озвучка: %1$s</string>
+    <string name="details_subscription_player">Плеер: %1$s</string>
+    <string name="details_subscription_episodes">Серий: %1$d</string>
+    <string name="details_subscription_subscribe">Подписаться</string>
+    <string name="details_subscription_unsubscribe">Отписаться</string>
     <string name="details_subscribe_updates">Подписаться на новые серии</string>
     <string name="details_unsubscribe_updates">Отписаться от новых серий</string>
     <string name="details_library_picker_title">Добавить в список</string>
@@ -71,7 +81,10 @@
     <string name="details_rating_empty">Оценок Yani пока нет</string>
     <string name="details_rating_votes_short">%1$d оценок пользователей</string>
     <string name="details_list_stats">Смотрят %1$d · В планах %2$d · Завершили %3$d</string>
+    <string name="details_collections_button">Коллекции</string>
     <string name="details_collections_title">Коллекции с этим тайтлом</string>
+    <string name="details_collections_empty">Коллекции не найдены</string>
+    <string name="details_collection_views">%1$d просмотров</string>
     <string name="details_similar">Похожее</string>
     <string name="details_viewing_order">Порядок</string>
     <string name="details_viewing_order_title">Порядок просмотра</string>

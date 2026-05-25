@@ -11,4 +11,5 @@ interface IDetailsNavigator {
     fun getViewingOrderDest(animeId: Int): NavKey
     fun getScreenshotsDest(animeId: Int): NavKey
     fun getRatingDest(animeId: Int): NavKey
+    fun getCollectionsDest(animeId: Int): NavKey
 }

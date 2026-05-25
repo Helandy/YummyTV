@@ -36,8 +36,10 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
+import su.afk.yummy.tv.core.storage.settings.PosterQuality
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.CollapsedPanelWidth
 import su.afk.yummy.tv.feature.library.R
@@ -58,6 +60,7 @@ internal fun LibraryGrid(
     val gridState = rememberLazyGridState()
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
     val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val posterQuality = LocalPosterQuality.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
@@ -168,7 +171,7 @@ internal fun LibraryGrid(
             ) {
                 TvTitleCard(
                     title = item.title,
-                    posterUrl = item.posterUrl,
+                    posterUrl = item.posterUrl(posterQuality),
                     onClick = stableOnClick,
                     onFocused = stableOnFocused,
                     screenshotUrls = if (item.animeId == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
@@ -200,4 +203,11 @@ internal fun LibraryGrid(
             }
         }
     }
+}
+
+private fun LibraryEntry.posterUrl(quality: PosterQuality): String? = when (quality) {
+    PosterQuality.LOW -> posterMediumUrl ?: posterBigUrl ?: posterFullsizeUrl ?: posterSmallUrl
+    PosterQuality.STANDARD -> posterBigUrl ?: posterMediumUrl ?: posterFullsizeUrl ?: posterSmallUrl
+    PosterQuality.MEGA -> posterMegaUrl ?: posterBigUrl ?: posterMediumUrl ?: posterFullsizeUrl ?: posterSmallUrl
+    PosterQuality.HIGH -> posterFullsizeUrl ?: posterMegaUrl ?: posterBigUrl ?: posterMediumUrl ?: posterSmallUrl
 }

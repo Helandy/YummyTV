@@ -7,6 +7,8 @@
     <string name="library_delete">Delete</string>
     <string name="library_tab_continue_watching">Continue</string>
     <string name="library_tab_continue_watching_short">Co</string>
+    <string name="library_tab_favorites">Favorites</string>
+    <string name="library_tab_favorites_short">Fa</string>
     <string name="library_tab_watching">Watching</string>
     <string name="library_tab_watching_short">Wa</string>
     <string name="library_tab_planned">Planned</string>

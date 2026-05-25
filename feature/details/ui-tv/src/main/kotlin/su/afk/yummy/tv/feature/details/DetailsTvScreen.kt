@@ -42,6 +42,7 @@ import su.afk.yummy.tv.feature.details.view.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.DetailsContent
 import su.afk.yummy.tv.feature.details.view.DetailsError
 import su.afk.yummy.tv.feature.details.view.LibraryListPickerOverlay
+import su.afk.yummy.tv.feature.details.view.SubscriptionsPickerOverlay
 
 @Composable
 private fun BalancerOptionItem(
@@ -136,14 +137,15 @@ fun DetailsTvScreen(
                 isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
                 watchProgress = state.watchProgress,
                 isInLibrary = state.isInLibrary,
+                isFavorite = state.isFavorite,
                 libraryList = state.libraryList,
                 collections = state.collections,
-                canSubscribe = state.isSignedIn && state.subscriptionVideoId > 0,
-                isSubscribed = state.isSubscribed,
+                canSubscribe = state.isSignedIn && state.subscriptions.isNotEmpty(),
                 restoreButtonFocusRequest = restoreButtonFocusRequest,
                 onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled) },
+                onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
                 onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                 onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                 onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
@@ -151,7 +153,7 @@ fun DetailsTvScreen(
                 onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
                 onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
                 onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
-                onCollectionSelected = { collectionId -> onEvent(DetailsState.Event.CollectionSelected(collectionId)) },
+                onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
             )
             else -> TvLoadingScreen()
         }
@@ -216,6 +218,22 @@ fun DetailsTvScreen(
                     restoreButtonFocus()
                 },
                 onDismiss = ::dismissLibraryListPicker,
+            )
+        }
+
+        BackHandler(enabled = state.showSubscriptionsPicker) {
+            onEvent(DetailsState.Event.SubscriptionsDismissed)
+            restoreButtonFocus()
+        }
+        if (state.showSubscriptionsPicker) {
+            SubscriptionsPickerOverlay(
+                subscriptions = state.subscriptions,
+                isLoading = state.isSubscriptionsLoading,
+                onToggle = { key -> onEvent(DetailsState.Event.SubscriptionToggled(key)) },
+                onDismiss = {
+                    onEvent(DetailsState.Event.SubscriptionsDismissed)
+                    restoreButtonFocus()
+                },
             )
         }
     }

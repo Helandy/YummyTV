@@ -32,7 +32,9 @@ import su.afk.yummy.tv.domain.account.usecase.GetCollectionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserStatsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
 import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
@@ -100,6 +102,9 @@ object AccountDataModule {
     fun provideGetUserAnimeListUseCase(repository: UserListsRepository) = GetUserAnimeListUseCase(repository)
 
     @Provides
+    fun provideGetUserFavoriteAnimeListUseCase(repository: UserListsRepository) = GetUserFavoriteAnimeListUseCase(repository)
+
+    @Provides
     fun provideGetAnimeListStateUseCase(repository: UserListsRepository) = GetAnimeListStateUseCase(repository)
 
     @Provides
@@ -144,6 +149,10 @@ object AccountDataModule {
     @Provides
     fun provideSetVideoSubscriptionUseCase(repository: VideoSubscriptionRepository) =
         SetVideoSubscriptionUseCase(repository)
+
+    @Provides
+    fun provideGetVideoSubscriptionsUseCase(repository: VideoSubscriptionRepository) =
+        GetVideoSubscriptionsUseCase(repository)
 
     @Provides
     fun provideGetUserStatsUseCase(repository: UserStatsRepository) = GetUserStatsUseCase(repository)

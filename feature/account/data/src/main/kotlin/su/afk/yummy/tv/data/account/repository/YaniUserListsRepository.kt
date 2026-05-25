@@ -14,6 +14,9 @@ class YaniUserListsRepository(
     override suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
         api.getUserList(userId, list.id).mapNotNull { it.toUserListItem() }
 
+    override suspend fun getUserFavorites(userId: Int): List<UserAnimeListItem> =
+        api.getUserList(userId, FAVORITES_LIST_ID).mapNotNull { it.toUserListItem() }
+
     override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? {
         val state = api.getAnimeListState(animeId)
         return UserAnimeListItem(
@@ -41,5 +44,9 @@ class YaniUserListsRepository(
         } else {
             api.removeFavorite(animeId)
         }
+    }
+
+    private companion object {
+        const val FAVORITES_LIST_ID = 4
     }
 }

@@ -6,6 +6,8 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.feature.details.CollectionsTvScreen
+import su.afk.yummy.tv.feature.details.CollectionsViewModel
 import su.afk.yummy.tv.feature.details.DetailsTvScreen
 import su.afk.yummy.tv.feature.details.DetailsViewModel
 import su.afk.yummy.tv.feature.details.EpisodesTvScreen
@@ -105,6 +107,16 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     RatingTvScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+
+            entry<DetailsCollectionsDestination> { dest ->
+                val viewModel = hiltViewModel<CollectionsViewModel, CollectionsViewModel.Factory>(
+                    key = "collections-${dest.animeId}",
+                    creationCallback = { factory -> factory.create(dest.animeId) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    CollectionsTvScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
         }

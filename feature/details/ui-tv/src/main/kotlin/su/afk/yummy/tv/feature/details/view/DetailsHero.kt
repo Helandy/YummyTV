@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
-import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -57,17 +56,18 @@ internal fun DetailsHero(
     details: AnimeDetails,
     downFocusRequester: FocusRequester,
     isInLibrary: Boolean,
+    isFavorite: Boolean,
     libraryList: UserAnimeList?,
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     collections: List<AnimeCollectionSummary>,
     canSubscribe: Boolean,
-    isSubscribed: Boolean,
     restoreButtonFocusRequest: Int,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
-    onSubscriptionToggle: () -> Unit,
+    onFavoriteToggle: () -> Unit,
+    onSubscriptionsSelected: () -> Unit,
     onFullDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -75,7 +75,7 @@ internal fun DetailsHero(
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
-    onCollectionSelected: (Int) -> Unit,
+    onCollectionsSelected: () -> Unit,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -145,17 +145,19 @@ internal fun DetailsHero(
                 DetailsButtonBar(
                     details = details,
                     isInLibrary = isInLibrary,
+                    isFavorite = isFavorite,
                     libraryList = libraryList,
                     videosState = videosState,
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     canSubscribe = canSubscribe,
-                    isSubscribed = isSubscribed,
+                    hasCollections = collections.isNotEmpty(),
                     restoreFocusRequest = restoreButtonFocusRequest,
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,
                     onLibraryToggle = onLibraryToggle,
-                    onSubscriptionToggle = onSubscriptionToggle,
+                    onFavoriteToggle = onFavoriteToggle,
+                    onSubscriptionsSelected = onSubscriptionsSelected,
                     onDetailsSelected = onFullDetailsSelected,
                     onEpisodesSelected = onEpisodesSelected,
                     onTrailersSelected = onTrailersSelected,
@@ -163,13 +165,9 @@ internal fun DetailsHero(
                     onViewingOrderSelected = onViewingOrderSelected,
                     onScreenshotsSelected = onScreenshotsSelected,
                     onRatingSelected = onRatingScreenSelected,
+                    onCollectionsSelected = onCollectionsSelected,
                     modifier = Modifier.padding(top = 8.dp),
                     height = buttonBarHeight,
-                )
-
-                DetailsAccountExtras(
-                    collections = collections,
-                    onCollectionSelected = onCollectionSelected,
                 )
             }
 
@@ -198,52 +196,6 @@ internal fun DetailsHero(
             }
         }
     }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun DetailsAccountExtras(
-    collections: List<AnimeCollectionSummary>,
-    onCollectionSelected: (Int) -> Unit,
-) {
-    if (collections.isEmpty()) return
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(R.string.details_collections_title),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f),
-        )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            collections.take(3).forEach { collection ->
-                ExtraPill(
-                    label = collection.title,
-                    onClick = { onCollectionSelected(collection.id) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExtraPill(label: String, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(6.dp)
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-            .tvFocusableClick(onClick = onClick, shape = shape)
-            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f), shape)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

@@ -7,6 +7,8 @@
     <string name="library_delete">Удалить</string>
     <string name="library_tab_continue_watching">Продолжить</string>
     <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_tab_favorites">Любимые</string>
+    <string name="library_tab_favorites_short">Лю</string>
     <string name="library_tab_watching">Смотрю</string>
     <string name="library_tab_watching_short">См</string>
     <string name="library_tab_planned">В планах</string>

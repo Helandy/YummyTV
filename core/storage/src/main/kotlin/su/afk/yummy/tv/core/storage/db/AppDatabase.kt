@@ -9,7 +9,7 @@ import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressDao
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 
-@Database(entities = [CacheEntry::class, LibraryEntry::class, WatchProgressEntry::class], version = 9, exportSchema = false)
+@Database(entities = [CacheEntry::class, LibraryEntry::class, WatchProgressEntry::class], version = 11, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cacheDao(): CacheDao
     abstract fun libraryDao(): LibraryDao

@@ -59,17 +59,19 @@ private data class ButtonData(
 internal fun DetailsButtonBar(
     details: AnimeDetails,
     isInLibrary: Boolean,
+    isFavorite: Boolean,
     libraryList: UserAnimeList?,
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     canSubscribe: Boolean,
-    isSubscribed: Boolean,
+    hasCollections: Boolean,
     restoreFocusRequest: Int,
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
-    onSubscriptionToggle: () -> Unit,
+    onFavoriteToggle: () -> Unit,
+    onSubscriptionsSelected: () -> Unit,
     onDetailsSelected: () -> Unit,
     onEpisodesSelected: () -> Unit,
     onTrailersSelected: () -> Unit,
@@ -77,6 +79,7 @@ internal fun DetailsButtonBar(
     onViewingOrderSelected: () -> Unit,
     onScreenshotsSelected: () -> Unit,
     onRatingSelected: () -> Unit,
+    onCollectionsSelected: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 150.dp,
 ) {
@@ -102,15 +105,20 @@ internal fun DetailsButtonBar(
             style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
             onClick = onLibraryToggle,
         ),
+        ButtonData(
+            label = stringResource(
+                if (isFavorite) R.string.details_remove_favorite
+                else R.string.details_add_favorite,
+            ),
+            style = if (isFavorite) ButtonStyle.Outlined else ButtonStyle.Normal,
+            onClick = onFavoriteToggle,
+        ),
     ) + if (canSubscribe) {
         listOf(
             ButtonData(
-                label = stringResource(
-                    if (isSubscribed) R.string.details_unsubscribe_updates
-                    else R.string.details_subscribe_updates,
-                ),
-                style = if (isSubscribed) ButtonStyle.Outlined else ButtonStyle.Normal,
-                onClick = onSubscriptionToggle,
+                label = stringResource(R.string.details_subscriptions),
+                style = ButtonStyle.Normal,
+                onClick = onSubscriptionsSelected,
             )
         )
     } else {
@@ -122,7 +130,11 @@ internal fun DetailsButtonBar(
         ButtonData(stringResource(R.string.details_similar), ButtonStyle.Normal, onSimilarSelected),
         ButtonData(stringResource(R.string.details_viewing_order), ButtonStyle.Normal, onViewingOrderSelected),
         ButtonData(stringResource(R.string.details_rating_button), ButtonStyle.Normal, onRatingSelected),
-    ) + if (details.screenshots.isNotEmpty()) {
+    ) + if (hasCollections) {
+        listOf(ButtonData(stringResource(R.string.details_collections_button), ButtonStyle.Normal, onCollectionsSelected))
+    } else {
+        emptyList()
+    } + if (details.screenshots.isNotEmpty()) {
         listOf(ButtonData(stringResource(R.string.details_screenshots_title), ButtonStyle.Normal, onScreenshotsSelected))
     } else {
         emptyList()

@@ -41,10 +41,11 @@ internal fun LibrarySidePanel(
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selectedIndex = LibraryTab.entries.indexOf(selectedTab).coerceAtLeast(0)
+    val tabs = remember { libraryTabsDisplayOrder() }
+    val selectedIndex = tabs.indexOf(selectedTab).coerceAtLeast(0)
     var focusedIndex by remember { mutableIntStateOf(selectedIndex) }
-    val itemFocusRequesters = remember { List(LibraryTab.entries.size) { FocusRequester() } }
-    val effectiveFocusRequesters = LibraryTab.entries.mapIndexed { index, _ ->
+    val itemFocusRequesters = remember(tabs.size) { List(tabs.size) { FocusRequester() } }
+    val effectiveFocusRequesters = tabs.mapIndexed { index, _ ->
         if (index == selectedIndex) selectedTabFocusRequester else itemFocusRequesters[index]
     }
     val panelWidth by animateDpAsState(
@@ -93,7 +94,7 @@ internal fun LibrarySidePanel(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        LibraryTab.entries.forEachIndexed { index, tab ->
+        tabs.forEachIndexed { index, tab ->
             LibrarySidePanelItem(
                 label = tab.label(),
                 shortLabel = tab.shortLabel(),
@@ -110,10 +111,14 @@ internal fun LibrarySidePanel(
     }
 }
 
+private fun libraryTabsDisplayOrder(): List<LibraryTab> =
+    LibraryTab.entries.filterNot { it == LibraryTab.FAVORITES } + LibraryTab.FAVORITES
+
 @Composable
 private fun LibraryTab.label(): String = stringResource(
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching
+        LibraryTab.FAVORITES -> R.string.library_tab_favorites
         LibraryTab.WATCHING -> R.string.library_tab_watching
         LibraryTab.PLANNED -> R.string.library_tab_planned
         LibraryTab.COMPLETED -> R.string.library_tab_completed
@@ -126,6 +131,7 @@ private fun LibraryTab.label(): String = stringResource(
 private fun LibraryTab.shortLabel(): String = stringResource(
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching_short
+        LibraryTab.FAVORITES -> R.string.library_tab_favorites_short
         LibraryTab.WATCHING -> R.string.library_tab_watching_short
         LibraryTab.PLANNED -> R.string.library_tab_planned_short
         LibraryTab.COMPLETED -> R.string.library_tab_completed_short

@@ -15,12 +15,18 @@ interface LibraryDao {
     @Query("SELECT * FROM library ORDER BY addedAt DESC")
     suspend fun getAll(): List<LibraryEntry>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM library WHERE animeId = :animeId)")
+    @Query("SELECT * FROM library WHERE animeId = :animeId")
+    suspend fun getByAnimeId(animeId: Int): LibraryEntry?
+
+    @Query("SELECT EXISTS(SELECT 1 FROM library WHERE animeId = :animeId AND listId >= 0)")
     fun observeIsInLibrary(animeId: Int): Flow<Boolean>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM library WHERE animeId = :animeId AND isFavorite = 1)")
+    fun observeIsFavorite(animeId: Int): Flow<Boolean>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(entry: LibraryEntry)
 
     @Query("DELETE FROM library WHERE animeId = :animeId")
-    suspend fun remove(animeId: Int)
+    suspend fun delete(animeId: Int)
 }

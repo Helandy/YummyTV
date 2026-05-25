@@ -10,15 +10,19 @@ import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListWatchStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserRatingStatDto
+import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionDto
+import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
+import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 
 internal fun YaniProfileDto.toAccount(): YaniAccount =
@@ -33,7 +37,8 @@ internal fun YaniUserAnimeDto.toUserListItem(): UserAnimeListItem? {
     return UserAnimeListItem(
         animeId = id,
         title = title,
-        posterUrl = poster?.bestUrl(),
+        posterUrl = poster?.toUserAnimePoster()?.standardUrl,
+        poster = poster?.toUserAnimePoster(),
         rating = rating?.takeIf { it > 0.0 },
         year = year?.takeIf { it > 0 },
         list = user?.list?.list?.id.toUserAnimeList(),
@@ -43,12 +48,28 @@ internal fun YaniUserAnimeDto.toUserListItem(): UserAnimeListItem? {
 
 internal fun YaniCollectionSummaryDto.toCollectionSummary(): AnimeCollectionSummary? {
     val id = id ?: return null
+    val poster = posterPreviews.firstOrNull()?.toCollectionPoster()
+        ?: animes.firstOrNull()?.poster?.toCollectionPoster()
     return AnimeCollectionSummary(
         id = id,
         title = title,
         description = description,
-        posterUrl = animes.firstOrNull()?.poster?.bestUrl(),
+        posterUrl = poster?.standardUrl,
+        poster = poster,
         views = views,
+    )
+}
+
+internal fun YaniVideoSubscriptionDto.toVideoSubscription(): VideoSubscription? {
+    val id = animeId ?: return null
+    val subInfo = sub ?: return null
+    return VideoSubscription(
+        animeId = id,
+        playerId = subInfo.playerId,
+        player = subInfo.player,
+        dubbing = subInfo.dubbing,
+        posterUrl = poster?.bestUrl(),
+        title = title,
     )
 }
 
@@ -57,6 +78,30 @@ internal fun Int?.toUserAnimeList(): UserAnimeList? =
 
 internal fun YaniAccountPosterDto.bestUrl(): String? =
     mega?.toHttpsUrl() ?: huge?.toHttpsUrl() ?: big?.toHttpsUrl() ?: medium?.toHttpsUrl() ?: fullsize?.toHttpsUrl() ?: small?.toHttpsUrl()
+
+private fun YaniAccountPosterDto.toCollectionPoster(): AnimeCollectionPoster =
+    AnimeCollectionPoster(
+        small = small?.toHttpsUrl(),
+        medium = medium?.toHttpsUrl(),
+        big = big?.toHttpsUrl(),
+        fullsize = fullsize?.toHttpsUrl(),
+        mega = mega?.toHttpsUrl(),
+    )
+
+private fun YaniAccountPosterDto.toUserAnimePoster(): UserAnimePoster =
+    UserAnimePoster(
+        small = small?.toHttpsUrl(),
+        medium = medium?.toHttpsUrl(),
+        big = big?.toHttpsUrl(),
+        fullsize = fullsize?.toHttpsUrl(),
+        mega = mega?.toHttpsUrl(),
+    )
+
+private val AnimeCollectionPoster.standardUrl: String?
+    get() = big ?: medium ?: fullsize ?: small
+
+private val UserAnimePoster.standardUrl: String?
+    get() = big ?: medium ?: fullsize ?: small
 
 internal fun String.toHttpsUrl(): String = when {
     startsWith("//") -> "https:$this"

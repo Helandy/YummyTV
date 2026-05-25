@@ -11,6 +11,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimePreview
 
 enum class LibraryTab {
     CONTINUE_WATCHING,
+    FAVORITES,
     WATCHING,
     PLANNED,
     COMPLETED,
@@ -37,6 +38,7 @@ class LibraryState {
         data class ItemFocused(val animeId: Int) : Event
         data class TabSelected(val tab: LibraryTab) : Event
         data class RemoveLibraryEntry(val animeId: Int) : Event
+        data class RemoveFavoriteEntry(val animeId: Int) : Event
         data class RemoveWatchProgress(val animeId: Int) : Event
         data class RemoveRemoteEntry(val animeId: Int, val list: UserAnimeList? = null, val favorite: Boolean = false) : Event
     }

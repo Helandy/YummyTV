@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
 import su.afk.yummy.tv.feature.library.view.LibrarySidePanel
@@ -48,8 +49,15 @@ fun LibraryTvScreen(
     var restoreGridFocusOnResume by rememberSaveable { mutableStateOf(false) }
     var restoreContinueWatchingFirstOnResume by rememberSaveable { mutableStateOf(false) }
     var continueWatchingRestoreFirstToken by rememberSaveable { mutableIntStateOf(0) }
+    val signedInFavoriteItems = state.signedInFavoriteItems()
+    val remoteFavoriteIds = state.remoteItems[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
     val hasFocusableGridContent = when (state.selectedTab) {
         LibraryTab.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
+        LibraryTab.FAVORITES -> if (state.isSignedIn) {
+            signedInFavoriteItems.isNotEmpty()
+        } else {
+            state.items.any { it.isFavorite }
+        }
         LibraryTab.PLANNED,
         LibraryTab.COMPLETED,
         LibraryTab.DROPPED,
@@ -107,6 +115,48 @@ fun LibraryTvScreen(
                 onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
                 onRemoveWatchProgress = { onEvent(LibraryState.Event.RemoveWatchProgress(it)) },
             )
+            LibraryTab.FAVORITES -> {
+                if (!state.isSignedIn) {
+                    LibraryGrid(
+                        items = state.items.filter { it.isFavorite },
+                        focusedItemId = state.focusedItemId,
+                        focusedPreview = state.focusedPreview,
+                        gridFocusRequester = gridFocusRequester,
+                        sidePanelFocusRequester = selectedTabFocusRequester,
+                        onAnimeSelected = {
+                            restoreGridFocusOnResume = true
+                            onEvent(LibraryState.Event.AnimeSelected(it))
+                        },
+                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                        onRemoveLibraryEntry = { onEvent(LibraryState.Event.RemoveFavoriteEntry(it)) },
+                    )
+                } else {
+                    LibraryGrid(
+                        items = signedInFavoriteItems,
+                        focusedItemId = state.focusedItemId,
+                        focusedPreview = state.focusedPreview,
+                        gridFocusRequester = gridFocusRequester,
+                        sidePanelFocusRequester = selectedTabFocusRequester,
+                        onAnimeSelected = {
+                            restoreGridFocusOnResume = true
+                            onEvent(LibraryState.Event.RemoteAnimeSelected(it))
+                        },
+                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                        onRemoveLibraryEntry = {
+                            if (it in remoteFavoriteIds) {
+                                onEvent(
+                                    LibraryState.Event.RemoveRemoteEntry(
+                                        animeId = it,
+                                        favorite = true,
+                                    )
+                                )
+                            } else {
+                                onEvent(LibraryState.Event.RemoveFavoriteEntry(it))
+                            }
+                        },
+                    )
+                }
+            }
             LibraryTab.WATCHING,
             LibraryTab.PLANNED,
             LibraryTab.COMPLETED,
@@ -130,7 +180,7 @@ fun LibraryTvScreen(
                 } else {
                     val remoteItems = state.remoteItems[state.selectedTab].orEmpty()
                     LibraryGrid(
-                        items = remoteItems.map { LibraryEntry(it.animeId, it.title, it.posterUrl) },
+                        items = remoteItems.map { it.toLibraryEntry() },
                         focusedItemId = state.focusedItemId,
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
@@ -163,8 +213,41 @@ fun LibraryTvScreen(
     }
 }
 
+private fun LibraryState.State.signedInFavoriteItems(): List<LibraryEntry> {
+    val remoteFavorites = remoteItems[LibraryTab.FAVORITES].orEmpty()
+    val remoteIds = remoteFavorites.map { it.animeId }.toSet()
+    val localOnlyFavorites = items.filter { it.isFavorite && it.animeId !in remoteIds }
+    val remoteEntries = remoteFavorites.map {
+        LibraryEntry(
+            animeId = it.animeId,
+            title = it.title,
+            posterSmallUrl = it.poster?.small,
+            posterMediumUrl = it.poster?.medium,
+            posterBigUrl = it.poster?.big,
+            posterFullsizeUrl = it.poster?.fullsize,
+            posterMegaUrl = it.poster?.mega,
+            isFavorite = true,
+        )
+    }
+    return localOnlyFavorites + remoteEntries
+}
+
+private fun UserAnimeListItem.toLibraryEntry(): LibraryEntry =
+    LibraryEntry(
+        animeId = animeId,
+        title = title,
+        posterSmallUrl = poster?.small,
+        posterMediumUrl = poster?.medium,
+        posterBigUrl = poster?.big,
+        posterFullsizeUrl = poster?.fullsize,
+        posterMegaUrl = poster?.mega,
+        listId = list?.id ?: 0,
+        isFavorite = isFavorite,
+    )
+
 private fun LibraryTab.userAnimeListId(): Int? = when (this) {
     LibraryTab.CONTINUE_WATCHING -> null
+    LibraryTab.FAVORITES -> null
     LibraryTab.WATCHING -> UserAnimeList.WATCHING.id
     LibraryTab.PLANNED -> UserAnimeList.PLANNED.id
     LibraryTab.COMPLETED -> UserAnimeList.COMPLETED.id

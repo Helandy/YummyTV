@@ -26,3 +26,6 @@ data class DetailsScreenshotsDestination(val animeId: Int) : NavKey
 
 @Serializable
 data class DetailsRatingDestination(val animeId: Int) : NavKey
+
+@Serializable
+data class DetailsCollectionsDestination(val animeId: Int) : NavKey

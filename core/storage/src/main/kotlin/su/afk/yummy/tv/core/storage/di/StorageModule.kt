@@ -32,11 +32,69 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE library ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    private val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS library_new (
+                    animeId INTEGER NOT NULL,
+                    title TEXT NOT NULL,
+                    posterSmallUrl TEXT,
+                    posterMediumUrl TEXT,
+                    posterBigUrl TEXT,
+                    posterFullsizeUrl TEXT,
+                    posterMegaUrl TEXT,
+                    addedAt INTEGER NOT NULL,
+                    listId INTEGER NOT NULL,
+                    isFavorite INTEGER NOT NULL,
+                    PRIMARY KEY(animeId)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                INSERT INTO library_new (
+                    animeId,
+                    title,
+                    posterSmallUrl,
+                    posterMediumUrl,
+                    posterBigUrl,
+                    posterFullsizeUrl,
+                    posterMegaUrl,
+                    addedAt,
+                    listId,
+                    isFavorite
+                )
+                SELECT
+                    animeId,
+                    title,
+                    CASE WHEN posterUrl IS NULL THEN NULL ELSE replace(replace(replace(replace(replace(replace(replace(posterUrl, '/medium/', '/small/'), '/big/', '/small/'), '/full/', '/small/'), '/huge/', '/small/'), '/mega/', '/small/'), '.jpg', '.webp'), '.avif', '.webp') END,
+                    CASE WHEN posterUrl IS NULL THEN NULL ELSE replace(replace(replace(replace(replace(replace(replace(posterUrl, '/small/', '/medium/'), '/big/', '/medium/'), '/full/', '/medium/'), '/huge/', '/medium/'), '/mega/', '/medium/'), '.jpg', '.webp'), '.avif', '.webp') END,
+                    CASE WHEN posterUrl IS NULL THEN NULL ELSE replace(replace(replace(replace(replace(replace(replace(posterUrl, '/small/', '/big/'), '/medium/', '/big/'), '/full/', '/big/'), '/huge/', '/big/'), '/mega/', '/big/'), '.jpg', '.webp'), '.avif', '.webp') END,
+                    CASE WHEN posterUrl IS NULL THEN NULL ELSE replace(replace(replace(replace(replace(replace(replace(posterUrl, '/small/', '/full/'), '/medium/', '/full/'), '/big/', '/full/'), '/huge/', '/full/'), '/mega/', '/full/'), '.webp', '.jpg'), '.avif', '.jpg') END,
+                    CASE WHEN posterUrl IS NULL THEN NULL ELSE replace(replace(replace(replace(replace(replace(replace(posterUrl, '/small/', '/mega/'), '/medium/', '/mega/'), '/big/', '/mega/'), '/full/', '/mega/'), '/huge/', '/mega/'), '.webp', '.avif'), '.jpg', '.avif') END,
+                    addedAt,
+                    listId,
+                    isFavorite
+                FROM library
+                """.trimIndent()
+            )
+            db.execSQL("DROP TABLE library")
+            db.execSQL("ALTER TABLE library_new RENAME TO library")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "yummy_cache.db")
-            .addMigrations(MIGRATION_7_8, MIGRATION_8_9)
+            .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
 

@@ -17,13 +17,14 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
@@ -43,6 +44,7 @@ class LibraryViewModel @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val getUserAnimeList: GetUserAnimeListUseCase,
+    private val getUserFavoriteAnimeList: GetUserFavoriteAnimeListUseCase,
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
@@ -96,6 +98,8 @@ class LibraryViewModel @Inject constructor(
                 setState { copy(selectedTab = event.tab, focusedItemId = null, focusedPreview = null) }
             is LibraryState.Event.RemoveLibraryEntry ->
                 viewModelScope.launch { libraryStore.remove(event.animeId) }
+            is LibraryState.Event.RemoveFavoriteEntry ->
+                viewModelScope.launch { libraryStore.setFavorite(event.animeId, title = "", poster = null, favorite = false) }
             is LibraryState.Event.RemoveWatchProgress ->
                 viewModelScope.launch {
                     val entries = currentState.continueWatching.filter { it.animeId == event.animeId }
@@ -125,6 +129,7 @@ class LibraryViewModel @Inject constructor(
     private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> =
         mapOf(
             LibraryTab.WATCHING to getUserAnimeList(userId, UserAnimeList.WATCHING),
+            LibraryTab.FAVORITES to getUserFavoriteAnimeList(userId),
             LibraryTab.PLANNED to getUserAnimeList(userId, UserAnimeList.PLANNED),
             LibraryTab.COMPLETED to getUserAnimeList(userId, UserAnimeList.COMPLETED),
             LibraryTab.POSTPONED to getUserAnimeList(userId, UserAnimeList.POSTPONED),
@@ -134,13 +139,22 @@ class LibraryViewModel @Inject constructor(
     private suspend fun syncLocalMissingToRemote(
         remote: Map<LibraryTab, List<UserAnimeListItem>>,
     ): LocalLibrarySyncResult {
-        val remoteAnimeIds = remote.values.flatten().map { it.animeId }.toSet()
-        val localMissing = libraryStore.getAll().filterNot { it.animeId in remoteAnimeIds }
+        val remotePrimaryAnimeIds = remote
+            .filterKeys { it != LibraryTab.FAVORITES }
+            .values
+            .flatten()
+            .map { it.animeId }
+            .toSet()
+        val remoteFavoriteAnimeIds = remote[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
+        val localItems = libraryStore.getAll()
+        val localMissing = localItems
+            .filter { it.listId >= 0 }
+            .filterNot { it.animeId in remotePrimaryAnimeIds }
         var syncedAny = false
         var firstError: String? = null
 
         localMissing.forEach { entry ->
-            val list = entry.userAnimeList()
+            val list = entry.userAnimeList() ?: return@forEach
             runCatching {
                 setAnimeList(entry.animeId, list)
             }.fold(
@@ -148,6 +162,18 @@ class LibraryViewModel @Inject constructor(
                 onFailure = { if (firstError == null) firstError = it.message },
             )
         }
+
+        localItems
+            .filter { it.isFavorite }
+            .filterNot { it.animeId in remoteFavoriteAnimeIds }
+            .forEach { entry ->
+                runCatching {
+                    setAnimeFavorite(entry.animeId, true)
+                }.fold(
+                    onSuccess = { syncedAny = true },
+                    onFailure = { if (firstError == null) firstError = it.message },
+                )
+            }
 
         return LocalLibrarySyncResult(syncedAny = syncedAny, error = firstError)
     }
@@ -160,7 +186,13 @@ class LibraryViewModel @Inject constructor(
         }
         viewModelScope.launch {
             val result = runCatching {
-                if (event.favorite) setAnimeFavorite(event.animeId, false) else removeAnimeList(event.animeId)
+                if (event.favorite) {
+                    setAnimeFavorite(event.animeId, false)
+                    libraryStore.setFavorite(event.animeId, title = "", poster = null, favorite = false)
+                } else {
+                    removeAnimeList(event.animeId)
+                    libraryStore.remove(event.animeId)
+                }
             }
             if (result.isFailure) setState { copy(remoteItems = previous, remoteError = result.exceptionOrNull()?.message) }
         }
@@ -224,8 +256,8 @@ private data class LocalLibrarySyncResult(
     val error: String?,
 )
 
-private fun LibraryEntry.userAnimeList(): UserAnimeList =
-    UserAnimeList.entries.firstOrNull { it.id == listId } ?: UserAnimeList.WATCHING
+private fun LibraryEntry.userAnimeList(): UserAnimeList? =
+    UserAnimeList.entries.firstOrNull { it.id == listId }
 
 private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
     opening = opening.toPlayerSkipSegment(),

@@ -49,6 +49,7 @@ import su.afk.yummy.tv.data.account.dto.YaniUserStatsGenresResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsListsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsRatingsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsTypesResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionsResponseDto
 
 class YaniCaptchaRequiredException : RuntimeException("Captcha required")
 class YaniAccountException(message: String, val code: Int? = null) : RuntimeException(message)
@@ -106,7 +107,10 @@ class YaniAccountApi(
             .response
 
     suspend fun setAnimeList(animeId: Int, listId: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/list") { setBody(YaniSetListBodyDto(listId)) }
+        client.put("$YANI_BASE_URL/anime/$animeId/list") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniSetListBodyDto(listId))
+        }
     }
 
     suspend fun removeAnimeList(animeId: Int) {
@@ -114,7 +118,10 @@ class YaniAccountApi(
     }
 
     suspend fun setFavorite(animeId: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/list/fav") { setBody(YaniSetFavoriteBodyDto()) }
+        client.put("$YANI_BASE_URL/anime/$animeId/list/fav") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniSetFavoriteBodyDto())
+        }
     }
 
     suspend fun removeFavorite(animeId: Int) {
@@ -123,6 +130,7 @@ class YaniAccountApi(
 
     suspend fun markWatched(videoId: Int, timeSeconds: Int, durationSeconds: Int): Boolean =
         client.put("$YANI_BASE_URL/video/$videoId") {
+            contentType(ContentType.Application.Json)
             setBody(YaniPutVideoBodyDto(time = timeSeconds, duration = durationSeconds))
         }.body<YaniBooleanResponseDto>().response
 
@@ -131,6 +139,7 @@ class YaniAccountApi(
 
     suspend fun syncWatched(videos: List<YaniPostVideoItemDto>): Boolean =
         client.post("$YANI_BASE_URL/video") {
+            contentType(ContentType.Application.Json)
             setBody(YaniPostVideosBodyDto(videos))
         }.body<YaniBooleanResponseDto>().response
 
@@ -177,6 +186,11 @@ class YaniAccountApi(
 
     suspend fun removeSubscribed(videoId: Int): Boolean =
         client.delete("$YANI_BASE_URL/video/$videoId/subscribe").body<YaniBooleanResponseDto>().response
+
+    suspend fun getSubscriptions(userId: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/lists/subs")
+            .body<YaniVideoSubscriptionsResponseDto>()
+            .response
 
     suspend fun getUserStatsGenres(userId: Int) =
         client.get("$YANI_BASE_URL/users/$userId/stats/genres")

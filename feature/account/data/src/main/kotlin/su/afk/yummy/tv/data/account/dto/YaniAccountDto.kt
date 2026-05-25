@@ -68,6 +68,26 @@ data class YaniBooleanResponseDto(
 )
 
 @Serializable
+data class YaniVideoSubscriptionsResponseDto(
+    val response: List<YaniVideoSubscriptionDto> = emptyList(),
+)
+
+@Serializable
+data class YaniVideoSubscriptionDto(
+    @SerialName("anime_id") val animeId: Int? = null,
+    val title: String = "",
+    val poster: YaniAccountPosterDto? = null,
+    val sub: YaniVideoSubscriptionSubDto? = null,
+)
+
+@Serializable
+data class YaniVideoSubscriptionSubDto(
+    val player: String = "",
+    @SerialName("player_id") val playerId: Int? = null,
+    val dubbing: String = "",
+)
+
+@Serializable
 data class YaniUserListResponseDto(
     val response: List<YaniUserAnimeDto> = emptyList(),
 )
@@ -201,6 +221,7 @@ data class YaniCollectionSummaryDto(
     val title: String = "",
     val description: String = "",
     val animes: List<YaniCollectionAnimeDto> = emptyList(),
+    @SerialName("poster_previews") val posterPreviews: List<YaniAccountPosterDto> = emptyList(),
     val views: Int? = null,
 )
 

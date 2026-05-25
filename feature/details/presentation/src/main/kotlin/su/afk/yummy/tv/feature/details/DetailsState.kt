@@ -12,6 +12,15 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 
 data class BalancerOption(val playerName: String, val video: AnimeVideo, val isSupported: Boolean = true)
 data class BalancerPickerState(val episodeNumber: String, val options: List<BalancerOption>)
+data class SubscriptionOption(
+    val key: String,
+    val playerId: Int?,
+    val player: String,
+    val dubbing: String,
+    val episodesCount: Int,
+    val representativeVideoId: Int,
+    val isSubscribed: Boolean,
+)
 
 class DetailsState {
     data class State(
@@ -20,6 +29,7 @@ class DetailsState {
         val videosState: VideosUiState = VideosUiState.Loading,
         val error: String? = null,
         val isInLibrary: Boolean = false,
+        val isFavorite: Boolean = false,
         val libraryList: UserAnimeList? = null,
         val showPosterFullscreen: Boolean = false,
         val watchProgress: Map<String, WatchProgressEntry> = emptyMap(),
@@ -28,8 +38,9 @@ class DetailsState {
         val isWatchLaunchPending: Boolean = false,
         val collections: List<AnimeCollectionSummary> = emptyList(),
         val isSignedIn: Boolean = false,
-        val subscriptionVideoId: Int = 0,
-        val isSubscribed: Boolean = false,
+        val subscriptions: List<SubscriptionOption> = emptyList(),
+        val showSubscriptionsPicker: Boolean = false,
+        val isSubscriptionsLoading: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -44,7 +55,9 @@ class DetailsState {
         data object ViewingOrderSelected : Event
         data object ScreenshotsSelected : Event
         data object RatingScreenSelected : Event
+        data object CollectionsSelected : Event
         data object LibraryToggled : Event
+        data object FavoriteToggled : Event
         data object LibraryListPickerDismissed : Event
         data class LibraryListSelected(val list: UserAnimeList) : Event
         data object PosterClicked : Event
@@ -52,7 +65,9 @@ class DetailsState {
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event
         data class CollectionSelected(val collectionId: Int) : Event
-        data object SubscriptionToggled : Event
+        data object SubscriptionsSelected : Event
+        data object SubscriptionsDismissed : Event
+        data class SubscriptionToggled(val key: String) : Event
     }
 
     sealed interface Effect : UiEffect
