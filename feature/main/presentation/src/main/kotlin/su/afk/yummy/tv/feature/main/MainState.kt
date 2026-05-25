@@ -11,7 +11,9 @@ object MainState {
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val showScreenshotsOnFocus: Boolean = false,
         val yaniNickname: String = "",
+        val yaniAvatarUrl: String = "",
         val isYaniSignedIn: Boolean = false,
+        val unreadNotificationsCount: Int = 0,
     ) : UiState
 
     sealed class Event : UiEvent

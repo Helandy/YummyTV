@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
+    implementation(libs.coil.compose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jetbrains.navigation3.ui)

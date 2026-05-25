@@ -28,6 +28,7 @@ class SettingsStore(private val context: Context) {
     private val yaniNicknameKey = stringPreferencesKey("yani_nickname")
     private val yaniAvatarUrlKey = stringPreferencesKey("yani_avatar_url")
     private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
+    private val yaniUnreadNotificationsCountKey = intPreferencesKey("yani_unread_notifications_count")
     private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
@@ -81,6 +82,10 @@ class SettingsStore(private val context: Context) {
 
     val yaniTokenRefreshAt: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[yaniTokenRefreshAtKey]?.toLongOrNull() ?: 0L
+    }
+
+    val yaniUnreadNotificationsCount: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[yaniUnreadNotificationsCountKey] ?: 0
     }
 
     suspend fun setPosterQuality(quality: PosterQuality) {
@@ -145,6 +150,13 @@ class SettingsStore(private val context: Context) {
             prefs.remove(yaniNicknameKey)
             prefs.remove(yaniAvatarUrlKey)
             prefs.remove(yaniTokenRefreshAtKey)
+            prefs.remove(yaniUnreadNotificationsCountKey)
+        }
+    }
+
+    suspend fun setYaniUnreadNotificationsCount(count: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[yaniUnreadNotificationsCountKey] = count.coerceAtLeast(0)
         }
     }
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="account_title">Yani account</string>
+    <string name="account_title">Yummy account</string>
     <string name="account_back">Back</string>
     <string name="account_signed_in">Signed in</string>
     <string name="account_signed_out">Sign in to sync library, ratings, and subscriptions</string>
     <string name="account_unknown_user">Unknown user</string>
     <string name="account_refresh">Refresh profile</string>
-    <string name="account_refresh_hint">Update account data from Yani</string>
+    <string name="account_refresh_hint">Update account data from Yummy</string>
     <string name="account_logout">Log out</string>
     <string name="account_logout_hint">Keep local library and progress on this device</string>
     <string name="account_login">Sign in</string>
@@ -14,5 +14,21 @@
     <string name="account_login_placeholder">Email or nickname</string>
     <string name="account_password_placeholder">Password</string>
     <string name="account_loading">Loading...</string>
-    <string name="account_captcha_hint">If Yani requires captcha, sign in on the website first. Manual app-token settings remain in Settings.</string>
+    <string name="account_captcha_hint">If Yummy requires captcha, sign in on the website first. Manual app-token settings remain in Settings.</string>
+    <string name="account_user_id">ID %1$d</string>
+    <string name="account_tab_profile">Profile</string>
+    <string name="account_tab_stats">Statistics</string>
+    <string name="account_tab_notifications">Notifications</string>
+    <string name="account_profile_summary">Profile</string>
+    <string name="account_notifications_preview">Latest notifications</string>
+    <string name="account_open">Open</string>
+    <string name="account_unread_count">Unread: %1$d</string>
+    <string name="account_stats_empty">No statistics yet</string>
+    <string name="account_notifications_empty">No notifications yet</string>
+    <string name="account_stats_genres">Favorite genres</string>
+    <string name="account_stats_ratings">Ratings</string>
+    <string name="account_stats_types">Anime types</string>
+    <string name="account_mark_read">Mark read</string>
+    <string name="account_mark_all_read">Mark all read</string>
+    <string name="account_delete">Delete</string>
 </resources>

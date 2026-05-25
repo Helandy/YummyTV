@@ -88,6 +88,8 @@ class TvMainGraph @Inject constructor(
                         onDestinationSelected = { navManager.switchTab(it) },
                         onSettingsClick = { navManager.navigate(settingsNavigator.getSettingsDest()) },
                         accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null,
+                        accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
+                        unreadNotificationsCount = state.unreadNotificationsCount,
                         onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
                         showTopBar = atTabRoot,
                         requestedTopBarFocusTarget = navManager.pendingTopBarFocusTarget,

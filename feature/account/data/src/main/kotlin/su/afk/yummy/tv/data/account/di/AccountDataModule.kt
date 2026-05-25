@@ -9,24 +9,34 @@ import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
+import su.afk.yummy.tv.data.account.repository.YaniProfileNotificationsRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserListsRepository
+import su.afk.yummy.tv.data.account.repository.YaniUserStatsRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoSubscriptionRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoWatchesRepository
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
+import su.afk.yummy.tv.domain.account.repository.UserStatsRepository
 import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetCollectionsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetUserStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
 import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
+import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
+import su.afk.yummy.tv.domain.account.usecase.MarkNotificationReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
@@ -67,6 +77,15 @@ object AccountDataModule {
     @Singleton
     fun provideVideoSubscriptionRepository(api: YaniAccountApi): VideoSubscriptionRepository =
         YaniVideoSubscriptionRepository(api)
+
+    @Provides
+    @Singleton
+    fun provideUserStatsRepository(api: YaniAccountApi): UserStatsRepository = YaniUserStatsRepository(api)
+
+    @Provides
+    @Singleton
+    fun provideProfileNotificationsRepository(api: YaniAccountApi): ProfileNotificationsRepository =
+        YaniProfileNotificationsRepository(api)
 
     @Provides
     fun provideLoginUseCase(repository: AccountRepository) = LoginUseCase(repository)
@@ -125,4 +144,27 @@ object AccountDataModule {
     @Provides
     fun provideSetVideoSubscriptionUseCase(repository: VideoSubscriptionRepository) =
         SetVideoSubscriptionUseCase(repository)
+
+    @Provides
+    fun provideGetUserStatsUseCase(repository: UserStatsRepository) = GetUserStatsUseCase(repository)
+
+    @Provides
+    fun provideGetProfileNotificationsUseCase(repository: ProfileNotificationsRepository) =
+        GetProfileNotificationsUseCase(repository)
+
+    @Provides
+    fun provideGetNotificationCountsUseCase(repository: ProfileNotificationsRepository) =
+        GetNotificationCountsUseCase(repository)
+
+    @Provides
+    fun provideMarkNotificationReadUseCase(repository: ProfileNotificationsRepository) =
+        MarkNotificationReadUseCase(repository)
+
+    @Provides
+    fun provideMarkAllNotificationsReadUseCase(repository: ProfileNotificationsRepository) =
+        MarkAllNotificationsReadUseCase(repository)
+
+    @Provides
+    fun provideDeleteNotificationUseCase(repository: ProfileNotificationsRepository) =
+        DeleteNotificationUseCase(repository)
 }

@@ -30,6 +30,8 @@ import su.afk.yummy.tv.data.account.dto.YaniListStatDto
 import su.afk.yummy.tv.data.account.dto.YaniListStatsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniNotificationCountsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
 import su.afk.yummy.tv.data.account.dto.YaniPostVideosBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
@@ -43,6 +45,10 @@ import su.afk.yummy.tv.data.account.dto.YaniSetListBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniTokenResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserStatsGenresResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserStatsListsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserStatsRatingsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserStatsTypesResponseDto
 
 class YaniCaptchaRequiredException : RuntimeException("Captcha required")
 class YaniAccountException(message: String, val code: Int? = null) : RuntimeException(message)
@@ -171,6 +177,52 @@ class YaniAccountApi(
 
     suspend fun removeSubscribed(videoId: Int): Boolean =
         client.delete("$YANI_BASE_URL/video/$videoId/subscribe").body<YaniBooleanResponseDto>().response
+
+    suspend fun getUserStatsGenres(userId: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/stats/genres")
+            .body<YaniUserStatsGenresResponseDto>()
+            .response
+
+    suspend fun getUserStatsRatings(userId: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/stats/ratings")
+            .body<YaniUserStatsRatingsResponseDto>()
+            .response
+
+    suspend fun getUserStatsLists(userId: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/stats/lists")
+            .body<YaniUserStatsListsResponseDto>()
+            .response
+
+    suspend fun getUserStatsTypes(userId: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/stats/types-v2")
+            .body<YaniUserStatsTypesResponseDto>()
+            .response
+
+    suspend fun getNotifications(limit: Int, offset: Int) =
+        client.get("$YANI_BASE_URL/profile/notifications") {
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }.body<YaniNotificationsResponseDto>().response
+
+    suspend fun getNotificationCounts() =
+        client.get("$YANI_BASE_URL/profile/notifications/counts")
+            .body<YaniNotificationCountsResponseDto>()
+            .response
+
+    suspend fun markNotificationRead(id: Int): Boolean =
+        client.post("$YANI_BASE_URL/profile/notifications/$id/read")
+            .body<YaniBooleanResponseDto>()
+            .response
+
+    suspend fun markAllNotificationsRead(): Boolean =
+        client.post("$YANI_BASE_URL/profile/notifications/read")
+            .body<YaniBooleanResponseDto>()
+            .response
+
+    suspend fun deleteNotification(id: Int): Boolean =
+        client.delete("$YANI_BASE_URL/profile/notifications/$id")
+            .body<YaniBooleanResponseDto>()
+            .response
 
     private suspend fun HttpResponse.toYaniError(): YaniErrorResponseDto =
         runCatching {

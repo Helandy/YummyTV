@@ -208,3 +208,84 @@ data class YaniCollectionSummaryDto(
 data class YaniCollectionAnimeDto(
     val poster: YaniAccountPosterDto? = null,
 )
+
+@Serializable
+data class YaniUserStatsGenresResponseDto(
+    val response: List<YaniUserGenreStatDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserGenreStatDto(
+    val id: Int = 0,
+    val title: String = "",
+    val count: Int = 0,
+)
+
+@Serializable
+data class YaniUserStatsRatingsResponseDto(
+    val response: List<YaniUserRatingStatDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserRatingStatDto(
+    val rating: Int = 0,
+    val count: Int = 0,
+)
+
+@Serializable
+data class YaniUserStatsListsResponseDto(
+    val response: List<YaniUserListWatchStatDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserListWatchStatDto(
+    val list: YaniListInfoDto? = null,
+    val seconds: Long = 0L,
+)
+
+@Serializable
+data class YaniUserStatsTypesResponseDto(
+    val response: List<YaniUserAnimeTypeStatDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserAnimeTypeStatDto(
+    val type: YaniAnimeTypeDto? = null,
+    val count: Int = 0,
+)
+
+@Serializable
+data class YaniAnimeTypeDto(
+    val name: String = "",
+    val shortname: String = "",
+    val value: Int = 0,
+)
+
+@Serializable
+data class YaniNotificationsResponseDto(
+    val response: List<YaniNotificationDto> = emptyList(),
+)
+
+@Serializable
+data class YaniNotificationDto(
+    val id: Int = 0,
+    val date: Long = 0L,
+    @SerialName("text_html") val textHtml: String = "",
+    @SerialName("title_html") val titleHtml: String = "",
+    @SerialName("click_uri") val clickUri: String = "",
+    val type: String = "",
+    @SerialName("sub_type") val subType: String = "",
+    val viewed: Boolean = false,
+    @SerialName("object_id") val objectId: Int? = null,
+)
+
+@Serializable
+data class YaniNotificationCountsResponseDto(
+    val response: List<YaniNotificationCountDto> = emptyList(),
+)
+
+@Serializable
+data class YaniNotificationCountDto(
+    val type: String = "",
+    val count: Int = 0,
+)

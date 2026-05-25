@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -47,9 +48,11 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
@@ -70,6 +73,8 @@ fun <T> TvMainScaffold(
     onDestinationSelected: (T) -> Unit,
     onSettingsClick: () -> Unit = {},
     accountLabel: String? = null,
+    accountAvatarUrl: String = "",
+    unreadNotificationsCount: Int = 0,
     onAccountClick: () -> Unit = {},
     showTopBar: Boolean = true,
     requestedTopBarFocusTarget: TopBarFocusTarget? = null,
@@ -151,6 +156,8 @@ fun <T> TvMainScaffold(
                     onDestinationSelected = onDestinationSelected,
                     onSettingsClick = onSettingsClick,
                     accountLabel = accountLabel,
+                    accountAvatarUrl = accountAvatarUrl,
+                    unreadNotificationsCount = unreadNotificationsCount,
                     onAccountClick = onAccountClick,
                     selectedTabFocusRequester = topBarFocusRequester,
                     accountFocusRequester = accountFocusRequester,
@@ -178,6 +185,8 @@ private fun <T> TvTopBar(
     onDestinationSelected: (T) -> Unit,
     onSettingsClick: () -> Unit,
     accountLabel: String?,
+    accountAvatarUrl: String,
+    unreadNotificationsCount: Int,
     onAccountClick: () -> Unit,
     selectedTabFocusRequester: FocusRequester,
     accountFocusRequester: FocusRequester,
@@ -221,6 +230,8 @@ private fun <T> TvTopBar(
         TvAccountButton(
             label = accountLabel?.ifBlank { null } ?: stringResource(R.string.main_account_sign_in),
             signedIn = !accountLabel.isNullOrBlank(),
+            avatarUrl = accountAvatarUrl,
+            unreadNotificationsCount = unreadNotificationsCount,
             focusRequester = accountFocusRequester,
             downFocusRequester = downFocusRequester,
             onClick = onAccountClick,
@@ -339,6 +350,8 @@ private fun TvSettingsButton(
 private fun TvAccountButton(
     label: String,
     signedIn: Boolean,
+    avatarUrl: String,
+    unreadNotificationsCount: Int,
     focusRequester: FocusRequester,
     downFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
@@ -372,12 +385,42 @@ private fun TvAccountButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = stringResource(R.string.main_account_content_description),
-            modifier = Modifier.size(24.dp),
-            tint = contentColor,
-        )
+        Box(modifier = Modifier.size(26.dp)) {
+            if (signedIn && avatarUrl.isNotBlank()) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = stringResource(R.string.main_account_content_description),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center)
+                        .clip(CircleShape),
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = stringResource(R.string.main_account_content_description),
+                    modifier = Modifier.size(24.dp).align(Alignment.Center),
+                    tint = contentColor,
+                )
+            }
+            if (signedIn && unreadNotificationsCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .align(Alignment.TopEnd)
+                        .background(MaterialTheme.colorScheme.error, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = if (unreadNotificationsCount > 9) "9+" else unreadNotificationsCount.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onError,
+                    )
+                }
+            }
+        }
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,

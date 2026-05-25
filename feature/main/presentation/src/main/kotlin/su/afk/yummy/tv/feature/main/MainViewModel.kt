@@ -2,6 +2,8 @@ package su.afk.yummy.tv.feature.main
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
@@ -9,6 +11,7 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
+import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.feature.main.utils.isNewer
 import javax.inject.Inject
@@ -22,12 +25,15 @@ class MainViewModel @Inject constructor(
     private val settingsStore: SettingsStore,
     private val updateChecker: GitHubUpdateChecker,
     private val refreshAccount: RefreshAccountUseCase,
+    private val getNotificationCounts: GetNotificationCountsUseCase,
     @param:Named("appVersionName") private val versionName: String,
 ) : BaseViewModelNew<MainState.State, MainState.Event, MainState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = MainState.State()
 
     override fun onEvent(event: MainState.Event) {}
+
+    private var notificationCountsJob: Job? = null
 
     init {
         observeSettings()
@@ -46,7 +52,36 @@ class MainViewModel @Inject constructor(
             settingsStore.yaniNickname.collect { nickname -> setState { copy(yaniNickname = nickname) } }
         }
         viewModelScope.launch {
-            settingsStore.yaniAccessToken.collect { token -> setState { copy(isYaniSignedIn = token.isNotBlank()) } }
+            settingsStore.yaniAvatarUrl.collect { avatarUrl -> setState { copy(yaniAvatarUrl = avatarUrl) } }
+        }
+        viewModelScope.launch {
+            settingsStore.yaniUnreadNotificationsCount.collect { count ->
+                setState { copy(unreadNotificationsCount = count) }
+            }
+        }
+        viewModelScope.launch {
+            settingsStore.yaniAccessToken.collect { token ->
+                val signedIn = token.isNotBlank()
+                setState {
+                    copy(
+                        isYaniSignedIn = signedIn,
+                        unreadNotificationsCount = if (signedIn) unreadNotificationsCount else 0,
+                    )
+                }
+                observeNotificationCounts(signedIn)
+            }
+        }
+    }
+
+    private fun observeNotificationCounts(signedIn: Boolean) {
+        notificationCountsJob?.cancel()
+        if (!signedIn) return
+        notificationCountsJob = viewModelScope.launch {
+            while (true) {
+                runCatching { getNotificationCounts().sumOf { it.count } }
+                    .onSuccess { count -> settingsStore.setYaniUnreadNotificationsCount(count) }
+                delay(NOTIFICATION_REFRESH_INTERVAL_MS)
+            }
         }
     }
 
@@ -81,6 +116,8 @@ class MainViewModel @Inject constructor(
         }
     }
 }
+
+private const val NOTIFICATION_REFRESH_INTERVAL_MS = 5 * 60 * 1000L
 
 private suspend fun kotlinx.coroutines.flow.Flow<String>.firstOrEmpty(): String =
     first()
