@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -62,11 +63,22 @@ internal fun SubscriptionsPickerOverlay(
     val firstFocusRequester = remember { FocusRequester() }
     val itemFocusRequesters = remember(subscriptions.size) { List(subscriptions.size) { FocusRequester() } }
     var focusedOptionIndex by remember { mutableIntStateOf(0) }
+    var focusedOptionKey by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(subscriptions.size) {
-        if (subscriptions.isNotEmpty()) {
+    LaunchedEffect(subscriptions.map { it.key }) {
+        if (subscriptions.isNotEmpty() && focusedOptionKey == null) {
             withFrameNanos { }
             runCatching { firstFocusRequester.requestFocus() }
+        }
+    }
+
+    LaunchedEffect(subscriptions.map { it.key }, focusedOptionKey) {
+        val key = focusedOptionKey ?: return@LaunchedEffect
+        val index = subscriptions.indexOfFirst { it.key == key }
+        if (index >= 0) {
+            focusedOptionIndex = index
+            withFrameNanos { }
+            runCatching { itemFocusRequesters.getOrNull(index)?.requestFocus() }
         }
     }
 
@@ -112,7 +124,7 @@ internal fun SubscriptionsPickerOverlay(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                 )
                 when {
-                    isLoading -> SubscriptionMessage(stringResource(R.string.details_subscriptions_loading))
+                    isLoading && subscriptions.isEmpty() -> SubscriptionMessage(stringResource(R.string.details_subscriptions_loading))
                     subscriptions.isEmpty() -> SubscriptionMessage(stringResource(R.string.details_subscriptions_empty))
                     else -> LazyColumn(
                         modifier = Modifier
@@ -124,7 +136,10 @@ internal fun SubscriptionsPickerOverlay(
                             SubscriptionOptionItem(
                                 option = option,
                                 focusRequester = if (index == 0) firstFocusRequester else itemFocusRequesters[index],
-                                onFocused = { focusedOptionIndex = index },
+                                onFocused = {
+                                    focusedOptionIndex = index
+                                    focusedOptionKey = option.key
+                                },
                                 onClick = { onToggle(option.key) },
                             )
                         }

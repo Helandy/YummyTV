@@ -2,6 +2,7 @@ package su.afk.yummy.tv.domain.anime.model
 
 data class AnimeDetails(
     val id: Int,
+    val animeUrl: String,
     val title: String,
     val description: String,
     val poster: AnimePoster?,

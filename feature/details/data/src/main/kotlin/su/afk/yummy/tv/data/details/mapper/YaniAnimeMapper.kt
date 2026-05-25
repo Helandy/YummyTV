@@ -35,6 +35,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
     val source = response
     return AnimeDetails(
         id = source.animeId ?: 0,
+        animeUrl = source.animeUrl,
         title = source.title,
         description = source.description,
         poster = source.poster?.toAnimePoster(),

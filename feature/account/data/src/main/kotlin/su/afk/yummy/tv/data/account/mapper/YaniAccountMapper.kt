@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.data.account.mapper
 
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
 import su.afk.yummy.tv.data.account.dto.YaniAccountPosterDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationCountDto
@@ -61,11 +65,12 @@ internal fun YaniCollectionSummaryDto.toCollectionSummary(): AnimeCollectionSumm
 }
 
 internal fun YaniVideoSubscriptionDto.toVideoSubscription(): VideoSubscription? {
-    val id = animeId ?: return null
+    val id = animeId.toFlexibleInt() ?: return null
     val subInfo = sub ?: return null
     return VideoSubscription(
         animeId = id,
-        playerId = subInfo.playerId,
+        animeUrl = animeUrl,
+        playerId = subInfo.playerId.toFlexibleInt(),
         player = subInfo.player,
         dubbing = subInfo.dubbing,
         posterUrl = poster?.bestUrl(),
@@ -102,6 +107,13 @@ private val AnimeCollectionPoster.standardUrl: String?
 
 private val UserAnimePoster.standardUrl: String?
     get() = big ?: medium ?: fullsize ?: small
+
+private fun JsonElement?.toFlexibleInt(): Int? {
+    val primitive = this as? JsonPrimitive ?: return null
+    primitive.intOrNull?.let { return it }
+    primitive.doubleOrNull?.let { return it.toInt() }
+    return primitive.content.toIntOrNull()
+}
 
 internal fun String.toHttpsUrl(): String = when {
     startsWith("//") -> "https:$this"

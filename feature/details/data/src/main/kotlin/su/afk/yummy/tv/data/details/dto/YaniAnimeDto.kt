@@ -10,6 +10,7 @@ data class YaniAnimeDetailsDto(val response: YaniAnimeResponseDto = YaniAnimeRes
 @Serializable
 data class YaniAnimeResponseDto(
     @SerialName("anime_id") val animeId: Int? = null,
+    @SerialName("anime_url") val animeUrl: String = "",
     val title: String = "",
     val description: String = "",
     val poster: YaniAnimePosterDto? = null,

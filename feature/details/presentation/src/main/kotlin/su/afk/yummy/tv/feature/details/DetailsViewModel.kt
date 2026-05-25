@@ -5,6 +5,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -269,7 +270,7 @@ class DetailsViewModel @AssistedInject constructor(
                 setState {
                     copy(
                         videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos),
-                        subscriptions = videos.toSubscriptionOptions(subscribedKeys = subscriptions.subscribedKeys()),
+                        subscriptions = videos.toSubscriptionOptions(optimisticKeys = subscriptions.subscribedKeys()),
                     )
                 }
                 refreshSubscriptions()
@@ -345,14 +346,16 @@ class DetailsViewModel @AssistedInject constructor(
                     setState { copy(isSubscriptionsLoading = false, subscriptions = emptyList()) }
                     return@fold
                 }
-                val subscribedKeys = subscriptions
-                    .filter { it.animeId == animeId }
-                    .flatMap { it.subscriptionMatchKeys() }
-                    .toSet()
+                val details = currentState.details
+                val animeSubscriptions = subscriptions
+                    .filter { it.matchesCurrentAnime(requestedAnimeId = animeId, details = details) }
                 setState {
                     copy(
                         isSubscriptionsLoading = false,
-                        subscriptions = videos.toSubscriptionOptions(subscribedKeys),
+                        subscriptions = videos.toSubscriptionOptions(
+                            remoteSubscriptions = animeSubscriptions,
+                            optimisticKeys = this.subscriptions.subscribedKeys(),
+                        ),
                     )
                 }
             },
@@ -367,7 +370,12 @@ class DetailsViewModel @AssistedInject constructor(
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
             val result = runCatching { setVideoSubscription(option.representativeVideoId, !wasSubscribed) }
-            if (result.isFailure) setSubscriptionState(key, wasSubscribed)
+            if (result.isFailure) {
+                setSubscriptionState(key, wasSubscribed)
+            } else {
+                delay(SUBSCRIPTION_REFRESH_DELAY_MS)
+                refreshSubscriptions()
+            }
         }
     }
 
@@ -516,8 +524,11 @@ private fun su.afk.yummy.tv.domain.anime.model.AnimePoster.toLibraryPoster(): Li
         mega = mega,
     )
 
-private fun List<AnimeVideo>.toSubscriptionOptions(subscribedKeys: Set<String>): List<SubscriptionOption> =
-    filter { it.id > 0 && it.dubbing.isNotBlank() }
+private fun List<AnimeVideo>.toSubscriptionOptions(
+    remoteSubscriptions: List<VideoSubscription> = emptyList(),
+    optimisticKeys: Set<String> = emptySet(),
+): List<SubscriptionOption> {
+    val sortedOptions = filter { it.id > 0 && it.dubbing.isNotBlank() }
         .groupBy { subscriptionGroupKey(it.playerId, it.player, it.dubbing) }
         .values
         .mapNotNull { videos ->
@@ -538,7 +549,8 @@ private fun List<AnimeVideo>.toSubscriptionOptions(subscribedKeys: Set<String>):
                     dubbing = representative.dubbing,
                     episodesCount = videos.size,
                     representativeVideoId = representative.id,
-                    isSubscribed = matchKeys.any { it in subscribedKeys },
+                    isSubscribed = matchKeys.any { it in optimisticKeys } ||
+                        remoteSubscriptions.any { it.matchesExactSubscription(representative) },
                 ),
                 totalViews = videos.sumOf { it.views ?: 0 },
             )
@@ -552,7 +564,18 @@ private fun List<AnimeVideo>.toSubscriptionOptions(subscribedKeys: Set<String>):
                     .thenBy { it.option.player }
             )
         }
-        .map { it.option }
+    val blankDubbingFallbackKeys = remoteSubscriptions
+        .filter { it.dubbing.isBlank() }
+        .mapNotNull { subscription ->
+            sortedOptions.firstOrNull { subscription.matchesPlayer(it.option) }?.option?.key
+        }
+        .toSet()
+
+    return sortedOptions.map { item ->
+        val option = item.option
+        if (option.key in blankDubbingFallbackKeys) option.copy(isSubscribed = true) else option
+    }
+}
 
 private data class SubscriptionOptionWithViews(
     val option: SubscriptionOption,
@@ -566,6 +589,39 @@ private fun List<SubscriptionOption>.subscribedKeys(): Set<String> =
 
 private fun VideoSubscription.subscriptionMatchKeys(): Set<String> =
     subscriptionMatchKeys(playerId = playerId, player = player, dubbing = dubbing)
+
+private fun VideoSubscription.matchesCurrentAnime(
+    requestedAnimeId: Int,
+    details: su.afk.yummy.tv.domain.anime.model.AnimeDetails?,
+): Boolean {
+    if (animeId == requestedAnimeId || animeId == details?.id) return true
+    val detailsAnimeUrl = details?.animeUrl.orEmpty()
+    return animeUrl.isNotBlank() && detailsAnimeUrl.isNotBlank() && animeUrl == detailsAnimeUrl
+}
+
+private fun VideoSubscription.matchesExactSubscription(video: AnimeVideo): Boolean {
+    if (dubbing.isBlank()) return false
+    val dubbingMatches = dubbing.relaxedSubscriptionPart().matchesRelaxed(video.dubbing.relaxedSubscriptionPart())
+    if (!dubbingMatches) return false
+
+    return matchesPlayer(
+        playerId = video.playerId,
+        player = video.player,
+    )
+}
+
+private fun VideoSubscription.matchesPlayer(option: SubscriptionOption): Boolean =
+    matchesPlayer(playerId = option.playerId, player = option.player)
+
+private fun VideoSubscription.matchesPlayer(playerId: Int?, player: String): Boolean {
+    val playerIdMatches = this.playerId != null && playerId != null && this.playerId == playerId
+    if (playerIdMatches) return true
+
+    val playerMatches = this.player.relaxedSubscriptionPart().matchesRelaxed(player.relaxedSubscriptionPart())
+    if (playerMatches) return true
+
+    return this.playerId == null && this.player.isBlank()
+}
 
 private fun subscriptionMatchKeys(playerId: Int?, player: String, dubbing: String): Set<String> = buildSet {
     val normalizedDubbing = dubbing.normalizedSubscriptionPart()
@@ -583,3 +639,16 @@ private fun subscriptionGroupKey(playerId: Int?, player: String, dubbing: String
 
 private fun String.normalizedSubscriptionPart(): String =
     trim().lowercase()
+
+private fun String.relaxedSubscriptionPart(): String =
+    trim()
+        .lowercase()
+        .replace('ё', 'е')
+        .replace(Regex("<[^>]+>"), "")
+        .replace(Regex("&[a-z0-9#]+;"), "")
+        .filter { it.isLetterOrDigit() }
+
+private fun String.matchesRelaxed(other: String): Boolean =
+    isNotBlank() && other.isNotBlank() && (this == other || this.contains(other) || other.contains(this))
+
+private const val SUBSCRIPTION_REFRESH_DELAY_MS = 350L

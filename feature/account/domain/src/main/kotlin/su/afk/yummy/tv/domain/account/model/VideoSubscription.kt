@@ -2,6 +2,7 @@ package su.afk.yummy.tv.domain.account.model
 
 data class VideoSubscription(
     val animeId: Int,
+    val animeUrl: String,
     val playerId: Int?,
     val player: String,
     val dubbing: String,
