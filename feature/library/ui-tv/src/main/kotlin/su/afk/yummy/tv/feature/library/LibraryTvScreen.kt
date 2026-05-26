@@ -1,22 +1,27 @@
 package su.afk.yummy.tv.feature.library
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -45,9 +50,14 @@ fun LibraryTvScreen(
     val selectedTabFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+    val itemRemovedText = stringResource(R.string.library_remove_success)
     val scope = rememberCoroutineScope()
+    val currentOnEvent by rememberUpdatedState(onEvent)
+    val currentSelectedTab by rememberUpdatedState(state.selectedTab)
     var restoreGridFocusOnResume by rememberSaveable { mutableStateOf(false) }
     var restoreContinueWatchingFirstOnResume by rememberSaveable { mutableStateOf(false) }
+    var restoreFocusedItemToken by rememberSaveable { mutableIntStateOf(0) }
     var continueWatchingRestoreFirstToken by rememberSaveable { mutableIntStateOf(0) }
     val signedInFavoriteItems = state.signedInFavoriteItems()
     val remoteFavoriteIds = state.remoteItems[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
@@ -70,22 +80,44 @@ fun LibraryTvScreen(
         }
     }
 
-    DisposableEffect(gridFocusRequester, hasFocusableGridContent, registerPreferredContentFocusRequester) {
-        registerPreferredContentFocusRequester?.invoke(if (hasFocusableGridContent) gridFocusRequester else null)
+    DisposableEffect(
+        gridFocusRequester,
+        selectedTabFocusRequester,
+        hasFocusableGridContent,
+        registerPreferredContentFocusRequester,
+    ) {
+        registerPreferredContentFocusRequester?.invoke(
+            if (hasFocusableGridContent) gridFocusRequester else selectedTabFocusRequester,
+        )
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
+
+    LaunchedEffect(effect, context, itemRemovedText) {
+        effect.collect { event ->
+            when (event) {
+                LibraryState.Effect.ItemRemoved -> {
+                    Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     DisposableEffect(lifecycleOwner, hasFocusableGridContent) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME && restoreGridFocusOnResume && hasFocusableGridContent) {
-                if (restoreContinueWatchingFirstOnResume && state.selectedTab == LibraryTab.CONTINUE_WATCHING) {
-                    restoreContinueWatchingFirstOnResume = false
-                    continueWatchingRestoreFirstToken += 1
-                }
-                restoreGridFocusOnResume = false
-                scope.launch {
-                    delay(60)
-                    runCatching { gridFocusRequester.requestFocus() }
+            if (event == Lifecycle.Event.ON_RESUME) {
+                currentOnEvent(LibraryState.Event.ScreenResumed)
+                if (restoreGridFocusOnResume && hasFocusableGridContent) {
+                    if (restoreContinueWatchingFirstOnResume && currentSelectedTab == LibraryTab.CONTINUE_WATCHING) {
+                        restoreContinueWatchingFirstOnResume = false
+                        continueWatchingRestoreFirstToken += 1
+                    } else {
+                        restoreFocusedItemToken += 1
+                    }
+                    restoreGridFocusOnResume = false
+                    scope.launch {
+                        delay(60)
+                        runCatching { gridFocusRequester.requestFocus() }
+                    }
                 }
             }
         }
@@ -123,6 +155,7 @@ fun LibraryTvScreen(
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
                         sidePanelFocusRequester = selectedTabFocusRequester,
+                        restoreFocusedItemToken = restoreFocusedItemToken,
                         onAnimeSelected = {
                             restoreGridFocusOnResume = true
                             onEvent(LibraryState.Event.AnimeSelected(it))
@@ -137,6 +170,7 @@ fun LibraryTvScreen(
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
                         sidePanelFocusRequester = selectedTabFocusRequester,
+                        restoreFocusedItemToken = restoreFocusedItemToken,
                         onAnimeSelected = {
                             restoreGridFocusOnResume = true
                             onEvent(LibraryState.Event.RemoteAnimeSelected(it))
@@ -170,6 +204,7 @@ fun LibraryTvScreen(
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
                         sidePanelFocusRequester = selectedTabFocusRequester,
+                        restoreFocusedItemToken = restoreFocusedItemToken,
                         onAnimeSelected = {
                             restoreGridFocusOnResume = true
                             onEvent(LibraryState.Event.AnimeSelected(it))
@@ -185,6 +220,7 @@ fun LibraryTvScreen(
                         focusedPreview = state.focusedPreview,
                         gridFocusRequester = gridFocusRequester,
                         sidePanelFocusRequester = selectedTabFocusRequester,
+                        restoreFocusedItemToken = restoreFocusedItemToken,
                         onAnimeSelected = {
                             restoreGridFocusOnResume = true
                             onEvent(LibraryState.Event.RemoteAnimeSelected(it))

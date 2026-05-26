@@ -37,11 +37,14 @@ class LibraryState {
         data class RemoteAnimeSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
         data class TabSelected(val tab: LibraryTab) : Event
+        data object ScreenResumed : Event
         data class RemoveLibraryEntry(val animeId: Int) : Event
         data class RemoveFavoriteEntry(val animeId: Int) : Event
         data class RemoveWatchProgress(val animeId: Int) : Event
         data class RemoveRemoteEntry(val animeId: Int, val list: UserAnimeList? = null, val favorite: Boolean = false) : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data object ItemRemoved : Effect
+    }
 }

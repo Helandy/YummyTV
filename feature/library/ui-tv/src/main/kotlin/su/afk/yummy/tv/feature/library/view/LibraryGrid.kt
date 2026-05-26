@@ -24,26 +24,29 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.settings.PosterQuality
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.CollapsedPanelWidth
 import su.afk.yummy.tv.feature.library.R
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LibraryGrid(
     items: List<LibraryEntry>,
@@ -51,6 +54,7 @@ internal fun LibraryGrid(
     focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
     sidePanelFocusRequester: FocusRequester,
+    restoreFocusedItemToken: Int,
     onAnimeSelected: (Int) -> Unit,
     onItemFocused: (Int) -> Unit,
     onRemoveLibraryEntry: (Int) -> Unit,
@@ -59,12 +63,13 @@ internal fun LibraryGrid(
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
     val posterQuality = LocalPosterQuality.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var gridHasFocus by remember { mutableStateOf(false) }
+    var restoringFromTopBar by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
+    var pendingDeletedItemId by remember { mutableStateOf<Int?>(null) }
     var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
 
     LaunchedEffect(gridState, items.size) {
@@ -86,20 +91,58 @@ internal fun LibraryGrid(
         }
     }
 
-    LaunchedEffect(items.size, pendingFocusAfterDeleteIndex) {
-        val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
-        isRestoringFocus = true
-        if (items.isEmpty()) {
-            runCatching { topBarFocusRequester?.requestFocus() }
-        } else {
-            val target = pendingIndex.coerceIn(0, items.lastIndex)
-            lastFocusedIndex = target
+    fun requestItemFocus(index: Int) {
+        if (items.isEmpty()) return
+        val target = index.coerceIn(0, items.lastIndex)
+        lastFocusedIndex = target
+        scope.launch {
             gridState.scrollToItem(target)
             snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
                 .first { it }
             runCatching { focusRequesters[target].requestFocus() }
         }
+    }
+
+    suspend fun requestItemFocusRepeated(index: Int) {
+        if (items.isEmpty()) return
+        val target = index.coerceIn(0, items.lastIndex)
+        lastFocusedIndex = target
+        gridState.scrollToItem(target)
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
+            .first { it }
+        repeat(6) {
+            runCatching { focusRequesters[target].requestFocus() }
+            delay(16)
+        }
+    }
+
+    LaunchedEffect(restoreFocusedItemToken) {
+        if (restoreFocusedItemToken <= 0 || items.isEmpty()) return@LaunchedEffect
+        isRestoringFocus = true
+        val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+        gridState.scrollToItem(target)
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
+            .first { it }
+        runCatching { focusRequesters[target].requestFocus() }
+        isRestoringFocus = false
+    }
+
+    LaunchedEffect(items, pendingFocusAfterDeleteIndex, pendingDeletedItemId) {
+        val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
+        val deletedItemId = pendingDeletedItemId ?: return@LaunchedEffect
+        if (items.any { it.animeId == deletedItemId }) return@LaunchedEffect
+        isRestoringFocus = true
+        if (items.isEmpty()) {
+            repeat(6) {
+                runCatching { sidePanelFocusRequester.requestFocus() }
+                delay(16)
+            }
+        } else {
+            val target = pendingIndex.coerceIn(0, items.lastIndex)
+            requestItemFocusRepeated(target)
+        }
         pendingFocusAfterDeleteIndex = null
+        pendingDeletedItemId = null
         isRestoringFocus = false
     }
 
@@ -120,19 +163,29 @@ internal fun LibraryGrid(
         modifier = modifier
             .fillMaxSize()
             .focusRequester(gridFocusRequester)
+            .focusProperties {
+                onEnter = {
+                    restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
+                    requestItemFocus(if (restoringFromTopBar) 0 else lastFocusedIndex)
+                }
+            }
             .onFocusChanged { state ->
                 val hadFocus = gridHasFocus
                 gridHasFocus = state.hasFocus
-                if (!state.hasFocus) isRestoringFocus = false
+                if (!state.hasFocus) {
+                    isRestoringFocus = false
+                    restoringFromTopBar = false
+                }
                 if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
                     isRestoringFocus = true
                     scope.launch {
-                        val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+                        val target = if (restoringFromTopBar) 0 else lastFocusedIndex.coerceIn(0, items.lastIndex)
                         gridState.scrollToItem(target)
                         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
                             .first { it }
                         runCatching { focusRequesters[target].requestFocus() }
                         isRestoringFocus = false
+                        restoringFromTopBar = false
                     }
                 }
             }
@@ -153,6 +206,13 @@ internal fun LibraryGrid(
             val stableOnDelete = remember(item.animeId, index) {
                 {
                     pendingFocusAfterDeleteIndex = index
+                    pendingDeletedItemId = item.animeId
+                    val immediateTarget = if (index < items.lastIndex) index + 1 else index - 1
+                    if (immediateTarget >= 0) {
+                        runCatching { focusRequesters[immediateTarget].requestFocus() }
+                    } else {
+                        runCatching { sidePanelFocusRequester.requestFocus() }
+                    }
                     onRemoveLibraryEntry(item.animeId)
                 }
             }

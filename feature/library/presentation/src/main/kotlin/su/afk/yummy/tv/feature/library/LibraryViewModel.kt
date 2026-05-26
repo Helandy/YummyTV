@@ -58,6 +58,7 @@ class LibraryViewModel @Inject constructor(
     override fun createInitialState() = LibraryState.State()
 
     private var previewJob: Job? = null
+    private var signedInUserId: Int = 0
 
     init {
         libraryStore.observeAll()
@@ -77,6 +78,7 @@ class LibraryViewModel @Inject constructor(
             .launchIn(viewModelScope)
         settingsStore.yaniUserId
             .onEach { userId ->
+                signedInUserId = userId
                 setState { copy(isSignedIn = userId > 0) }
                 if (userId > 0) loadRemoteLists(userId)
             }
@@ -95,10 +97,17 @@ class LibraryViewModel @Inject constructor(
                 onItemFocused(event.animeId)
             is LibraryState.Event.TabSelected ->
                 setState { copy(selectedTab = event.tab, focusedItemId = null, focusedPreview = null) }
+            LibraryState.Event.ScreenResumed -> refreshRemoteLists()
             is LibraryState.Event.RemoveLibraryEntry ->
-                viewModelScope.launch { libraryStore.remove(event.animeId) }
+                viewModelScope.launch {
+                    libraryStore.remove(event.animeId)
+                    setEffect(LibraryState.Effect.ItemRemoved)
+                }
             is LibraryState.Event.RemoveFavoriteEntry ->
-                viewModelScope.launch { libraryStore.setFavorite(event.animeId, title = "", poster = null, favorite = false) }
+                viewModelScope.launch {
+                    libraryStore.setFavorite(event.animeId, title = "", poster = null, favorite = false)
+                    setEffect(LibraryState.Effect.ItemRemoved)
+                }
             is LibraryState.Event.RemoveWatchProgress ->
                 viewModelScope.launch {
                     val entries = currentState.continueWatching.filter { it.animeId == event.animeId }
@@ -106,9 +115,14 @@ class LibraryViewModel @Inject constructor(
                     entries.mapNotNull { it.videoId.takeIf { id -> id > 0 } }.distinct().forEach { videoId ->
                         runCatching { removeWatchedVideo(videoId) }
                     }
+                    setEffect(LibraryState.Effect.ItemRemoved)
                 }
             is LibraryState.Event.RemoveRemoteEntry -> removeRemoteEntry(event)
         }
+    }
+
+    private fun refreshRemoteLists() {
+        if (signedInUserId > 0) loadRemoteLists(signedInUserId)
     }
 
     private fun loadRemoteLists(userId: Int) {
@@ -193,7 +207,11 @@ class LibraryViewModel @Inject constructor(
                     libraryStore.remove(event.animeId)
                 }
             }
-            if (result.isFailure) setState { copy(remoteItems = previous, remoteError = result.exceptionOrNull()?.message) }
+            if (result.isFailure) {
+                setState { copy(remoteItems = previous, remoteError = result.exceptionOrNull()?.message) }
+            } else {
+                setEffect(LibraryState.Effect.ItemRemoved)
+            }
         }
     }
 

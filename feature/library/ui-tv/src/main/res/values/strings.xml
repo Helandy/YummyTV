@@ -5,6 +5,7 @@
     <string name="library_episode">Episode</string>
     <string name="library_episode_number">Episode %1$s</string>
     <string name="library_delete">Delete</string>
+    <string name="library_remove_success">Removed</string>
     <string name="library_tab_continue_watching">Continue</string>
     <string name="library_tab_continue_watching_short">Co</string>
     <string name="library_tab_favorites">Favorites</string>
