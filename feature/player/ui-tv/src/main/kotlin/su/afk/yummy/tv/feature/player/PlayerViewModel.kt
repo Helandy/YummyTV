@@ -256,7 +256,14 @@ class PlayerViewModel @AssistedInject constructor(
                 val result = AllohaExtractor.extract(url, context)
                 if (result != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState { copy(streamHeaders = result.headers, streamUrl = result.url, resumeFromMs = resume) }
+                    setState {
+                        copy(
+                            streamHeaders = result.headers,
+                            streamQualityMap = result.qualities,
+                            streamUrl = result.url,
+                            resumeFromMs = resume,
+                        )
+                    }
                 } else {
                     setState { copy(playerError = context.getString(R.string.player_stream_error)) }
                 }
