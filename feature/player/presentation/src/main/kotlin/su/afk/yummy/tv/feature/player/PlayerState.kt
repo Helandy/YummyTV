@@ -39,7 +39,6 @@ class PlayerState {
         val streamUrl: String? = null,
         val streamHeaders: Map<String, String> = emptyMap(),
         val cvhQualityMap: LinkedHashMap<String, String>? = null,
-        val youtubeWebViewFallback: Boolean = false,
         val playerError: String? = null,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,

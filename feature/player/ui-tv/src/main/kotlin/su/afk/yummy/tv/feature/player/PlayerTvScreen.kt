@@ -23,7 +23,6 @@ import su.afk.yummy.tv.feature.player.view.KodikBlockedOverlay
 import su.afk.yummy.tv.feature.player.view.StreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.StreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.ExoPlayerView
-import su.afk.yummy.tv.feature.player.view.youtube.YouTubeTrailerView
 
 @Composable
 fun PlayerTvScreen(
@@ -120,10 +119,6 @@ fun PlayerTvScreen(
             },
             skips = activeSkips,
             autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
-        )
-        state.youtubeWebViewFallback -> YouTubeTrailerView(
-            iframeUrl = activeIframeUrl,
-            screenshotUrls = state.screenshotUrls,
         )
         kodikBlockedError != null -> Box(
             modifier = Modifier.fillMaxSize().background(Color.Black),

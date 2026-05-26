@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -46,7 +44,6 @@ import su.afk.yummy.tv.feature.details.R
 @Composable
 internal fun TrailerTab(
     trailers: List<AnimeTrailer>,
-    onTrailerSelected: (String) -> Unit,
 ) {
     if (trailers.isEmpty()) {
         Text(
@@ -76,7 +73,6 @@ internal fun TrailerTab(
                 TrailerItem(
                     number = index + 1,
                     trailer = trailer,
-                    onPlay = { onTrailerSelected(trailer.iframeUrl) },
                     thumbnailModifier = Modifier.focusRestorerItem(index, restorerState),
                 )
             }
@@ -88,25 +84,18 @@ internal fun TrailerTab(
 private fun TrailerItem(
     number: Int,
     trailer: AnimeTrailer,
-    onPlay: () -> Unit,
     thumbnailModifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (trailer.youtubeWatchUrl != null) {
-            YoutubeButton(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailer.youtubeWatchUrl))
-                    context.startActivity(intent)
-                },
-            )
-        }
-
         TrailerThumbnail(
             number = number,
             thumbnailUrl = trailer.youtubeThumbnailUrl,
-            onClick = onPlay,
+            onClick = {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailer.externalWatchUrl))
+                runCatching { context.startActivity(intent) }
+            },
             modifier = thumbnailModifier,
         )
     }
@@ -165,40 +154,6 @@ private fun TrailerThumbnail(
                     color = Color.White,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun YoutubeButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(8.dp)
-    Surface(
-        modifier = modifier
-            .width(256.dp)
-            .tvFocusableClick(onClick = onClick, shape = shape),
-        shape = shape,
-        color = Color(0xFFFF0000),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = stringResource(R.string.details_watch_youtube),
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.White,
-            )
         }
     }
 }

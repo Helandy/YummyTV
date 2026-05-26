@@ -10,9 +10,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
-import su.afk.yummy.tv.feature.player.IPlayerNavigator
 
 @HiltViewModel(assistedFactory = TrailersViewModel.Factory::class)
 class TrailersViewModel @AssistedInject constructor(
@@ -21,8 +19,6 @@ class TrailersViewModel @AssistedInject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
-    private val playerNavigator: IPlayerNavigator,
-    private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeTrailers: GetAnimeTrailersUseCase,
 ) : BaseViewModelNew<TrailersState.State, TrailersState.Event, TrailersState.Effect>(savedStateHandle) {
 
@@ -40,22 +36,11 @@ class TrailersViewModel @AssistedInject constructor(
     override fun onEvent(event: TrailersState.Event) {
         when (event) {
             TrailersState.Event.BackSelected -> nav.back()
-            is TrailersState.Event.TrailerSelected -> nav.navigate(
-                playerNavigator.getPlayerDest(
-                    iframeUrl = event.iframeUrl,
-                    animeTitle = currentState.animeTitle,
-                    episode = "",
-                    playerName = "",
-                )
-            )
         }
     }
 
     private suspend fun load() {
         setState { copy(isLoading = true) }
-        runCatching { getAnimeDetails(animeId) }.onSuccess { details ->
-            setState { copy(animeTitle = details.title) }
-        }
         runCatching { getAnimeTrailers(animeId) }.fold(
             onSuccess = { trailers -> setState { copy(isLoading = false, trailers = trailers) } },
             onFailure = { setState { copy(isLoading = false) } },

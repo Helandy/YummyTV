@@ -43,7 +43,6 @@ fun TrailersTvScreen(
                 item {
                     TrailerTab(
                         trailers = state.trailers,
-                        onTrailerSelected = { url -> onEvent(TrailersState.Event.TrailerSelected(url)) },
                     )
                 }
             }

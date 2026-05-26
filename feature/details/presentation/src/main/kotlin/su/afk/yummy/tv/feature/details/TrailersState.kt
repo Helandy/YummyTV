@@ -8,13 +8,11 @@ import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 class TrailersState {
     data class State(
         val isLoading: Boolean = true,
-        val animeTitle: String = "",
         val trailers: List<AnimeTrailer> = emptyList(),
     ) : UiState
 
     sealed interface Event : UiEvent {
         data object BackSelected : Event
-        data class TrailerSelected(val iframeUrl: String) : Event
     }
 
     sealed interface Effect : UiEffect

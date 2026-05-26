@@ -25,7 +25,6 @@
     <string name="details_trailer_empty">Trailer not found</string>
     <string name="details_trailers">Trailers</string>
     <string name="details_trailer_number">Trailer %1$d</string>
-    <string name="details_watch_youtube">Watch on YouTube</string>
     <string name="details_episode_number">Episode %1$s</string>
     <string name="details_aired">Aired: %1$s</string>
     <string name="details_unknown_count">?</string>

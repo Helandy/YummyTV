@@ -43,8 +43,6 @@ dependencies {
     implementation(libs.jetbrains.navigation3.ui)
     implementation(libs.kotlinx.serialization.json)
     implementation(project(":feature:player:api"))
-    implementation(libs.newpipe.extractor)
     implementation(libs.coil.compose)
-    implementation(libs.youtube.player)
     implementation(libs.androidx.lifecycle.runtimeCompose)
 }

@@ -24,7 +24,6 @@ import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
 import su.afk.yummy.tv.feature.player.extractor.CvhExtractor
 import su.afk.yummy.tv.feature.player.extractor.KodikExtractor
 import su.afk.yummy.tv.feature.player.extractor.KodikResult
-import su.afk.yummy.tv.feature.player.extractor.YouTubeExtractor
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
@@ -240,7 +239,6 @@ class PlayerViewModel @AssistedInject constructor(
                     streamUrl = null,
                     streamHeaders = emptyMap(),
                     cvhQualityMap = null,
-                    youtubeWebViewFallback = false,
                     playerError = null,
                     kodikBlockedError = null,
                     resumeFromMs = 0L,
@@ -248,16 +246,6 @@ class PlayerViewModel @AssistedInject constructor(
             }
             val s = currentState
             val url = activeIframeUrl(s)
-
-            if (url.contains("youtube.com", ignoreCase = true)) {
-                val extracted = YouTubeExtractor.extract(url)
-                if (extracted != null) {
-                    setState { copy(streamUrl = extracted) }
-                } else {
-                    setState { copy(youtubeWebViewFallback = true) }
-                }
-                return@launch
-            }
 
             if (url.contains("alloha", ignoreCase = true)) {
                 val result = AllohaExtractor.extract(url, context)
