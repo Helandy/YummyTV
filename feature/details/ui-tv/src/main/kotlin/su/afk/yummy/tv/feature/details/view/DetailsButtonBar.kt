@@ -5,13 +5,33 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CollectionsBookmark
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +50,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +72,7 @@ private enum class ButtonStyle { Filled, Outlined, Normal }
 
 private data class ButtonData(
     val label: String,
+    val icon: ImageVector,
     val style: ButtonStyle,
     val onClick: () -> Unit,
 )
@@ -95,13 +117,14 @@ internal fun DetailsButtonBar(
     }
 
     val buttons = listOf(
-        ButtonData(watchLabel, ButtonStyle.Filled, onWatchSelected),
+        ButtonData(watchLabel, Icons.Filled.PlayArrow, ButtonStyle.Filled, onWatchSelected),
         ButtonData(
             label = if (isInLibrary) {
                 (libraryList ?: UserAnimeList.WATCHING).label()
             } else {
                 stringResource(R.string.details_add_library)
             },
+            icon = if (isInLibrary) Icons.AutoMirrored.Filled.PlaylistAddCheck else Icons.AutoMirrored.Filled.PlaylistAdd,
             style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
             onClick = onLibraryToggle,
         ),
@@ -110,6 +133,7 @@ internal fun DetailsButtonBar(
                 if (isFavorite) R.string.details_remove_favorite
                 else R.string.details_add_favorite,
             ),
+            icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
             style = if (isFavorite) ButtonStyle.Outlined else ButtonStyle.Normal,
             onClick = onFavoriteToggle,
         ),
@@ -117,6 +141,7 @@ internal fun DetailsButtonBar(
         listOf(
             ButtonData(
                 label = stringResource(R.string.details_subscriptions),
+                icon = Icons.Filled.Notifications,
                 style = ButtonStyle.Normal,
                 onClick = onSubscriptionsSelected,
             )
@@ -124,18 +149,37 @@ internal fun DetailsButtonBar(
     } else {
         emptyList()
     } + listOf(
-        ButtonData(stringResource(R.string.details_full_details), ButtonStyle.Normal, onDetailsSelected),
-        ButtonData(stringResource(R.string.details_episodes), ButtonStyle.Normal, onEpisodesSelected),
-        ButtonData(stringResource(R.string.details_trailers), ButtonStyle.Normal, onTrailersSelected),
-        ButtonData(stringResource(R.string.details_similar), ButtonStyle.Normal, onSimilarSelected),
-        ButtonData(stringResource(R.string.details_viewing_order), ButtonStyle.Normal, onViewingOrderSelected),
-        ButtonData(stringResource(R.string.details_rating_button), ButtonStyle.Normal, onRatingSelected),
+        ButtonData(stringResource(R.string.details_full_details), Icons.Filled.Info, ButtonStyle.Normal, onDetailsSelected),
+        ButtonData(stringResource(R.string.details_episodes), Icons.Filled.VideoLibrary, ButtonStyle.Normal, onEpisodesSelected),
+        ButtonData(stringResource(R.string.details_trailers), Icons.Filled.Movie, ButtonStyle.Normal, onTrailersSelected),
+        ButtonData(stringResource(R.string.details_similar), Icons.Filled.AutoAwesome, ButtonStyle.Normal, onSimilarSelected),
+        ButtonData(
+            stringResource(R.string.details_viewing_order),
+            Icons.Filled.FormatListNumbered,
+            ButtonStyle.Normal,
+            onViewingOrderSelected,
+        ),
+        ButtonData(stringResource(R.string.details_rating_button), Icons.Filled.Star, ButtonStyle.Normal, onRatingSelected),
     ) + if (hasCollections) {
-        listOf(ButtonData(stringResource(R.string.details_collections_button), ButtonStyle.Normal, onCollectionsSelected))
+        listOf(
+            ButtonData(
+                stringResource(R.string.details_collections_button),
+                Icons.Filled.CollectionsBookmark,
+                ButtonStyle.Normal,
+                onCollectionsSelected,
+            )
+        )
     } else {
         emptyList()
     } + if (details.screenshots.isNotEmpty()) {
-        listOf(ButtonData(stringResource(R.string.details_screenshots_title), ButtonStyle.Normal, onScreenshotsSelected))
+        listOf(
+            ButtonData(
+                stringResource(R.string.details_screenshots_title),
+                Icons.Filled.PhotoLibrary,
+                ButtonStyle.Normal,
+                onScreenshotsSelected,
+            )
+        )
     } else {
         emptyList()
     }
@@ -209,6 +253,7 @@ internal fun DetailsButtonBar(
                 ) {
                     ActionButton(
                         label = button.label,
+                        icon = button.icon,
                         style = button.style,
                         alpha = itemAlpha,
                         onClick = button.onClick,
@@ -248,6 +293,7 @@ private fun UserAnimeList.label(): String = stringResource(
 @Composable
 private fun ActionButton(
     label: String,
+    icon: ImageVector,
     style: ButtonStyle,
     alpha: Float,
     onClick: () -> Unit,
@@ -273,14 +319,27 @@ private fun ActionButton(
             .padding(horizontal = 20.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
-            fontWeight = FontWeight.Bold,
-            color = textColor.copy(alpha = textColor.alpha * alpha),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = textColor.copy(alpha = textColor.alpha * alpha),
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+                fontWeight = FontWeight.Bold,
+                color = textColor.copy(alpha = textColor.alpha * alpha),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 

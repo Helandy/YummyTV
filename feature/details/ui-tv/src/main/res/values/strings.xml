@@ -17,6 +17,7 @@
     <string name="details_player_prefix">Player </string>
     <string name="details_loading_episodes">Loading episodes...</string>
     <string name="details_episodes">Episodes</string>
+    <string name="details_episodes_count_title">Episodes %1$d</string>
     <string name="details_frames">Frames</string>
     <string name="details_similar_empty">No similar anime found</string>
     <string name="details_similar_users">From users</string>
@@ -32,13 +33,13 @@
     <string name="details_director_prefix">Dir.: %1$s</string>
     <string name="details_kinopoisk_rating">KP %1$s</string>
     <string name="details_episodes_count_short">%1$d ep.</string>
-    <string name="details_continue_episode">▶  Continue · Episode %1$s</string>
-    <string name="details_watch">▶  Watch</string>
+    <string name="details_continue_episode">Continue · Episode %1$s</string>
+    <string name="details_watch">Watch</string>
     <string name="details_watch_not_found">Video not found</string>
-    <string name="details_in_library">★  In library</string>
-    <string name="details_add_library">☆  Add to library</string>
-    <string name="details_add_favorite">☆  Favorite</string>
-    <string name="details_remove_favorite">★  Favorite</string>
+    <string name="details_in_library">In library</string>
+    <string name="details_add_library">Add to library</string>
+    <string name="details_add_favorite">Favorite</string>
+    <string name="details_remove_favorite">Favorite</string>
     <string name="details_subscriptions">Subscriptions</string>
     <string name="details_subscriptions_loading">Loading subscriptions...</string>
     <string name="details_subscriptions_empty">No dubbings found</string>

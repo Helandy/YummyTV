@@ -135,7 +135,7 @@ internal fun EpisodesContent(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
-                text = stringResource(R.string.details_episodes),
+                text = stringResource(R.string.details_episodes_count_title, episodeGroups.size),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier

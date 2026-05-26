@@ -17,6 +17,7 @@
     <string name="details_player_prefix">Плеер </string>
     <string name="details_loading_episodes">Загружаем серии...</string>
     <string name="details_episodes">Серии</string>
+    <string name="details_episodes_count_title">Серии %1$d</string>
     <string name="details_frames">Кадры</string>
     <string name="details_similar_empty">Похожее аниме не найдено</string>
     <string name="details_similar_users">От пользователей</string>
@@ -32,13 +33,13 @@
     <string name="details_director_prefix">Реж.: %1$s</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
     <string name="details_episodes_count_short">%1$d эп.</string>
-    <string name="details_continue_episode">▶  Продолжить · Серия %1$s</string>
-    <string name="details_watch">▶  Смотреть</string>
+    <string name="details_continue_episode">Продолжить · Серия %1$s</string>
+    <string name="details_watch">Смотреть</string>
     <string name="details_watch_not_found">Видео не найдено</string>
-    <string name="details_in_library">★  В списке</string>
-    <string name="details_add_library">☆  В список</string>
-    <string name="details_add_favorite">☆  Любимые</string>
-    <string name="details_remove_favorite">★  Любимые</string>
+    <string name="details_in_library">В списке</string>
+    <string name="details_add_library">В список</string>
+    <string name="details_add_favorite">Любимые</string>
+    <string name="details_remove_favorite">Любимые</string>
     <string name="details_subscriptions">Подписки</string>
     <string name="details_subscriptions_loading">Загружаем подписки...</string>
     <string name="details_subscriptions_empty">Озвучки не найдены</string>
