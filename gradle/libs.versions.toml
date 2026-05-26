@@ -3,8 +3,8 @@ android-compileSdk = "36"
 android-minSdk = "28"
 
 # --- App versioning
-appVersionName = "1.5"
-appVersionCode = "8"
+appVersionName = "1.6"
+appVersionCode = "10"
 
 agp = "9.2.1"
 kotlin = "2.3.21"
