@@ -2,6 +2,7 @@
 <resources>
     <string name="settings_tab_posters">Posters</string>
     <string name="settings_tab_cards">Cards</string>
+    <string name="settings_tab_details">Details</string>
     <string name="settings_tab_player">Player</string>
     <string name="settings_tab_account">Account</string>
     <string name="settings_account_sign_in_short">Sign in</string>
@@ -11,6 +12,23 @@
     <string name="settings_tab_about">About</string>
     <string name="settings_show_screenshots_label">Screens on focus</string>
     <string name="settings_show_screenshots_hint">Show title screenshots when a card is selected</string>
+    <string name="settings_details_buttons_reset">Reset button order</string>
+    <string name="settings_details_buttons_reset_hint">Restore the default details screen layout</string>
+    <string name="settings_details_button_position">Position %1$d</string>
+    <string name="settings_details_button_move_up">Move up</string>
+    <string name="settings_details_button_move_down">Move down</string>
+    <string name="settings_details_button_watch">Watch</string>
+    <string name="settings_details_button_library">Library</string>
+    <string name="settings_details_button_favorite">Favorite</string>
+    <string name="settings_details_button_episodes">Episodes</string>
+    <string name="settings_details_button_subscriptions">Subscriptions</string>
+    <string name="settings_details_button_full_details">Details</string>
+    <string name="settings_details_button_trailers">Trailers</string>
+    <string name="settings_details_button_similar">Similar</string>
+    <string name="settings_details_button_viewing_order">Viewing order</string>
+    <string name="settings_details_button_rating">Rating</string>
+    <string name="settings_details_button_collections">Collections</string>
+    <string name="settings_details_button_screenshots">Screenshots</string>
     <string name="settings_preview_channel_label">New releases</string>
     <string name="settings_preview_channel_added">Channel added to the home screen</string>
     <string name="settings_preview_channel_add_hint">Press to add the channel to the home screen</string>

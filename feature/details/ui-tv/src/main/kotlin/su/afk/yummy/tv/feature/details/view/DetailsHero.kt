@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
+import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -63,6 +64,7 @@ internal fun DetailsHero(
     watchProgress: Map<String, WatchProgressEntry>,
     collections: List<AnimeCollectionSummary>,
     canSubscribe: Boolean,
+    detailsButtonOrder: List<DetailsButtonAction>,
     restoreButtonFocusRequest: Int,
     onWatchSelected: () -> Unit,
     onLibraryToggle: () -> Unit,
@@ -152,6 +154,7 @@ internal fun DetailsHero(
                     watchProgress = watchProgress,
                     canSubscribe = canSubscribe,
                     hasCollections = collections.isNotEmpty(),
+                    buttonOrder = detailsButtonOrder,
                     restoreFocusRequest = restoreButtonFocusRequest,
                     firstFocusRequester = downFocusRequester,
                     onWatchSelected = onWatchSelected,

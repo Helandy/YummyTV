@@ -98,6 +98,9 @@ class DetailsViewModel @AssistedInject constructor(
         watchProgressStore.observeAll()
             .onEach { entries -> setState { copy(watchProgress = entries.associateBy { it.episodeUrl }) } }
             .launchIn(viewModelScope)
+        settingsStore.detailsButtonOrder
+            .onEach { order -> setState { copy(detailsButtonOrder = order) } }
+            .launchIn(viewModelScope)
         settingsStore.yaniAccessToken
             .onEach { token ->
                 setState {

@@ -22,6 +22,7 @@ class SettingsStore(private val context: Context) {
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
     private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
     private val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
     private val yaniUserIdKey = intPreferencesKey("yani_user_id")
@@ -58,6 +59,10 @@ class SettingsStore(private val context: Context) {
 
     val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[autoSkipOpeningsEndingsKey] ?: false
+    }
+
+    val detailsButtonOrder: Flow<List<DetailsButtonAction>> = context.dataStore.data.map { prefs ->
+        prefs[detailsButtonOrderKey].toDetailsButtonOrder()
     }
 
     val yaniApplicationToken: Flow<String> = context.dataStore.data.map { prefs ->
@@ -110,6 +115,14 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
+    }
+
+    suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>) {
+        context.dataStore.edit { prefs ->
+            prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder().joinToString(DETAILS_BUTTON_ORDER_SEPARATOR) {
+                it.name
+            }
+        }
     }
 
     suspend fun setYaniApplicationToken(token: String) {
@@ -168,5 +181,36 @@ class SettingsStore(private val context: Context) {
             prefs[lastStartedVersionCodeKey] = versionCode
         }
         return isFreshVersion
+    }
+
+    private fun String?.toDetailsButtonOrder(): List<DetailsButtonAction> {
+        if (isNullOrBlank()) return defaultDetailsButtonOrder
+        return split(DETAILS_BUTTON_ORDER_SEPARATOR)
+            .mapNotNull { name -> runCatching { DetailsButtonAction.valueOf(name) }.getOrNull() }
+            .normalizedDetailsButtonOrder()
+    }
+
+    private fun List<DetailsButtonAction>.normalizedDetailsButtonOrder(): List<DetailsButtonAction> {
+        val unique = distinct()
+        return unique + defaultDetailsButtonOrder.filterNot { it in unique }
+    }
+
+    companion object {
+        private const val DETAILS_BUTTON_ORDER_SEPARATOR = "|"
+
+        val defaultDetailsButtonOrder: List<DetailsButtonAction> = listOf(
+            DetailsButtonAction.WATCH,
+            DetailsButtonAction.LIBRARY,
+            DetailsButtonAction.FAVORITE,
+            DetailsButtonAction.EPISODES,
+            DetailsButtonAction.SUBSCRIPTIONS,
+            DetailsButtonAction.FULL_DETAILS,
+            DetailsButtonAction.TRAILERS,
+            DetailsButtonAction.SIMILAR,
+            DetailsButtonAction.VIEWING_ORDER,
+            DetailsButtonAction.RATING,
+            DetailsButtonAction.COLLECTIONS,
+            DetailsButtonAction.SCREENSHOTS,
+        )
     }
 }

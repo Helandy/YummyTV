@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.details
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -41,6 +43,7 @@ class DetailsState {
         val subscriptions: List<SubscriptionOption> = emptyList(),
         val showSubscriptionsPicker: Boolean = false,
         val isSubscriptionsLoading: Boolean = false,
+        val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     ) : UiState
 
     sealed interface Event : UiEvent {

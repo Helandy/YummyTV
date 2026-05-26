@@ -21,18 +21,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,11 +51,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.settings.PosterQuality
 import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.PreviewCacheSize
@@ -65,6 +69,7 @@ import su.afk.yummy.tv.feature.settings.view.ToggleRow
 private enum class SettingsTab(@param:StringRes val labelRes: Int) {
     POSTERS(R.string.settings_tab_posters),
     CARDS(R.string.settings_tab_cards),
+    DETAILS(R.string.settings_tab_details),
     PLAYER(R.string.settings_tab_player),
     CACHE(R.string.settings_tab_cache),
     API(R.string.settings_tab_api),
@@ -123,14 +128,6 @@ fun SettingsTvScreen(
                 .focusProperties {
                     up = tabFocusRequesters.getValue(contentAnchorTab)
                 }
-                .onPreviewKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionUp) {
-                        tabFocusRequesters.getValue(contentAnchorTab).requestFocus()
-                        true
-                    } else {
-                        false
-                    }
-                }
                 .focusGroup(),
             contentAlignment = Alignment.TopCenter,
         ) {
@@ -168,6 +165,27 @@ fun SettingsTvScreen(
                             hint = stringResource(R.string.settings_show_screenshots_hint),
                             enabled = state.showScreenshotsOnFocus,
                             onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
+                        )
+
+                        SettingsTab.DETAILS -> DetailsButtonOrderContent(
+                            order = state.detailsButtonOrder,
+                            onMoveUp = {
+                                onEvent(
+                                    SettingsState.Event.DetailsButtonMoved(
+                                        action = it,
+                                        direction = DetailsButtonMoveDirection.UP,
+                                    ),
+                                )
+                            },
+                            onMoveDown = {
+                                onEvent(
+                                    SettingsState.Event.DetailsButtonMoved(
+                                        action = it,
+                                        direction = DetailsButtonMoveDirection.DOWN,
+                                    ),
+                                )
+                            },
+                            onReset = { onEvent(SettingsState.Event.DetailsButtonOrderReset) },
                         )
 
                         SettingsTab.PLAYER -> {
@@ -276,6 +294,177 @@ fun SettingsTvScreen(
 }
 
 @Composable
+private fun DetailsButtonOrderContent(
+    order: List<DetailsButtonAction>,
+    onMoveUp: (DetailsButtonAction) -> Unit,
+    onMoveDown: (DetailsButtonAction) -> Unit,
+    onReset: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        DetailsButtonOrderResetRow(onReset = onReset)
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        )
+        order.forEachIndexed { index, action ->
+            key(action) {
+                DetailsButtonOrderRow(
+                    action = action,
+                    position = index + 1,
+                    canMoveUp = index > 0,
+                    canMoveDown = index < order.lastIndex,
+                    onMoveUp = { onMoveUp(action) },
+                    onMoveDown = { onMoveDown(action) },
+                )
+            }
+            if (index < order.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailsButtonOrderResetRow(onReset: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(10.dp)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .border(
+                width = 2.dp,
+                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            )
+            .background(
+                color = if (focused) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f) else Color.Transparent,
+                shape = shape,
+            )
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onReset)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.RestartAlt,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.settings_details_buttons_reset),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.settings_details_buttons_reset_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailsButtonOrderRow(
+    action: DetailsButtonAction,
+    position: Int,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = action.label(),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.settings_details_button_position, position),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        FocusableIconButton(
+            icon = Icons.Filled.KeyboardArrowUp,
+            contentDescription = stringResource(R.string.settings_details_button_move_up),
+            onClick = onMoveUp,
+            enabled = canMoveUp,
+        )
+        FocusableIconButton(
+            icon = Icons.Filled.KeyboardArrowDown,
+            contentDescription = stringResource(R.string.settings_details_button_move_down),
+            onClick = onMoveDown,
+            enabled = canMoveDown,
+        )
+    }
+}
+
+@Composable
+private fun FocusableIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(8.dp)
+    val contentColor = when {
+        !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f)
+        focused -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val backgroundColor = when {
+        !enabled -> Color.Transparent
+        focused -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+    }
+
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(shape)
+            .border(
+                width = 2.dp,
+                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            )
+            .background(backgroundColor, shape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    if (enabled) onClick()
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = contentColor,
+        )
+    }
+}
+
+@Composable
 private fun ApiSettingsContent(
     token: String,
     onTokenChanged: (String) -> Unit,
@@ -308,6 +497,24 @@ private fun ApiSettingsContent(
         )
     }
 }
+
+@Composable
+private fun DetailsButtonAction.label(): String = stringResource(
+    when (this) {
+        DetailsButtonAction.WATCH -> R.string.settings_details_button_watch
+        DetailsButtonAction.LIBRARY -> R.string.settings_details_button_library
+        DetailsButtonAction.FAVORITE -> R.string.settings_details_button_favorite
+        DetailsButtonAction.EPISODES -> R.string.settings_details_button_episodes
+        DetailsButtonAction.SUBSCRIPTIONS -> R.string.settings_details_button_subscriptions
+        DetailsButtonAction.FULL_DETAILS -> R.string.settings_details_button_full_details
+        DetailsButtonAction.TRAILERS -> R.string.settings_details_button_trailers
+        DetailsButtonAction.SIMILAR -> R.string.settings_details_button_similar
+        DetailsButtonAction.VIEWING_ORDER -> R.string.settings_details_button_viewing_order
+        DetailsButtonAction.RATING -> R.string.settings_details_button_rating
+        DetailsButtonAction.COLLECTIONS -> R.string.settings_details_button_collections
+        DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
+    },
+)
 
 @Composable
 private fun PosterQuality.label(): String = stringResource(

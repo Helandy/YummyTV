@@ -62,6 +62,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
+import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
@@ -71,6 +73,7 @@ import su.afk.yummy.tv.feature.details.VideosUiState
 private enum class ButtonStyle { Filled, Outlined, Normal }
 
 private data class ButtonData(
+    val action: DetailsButtonAction,
     val label: String,
     val icon: ImageVector,
     val style: ButtonStyle,
@@ -88,6 +91,7 @@ internal fun DetailsButtonBar(
     watchProgress: Map<String, WatchProgressEntry>,
     canSubscribe: Boolean,
     hasCollections: Boolean,
+    buttonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     restoreFocusRequest: Int,
     firstFocusRequester: FocusRequester,
     onWatchSelected: () -> Unit,
@@ -116,8 +120,15 @@ internal fun DetailsButtonBar(
         else -> stringResource(R.string.details_watch)
     }
 
-    val watchButton = ButtonData(watchLabel, Icons.Filled.PlayArrow, ButtonStyle.Filled, onWatchSelected)
+    val watchButton = ButtonData(
+        action = DetailsButtonAction.WATCH,
+        label = watchLabel,
+        icon = Icons.Filled.PlayArrow,
+        style = ButtonStyle.Filled,
+        onClick = onWatchSelected,
+    )
     val libraryButton = ButtonData(
+        action = DetailsButtonAction.LIBRARY,
         label = if (isInLibrary) {
             (libraryList ?: UserAnimeList.WATCHING).label()
         } else {
@@ -128,6 +139,7 @@ internal fun DetailsButtonBar(
         onClick = onLibraryToggle,
     )
     val favoriteButton = ButtonData(
+        action = DetailsButtonAction.FAVORITE,
         label = stringResource(
             if (isFavorite) R.string.details_remove_favorite
             else R.string.details_add_favorite,
@@ -137,10 +149,17 @@ internal fun DetailsButtonBar(
         onClick = onFavoriteToggle,
     )
     val secondaryButtons = listOf(
-        ButtonData(stringResource(R.string.details_episodes), Icons.Filled.VideoLibrary, ButtonStyle.Normal, onEpisodesSelected),
+        ButtonData(
+            DetailsButtonAction.EPISODES,
+            stringResource(R.string.details_episodes),
+            Icons.Filled.VideoLibrary,
+            ButtonStyle.Normal,
+            onEpisodesSelected,
+        ),
     ) + if (canSubscribe) {
         listOf(
             ButtonData(
+                action = DetailsButtonAction.SUBSCRIPTIONS,
                 label = stringResource(R.string.details_subscriptions),
                 icon = Icons.Filled.Notifications,
                 style = ButtonStyle.Normal,
@@ -150,19 +169,45 @@ internal fun DetailsButtonBar(
     } else {
         emptyList()
     } + listOf(
-        ButtonData(stringResource(R.string.details_full_details), Icons.Filled.Info, ButtonStyle.Normal, onDetailsSelected),
-        ButtonData(stringResource(R.string.details_trailers), Icons.Filled.Movie, ButtonStyle.Normal, onTrailersSelected),
-        ButtonData(stringResource(R.string.details_similar), Icons.Filled.AutoAwesome, ButtonStyle.Normal, onSimilarSelected),
         ButtonData(
+            DetailsButtonAction.FULL_DETAILS,
+            stringResource(R.string.details_full_details),
+            Icons.Filled.Info,
+            ButtonStyle.Normal,
+            onDetailsSelected,
+        ),
+        ButtonData(
+            DetailsButtonAction.TRAILERS,
+            stringResource(R.string.details_trailers),
+            Icons.Filled.Movie,
+            ButtonStyle.Normal,
+            onTrailersSelected,
+        ),
+        ButtonData(
+            DetailsButtonAction.SIMILAR,
+            stringResource(R.string.details_similar),
+            Icons.Filled.AutoAwesome,
+            ButtonStyle.Normal,
+            onSimilarSelected,
+        ),
+        ButtonData(
+            DetailsButtonAction.VIEWING_ORDER,
             stringResource(R.string.details_viewing_order),
             Icons.Filled.FormatListNumbered,
             ButtonStyle.Normal,
             onViewingOrderSelected,
         ),
-        ButtonData(stringResource(R.string.details_rating_button), Icons.Filled.Star, ButtonStyle.Normal, onRatingSelected),
+        ButtonData(
+            DetailsButtonAction.RATING,
+            stringResource(R.string.details_rating_button),
+            Icons.Filled.Star,
+            ButtonStyle.Normal,
+            onRatingSelected,
+        ),
     ) + if (hasCollections) {
         listOf(
             ButtonData(
+                DetailsButtonAction.COLLECTIONS,
                 stringResource(R.string.details_collections_button),
                 Icons.Filled.CollectionsBookmark,
                 ButtonStyle.Normal,
@@ -174,6 +219,7 @@ internal fun DetailsButtonBar(
     } + if (details.screenshots.isNotEmpty()) {
         listOf(
             ButtonData(
+                DetailsButtonAction.SCREENSHOTS,
                 stringResource(R.string.details_screenshots_title),
                 Icons.Filled.PhotoLibrary,
                 ButtonStyle.Normal,
@@ -183,7 +229,10 @@ internal fun DetailsButtonBar(
     } else {
         emptyList()
     }
-    val buttons = listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons
+    val availableButtons = (listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons)
+        .associateBy { it.action }
+    val buttons = buttonOrder.mapNotNull { availableButtons[it] } +
+        availableButtons.values.filterNot { button -> button.action in buttonOrder }
     val initialFocusedIndex = 0
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -198,7 +247,7 @@ internal fun DetailsButtonBar(
     val requestFocusedButton: () -> Unit = {
         val targetIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
         scope.launch {
-            listState.scrollToItem((lazyRowIndexForButton(targetIndex) - 1).coerceAtLeast(0))
+            listState.scrollToItem((targetIndex - 1).coerceAtLeast(0))
             focusRequesters.getOrNull(targetIndex)?.requestFocus()
         }
     }
@@ -242,84 +291,10 @@ internal fun DetailsButtonBar(
             contentPadding = PaddingValues(horizontal = 2.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            item(key = "watch") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .padding(horizontal = 2.dp),
-                ) {
-                    ActionButton(
-                        label = watchButton.label,
-                        icon = watchButton.icon,
-                        style = watchButton.style,
-                        alpha = itemAlpha(0),
-                        onClick = watchButton.onClick,
-                        modifier = Modifier
-                            .focusRequester(focusRequesters[0])
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    focusedIndex = 0
-                                    scope.launch { listState.animateScrollToItem(0) }
-                                }
-                            },
-                    )
-                }
-            }
-
-            item(key = "library_favorite") {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .padding(horizontal = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ActionButton(
-                        label = libraryButton.label,
-                        icon = libraryButton.icon,
-                        style = libraryButton.style,
-                        alpha = itemAlpha(1),
-                        onClick = libraryButton.onClick,
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(focusRequesters[1])
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    focusedIndex = 1
-                                    scope.launch { listState.animateScrollToItem(0) }
-                                }
-                            },
-                    )
-                    ActionButton(
-                        label = favoriteButton.label,
-                        icon = favoriteButton.icon,
-                        style = favoriteButton.style,
-                        alpha = itemAlpha(2),
-                        showLabel = false,
-                        iconSize = 24.dp,
-                        verticalPadding = 5.dp,
-                        focusedScale = 1.10f,
-                        onClick = favoriteButton.onClick,
-                        modifier = Modifier
-                            .width(56.dp)
-                            .focusRequester(focusRequesters[2])
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    focusedIndex = 2
-                                    scope.launch { listState.animateScrollToItem(0) }
-                                }
-                            },
-                    )
-                }
-            }
-
             itemsIndexed(
-                items = secondaryButtons,
-                key = { index, _ -> "secondary_$index" },
+                items = buttons,
+                key = { _, button -> button.action.name },
             ) { index, button ->
-                val buttonIndex = index + 3
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -330,16 +305,16 @@ internal fun DetailsButtonBar(
                         label = button.label,
                         icon = button.icon,
                         style = button.style,
-                        alpha = itemAlpha(buttonIndex),
+                        alpha = itemAlpha(index),
                         onClick = button.onClick,
                         modifier = Modifier
-                            .focusRequester(focusRequesters[buttonIndex])
+                            .focusRequester(focusRequesters[index])
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
-                                    focusedIndex = buttonIndex
+                                    focusedIndex = index
                                     scope.launch {
                                         listState.animateScrollToItem(
-                                            (lazyRowIndexForButton(buttonIndex) - 1).coerceAtLeast(0),
+                                            (index - 1).coerceAtLeast(0),
                                         )
                                     }
                                 }
@@ -356,12 +331,6 @@ internal fun DetailsButtonBar(
             ButtonFadeOverlay(alignment = Alignment.BottomCenter)
         }
     }
-}
-
-private fun lazyRowIndexForButton(index: Int): Int = when (index) {
-    0 -> 0
-    1, 2 -> 1
-    else -> index - 1
 }
 
 @Composable

@@ -141,6 +141,7 @@ fun DetailsTvScreen(
                 libraryList = state.libraryList,
                 collections = state.collections,
                 canSubscribe = state.isSignedIn && state.subscriptions.isNotEmpty(),
+                detailsButtonOrder = state.detailsButtonOrder,
                 restoreButtonFocusRequest = restoreButtonFocusRequest,
                 onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
                 onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },

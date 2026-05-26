@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
+import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.ITvIntegration
 import javax.inject.Inject
@@ -48,6 +49,9 @@ class SettingsViewModel @Inject constructor(
         settingsStore.yaniApplicationToken
             .onEach { setState { copy(yaniApplicationToken = it) } }
             .launchIn(viewModelScope)
+        settingsStore.detailsButtonOrder
+            .onEach { setState { copy(detailsButtonOrder = it) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: SettingsState.Event) {
@@ -79,6 +83,31 @@ class SettingsViewModel @Inject constructor(
                     settingsStore.setYaniApplicationToken(event.token)
                 }
             }
+            is SettingsState.Event.DetailsButtonMoved -> viewModelScope.launch {
+                settingsStore.setDetailsButtonOrder(
+                    currentState.detailsButtonOrder.moved(event.action, event.direction),
+                )
+            }
+            SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {
+                settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)
+            }
+        }
+    }
+
+    private fun List<DetailsButtonAction>.moved(
+        action: DetailsButtonAction,
+        direction: DetailsButtonMoveDirection,
+    ): List<DetailsButtonAction> {
+        val index = indexOf(action)
+        if (index == -1) return this
+        val targetIndex = when (direction) {
+            DetailsButtonMoveDirection.UP -> index - 1
+            DetailsButtonMoveDirection.DOWN -> index + 1
+        }
+        if (targetIndex !in indices) return this
+        return toMutableList().apply {
+            this[index] = this[targetIndex]
+            this[targetIndex] = action
         }
     }
 }

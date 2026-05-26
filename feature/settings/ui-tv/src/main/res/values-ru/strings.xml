@@ -2,6 +2,7 @@
 <resources>
     <string name="settings_tab_posters">Постеры</string>
     <string name="settings_tab_cards">Карточки</string>
+    <string name="settings_tab_details">Деталка</string>
     <string name="settings_tab_player">Плеер</string>
     <string name="settings_tab_account">Аккаунт</string>
     <string name="settings_account_sign_in_short">Войти</string>
@@ -11,6 +12,23 @@
     <string name="settings_tab_about">О приложении</string>
     <string name="settings_show_screenshots_label">Скрины при фокусе</string>
     <string name="settings_show_screenshots_hint">Показывать скриншоты тайтла при выборе карточки</string>
+    <string name="settings_details_buttons_reset">Сбросить порядок кнопок</string>
+    <string name="settings_details_buttons_reset_hint">Вернуть стандартный порядок на экране деталки</string>
+    <string name="settings_details_button_position">Позиция %1$d</string>
+    <string name="settings_details_button_move_up">Переместить выше</string>
+    <string name="settings_details_button_move_down">Переместить ниже</string>
+    <string name="settings_details_button_watch">Смотреть</string>
+    <string name="settings_details_button_library">Список</string>
+    <string name="settings_details_button_favorite">Любимые</string>
+    <string name="settings_details_button_episodes">Серии</string>
+    <string name="settings_details_button_subscriptions">Подписки</string>
+    <string name="settings_details_button_full_details">Детали</string>
+    <string name="settings_details_button_trailers">Трейлеры</string>
+    <string name="settings_details_button_similar">Похожее</string>
+    <string name="settings_details_button_viewing_order">Порядок просмотра</string>
+    <string name="settings_details_button_rating">Рейтинг</string>
+    <string name="settings_details_button_collections">Коллекции</string>
+    <string name="settings_details_button_screenshots">Скриншоты</string>
     <string name="settings_preview_channel_label">Новинки</string>
     <string name="settings_preview_channel_added">Канал добавлен на главный экран</string>
     <string name="settings_preview_channel_add_hint">Нажмите, чтобы добавить канал на главный экран</string>
