@@ -49,6 +49,18 @@ internal fun PlayerSelectionPanel(
     selectedFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     itemMeta: @Composable (index: Int) -> String? = { null },
+    itemMetaContent: @Composable (index: Int, contentColor: Color) -> Unit = { index, contentColor ->
+        val meta = itemMeta(index)
+        if (!meta.isNullOrBlank()) {
+            Text(
+                text = meta,
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor.copy(alpha = 0.62f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    },
     onItemSelected: (index: Int) -> Unit,
 ) {
     AnimatedVisibility(
@@ -79,7 +91,7 @@ internal fun PlayerSelectionPanel(
                 val selected = idx == selectedIndex
                 PlayerSelectionItem(
                     label = label,
-                    meta = itemMeta(idx),
+                    metaContent = { contentColor -> itemMetaContent(idx, contentColor) },
                     selected = selected,
                     modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                     onClick = { onItemSelected(idx) },
@@ -92,7 +104,7 @@ internal fun PlayerSelectionPanel(
 @Composable
 private fun PlayerSelectionItem(
     label: String,
-    meta: String?,
+    metaContent: @Composable (contentColor: Color) -> Unit,
     selected: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
@@ -147,15 +159,7 @@ private fun PlayerSelectionItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (!meta.isNullOrBlank()) {
-                    Text(
-                        text = meta,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.62f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                metaContent(contentColor)
             }
             if (selected) {
                 Box(

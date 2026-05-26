@@ -25,6 +25,8 @@
     <string name="player_dubbing_meta">Дорожка озвучки</string>
     <string name="player_balancer_meta">Балансер воспроизведения</string>
     <string name="player_speed_meta">Темп воспроизведения</string>
+    <string name="player_count_thousands">%1$sк</string>
+    <string name="player_count_millions">%1$sм</string>
     <string name="player_skip_segment">Пропустить</string>
     <string name="player_opening_skipped">Опенинг пропущен %1$s - %2$s</string>
     <string name="player_ending_skipped">Эндинг пропущен %1$s - %2$s</string>

@@ -12,11 +12,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,6 +69,7 @@ import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.R
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
+import java.util.Locale
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -82,6 +89,8 @@ internal fun ExoPlayerView(
     onNextEpisode: () -> Unit = {},
     onRateTitle: () -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
+    allDubbingEpisodeNumbers: List<List<String>> = emptyList(),
+    allDubbingViews: List<Int> = emptyList(),
     currentDubbingIndex: Int = 0,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
     allBalancerNames: List<String> = emptyList(),
@@ -500,7 +509,17 @@ internal fun ExoPlayerView(
             selectedIndex = currentDubbingIndex,
             selectedFocusRequester = selectedDubbingFocusRequester,
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
-            itemMeta = { stringResource(R.string.player_dubbing_meta) },
+            itemMetaContent = { idx, contentColor ->
+                val views = allDubbingViews.getOrElse(idx) { 0 }
+                val episodeCount = allDubbingEpisodeNumbers.getOrElse(idx) { emptyList() }
+                    .distinct()
+                    .size
+                DubbingMetaRow(
+                    views = views.formatCompactCount(),
+                    episodeCount = episodeCount,
+                    contentColor = contentColor,
+                )
+            },
             onItemSelected = { idx ->
                 onDubbingSelected(idx, exoPlayer.currentPosition)
                 closePanels()
@@ -647,6 +666,61 @@ internal fun ExoPlayerView(
         }
     }
 }
+
+@Composable
+private fun DubbingMetaRow(
+    views: String,
+    episodeCount: Int,
+    contentColor: Color,
+) {
+    val metaColor = contentColor.copy(alpha = 0.62f)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Visibility,
+            contentDescription = null,
+            tint = metaColor,
+            modifier = Modifier.size(13.dp),
+        )
+        Text(
+            text = views,
+            style = MaterialTheme.typography.labelSmall,
+            color = metaColor,
+            maxLines = 1,
+            modifier = Modifier.width(42.dp),
+        )
+        Spacer(Modifier.width(6.dp))
+        Icon(
+            imageVector = Icons.Filled.VideoLibrary,
+            contentDescription = null,
+            tint = metaColor,
+            modifier = Modifier.size(13.dp),
+        )
+        Text(
+            text = episodeCount.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = metaColor,
+            maxLines = 1,
+            modifier = Modifier.width(24.dp),
+        )
+    }
+}
+
+@Composable
+private fun Int.formatCompactCount(): String = when {
+    this >= 1_000_000 -> stringResource(R.string.player_count_millions, (this / 1_000_000f).formatCompactDecimal())
+    this >= 1_000 -> stringResource(R.string.player_count_thousands, (this / 1_000f).formatCompactDecimal())
+    else -> toString()
+}
+
+private fun Float.formatCompactDecimal(): String =
+    if (this % 1f == 0f) {
+        toInt().toString()
+    } else {
+        String.format(Locale.US, "%.1f", this)
+    }
 
 internal fun formatTime(ms: Long): String {
     val totalSec = ms / 1000

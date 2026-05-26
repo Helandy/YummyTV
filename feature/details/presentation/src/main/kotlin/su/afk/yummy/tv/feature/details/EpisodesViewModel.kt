@@ -158,6 +158,7 @@ class EpisodesViewModel @AssistedInject constructor(
         val dubbingNames = dubbingGroups.keys.toList()
         val currentDubbingIdx = dubbingNames.indexOf(selectedDubbing).coerceAtLeast(0)
         val group = dubbingGroups[selectedDubbing] ?: emptyList()
+        val allDubbingViews = dubbingNames.map { n -> dubbingGroups[n].orEmpty().sumOf { it.views ?: 0 } }
         val idx = group.indexOfFirst { it.id == video.id }.coerceAtLeast(0)
         val screenshotUrls = group.map { ep -> screenshotsByEpisode[ep.episode].orEmpty() }
 
@@ -189,6 +190,12 @@ class EpisodesViewModel @AssistedInject constructor(
                     .map { it.skips.toPlayerSkips() }
             }
         }
+        val allBalancerDubbingViews = supportedBalancers.mapIndexed { bIdx, bName ->
+            allBalancerDubbingNames[bIdx].map { dName ->
+                allVideos.filter { it.player == bName && it.dubbing == dName }
+                    .sumOf { it.views ?: 0 }
+            }
+        }
 
         nav.navigate(
             playerNavigator.getPlayerDest(
@@ -207,11 +214,13 @@ class EpisodesViewModel @AssistedInject constructor(
                 currentDubbingIndex = currentDubbingIdx,
                 allDubbingEpisodeUrls = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.iframeUrl } },
                 allDubbingEpisodeNumbers = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.episode } },
+                allDubbingViews = allDubbingViews,
                 allBalancerNames = supportedBalancers,
                 currentBalancerIndex = currentBalancerIdx,
                 allBalancerDubbingNames = allBalancerDubbingNames,
                 allBalancerEpisodeUrls = allBalancerEpisodeUrls,
                 allBalancerEpisodeNumbers = allBalancerEpisodeNumbers,
+                allBalancerDubbingViews = allBalancerDubbingViews,
                 episodeSkips = group.map { it.skips.toPlayerSkips() },
                 allDubbingEpisodeSkips = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.skips.toPlayerSkips() } },
                 allBalancerEpisodeSkips = allBalancerEpisodeSkips,

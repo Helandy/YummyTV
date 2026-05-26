@@ -62,6 +62,10 @@ fun PlayerTvScreen(
         state.allBalancerEpisodeNumbers.getOrElse(state.balancerIndex) { state.allDubbingEpisodeNumbers }
     else state.allDubbingEpisodeNumbers
 
+    val activeAllDubbingViews = if (state.allBalancerDubbingViews.isNotEmpty())
+        state.allBalancerDubbingViews.getOrElse(state.balancerIndex) { state.allDubbingViews }
+    else state.allDubbingViews
+
     val activeAllEpisodeSkips = if (state.allBalancerEpisodeSkips.isNotEmpty())
         state.allBalancerEpisodeSkips.getOrElse(state.balancerIndex) { state.allDubbingEpisodeSkips }
     else state.allDubbingEpisodeSkips
@@ -103,6 +107,8 @@ fun PlayerTvScreen(
             onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
             onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
             allDubbingNames = activeAllDubbingNames,
+            allDubbingEpisodeNumbers = activeAllEpisodeNumbers,
+            allDubbingViews = activeAllDubbingViews,
             currentDubbingIndex = state.dubbingIndex,
             onDubbingSelected = { newIdx, currentPosMs ->
                 onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
