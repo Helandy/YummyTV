@@ -55,6 +55,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -88,6 +90,7 @@ internal fun ExoPlayerView(
     onPrevEpisode: () -> Unit = {},
     onNextEpisode: () -> Unit = {},
     onRateTitle: () -> Unit = {},
+    onPlaybackError: (String) -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
     allDubbingEpisodeNumbers: List<List<String>> = emptyList(),
     allDubbingViews: List<Int> = emptyList(),
@@ -159,12 +162,14 @@ internal fun ExoPlayerView(
 
     val currentUrl = remember(streamUrl, selectedQuality) { qualities[selectedQuality] ?: streamUrl }
 
-    val exoPlayer = remember(currentUrl) {
+    val exoPlayer = remember(currentUrl, streamHeaders) {
         val trackSelector = DefaultTrackSelector(context).apply {
             setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
         }
         val dataSourceFactory = DefaultHttpDataSource.Factory().apply {
-            if (streamHeaders.isNotEmpty()) setDefaultRequestProperties(streamHeaders)
+            streamHeaders["User-Agent"]?.takeIf { it.isNotBlank() }?.let(::setUserAgent)
+            val requestHeaders = streamHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) }
+            if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
         }
         ExoPlayer.Builder(context)
             .setTrackSelector(trackSelector)
@@ -172,7 +177,7 @@ internal fun ExoPlayerView(
             .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
-                setMediaItem(MediaItem.fromUri(currentUrl))
+                setMediaItem(mediaItemFor(currentUrl))
                 seekTo(seekOnSwitch)
                 prepare()
             }
@@ -272,6 +277,10 @@ internal fun ExoPlayerView(
                         hideJob?.cancel()
                     }
                 }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                onPlaybackError(error.errorCodeName.takeIf { it.isNotBlank() } ?: error.message.orEmpty())
             }
         }
         exoPlayer.addListener(listener)
@@ -668,6 +677,19 @@ internal fun ExoPlayerView(
             }
         }
     }
+}
+
+private fun mediaItemFor(url: String): MediaItem {
+    val cleanUrl = url.substringBefore('?').substringBefore('#')
+    val mimeType = when {
+        cleanUrl.endsWith(".mpd", ignoreCase = true) -> MimeTypes.APPLICATION_MPD
+        cleanUrl.endsWith(".m3u8", ignoreCase = true) -> MimeTypes.APPLICATION_M3U8
+        else -> null
+    }
+    return MediaItem.Builder()
+        .setUri(url)
+        .apply { if (mimeType != null) setMimeType(mimeType) }
+        .build()
 }
 
 @Composable

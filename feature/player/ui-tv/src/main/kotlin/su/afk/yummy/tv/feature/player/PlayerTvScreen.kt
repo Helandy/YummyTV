@@ -89,7 +89,7 @@ fun PlayerTvScreen(
         streamUrl != null -> ExoPlayerView(
             streamUrl = streamUrl,
             streamHeaders = state.streamHeaders,
-            qualityOverrides = state.cvhQualityMap,
+            qualityOverrides = state.streamQualityMap,
             episodeKey = activeIframeUrl,
             resumeFromMs = state.resumeFromMs,
             onSaveProgress = { posMs, durMs ->
@@ -105,6 +105,7 @@ fun PlayerTvScreen(
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
             onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
+            onPlaybackError = { message -> onEvent(PlayerState.Event.PlaybackError(message)) },
             allDubbingNames = activeAllDubbingNames,
             allDubbingEpisodeNumbers = activeAllEpisodeNumbers,
             allDubbingViews = activeAllDubbingViews,
@@ -134,9 +135,7 @@ fun PlayerTvScreen(
             StreamErrorOverlay(
                 message = playerError,
                 modifier = Modifier.align(Alignment.TopEnd),
-                onRetry = if (activeIframeUrl.contains("kodik", ignoreCase = true)) {
-                    { onEvent(PlayerState.Event.RetryStream) }
-                } else null,
+                onRetry = { onEvent(PlayerState.Event.RetryStream) },
             )
         }
         else -> StreamLoadingView()

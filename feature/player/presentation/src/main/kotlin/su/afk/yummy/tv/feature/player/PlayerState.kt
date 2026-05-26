@@ -38,7 +38,7 @@ class PlayerState {
         val retryKey: Int = 0,
         val streamUrl: String? = null,
         val streamHeaders: Map<String, String> = emptyMap(),
-        val cvhQualityMap: LinkedHashMap<String, String>? = null,
+        val streamQualityMap: LinkedHashMap<String, String>? = null,
         val playerError: String? = null,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
@@ -52,6 +52,7 @@ class PlayerState {
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class SaveProgress(val posMs: Long, val durMs: Long) : Event
+        data class PlaybackError(val message: String) : Event
         data object RetryStream : Event
         data object RateTitle : Event
     }

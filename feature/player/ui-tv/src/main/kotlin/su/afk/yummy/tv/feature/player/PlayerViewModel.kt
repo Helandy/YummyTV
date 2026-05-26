@@ -136,6 +136,17 @@ class PlayerViewModel @AssistedInject constructor(
                 val animeId = currentState.animeId
                 if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
+            is PlayerState.Event.PlaybackError -> {
+                val detail = event.message.trim().takeIf { it.isNotBlank() }
+                val message = buildString {
+                    append(context.getString(R.string.player_stream_error))
+                    if (detail != null) {
+                        append("\n")
+                        append(detail)
+                    }
+                }
+                setState { copy(playerError = message) }
+            }
             PlayerState.Event.PrevEpisode -> {
                 val idx = currentState.episodeIndex
                 if (idx > 0) {
@@ -232,7 +243,7 @@ class PlayerViewModel @AssistedInject constructor(
                 copy(
                     streamUrl = null,
                     streamHeaders = emptyMap(),
-                    cvhQualityMap = null,
+                    streamQualityMap = null,
                     playerError = null,
                     kodikBlockedError = null,
                     resumeFromMs = 0L,
@@ -269,10 +280,17 @@ class PlayerViewModel @AssistedInject constructor(
             }
 
             if (url.contains("aksor.tv", ignoreCase = true)) {
-                val extracted = AksorExtractor.extract(url)
-                if (extracted != null) {
+                val result = AksorExtractor.extract(url)
+                if (result != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState { copy(streamUrl = extracted, resumeFromMs = resume) }
+                    setState {
+                        copy(
+                            streamHeaders = result.headers,
+                            streamQualityMap = result.qualities,
+                            streamUrl = result.url,
+                            resumeFromMs = resume,
+                        )
+                    }
                 } else {
                     setState { copy(playerError = context.getString(R.string.player_stream_error)) }
                 }
@@ -285,7 +303,7 @@ class PlayerViewModel @AssistedInject constructor(
                 val qualities = CvhExtractor.extract(url, context.getString(R.string.player_quality_auto))
                 if (qualities != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState { copy(cvhQualityMap = qualities, streamUrl = qualities.values.last(), resumeFromMs = resume) }
+                    setState { copy(streamQualityMap = qualities, streamUrl = qualities.values.last(), resumeFromMs = resume) }
                 } else {
                     setState { copy(playerError = context.getString(R.string.player_stream_error)) }
                 }
