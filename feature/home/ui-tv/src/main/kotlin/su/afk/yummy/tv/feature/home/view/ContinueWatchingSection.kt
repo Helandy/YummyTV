@@ -57,7 +57,22 @@ internal fun ContinueWatchingSection(
     val isRestoring = remember { mutableStateOf(false) }
     val topBarFocusRequester = LocalTopBarFocusRequester.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+
+    fun WatchProgressEntry.focusKey(): String = "$animeId:$episode"
+
+    fun restoreIndex(): Int {
+        val keyedIndex = lastFocusedKey?.let { key ->
+            items.indexOfFirst { it.focusKey() == key }
+        } ?: -1
+        return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
+    }
+
+    fun rememberFocusedItem(index: Int, entry: WatchProgressEntry) {
+        lastFocusedIndex = index
+        lastFocusedKey = entry.focusKey()
+    }
 
     Column {
         Text(
@@ -85,7 +100,7 @@ internal fun ContinueWatchingSection(
                     if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
                         isRestoring.value = true
                         scope.launch {
-                            val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+                            val target = restoreIndex()
                             listState.scrollToItem(target)
                             runCatching { focusRequesters[target].requestFocus() }
                             isRestoring.value = false
@@ -114,9 +129,10 @@ internal fun ContinueWatchingSection(
                 ContinueWatchingCard(
                     entry = entry,
                     onFocused = {
-                        if (rowHasFocus.value && !isRestoring.value) lastFocusedIndex = index
+                        if (rowHasFocus.value && !isRestoring.value) rememberFocusedItem(index, entry)
                     },
                     onClick = {
+                        rememberFocusedItem(index, entry)
                         onItemSelected(entry)
                     },
                     modifier = Modifier.focusRequester(focusRequesters[index]),

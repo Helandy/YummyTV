@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -82,6 +83,7 @@ fun <T> TvMainScaffold(
     content: @Composable () -> Unit,
 ) {
     val topBarFocusRequester = remember { FocusRequester() }
+    val settingsFocusRequester = remember { FocusRequester() }
     val accountFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
     var preferredContentFocusRequester by remember { mutableStateOf<FocusRequester?>(null) }
@@ -99,6 +101,14 @@ fun <T> TvMainScaffold(
     LaunchedEffect(showTopBar, requestedTopBarFocusTarget) {
         if (!showTopBar) return@LaunchedEffect
         when (requestedTopBarFocusTarget) {
+            TopBarFocusTarget.SETTINGS_ACTION -> {
+                hasInitialisedFocus = true
+                skipNextContentRedirect = true
+                kotlinx.coroutines.delay(40)
+                runCatching { settingsFocusRequester.requestFocus() }
+                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                return@LaunchedEffect
+            }
             TopBarFocusTarget.TRAILING_ACTION -> {
                 hasInitialisedFocus = true
                 skipNextContentRedirect = true
@@ -124,10 +134,11 @@ fun <T> TvMainScaffold(
         } else if (skipNextContentRedirect) {
             skipNextContentRedirect = false
         } else {
+            runCatching { contentFocusRequester.requestFocus() }
             var attempts = 0
             var redirected = false
             while (attempts < 40) {
-                kotlinx.coroutines.delay(40)
+                kotlinx.coroutines.delay(20)
                 if (topBarHasFocus) {
                     runCatching { contentFocusRequester.requestFocus() }
                     redirected = true
@@ -159,6 +170,7 @@ fun <T> TvMainScaffold(
                     accountAvatarUrl = accountAvatarUrl,
                     unreadNotificationsCount = unreadNotificationsCount,
                     onAccountClick = onAccountClick,
+                    settingsFocusRequester = settingsFocusRequester,
                     selectedTabFocusRequester = topBarFocusRequester,
                     accountFocusRequester = accountFocusRequester,
                     downFocusRequester = topBarDownFocusRequester,
@@ -188,6 +200,7 @@ private fun <T> TvTopBar(
     accountAvatarUrl: String,
     unreadNotificationsCount: Int,
     onAccountClick: () -> Unit,
+    settingsFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     accountFocusRequester: FocusRequester,
     downFocusRequester: FocusRequester,
@@ -205,6 +218,7 @@ private fun <T> TvTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TvSettingsButton(
+            focusRequester = settingsFocusRequester,
             downFocusRequester = downFocusRequester,
             onClick = onSettingsClick,
         )
@@ -315,6 +329,7 @@ private fun TvNavTab(
 
 @Composable
 private fun TvSettingsButton(
+    focusRequester: FocusRequester,
     downFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
@@ -324,6 +339,7 @@ private fun TvSettingsButton(
 
     Box(
         modifier = modifier
+            .focusRequester(focusRequester)
             .size(44.dp)
             .moveFocusDownOnKey(downFocusRequester)
             .focusProperties {
@@ -434,7 +450,7 @@ private fun TvAccountButton(
 private fun Modifier.moveFocusDownOnKey(focusRequester: FocusRequester): Modifier =
     onPreviewKeyEvent { event ->
         if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
-            runCatching { focusRequester.requestFocus() }
+            runCatching { focusRequester.requestFocus(FocusDirection.Down) }
             true
         } else {
             false

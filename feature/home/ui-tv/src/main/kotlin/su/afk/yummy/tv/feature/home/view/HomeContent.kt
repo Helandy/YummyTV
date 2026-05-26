@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -62,11 +63,9 @@ internal fun HomeContent(
     val totalLazyItems = sectionsBaseLazyIdx + feed.sections.size
 
     // When returning to Home (e.g. back from details/collection) or stepping back down from
-    // the top bar, the column regains focus. Restore focus to the row that contained the last
-    // focused item. The target is derived from focusedItemId, read at the moment the column
-    // gains focus: the column's onFocusChanged fires before any card re-focus (parent first)
-    // and the forward's onItemFocused is async, so focusedItemId is still the pre-navigation
-    // card and can't be clobbered by the restore traversal.
+    // the top bar, the column regains focus. Prefer the last focused row index because the
+    // same anime id can appear in several sections, then fall back to item lookup if the feed
+    // changed and that row no longer contains the focused item.
     fun rowIndexForFocusedItem(): Int = when {
         focusedItemId != null && hasHero && feed.heroItems.any { it.id == focusedItemId } -> heroLazyIdx
         focusedItemId != null -> {
@@ -81,34 +80,12 @@ internal fun HomeContent(
     var columnHasFocus by remember { mutableStateOf(false) }
     var restoringFromTopBar by remember { mutableStateOf(false) }
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
+    val homeContentFocusRequester = remember { FocusRequester() }
     val continueWatchingFocusRequester = remember { FocusRequester() }
     val heroFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val sectionFocusRequesters = remember(feed.sections.map { it.title }) {
         feed.sections.associate { section -> section.title to FocusRequester() }
-    }
-
-    fun focusRequesterForFocusedItem(): FocusRequester = when {
-        focusedItemId != null && hasHero && feed.heroItems.any { it.id == focusedItemId } -> heroFocusRequester
-        focusedItemId != null -> {
-            val section = feed.sections.firstOrNull { section ->
-                section.items.any { it.id == focusedItemId }
-            }
-            section?.let { sectionFocusRequesters[it.title] } ?: firstAvailableFocusRequester(
-                hasHero = hasHero,
-                hasContinueWatching = hasContinueWatching,
-                continueWatchingFocusRequester = continueWatchingFocusRequester,
-                heroFocusRequester = heroFocusRequester,
-                sectionFocusRequesters = sectionFocusRequesters,
-            )
-        }
-        else -> firstAvailableFocusRequester(
-            hasHero = hasHero,
-            hasContinueWatching = hasContinueWatching,
-            continueWatchingFocusRequester = continueWatchingFocusRequester,
-            heroFocusRequester = heroFocusRequester,
-            sectionFocusRequesters = sectionFocusRequesters,
-        )
     }
 
     fun focusRequesterForLazyIndex(index: Int): FocusRequester = when {
@@ -134,7 +111,27 @@ internal fun HomeContent(
         )
     }
 
-    fun topBarEnterIndex(): Int = if (hasContinueWatching) 0 else rowIndexForFocusedItem()
+    fun lazyIndexContainsFocusedItem(index: Int): Boolean = when {
+        focusedItemId == null -> false
+        hasHero && index == heroLazyIdx -> feed.heroItems.any { it.id == focusedItemId }
+        index >= sectionsBaseLazyIdx -> {
+            val sectionIndex = index - sectionsBaseLazyIdx
+            feed.sections.getOrNull(sectionIndex)?.items?.any { it.id == focusedItemId } == true
+        }
+        else -> false
+    }
+
+    fun focusedLazyIndex(): Int {
+        val savedIndex = lastFocusedLazyIndex.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
+        return when {
+            totalLazyItems <= 0 -> 0
+            focusedItemId != null && lazyIndexContainsFocusedItem(savedIndex) -> savedIndex
+            focusedItemId != null -> rowIndexForFocusedItem()
+            else -> savedIndex
+        }
+    }
+
+    fun topBarEnterIndex(): Int = if (hasContinueWatching) 0 else focusedLazyIndex()
 
     fun previousRowFocusRequester(index: Int): FocusRequester? =
         when {
@@ -151,8 +148,7 @@ internal fun HomeContent(
     fun restoreFocusRequester(direction: FocusDirection): FocusRequester = when {
         totalLazyItems <= 0 -> FocusRequester.Default
         direction == FocusDirection.Down -> focusRequesterForLazyIndex(topBarEnterIndex())
-        focusedItemId != null -> focusRequesterForFocusedItem()
-        else -> focusRequesterForLazyIndex(lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1))
+        else -> focusRequesterForLazyIndex(focusedLazyIndex())
     }
 
     fun requestRowFocus(index: Int) {
@@ -169,7 +165,7 @@ internal fun HomeContent(
     }
 
     val preferredContentFocusRequester =
-        if (totalLazyItems > 0) focusRequesterForLazyIndex(topBarEnterIndex()) else null
+        if (totalLazyItems > 0) homeContentFocusRequester else null
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
@@ -180,11 +176,16 @@ internal fun HomeContent(
         state = lazyColumnState,
         modifier = Modifier
             .fillMaxSize()
+            .focusRequester(homeContentFocusRequester)
             .background(MaterialTheme.colorScheme.background)
             .focusProperties {
                 onEnter = {
                     restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
-                    restoreFocusRequester(requestedFocusDirection).requestFocus()
+                    if (restoringFromTopBar) {
+                        requestRowFocus(topBarEnterIndex())
+                    } else {
+                        restoreFocusRequester(requestedFocusDirection).requestFocus()
+                    }
                 }
             }
             .onFocusChanged { state ->
@@ -193,7 +194,7 @@ internal fun HomeContent(
                 if (state.hasFocus && !hadFocus && totalLazyItems > 0) {
                     val target = when {
                         restoringFromTopBar -> topBarEnterIndex()
-                        focusedItemId != null -> rowIndexForFocusedItem()
+                        focusedItemId != null -> focusedLazyIndex()
                         else -> lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
                     }
                     scope.launch {
@@ -201,12 +202,7 @@ internal fun HomeContent(
                         snapshotFlow {
                             lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
                         }.first { it }
-                        val focusRequester = if (focusedItemId != null) {
-                            if (restoringFromTopBar) focusRequesterForLazyIndex(target) else focusRequesterForFocusedItem()
-                        } else {
-                            focusRequesterForLazyIndex(target)
-                        }
-                        runCatching { focusRequester.requestFocus() }
+                        runCatching { focusRequesterForLazyIndex(target).requestFocus() }
                         restoringFromTopBar = false
                     }
                 } else if (!state.hasFocus) {

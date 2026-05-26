@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 
 enum class TopBarFocusTarget {
+    SETTINGS_ACTION,
     SELECTED_TAB,
     TRAILING_ACTION,
 }
