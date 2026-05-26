@@ -18,6 +18,7 @@
     <string name="settings_details_button_move_up">Переместить выше</string>
     <string name="settings_details_button_move_down">Переместить ниже</string>
     <string name="settings_details_button_watch">Смотреть</string>
+    <string name="settings_details_button_library_favorite">Список + Любимые</string>
     <string name="settings_details_button_library">Список</string>
     <string name="settings_details_button_favorite">Любимые</string>
     <string name="settings_details_button_episodes">Серии</string>

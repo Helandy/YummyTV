@@ -80,6 +80,26 @@ private data class ButtonData(
     val onClick: () -> Unit,
 )
 
+private sealed interface ButtonRowData {
+    val key: String
+    val buttonIndices: List<Int>
+
+    data class Single(val index: Int, val button: ButtonData) : ButtonRowData {
+        override val key = button.action.name
+        override val buttonIndices = listOf(index)
+    }
+
+    data class LibraryFavorite(
+        val libraryIndex: Int,
+        val libraryButton: ButtonData,
+        val favoriteIndex: Int,
+        val favoriteButton: ButtonData,
+    ) : ButtonRowData {
+        override val key = "${libraryButton.action.name}_${favoriteButton.action.name}"
+        override val buttonIndices = listOf(libraryIndex, favoriteIndex)
+    }
+}
+
 @Composable
 internal fun DetailsButtonBar(
     details: AnimeDetails,
@@ -233,6 +253,7 @@ internal fun DetailsButtonBar(
         .associateBy { it.action }
     val buttons = buttonOrder.mapNotNull { availableButtons[it] } +
         availableButtons.values.filterNot { button -> button.action in buttonOrder }
+    val buttonRows = buttons.toButtonRows()
     val initialFocusedIndex = 0
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -247,7 +268,7 @@ internal fun DetailsButtonBar(
     val requestFocusedButton: () -> Unit = {
         val targetIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
         scope.launch {
-            listState.scrollToItem((targetIndex - 1).coerceAtLeast(0))
+            listState.scrollToItem((buttonRows.rowIndexForButton(targetIndex) - 1).coerceAtLeast(0))
             focusRequesters.getOrNull(targetIndex)?.requestFocus()
         }
     }
@@ -292,34 +313,66 @@ internal fun DetailsButtonBar(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             itemsIndexed(
-                items = buttons,
-                key = { _, button -> button.action.name },
-            ) { index, button ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .padding(horizontal = 2.dp),
-                ) {
-                    ActionButton(
-                        label = button.label,
-                        icon = button.icon,
-                        style = button.style,
-                        alpha = itemAlpha(index),
-                        onClick = button.onClick,
-                        modifier = Modifier
-                            .focusRequester(focusRequesters[index])
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    focusedIndex = index
-                                    scope.launch {
-                                        listState.animateScrollToItem(
-                                            (index - 1).coerceAtLeast(0),
-                                        )
-                                    }
-                                }
-                            },
-                    )
+                items = buttonRows,
+                key = { _, row -> row.key },
+            ) { rowIndex, row ->
+                when (row) {
+                    is ButtonRowData.Single -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .padding(horizontal = 2.dp),
+                        ) {
+                            DetailsActionButton(
+                                button = row.button,
+                                index = row.index,
+                                alpha = itemAlpha(row.index),
+                                focusRequester = focusRequesters[row.index],
+                                onFocused = {
+                                    focusedIndex = row.index
+                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                },
+                            )
+                        }
+                    }
+                    is ButtonRowData.LibraryFavorite -> {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .padding(horizontal = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            DetailsActionButton(
+                                button = row.libraryButton,
+                                index = row.libraryIndex,
+                                alpha = itemAlpha(row.libraryIndex),
+                                focusRequester = focusRequesters[row.libraryIndex],
+                                onFocused = {
+                                    focusedIndex = row.libraryIndex
+                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                },
+                                modifier = Modifier.weight(1f),
+                            )
+                            DetailsActionButton(
+                                button = row.favoriteButton,
+                                index = row.favoriteIndex,
+                                alpha = itemAlpha(row.favoriteIndex),
+                                focusRequester = focusRequesters[row.favoriteIndex],
+                                onFocused = {
+                                    focusedIndex = row.favoriteIndex
+                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                },
+                                showLabel = false,
+                                iconSize = 24.dp,
+                                verticalPadding = 5.dp,
+                                focusedScale = 1.10f,
+                                modifier = Modifier.width(56.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -333,6 +386,24 @@ internal fun DetailsButtonBar(
     }
 }
 
+private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
+    var index = 0
+    while (index <= this@toButtonRows.lastIndex) {
+        val button = this@toButtonRows[index]
+        val nextButton = this@toButtonRows.getOrNull(index + 1)
+        if (button.action == DetailsButtonAction.LIBRARY && nextButton?.action == DetailsButtonAction.FAVORITE) {
+            add(ButtonRowData.LibraryFavorite(index, button, index + 1, nextButton))
+            index += 2
+        } else {
+            add(ButtonRowData.Single(index, button))
+            index += 1
+        }
+    }
+}
+
+private fun List<ButtonRowData>.rowIndexForButton(buttonIndex: Int): Int =
+    indexOfFirst { buttonIndex in it.buttonIndices }.coerceAtLeast(0)
+
 @Composable
 private fun UserAnimeList.label(): String = stringResource(
     when (this) {
@@ -343,6 +414,39 @@ private fun UserAnimeList.label(): String = stringResource(
         UserAnimeList.DROPPED -> R.string.details_library_list_dropped
     }
 )
+
+@Composable
+private fun DetailsActionButton(
+    button: ButtonData,
+    index: Int,
+    alpha: Float,
+    focusRequester: FocusRequester,
+    onFocused: () -> Unit,
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = true,
+    iconSize: Dp = 18.dp,
+    verticalPadding: Dp = 8.dp,
+    focusedScale: Float = 1.04f,
+) {
+    ActionButton(
+        label = button.label,
+        icon = button.icon,
+        style = button.style,
+        alpha = alpha,
+        showLabel = showLabel,
+        iconSize = iconSize,
+        verticalPadding = verticalPadding,
+        focusedScale = focusedScale,
+        onClick = button.onClick,
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocused()
+                }
+            },
+    )
+}
 
 @Composable
 private fun ActionButton(

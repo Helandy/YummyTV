@@ -192,7 +192,13 @@ class SettingsStore(private val context: Context) {
 
     private fun List<DetailsButtonAction>.normalizedDetailsButtonOrder(): List<DetailsButtonAction> {
         val unique = distinct()
-        return unique + defaultDetailsButtonOrder.filterNot { it in unique }
+        val complete = unique + defaultDetailsButtonOrder.filterNot { it in unique }
+        val withoutFavorite = complete.filterNot { it == DetailsButtonAction.FAVORITE }
+        val libraryIndex = withoutFavorite.indexOf(DetailsButtonAction.LIBRARY)
+        if (libraryIndex == -1) return complete
+        return withoutFavorite.toMutableList().apply {
+            add(libraryIndex + 1, DetailsButtonAction.FAVORITE)
+        }
     }
 
     companion object {

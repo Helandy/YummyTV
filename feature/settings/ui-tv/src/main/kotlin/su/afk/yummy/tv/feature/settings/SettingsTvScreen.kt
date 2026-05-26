@@ -77,6 +77,12 @@ private enum class SettingsTab(@param:StringRes val labelRes: Int) {
     ABOUT(R.string.settings_tab_about),
 }
 
+private data class DetailsButtonOrderItem(
+    val key: String,
+    val action: DetailsButtonAction,
+    val label: String,
+)
+
 @Composable
 fun SettingsTvScreen(
     state: SettingsState.State,
@@ -300,24 +306,25 @@ private fun DetailsButtonOrderContent(
     onMoveDown: (DetailsButtonAction) -> Unit,
     onReset: () -> Unit,
 ) {
+    val items = order.toDetailsButtonOrderItems()
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         DetailsButtonOrderResetRow(onReset = onReset)
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 8.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         )
-        order.forEachIndexed { index, action ->
-            key(action) {
+        items.forEachIndexed { index, item ->
+            key(item.key) {
                 DetailsButtonOrderRow(
-                    action = action,
+                    label = item.label,
                     position = index + 1,
                     canMoveUp = index > 0,
-                    canMoveDown = index < order.lastIndex,
-                    onMoveUp = { onMoveUp(action) },
-                    onMoveDown = { onMoveDown(action) },
+                    canMoveDown = index < items.lastIndex,
+                    onMoveUp = { onMoveUp(item.action) },
+                    onMoveDown = { onMoveDown(item.action) },
                 )
             }
-            if (index < order.lastIndex) {
+            if (index < items.lastIndex) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
@@ -374,7 +381,7 @@ private fun DetailsButtonOrderResetRow(onReset: () -> Unit) {
 
 @Composable
 private fun DetailsButtonOrderRow(
-    action: DetailsButtonAction,
+    label: String,
     position: Int,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
@@ -390,7 +397,7 @@ private fun DetailsButtonOrderRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = action.label(),
+                text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -495,6 +502,36 @@ private fun ApiSettingsContent(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsButtonOrderItem> = buildList {
+    var index = 0
+    while (index <= this@toDetailsButtonOrderItems.lastIndex) {
+        val action = this@toDetailsButtonOrderItems[index]
+        val nextAction = this@toDetailsButtonOrderItems.getOrNull(index + 1)
+        if (action == DetailsButtonAction.LIBRARY && nextAction == DetailsButtonAction.FAVORITE) {
+            add(
+                DetailsButtonOrderItem(
+                    key = "LIBRARY_FAVORITE",
+                    action = DetailsButtonAction.LIBRARY,
+                    label = stringResource(R.string.settings_details_button_library_favorite),
+                ),
+            )
+            index += 2
+        } else if (action != DetailsButtonAction.FAVORITE) {
+            add(
+                DetailsButtonOrderItem(
+                    key = action.name,
+                    action = action,
+                    label = action.label(),
+                ),
+            )
+            index += 1
+        } else {
+            index += 1
+        }
     }
 }
 
