@@ -35,6 +35,7 @@ internal fun ToggleRow(
     hint: String,
     enabled: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -52,7 +53,7 @@ internal fun ToggleRow(
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .border(width = 2.dp, color = borderColor, shape = shape)

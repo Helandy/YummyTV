@@ -145,6 +145,7 @@ fun SettingsTvScreen(
                 label = "settings_tab_content",
                 modifier = Modifier.widthIn(max = 720.dp),
             ) { tab ->
+                val tabFocusRequester = tabFocusRequesters.getValue(tab)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,6 +160,7 @@ fun SettingsTvScreen(
                                 hint = theme.hint(),
                                 selected = theme == state.appTheme,
                                 onClick = { onEvent(SettingsState.Event.AppThemeSelected(theme)) },
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
                             if (index < AppTheme.entries.lastIndex) {
                                 HorizontalDivider(
@@ -174,6 +176,7 @@ fun SettingsTvScreen(
                                 hint = quality.hint(),
                                 selected = quality == state.posterQuality,
                                 onClick = { onEvent(SettingsState.Event.PosterQualitySelected(quality)) },
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
                             if (index < PosterQuality.entries.lastIndex) {
                                 HorizontalDivider(
@@ -188,10 +191,12 @@ fun SettingsTvScreen(
                             hint = stringResource(R.string.settings_show_screenshots_hint),
                             enabled = state.showScreenshotsOnFocus,
                             onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
+                            modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
                         )
 
                         SettingsTab.DETAILS -> DetailsButtonOrderContent(
                             order = state.detailsButtonOrder,
+                            upFocusRequester = tabFocusRequester,
                             onMoveUp = {
                                 onEvent(
                                     SettingsState.Event.DetailsButtonMoved(
@@ -221,6 +226,7 @@ fun SettingsTvScreen(
                                 },
                                 enabled = state.autoSkipOpeningsEndings,
                                 onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -248,6 +254,7 @@ fun SettingsTvScreen(
                                 hint = size.hint(),
                                 selected = size == state.previewCacheSize,
                                 onClick = { onEvent(SettingsState.Event.PreviewCacheSizeSelected(size)) },
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
                             if (index < PreviewCacheSize.entries.lastIndex) {
                                 HorizontalDivider(
@@ -259,6 +266,7 @@ fun SettingsTvScreen(
 
                         SettingsTab.API -> ApiSettingsContent(
                             token = state.yaniApplicationToken,
+                            upFocusRequester = tabFocusRequester,
                             onTokenChanged = { onEvent(SettingsState.Event.YaniApplicationTokenChanged(it)) },
                         )
 
@@ -274,6 +282,7 @@ fun SettingsTvScreen(
                                 onClick = {
                                     if (!state.isPreviewChannelBrowsable) onEvent(SettingsState.Event.RequestPreviewChannelBrowsable)
                                 },
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -298,6 +307,7 @@ fun SettingsTvScreen(
                             AboutRow(
                                 label = stringResource(R.string.settings_version_label),
                                 hint = BuildConfig.VERSION_NAME,
+                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -319,13 +329,17 @@ fun SettingsTvScreen(
 @Composable
 private fun DetailsButtonOrderContent(
     order: List<DetailsButtonAction>,
+    upFocusRequester: FocusRequester,
     onMoveUp: (DetailsButtonAction) -> Unit,
     onMoveDown: (DetailsButtonAction) -> Unit,
     onReset: () -> Unit,
 ) {
     val items = order.toDetailsButtonOrderItems()
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        DetailsButtonOrderResetRow(onReset = onReset)
+        DetailsButtonOrderResetRow(
+            onReset = onReset,
+            modifier = Modifier.restoreTabFocusOnUp(upFocusRequester),
+        )
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 8.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
@@ -352,13 +366,16 @@ private fun DetailsButtonOrderContent(
 }
 
 @Composable
-private fun DetailsButtonOrderResetRow(onReset: () -> Unit) {
+private fun DetailsButtonOrderResetRow(
+    onReset: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .border(
@@ -491,6 +508,7 @@ private fun FocusableIconButton(
 @Composable
 private fun ApiSettingsContent(
     token: String,
+    upFocusRequester: FocusRequester,
     onTokenChanged: (String) -> Unit,
 ) {
     Column(
@@ -512,7 +530,9 @@ private fun ApiSettingsContent(
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .restoreTabFocusOnUp(upFocusRequester),
         )
         Text(
             text = stringResource(R.string.settings_yani_application_token_hint),
@@ -654,6 +674,7 @@ private fun PreviewCacheSize.hint(): String = stringResource(
 private fun AboutRow(
     label: String,
     hint: String,
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -661,7 +682,7 @@ private fun AboutRow(
     val shape = RoundedCornerShape(10.dp)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .border(
@@ -702,6 +723,15 @@ private fun AboutRow(
             )
         }
     }
+}
+
+private fun Modifier.restoreTabFocusOnUp(
+    focusRequester: FocusRequester,
+    enabled: Boolean = true,
+): Modifier = if (enabled) {
+    focusProperties { up = focusRequester }
+} else {
+    this
 }
 
 @Composable

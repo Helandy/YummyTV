@@ -35,6 +35,7 @@ internal fun QualityRow(
     hint: String,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -53,7 +54,6 @@ internal fun QualityRow(
     val borderColor by animateColorAsState(
         targetValue = when {
             focused -> MaterialTheme.colorScheme.primary
-            selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
             else -> Color.Transparent
         },
         animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
@@ -66,7 +66,7 @@ internal fun QualityRow(
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .border(width = 2.dp, color = borderColor, shape = shape)
