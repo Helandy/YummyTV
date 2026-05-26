@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
@@ -121,6 +122,8 @@ internal fun SearchContent(
     }
 
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val filterButtonFocusRequester = remember { FocusRequester() }
+    val filterPanelInitialFocusRequester = remember { FocusRequester() }
     var lastFocusedIndex by rememberSaveable {
         val idx = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }?.coerceAtLeast(0) ?: 0
         mutableIntStateOf(idx)
@@ -128,6 +131,15 @@ internal fun SearchContent(
     var searchEditing by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
+    var restoreFilterButtonFocusToken by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(restoreFilterButtonFocusToken, isFilterPanelOpen) {
+        if (restoreFilterButtonFocusToken <= 0 || isFilterPanelOpen) return@LaunchedEffect
+        repeat(6) {
+            runCatching { filterButtonFocusRequester.requestFocus() }
+            delay(16)
+        }
+    }
 
     // Lift the focused card's row to the top once focus settles. A cancellable
     // effect keeps the focused row pinned so the row below stays composed and
@@ -193,6 +205,7 @@ internal fun SearchContent(
             FilterButton(
                 activeCount = filters.activeCount,
                 onClick = onOpenFilters,
+                modifier = Modifier.focusRequester(filterButtonFocusRequester),
             )
         }
 
@@ -202,8 +215,15 @@ internal fun SearchContent(
                     draftFilters = draftFilters,
                     filterOptions = filterOptions,
                     isLoadingFilterOptions = isLoadingFilterOptions,
-                    onClose = onCloseFilters,
-                    onApply = onApplyFilters,
+                    initialFocusRequester = filterPanelInitialFocusRequester,
+                    onClose = {
+                        restoreFilterButtonFocusToken += 1
+                        onCloseFilters()
+                    },
+                    onApply = {
+                        restoreFilterButtonFocusToken += 1
+                        onApplyFilters()
+                    },
                     onReset = onResetFilters,
                     onGenreToggled = onGenreToggled,
                     onExcludedGenreToggled = onExcludedGenreToggled,
@@ -315,6 +335,7 @@ internal fun SearchContent(
 private fun FilterButton(
     activeCount: Int,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val label = if (activeCount > 0) {
         stringResource(R.string.search_filters_with_count, activeCount)
@@ -325,7 +346,7 @@ private fun FilterButton(
         label = label,
         selected = activeCount > 0,
         onClick = onClick,
-        modifier = Modifier.widthIn(min = 148.dp),
+        modifier = modifier.widthIn(min = 148.dp),
     )
 }
 
@@ -334,6 +355,7 @@ private fun FilterPanel(
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
     isLoadingFilterOptions: Boolean,
+    initialFocusRequester: FocusRequester,
     onClose: () -> Unit,
     onApply: () -> Unit,
     onReset: () -> Unit,
@@ -355,6 +377,13 @@ private fun FilterPanel(
     val includeGenresFocusRequester = remember { FocusRequester() }
     val excludeGenresFocusRequester = remember { FocusRequester() }
     val genreBackFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        repeat(6) {
+            runCatching { initialFocusRequester.requestFocus() }
+            delay(16)
+        }
+    }
 
     LaunchedEffect(currentGenrePickerMode, restoreGenreButtonMode) {
         val pickerMode = currentGenrePickerMode
@@ -440,14 +469,15 @@ private fun FilterPanel(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 SelectableRow(
-                    label = stringResource(R.string.search_filters_reset),
-                    selected = false,
-                    onClick = onReset,
-                )
-                SelectableRow(
                     label = stringResource(R.string.search_filters_apply),
                     selected = true,
                     onClick = onApply,
+                    modifier = Modifier.focusRequester(initialFocusRequester),
+                )
+                SelectableRow(
+                    label = stringResource(R.string.search_filters_reset),
+                    selected = false,
+                    onClick = onReset,
                 )
                 SelectableRow(
                     label = stringResource(R.string.search_filters_close),
