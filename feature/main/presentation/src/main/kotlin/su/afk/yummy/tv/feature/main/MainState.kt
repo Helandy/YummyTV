@@ -3,11 +3,13 @@ package su.afk.yummy.tv.feature.main
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.core.storage.settings.AppTheme
 import su.afk.yummy.tv.core.storage.settings.PosterQuality
 
 object MainState {
 
     data class State(
+        val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val showScreenshotsOnFocus: Boolean = false,
         val yaniNickname: String = "",

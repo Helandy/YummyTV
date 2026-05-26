@@ -77,7 +77,7 @@ class TvMainGraph @Inject constructor(
                 }
             }
 
-            YummyTvTheme {
+            YummyTvTheme(appTheme = state.appTheme) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalShowScreenshotsOnFocus provides state.showScreenshotsOnFocus,

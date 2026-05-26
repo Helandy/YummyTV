@@ -59,6 +59,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.storage.settings.AppTheme
 import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.settings.PosterQuality
 import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
@@ -67,6 +68,7 @@ import su.afk.yummy.tv.feature.settings.view.QualityRow
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
 
 private enum class SettingsTab(@param:StringRes val labelRes: Int) {
+    THEME(R.string.settings_tab_theme),
     POSTERS(R.string.settings_tab_posters),
     CARDS(R.string.settings_tab_cards),
     DETAILS(R.string.settings_tab_details),
@@ -89,8 +91,8 @@ fun SettingsTvScreen(
     effect: Flow<SettingsState.Effect>,
     onEvent: (SettingsState.Event) -> Unit,
 ) {
-    var selectedTab by remember { mutableStateOf(SettingsTab.POSTERS) }
-    var contentAnchorTab by remember { mutableStateOf(SettingsTab.POSTERS) }
+    var selectedTab by remember { mutableStateOf(SettingsTab.THEME) }
+    var contentAnchorTab by remember { mutableStateOf(SettingsTab.THEME) }
     val contentFocusRequester = remember { FocusRequester() }
     val tabFocusRequesters = remember {
         SettingsTab.entries.associateWith { FocusRequester() }
@@ -151,6 +153,21 @@ fun SettingsTvScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     when (tab) {
+                        SettingsTab.THEME -> AppTheme.entries.forEachIndexed { index, theme ->
+                            QualityRow(
+                                label = theme.label(),
+                                hint = theme.hint(),
+                                selected = theme == state.appTheme,
+                                onClick = { onEvent(SettingsState.Event.AppThemeSelected(theme)) },
+                            )
+                            if (index < AppTheme.entries.lastIndex) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                )
+                            }
+                        }
+
                         SettingsTab.POSTERS -> PosterQuality.entries.forEachIndexed { index, quality ->
                             QualityRow(
                                 label = quality.label(),
@@ -534,6 +551,28 @@ private fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsB
         }
     }
 }
+
+@Composable
+private fun AppTheme.label(): String = stringResource(
+    when (this) {
+        AppTheme.WARM_AMBER -> R.string.settings_theme_warm_amber
+        AppTheme.SAKURA -> R.string.settings_theme_sakura
+        AppTheme.MINT -> R.string.settings_theme_mint
+        AppTheme.OCEAN -> R.string.settings_theme_ocean
+        AppTheme.GRAPHITE -> R.string.settings_theme_graphite
+    },
+)
+
+@Composable
+private fun AppTheme.hint(): String = stringResource(
+    when (this) {
+        AppTheme.WARM_AMBER -> R.string.settings_theme_warm_amber_hint
+        AppTheme.SAKURA -> R.string.settings_theme_sakura_hint
+        AppTheme.MINT -> R.string.settings_theme_mint_hint
+        AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
+        AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
+    },
+)
 
 @Composable
 private fun DetailsButtonAction.label(): String = stringResource(

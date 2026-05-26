@@ -45,6 +45,9 @@ class MainViewModel @Inject constructor(
 
     private fun observeSettings() {
         viewModelScope.launch {
+            settingsStore.appTheme.collect { setState { copy(appTheme = it) } }
+        }
+        viewModelScope.launch {
             settingsStore.posterQuality.collect { setState { copy(posterQuality = it) } }
         }
         viewModelScope.launch {

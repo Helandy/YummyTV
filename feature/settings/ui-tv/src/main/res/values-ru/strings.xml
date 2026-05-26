@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_tab_posters">Постеры</string>
+    <string name="settings_tab_theme">Тема</string>
     <string name="settings_tab_cards">Карточки</string>
     <string name="settings_tab_details">Деталка</string>
     <string name="settings_tab_player">Плеер</string>
@@ -36,6 +37,16 @@
     <string name="settings_watch_next_label">Продолжить просмотр</string>
     <string name="settings_watch_next_enabled">Синхронизируется с TV Home</string>
     <string name="settings_disabled">Отключено</string>
+    <string name="settings_theme_warm_amber">Тёплый янтарь</string>
+    <string name="settings_theme_warm_amber_hint">Нейтральная тёмная основа и мягкий янтарный фокус</string>
+    <string name="settings_theme_sakura">Сакура</string>
+    <string name="settings_theme_sakura_hint">Приглушённая тёмная тема со спокойным розовым акцентом</string>
+    <string name="settings_theme_mint">Мята</string>
+    <string name="settings_theme_mint_hint">Свежий зелёный акцент для мягкого вечернего вида</string>
+    <string name="settings_theme_ocean">Океан</string>
+    <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
+    <string name="settings_theme_graphite">Графит</string>
+    <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
     <string name="settings_poster_quality_low">Низкое</string>
     <string name="settings_poster_quality_low_hint">~15 КБ · WebP</string>
     <string name="settings_poster_quality_standard">Стандартное</string>

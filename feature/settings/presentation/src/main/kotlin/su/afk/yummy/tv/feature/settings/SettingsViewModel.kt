@@ -25,6 +25,9 @@ class SettingsViewModel @Inject constructor(
     override fun createInitialState() = SettingsState.State()
 
     init {
+        settingsStore.appTheme
+            .onEach { setState { copy(appTheme = it) } }
+            .launchIn(viewModelScope)
         settingsStore.posterQuality
             .onEach { setState { copy(posterQuality = it) } }
             .launchIn(viewModelScope)
@@ -56,6 +59,9 @@ class SettingsViewModel @Inject constructor(
 
     override fun onEvent(event: SettingsState.Event) {
         when (event) {
+            is SettingsState.Event.AppThemeSelected -> viewModelScope.launch {
+                settingsStore.setAppTheme(event.theme)
+            }
             is SettingsState.Event.PosterQualitySelected -> viewModelScope.launch {
                 settingsStore.setPosterQuality(event.quality)
             }
