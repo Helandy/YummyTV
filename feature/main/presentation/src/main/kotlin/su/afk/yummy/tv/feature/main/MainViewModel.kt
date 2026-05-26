@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
@@ -13,6 +12,9 @@ import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
+import su.afk.yummy.tv.feature.main.utils.NOTIFICATION_REFRESH_INTERVAL_MS
+import su.afk.yummy.tv.feature.main.utils.firstOrEmpty
+import su.afk.yummy.tv.feature.main.utils.firstOrZero
 import su.afk.yummy.tv.feature.main.utils.isNewer
 import javax.inject.Inject
 import javax.inject.Named
@@ -116,11 +118,3 @@ class MainViewModel @Inject constructor(
         }
     }
 }
-
-private const val NOTIFICATION_REFRESH_INTERVAL_MS = 5 * 60 * 1000L
-
-private suspend fun kotlinx.coroutines.flow.Flow<String>.firstOrEmpty(): String =
-    first()
-
-private suspend fun kotlinx.coroutines.flow.Flow<Long>.firstOrZero(): Long =
-    first()

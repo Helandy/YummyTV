@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
@@ -25,13 +24,13 @@ import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
+import su.afk.yummy.tv.feature.library.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import javax.inject.Inject
 
@@ -250,19 +249,3 @@ class LibraryViewModel @Inject constructor(
         }
     }
 }
-
-private data class LocalLibrarySyncResult(
-    val syncedAny: Boolean,
-    val error: String?,
-)
-
-private fun LibraryEntry.userAnimeList(): UserAnimeList? =
-    UserAnimeList.entries.firstOrNull { it.id == listId }
-
-private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
-    opening = opening.toPlayerSkipSegment(),
-    ending = ending.toPlayerSkipSegment(),
-)
-
-private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
-    this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }

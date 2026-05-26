@@ -13,19 +13,17 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
-import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.home.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import javax.inject.Inject
 
@@ -189,11 +187,3 @@ class HomeViewModel @Inject constructor(
             .forEach(::prefetchPreview)
     }
 }
-
-private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
-    opening = opening.toPlayerSkipSegment(),
-    ending = ending.toPlayerSkipSegment(),
-)
-
-private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
-    this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }

@@ -18,13 +18,10 @@ import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerSkipSegment
-import su.afk.yummy.tv.feature.player.PlayerSkips
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject constructor(
@@ -228,11 +225,3 @@ class EpisodesViewModel @AssistedInject constructor(
         )
     }
 }
-
-private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
-    opening = opening.toPlayerSkipSegment(),
-    ending = ending.toPlayerSkipSegment(),
-)
-
-private fun AnimeVideoSkipSegment?.toPlayerSkipSegment(): PlayerSkipSegment? =
-    this?.let { PlayerSkipSegment(startMs = it.startMs, endMs = it.endMs) }
