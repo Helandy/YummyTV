@@ -418,6 +418,25 @@ internal fun ExoPlayerView(
                         .padding(horizontal = 48.dp, vertical = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
+                    if (activeSkip != null && !autoSkipOpeningsEndings) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            ControlButton(
+                                onClick = ::skipActiveSegment,
+                                onFocused = ::onInteraction,
+                                focusRequester = skipFocusRequester,
+                                primary = highlightedSkipKey == activeSkip.key,
+                            ) { color ->
+                                Text(
+                                    text = stringResource(R.string.player_skip_segment),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = color,
+                                )
+                            }
+                        }
+                    }
                     PlayerProgressRow(
                         wantsPlay = wantsPlay,
                         displayTime = displayTime,
@@ -556,22 +575,6 @@ internal fun ExoPlayerView(
                 onInteraction()
             },
         )
-
-        if (activeSkip != null && !autoSkipOpeningsEndings) {
-            ControlButton(
-                onClick = ::skipActiveSegment,
-                onFocused = ::onInteraction,
-                focusRequester = skipFocusRequester,
-                primary = highlightedSkipKey == activeSkip.key,
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 56.dp),
-            ) { color ->
-                Text(
-                    text = stringResource(R.string.player_skip_segment),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = color,
-                )
-            }
-        }
 
         AnimatedVisibility(
             visible = skipSnackbarText != null,
