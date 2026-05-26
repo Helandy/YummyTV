@@ -116,27 +116,28 @@ internal fun DetailsButtonBar(
         else -> stringResource(R.string.details_watch)
     }
 
-    val buttons = listOf(
-        ButtonData(watchLabel, Icons.Filled.PlayArrow, ButtonStyle.Filled, onWatchSelected),
-        ButtonData(
-            label = if (isInLibrary) {
-                (libraryList ?: UserAnimeList.WATCHING).label()
-            } else {
-                stringResource(R.string.details_add_library)
-            },
-            icon = if (isInLibrary) Icons.AutoMirrored.Filled.PlaylistAddCheck else Icons.AutoMirrored.Filled.PlaylistAdd,
-            style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
-            onClick = onLibraryToggle,
+    val watchButton = ButtonData(watchLabel, Icons.Filled.PlayArrow, ButtonStyle.Filled, onWatchSelected)
+    val libraryButton = ButtonData(
+        label = if (isInLibrary) {
+            (libraryList ?: UserAnimeList.WATCHING).label()
+        } else {
+            stringResource(R.string.details_add_library)
+        },
+        icon = if (isInLibrary) Icons.AutoMirrored.Filled.PlaylistAddCheck else Icons.AutoMirrored.Filled.PlaylistAdd,
+        style = if (isInLibrary) ButtonStyle.Outlined else ButtonStyle.Normal,
+        onClick = onLibraryToggle,
+    )
+    val favoriteButton = ButtonData(
+        label = stringResource(
+            if (isFavorite) R.string.details_remove_favorite
+            else R.string.details_add_favorite,
         ),
-        ButtonData(
-            label = stringResource(
-                if (isFavorite) R.string.details_remove_favorite
-                else R.string.details_add_favorite,
-            ),
-            icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-            style = if (isFavorite) ButtonStyle.Outlined else ButtonStyle.Normal,
-            onClick = onFavoriteToggle,
-        ),
+        icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+        style = if (isFavorite) ButtonStyle.Outlined else ButtonStyle.Normal,
+        onClick = onFavoriteToggle,
+    )
+    val secondaryButtons = listOf(
+        ButtonData(stringResource(R.string.details_episodes), Icons.Filled.VideoLibrary, ButtonStyle.Normal, onEpisodesSelected),
     ) + if (canSubscribe) {
         listOf(
             ButtonData(
@@ -150,7 +151,6 @@ internal fun DetailsButtonBar(
         emptyList()
     } + listOf(
         ButtonData(stringResource(R.string.details_full_details), Icons.Filled.Info, ButtonStyle.Normal, onDetailsSelected),
-        ButtonData(stringResource(R.string.details_episodes), Icons.Filled.VideoLibrary, ButtonStyle.Normal, onEpisodesSelected),
         ButtonData(stringResource(R.string.details_trailers), Icons.Filled.Movie, ButtonStyle.Normal, onTrailersSelected),
         ButtonData(stringResource(R.string.details_similar), Icons.Filled.AutoAwesome, ButtonStyle.Normal, onSimilarSelected),
         ButtonData(
@@ -183,11 +183,13 @@ internal fun DetailsButtonBar(
     } else {
         emptyList()
     }
+    val buttons = listOf(watchButton, libraryButton, favoriteButton) + secondaryButtons
     val initialFocusedIndex = 0
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var focusedIndex by rememberSaveable { mutableIntStateOf(initialFocusedIndex) }
+    val currentFocusedIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
     val focusRequesters = remember(buttons.size) {
         List(buttons.size) { index ->
             if (index == initialFocusedIndex) firstFocusRequester else FocusRequester()
@@ -196,9 +198,14 @@ internal fun DetailsButtonBar(
     val requestFocusedButton: () -> Unit = {
         val targetIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
         scope.launch {
-            listState.scrollToItem((targetIndex - 1).coerceAtLeast(0))
+            listState.scrollToItem((lazyRowIndexForButton(targetIndex) - 1).coerceAtLeast(0))
             focusRequesters.getOrNull(targetIndex)?.requestFocus()
         }
+    }
+    fun itemAlpha(index: Int): Float = when {
+        currentFocusedIndex == index -> 1f
+        kotlin.math.abs(currentFocusedIndex - index) == 1 -> 0.54f
+        else -> 0.24f
     }
 
     LaunchedEffect(buttons.size) {
@@ -235,16 +242,84 @@ internal fun DetailsButtonBar(
             contentPadding = PaddingValues(horizontal = 2.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            itemsIndexed(
-                items = buttons,
-                key = { index, _ -> index },
-            ) { index, button ->
-                val isFocused = focusedIndex == index
-                val itemAlpha = when {
-                    isFocused -> 1f
-                    kotlin.math.abs(focusedIndex - index) == 1 -> 0.54f
-                    else -> 0.24f
+            item(key = "watch") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .padding(horizontal = 2.dp),
+                ) {
+                    ActionButton(
+                        label = watchButton.label,
+                        icon = watchButton.icon,
+                        style = watchButton.style,
+                        alpha = itemAlpha(0),
+                        onClick = watchButton.onClick,
+                        modifier = Modifier
+                            .focusRequester(focusRequesters[0])
+                            .onFocusChanged { focusState ->
+                                if (focusState.isFocused) {
+                                    focusedIndex = 0
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                }
+                            },
+                    )
                 }
+            }
+
+            item(key = "library_favorite") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .padding(horizontal = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ActionButton(
+                        label = libraryButton.label,
+                        icon = libraryButton.icon,
+                        style = libraryButton.style,
+                        alpha = itemAlpha(1),
+                        onClick = libraryButton.onClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequesters[1])
+                            .onFocusChanged { focusState ->
+                                if (focusState.isFocused) {
+                                    focusedIndex = 1
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                }
+                            },
+                    )
+                    ActionButton(
+                        label = favoriteButton.label,
+                        icon = favoriteButton.icon,
+                        style = favoriteButton.style,
+                        alpha = itemAlpha(2),
+                        showLabel = false,
+                        iconSize = 24.dp,
+                        verticalPadding = 5.dp,
+                        focusedScale = 1.10f,
+                        onClick = favoriteButton.onClick,
+                        modifier = Modifier
+                            .width(56.dp)
+                            .focusRequester(focusRequesters[2])
+                            .onFocusChanged { focusState ->
+                                if (focusState.isFocused) {
+                                    focusedIndex = 2
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                }
+                            },
+                    )
+                }
+            }
+
+            itemsIndexed(
+                items = secondaryButtons,
+                key = { index, _ -> "secondary_$index" },
+            ) { index, button ->
+                val buttonIndex = index + 3
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -255,14 +330,18 @@ internal fun DetailsButtonBar(
                         label = button.label,
                         icon = button.icon,
                         style = button.style,
-                        alpha = itemAlpha,
+                        alpha = itemAlpha(buttonIndex),
                         onClick = button.onClick,
                         modifier = Modifier
-                            .focusRequester(focusRequesters[index])
+                            .focusRequester(focusRequesters[buttonIndex])
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
-                                    focusedIndex = index
-                                    scope.launch { listState.animateScrollToItem((index - 1).coerceAtLeast(0)) }
+                                    focusedIndex = buttonIndex
+                                    scope.launch {
+                                        listState.animateScrollToItem(
+                                            (lazyRowIndexForButton(buttonIndex) - 1).coerceAtLeast(0),
+                                        )
+                                    }
                                 }
                             },
                     )
@@ -270,13 +349,19 @@ internal fun DetailsButtonBar(
             }
         }
 
-        if (focusedIndex > 0) {
+        if (currentFocusedIndex > 0) {
             ButtonFadeOverlay(alignment = Alignment.TopCenter)
         }
-        if (focusedIndex < buttons.lastIndex) {
+        if (currentFocusedIndex < buttons.lastIndex) {
             ButtonFadeOverlay(alignment = Alignment.BottomCenter)
         }
     }
+}
+
+private fun lazyRowIndexForButton(index: Int): Int = when (index) {
+    0 -> 0
+    1, 2 -> 1
+    else -> index - 1
 }
 
 @Composable
@@ -296,6 +381,10 @@ private fun ActionButton(
     icon: ImageVector,
     style: ButtonStyle,
     alpha: Float,
+    showLabel: Boolean = true,
+    iconSize: Dp = 18.dp,
+    verticalPadding: Dp = 8.dp,
+    focusedScale: Float = 1.04f,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -314,9 +403,9 @@ private fun ActionButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .tvFocusableClick(onClick = onClick, shape = shape)
+            .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale)
             .background(bgColor.copy(alpha = bgColor.alpha * alpha), shape)
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .padding(horizontal = 20.dp, vertical = verticalPadding),
         contentAlignment = Alignment.Center,
     ) {
         Row(
@@ -328,17 +417,19 @@ private fun ActionButton(
                 imageVector = icon,
                 contentDescription = null,
                 tint = textColor.copy(alpha = textColor.alpha * alpha),
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(iconSize),
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
-                fontWeight = FontWeight.Bold,
-                color = textColor.copy(alpha = textColor.alpha * alpha),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (showLabel) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+                    fontWeight = FontWeight.Bold,
+                    color = textColor.copy(alpha = textColor.alpha * alpha),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
