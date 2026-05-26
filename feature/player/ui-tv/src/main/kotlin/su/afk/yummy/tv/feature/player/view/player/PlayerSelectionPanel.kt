@@ -64,7 +64,7 @@ internal fun PlayerSelectionPanel(
     onItemSelected: (index: Int) -> Unit,
 ) {
     AnimatedVisibility(
-        visible = visible && items.size > 1,
+        visible = visible && items.isNotEmpty(),
         modifier = modifier,
         enter = fadeIn(),
         exit = fadeOut(),

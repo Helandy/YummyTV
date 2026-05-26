@@ -64,7 +64,7 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (allDubbingNames.size > 1 || qualityCount > 1 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
+            if (allDubbingNames.size > 1 || qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
         }
         if (allDubbingNames.size > 1) {
             val label = allDubbingNames.getOrElse(currentDubbingIndex) { dubbing }
@@ -81,9 +81,9 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (qualityCount > 1 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
+            if (qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
         }
-        if (qualityCount > 1) {
+        if (qualityCount > 0) {
             ControlButton(
                 onClick = onToggleQuality,
                 onFocused = onInteraction,
