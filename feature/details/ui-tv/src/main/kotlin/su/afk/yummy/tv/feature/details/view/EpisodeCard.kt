@@ -73,7 +73,7 @@ internal fun EpisodeCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(ThumbnailHeight)
-                    .background(Color.DarkGray.copy(alpha = 0.55f)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 if (screenshotUrl != null) {
                     AsyncImage(

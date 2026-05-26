@@ -103,7 +103,7 @@ internal fun HomeFeedCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(HomeFeedCardDefaults.PosterHeight)
-                    .background(Color.DarkGray.copy(alpha = 0.55f)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 val imageUrl = when {

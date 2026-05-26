@@ -100,7 +100,7 @@ internal fun ContinueWatchingCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(ThumbnailHeight)
-                        .background(Color.DarkGray.copy(alpha = 0.55f)),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     AsyncImage(
                         model = imageUrl,

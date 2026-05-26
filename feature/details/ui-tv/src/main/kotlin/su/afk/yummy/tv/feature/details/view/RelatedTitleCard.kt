@@ -73,7 +73,7 @@ internal fun RelatedTitleCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(258.dp)
-                    .background(Color.DarkGray.copy(alpha = 0.50f), posterShape),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, posterShape),
             ) {
                 AsyncImage(
                     model = posterUrl,
