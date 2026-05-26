@@ -69,6 +69,7 @@ class LibraryViewModel @Inject constructor(
             .map { entries ->
                 entries
                     .filter { it.animeId > 0 }
+                    .filter { WatchProgressStore.isContinueWatchingEntry(it) }
                     .groupBy { it.animeId }
                     .values
                     .map { group -> group.maxBy { it.updatedAt } }

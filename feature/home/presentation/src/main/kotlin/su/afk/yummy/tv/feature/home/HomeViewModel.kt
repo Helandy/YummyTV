@@ -54,10 +54,7 @@ class HomeViewModel @Inject constructor(
         watchProgressStore.observeAll()
             .onEach { entries ->
                 val inProgress = entries
-                    .filter { e ->
-                        e.durationMs > 0 && e.positionMs >= 30_000 &&
-                        e.positionMs.toFloat() / e.durationMs < 0.90f
-                    }
+                    .filter { WatchProgressStore.isContinueWatchingEntry(it) }
                     .sortedByDescending { it.updatedAt }
                     .distinctBy { it.animeId to it.episode }
                 setState {

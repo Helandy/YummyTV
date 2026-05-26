@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.tvprovider.media.tv.TvContractCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,11 +30,8 @@ internal class WatchNextManager @Inject constructor(
     suspend fun sync(entries: List<WatchProgressEntry>) {
         deleteAll()
         entries
-            .filter { it.animeId > 0 && it.durationMs > 0 }
-            .filter { entry ->
-                val progress = entry.positionMs.toFloat() / entry.durationMs
-                entry.positionMs >= 30_000 && progress < 0.90f
-            }
+            .filter { it.animeId > 0 }
+            .filter { WatchProgressStore.isContinueWatchingEntry(it) }
             .groupBy { it.animeId }
             .values
             .map { group -> group.maxBy { it.updatedAt } }

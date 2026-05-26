@@ -222,13 +222,7 @@ class PlayerViewModel @AssistedInject constructor(
 
     private suspend fun loadResumePosition(animeId: Int, episode: String): Long? {
         val entry = watchProgressStore.get(animeId, episode) ?: return null
-        if (entry.durationMs <= 0) return null
-        val progress = entry.positionMs.toFloat() / entry.durationMs
-        return when {
-            entry.positionMs < 30_000 -> null
-            progress > 0.90f -> null
-            else -> entry.positionMs
-        }
+        return entry.positionMs.takeIf { WatchProgressStore.isContinueWatchingEntry(entry) }
     }
 
     private fun loadStream() {
