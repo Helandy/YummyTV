@@ -250,6 +250,11 @@ class DetailsViewModel @AssistedInject constructor(
         runCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, details = details) }
+                libraryStore.refreshMetadata(
+                    animeId = details.id,
+                    title = details.title,
+                    poster = details.poster?.toLibraryPoster(),
+                )
                 loadVideos()
             },
             onFailure = { e ->

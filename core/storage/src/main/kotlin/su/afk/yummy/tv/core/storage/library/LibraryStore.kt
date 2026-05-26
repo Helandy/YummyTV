@@ -8,6 +8,24 @@ class LibraryStore(private val dao: LibraryDao) {
     fun observeIsInLibrary(animeId: Int): Flow<Boolean> = dao.observeIsInLibrary(animeId)
     fun observeIsFavorite(animeId: Int): Flow<Boolean> = dao.observeIsFavorite(animeId)
     suspend fun add(entry: LibraryEntry) = dao.add(entry)
+    suspend fun refreshMetadata(
+        animeId: Int,
+        title: String,
+        poster: LibraryPoster?,
+    ) {
+        val entry = dao.getByAnimeId(animeId) ?: return
+        dao.add(
+            entry.copy(
+                title = title.ifBlank { entry.title },
+                posterSmallUrl = poster?.small ?: entry.posterSmallUrl,
+                posterMediumUrl = poster?.medium ?: entry.posterMediumUrl,
+                posterBigUrl = poster?.big ?: entry.posterBigUrl,
+                posterFullsizeUrl = poster?.fullsize ?: entry.posterFullsizeUrl,
+                posterMegaUrl = poster?.mega ?: entry.posterMegaUrl,
+            )
+        )
+    }
+
     suspend fun remove(animeId: Int) {
         val entry = dao.getByAnimeId(animeId) ?: return
         if (entry.isFavorite) {
