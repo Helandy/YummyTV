@@ -158,6 +158,8 @@ internal fun YaniNotificationDto.toNotification(): ProfileNotification =
         subType = subType,
         viewed = viewed,
         objectId = objectId,
+        animeSlug = clickUri.toCatalogItemSlug(),
+        isNewEpisode = type == NOTIFICATION_TYPE_ANIME_EPISODE && subType == NOTIFICATION_SUB_TYPE_NEW_EPISODE,
     )
 
 internal fun YaniNotificationCountDto.toNotificationCount(): NotificationCount =
@@ -173,3 +175,15 @@ private fun String.toPlainText(): String =
         .replace("&gt;", ">")
         .replace(Regex("\\s+"), " ")
         .trim()
+
+private fun String.toCatalogItemSlug(): String? {
+    val slug = substringAfter(CATALOG_ITEM_PATH, missingDelimiterValue = "")
+        .substringBefore("?")
+        .substringBefore("#")
+        .substringBefore("/")
+    return slug.takeIf { it.isNotBlank() }
+}
+
+private const val CATALOG_ITEM_PATH = "/catalog/item/"
+private const val NOTIFICATION_TYPE_ANIME_EPISODE = "anime_episode"
+private const val NOTIFICATION_SUB_TYPE_NEW_EPISODE = "new_episode"

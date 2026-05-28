@@ -22,6 +22,11 @@ class YaniProfileNotificationsRepository(
             api.getNotificationCounts().map { it.toNotificationCount() }
         }
 
+    override suspend fun resolveAnimeIdBySlug(slug: String): Int? =
+        withContext(Dispatchers.IO) {
+            runCatching { api.getNotificationAnimeId(slug) }.getOrNull()
+        }
+
     override suspend fun markNotificationRead(id: Int): Boolean =
         withContext(Dispatchers.IO) { api.markNotificationRead(id) }
 

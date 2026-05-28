@@ -40,6 +40,7 @@ class AccountState {
         data object LogoutSelected : Event
         data object RefreshProfileSelected : Event
         data object RefreshHubSelected : Event
+        data class NotificationSelected(val id: Int) : Event
         data class NotificationReadSelected(val id: Int) : Event
         data object AllNotificationsReadSelected : Event
         data class NotificationDeleteSelected(val id: Int) : Event

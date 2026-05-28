@@ -78,12 +78,13 @@ fun AccountTvScreen(
     onEvent: (AccountState.Event) -> Unit,
 ) {
     BackHandler { onEvent(AccountState.Event.BackSelected) }
+    val horizontalPadding = if (state.accessToken.isBlank()) TvScreenPadding.Horizontal else 32.dp
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = TvScreenPadding.Horizontal, vertical = TvScreenPadding.Vertical),
+            .padding(horizontal = horizontalPadding, vertical = TvScreenPadding.Vertical),
     ) {
         if (state.accessToken.isBlank()) {
             LoginContent(
@@ -162,7 +163,7 @@ private fun AccountHubContent(
     val contentModifier = modifier
         .fillMaxHeight()
         .fillMaxWidth(0.92f)
-        .widthIn(max = 1180.dp)
+        .widthIn(max = 1440.dp)
 
     when (state.selectedTab) {
         AccountState.AccountTab.STATS -> StatsTab(
@@ -459,6 +460,7 @@ private fun NotificationsTab(
                 items(state.notifications, key = { it.id }) { notification ->
                     NotificationRow(
                         notification = notification,
+                        onClick = { onEvent(AccountState.Event.NotificationSelected(notification.id)) },
                         onRead = { onEvent(AccountState.Event.NotificationReadSelected(notification.id)) },
                         onDelete = { onEvent(AccountState.Event.NotificationDeleteSelected(notification.id)) },
                     )
@@ -608,7 +610,7 @@ private fun NotificationMiniRow(notification: ProfileNotification) {
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = if (notification.viewed) FontWeight.SemiBold else FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
         Text(
@@ -624,10 +626,27 @@ private fun NotificationMiniRow(notification: ProfileNotification) {
 @Composable
 private fun NotificationRow(
     notification: ProfileNotification,
+    onClick: () -> Unit,
     onRead: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    SurfacePanel(modifier = Modifier.fillMaxWidth()) {
+    val shape = RoundedCornerShape(12.dp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isOpenable = notification.isNewEpisode && notification.animeSlug != null
+    val rowModifier = if (isOpenable) {
+        Modifier
+            .fillMaxWidth()
+            .tvFocusableClick(
+                onClick = onClick,
+                interactionSource = interactionSource,
+                shape = shape,
+                focusedScale = 1.01f,
+            )
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
+    SurfacePanel(modifier = rowModifier) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 modifier = Modifier
@@ -644,7 +663,7 @@ private fun NotificationRow(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = if (notification.viewed) FontWeight.SemiBold else FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
@@ -655,7 +674,7 @@ private fun NotificationRow(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${notification.typeLabel()} · ${notification.dateSeconds.formatDate()}",
+                    text = notification.dateSeconds.formatDate(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -806,9 +825,6 @@ private fun Long.toDurationLabel(): String {
         else -> "${seconds}s"
     }
 }
-
-private fun ProfileNotification.typeLabel(): String =
-    type.ifBlank { subType.ifBlank { "notification" } }
 
 private fun Long.formatDate(): String =
     if (this <= 0L) "" else SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date(this * 1000L))

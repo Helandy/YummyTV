@@ -10,6 +10,8 @@ data class ProfileNotification(
     val subType: String,
     val viewed: Boolean,
     val objectId: Int?,
+    val animeSlug: String? = null,
+    val isNewEpisode: Boolean = false,
 )
 
 data class NotificationCount(

@@ -303,6 +303,16 @@ data class YaniNotificationDto(
 )
 
 @Serializable
+data class YaniNotificationAnimeResponseDto(
+    val response: YaniNotificationAnimeDto = YaniNotificationAnimeDto(),
+)
+
+@Serializable
+data class YaniNotificationAnimeDto(
+    @SerialName("anime_id") val animeId: Int? = null,
+)
+
+@Serializable
 data class YaniNotificationCountsResponseDto(
     val response: List<YaniNotificationCountDto> = emptyList(),
 )

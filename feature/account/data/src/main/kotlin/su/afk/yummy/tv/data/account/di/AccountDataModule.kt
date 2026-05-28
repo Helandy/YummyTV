@@ -43,6 +43,7 @@ import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
+import su.afk.yummy.tv.domain.account.usecase.ResolveNotificationAnimeIdUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
@@ -164,6 +165,10 @@ object AccountDataModule {
     @Provides
     fun provideGetNotificationCountsUseCase(repository: ProfileNotificationsRepository) =
         GetNotificationCountsUseCase(repository)
+
+    @Provides
+    fun provideResolveNotificationAnimeIdUseCase(repository: ProfileNotificationsRepository) =
+        ResolveNotificationAnimeIdUseCase(repository)
 
     @Provides
     fun provideMarkNotificationReadUseCase(repository: ProfileNotificationsRepository) =

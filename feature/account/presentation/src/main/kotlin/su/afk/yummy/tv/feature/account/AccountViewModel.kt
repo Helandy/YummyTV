@@ -21,6 +21,8 @@ import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkNotificationReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
+import su.afk.yummy.tv.domain.account.usecase.ResolveNotificationAnimeIdUseCase
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,9 +38,11 @@ class AccountViewModel @Inject constructor(
     private val getUserStats: GetUserStatsUseCase,
     private val getNotifications: GetProfileNotificationsUseCase,
     private val getNotificationCounts: GetNotificationCountsUseCase,
+    private val resolveNotificationAnimeId: ResolveNotificationAnimeIdUseCase,
     private val markNotificationRead: MarkNotificationReadUseCase,
     private val markAllNotificationsRead: MarkAllNotificationsReadUseCase,
     private val deleteNotification: DeleteNotificationUseCase,
+    private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<AccountState.State, AccountState.Event, AccountState.Effect>(savedStateHandle) {
 
     private companion object {
@@ -129,6 +133,7 @@ class AccountViewModel @Inject constructor(
                 )
             }
             AccountState.Event.RefreshHubSelected -> maybeLoadHub(force = true)
+            is AccountState.Event.NotificationSelected -> openNotification(event.id)
             is AccountState.Event.NotificationReadSelected -> updateNotification(event.id) {
                 markNotificationRead(event.id)
             }
@@ -138,6 +143,27 @@ class AccountViewModel @Inject constructor(
             is AccountState.Event.NotificationDeleteSelected -> updateNotification(event.id) {
                 deleteNotification(event.id)
             }
+        }
+    }
+
+    private fun openNotification(id: Int) {
+        val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
+        if (!notification.isNewEpisode) return
+        val slug = notification.animeSlug ?: return
+        viewModelScope.launch {
+            setState { copy(hubError = null) }
+            runCatching { resolveNotificationAnimeId(slug) }.fold(
+                onSuccess = { animeId ->
+                    if (animeId != null) {
+                        nav.navigate(detailsNavigator.getDetailsDest(animeId))
+                    } else {
+                        setState { copy(hubError = "Could not open notification") }
+                    }
+                },
+                onFailure = { error ->
+                    setState { copy(hubError = error.message ?: "Could not open notification") }
+                },
+            )
         }
     }
 

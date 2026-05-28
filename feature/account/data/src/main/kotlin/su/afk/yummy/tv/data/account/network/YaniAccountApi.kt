@@ -30,6 +30,7 @@ import su.afk.yummy.tv.data.account.dto.YaniListStatDto
 import su.afk.yummy.tv.data.account.dto.YaniListStatsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniNotificationAnimeResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationCountsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
@@ -217,6 +218,12 @@ class YaniAccountApi(
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniNotificationsResponseDto>().response
+
+    suspend fun getNotificationAnimeId(slug: String): Int? =
+        client.get("$YANI_BASE_URL/anime/$slug")
+            .body<YaniNotificationAnimeResponseDto>()
+            .response
+            .animeId
 
     suspend fun getNotificationCounts() =
         client.get("$YANI_BASE_URL/profile/notifications/counts")
