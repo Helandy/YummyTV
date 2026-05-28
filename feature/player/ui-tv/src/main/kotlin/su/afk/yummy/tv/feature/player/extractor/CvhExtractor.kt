@@ -93,13 +93,17 @@ internal object CvhExtractor {
 
     private fun fetchJson(url: String, referer: String): JSONObject {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 15_000
-        conn.instanceFollowRedirects = true
-        conn.setRequestProperty("Referer", referer)
-        conn.setRequestProperty("User-Agent", CHROME_UA)
-        conn.setRequestProperty("Accept", "application/json")
-        val body = conn.inputStream.bufferedReader().readText()
-        return JSONObject(body)
+        return try {
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 15_000
+            conn.instanceFollowRedirects = true
+            conn.setRequestProperty("Referer", referer)
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.setRequestProperty("Accept", "application/json")
+            val body = conn.inputStream.bufferedReader().use { it.readText() }
+            JSONObject(body)
+        } finally {
+            conn.disconnect()
+        }
     }
 }

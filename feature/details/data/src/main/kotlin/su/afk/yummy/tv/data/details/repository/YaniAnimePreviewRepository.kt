@@ -18,11 +18,11 @@ class YaniAnimePreviewRepository(
     private val json: Json,
 ) : AnimePreviewRepository {
 
-    override suspend fun getAnimePreview(animeId: Int): AnimePreview = withContext(Dispatchers.IO) {
-        cache.getOrFetch(
-            key = "anime_details_$animeId",
-            ttlMs = ANIME_PREVIEW_TTL_MS,
-            serialize = { dto: YaniAnimeDetailsDto -> json.encodeToString(dto) },
+	    override suspend fun getAnimePreview(animeId: Int): AnimePreview = withContext(Dispatchers.IO) {
+	        cache.getOrFetch(
+	            key = "anime_details_v2_$animeId",
+	            ttlMs = ANIME_PREVIEW_TTL_MS,
+	            serialize = { dto: YaniAnimeDetailsDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
             fetch = { api.getAnimeDetails(animeId) },
             isValid = { it.response.animeId != null },

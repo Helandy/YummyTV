@@ -2,8 +2,10 @@ package su.afk.yummy.tv.feature.library
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -65,16 +67,15 @@ class LibraryViewModel @Inject constructor(
             .onEach { entries -> setState { copy(items = entries) } }
             .launchIn(viewModelScope)
 
-        watchProgressStore.observeAll()
+        watchProgressStore.observeContinueWatching()
             .map { entries ->
                 entries
-                    .filter { it.animeId > 0 }
-                    .filter { WatchProgressStore.isContinueWatchingEntry(it) }
                     .groupBy { it.animeId }
                     .values
                     .map { group -> group.maxBy { it.updatedAt } }
                     .sortedByDescending { it.updatedAt }
             }
+            .flowOn(Dispatchers.Default)
             .onEach { entries -> setState { copy(continueWatching = entries) } }
             .launchIn(viewModelScope)
         settingsStore.yaniUserId
@@ -246,6 +247,7 @@ class LibraryViewModel @Inject constructor(
 
             val urls = episodeGroup.map { it.iframeUrl }.ifEmpty { listOf(iframeUrl) }
             val numbers = episodeGroup.map { it.episode }.ifEmpty { listOf(entry.episode) }
+            val videoIds = episodeGroup.map { it.id }.ifEmpty { listOf(entry.videoId) }
             val skips = episodeGroup.map { it.skips.toPlayerSkips() }.ifEmpty { listOf(PlayerSkips.Empty) }
             val idx = urls.indexOf(iframeUrl).coerceAtLeast(0)
 
@@ -258,7 +260,7 @@ class LibraryViewModel @Inject constructor(
                     dubbing = resolvedDubbing,
                     episodeUrls = urls,
                     episodeNumbers = numbers,
-                    episodeVideoIds = episodeGroup.map { it.id }.ifEmpty { listOf(entry.videoId) },
+                    episodeVideoIds = videoIds,
                     currentEpisodeIndex = idx,
                     episodeSkips = skips,
                     animeId = entry.animeId,

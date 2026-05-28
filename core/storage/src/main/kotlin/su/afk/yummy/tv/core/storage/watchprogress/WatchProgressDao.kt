@@ -15,6 +15,24 @@ interface WatchProgressDao {
     @Query("SELECT * FROM watch_progress")
     fun observeAll(): Flow<List<WatchProgressEntry>>
 
+    @Query("SELECT * FROM watch_progress WHERE animeId = :animeId")
+    fun observeByAnimeId(animeId: Int): Flow<List<WatchProgressEntry>>
+
+    @Query(
+        """
+        SELECT * FROM watch_progress
+        WHERE animeId > 0
+            AND durationMs > 0
+            AND positionMs >= :minPositionMs
+            AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+        ORDER BY updatedAt DESC
+        """
+    )
+    fun observeContinueWatching(
+        minPositionMs: Long,
+        maxProgress: Float,
+    ): Flow<List<WatchProgressEntry>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entry: WatchProgressEntry)
 

@@ -5,12 +5,16 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -95,8 +99,10 @@ class DetailsViewModel @AssistedInject constructor(
         libraryStore.observeIsFavorite(animeId)
             .onEach { favorite -> setState { copy(isFavorite = favorite || (isSignedIn && isFavorite)) } }
             .launchIn(viewModelScope)
-        watchProgressStore.observeAll()
-            .onEach { entries -> setState { copy(watchProgress = entries.associateBy { it.episodeUrl }) } }
+        watchProgressStore.observeByAnimeId(animeId)
+            .map { entries -> entries.associateBy { it.episodeUrl } }
+            .flowOn(Dispatchers.Default)
+            .onEach { progress -> setState { copy(watchProgress = progress) } }
             .launchIn(viewModelScope)
         settingsStore.detailsButtonOrder
             .onEach { order -> setState { copy(detailsButtonOrder = order) } }
@@ -431,60 +437,60 @@ class DetailsViewModel @AssistedInject constructor(
     private fun navigateToPlayer(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val details = currentState.details
-        val playerName = video.player
-        val selectedDubbing = video.dubbing
+        viewModelScope.launch(Dispatchers.Default) {
+            val playerName = video.player
+            val selectedDubbing = video.dubbing
 
-        val dubbingGroups = allVideos
-            .filter { it.player == playerName }
-            .groupBy { it.dubbing }
-            .mapValues { (_, v) -> v.sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE } }
-        val dubbingNames = dubbingGroups.keys.toList()
-        val currentDubbingIdx = dubbingNames.indexOf(selectedDubbing).coerceAtLeast(0)
-        val group = dubbingGroups[selectedDubbing] ?: emptyList()
-        val allDubbingViews = dubbingNames.map { n -> dubbingGroups[n].orEmpty().sumOf { it.views ?: 0 } }
-        val idx = group.indexOfFirst { it.id == video.id }.coerceAtLeast(0)
-        val episodeScreenshots = details?.screenshots.orEmpty()
-        val screenshotUrls = group.map { ep ->
-            episodeScreenshots.firstOrNull { it.episode == ep.episode }?.small.orEmpty()
-        }
+            val dubbingGroups = allVideos
+                .filter { it.player == playerName }
+                .groupBy { it.dubbing }
+                .mapValues { (_, v) -> v.sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE } }
+            val dubbingNames = dubbingGroups.keys.toList()
+            val currentDubbingIdx = dubbingNames.indexOf(selectedDubbing).coerceAtLeast(0)
+            val group = dubbingGroups[selectedDubbing] ?: emptyList()
+            val allDubbingViews = dubbingNames.map { n -> dubbingGroups[n].orEmpty().sumOf { it.views ?: 0 } }
+            val idx = group.indexOfFirst { it.id == video.id }.coerceAtLeast(0)
+            val episodeScreenshots = details?.screenshots.orEmpty()
+            val screenshotUrls = group.map { ep ->
+                episodeScreenshots.firstOrNull { it.episode == ep.episode }?.small.orEmpty()
+            }
 
-        val supportedBalancers = allVideos
-            .map { it.player }.distinct()
-            .filter { pName -> isSupportedPlayer(allVideos.first { it.player == pName }.iframeUrl) }
-        val currentBalancerIdx = supportedBalancers.indexOf(playerName).coerceAtLeast(0)
-        val allBalancerDubbingNames = supportedBalancers.map { bName ->
-            allVideos.filter { it.player == bName }.map { it.dubbing }.distinct()
-        }
-        val allBalancerEpisodeUrls = supportedBalancers.mapIndexed { bIdx, bName ->
-            allBalancerDubbingNames[bIdx].map { dName ->
-                allVideos.filter { it.player == bName && it.dubbing == dName }
-                    .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                    .map { it.iframeUrl }
+            val supportedBalancers = allVideos
+                .map { it.player }.distinct()
+                .filter { pName -> isSupportedPlayer(allVideos.first { it.player == pName }.iframeUrl) }
+            val currentBalancerIdx = supportedBalancers.indexOf(playerName).coerceAtLeast(0)
+            val allBalancerDubbingNames = supportedBalancers.map { bName ->
+                allVideos.filter { it.player == bName }.map { it.dubbing }.distinct()
             }
-        }
-        val allBalancerEpisodeNumbers = supportedBalancers.mapIndexed { bIdx, bName ->
-            allBalancerDubbingNames[bIdx].map { dName ->
-                allVideos.filter { it.player == bName && it.dubbing == dName }
-                    .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                    .map { it.episode }
+            val allBalancerEpisodeUrls = supportedBalancers.mapIndexed { bIdx, bName ->
+                allBalancerDubbingNames[bIdx].map { dName ->
+                    allVideos.filter { it.player == bName && it.dubbing == dName }
+                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+                        .map { it.iframeUrl }
+                }
             }
-        }
-        val allBalancerEpisodeSkips = supportedBalancers.mapIndexed { bIdx, bName ->
-            allBalancerDubbingNames[bIdx].map { dName ->
-                allVideos.filter { it.player == bName && it.dubbing == dName }
-                    .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                    .map { it.skips.toPlayerSkips() }
+            val allBalancerEpisodeNumbers = supportedBalancers.mapIndexed { bIdx, bName ->
+                allBalancerDubbingNames[bIdx].map { dName ->
+                    allVideos.filter { it.player == bName && it.dubbing == dName }
+                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+                        .map { it.episode }
+                }
             }
-        }
-        val allBalancerDubbingViews = supportedBalancers.mapIndexed { bIdx, bName ->
-            allBalancerDubbingNames[bIdx].map { dName ->
-                allVideos.filter { it.player == bName && it.dubbing == dName }
-                    .sumOf { it.views ?: 0 }
+            val allBalancerEpisodeSkips = supportedBalancers.mapIndexed { bIdx, bName ->
+                allBalancerDubbingNames[bIdx].map { dName ->
+                    allVideos.filter { it.player == bName && it.dubbing == dName }
+                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+                        .map { it.skips.toPlayerSkips() }
+                }
             }
-        }
+            val allBalancerDubbingViews = supportedBalancers.mapIndexed { bIdx, bName ->
+                allBalancerDubbingNames[bIdx].map { dName ->
+                    allVideos.filter { it.player == bName && it.dubbing == dName }
+                        .sumOf { it.views ?: 0 }
+                }
+            }
 
-        nav.navigate(
-            playerNavigator.getPlayerDest(
+            val destination = playerNavigator.getPlayerDest(
                 iframeUrl = video.iframeUrl,
                 animeTitle = details?.title ?: "",
                 episode = video.episode,
@@ -520,6 +526,7 @@ class DetailsViewModel @AssistedInject constructor(
                 allDubbingEpisodeSkips = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.skips.toPlayerSkips() } },
                 allBalancerEpisodeSkips = allBalancerEpisodeSkips,
             )
-        )
+            withContext(Dispatchers.Main) { nav.navigate(destination) }
+        }
     }
 }

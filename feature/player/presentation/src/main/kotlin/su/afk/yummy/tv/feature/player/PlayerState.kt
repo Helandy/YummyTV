@@ -4,6 +4,17 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 
+data class PlayerProgressSnapshot(
+    val episode: String,
+    val episodeUrl: String,
+    val videoId: Int,
+    val playerName: String,
+    val dubbing: String,
+    val screenshotUrl: String,
+    val positionMs: Long,
+    val durationMs: Long,
+)
+
 class PlayerState {
     data class State(
         val iframeUrl: String = "",
@@ -51,7 +62,7 @@ class PlayerState {
         data object NextEpisode : Event
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
-        data class SaveProgress(val posMs: Long, val durMs: Long) : Event
+        data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
         data class PlaybackError(val message: String) : Event
         data object RetryStream : Event
         data object RateTitle : Event

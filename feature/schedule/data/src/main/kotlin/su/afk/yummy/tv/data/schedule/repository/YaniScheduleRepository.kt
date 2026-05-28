@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.schedule.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.schedule.dto.YaniScheduleResponseDto
@@ -16,7 +18,7 @@ class YaniScheduleRepository(
     private val json: Json,
 ) : AnimeScheduleRepository {
 
-    override suspend fun getSchedule(): List<AnimeScheduleDay> =
+    override suspend fun getSchedule(): List<AnimeScheduleDay> = withContext(Dispatchers.IO) {
         cache.getOrFetch(
             key = "anime_schedule_v2",
             ttlMs = SCHEDULE_TTL_MS,
@@ -24,4 +26,5 @@ class YaniScheduleRepository(
             deserialize = { json.decodeFromString(it) },
             fetch = { api.getSchedule() },
         ).response.toScheduleDays()
+    }
 }

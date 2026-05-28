@@ -117,6 +117,8 @@ class PlayerViewModel @AssistedInject constructor(
     )
 
     private var extractionJob: Job? = null
+    private val markedWatchedVideoIds = mutableSetOf<Int>()
+    private val markingWatchedVideoIds = mutableSetOf<Int>()
 
     init {
         settingsStore.autoSkipOpeningsEndings
@@ -199,31 +201,39 @@ class PlayerViewModel @AssistedInject constructor(
             }
             is PlayerState.Event.SaveProgress -> {
                 val s = currentState
-                val episode = activeEpisode(s)
-                if (s.animeId == 0 || episode.isBlank() || event.durMs <= 0) return
+                val snapshot = event.snapshot
+                if (s.animeId == 0 || snapshot.episode.isBlank() || snapshot.durationMs <= 0) return
                 viewModelScope.launch {
                     watchProgressStore.save(
                         animeId = s.animeId,
-                        episode = episode,
-                        videoId = activeVideoId(s),
-                        episodeUrl = activeIframeUrl(s),
-                        positionMs = event.posMs,
-                        durationMs = event.durMs,
+                        episode = snapshot.episode,
+                        videoId = snapshot.videoId,
+                        episodeUrl = snapshot.episodeUrl,
+                        positionMs = snapshot.positionMs,
+                        durationMs = snapshot.durationMs,
                         animeTitle = s.animeTitle,
                         posterUrl = s.posterUrl,
-                        playerName = activeBalancerName(s),
-                        dubbing = activeDubbing(s),
-                        screenshotUrl = activeScreenshotUrl(s),
+                        playerName = snapshot.playerName,
+                        dubbing = snapshot.dubbing,
+                        screenshotUrl = snapshot.screenshotUrl,
                     )
-                    val videoId = activeVideoId(s)
-                    val watchedEnough = videoId > 0 && event.durMs > 0 && event.posMs.toDouble() / event.durMs >= 0.9
+                    val videoId = snapshot.videoId
+                    val watchedEnough = videoId > 0 &&
+                        snapshot.positionMs.toDouble() / snapshot.durationMs >= 0.9
                     if (watchedEnough) {
+                        if (videoId in markedWatchedVideoIds || !markingWatchedVideoIds.add(videoId)) {
+                            return@launch
+                        }
                         runCatching {
                             markVideoWatched(
                                 videoId = videoId,
-                                timeSeconds = (event.posMs / 1000L).toInt(),
-                                durationSeconds = (event.durMs / 1000L).toInt(),
+                                timeSeconds = (snapshot.positionMs / 1000L).toInt(),
+                                durationSeconds = (snapshot.durationMs / 1000L).toInt(),
                             )
+                        }.onSuccess {
+                            markedWatchedVideoIds += videoId
+                        }.also {
+                            markingWatchedVideoIds -= videoId
                         }
                     }
                 }

@@ -165,23 +165,27 @@ internal object KodikExtractor {
         serverErrorMessage: (Int) -> String,
     ): Pair<String, String> {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 15_000
-        conn.instanceFollowRedirects = true
-        conn.setRequestProperty("Referer", referer)
-        conn.setRequestProperty("User-Agent", CHROME_UA)
-        conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
-        val code = conn.responseCode
-        if (code !in 200..299) {
-            val errorHtml = conn.errorStream?.bufferedReader()?.readText() ?: ""
-            val message = parseErrorMessage(errorHtml) ?: serverErrorMessage(code)
-            throw KodikBlockedException(message)
+        return try {
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 15_000
+            conn.instanceFollowRedirects = true
+            conn.setRequestProperty("Referer", referer)
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
+            val code = conn.responseCode
+            if (code !in 200..299) {
+                val errorHtml = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                val message = parseErrorMessage(errorHtml) ?: serverErrorMessage(code)
+                throw KodikBlockedException(message)
+            }
+            val html = conn.inputStream.bufferedReader().use { it.readText() }
+            val cookies = conn.headerFields["Set-Cookie"]
+                ?.joinToString("; ") { it.split(";").first() }
+                ?: ""
+            html to cookies
+        } finally {
+            conn.disconnect()
         }
-        val html = conn.inputStream.bufferedReader().readText()
-        val cookies = conn.headerFields["Set-Cookie"]
-            ?.joinToString("; ") { it.split(";").first() }
-            ?: ""
-        return html to cookies
     }
 
     private fun parseErrorMessage(html: String): String? =
@@ -190,30 +194,38 @@ internal object KodikExtractor {
 
     private fun fetchHtml(url: String, referer: String): String {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 15_000
-        conn.instanceFollowRedirects = true
-        conn.setRequestProperty("Referer", referer)
-        conn.setRequestProperty("User-Agent", CHROME_UA)
-        conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
-        return conn.inputStream.bufferedReader().readText()
+        return try {
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 15_000
+            conn.instanceFollowRedirects = true
+            conn.setRequestProperty("Referer", referer)
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
+            conn.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            conn.disconnect()
+        }
     }
 
     private fun postForm(url: String, body: String, referer: String, cookies: String): String {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.doOutput = true
-        conn.connectTimeout = 8_000
-        conn.readTimeout = 10_000
-        conn.setRequestProperty("Referer", referer)
-        conn.setRequestProperty("User-Agent", CHROME_UA)
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        conn.setRequestProperty("X-Requested-With", "XMLHttpRequest")
-        if (cookies.isNotEmpty()) conn.setRequestProperty("Cookie", cookies)
-        conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
-        val code = conn.responseCode
-        val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-        val bytes = stream?.readBytes() ?: byteArrayOf()
-        return bytes.toString(Charsets.UTF_8)
+        return try {
+            conn.requestMethod = "POST"
+            conn.doOutput = true
+            conn.connectTimeout = 8_000
+            conn.readTimeout = 10_000
+            conn.setRequestProperty("Referer", referer)
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+            conn.setRequestProperty("X-Requested-With", "XMLHttpRequest")
+            if (cookies.isNotEmpty()) conn.setRequestProperty("Cookie", cookies)
+            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+            val code = conn.responseCode
+            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+            val bytes = stream?.use { it.readBytes() } ?: byteArrayOf()
+            bytes.toString(Charsets.UTF_8)
+        } finally {
+            conn.disconnect()
+        }
     }
 }

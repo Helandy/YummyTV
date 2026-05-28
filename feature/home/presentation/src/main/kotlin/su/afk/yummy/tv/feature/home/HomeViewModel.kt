@@ -2,8 +2,11 @@ package su.afk.yummy.tv.feature.home
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
@@ -51,12 +54,12 @@ class HomeViewModel @Inject constructor(
 
     init {
         load()
-        watchProgressStore.observeAll()
-            .onEach { entries ->
-                val inProgress = entries
-                    .filter { WatchProgressStore.isContinueWatchingEntry(it) }
-                    .sortedByDescending { it.updatedAt }
-                    .distinctBy { it.animeId to it.episode }
+        watchProgressStore.observeContinueWatching()
+            .map { entries ->
+                entries.distinctBy { it.animeId to it.episode }
+            }
+            .flowOn(Dispatchers.Default)
+            .onEach { inProgress ->
                 setState {
                     copy(
                         continueWatching = inProgress,
@@ -140,6 +143,7 @@ class HomeViewModel @Inject constructor(
 
             val urls = episodeGroup.map { it.iframeUrl }.ifEmpty { listOf(iframeUrl) }
             val numbers = episodeGroup.map { it.episode }.ifEmpty { listOf(entry.episode) }
+            val videoIds = episodeGroup.map { it.id }.ifEmpty { listOf(entry.videoId) }
             val skips = episodeGroup.map { it.skips.toPlayerSkips() }.ifEmpty { listOf(PlayerSkips.Empty) }
             val idx = urls.indexOf(iframeUrl).coerceAtLeast(0)
 
@@ -151,6 +155,7 @@ class HomeViewModel @Inject constructor(
                 dubbing = resolvedDubbing,
                 episodeUrls = urls,
                 episodeNumbers = numbers,
+                episodeVideoIds = videoIds,
                 currentEpisodeIndex = idx,
                 episodeSkips = skips,
                 animeId = entry.animeId,

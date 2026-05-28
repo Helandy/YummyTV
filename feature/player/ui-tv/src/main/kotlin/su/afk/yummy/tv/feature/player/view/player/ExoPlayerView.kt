@@ -67,6 +67,7 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.R
@@ -79,11 +80,13 @@ internal fun ExoPlayerView(
     streamUrl: String,
     episodeKey: String = "",
     resumeFromMs: Long = 0L,
-    onSaveProgress: (positionMs: Long, durationMs: Long) -> Unit = { _, _ -> },
+    onSaveProgress: (PlayerProgressSnapshot) -> Unit = {},
     animeTitle: String = "",
     episode: String = "",
+    videoId: Int = 0,
     playerName: String = "",
     dubbing: String = "",
+    screenshotUrl: String = "",
     hasPrevEpisode: Boolean = false,
     hasNextEpisode: Boolean = false,
     canRateTitleOnEnd: Boolean = false,
@@ -185,7 +188,18 @@ internal fun ExoPlayerView(
 
     fun saveProgressIfReady(positionMs: Long = currentPosition) {
         if (episodeKey.isNotBlank() && duration > 0) {
-            onSaveProgress(positionMs, duration)
+            onSaveProgress(
+                PlayerProgressSnapshot(
+                    episode = episode,
+                    episodeUrl = episodeKey,
+                    videoId = videoId,
+                    playerName = playerName,
+                    dubbing = dubbing,
+                    screenshotUrl = screenshotUrl,
+                    positionMs = positionMs,
+                    durationMs = duration,
+                )
+            )
             lastSaveTime = System.currentTimeMillis()
         }
     }

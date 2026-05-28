@@ -65,6 +65,7 @@ class NavigationManager(
     }
 
     fun navigate(dest: NavKey) {
+        if (backStack.lastOrNull() == dest) return
         backStack += dest
     }
 

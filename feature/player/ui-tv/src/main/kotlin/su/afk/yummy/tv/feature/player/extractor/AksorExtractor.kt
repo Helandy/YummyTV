@@ -149,16 +149,18 @@ internal object AksorExtractor {
 
     private fun fetchText(url: String, referer: String, accept: String): String {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 15_000
-        conn.instanceFollowRedirects = true
-        conn.setRequestProperty("Referer", referer)
-        conn.setRequestProperty("User-Agent", CHROME_UA)
-        conn.setRequestProperty("Accept", accept)
         return try {
-            conn.inputStream.bufferedReader().readText()
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 15_000
+            conn.instanceFollowRedirects = true
+            conn.setRequestProperty("Referer", referer)
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.setRequestProperty("Accept", accept)
+            conn.inputStream.bufferedReader().use { it.readText() }
         } catch (_: Exception) {
-            conn.errorStream?.bufferedReader()?.readText().orEmpty()
+            conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+        } finally {
+            conn.disconnect()
         }
     }
 }

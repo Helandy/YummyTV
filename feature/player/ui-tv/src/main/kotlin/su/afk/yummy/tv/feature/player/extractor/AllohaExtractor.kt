@@ -66,19 +66,21 @@ internal object AllohaExtractor {
             var pendingQualityLabel: String? = null
             val capturedStreams = LinkedHashMap<String, CapturedStream>()
             var fallbackStream: CapturedStream? = null
-            val handler = Handler(Looper.getMainLooper())
-            var settleRunnable: Runnable? = null
+	            val handler = Handler(Looper.getMainLooper())
+	            var settleRunnable: Runnable? = null
+	            lateinit var timeoutRunnable: Runnable
 
-            fun deliver(result: AllohaResult?) {
-                if (!delivered) {
-                    delivered = true
-                    val wv = webView
-                    webView = null
-                    settleRunnable?.let(handler::removeCallbacks)
-                    handler.post { wv?.destroy() }
-                    if (cont.isActive) cont.resume(result)
-                }
-            }
+	            fun deliver(result: AllohaResult?) {
+	                if (!delivered) {
+	                    delivered = true
+	                    val wv = webView
+	                    webView = null
+	                    settleRunnable?.let(handler::removeCallbacks)
+	                    handler.removeCallbacks(timeoutRunnable)
+	                    handler.post { wv?.destroy() }
+	                    if (cont.isActive) cont.resume(result)
+	                }
+	            }
 
             fun resultFromCapturedStreams(): AllohaResult? {
                 val qualityMap = capturedStreams.toQualityMap()
@@ -114,10 +116,10 @@ internal object AllohaExtractor {
                 scheduleDelivery()
             }
 
-            val timeoutRunnable = Runnable {
-                deliver(resultFromCapturedStreams())
-            }
-            handler.postDelayed(timeoutRunnable, TIMEOUT_MS)
+	            timeoutRunnable = Runnable {
+	                deliver(resultFromCapturedStreams())
+	            }
+	            handler.postDelayed(timeoutRunnable, TIMEOUT_MS)
 
             val bridge = object {
                 @JavascriptInterface
@@ -188,10 +190,10 @@ internal object AllohaExtractor {
                 )
             }
 
-            cont.invokeOnCancellation {
-                handler.removeCallbacks(timeoutRunnable)
-                deliver(null)
-            }
+	            cont.invokeOnCancellation {
+	                handler.removeCallbacks(timeoutRunnable)
+	                deliver(null)
+	            }
         }
 
     private fun isStreamUrl(url: String): Boolean {

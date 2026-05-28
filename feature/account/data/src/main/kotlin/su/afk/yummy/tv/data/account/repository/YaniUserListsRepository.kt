@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.account.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.account.mapper.toUserAnimeList
 import su.afk.yummy.tv.data.account.mapper.toUserListItem
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
@@ -12,14 +14,14 @@ class YaniUserListsRepository(
 ) : UserListsRepository {
 
     override suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
-        api.getUserList(userId, list.id).mapNotNull { it.toUserListItem() }
+        withContext(Dispatchers.IO) { api.getUserList(userId, list.id).mapNotNull { it.toUserListItem() } }
 
     override suspend fun getUserFavorites(userId: Int): List<UserAnimeListItem> =
-        api.getUserList(userId, FAVORITES_LIST_ID).mapNotNull { it.toUserListItem() }
+        withContext(Dispatchers.IO) { api.getUserList(userId, FAVORITES_LIST_ID).mapNotNull { it.toUserListItem() } }
 
-    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? {
+    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? = withContext(Dispatchers.IO) {
         val state = api.getAnimeListState(animeId)
-        return UserAnimeListItem(
+        UserAnimeListItem(
             animeId = animeId,
             title = "",
             posterUrl = null,
@@ -30,15 +32,15 @@ class YaniUserListsRepository(
         )
     }
 
-    override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) {
+    override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) = withContext(Dispatchers.IO) {
         api.setAnimeList(animeId, list.id)
     }
 
-    override suspend fun removeAnimeList(animeId: Int) {
+    override suspend fun removeAnimeList(animeId: Int) = withContext(Dispatchers.IO) {
         api.removeAnimeList(animeId)
     }
 
-    override suspend fun setFavorite(animeId: Int, favorite: Boolean) {
+    override suspend fun setFavorite(animeId: Int, favorite: Boolean) = withContext(Dispatchers.IO) {
         if (favorite) {
             api.setFavorite(animeId)
         } else {

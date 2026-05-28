@@ -42,7 +42,7 @@ internal class TvIntegration @Inject constructor(
 
         scope.launch {
             combine(
-                watchProgressStore.observeAll().distinctUntilChanged(),
+                watchProgressStore.observeContinueWatching().distinctUntilChanged(),
                 settingsStore.watchNextEnabled.distinctUntilChanged(),
             ) { entries, enabled -> if (enabled) entries else emptyList() }
                 .collect { entries -> watchNextManager.sync(entries) }

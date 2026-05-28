@@ -61,6 +61,10 @@ fun PlayerTvScreen(
         state.allBalancerEpisodeNumbers.getOrElse(state.balancerIndex) { state.allDubbingEpisodeNumbers }
     else state.allDubbingEpisodeNumbers
 
+    val activeAllEpisodeVideoIds = if (state.allBalancerEpisodeVideoIds.isNotEmpty())
+        state.allBalancerEpisodeVideoIds.getOrElse(state.balancerIndex) { state.allDubbingEpisodeVideoIds }
+    else state.allDubbingEpisodeVideoIds
+
     val activeAllDubbingViews = if (state.allBalancerDubbingViews.isNotEmpty())
         state.allBalancerDubbingViews.getOrElse(state.balancerIndex) { state.allDubbingViews }
     else state.allDubbingViews
@@ -71,11 +75,14 @@ fun PlayerTvScreen(
 
     val activeDubbingUrls = activeAllEpisodeUrls.getOrElse(state.dubbingIndex) { state.episodeUrls }
     val activeEpisodeNumbers = activeAllEpisodeNumbers.getOrElse(state.dubbingIndex) { state.episodeNumbers }
+    val activeEpisodeVideoIds = activeAllEpisodeVideoIds.getOrElse(state.dubbingIndex) { state.episodeVideoIds }
     val activeEpisodeSkips = activeAllEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
     val activeDubbing = activeAllDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
     val activeIframeUrl = activeDubbingUrls.getOrElse(state.episodeIndex) { state.iframeUrl }
     val activeEpisode = activeEpisodeNumbers.getOrElse(state.episodeIndex) { state.episode }
+    val activeVideoId = activeEpisodeVideoIds.getOrElse(state.episodeIndex) { 0 }
     val activeSkips = activeEpisodeSkips.getOrElse(state.episodeIndex) { su.afk.yummy.tv.feature.player.PlayerSkips.Empty }
+    val activeScreenshotUrl = state.screenshotUrls.getOrElse(state.episodeIndex) { "" }
     val activeBalancerName = if (state.allBalancerNames.isNotEmpty())
         state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName }
     else state.playerName
@@ -92,13 +99,13 @@ fun PlayerTvScreen(
             qualityOverrides = state.streamQualityMap,
             episodeKey = activeIframeUrl,
             resumeFromMs = state.resumeFromMs,
-            onSaveProgress = { posMs, durMs ->
-                onEvent(PlayerState.Event.SaveProgress(posMs, durMs))
-            },
+            onSaveProgress = { snapshot -> onEvent(PlayerState.Event.SaveProgress(snapshot)) },
             animeTitle = state.animeTitle,
             episode = activeEpisode,
+            videoId = activeVideoId,
             playerName = activeBalancerName,
             dubbing = activeDubbing,
+            screenshotUrl = activeScreenshotUrl,
             hasPrevEpisode = state.episodeIndex > 0,
             hasNextEpisode = state.episodeIndex < activeDubbingUrls.size - 1,
             canRateTitleOnEnd = isFinalEpisode && state.animeId > 0,

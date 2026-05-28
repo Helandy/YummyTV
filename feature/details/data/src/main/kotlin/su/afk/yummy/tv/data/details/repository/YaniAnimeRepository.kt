@@ -6,6 +6,8 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeVideosDto
+import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
+import su.afk.yummy.tv.data.details.dto.YaniTrailersResponseDto
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
 import su.afk.yummy.tv.data.details.mapper.toAnimeVideo
@@ -13,12 +15,13 @@ import su.afk.yummy.tv.data.details.mapper.toHttpsUrl
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 60 * 60 * 1000L
+private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 
 class YaniAnimeRepository(
     private val api: YaniAnimeApi,
@@ -48,16 +51,28 @@ class YaniAnimeRepository(
         ).response.map { it.toAnimeVideo() }
     }
 
-    override suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                api.getAnimeRecommendations(animeId, fromAi).response.mapNotNull { it.toAnimeRecommendation() }
-            }.getOrElse { emptyList() }
-        }
+	    override suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation> =
+	        withContext(Dispatchers.IO) {
+	            runCatching {
+	                cache.getOrFetch(
+	                    key = "anime_recommendations_${fromAi}_$animeId",
+	                    ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
+	                    serialize = { dto: YaniRecommendationsDto -> json.encodeToString(dto) },
+	                    deserialize = { json.decodeFromString(it) },
+	                    fetch = { api.getAnimeRecommendations(animeId, fromAi) },
+	                ).response.mapNotNull { it.toAnimeRecommendation() }
+	            }.getOrElse { emptyList() }
+	        }
 
-    override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> = withContext(Dispatchers.IO) {
-        runCatching {
-            api.getAnimeTrailers(animeId).response.map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
-        }.getOrElse { emptyList() }
-    }
+	    override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> = withContext(Dispatchers.IO) {
+	        runCatching {
+	            cache.getOrFetch(
+	                key = "anime_trailers_$animeId",
+	                ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
+	                serialize = { dto: YaniTrailersResponseDto -> json.encodeToString(dto) },
+	                deserialize = { json.decodeFromString(it) },
+	                fetch = { api.getAnimeTrailers(animeId) },
+	            ).response.map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
+	        }.getOrElse { emptyList() }
+	    }
 }

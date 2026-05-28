@@ -16,4 +16,7 @@ interface CacheDao {
 
     @Query("DELETE FROM cache WHERE `key` = :key")
     suspend fun delete(key: String)
+
+    @Query("DELETE FROM cache WHERE cachedAt < :cutoffMs")
+    suspend fun deleteOlderThan(cutoffMs: Long)
 }

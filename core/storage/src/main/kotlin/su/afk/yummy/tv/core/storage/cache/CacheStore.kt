@@ -37,7 +37,10 @@ class CacheStore(private val dao: CacheDao) {
         isValid: (T) -> Boolean,
     ): T? {
         val entry = dao.get(key) ?: return null
-        if (System.currentTimeMillis() - entry.cachedAt >= ttlMs) return null
+        if (System.currentTimeMillis() - entry.cachedAt >= ttlMs) {
+            dao.delete(key)
+            return null
+        }
 
         val cached = runCatching { deserialize(entry.json) }.getOrElse {
             dao.delete(key)
@@ -48,5 +51,9 @@ class CacheStore(private val dao: CacheDao) {
             return null
         }
         return cached
+    }
+
+    suspend fun pruneOlderThan(cutoffMs: Long) {
+        dao.deleteOlderThan(cutoffMs)
     }
 }
