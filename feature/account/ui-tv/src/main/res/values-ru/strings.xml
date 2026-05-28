@@ -14,7 +14,9 @@
     <string name="account_login_placeholder">Email или никнейм</string>
     <string name="account_password_placeholder">Пароль</string>
     <string name="account_loading">Загрузка...</string>
-    <string name="account_captcha_hint">Если Yummy требует капчу, сначала войдите на сайте. Ручной app-token остается в настройках.</string>
+    <string name="account_captcha_title">Подтвердите, что вы не робот</string>
+    <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход.</string>
+    <string name="account_captcha_loading">Капча пройдена, выполняем вход...</string>
     <string name="account_user_id">ID %1$d</string>
     <string name="account_tab_profile">Профиль</string>
     <string name="account_tab_stats">Статистика</string>

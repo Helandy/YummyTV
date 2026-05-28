@@ -14,7 +14,9 @@
     <string name="account_login_placeholder">Email or nickname</string>
     <string name="account_password_placeholder">Password</string>
     <string name="account_loading">Loading...</string>
-    <string name="account_captcha_hint">If Yummy requires captcha, sign in on the website first. Manual app-token settings remain in Settings.</string>
+    <string name="account_captcha_title">Confirm you are not a robot</string>
+    <string name="account_captcha_hint">Complete the captcha to continue signing in.</string>
+    <string name="account_captcha_loading">Captcha solved, signing in...</string>
     <string name="account_user_id">ID %1$d</string>
     <string name="account_tab_profile">Profile</string>
     <string name="account_tab_stats">Statistics</string>

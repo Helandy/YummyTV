@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonElement
 data class YaniLoginBodyDto(
     val login: String,
     val password: String,
+    @SerialName("recaptcha_response") val captchaResponse: String? = null,
     @EncodeDefault
     @SerialName("need_json") val needJson: Boolean = true,
 )

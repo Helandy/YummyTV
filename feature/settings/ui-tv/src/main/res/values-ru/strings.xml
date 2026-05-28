@@ -90,7 +90,7 @@
     <string name="settings_account_refresh_hint">Обновить токен и данные аккаунта</string>
     <string name="settings_account_logout">Выйти</string>
     <string name="settings_account_logout_hint">Локальная библиотека и прогресс останутся на устройстве</string>
-    <string name="settings_account_captcha_hint">Если API просит капчу, сначала войдите на сайте; TV-интерфейса капчи пока нет.</string>
+    <string name="settings_account_captcha_hint">Если Yummy попросит капчу, экран аккаунта покажет её прямо в приложении.</string>
     <string name="settings_version_label">Версия</string>
     <string name="settings_feedback_label">Вопросы/Идеи/Предложения</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>

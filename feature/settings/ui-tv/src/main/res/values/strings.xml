@@ -90,7 +90,7 @@
     <string name="settings_account_refresh_hint">Refresh token and account data</string>
     <string name="settings_account_logout">Sign out</string>
     <string name="settings_account_logout_hint">Local library and progress stay on this device</string>
-    <string name="settings_account_captcha_hint">If the API requires captcha, sign in on the website first; captcha UI is not available on TV yet.</string>
+    <string name="settings_account_captcha_hint">If Yummy requires captcha, the account screen will show it in the app.</string>
     <string name="settings_version_label">Version</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>

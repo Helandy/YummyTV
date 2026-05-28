@@ -59,12 +59,18 @@ class YaniAccountApi(
     private val client: HttpClient,
 ) {
 
-    suspend fun login(login: String, password: String): String {
+    suspend fun login(login: String, password: String, captchaResponse: String? = null): String {
         val response = try {
             Log.d(TAG, "POST /profile/login")
             client.post("$YANI_BASE_URL/profile/login") {
                 contentType(ContentType.Application.Json)
-                setBody(YaniLoginBodyDto(login = login, password = password))
+                setBody(
+                    YaniLoginBodyDto(
+                        login = login,
+                        password = password,
+                        captchaResponse = captchaResponse,
+                    ),
+                )
             }
         } catch (e: ClientRequestException) {
             Log.d(TAG, "POST /profile/login failed status=${e.response.status.value}")

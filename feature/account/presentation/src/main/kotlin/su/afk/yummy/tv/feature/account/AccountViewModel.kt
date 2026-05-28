@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.account
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -12,6 +11,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.TopBarFocusTarget
 import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
@@ -44,10 +44,6 @@ class AccountViewModel @Inject constructor(
     private val deleteNotification: DeleteNotificationUseCase,
     private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<AccountState.State, AccountState.Event, AccountState.Effect>(savedStateHandle) {
-
-    private companion object {
-        const val TAG = "YaniAccount"
-    }
 
     private var loadedUserId: Int = 0
 
@@ -93,11 +89,47 @@ class AccountViewModel @Inject constructor(
                 nav.back()
             }
             is AccountState.Event.TabSelected -> setState { copy(selectedTab = event.tab) }
-            is AccountState.Event.LoginChanged -> setState { copy(login = event.login, error = null) }
-            is AccountState.Event.PasswordChanged -> setState { copy(password = event.password, error = null) }
+            is AccountState.Event.LoginChanged -> setState {
+                copy(
+                    login = event.login,
+                    error = null,
+                    isCaptchaRequired = false,
+                    captchaChallengeId = currentState.captchaChallengeId + 1,
+                    captchaError = null,
+                )
+            }
+            is AccountState.Event.PasswordChanged -> setState {
+                copy(
+                    password = event.password,
+                    error = null,
+                    isCaptchaRequired = false,
+                    captchaChallengeId = currentState.captchaChallengeId + 1,
+                    captchaError = null,
+                )
+            }
             AccountState.Event.LoginSelected -> {
-                Log.d(TAG, "LoginSelected loginBlank=${currentState.login.isBlank()} passwordBlank=${currentState.password.isBlank()}")
                 login()
+            }
+            is AccountState.Event.CaptchaSolved -> {
+                if (event.token.isBlank()) {
+                    setState { copy(captchaError = "Captcha response is empty") }
+                } else {
+                    login(captchaResponse = event.token)
+                }
+            }
+            AccountState.Event.CaptchaExpired -> setState {
+                copy(
+                    isLoading = false,
+                    captchaChallengeId = currentState.captchaChallengeId + 1,
+                    captchaError = "Captcha expired. Try again.",
+                )
+            }
+            is AccountState.Event.CaptchaFailed -> setState {
+                copy(
+                    isLoading = false,
+                    captchaChallengeId = currentState.captchaChallengeId + 1,
+                    captchaError = event.message ?: "Could not load captcha. Try again.",
+                )
             }
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
                 setState { copy(isLoading = true, error = null) }
@@ -112,6 +144,9 @@ class AccountViewModel @Inject constructor(
                                 stats = null,
                                 notifications = emptyList(),
                                 notificationCounts = emptyList(),
+                                isCaptchaRequired = false,
+                                captchaChallengeId = captchaChallengeId + 1,
+                                captchaError = null,
                                 hubError = null,
                             )
                         }
@@ -167,25 +202,32 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    private fun login() {
+    private fun login(captchaResponse: String? = null) {
         val loginValue = currentState.login.trim()
         val passwordValue = currentState.password
         if (loginValue.isBlank() || passwordValue.isBlank()) {
-            Log.d(TAG, "Login blocked by local validation")
-            setState { copy(error = "Login and password are required") }
+            setState {
+                copy(
+                    error = "Login and password are required",
+                    isCaptchaRequired = false,
+                    captchaChallengeId = currentState.captchaChallengeId + 1,
+                    captchaError = null,
+                )
+            }
             return
         }
         viewModelScope.launch {
-            Log.d(TAG, "Calling /profile/login")
-            setState { copy(isLoading = true, error = null) }
-            runCatching { login(loginValue, passwordValue) }.fold(
+            setState { copy(isLoading = true, error = null, captchaError = null) }
+            runCatching { login(loginValue, passwordValue, captchaResponse) }.fold(
                 onSuccess = { account ->
-                    Log.d(TAG, "Login succeeded userId=${account.id}")
                     loadedUserId = 0
                     setState {
                         copy(
                             isLoading = false,
                             password = "",
+                            isCaptchaRequired = false,
+                            captchaChallengeId = captchaChallengeId + 1,
+                            captchaError = null,
                             userId = account.id,
                             nickname = account.nickname,
                             avatarUrl = account.avatarUrl.orEmpty(),
@@ -194,13 +236,23 @@ class AccountViewModel @Inject constructor(
                     maybeLoadHub(force = true)
                 },
                 onFailure = { error ->
-                    Log.d(TAG, "Login failed: ${error::class.simpleName}: ${error.message}")
-                    val message = if (error::class.simpleName == "YaniCaptchaRequiredException") {
-                        "Captcha required. Login on the website first, then try again later."
-                    } else {
-                        error.message ?: "Could not sign in"
+                    if (error is AccountCaptchaRequiredException) {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                isCaptchaRequired = true,
+                                captchaChallengeId = captchaChallengeId + 1,
+                                captchaError = if (captchaResponse == null) {
+                                    null
+                                } else {
+                                    "Captcha was not accepted. Try again."
+                                },
+                                error = null,
+                            )
+                        }
+                        return@fold
                     }
-                    setState { copy(isLoading = false, error = message) }
+                    setState { copy(isLoading = false, error = error.message ?: "Could not sign in") }
                 },
             )
         }

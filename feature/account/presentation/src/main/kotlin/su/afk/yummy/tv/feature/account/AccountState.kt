@@ -7,6 +7,8 @@ import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserStats
 
+const val YANI_HCAPTCHA_SITE_KEY = "b1847961-208e-4a90-9671-1e6bba9e0b36"
+
 class AccountState {
     data class State(
         val accessToken: String = "",
@@ -22,6 +24,10 @@ class AccountState {
         val notificationCounts: List<NotificationCount> = emptyList(),
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
+        val isCaptchaRequired: Boolean = false,
+        val captchaSiteKey: String = YANI_HCAPTCHA_SITE_KEY,
+        val captchaChallengeId: Int = 0,
+        val captchaError: String? = null,
         val error: String? = null,
         val hubError: String? = null,
     ) : UiState
@@ -37,6 +43,9 @@ class AccountState {
         data class LoginChanged(val login: String) : Event
         data class PasswordChanged(val password: String) : Event
         data object LoginSelected : Event
+        data class CaptchaSolved(val token: String) : Event
+        data object CaptchaExpired : Event
+        data class CaptchaFailed(val message: String? = null) : Event
         data object LogoutSelected : Event
         data object RefreshProfileSelected : Event
         data object RefreshHubSelected : Event
