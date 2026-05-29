@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
@@ -42,6 +44,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -120,6 +123,10 @@ internal fun ExoPlayerView(
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
+    var lastStepSeekTime by remember { mutableLongStateOf(0L) }
+    var stepSeekCount by remember { mutableStateOf(0) }
+    var stepSeekTotalOffset by remember { mutableLongStateOf(0L) }
+    var lastStepSeekDirection by remember { mutableStateOf<SeekDirection?>(null) }
     var controllerVisible by remember { mutableStateOf(true) }
     var showQualityPanel by remember { mutableStateOf(false) }
     var showDubbingPanel by remember { mutableStateOf(false) }
@@ -143,6 +150,9 @@ internal fun ExoPlayerView(
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var skipSnackbarJob by remember { mutableStateOf<Job?>(null) }
+    var stepSeekToastText by remember { mutableStateOf<String?>(null) }
+    var stepSeekToastIcon by remember { mutableStateOf(Icons.Filled.FastForward) }
+    var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
 
     fun scheduleHide() {
         hideJob?.cancel()
@@ -205,11 +215,33 @@ internal fun ExoPlayerView(
     }
 
     fun seekTo(positionMs: Long) {
-        val clamped = positionMs.coerceAtLeast(0)
+        val clamped = if (duration > 0) positionMs.coerceIn(0L, duration) else positionMs.coerceAtLeast(0)
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
         saveProgressIfReady(clamped)
+    }
+
+    fun stepSeek(direction: SeekDirection) {
+        val now = System.currentTimeMillis()
+        if (now - lastStepSeekTime > STEP_SEEK_RESET_MS || lastStepSeekDirection != direction) {
+            stepSeekCount = 0
+            stepSeekTotalOffset = 0L
+        }
+        stepSeekCount = (stepSeekCount + 1).coerceAtMost(STEP_SEEK_OFFSETS_MS.size)
+        lastStepSeekTime = now
+        lastStepSeekDirection = direction
+
+        val offset = STEP_SEEK_OFFSETS_MS[stepSeekCount - 1] * direction.sign
+        stepSeekTotalOffset += offset
+        seekTo(exoPlayer.currentPosition + offset)
+        stepSeekToastText = stepSeekTotalOffset.formatSignedSeconds()
+        stepSeekToastIcon = direction.toastIcon
+        stepSeekToastJob?.cancel()
+        stepSeekToastJob = coroutineScope.launch {
+            delay(PLAYER_INLINE_TOAST_DURATION_MS)
+            stepSeekToastText = null
+        }
     }
 
     fun closePanels() {
@@ -302,6 +334,7 @@ internal fun ExoPlayerView(
         onDispose {
             hideJob?.cancel()
             skipSnackbarJob?.cancel()
+            stepSeekToastJob?.cancel()
             exoPlayer.removeListener(listener)
             saveProgressIfReady()
             exoPlayer.release()
@@ -371,11 +404,26 @@ internal fun ExoPlayerView(
 
     val displayTime = if (isSeeking) (seekProgress * duration).toLong() else currentPosition
 
-    BackHandler(enabled = showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt) {
-        showNextEpisodePrompt = false
-        showRateTitlePrompt = false
-        closePanels()
-        onInteraction()
+    BackHandler(
+        enabled = showQualityPanel ||
+            showDubbingPanel ||
+            showBalancerPanel ||
+            showSpeedPanel ||
+            showNextEpisodePrompt ||
+            showRateTitlePrompt ||
+            controllerVisible,
+    ) {
+        when {
+            showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt -> {
+                showNextEpisodePrompt = false
+                showRateTitlePrompt = false
+                closePanels()
+            }
+            controllerVisible -> {
+                hideJob?.cancel()
+                controllerVisible = false
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -400,12 +448,19 @@ internal fun ExoPlayerView(
                     .onKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
                         when (event.key) {
-                            Key.DirectionLeft -> seekTo(exoPlayer.currentPosition - 30_000L)
-                            Key.DirectionRight -> seekTo(exoPlayer.currentPosition + 30_000L)
-                            else -> {}
+                            Key.DirectionLeft -> {
+                                stepSeek(SeekDirection.Backward)
+                                true
+                            }
+                            Key.DirectionRight -> {
+                                stepSeek(SeekDirection.Forward)
+                                true
+                            }
+                            else -> {
+                                onInteraction()
+                                true
+                            }
                         }
-                        onInteraction()
-                        true
                     },
             )
         }
@@ -690,7 +745,35 @@ internal fun ExoPlayerView(
                 }
             }
         }
+
+        PlayerInlineToast(
+            text = stepSeekToastText,
+            icon = stepSeekToastIcon,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = if (controllerVisible) 136.dp else 36.dp),
+        )
     }
+}
+
+private const val STEP_SEEK_RESET_MS = 1_500L
+private val STEP_SEEK_OFFSETS_MS = longArrayOf(5_000L, 10_000L, 15_000L)
+
+private enum class SeekDirection(val sign: Int) {
+    Backward(-1),
+    Forward(1),
+}
+
+private val SeekDirection.toastIcon: ImageVector
+    get() = when (this) {
+        SeekDirection.Backward -> Icons.Filled.FastRewind
+        SeekDirection.Forward -> Icons.Filled.FastForward
+    }
+
+private fun Long.formatSignedSeconds(): String {
+    val seconds = this / 1_000L
+    val prefix = if (seconds > 0) "+" else ""
+    return "${prefix}${seconds}s"
 }
 
 private fun mediaItemFor(url: String): MediaItem {

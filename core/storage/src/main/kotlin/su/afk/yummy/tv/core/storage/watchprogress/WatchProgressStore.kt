@@ -6,7 +6,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
 
     companion object {
         const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
-        private const val MAX_CONTINUE_WATCHING_PROGRESS = 0.90f
+        private const val MAX_CONTINUE_WATCHING_PROGRESS = 0.95f
 
         fun isContinueWatchingEntry(entry: WatchProgressEntry): Boolean =
             entry.durationMs > 0 &&
