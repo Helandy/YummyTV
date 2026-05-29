@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ fun PlayerTvScreen(
     var backPressedOnce by remember { mutableStateOf(false) }
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
+    var pendingControlFocusTarget by rememberSaveable { mutableStateOf<PlayerControlFocusTarget?>(null) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -149,14 +151,18 @@ fun PlayerTvScreen(
                 allDubbingSourceNames = globalDubbingSourceNames,
                 currentDubbingIndex = currentGlobalDubbingIndex,
                 onDubbingSelected = { newIdx, currentPosMs ->
+                    pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
                     onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
                 },
                 allBalancerNames = availableBalancerNames,
                 currentBalancerIndex = currentAvailableBalancerIndex,
                 onBalancerSelected = { newIdx, currentPosMs ->
                     val balancerIndex = availableBalancerIndices.getOrElse(newIdx) { state.balancerIndex }
+                    pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
                     onEvent(PlayerState.Event.BalancerSelected(balancerIndex, currentPosMs))
                 },
+                restoreControlFocusTarget = pendingControlFocusTarget,
+                onControlFocusRestored = { pendingControlFocusTarget = null },
                 skips = activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
             )
@@ -187,6 +193,13 @@ fun PlayerTvScreen(
                 .padding(bottom = 36.dp),
         )
     }
+}
+
+internal enum class PlayerControlFocusTarget {
+    Dubbing,
+    Balancer,
+    Quality,
+    Speed,
 }
 
 private fun PlayerState.State.isFinalAvailableEpisode(activeEpisode: String, activeDubbingSize: Int): Boolean {

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,10 @@ internal fun PlayerEpisodeRow(
     dubbing: String,
     currentQualityLabel: String,
     currentSpeedLabel: String,
+    qualityFocusRequester: FocusRequester? = null,
+    dubbingFocusRequester: FocusRequester? = null,
+    balancerFocusRequester: FocusRequester? = null,
+    speedFocusRequester: FocusRequester? = null,
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
@@ -53,6 +58,7 @@ internal fun PlayerEpisodeRow(
             ControlButton(
                 onClick = onToggleDubbing,
                 onFocused = onInteraction,
+                focusRequester = dubbingFocusRequester,
                 modifier = Modifier.widthIn(min = 164.dp, max = 220.dp),
             ) { color ->
                 Text(
@@ -71,6 +77,7 @@ internal fun PlayerEpisodeRow(
             ControlButton(
                 onClick = onToggleBalancer,
                 onFocused = onInteraction,
+                focusRequester = balancerFocusRequester,
                 modifier = Modifier.widthIn(min = 128.dp, max = 156.dp),
             ) { color ->
                 Text(
@@ -87,6 +94,7 @@ internal fun PlayerEpisodeRow(
             ControlButton(
                 onClick = onToggleQuality,
                 onFocused = onInteraction,
+                focusRequester = qualityFocusRequester,
                 modifier = Modifier.widthIn(min = 92.dp),
             ) { color ->
                 Text(
@@ -102,6 +110,7 @@ internal fun PlayerEpisodeRow(
         ControlButton(
             onClick = onToggleSpeed,
             onFocused = onInteraction,
+            focusRequester = speedFocusRequester,
             modifier = Modifier.widthIn(min = 76.dp),
         ) { color ->
             Text(
