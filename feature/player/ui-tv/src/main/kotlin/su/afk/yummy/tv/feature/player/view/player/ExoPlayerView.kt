@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
@@ -100,6 +101,7 @@ internal fun ExoPlayerView(
     allDubbingNames: List<String> = emptyList(),
     allDubbingEpisodeNumbers: List<List<String>> = emptyList(),
     allDubbingViews: List<Int> = emptyList(),
+    allDubbingSourceNames: List<String> = emptyList(),
     currentDubbingIndex: Int = 0,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
     allBalancerNames: List<String> = emptyList(),
@@ -530,11 +532,11 @@ internal fun ExoPlayerView(
                         },
                         onInteraction = ::onInteraction,
                     )
-                        PlayerEpisodeRow(
-                            hasPrevEpisode = hasPrevEpisode,
-                            hasNextEpisode = hasNextEpisode,
-                            canRateTitle = canRateTitleOnEnd && !hasNextEpisode,
-                            qualityCount = qualities.size,
+                    PlayerEpisodeRow(
+                        hasPrevEpisode = hasPrevEpisode,
+                        hasNextEpisode = hasNextEpisode,
+                        canRateTitle = canRateTitleOnEnd && !hasNextEpisode,
+                        qualityCount = qualities.size,
                         allDubbingNames = allDubbingNames,
                         currentDubbingIndex = currentDubbingIndex,
                         allBalancerNames = allBalancerNames,
@@ -542,11 +544,11 @@ internal fun ExoPlayerView(
                         playerName = playerName,
                         dubbing = dubbing,
                         currentQualityLabel = selectedQuality,
-                            onInteraction = ::onInteraction,
-                            onPrevEpisode = onPrevEpisode,
-                            onNextEpisode = onNextEpisode,
-                            onRateTitle = ::rateTitle,
-                            onToggleQuality = {
+                        onInteraction = ::onInteraction,
+                        onPrevEpisode = onPrevEpisode,
+                        onNextEpisode = onNextEpisode,
+                        onRateTitle = ::rateTitle,
+                        onToggleQuality = {
                             showQualityPanel = !showQualityPanel
                             showDubbingPanel = false
                             showBalancerPanel = false
@@ -614,26 +616,12 @@ internal fun ExoPlayerView(
                 DubbingMetaRow(
                     views = views.formatCompactCount(),
                     episodeCount = episodeCount,
+                    sourceNames = allDubbingSourceNames.getOrElse(idx) { "" },
                     contentColor = contentColor,
                 )
             },
             onItemSelected = { idx ->
                 onDubbingSelected(idx, exoPlayer.currentPosition)
-                closePanels()
-                onInteraction()
-            },
-        )
-
-        PlayerSelectionPanel(
-            visible = showBalancerPanel,
-            title = stringResource(R.string.player_balancer_title),
-            items = allBalancerNames.map { it.removePrefix(stringResource(R.string.player_name_prefix)) },
-            selectedIndex = currentBalancerIndex,
-            selectedFocusRequester = selectedBalancerFocusRequester,
-            modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
-            itemMeta = { stringResource(R.string.player_balancer_meta) },
-            onItemSelected = { idx ->
-                onBalancerSelected(idx, exoPlayer.currentPosition)
                 closePanels()
                 onInteraction()
             },
@@ -649,6 +637,21 @@ internal fun ExoPlayerView(
             itemMeta = { stringResource(R.string.player_speed_meta) },
             onItemSelected = { idx ->
                 selectedSpeed = speeds[idx]
+                closePanels()
+                onInteraction()
+            },
+        )
+
+        PlayerSelectionPanel(
+            visible = showBalancerPanel,
+            title = stringResource(R.string.player_balancer_title),
+            items = allBalancerNames.map { it.removePrefix(stringResource(R.string.player_name_prefix)) },
+            selectedIndex = currentBalancerIndex,
+            selectedFocusRequester = selectedBalancerFocusRequester,
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
+            itemMeta = { stringResource(R.string.player_balancer_meta) },
+            onItemSelected = { idx ->
+                onBalancerSelected(idx, exoPlayer.currentPosition)
                 closePanels()
                 onInteraction()
             },
@@ -793,40 +796,52 @@ private fun mediaItemFor(url: String): MediaItem {
 private fun DubbingMetaRow(
     views: String,
     episodeCount: Int,
+    sourceNames: String,
     contentColor: Color,
 ) {
     val metaColor = contentColor.copy(alpha = 0.62f)
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Visibility,
-            contentDescription = null,
-            tint = metaColor,
-            modifier = Modifier.size(13.dp),
-        )
-        Text(
-            text = views,
-            style = MaterialTheme.typography.labelSmall,
-            color = metaColor,
-            maxLines = 1,
-            modifier = Modifier.width(42.dp),
-        )
-        Spacer(Modifier.width(6.dp))
-        Icon(
-            imageVector = Icons.Filled.VideoLibrary,
-            contentDescription = null,
-            tint = metaColor,
-            modifier = Modifier.size(13.dp),
-        )
-        Text(
-            text = episodeCount.toString(),
-            style = MaterialTheme.typography.labelSmall,
-            color = metaColor,
-            maxLines = 1,
-            modifier = Modifier.width(24.dp),
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Visibility,
+                contentDescription = null,
+                tint = metaColor,
+                modifier = Modifier.size(13.dp),
+            )
+            Text(
+                text = views,
+                style = MaterialTheme.typography.labelSmall,
+                color = metaColor,
+                maxLines = 1,
+                modifier = Modifier.width(42.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                imageVector = Icons.Filled.VideoLibrary,
+                contentDescription = null,
+                tint = metaColor,
+                modifier = Modifier.size(13.dp),
+            )
+            Text(
+                text = episodeCount.toString(),
+                style = MaterialTheme.typography.labelSmall,
+                color = metaColor,
+                maxLines = 1,
+                modifier = Modifier.width(24.dp),
+            )
+        }
+        if (sourceNames.isNotBlank()) {
+            Text(
+                text = sourceNames,
+                style = MaterialTheme.typography.labelSmall,
+                color = metaColor,
+                maxLines = 1,
+                modifier = Modifier.widthIn(max = 260.dp),
+            )
+        }
     }
 }
 

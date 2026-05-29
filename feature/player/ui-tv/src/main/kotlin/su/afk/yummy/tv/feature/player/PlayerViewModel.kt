@@ -166,15 +166,27 @@ class PlayerViewModel @AssistedInject constructor(
             }
             is PlayerState.Event.DubbingSelected -> {
                 val s = currentState
-                if (event.index == s.dubbingIndex) return
                 val currentNum = activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { "" }
-                val newNums = activeAllEpisodeNumbers(s).getOrElse(event.index) { emptyList() }
-                val newEpisodeIdx = newNums.indexOf(currentNum).takeIf { it >= 0 } ?: 0
+                val selectedDubbing = globalDubbingNames(s).getOrElse(event.index) {
+                    activeAllDubbingNames(s).getOrElse(event.index) { "" }
+                }
+                if (selectedDubbing.isBlank()) return
+                val selection = resolveDubbingSource(
+                    state = s,
+                    dubbingName = selectedDubbing,
+                    episodeNumber = currentNum,
+                ) ?: return
+                if (
+                    selection.balancerIndex == s.balancerIndex &&
+                    selection.dubbingIndex == s.dubbingIndex &&
+                    selection.episodeIndex == s.episodeIndex
+                ) return
                 setState {
                     copy(
                         dubbingResumeMs = (event.currentPosMs - 3_000L).coerceAtLeast(0L),
-                        dubbingIndex = event.index,
-                        episodeIndex = newEpisodeIdx,
+                        balancerIndex = selection.balancerIndex,
+                        dubbingIndex = selection.dubbingIndex,
+                        episodeIndex = selection.episodeIndex,
                     )
                 }
                 loadStream()
@@ -183,7 +195,7 @@ class PlayerViewModel @AssistedInject constructor(
                 val s = currentState
                 if (event.index == s.balancerIndex) return
                 val newDubbingNames = s.allBalancerDubbingNames.getOrElse(event.index) { emptyList() }
-                val currentDubbingName = s.allDubbingNames.getOrElse(s.dubbingIndex) { s.dubbing }
+                val currentDubbingName = activeDubbing(s)
                 val newDubbingIdx = newDubbingNames.indexOf(currentDubbingName).takeIf { it >= 0 } ?: 0
                 val currentEpNum = activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { s.episode }
                 val newEpNums = s.allBalancerEpisodeNumbers.getOrElse(event.index) { emptyList() }
@@ -396,4 +408,52 @@ class PlayerViewModel @AssistedInject constructor(
 
     private fun activeScreenshotUrl(s: PlayerState.State) =
         s.screenshotUrls.getOrElse(s.episodeIndex) { "" }
+
+    private fun globalDubbingNames(s: PlayerState.State): List<String> =
+        if (s.allBalancerDubbingNames.isNotEmpty()) {
+            s.allBalancerDubbingNames.flatten().distinct()
+        } else {
+            s.allDubbingNames
+        }
+
+    private fun resolveDubbingSource(
+        state: PlayerState.State,
+        dubbingName: String,
+        episodeNumber: String,
+    ): DubbingSource? {
+        if (state.allBalancerDubbingNames.isEmpty()) {
+            val dubbingIndex = state.allDubbingNames.indexOf(dubbingName).takeIf { it >= 0 } ?: return null
+            val episodeNumbers = state.allDubbingEpisodeNumbers.getOrElse(dubbingIndex) { emptyList() }
+            val episodeIndex = episodeNumbers.indexOf(episodeNumber).takeIf { it >= 0 } ?: 0
+            return DubbingSource(
+                balancerIndex = state.balancerIndex,
+                dubbingIndex = dubbingIndex,
+                episodeIndex = episodeIndex,
+            )
+        }
+
+        val candidates = state.allBalancerDubbingNames.flatMapIndexed { balancerIndex, dubbingNames ->
+            dubbingNames.mapIndexedNotNull { dubbingIndex, name ->
+                if (name != dubbingName) return@mapIndexedNotNull null
+                val episodeNumbers = state.allBalancerEpisodeNumbers
+                    .getOrElse(balancerIndex) { emptyList() }
+                    .getOrElse(dubbingIndex) { emptyList() }
+                val episodeIndex = episodeNumbers.indexOf(episodeNumber).takeIf { it >= 0 } ?: 0
+                DubbingSource(
+                    balancerIndex = balancerIndex,
+                    dubbingIndex = dubbingIndex,
+                    episodeIndex = episodeIndex,
+                )
+            }
+        }
+
+        return candidates.firstOrNull { it.balancerIndex == state.balancerIndex }
+            ?: candidates.firstOrNull()
+    }
+
+    private data class DubbingSource(
+        val balancerIndex: Int,
+        val dubbingIndex: Int,
+        val episodeIndex: Int,
+    )
 }

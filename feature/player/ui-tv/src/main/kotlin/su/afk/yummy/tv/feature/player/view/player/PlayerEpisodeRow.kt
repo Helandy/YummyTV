@@ -48,13 +48,12 @@ internal fun PlayerEpisodeRow(
             }
         }
         Spacer(Modifier.weight(1f))
-        if (allBalancerNames.size > 1) {
-            val label = allBalancerNames.getOrElse(currentBalancerIndex) { playerName }
-                .removePrefix(stringResource(R.string.player_name_prefix))
+        if (allDubbingNames.size > 1) {
+            val label = allDubbingNames.getOrElse(currentDubbingIndex) { dubbing }
             ControlButton(
-                onClick = onToggleBalancer,
+                onClick = onToggleDubbing,
                 onFocused = onInteraction,
-                modifier = Modifier.widthIn(min = 128.dp, max = 156.dp),
+                modifier = Modifier.widthIn(min = 164.dp, max = 220.dp),
             ) { color ->
                 Text(
                     text = label,
@@ -64,14 +63,15 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (allDubbingNames.size > 1 || qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
+            if (allBalancerNames.size > 1 || qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
         }
-        if (allDubbingNames.size > 1) {
-            val label = allDubbingNames.getOrElse(currentDubbingIndex) { dubbing }
+        if (allBalancerNames.size > 1) {
+            val label = allBalancerNames.getOrElse(currentBalancerIndex) { playerName }
+                .removePrefix(stringResource(R.string.player_name_prefix))
             ControlButton(
-                onClick = onToggleDubbing,
+                onClick = onToggleBalancer,
                 onFocused = onInteraction,
-                modifier = Modifier.widthIn(min = 164.dp, max = 220.dp),
+                modifier = Modifier.widthIn(min = 128.dp, max = 156.dp),
             ) { color ->
                 Text(
                     text = label,

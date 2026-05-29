@@ -37,6 +37,7 @@ fun PlayerTvScreen(
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     val pressBackAgainText = stringResource(R.string.player_press_back_again)
+    val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val coroutineScope = rememberCoroutineScope()
     var backPressedOnce by remember { mutableStateOf(false) }
     var backToastText by remember { mutableStateOf<String?>(null) }
@@ -96,6 +97,11 @@ fun PlayerTvScreen(
     val activeEpisodeVideoIds = activeAllEpisodeVideoIds.getOrElse(state.dubbingIndex) { state.episodeVideoIds }
     val activeEpisodeSkips = activeAllEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
     val activeDubbing = activeAllDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
+    val globalDubbingNames = state.globalDubbingNames()
+    val globalDubbingEpisodeNumbers = globalDubbingNames.map { state.globalDubbingEpisodeNumbers(it) }
+    val globalDubbingViews = globalDubbingNames.map { state.globalDubbingViews(it) }
+    val globalDubbingSourceNames = globalDubbingNames.map { state.globalDubbingSourceNames(it, playerNamePrefix) }
+    val currentGlobalDubbingIndex = globalDubbingNames.indexOf(activeDubbing).takeIf { it >= 0 } ?: state.dubbingIndex
     val activeIframeUrl = activeDubbingUrls.getOrElse(state.episodeIndex) { state.iframeUrl }
     val activeEpisode = activeEpisodeNumbers.getOrElse(state.episodeIndex) { state.episode }
     val activeVideoId = activeEpisodeVideoIds.getOrElse(state.episodeIndex) { 0 }
@@ -104,6 +110,11 @@ fun PlayerTvScreen(
     val activeBalancerName = if (state.allBalancerNames.isNotEmpty())
         state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName }
     else state.playerName
+    val availableBalancerIndices = state.availableBalancerIndices(activeDubbing)
+    val availableBalancerNames = availableBalancerIndices.map { index ->
+        state.allBalancerNames.getOrElse(index) { state.playerName }
+    }
+    val currentAvailableBalancerIndex = availableBalancerIndices.indexOf(state.balancerIndex).takeIf { it >= 0 } ?: 0
     val isFinalEpisode = state.isFinalAvailableEpisode(activeEpisode, activeDubbingUrls.size)
 
     val streamUrl = state.streamUrl
@@ -132,17 +143,19 @@ fun PlayerTvScreen(
                 onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
                 onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
                 onPlaybackError = { message -> onEvent(PlayerState.Event.PlaybackError(message)) },
-                allDubbingNames = activeAllDubbingNames,
-                allDubbingEpisodeNumbers = activeAllEpisodeNumbers,
-                allDubbingViews = activeAllDubbingViews,
-                currentDubbingIndex = state.dubbingIndex,
+                allDubbingNames = globalDubbingNames.ifEmpty { activeAllDubbingNames },
+                allDubbingEpisodeNumbers = globalDubbingEpisodeNumbers.ifEmpty { activeAllEpisodeNumbers },
+                allDubbingViews = globalDubbingViews.ifEmpty { activeAllDubbingViews },
+                allDubbingSourceNames = globalDubbingSourceNames,
+                currentDubbingIndex = currentGlobalDubbingIndex,
                 onDubbingSelected = { newIdx, currentPosMs ->
                     onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
                 },
-                allBalancerNames = state.allBalancerNames,
-                currentBalancerIndex = state.balancerIndex,
+                allBalancerNames = availableBalancerNames,
+                currentBalancerIndex = currentAvailableBalancerIndex,
                 onBalancerSelected = { newIdx, currentPosMs ->
-                    onEvent(PlayerState.Event.BalancerSelected(newIdx, currentPosMs))
+                    val balancerIndex = availableBalancerIndices.getOrElse(newIdx) { state.balancerIndex }
+                    onEvent(PlayerState.Event.BalancerSelected(balancerIndex, currentPosMs))
                 },
                 skips = activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
@@ -188,3 +201,65 @@ private fun PlayerState.State.isFinalAvailableEpisode(activeEpisode: String, act
     }.maxOrNull()
     return maxNumber == null || currentNumber >= maxNumber
 }
+
+private fun PlayerState.State.globalDubbingNames(): List<String> =
+    if (allBalancerDubbingNames.isNotEmpty()) {
+        allBalancerDubbingNames.flatten().distinct()
+    } else {
+        allDubbingNames
+    }
+
+private fun PlayerState.State.globalDubbingEpisodeNumbers(dubbingName: String): List<String> {
+    if (allBalancerDubbingNames.isEmpty()) {
+        val index = allDubbingNames.indexOf(dubbingName).takeIf { it >= 0 } ?: return emptyList()
+        return allDubbingEpisodeNumbers.getOrElse(index) { emptyList() }
+    }
+    return allBalancerDubbingNames.flatMapIndexed { balancerIndex, dubbingNames ->
+        val dubbingIndex = dubbingNames.indexOf(dubbingName)
+        if (dubbingIndex < 0) {
+            emptyList()
+        } else {
+            allBalancerEpisodeNumbers
+                .getOrElse(balancerIndex) { emptyList() }
+                .getOrElse(dubbingIndex) { emptyList() }
+        }
+    }.distinct()
+}
+
+private fun PlayerState.State.globalDubbingViews(dubbingName: String): Int {
+    if (allBalancerDubbingNames.isEmpty()) {
+        val index = allDubbingNames.indexOf(dubbingName).takeIf { it >= 0 } ?: return 0
+        return allDubbingViews.getOrElse(index) { 0 }
+    }
+    return allBalancerDubbingNames.mapIndexedNotNull { balancerIndex, dubbingNames ->
+        val dubbingIndex = dubbingNames.indexOf(dubbingName)
+        if (dubbingIndex < 0) {
+            null
+        } else {
+            allBalancerDubbingViews
+                .getOrElse(balancerIndex) { emptyList() }
+                .getOrElse(dubbingIndex) { 0 }
+        }
+    }.maxOrNull() ?: 0
+}
+
+private fun PlayerState.State.globalDubbingSourceNames(
+    dubbingName: String,
+    playerNamePrefix: String,
+): String {
+    if (allBalancerDubbingNames.isEmpty()) return playerName.removePrefix(playerNamePrefix)
+    return allBalancerDubbingNames.mapIndexedNotNull { index, dubbingNames ->
+        allBalancerNames.getOrNull(index)
+            ?.takeIf { dubbingName in dubbingNames }
+            ?.removePrefix(playerNamePrefix)
+    }.joinToString(" • ")
+}
+
+private fun PlayerState.State.availableBalancerIndices(dubbingName: String): List<Int> =
+    if (allBalancerDubbingNames.isEmpty()) {
+        allBalancerNames.indices.toList()
+    } else {
+        allBalancerDubbingNames.mapIndexedNotNull { index, dubbingNames ->
+            index.takeIf { dubbingName in dubbingNames }
+        }
+    }
