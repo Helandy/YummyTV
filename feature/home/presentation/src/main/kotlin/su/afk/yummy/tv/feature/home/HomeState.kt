@@ -17,6 +17,7 @@ class HomeState {
         val animePreviews: Map<Int, AnimePreview> = emptyMap(),
         val continueWatching: List<WatchProgressEntry> = emptyList(),
         val isContinueWatchingLoaded: Boolean = false,
+        val continueWatchingRestoreToken: Int = 0,
     ) : UiState
 
     sealed interface Event : UiEvent {

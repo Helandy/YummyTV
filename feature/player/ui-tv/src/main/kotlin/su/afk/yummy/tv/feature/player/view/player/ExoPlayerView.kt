@@ -412,20 +412,11 @@ internal fun ExoPlayerView(
             showBalancerPanel ||
             showSpeedPanel ||
             showNextEpisodePrompt ||
-            showRateTitlePrompt ||
-            controllerVisible,
+            showRateTitlePrompt,
     ) {
-        when {
-            showQualityPanel || showDubbingPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt -> {
-                showNextEpisodePrompt = false
-                showRateTitlePrompt = false
-                closePanels()
-            }
-            controllerVisible -> {
-                hideJob?.cancel()
-                controllerVisible = false
-            }
-        }
+        showNextEpisodePrompt = false
+        showRateTitlePrompt = false
+        closePanels()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

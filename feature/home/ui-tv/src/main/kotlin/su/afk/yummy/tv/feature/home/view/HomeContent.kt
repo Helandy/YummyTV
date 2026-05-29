@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,6 +51,7 @@ internal fun HomeContent(
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
     animePreviews: Map<Int, AnimePreview>,
+    continueWatchingRestoreToken: Int,
 ) {
     val lazyColumnState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -80,6 +82,7 @@ internal fun HomeContent(
     var columnHasFocus by remember { mutableStateOf(false) }
     var restoringFromTopBar by remember { mutableStateOf(false) }
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
+    var handledContinueWatchingRestoreToken by rememberSaveable { mutableIntStateOf(0) }
     val homeContentFocusRequester = remember { FocusRequester() }
     val continueWatchingFocusRequester = remember { FocusRequester() }
     val heroFocusRequester = remember { FocusRequester() }
@@ -125,6 +128,11 @@ internal fun HomeContent(
         val savedIndex = lastFocusedLazyIndex.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
         return when {
             totalLazyItems <= 0 -> 0
+            hasPendingContinueWatchingRestore(
+                hasContinueWatching = hasContinueWatching,
+                restoreToken = continueWatchingRestoreToken,
+                handledToken = handledContinueWatchingRestoreToken,
+            ) -> 0
             focusedItemId != null && lazyIndexContainsFocusedItem(savedIndex) -> savedIndex
             focusedItemId != null -> rowIndexForFocusedItem()
             else -> savedIndex
@@ -164,6 +172,20 @@ internal fun HomeContent(
         }
     }
 
+    fun consumeContinueWatchingRestoreIfPending(): Boolean {
+        if (!hasPendingContinueWatchingRestore(
+                hasContinueWatching = hasContinueWatching,
+                restoreToken = continueWatchingRestoreToken,
+                handledToken = handledContinueWatchingRestoreToken,
+            )
+        ) {
+            return false
+        }
+        handledContinueWatchingRestoreToken = continueWatchingRestoreToken
+        lastFocusedLazyIndex = 0
+        return true
+    }
+
     val preferredContentFocusRequester =
         if (totalLazyItems > 0) homeContentFocusRequester else null
 
@@ -181,7 +203,9 @@ internal fun HomeContent(
             .focusProperties {
                 onEnter = {
                     restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
-                    if (restoringFromTopBar) {
+                    if (consumeContinueWatchingRestoreIfPending()) {
+                        requestRowFocus(0)
+                    } else if (restoringFromTopBar) {
                         requestRowFocus(topBarEnterIndex())
                     } else {
                         restoreFocusRequester(requestedFocusDirection).requestFocus()
@@ -193,6 +217,7 @@ internal fun HomeContent(
                 columnHasFocus = state.hasFocus
                 if (state.hasFocus && !hadFocus && totalLazyItems > 0) {
                     val target = when {
+                        consumeContinueWatchingRestoreIfPending() -> 0
                         restoringFromTopBar -> topBarEnterIndex()
                         focusedItemId != null -> focusedLazyIndex()
                         else -> lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
@@ -224,6 +249,7 @@ internal fun HomeContent(
                         items = continueWatching,
                         onItemSelected = onContinueWatchingSelected,
                         rowFocusRequester = continueWatchingFocusRequester,
+                        restoreFirstItemToken = continueWatchingRestoreToken,
                         downFocusRequester = nextRowFocusRequester(0),
                         onMoveDown = if (totalLazyItems > 1) {
                             { requestRowFocus(1) }
@@ -346,3 +372,9 @@ private fun firstAvailableFocusRequester(
     hasHero -> heroFocusRequester
     else -> sectionFocusRequesters.values.firstOrNull() ?: FocusRequester.Default
 }
+
+private fun hasPendingContinueWatchingRestore(
+    hasContinueWatching: Boolean,
+    restoreToken: Int,
+    handledToken: Int,
+): Boolean = hasContinueWatching && restoreToken > handledToken

@@ -26,6 +26,8 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.PlayerVideoSource
+import su.afk.yummy.tv.feature.player.getPlayerDest
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject constructor(
@@ -155,93 +157,25 @@ class EpisodesViewModel @AssistedInject constructor(
         val poster = posterUrl
         val screenshots = screenshotsByEpisode
         viewModelScope.launch(Dispatchers.Default) {
-            val playerName = video.player
-            val selectedDubbing = video.dubbing
-
-            val dubbingGroups = allVideos
-                .filter { it.player == playerName }
-                .groupBy { it.dubbing }
-                .mapValues { (_, v) -> v.sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE } }
-            val dubbingNames = dubbingGroups.keys.toList()
-            val currentDubbingIdx = dubbingNames.indexOf(selectedDubbing).coerceAtLeast(0)
-            val group = dubbingGroups[selectedDubbing] ?: emptyList()
-            val allDubbingViews = dubbingNames.map { n -> dubbingGroups[n].orEmpty().sumOf { it.views ?: 0 } }
-            val idx = group.indexOfFirst { it.id == video.id }.coerceAtLeast(0)
-            val screenshotUrls = group.map { ep -> screenshots[ep.episode].orEmpty() }
-
-            val supportedBalancers = allVideos
-                .map { it.player }.distinct()
-                .filter { pName -> isSupportedPlayer(allVideos.first { it.player == pName }.iframeUrl) }
-            val currentBalancerIdx = supportedBalancers.indexOf(playerName).coerceAtLeast(0)
-            val allBalancerDubbingNames = supportedBalancers.map { bName ->
-                allVideos.filter { it.player == bName }.map { it.dubbing }.distinct()
-            }
-            val allBalancerEpisodeUrls = supportedBalancers.mapIndexed { bIdx, bName ->
-                allBalancerDubbingNames[bIdx].map { dName ->
-                    allVideos.filter { it.player == bName && it.dubbing == dName }
-                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                        .map { it.iframeUrl }
-                }
-            }
-            val allBalancerEpisodeNumbers = supportedBalancers.mapIndexed { bIdx, bName ->
-                allBalancerDubbingNames[bIdx].map { dName ->
-                    allVideos.filter { it.player == bName && it.dubbing == dName }
-                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                        .map { it.episode }
-                }
-            }
-            val allBalancerEpisodeVideoIds = supportedBalancers.mapIndexed { bIdx, bName ->
-                allBalancerDubbingNames[bIdx].map { dName ->
-                    allVideos.filter { it.player == bName && it.dubbing == dName }
-                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                        .map { it.id }
-                }
-            }
-            val allBalancerEpisodeSkips = supportedBalancers.mapIndexed { bIdx, bName ->
-                allBalancerDubbingNames[bIdx].map { dName ->
-                    allVideos.filter { it.player == bName && it.dubbing == dName }
-                        .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-                        .map { it.skips.toPlayerSkips() }
-                }
-            }
-            val allBalancerDubbingViews = supportedBalancers.mapIndexed { bIdx, bName ->
-                allBalancerDubbingNames[bIdx].map { dName ->
-                    allVideos.filter { it.player == bName && it.dubbing == dName }
-                        .sumOf { it.views ?: 0 }
-                }
-            }
-
             val destination = playerNavigator.getPlayerDest(
-                iframeUrl = video.iframeUrl,
+                video = video.toPlayerVideoSource(),
+                allVideos = allVideos.map { it.toPlayerVideoSource() },
                 animeTitle = title,
-                episode = video.episode,
-                playerName = playerName,
-                dubbing = selectedDubbing,
-                episodeUrls = group.map { it.iframeUrl },
-                episodeNumbers = group.map { it.episode },
-                episodeVideoIds = group.map { it.id },
-                currentEpisodeIndex = idx,
-                screenshotUrls = screenshotUrls,
                 animeId = animeId,
                 posterUrl = poster,
-                allDubbingNames = dubbingNames,
-                currentDubbingIndex = currentDubbingIdx,
-                allDubbingEpisodeUrls = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.iframeUrl } },
-                allDubbingEpisodeNumbers = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.episode } },
-                allDubbingEpisodeVideoIds = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.id } },
-                allDubbingViews = allDubbingViews,
-                allBalancerNames = supportedBalancers,
-                currentBalancerIndex = currentBalancerIdx,
-                allBalancerDubbingNames = allBalancerDubbingNames,
-                allBalancerEpisodeUrls = allBalancerEpisodeUrls,
-                allBalancerEpisodeNumbers = allBalancerEpisodeNumbers,
-                allBalancerEpisodeVideoIds = allBalancerEpisodeVideoIds,
-                allBalancerDubbingViews = allBalancerDubbingViews,
-                episodeSkips = group.map { it.skips.toPlayerSkips() },
-                allDubbingEpisodeSkips = dubbingNames.map { n -> dubbingGroups[n]!!.map { it.skips.toPlayerSkips() } },
-                allBalancerEpisodeSkips = allBalancerEpisodeSkips,
+                screenshotByEpisode = screenshots,
             )
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }
     }
 }
+
+private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
+    id = id,
+    episode = episode,
+    dubbing = dubbing,
+    player = player,
+    iframeUrl = iframeUrl,
+    views = views,
+    skips = skips.toPlayerSkips(),
+)

@@ -36,13 +36,15 @@ internal class WatchNextManager @Inject constructor(
             .values
             .map { group -> group.maxBy { it.updatedAt } }
             .forEach { entry ->
-                val episodeThumbnail = KodikThumbnailExtractor.extract(entry.episodeUrl)
+                val episodeThumbnail = resolveEpisodeThumbnail(entry)
                 insert(entry, episodeThumbnail)
             }
     }
 
     private fun insert(entry: WatchProgressEntry, episodeThumbnail: String?) {
-        val artUri = episodeThumbnail ?: entry.posterUrl.ifBlank { null }
+        val artUri = episodeThumbnail
+            ?: entry.screenshotUrl.takeIf { it.isLikelyImageUrl() }
+            ?: entry.posterUrl.ifBlank { null }
         val values = ContentValues().apply {
             put(COLUMN_WATCH_NEXT_TYPE, TvContractCompat.WatchNextPrograms.WATCH_NEXT_TYPE_CONTINUE)
             put(COLUMN_TYPE, TvContractCompat.PreviewPrograms.TYPE_TV_SERIES)
@@ -64,4 +66,15 @@ internal class WatchNextManager @Inject constructor(
             resolver.delete(TvContractCompat.WatchNextPrograms.CONTENT_URI, null, null)
         }
     }
+
+    private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
+        val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
+        return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
+            ?: entry.episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
+    }
 }
+
+private fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
+
+private fun String.isLikelyImageUrl(): Boolean =
+    Regex("""\.(webp|avif|jpe?g|png)(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(this)

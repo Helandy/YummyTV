@@ -58,11 +58,12 @@ internal fun ContinueWatchingCard(
     val positionLabel = entry.positionMs.msToTimeString()
     val durationLabel = entry.durationMs.msToTimeString()
 
-    val kodikThumbnail by produceState<String?>(null, entry.episodeUrl) {
-        value = KodikThumbnailExtractor.extract(entry.episodeUrl)
+    val kodikThumbnail by produceState<String?>(null, entry.screenshotUrl, entry.episodeUrl) {
+        value = resolveEpisodeThumbnail(entry)
     }
+    val directScreenshotUrl = entry.screenshotUrl.takeIf { it.isLikelyImageUrl() }
     val imageUrl = kodikThumbnail
-        ?: entry.screenshotUrl.ifBlank { null }
+        ?: directScreenshotUrl
         ?: entry.posterUrl.ifBlank { null }
 
     val shape = RoundedCornerShape(8.dp)
@@ -157,3 +158,14 @@ internal fun ContinueWatchingCard(
         }
     }
 }
+
+private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
+    val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
+    return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
+        ?: entry.episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
+}
+
+private fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
+
+private fun String.isLikelyImageUrl(): Boolean =
+    Regex("""\.(webp|avif|jpe?g|png)(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(this)

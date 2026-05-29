@@ -44,6 +44,7 @@ internal fun ContinueWatchingSection(
     items: List<WatchProgressEntry>,
     onItemSelected: (WatchProgressEntry) -> Unit,
     rowFocusRequester: FocusRequester? = null,
+    restoreFirstItemToken: Int = 0,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onMoveUp: (() -> Unit)? = null,
@@ -58,11 +59,15 @@ internal fun ContinueWatchingSection(
     val topBarFocusRequester = LocalTopBarFocusRequester.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var handledRestoreFirstItemToken by rememberSaveable { mutableIntStateOf(0) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
 
     fun WatchProgressEntry.focusKey(): String = "$animeId:$episode"
 
+    fun hasPendingFirstItemRestore(): Boolean = restoreFirstItemToken > handledRestoreFirstItemToken
+
     fun restoreIndex(): Int {
+        if (hasPendingFirstItemRestore()) return 0
         val keyedIndex = lastFocusedKey?.let { key ->
             items.indexOfFirst { it.focusKey() == key }
         } ?: -1
@@ -101,6 +106,10 @@ internal fun ContinueWatchingSection(
                         isRestoring.value = true
                         scope.launch {
                             val target = restoreIndex()
+                            if (hasPendingFirstItemRestore()) {
+                                handledRestoreFirstItemToken = restoreFirstItemToken
+                                rememberFocusedItem(0, items.first())
+                            }
                             listState.scrollToItem(target)
                             runCatching { focusRequesters[target].requestFocus() }
                             isRestoring.value = false

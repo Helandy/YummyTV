@@ -52,6 +52,7 @@ fun HomeTvScreen(
             focusedItemId = state.focusedItemId,
             focusedPreview = state.focusedPreview,
             animePreviews = state.animePreviews,
+            continueWatchingRestoreToken = state.continueWatchingRestoreToken,
         )
     }
 }

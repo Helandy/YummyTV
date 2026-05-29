@@ -26,6 +26,7 @@ import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -33,7 +34,10 @@ import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
 import su.afk.yummy.tv.feature.library.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.PlayerVideoSource
+import su.afk.yummy.tv.feature.player.getPlayerDest
+import su.afk.yummy.tv.feature.player.isPlaceholderEpisode
+import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
 import javax.inject.Inject
 
 @HiltViewModel
@@ -235,38 +239,67 @@ class LibraryViewModel @Inject constructor(
                 runCatching { getAnimeVideos(entry.animeId) }.getOrNull().orEmpty()
             else emptyList()
 
-            val kodikVideos = videos.filter { it.iframeUrl.contains("kodik", ignoreCase = true) }
-            val targetVideo = kodikVideos.firstOrNull { it.episode == entry.episode }
-            val iframeUrl = targetVideo?.iframeUrl ?: entry.episodeUrl
-            val resolvedDubbing = targetVideo?.dubbing ?: entry.dubbing
-            val resolvedPlayer = targetVideo?.player ?: entry.playerName
+            val videoSources = videos.map { it.toPlayerVideoSource() }
+            val targetVideo = videoSources.selectContinueWatchingVideo(
+                videoId = entry.videoId,
+                episodeUrl = entry.episodeUrl,
+                episode = entry.episode,
+                playerName = entry.playerName,
+                dubbing = entry.dubbing,
+            ) ?: entry.toPlayerVideoSource()
+            val allVideos = videoSources.ifEmpty { listOf(targetVideo) }
 
-            val episodeGroup = kodikVideos
-                .filter { it.dubbing == resolvedDubbing }
-                .sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-
-            val urls = episodeGroup.map { it.iframeUrl }.ifEmpty { listOf(iframeUrl) }
-            val numbers = episodeGroup.map { it.episode }.ifEmpty { listOf(entry.episode) }
-            val videoIds = episodeGroup.map { it.id }.ifEmpty { listOf(entry.videoId) }
-            val skips = episodeGroup.map { it.skips.toPlayerSkips() }.ifEmpty { listOf(PlayerSkips.Empty) }
-            val idx = urls.indexOf(iframeUrl).coerceAtLeast(0)
+            migratePlaceholderEpisode(entry, targetVideo)
 
             nav.navigate(
                 playerNavigator.getPlayerDest(
-                    iframeUrl = iframeUrl,
+                    video = targetVideo,
+                    allVideos = allVideos,
                     animeTitle = entry.animeTitle,
-                    episode = entry.episode,
-                    playerName = resolvedPlayer,
-                    dubbing = resolvedDubbing,
-                    episodeUrls = urls,
-                    episodeNumbers = numbers,
-                    episodeVideoIds = videoIds,
-                    currentEpisodeIndex = idx,
-                    episodeSkips = skips,
                     animeId = entry.animeId,
                     posterUrl = entry.posterUrl,
                 )
             )
         }
     }
+
+    private suspend fun migratePlaceholderEpisode(entry: WatchProgressEntry, targetVideo: PlayerVideoSource) {
+        if (!entry.episode.isPlaceholderEpisode() || targetVideo.episode.isPlaceholderEpisode()) return
+        if (entry.episode == targetVideo.episode) return
+        val isTrustedMatch = (entry.videoId > 0 && targetVideo.id == entry.videoId) ||
+            (entry.episodeUrl.isNotBlank() && targetVideo.iframeUrl == entry.episodeUrl)
+        if (!isTrustedMatch) return
+        watchProgressStore.save(
+            animeId = entry.animeId,
+            episode = targetVideo.episode,
+            videoId = targetVideo.id,
+            episodeUrl = targetVideo.iframeUrl,
+            positionMs = entry.positionMs,
+            durationMs = entry.durationMs,
+            animeTitle = entry.animeTitle,
+            posterUrl = entry.posterUrl,
+            playerName = targetVideo.player,
+            dubbing = targetVideo.dubbing,
+            screenshotUrl = entry.screenshotUrl,
+        )
+        watchProgressStore.delete(entry.animeId, entry.episode)
+    }
 }
+
+private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
+    id = id,
+    episode = episode,
+    dubbing = dubbing,
+    player = player,
+    iframeUrl = iframeUrl,
+    views = views,
+    skips = skips.toPlayerSkips(),
+)
+
+private fun WatchProgressEntry.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
+    id = videoId,
+    episode = episode,
+    dubbing = dubbing,
+    player = playerName,
+    iframeUrl = episodeUrl,
+)
