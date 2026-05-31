@@ -86,10 +86,13 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.work.compiler)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.runtime)
+    implementation(libs.work.runtime.ktx)
 
     implementation(libs.androidx.tvprovider)
     implementation(libs.androidx.core.ktx)

@@ -20,13 +20,18 @@ class YaniHomeFeedRepository(
     private val stringProvider: StringProvider,
 ) : HomeFeedRepository {
 
-    override suspend fun getHomeFeed(): HomeFeed = withContext(Dispatchers.IO) {
+    override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
+
+    override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
+
+    private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         cache.getOrFetch(
             key = "feed",
             ttlMs = FEED_TTL_MS,
             serialize = { dto: YaniFeedDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
             fetch = { api.getFeed() },
+            forceRefresh = forceRefresh,
         ).toHomeFeed(stringProvider)
     }
 }

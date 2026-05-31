@@ -1,7 +1,8 @@
 package su.afk.yummy.tv.domain.home.repository
 
-import su.afk.yummy.tv.domain.home.model.*
+import su.afk.yummy.tv.domain.home.model.HomeFeed
 
 interface HomeFeedRepository {
     suspend fun getHomeFeed(): HomeFeed
+    suspend fun refreshHomeFeed(): HomeFeed
 }

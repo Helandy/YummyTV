@@ -172,9 +172,7 @@ class AccountViewModel @Inject constructor(
             is AccountState.Event.NotificationReadSelected -> updateNotification(event.id) {
                 markNotificationRead(event.id)
             }
-            AccountState.Event.AllNotificationsReadSelected -> updateNotifications {
-                markAllNotificationsRead()
-            }
+            AccountState.Event.AllNotificationsReadSelected -> markAllNotificationsReadOptimistically()
             is AccountState.Event.NotificationDeleteSelected -> updateNotification(event.id) {
                 deleteNotification(event.id)
             }
@@ -328,13 +326,26 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    private fun updateNotifications(action: suspend () -> Boolean) {
+    private fun markAllNotificationsReadOptimistically() {
         viewModelScope.launch {
             setState { copy(isNotificationsLoading = true, hubError = null) }
-            runCatching { action() }.fold(
-                onSuccess = {
-                    if (it) {
-                        loadNotifications()
+            runCatching {
+                val updated = markAllNotificationsRead()
+                if (updated) {
+                    settingsStore.setYaniUnreadNotificationsCount(0)
+                }
+                updated
+            }.fold(
+                onSuccess = { updated ->
+                    if (updated) {
+                        setState {
+                            copy(
+                                notifications = notifications.map { it.copy(viewed = true) },
+                                notificationCounts = notificationCounts.map { it.copy(count = 0) },
+                                isNotificationsLoading = false,
+                                hubError = null,
+                            )
+                        }
                     } else {
                         setState { copy(isNotificationsLoading = false) }
                     }
@@ -350,4 +361,5 @@ class AccountViewModel @Inject constructor(
             )
         }
     }
+
 }

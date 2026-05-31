@@ -15,12 +15,17 @@ class CacheStore(private val dao: CacheDao) {
         deserialize: (String) -> T,
         fetch: suspend () -> T,
         isValid: (T) -> Boolean = { true },
+        forceRefresh: Boolean = false,
     ): T {
-        readValidCached(key, ttlMs, deserialize, isValid)?.let { return it }
+        if (!forceRefresh) {
+            readValidCached(key, ttlMs, deserialize, isValid)?.let { return it }
+        }
 
         val lock = locks.getOrPut(key) { Mutex() }
         return lock.withLock {
-            readValidCached(key, ttlMs, deserialize, isValid)?.let { return@withLock it }
+            if (!forceRefresh) {
+                readValidCached(key, ttlMs, deserialize, isValid)?.let { return@withLock it }
+            }
 
             val fresh = fetch()
             if (isValid(fresh)) {
