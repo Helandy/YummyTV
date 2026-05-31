@@ -65,6 +65,7 @@ dependencies {
 
     implementation(project(":core:network"))
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:deeplink"))
     implementation(project(":core:tv"))
     implementation(project(":feature:details:data"))

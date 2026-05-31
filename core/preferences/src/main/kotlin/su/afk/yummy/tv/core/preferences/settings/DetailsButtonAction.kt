@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.storage.settings
+package su.afk.yummy.tv.core.preferences.settings
 
 enum class DetailsButtonAction {
     WATCH,

@@ -20,10 +20,11 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
-import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
@@ -63,6 +64,7 @@ class DetailsViewModel @AssistedInject constructor(
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
     private val getAnimeCollections: GetAnimeCollectionsUseCase,
     private val getAnimeListState: GetAnimeListStateUseCase,
     private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
@@ -109,7 +111,7 @@ class DetailsViewModel @AssistedInject constructor(
         settingsStore.detailsButtonOrder
             .onEach { order -> setState { copy(detailsButtonOrder = order) } }
             .launchIn(viewModelScope)
-        settingsStore.yaniAccessToken
+        yaniAuthPreferences.refreshToken
             .onEach { token ->
                 setState {
                     copy(

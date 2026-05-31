@@ -10,7 +10,8 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.TopBarFocusTarget
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
@@ -32,6 +33,7 @@ class AccountViewModel @Inject constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
     private val login: LoginUseCase,
     private val logout: LogoutUseCase,
     private val refreshAccount: RefreshAccountUseCase,
@@ -50,19 +52,19 @@ class AccountViewModel @Inject constructor(
     override fun createInitialState() = AccountState.State()
 
     init {
-        settingsStore.yaniAccessToken
+        yaniAuthPreferences.refreshToken
             .onEach { token ->
                 setState {
                     if (token.isBlank()) {
                         copy(
-                            accessToken = token,
+                            isSignedIn = false,
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
                             hubError = null,
                         )
                     } else {
-                        copy(accessToken = token)
+                        copy(isSignedIn = true)
                     }
                 }
                 maybeLoadHub()
@@ -258,7 +260,7 @@ class AccountViewModel @Inject constructor(
 
     private fun maybeLoadHub(force: Boolean = false) {
         val state = currentState
-        if (state.accessToken.isBlank() || state.userId <= 0) return
+        if (!state.isSignedIn || state.userId <= 0) return
         if (!force && loadedUserId == state.userId) return
         loadedUserId = state.userId
         viewModelScope.launch {

@@ -12,14 +12,18 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 
 const val YANI_BASE_URL = "https://api.yani.tv"
 private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 
-fun buildYaniHttpClient(settingsStore: SettingsStore): HttpClient = HttpClient {
+fun buildYaniHttpClient(
+    settingsStore: SettingsStore,
+    yaniAuthPreferences: YaniAuthPreferences,
+): HttpClient = HttpClient {
     install(HttpTimeout) {
         connectTimeoutMillis = 10_000
         requestTimeoutMillis = 20_000
@@ -41,10 +45,10 @@ fun buildYaniHttpClient(settingsStore: SettingsStore): HttpClient = HttpClient {
                     request.headers.remove(YANI_APPLICATION_HEADER)
                     request.headers.append(YANI_APPLICATION_HEADER, token)
                 }
-                val accessToken = settingsStore.yaniAccessToken.first()
-                if (accessToken.isNotBlank()) {
+                val refreshToken = yaniAuthPreferences.refreshToken.first()
+                if (refreshToken.isNotBlank()) {
                     request.headers.remove(HttpHeaders.Authorization)
-                    request.headers.append(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + accessToken)
+                    request.headers.append(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + refreshToken)
                 }
             }
         }

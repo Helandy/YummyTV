@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "su.afk.yummy.tv.feature.account.presentation"
+    namespace = "su.afk.yummy.tv.core.preferences"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
     compileOptions {
@@ -15,14 +15,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:error"))
-    implementation(project(":core:navigation"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:preferences"))
-    implementation(project(":feature:account:domain"))
-    implementation(project(":feature:details:api"))
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(libs.datastore.preferences)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 }

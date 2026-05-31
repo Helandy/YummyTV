@@ -19,7 +19,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     api(libs.ktor.client.core)
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.logging)

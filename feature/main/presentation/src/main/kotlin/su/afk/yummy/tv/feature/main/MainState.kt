@@ -3,8 +3,8 @@ package su.afk.yummy.tv.feature.main
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.core.storage.settings.AppTheme
-import su.afk.yummy.tv.core.storage.settings.PosterQuality
+import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 
 object MainState {
 

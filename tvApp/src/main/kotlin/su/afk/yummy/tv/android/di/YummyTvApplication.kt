@@ -10,7 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import java.io.File
 import javax.inject.Inject
 

@@ -8,7 +8,8 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
@@ -25,6 +26,7 @@ class MainViewModel @Inject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
     private val updateChecker: GitHubUpdateChecker,
     private val refreshAccount: RefreshAccountUseCase,
     private val getNotificationCounts: GetNotificationCountsUseCase,
@@ -65,7 +67,7 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            settingsStore.yaniAccessToken.collect { token ->
+            yaniAuthPreferences.refreshToken.collect { token ->
                 val signedIn = token.isNotBlank()
                 setState {
                     copy(
@@ -111,7 +113,7 @@ class MainViewModel @Inject constructor(
 
     private fun refreshAccountIfNeeded() {
         viewModelScope.launch {
-            val token = settingsStore.yaniAccessToken.firstOrEmpty()
+            val token = yaniAuthPreferences.refreshToken.firstOrEmpty()
             if (token.isBlank()) return@launch
             val refreshedAt = settingsStore.yaniTokenRefreshAt.firstOrZero()
             val ageMs = System.currentTimeMillis() - refreshedAt

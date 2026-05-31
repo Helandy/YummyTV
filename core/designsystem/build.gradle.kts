@@ -32,4 +32,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
 }

@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.core.storage.settings
+package su.afk.yummy.tv.core.preferences.settings
 
 import android.content.Context
 import android.os.Build
@@ -76,10 +76,6 @@ class SettingsStore(private val context: Context) {
         prefs[yaniApplicationTokenKey].orEmpty()
     }
 
-    val yaniAccessToken: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[yaniAccessTokenKey].orEmpty()
-    }
-
     val yaniUserId: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[yaniUserIdKey] ?: 0
     }
@@ -148,14 +144,12 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun setYaniAccount(
-        accessToken: String,
         userId: Int,
         nickname: String,
         avatarUrl: String?,
         refreshedAt: Long = System.currentTimeMillis(),
     ) {
         context.dataStore.edit { prefs ->
-            prefs[yaniAccessTokenKey] = accessToken.trim()
             prefs[yaniUserIdKey] = userId
             prefs[yaniNicknameKey] = nickname
             prefs[yaniTokenRefreshAtKey] = refreshedAt.toString()
@@ -165,6 +159,15 @@ class SettingsStore(private val context: Context) {
                 prefs[yaniAvatarUrlKey] = avatarUrl
             }
         }
+    }
+
+    suspend fun consumeLegacyYaniAccessToken(): String {
+        var token = ""
+        context.dataStore.edit { prefs ->
+            token = prefs[yaniAccessTokenKey].orEmpty()
+            prefs.remove(yaniAccessTokenKey)
+        }
+        return token
     }
 
     suspend fun clearYaniAccount() {

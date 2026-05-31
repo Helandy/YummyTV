@@ -59,11 +59,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.storage.settings.AppTheme
-import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
-import su.afk.yummy.tv.core.storage.settings.PosterQuality
-import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
-import su.afk.yummy.tv.core.storage.settings.PreviewCacheSize
+import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.PosterQuality
+import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.feature.settings.view.QualityRow
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
 

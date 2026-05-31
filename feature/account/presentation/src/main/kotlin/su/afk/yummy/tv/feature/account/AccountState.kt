@@ -11,7 +11,7 @@ const val YANI_HCAPTCHA_SITE_KEY = "b1847961-208e-4a90-9671-1e6bba9e0b36"
 
 class AccountState {
     data class State(
-        val accessToken: String = "",
+        val isSignedIn: Boolean = false,
         val userId: Int = 0,
         val nickname: String = "",
         val avatarUrl: String = "",

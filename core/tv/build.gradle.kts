@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.androidx.tvprovider)
 
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:home:domain"))
 }

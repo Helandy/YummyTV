@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:presentation"))

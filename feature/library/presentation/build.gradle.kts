@@ -18,6 +18,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:details:api"))

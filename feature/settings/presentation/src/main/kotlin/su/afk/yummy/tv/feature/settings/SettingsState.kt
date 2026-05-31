@@ -3,12 +3,12 @@ package su.afk.yummy.tv.feature.settings
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.core.storage.settings.AppTheme
-import su.afk.yummy.tv.core.storage.settings.DetailsButtonAction
-import su.afk.yummy.tv.core.storage.settings.PosterQuality
-import su.afk.yummy.tv.core.storage.settings.PreferredPlayer
-import su.afk.yummy.tv.core.storage.settings.PreviewCacheSize
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.PosterQuality
+import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 
 enum class DetailsButtonMoveDirection {
     UP,

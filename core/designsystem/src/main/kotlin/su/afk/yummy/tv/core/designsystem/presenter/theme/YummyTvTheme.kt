@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import su.afk.yummy.tv.core.storage.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.AppTheme
 
 private data class YummyTvPalette(
     val background: Color,

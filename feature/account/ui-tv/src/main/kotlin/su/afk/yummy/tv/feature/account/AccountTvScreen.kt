@@ -88,7 +88,7 @@ fun AccountTvScreen(
     onEvent: (AccountState.Event) -> Unit,
 ) {
     BackHandler { onEvent(AccountState.Event.BackSelected) }
-    val horizontalPadding = if (state.accessToken.isBlank()) TvScreenPadding.Horizontal else 32.dp
+    val horizontalPadding = if (state.isSignedIn) 32.dp else TvScreenPadding.Horizontal
 
     Box(
         modifier = Modifier
@@ -96,7 +96,7 @@ fun AccountTvScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = horizontalPadding, vertical = TvScreenPadding.Vertical),
     ) {
-        if (state.accessToken.isBlank()) {
+        if (!state.isSignedIn) {
             LoginContent(
                 state = state,
                 onEvent = onEvent,

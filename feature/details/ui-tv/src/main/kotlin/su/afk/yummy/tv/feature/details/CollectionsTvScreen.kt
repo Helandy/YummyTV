@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.storage.settings.PosterQuality
+import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 
 @Composable

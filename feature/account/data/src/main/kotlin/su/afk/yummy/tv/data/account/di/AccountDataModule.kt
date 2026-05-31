@@ -5,7 +5,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
@@ -61,8 +62,11 @@ object AccountDataModule {
 
     @Provides
     @Singleton
-    fun provideAccountRepository(api: YaniAccountApi, settingsStore: SettingsStore): AccountRepository =
-        YaniAccountRepository(api, settingsStore)
+    fun provideAccountRepository(
+        api: YaniAccountApi,
+        settingsStore: SettingsStore,
+        yaniAuthPreferences: YaniAuthPreferences,
+    ): AccountRepository = YaniAccountRepository(api, settingsStore, yaniAuthPreferences)
 
     @Provides
     @Singleton

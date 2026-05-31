@@ -12,7 +12,6 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.core.storage.db.AppDatabase
 import su.afk.yummy.tv.core.storage.library.LibraryStore
-import su.afk.yummy.tv.core.storage.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import javax.inject.Singleton
 
@@ -109,8 +108,4 @@ object StorageModule {
     @Provides
     @Singleton
     fun provideWatchProgressStore(db: AppDatabase): WatchProgressStore = WatchProgressStore(db.watchProgressDao())
-
-    @Provides
-    @Singleton
-    fun provideSettingsStore(@ApplicationContext context: Context): SettingsStore = SettingsStore(context)
 }

@@ -44,7 +44,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.HomeFeedCardDefaul
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
-import su.afk.yummy.tv.core.storage.settings.PosterQuality
+import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction

@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:update"))
     implementation(project(":feature:account:domain"))
     implementation(libs.compose.runtime)
