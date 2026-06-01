@@ -44,28 +44,28 @@ YummyTV is a native Android TV app that makes watching anime from yummyani.me mo
 - ▶️ Continue watching
 - 📄 Title details with description, episodes, and trailers
 - 🎞️ Similar titles
-- 🏆 Top 100 and collections
+- 🏆 Top and collections
 - 📚 Local library
 - 🕘 Watch history
 - ⚙️ Quality, voiceover, and video balancer selection
 
 ## Screenshots
 
-| Home | Details | Top 100 |
+| Home | Details | Top |
 |:---:|:---:|:---:|
-| <img src="dock/Home.webp" width="320" alt="Home" /> | <img src="dock/Details.webp" width="320" alt="Details" /> | <img src="dock/Top100.webp" width="320" alt="Top 100" /> |
+| <img src="docs/screenshots/Home.webp" width="320" alt="Home" /> | <img src="docs/screenshots/Details.webp" width="320" alt="Details" /> | <img src="docs/screenshots/Top100.webp" width="320" alt="Top" /> |
 
 | Series | Continue Watching | Similar |
 |:---:|:---:|:---:|
-| <img src="dock/Series.webp" width="320" alt="Series" /> | <img src="dock/ContinueWatching.webp" width="320" alt="Continue Watching" /> | <img src="dock/Similar.webp" width="320" alt="Similar" /> |
+| <img src="docs/screenshots/Series.webp" width="320" alt="Series" /> | <img src="docs/screenshots/ContinueWatching.webp" width="320" alt="Continue Watching" /> | <img src="docs/screenshots/Similar.webp" width="320" alt="Similar" /> |
 
 | Player | Quality | Voice |
 |:---:|:---:|:---:|
-| <img src="dock/Player.webp" width="320" alt="Player" /> | <img src="dock/PlayerQuality.webp" width="320" alt="Player Quality" /> | <img src="dock/PlayerVoice.webp" width="320" alt="Player Voice" /> |
+| <img src="docs/screenshots/Player.webp" width="320" alt="Player" /> | <img src="docs/screenshots/PlayerQuality.webp" width="320" alt="Player Quality" /> | <img src="docs/screenshots/PlayerVoice.webp" width="320" alt="Player Voice" /> |
 
 | Select Balancer | Player Balancer |
 |:---:|:---:|
-| <img src="dock/SelectBalancer.webp" width="420" alt="Select Balancer" /> | <img src="dock/PlayerBalancer.webp" width="420" alt="Player Balancer" /> |
+| <img src="docs/screenshots/SelectBalancer.webp" width="420" alt="Select Balancer" /> | <img src="docs/screenshots/PlayerBalancer.webp" width="420" alt="Player Balancer" /> |
 
 ## Download
 

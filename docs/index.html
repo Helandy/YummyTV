@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YummyTV - Android TV клиент для YummyAni</title>
+    <meta
+      name="description"
+      content="YummyTV - неофициальный Android TV клиент для просмотра аниме с YummyAni на большом экране."
+    >
+    <meta name="theme-color" content="#0f1318">
+    <link rel="icon" href="../tvApp/src/main/ic_launcher-playstore.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Навигация YummyTV">
+      <a class="brand" href="#top" aria-label="YummyTV home">
+        <img src="../tvApp/src/main/ic_launcher-playstore.png" width="36" height="36" alt="">
+        <span>YummyTV</span>
+      </a>
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a href="#features">Возможности</a>
+        <a href="#screenshots">Скриншоты</a>
+        <a href="#download">Загрузка</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero-section">
+        <div class="hero-copy">
+          <p class="eyebrow">Неофициальный Android TV клиент</p>
+          <h1>Смотри YummyAni на телевизоре без браузера и курсора.</h1>
+          <p class="hero-text">
+            YummyTV переносит каталог, подборки, продолжение просмотра и гибкий
+            видеоплеер в нативный интерфейс, рассчитанный на большой экран и пульт.
+          </p>
+          <div class="hero-actions" aria-label="Ссылки проекта">
+            <a class="button button-primary" href="https://github.com/Helandy/yummytv/releases">
+              Скачать APK
+            </a>
+            <a class="button button-secondary" href="https://github.com/Helandy/yummytv">
+              GitHub
+            </a>
+          </div>
+          <dl class="hero-stats" aria-label="Ключевые особенности">
+            <div>
+              <dt>TV-first</dt>
+              <dd>Навигация пультом</dd>
+            </div>
+            <div>
+              <dt>Быстро</dt>
+              <dd>Каталог и поиск</dd>
+            </div>
+            <div>
+              <dt>Гибко</dt>
+              <dd>Качество и озвучка</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-visual" aria-label="Скриншоты YummyTV">
+          <figure class="screen-frame screen-frame-left">
+            <img
+              src="screenshots/Details.webp"
+              width="1920"
+              height="1080"
+              alt="Страница тайтла в YummyTV"
+            >
+          </figure>
+          <figure class="screen-frame screen-frame-main">
+            <img
+              src="screenshots/Home.webp"
+              width="1920"
+              height="1080"
+              alt="Главная страница YummyTV"
+            >
+          </figure>
+          <figure class="screen-frame screen-frame-right">
+            <img
+              src="screenshots/Player.webp"
+              width="1920"
+              height="1080"
+              alt="Плеер YummyTV"
+            >
+          </figure>
+        </div>
+      </section>
+
+      <section class="feature-band" id="features">
+        <div class="section-heading">
+          <p class="eyebrow">Для просмотра с дивана</p>
+          <h2>Все нужное рядом.</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Интерфейс для TV</h3>
+            <p>Крупные состояния фокуса, понятные ряды и управление D-pad без мыши.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Каталог и поиск</h3>
+            <p>Ищи тайтлы, открывай подборки и переходи к сериям прямо с телевизора.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Продолжение просмотра</h3>
+            <p>Возвращайся к последним эпизодам и быстро открывай нужную серию.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Удобный плеер</h3>
+            <p>Выбирай качество, озвучку и видеобалансер, не покидая TV-интерфейс.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="showcase-section" id="screenshots">
+        <div class="section-heading">
+          <p class="eyebrow">Экраны приложения</p>
+          <h2>Нативный Android TV опыт для большого экрана.</h2>
+        </div>
+        <div class="screenshot-grid">
+          <figure>
+            <img src="screenshots/Home.webp" width="1920" height="1080" alt="Главная страница">
+            <figcaption>Главная</figcaption>
+          </figure>
+          <figure>
+            <img src="screenshots/Details.webp" width="1920" height="1080" alt="Страница тайтла">
+            <figcaption>Тайтл</figcaption>
+          </figure>
+          <figure>
+            <img src="screenshots/Top100.webp" width="1920" height="1080" alt="Топ">
+            <figcaption>Топ</figcaption>
+          </figure>
+          <figure>
+            <img src="screenshots/Series.webp" width="1920" height="1080" alt="Список серий">
+            <figcaption>Серии</figcaption>
+          </figure>
+          <figure>
+            <img src="screenshots/ContinueWatching.webp" width="1920" height="1080" alt="Продолжение просмотра">
+            <figcaption>Продолжить</figcaption>
+          </figure>
+          <figure>
+            <img src="screenshots/Player.webp" width="1920" height="1080" alt="Видеоплеер">
+            <figcaption>Плеер</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="download-band" id="download">
+        <div class="download-copy">
+          <p class="eyebrow">Установи приложение</p>
+          <h2>Скачай последний APK из GitHub Releases.</h2>
+          <p>
+            Передай APK на телевизор или Android TV приставку, открой файл и разреши
+            установку из выбранного источника, если Android попросит подтверждение.
+          </p>
+        </div>
+        <div class="download-actions">
+          <a class="button button-primary" href="https://github.com/Helandy/yummytv/releases">
+            Скачать APK
+          </a>
+          <a class="button button-secondary" href="https://github.com/Helandy/yummytv/issues">
+            Сообщить о проблеме
+          </a>
+        </div>
+      </section>
+
+      <section class="disclaimer-section" aria-labelledby="disclaimer-title">
+        <h2 id="disclaimer-title">Неофициальный клиент</h2>
+        <p>
+          YummyTV не хранит и не распространяет контент. Приложение зависит от
+          доступности YummyAni и сторонних видеобалансеров.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>YummyTV</span>
+      <a href="https://github.com/Helandy/yummytv">GitHub</a>
+      <a href="https://github.com/Helandy/yummytv/releases">Releases</a>
+    </footer>
+  </body>
+</html>
