@@ -9,7 +9,6 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.update.apk.ApkDownloader
 import su.afk.yummy.tv.core.update.apk.ApkInstaller
-import su.afk.yummy.tv.core.utils.PlatformCapabilities
 import java.io.File
 import javax.inject.Inject
 
@@ -35,7 +34,6 @@ class UpdateViewModel @Inject constructor(
                         version = version,
                         changelog = changelog,
                         apkUrl = apkUrl,
-                        installSupported = PlatformCapabilities.supportsInAppUpdateInstall,
                     )
                 )
             }
@@ -54,8 +52,6 @@ class UpdateViewModel @Inject constructor(
     }
 
     private fun downloadAndInstall(apkUrl: String) {
-        if (!PlatformCapabilities.supportsInAppUpdateInstall) return
-
         viewModelScope.launch {
             setState { copy(status = UpdateState.State.Status.Downloading(0f)) }
             runCatching {
@@ -79,8 +75,6 @@ class UpdateViewModel @Inject constructor(
     }
 
     private fun retryInstall(apkUrl: String) {
-        if (!PlatformCapabilities.supportsInAppUpdateInstall) return
-
         val file = downloadedApk
         if (file == null || !file.exists()) {
             downloadAndInstall(apkUrl)

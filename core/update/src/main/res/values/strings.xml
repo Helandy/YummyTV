@@ -3,7 +3,6 @@
     <string name="update_available_title">Update available</string>
     <string name="update_version">Version %1$s</string>
     <string name="update_changelog_title">What is new:</string>
-    <string name="update_install_unsupported_android7">Automatic installation is unavailable on Android 7. Download and install the new APK manually.</string>
     <string name="update_later">Not now</string>
     <string name="update_install">Update</string>
     <string name="update_downloading">Downloading update...</string>

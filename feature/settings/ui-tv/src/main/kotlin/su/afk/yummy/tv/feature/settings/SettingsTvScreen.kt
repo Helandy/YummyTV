@@ -38,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -95,18 +94,8 @@ fun SettingsTvScreen(
     var selectedTab by remember { mutableStateOf(SettingsTab.THEME) }
     var contentAnchorTab by remember { mutableStateOf(SettingsTab.THEME) }
     val contentFocusRequester = remember { FocusRequester() }
-    val availableTabs = remember(state.tvHomeIntegrationSupported) {
-        SettingsTab.entries.filter { tab ->
-            tab != SettingsTab.TV_HOME || state.tvHomeIntegrationSupported
-        }
-    }
     val tabFocusRequesters = remember {
         SettingsTab.entries.associateWith { FocusRequester() }
-    }
-
-    LaunchedEffect(availableTabs) {
-        if (selectedTab !in availableTabs) selectedTab = SettingsTab.THEME
-        if (contentAnchorTab !in availableTabs) contentAnchorTab = SettingsTab.THEME
     }
 
     Column(
@@ -123,7 +112,7 @@ fun SettingsTvScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            availableTabs.forEach { tab ->
+            SettingsTab.entries.forEach { tab ->
                 SettingsTabItem(
                     label = stringResource(tab.labelRes),
                     selected = tab == selectedTab,

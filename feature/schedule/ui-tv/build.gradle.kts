@@ -23,7 +23,6 @@ dependencies {
     implementation(project(":feature:details:api"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    implementation(project(":core:utils"))
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)

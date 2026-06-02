@@ -83,12 +83,12 @@ private fun AvailableContent(
     status: UpdateState.State.Status.Available,
     onEvent: (UpdateState.Event) -> Unit,
 ) {
-    val primaryFocus = remember { FocusRequester() }
+    val updateFocus = remember { FocusRequester() }
     val changelogScrollState = rememberScrollState()
     val changelogFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     var changelogFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(status.installSupported) { runCatching { primaryFocus.requestFocus() } }
+    LaunchedEffect(Unit) { runCatching { updateFocus.requestFocus() } }
 
     Column {
         Text(
@@ -153,21 +153,11 @@ private fun AvailableContent(
             }
         }
 
-        if (!status.installSupported) {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.update_install_unsupported_android7),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
         Spacer(Modifier.height(24.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(
                 modifier = Modifier
-                    .then(if (!status.installSupported) Modifier.focusRequester(primaryFocus) else Modifier)
                     .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
                     .padding(horizontal = 24.dp, vertical = 12.dp),
@@ -179,23 +169,21 @@ private fun AvailableContent(
                 )
             }
 
-            if (status.installSupported) {
-                Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(4.dp))
 
-                Box(
-                    modifier = Modifier
-                        .focusRequester(primaryFocus)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                        .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.update_install),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .focusRequester(updateFocus)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                    .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.update_install),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
         }
     }

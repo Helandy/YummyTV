@@ -16,7 +16,6 @@ object UpdateState {
                 val version: String,
                 val changelog: String,
                 val apkUrl: String,
-                val installSupported: Boolean,
             ) : Status()
             data class Downloading(val progress: Float) : Status()
             data object Installing : Status()

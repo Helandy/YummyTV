@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface ITvIntegration {
-    val isTvHomeIntegrationSupported: Boolean
     val browsableChannelRequest: SharedFlow<Long>
     val previewChannelBrowsable: StateFlow<Boolean>
     fun start()

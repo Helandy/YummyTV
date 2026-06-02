@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="schedule_loading">Загружаем расписание</string>
-    <string name="schedule_unsupported_android7">Расписание недоступно на Android 7.</string>
     <string name="schedule_empty">Расписание пустое</string>
     <string name="schedule_episode_aired">%1$d серия уже вышла</string>
     <string name="schedule_episode_future">%1$d серия выйдет через %2$s</string>

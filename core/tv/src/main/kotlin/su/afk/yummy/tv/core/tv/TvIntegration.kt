@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.core.utils.PlatformCapabilities
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,23 +26,18 @@ internal class TvIntegration @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override val isTvHomeIntegrationSupported: Boolean = PlatformCapabilities.supportsTvHomeIntegration
     override val browsableChannelRequest: SharedFlow<Long> = previewChannelManager.browsableRequest
     override val previewChannelBrowsable: StateFlow<Boolean> = previewChannelManager.isBrowsable
 
     override fun requestPreviewChannelBrowsable() {
-        if (!isTvHomeIntegrationSupported) return
         previewChannelManager.requestBrowsable()
     }
 
     override fun refreshPreviewChannelStatus() {
-        if (!isTvHomeIntegrationSupported) return
         scope.launch { previewChannelManager.checkBrowsable() }
     }
 
     override fun start() {
-        if (!isTvHomeIntegrationSupported) return
-
         scope.launch { previewChannelManager.checkBrowsable() }
 
         scope.launch {

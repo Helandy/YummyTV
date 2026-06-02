@@ -25,7 +25,6 @@ class SettingsViewModel @Inject constructor(
     override fun createInitialState() = SettingsState.State()
 
     init {
-        setState { copy(tvHomeIntegrationSupported = tvIntegration.isTvHomeIntegrationSupported) }
         settingsStore.appTheme
             .onEach { setState { copy(appTheme = it) } }
             .launchIn(viewModelScope)
@@ -73,11 +72,9 @@ class SettingsViewModel @Inject constructor(
                 settingsStore.setPreferredPlayer(event.player)
             }
             SettingsState.Event.RequestPreviewChannelBrowsable -> {
-                if (!tvIntegration.isTvHomeIntegrationSupported) return
                 tvIntegration.requestPreviewChannelBrowsable()
             }
             SettingsState.Event.WatchNextToggled -> viewModelScope.launch {
-                if (!tvIntegration.isTvHomeIntegrationSupported) return@launch
                 settingsStore.setWatchNextEnabled(!currentState.watchNextEnabled)
             }
             is SettingsState.Event.PreviewCacheSizeSelected -> viewModelScope.launch {
