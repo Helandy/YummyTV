@@ -5,7 +5,7 @@
 <h1 align="center">YummyTV</h1>
 
 <p align="center">
-  Unofficial Android TV client for <a href="https://yummyani.me">yummyani.me</a><br/>
+  Unofficial Android TV client for <a href="https://yummyani.me/">yummyani.me</a><br/>
   Watch anime on the big screen with remote-friendly navigation and a high-performance player.
 </p>
 
@@ -25,7 +25,7 @@
   </a>
 </p>
 
-## Android TV client for YummyAni
+## Android TV client for YummyAnime
 
 YummyTV is a native Android TV app that makes watching anime from yummyani.me more comfortable on a TV:
 
