@@ -3,6 +3,7 @@
     <string name="update_available_title">Доступно обновление</string>
     <string name="update_version">Версия %1$s</string>
     <string name="update_changelog_title">Что нового:</string>
+    <string name="update_install_unsupported_android7">Автоматическая установка недоступна на Android 7. Скачайте и установите новый APK вручную.</string>
     <string name="update_later">Не сейчас</string>
     <string name="update_install">Обновить</string>
     <string name="update_downloading">Загрузка обновления...</string>

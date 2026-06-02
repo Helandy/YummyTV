@@ -12,6 +12,7 @@ import android.provider.Settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.utils.PlatformCapabilities
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
@@ -20,6 +21,10 @@ import kotlin.coroutines.resumeWithException
 class ApkInstaller(private val context: Context) {
 
     suspend fun install(apkFile: File) = withContext(Dispatchers.IO) {
+        if (!PlatformCapabilities.supportsInAppUpdateInstall) {
+            error("Автоматическая установка обновлений недоступна на этой версии Android")
+        }
+
         if (!context.packageManager.canRequestPackageInstalls()) {
             context.startActivity(
                 Intent(

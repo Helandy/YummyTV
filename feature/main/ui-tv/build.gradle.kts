@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))
     implementation(project(":core:update"))
+    implementation(project(":core:utils"))
 
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:account:api"))

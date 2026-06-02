@@ -1,10 +1,10 @@
 [versions]
 android-compileSdk = "36"
-android-minSdk = "28"
+android-minSdk = "24"
 
 # --- App versioning
-appVersionName = "1.8"
-appVersionCode = "13"
+appVersionName = "1.9"
+appVersionCode = "14"
 
 agp = "9.2.1"
 kotlin = "2.3.21"
@@ -21,7 +21,7 @@ androidx-tv-foundation = "1.0.0"
 androidx-tv-tvprovider = "1.1.0"
 androidx-tv-material = "1.1.0"
 
-composeMultiplatform = "1.11.0"
+composeMultiplatform = "1.11.1"
 coil = "3.4.0"
 junit = "4.13.2"
 ktor = "3.5.0"

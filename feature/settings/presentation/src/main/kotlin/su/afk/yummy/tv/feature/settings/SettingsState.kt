@@ -22,6 +22,7 @@ class SettingsState {
         val showScreenshotsOnFocus: Boolean = false,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val isPreviewChannelBrowsable: Boolean = false,
+        val tvHomeIntegrationSupported: Boolean = true,
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,

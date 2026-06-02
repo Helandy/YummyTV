@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
+import su.afk.yummy.tv.core.utils.PlatformCapabilities
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.ITvMainGraph
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
@@ -48,7 +49,9 @@ class TvMainGraph @Inject constructor(
         TvMenuItem(R.string.main_tab_schedule, SideTab.SCHEDULE, Icons.Default.DateRange),
         TvMenuItem(R.string.main_tab_top100, SideTab.TOP100, Icons.Default.Star),
         TvMenuItem(R.string.main_tab_library, SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
-    )
+    ).filter { item ->
+        item.destination != SideTab.SCHEDULE || PlatformCapabilities.supportsSchedule
+    }
 
     @Composable
     override fun MainGraph() {
@@ -58,7 +61,12 @@ class TvMainGraph @Inject constructor(
         val atTabRoot = navManager.backStack.size <= 1
 
         LaunchedEffect(Unit) {
-            navManager.restoreTab(savedTab)
+            val effectiveSavedTab = if (savedTab == SideTab.SCHEDULE && !PlatformCapabilities.supportsSchedule) {
+                SideTab.HOME
+            } else {
+                savedTab
+            }
+            navManager.restoreTab(effectiveSavedTab)
             restoredTab = true
         }
 

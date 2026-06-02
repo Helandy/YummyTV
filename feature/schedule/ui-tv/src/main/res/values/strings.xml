@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="schedule_loading">Loading schedule</string>
+    <string name="schedule_unsupported_android7">Schedule is unavailable on Android 7.</string>
     <string name="schedule_empty">Schedule is empty</string>
     <string name="schedule_episode_aired">Episode %1$d is out</string>
     <string name="schedule_episode_future">Episode %1$d releases in %2$s</string>
