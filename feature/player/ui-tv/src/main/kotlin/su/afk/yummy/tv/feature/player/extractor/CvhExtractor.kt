@@ -79,7 +79,8 @@ internal object CvhExtractor {
                 return@withContext null
             }
             qualities
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logExtractorFailure("CVH", iframeUrl, "unexpected extractor error", e)
             null
         }
     }

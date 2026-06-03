@@ -34,23 +34,28 @@ internal object KodikExtractor {
 
             val urlParamsStr = Regex("""\burlParams\s*=\s*'([^']+)'""").find(flat)
                 ?.groupValues?.get(1) ?: run {
+                logExtractorFailure("Kodik", fullUrl, "urlParams were not found")
                 return@withContext KodikResult.Failed
             }
             val type = Regex("""\b(?:videoInfo|vInfo)\.type\s*=\s*'([^']+)'""").find(flat)
                 ?.groupValues?.get(1) ?: run {
+                logExtractorFailure("Kodik", fullUrl, "video type was not found")
                 return@withContext KodikResult.Failed
             }
             val hash = Regex("""\b(?:videoInfo|vInfo)\.hash\s*=\s*'([^']+)'""").find(flat)
                 ?.groupValues?.get(1) ?: run {
+                logExtractorFailure("Kodik", fullUrl, "video hash was not found")
                 return@withContext KodikResult.Failed
             }
             val id = Regex("""\b(?:videoInfo|vInfo)\.id\s*=\s*'([^']+)'""").find(flat)
                 ?.groupValues?.get(1) ?: run {
+                logExtractorFailure("Kodik", fullUrl, "video id was not found")
                 return@withContext KodikResult.Failed
             }
 
             val playerSrc = Regex("""src="((?://[^"]+)?/assets/js/app\.player_single[^"]+)"""")
                 .find(flat)?.groupValues?.get(1) ?: run {
+                logExtractorFailure("Kodik", fullUrl, "player script URL was not found")
                 return@withContext KodikResult.Failed
             }
 
@@ -107,11 +112,13 @@ internal object KodikExtractor {
             if (streamUrl != null) {
                 KodikResult.Stream(streamUrl)
             } else {
+                logExtractorFailure("Kodik", endpointUrl, "stream URL was not found in endpoint response")
                 KodikResult.Failed
             }
         } catch (e: KodikBlockedException) {
             KodikResult.Blocked(e.message ?: blockedFallback)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logExtractorFailure("Kodik", fullUrl, "unexpected extractor error", e)
             KodikResult.Failed
         }
     }

@@ -1,9 +1,12 @@
 package su.afk.yummy.tv.feature.player.extractor
 
 import android.content.Context
+import android.net.http.SslError
 import android.os.Handler
 import android.os.Looper
 import android.webkit.JavascriptInterface
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -116,9 +119,12 @@ internal object AllohaExtractor {
                 scheduleDelivery()
             }
 
-	            timeoutRunnable = Runnable {
-	                deliver(resultFromCapturedStreams())
-	            }
+            timeoutRunnable = Runnable {
+                if (resultFromCapturedStreams() == null) {
+                    logExtractorFailure("Alloha", iframeUrl, "timed out before any stream was captured")
+                }
+                deliver(resultFromCapturedStreams())
+            }
 	            handler.postDelayed(timeoutRunnable, TIMEOUT_MS)
 
             val bridge = object {
@@ -175,6 +181,31 @@ internal object AllohaExtractor {
                         if (qualityProbeAttempts == 0) {
                             runQualityProbe(view)
                         }
+                    }
+
+                    override fun onReceivedError(
+                        view: WebView,
+                        request: WebResourceRequest,
+                        error: WebResourceError,
+                    ) {
+                        logExtractorFailure(
+                            extractor = "Alloha",
+                            url = request.url.toString(),
+                            reason = "WebView error ${error.errorCode}: ${error.description}",
+                        )
+                    }
+
+                    override fun onReceivedSslError(
+                        view: WebView,
+                        handler: SslErrorHandler,
+                        error: SslError,
+                    ) {
+                        logExtractorFailure(
+                            extractor = "Alloha",
+                            url = error.url.orEmpty(),
+                            reason = "WebView SSL error ${error.primaryError}",
+                        )
+                        super.onReceivedSslError(view, handler, error)
                     }
                 }
                 addJavascriptInterface(bridge, "AllohaBridge")

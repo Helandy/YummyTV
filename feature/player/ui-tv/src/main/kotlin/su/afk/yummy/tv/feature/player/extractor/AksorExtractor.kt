@@ -44,7 +44,8 @@ internal object AksorExtractor {
                 headers = headers,
                 qualities = qualities,
             )
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logExtractorFailure("Aksor", iframeUrl, "unexpected extractor error", e)
             null
         }
     }
@@ -121,8 +122,13 @@ internal object AksorExtractor {
                     .find(fetchText(scriptUrl, referer = playerUrl, accept = "*/*"))
                     ?.groupValues
                     ?.get(1)
+            }.onFailure { e ->
+                logExtractorFailure("Aksor", scriptUrl, "failed to inspect player script", e)
             }.getOrNull()
-        } ?: return null
+        } ?: run {
+            logExtractorFailure("Aksor", playerUrl, "API path was not found in player scripts")
+            return null
+        }
 
         val apiUrl = when {
             apiPath.startsWith("http") -> "$apiPath/video/$hash"
