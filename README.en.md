@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="tvApp/src/main/ic_launcher-playstore.png" width="128" height="128" alt="YummyTV logo" />
+  <img src="app/src/main/ic_launcher-playstore.png" width="128" height="128" alt="YummyTV logo" />
 </p>
 
 <h1 align="center">YummyTV</h1>
