@@ -4,11 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -56,6 +59,7 @@ class HomeViewModel @Inject constructor(
     private var previewJob: Job? = null
     private val previewCache = mutableMapOf<Int, AnimePreview>()
     private val prefetchingPreviews = mutableSetOf<Int>()
+    private val previewPrefetchSemaphore = Semaphore(2)
 
     init {
         load()
@@ -108,6 +112,7 @@ class HomeViewModel @Inject constructor(
         setState { copy(focusedItemId = displayId, focusedPreview = cachedPreview, animePreviews = previewCache.toMap()) }
         if (cachedPreview != null) return
         previewJob = viewModelScope.launch {
+            delay(PREVIEW_FOCUS_DEBOUNCE_MS)
             runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
                 previewCache[animeId] = preview
                 val previews = previewCache.toMap()
@@ -131,11 +136,17 @@ class HomeViewModel @Inject constructor(
     private fun prefetchPreview(animeId: Int) {
         if (previewCache.containsKey(animeId) || !prefetchingPreviews.add(animeId)) return
         viewModelScope.launch {
-            runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
-                previewCache[animeId] = preview
-                setState { copy(animePreviews = previewCache.toMap()) }
+            try {
+                previewPrefetchSemaphore.withPermit {
+                    if (previewCache.containsKey(animeId)) return@withPermit
+                    runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
+                        previewCache[animeId] = preview
+                        setState { copy(animePreviews = previewCache.toMap()) }
+                    }
+                }
+            } finally {
+                prefetchingPreviews.remove(animeId)
             }
-            prefetchingPreviews.remove(animeId)
         }
     }
 
@@ -212,6 +223,10 @@ class HomeViewModel @Inject constructor(
             .take(2)
             .mapNotNull { it.animeId }
             .forEach(::prefetchPreview)
+    }
+
+    private companion object {
+        const val PREVIEW_FOCUS_DEBOUNCE_MS = 250L
     }
 }
 

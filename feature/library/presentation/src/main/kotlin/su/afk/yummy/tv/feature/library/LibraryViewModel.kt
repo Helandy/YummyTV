@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -145,15 +147,23 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> =
+    private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> = coroutineScope {
+        val watching = async { getUserAnimeList(userId, UserAnimeList.WATCHING) }
+        val favorites = async { getUserFavoriteAnimeList(userId) }
+        val planned = async { getUserAnimeList(userId, UserAnimeList.PLANNED) }
+        val completed = async { getUserAnimeList(userId, UserAnimeList.COMPLETED) }
+        val postponed = async { getUserAnimeList(userId, UserAnimeList.POSTPONED) }
+        val dropped = async { getUserAnimeList(userId, UserAnimeList.DROPPED) }
+
         mapOf(
-            LibraryTab.WATCHING to getUserAnimeList(userId, UserAnimeList.WATCHING),
-            LibraryTab.FAVORITES to getUserFavoriteAnimeList(userId),
-            LibraryTab.PLANNED to getUserAnimeList(userId, UserAnimeList.PLANNED),
-            LibraryTab.COMPLETED to getUserAnimeList(userId, UserAnimeList.COMPLETED),
-            LibraryTab.POSTPONED to getUserAnimeList(userId, UserAnimeList.POSTPONED),
-            LibraryTab.DROPPED to getUserAnimeList(userId, UserAnimeList.DROPPED),
+            LibraryTab.WATCHING to watching.await(),
+            LibraryTab.FAVORITES to favorites.await(),
+            LibraryTab.PLANNED to planned.await(),
+            LibraryTab.COMPLETED to completed.await(),
+            LibraryTab.POSTPONED to postponed.await(),
+            LibraryTab.DROPPED to dropped.await(),
         )
+    }
 
     private suspend fun syncLocalMissingToRemote(
         remote: Map<LibraryTab, List<UserAnimeListItem>>,

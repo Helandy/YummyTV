@@ -13,8 +13,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import javax.inject.Singleton
 
@@ -30,9 +28,7 @@ object CoilModule {
         @ApplicationContext appContext: Context,
         settingsStore: SettingsStore,
     ): ImageLoader {
-        val cacheMb = runBlocking { settingsStore.previewCacheSize.first() }.megabytes
-
-        val cacheBytes = cacheMb.toLong() * 1024L * 1024L
+        val cacheBytes = settingsStore.currentPreviewCacheSize.megabytes.toLong() * 1024L * 1024L
 
         return ImageLoader.Builder(appContext)
             .crossfade(true)

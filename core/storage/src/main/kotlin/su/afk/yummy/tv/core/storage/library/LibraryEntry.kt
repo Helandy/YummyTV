@@ -1,11 +1,17 @@
 package su.afk.yummy.tv.core.storage.library
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 const val FAVORITE_ONLY_LIST_ID = -1
 
-@Entity(tableName = "library")
+@Entity(
+    tableName = "library",
+    indices = [
+        Index(value = ["addedAt"], name = "index_library_addedAt"),
+    ],
+)
 data class LibraryEntry(
     @PrimaryKey val animeId: Int,
     val title: String,

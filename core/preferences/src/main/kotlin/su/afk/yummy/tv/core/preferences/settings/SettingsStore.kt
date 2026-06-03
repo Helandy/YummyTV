@@ -9,12 +9,18 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
 
 class SettingsStore(private val context: Context) {
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val posterQualityKey = stringPreferencesKey("poster_quality")
     private val showScreenshotsOnFocusKey = booleanPreferencesKey("show_screenshots_on_focus")
@@ -32,6 +38,11 @@ class SettingsStore(private val context: Context) {
     private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
     private val yaniUnreadNotificationsCountKey = intPreferencesKey("yani_unread_notifications_count")
     private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
+
+    @Volatile private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
+
+    val currentPreviewCacheSize: PreviewCacheSize
+        get() = previewCacheSizeSnapshot
 
     val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
         prefs[posterQualityKey]?.let { name ->
@@ -96,6 +107,14 @@ class SettingsStore(private val context: Context) {
         prefs[yaniUnreadNotificationsCountKey] ?: 0
     }
 
+    init {
+        scope.launch {
+            previewCacheSize.collect { size ->
+                previewCacheSizeSnapshot = size
+            }
+        }
+    }
+
     suspend fun setPosterQuality(quality: PosterQuality) {
         context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
     }
@@ -113,6 +132,7 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun setPreviewCacheSize(size: PreviewCacheSize) {
+        previewCacheSizeSnapshot = size
         context.dataStore.edit { prefs -> prefs[previewCacheSizeKey] = size.megabytes }
     }
 
