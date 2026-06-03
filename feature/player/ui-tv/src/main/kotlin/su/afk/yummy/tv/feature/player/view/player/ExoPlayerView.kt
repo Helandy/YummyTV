@@ -71,11 +71,11 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.feature.player.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.R
+import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import java.util.Locale
 
@@ -100,7 +100,7 @@ internal fun ExoPlayerView(
     onRateTitle: () -> Unit = {},
     onPlaybackError: (String) -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
-    allDubbingEpisodeNumbers: List<List<String>> = emptyList(),
+    allDubbingEpisodeCounts: List<Int> = emptyList(),
     allDubbingViews: List<Int> = emptyList(),
     allDubbingSourceNames: List<String> = emptyList(),
     currentDubbingIndex: Int = 0,
@@ -658,9 +658,7 @@ internal fun ExoPlayerView(
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
             itemMetaContent = { idx, contentColor ->
                 val views = allDubbingViews.getOrElse(idx) { 0 }
-                val episodeCount = allDubbingEpisodeNumbers.getOrElse(idx) { emptyList() }
-                    .distinct()
-                    .size
+                val episodeCount = allDubbingEpisodeCounts.getOrElse(idx) { 0 }
                 DubbingMetaRow(
                     views = views.formatCompactCount(),
                     episodeCount = episodeCount,

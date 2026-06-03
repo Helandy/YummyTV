@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -70,6 +72,15 @@ internal fun PlayerSelectionPanel(
         exit = fadeOut(),
     ) {
         val maxPanelHeight = (LocalConfiguration.current.screenHeightDp * 0.7f).dp
+        val listState = rememberLazyListState()
+        val scrollIndex = selectedIndex.coerceIn(0, items.lastIndex)
+
+        LaunchedEffect(visible, items.size, scrollIndex) {
+            if (visible && items.isNotEmpty()) {
+                listState.scrollToItem(scrollIndex)
+            }
+        }
+
         Column(
             modifier = Modifier
                 .width(336.dp)
@@ -77,7 +88,6 @@ internal fun PlayerSelectionPanel(
                 .background(Color(0xE6121214))
                 .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
                 .heightIn(max = maxPanelHeight)
-                .verticalScroll(rememberScrollState())
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -87,15 +97,23 @@ internal fun PlayerSelectionPanel(
                 color = Color.White.copy(alpha = 0.62f),
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             )
-            items.forEachIndexed { idx, label ->
-                val selected = idx == selectedIndex
-                PlayerSelectionItem(
-                    label = label,
-                    metaContent = { contentColor -> itemMetaContent(idx, contentColor) },
-                    selected = selected,
-                    modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
-                    onClick = { onItemSelected(idx) },
-                )
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                itemsIndexed(items, key = { index, label -> "$index-$label" }) { idx, label ->
+                    val selected = idx == selectedIndex
+                    PlayerSelectionItem(
+                        label = label,
+                        metaContent = { contentColor -> itemMetaContent(idx, contentColor) },
+                        selected = selected,
+                        modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
+                        onClick = { onItemSelected(idx) },
+                    )
+                }
             }
         }
     }
