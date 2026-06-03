@@ -70,7 +70,6 @@ import su.afk.yummy.tv.feature.settings.view.ToggleRow
 private enum class SettingsTab(@param:StringRes val labelRes: Int) {
     THEME(R.string.settings_tab_theme),
     POSTERS(R.string.settings_tab_posters),
-    CARDS(R.string.settings_tab_cards),
     DETAILS(R.string.settings_tab_details),
     PLAYER(R.string.settings_tab_player),
     CACHE(R.string.settings_tab_cache),
@@ -170,29 +169,40 @@ fun SettingsTvScreen(
                             }
                         }
 
-                        SettingsTab.POSTERS -> PosterQuality.entries.forEachIndexed { index, quality ->
-                            QualityRow(
-                                label = quality.label(),
-                                hint = quality.hint(),
-                                selected = quality == state.posterQuality,
-                                onClick = { onEvent(SettingsState.Event.PosterQualitySelected(quality)) },
-                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                        SettingsTab.POSTERS -> {
+                            Text(
+                                text = stringResource(R.string.settings_poster_size_title),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                             )
-                            if (index < PosterQuality.entries.lastIndex) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            PosterQuality.entries.forEachIndexed { index, quality ->
+                                QualityRow(
+                                    label = quality.label(),
+                                    hint = quality.hint(),
+                                    selected = quality == state.posterQuality,
+                                    onClick = { onEvent(SettingsState.Event.PosterQualitySelected(quality)) },
+                                    modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                                 )
+                                if (index < PosterQuality.entries.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                    )
+                                }
                             }
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            )
+                            ToggleRow(
+                                label = stringResource(R.string.settings_show_screenshots_label),
+                                hint = stringResource(R.string.settings_show_screenshots_hint),
+                                enabled = state.showScreenshotsOnFocus,
+                                onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
+                            )
                         }
-
-                        SettingsTab.CARDS -> ToggleRow(
-                            label = stringResource(R.string.settings_show_screenshots_label),
-                            hint = stringResource(R.string.settings_show_screenshots_hint),
-                            enabled = state.showScreenshotsOnFocus,
-                            onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
-                            modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
-                        )
 
                         SettingsTab.DETAILS -> DetailsButtonOrderContent(
                             order = state.detailsButtonOrder,
@@ -248,19 +258,28 @@ fun SettingsTvScreen(
                             }
                         }
 
-                        SettingsTab.CACHE -> PreviewCacheSize.entries.forEachIndexed { index, size ->
-                            QualityRow(
-                                label = size.label(),
-                                hint = size.hint(),
-                                selected = size == state.previewCacheSize,
-                                onClick = { onEvent(SettingsState.Event.PreviewCacheSizeSelected(size)) },
-                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                        SettingsTab.CACHE -> {
+                            Text(
+                                text = stringResource(R.string.settings_poster_cache_size_title),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                             )
-                            if (index < PreviewCacheSize.entries.lastIndex) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            PreviewCacheSize.entries.forEachIndexed { index, size ->
+                                QualityRow(
+                                    label = size.label(),
+                                    hint = size.hint(),
+                                    selected = size == state.previewCacheSize,
+                                    onClick = { onEvent(SettingsState.Event.PreviewCacheSizeSelected(size)) },
+                                    modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                                 )
+                                if (index < PreviewCacheSize.entries.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                    )
+                                }
                             }
                         }
 

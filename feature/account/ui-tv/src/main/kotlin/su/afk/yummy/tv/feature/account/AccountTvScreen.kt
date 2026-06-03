@@ -337,6 +337,7 @@ private fun AccountHubContent(
         .fillMaxHeight()
         .fillMaxWidth(0.92f)
         .widthIn(max = 1440.dp)
+    val unreadCount = state.notificationCounts.sumOf { it.count }
 
     when (state.selectedTab) {
         AccountState.AccountTab.STATS -> StatsTab(
@@ -352,7 +353,12 @@ private fun AccountHubContent(
             AccountTabs(
                 selected = state.selectedTab,
                 onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
-                onMarkAllRead = { onEvent(AccountState.Event.AllNotificationsReadSelected) },
+                onMarkAllRead = if (unreadCount > 0) {
+                    { onEvent(AccountState.Event.AllNotificationsReadSelected) }
+                } else {
+                    null
+                },
+                markAllReadEnabled = !state.isNotificationsLoading,
             )
             ErrorText(state.error ?: state.hubError)
             NotificationsTab(state = state, onEvent = onEvent)
@@ -441,6 +447,7 @@ private fun AccountTabs(
     selected: AccountState.AccountTab,
     onSelected: (AccountState.AccountTab) -> Unit,
     onMarkAllRead: (() -> Unit)? = null,
+    markAllReadEnabled: Boolean = true,
 ) {
     val statsFocusRequester = remember { FocusRequester() }
     val notificationsFocusRequester = remember { FocusRequester() }
@@ -491,6 +498,7 @@ private fun AccountTabs(
                     .width(260.dp)
                     .focusRequester(markAllReadFocusRequester)
                     .focusProperties { left = notificationsFocusRequester },
+                enabled = markAllReadEnabled,
             )
         }
     }
@@ -900,30 +908,39 @@ private fun AccountAction(
     modifier: Modifier = Modifier,
     hint: String? = null,
     selected: Boolean = false,
+    enabled: Boolean = true,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
-    val active = focused || selected
+    val active = enabled && (focused || selected)
+    val actionModifier = modifier
+        .fillMaxWidth()
+        .clip(shape)
+        .border(
+            width = 2.dp,
+            color = if (focused && enabled) MaterialTheme.colorScheme.primary else Color.Transparent,
+            shape = shape,
+        )
+        .background(
+            color = when {
+                focused && enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+                selected && enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.025f)
+                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
+            },
+            shape = shape,
+        )
+        .let {
+            if (enabled) {
+                it.tvFocusableClick(onClick = onClick, interactionSource = interactionSource, shape = shape)
+            } else {
+                it
+            }
+        }
+        .padding(horizontal = 16.dp, vertical = 14.dp)
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .border(
-                width = 2.dp,
-                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = shape,
-            )
-            .background(
-                color = when {
-                    focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-                    selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
-                },
-                shape = shape,
-            )
-            .tvFocusableClick(onClick = onClick, interactionSource = interactionSource, shape = shape)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = actionModifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -931,7 +948,11 @@ private fun AccountAction(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                color = when {
+                    active -> MaterialTheme.colorScheme.primary
+                    enabled -> MaterialTheme.colorScheme.onBackground
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

@@ -2,7 +2,6 @@
 <resources>
     <string name="settings_tab_posters">Постеры</string>
     <string name="settings_tab_theme">Тема</string>
-    <string name="settings_tab_cards">Карточки</string>
     <string name="settings_tab_details">Деталка</string>
     <string name="settings_tab_player">Плеер</string>
     <string name="settings_tab_account">Аккаунт</string>
@@ -11,6 +10,8 @@
     <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">О приложении</string>
+    <string name="settings_poster_size_title">Размер постеров на экране</string>
+    <string name="settings_poster_cache_size_title">Размер кэша постеров на устройстве</string>
     <string name="settings_show_screenshots_label">Скрины при фокусе</string>
     <string name="settings_show_screenshots_hint">Показывать скриншоты тайтла при выборе карточки</string>
     <string name="settings_details_buttons_reset">Сбросить порядок кнопок</string>
@@ -77,7 +78,7 @@
     <string name="settings_cache_size_300">300 МБ</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Токен приложения</string>
-    <string name="settings_yani_application_token_hint">Нужен для полноценной и стабильной работы API; добавляется к запросам на api.yani.tv</string>
+    <string name="settings_yani_application_token_hint">Создайте приложение и скопируйте его публичный токен: https://yummyani.me/dev/applications/\nОн нужен для авторизации приложения и отправляется в заголовке X-Application. Все запросы API используют JSON, включая тело запроса.</string>
     <string name="settings_account_signed_in">Аккаунт Yani</string>
     <string name="settings_account_signed_out">Войти в Yani</string>
     <string name="settings_account_unknown_user">Вход выполнен</string>

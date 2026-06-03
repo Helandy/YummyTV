@@ -17,6 +17,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
@@ -241,10 +242,13 @@ class YaniAccountApi(
             .body<YaniBooleanResponseDto>()
             .response
 
-    suspend fun markAllNotificationsRead(): Boolean =
-        client.post("$YANI_BASE_URL/profile/notifications/read")
-            .body<YaniBooleanResponseDto>()
-            .response
+    suspend fun markAllNotificationsRead(): Boolean {
+        val response = client.post("$YANI_BASE_URL/profile/notifications/read") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { })
+        }
+        return response.body<YaniBooleanResponseDto>().response
+    }
 
     suspend fun deleteNotification(id: Int): Boolean =
         client.delete("$YANI_BASE_URL/profile/notifications/$id")

@@ -340,14 +340,7 @@ class AccountViewModel @Inject constructor(
             }.fold(
                 onSuccess = { updated ->
                     if (updated) {
-                        setState {
-                            copy(
-                                notifications = notifications.map { it.copy(viewed = true) },
-                                notificationCounts = notificationCounts.map { it.copy(count = 0) },
-                                isNotificationsLoading = false,
-                                hubError = null,
-                            )
-                        }
+                        loadNotifications()
                     } else {
                         setState { copy(isNotificationsLoading = false) }
                     }
