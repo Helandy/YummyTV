@@ -102,6 +102,10 @@ internal fun BalancerPickerOverlay(
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         when (event.key) {
+                            Key.Back, Key.Escape -> {
+                                onDismiss()
+                                true
+                            }
                             Key.DirectionUp -> focusedOptionIndex == firstSupportedIdx
                             Key.DirectionDown -> focusedOptionIndex == lastSupportedIdx
                             else -> false

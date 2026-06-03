@@ -107,6 +107,10 @@ internal fun SubscriptionsPickerOverlay(
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         when (event.key) {
+                            Key.Back, Key.Escape -> {
+                                onDismiss()
+                                true
+                            }
                             Key.DirectionUp -> focusedOptionIndex == 0
                             Key.DirectionDown -> focusedOptionIndex == subscriptions.lastIndex
                             else -> false

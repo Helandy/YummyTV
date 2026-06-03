@@ -102,6 +102,10 @@ internal fun LibraryListPickerOverlay(
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         when (event.key) {
+                            Key.Back, Key.Escape -> {
+                                onDismiss()
+                                true
+                            }
                             Key.DirectionUp -> focusedOptionIndex == 0
                             Key.DirectionDown -> focusedOptionIndex == options.lastIndex
                             else -> false
