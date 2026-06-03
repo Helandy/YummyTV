@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))
-    implementation(project(":core:tv"))
+    implementation(project(":core:tv-api"))
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

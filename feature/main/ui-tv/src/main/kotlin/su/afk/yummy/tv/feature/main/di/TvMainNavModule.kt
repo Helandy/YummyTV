@@ -5,7 +5,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.feature.main.TvMainGraph
-import su.afk.yummy.tv.feature.main.api.ITvMainGraph
+import su.afk.yummy.tv.feature.main.api.IMainGraph
 import javax.inject.Singleton
 
 @Module
@@ -14,5 +14,5 @@ interface TvMainNavModule {
 
     @Binds
     @Singleton
-    fun bindTvMainGraph(impl: TvMainGraph): ITvMainGraph
+    fun bindTvMainGraph(impl: TvMainGraph): IMainGraph
 }

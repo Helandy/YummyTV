@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_mobile_empty">Тайтл не найден</string>
+    <string name="details_mobile_back">Назад</string>
+    <string name="details_mobile_retry">Повторить</string>
+    <string name="details_mobile_watch">Смотреть</string>
+    <string name="details_mobile_watch_not_found">Видео не найдено</string>
+    <string name="details_mobile_loading_episodes">Загружаем серии...</string>
+    <string name="details_mobile_continue_episode">Продолжить · Серия %1$s</string>
+    <string name="details_mobile_add_library">В список</string>
+    <string name="details_mobile_favorite_on">Любимые</string>
+    <string name="details_mobile_favorite_off">Любимые</string>
+    <string name="details_mobile_sections">Разделы</string>
+    <string name="details_mobile_description">Описание</string>
+    <string name="details_mobile_episodes">Серии</string>
+    <string name="details_mobile_subscriptions">Подписки</string>
+    <string name="details_mobile_full_details">Детали</string>
+    <string name="details_mobile_trailers">Трейлеры</string>
+    <string name="details_mobile_similar">Похожее</string>
+    <string name="details_mobile_viewing_order">Порядок</string>
+    <string name="details_mobile_rating">Рейтинг</string>
+    <string name="details_mobile_collections">Коллекции</string>
+    <string name="details_mobile_screenshots">Скриншоты</string>
+    <string name="details_mobile_yani_rating">Yani %1$s</string>
+    <string name="details_mobile_kinopoisk_rating">КП %1$s</string>
+    <string name="details_mobile_library_picker_title">Добавить в список</string>
+    <string name="details_mobile_library_watching">Смотрю</string>
+    <string name="details_mobile_library_planned">В планах</string>
+    <string name="details_mobile_library_completed">Просмотрено</string>
+    <string name="details_mobile_library_postponed">Отложено</string>
+    <string name="details_mobile_library_dropped">Брошено</string>
+    <string name="details_mobile_subscriptions_loading">Загружаем подписки...</string>
+    <string name="details_mobile_subscriptions_empty">Озвучки не найдены</string>
+    <string name="details_mobile_subscription_meta">%1$s · серий: %2$d</string>
+    <string name="details_mobile_subscribe">Подписаться</string>
+    <string name="details_mobile_unsubscribe">Отписаться</string>
+    <string name="details_mobile_balancer_title">Серия %1$s · Балансер</string>
+    <string name="details_mobile_unsupported_player">%1$s · не поддерживается</string>
+    <string name="details_mobile_close">Закрыть</string>
+    <string name="details_mobile_cancel">Отмена</string>
+    <string name="details_mobile_aired">Вышло: %1$d из %2$s</string>
+    <string name="details_mobile_unknown_count">?</string>
+</resources>

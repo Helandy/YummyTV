@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.rememberPlayerScreenUiState
+import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.KodikBlockedOverlay
 import su.afk.yummy.tv.feature.player.view.StreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.StreamLoadingView

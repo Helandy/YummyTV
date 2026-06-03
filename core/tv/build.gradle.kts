@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.tvprovider)
 
+    implementation(project(":core:tv-api"))
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))

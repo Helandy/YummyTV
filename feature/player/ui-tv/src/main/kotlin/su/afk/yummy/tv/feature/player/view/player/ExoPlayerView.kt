@@ -74,8 +74,8 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
-import su.afk.yummy.tv.feature.player.R
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import java.util.Locale
 

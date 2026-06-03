@@ -27,7 +27,7 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.account.IAccountNavigator
-import su.afk.yummy.tv.feature.main.api.ITvMainGraph
+import su.afk.yummy.tv.feature.main.api.IMainGraph
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
 import su.afk.yummy.tv.feature.main.view.TvMenuItem
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
@@ -40,7 +40,7 @@ class TvMainGraph @Inject constructor(
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
     private val registrars: Set<@JvmSuppressWildcards NavRegistrar>,
-) : ITvMainGraph {
+) : IMainGraph {
 
     private val menuItems = listOf(
         TvMenuItem(R.string.main_tab_search, SideTab.SEARCH, Icons.Default.Search),

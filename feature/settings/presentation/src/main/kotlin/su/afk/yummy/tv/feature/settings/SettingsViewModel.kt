@@ -10,7 +10,7 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.tv.ITvIntegration
+import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import javax.inject.Inject
 
 @HiltViewModel

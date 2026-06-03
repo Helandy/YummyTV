@@ -4,8 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import su.afk.yummy.tv.core.tv.ITvIntegration
 import su.afk.yummy.tv.core.tv.TvIntegration
+import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import javax.inject.Singleton
 
 @Module

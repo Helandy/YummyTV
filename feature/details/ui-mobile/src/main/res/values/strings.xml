@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_mobile_empty">Title not found</string>
+    <string name="details_mobile_back">Back</string>
+    <string name="details_mobile_retry">Retry</string>
+    <string name="details_mobile_watch">Watch</string>
+    <string name="details_mobile_watch_not_found">Video not found</string>
+    <string name="details_mobile_loading_episodes">Loading episodes...</string>
+    <string name="details_mobile_continue_episode">Continue · Episode %1$s</string>
+    <string name="details_mobile_add_library">Add to list</string>
+    <string name="details_mobile_favorite_on">Favorite</string>
+    <string name="details_mobile_favorite_off">Favorite</string>
+    <string name="details_mobile_sections">Sections</string>
+    <string name="details_mobile_description">Description</string>
+    <string name="details_mobile_episodes">Episodes</string>
+    <string name="details_mobile_subscriptions">Subscriptions</string>
+    <string name="details_mobile_full_details">Details</string>
+    <string name="details_mobile_trailers">Trailers</string>
+    <string name="details_mobile_similar">Similar</string>
+    <string name="details_mobile_viewing_order">Order</string>
+    <string name="details_mobile_rating">Rating</string>
+    <string name="details_mobile_collections">Collections</string>
+    <string name="details_mobile_screenshots">Screenshots</string>
+    <string name="details_mobile_yani_rating">Yani %1$s</string>
+    <string name="details_mobile_kinopoisk_rating">KP %1$s</string>
+    <string name="details_mobile_library_picker_title">Add to list</string>
+    <string name="details_mobile_library_watching">Watching</string>
+    <string name="details_mobile_library_planned">Planned</string>
+    <string name="details_mobile_library_completed">Completed</string>
+    <string name="details_mobile_library_postponed">Postponed</string>
+    <string name="details_mobile_library_dropped">Dropped</string>
+    <string name="details_mobile_subscriptions_loading">Loading subscriptions...</string>
+    <string name="details_mobile_subscriptions_empty">No dubbings found</string>
+    <string name="details_mobile_subscription_meta">%1$s · %2$d episodes</string>
+    <string name="details_mobile_subscribe">Subscribe</string>
+    <string name="details_mobile_unsubscribe">Unsubscribe</string>
+    <string name="details_mobile_balancer_title">Episode %1$s · Balancer</string>
+    <string name="details_mobile_unsupported_player">%1$s · unsupported</string>
+    <string name="details_mobile_close">Close</string>
+    <string name="details_mobile_cancel">Cancel</string>
+    <string name="details_mobile_aired">Aired: %1$d of %2$s</string>
+    <string name="details_mobile_unknown_count">?</string>
+</resources>
