@@ -1,6 +1,6 @@
 [versions]
 android-compileSdk = "37"
-android-minSdk = "28"
+android-minSdk = "24"
 
 # --- App versioning
 appVersionName = "1.9"
