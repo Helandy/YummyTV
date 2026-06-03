@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.utils
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.feature.details.SubscriptionOption
+import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 
 internal const val SUBSCRIPTION_REFRESH_DELAY_MS = 350L
 

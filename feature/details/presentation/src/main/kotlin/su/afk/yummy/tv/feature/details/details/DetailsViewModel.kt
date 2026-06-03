@@ -1,0 +1,471 @@
+package su.afk.yummy.tv.feature.details.details
+
+import androidx.lifecycle.SavedStateHandle
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
+import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
+import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.error.storage.RetryStorage
+import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.library.LibraryEntry
+import su.afk.yummy.tv.core.storage.library.LibraryStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
+import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
+import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.collection.ICollectionNavigator
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
+import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
+import su.afk.yummy.tv.feature.details.utils.subscribedKeys
+import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
+import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
+import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.PlayerVideoSource
+import su.afk.yummy.tv.feature.player.getPlayerDest
+
+@HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
+class DetailsViewModel @AssistedInject constructor(
+    @Assisted private val animeId: Int,
+    savedStateHandle: SavedStateHandle,
+    override val errorHandler: IErrorHandlerUseCase,
+    override val retryStorage: RetryStorage,
+    private val nav: NavigationManager,
+    private val detailsNavigator: IDetailsNavigator,
+    private val collectionNavigator: ICollectionNavigator,
+    private val playerNavigator: IPlayerNavigator,
+    private val getAnimeDetails: GetAnimeDetailsUseCase,
+    private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val libraryStore: LibraryStore,
+    private val watchProgressStore: WatchProgressStore,
+    private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
+    private val getAnimeCollections: GetAnimeCollectionsUseCase,
+    private val getAnimeListState: GetAnimeListStateUseCase,
+    private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
+    private val setAnimeFavorite: SetAnimeFavoriteUseCase,
+    private val setAnimeList: SetAnimeListUseCase,
+    private val removeAnimeList: RemoveAnimeListUseCase,
+    private val setVideoSubscription: SetVideoSubscriptionUseCase,
+    private val stringProvider: StringProvider,
+) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(animeId: Int): DetailsViewModel
+    }
+
+    override fun createInitialState() = DetailsState.State()
+
+    private val preferredPlayerState = settingsStore.preferredPlayer.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = PreferredPlayer.NONE,
+    )
+    private val yaniUserIdState = settingsStore.yaniUserId.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = 0,
+    )
+    private var libraryMutationVersion = 0
+    private var favoriteMutationVersion = 0
+
+    init {
+        load()
+        libraryStore.observeIsInLibrary(animeId)
+            .onEach { inLibrary -> setState { copy(isInLibrary = inLibrary || (isSignedIn && libraryList != null)) } }
+            .launchIn(viewModelScope)
+        libraryStore.observeIsFavorite(animeId)
+            .onEach { favorite -> setState { copy(isFavorite = favorite || (isSignedIn && isFavorite)) } }
+            .launchIn(viewModelScope)
+        watchProgressStore.observeByAnimeId(animeId)
+            .map { entries -> entries.associateBy { it.episodeUrl } }
+            .flowOn(Dispatchers.Default)
+            .onEach { progress -> setState { copy(watchProgress = progress) } }
+            .launchIn(viewModelScope)
+        settingsStore.detailsButtonOrder
+            .onEach { order -> setState { copy(detailsButtonOrder = order) } }
+            .launchIn(viewModelScope)
+        yaniAuthPreferences.refreshToken
+            .onEach { token ->
+                setState {
+                    copy(
+                        isSignedIn = token.isNotBlank(),
+                        subscriptions = if (token.isBlank()) emptyList() else subscriptions,
+                        showSubscriptionsPicker = if (token.isBlank()) false else showSubscriptionsPicker,
+                    )
+                }
+                if (token.isNotBlank()) {
+                    refreshSubscriptions()
+                }
+            }
+            .launchIn(viewModelScope)
+        settingsStore.yaniUserId
+            .onEach { userId ->
+                if (userId > 0 && currentState.isSignedIn) {
+                    viewModelScope.launch { loadSubscriptions(userId) }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    override fun onEvent(event: DetailsState.Event) {
+        when (event) {
+            DetailsState.Event.BackSelected -> nav.back()
+            DetailsState.Event.RetrySelected -> load()
+            DetailsState.Event.WatchSelected -> onWatchSelected()
+            is DetailsState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
+            is DetailsState.Event.BalancerConfirmed -> {
+                setState { copy(pendingBalancerSelection = null) }
+                navigateToPlayer(event.video)
+            }
+            DetailsState.Event.BalancerPickerDismissed -> setState { copy(pendingBalancerSelection = null) }
+            DetailsState.Event.FullDetailsSelected -> nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
+            DetailsState.Event.EpisodesSelected -> nav.navigate(detailsNavigator.getEpisodesDest(animeId))
+            DetailsState.Event.TrailersSelected -> nav.navigate(detailsNavigator.getTrailersDest(animeId))
+            DetailsState.Event.SimilarSelected -> nav.navigate(detailsNavigator.getSimilarDest(animeId))
+            DetailsState.Event.ViewingOrderSelected -> nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
+            DetailsState.Event.ScreenshotsSelected -> nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
+            DetailsState.Event.RatingScreenSelected -> nav.navigate(detailsNavigator.getRatingDest(animeId))
+            DetailsState.Event.CollectionsSelected -> nav.navigate(detailsNavigator.getCollectionsDest(animeId))
+            DetailsState.Event.LibraryToggled -> viewModelScope.launch { toggleLibrary() }
+            DetailsState.Event.FavoriteToggled -> viewModelScope.launch { toggleFavorite() }
+            DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
+            is DetailsState.Event.LibraryListSelected -> viewModelScope.launch { addToLibrary(event.list) }
+            DetailsState.Event.PosterClicked -> setState { copy(showPosterFullscreen = true) }
+            DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
+            is DetailsState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            DetailsState.Event.SubscriptionsSelected -> setState { copy(showSubscriptionsPicker = true) }
+            DetailsState.Event.SubscriptionsDismissed -> setState { copy(showSubscriptionsPicker = false) }
+            is DetailsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
+        }
+    }
+
+    private suspend fun toggleLibrary() {
+        currentState.details ?: return
+        if (currentState.isInLibrary) {
+            libraryMutationVersion++
+            libraryStore.remove(animeId)
+            setState { copy(isInLibrary = false, libraryList = null) }
+            runCatching { removeAnimeList(animeId) }
+        } else {
+            setState { copy(showLibraryListPicker = true) }
+        }
+    }
+
+    private suspend fun addToLibrary(list: UserAnimeList) {
+        val details = currentState.details ?: return
+        libraryMutationVersion++
+        setState { copy(showLibraryListPicker = false, isInLibrary = true, libraryList = list) }
+        libraryStore.add(
+            LibraryEntry(
+                animeId = details.id,
+                title = details.title,
+                posterSmallUrl = details.poster?.small,
+                posterMediumUrl = details.poster?.medium,
+                posterBigUrl = details.poster?.big,
+                posterFullsizeUrl = details.poster?.fullsize,
+                posterMegaUrl = details.poster?.mega,
+                listId = list.id,
+                isFavorite = currentState.isFavorite,
+            )
+        )
+        runCatching { setAnimeList(animeId, list) }
+    }
+
+    private suspend fun toggleFavorite() {
+        val details = currentState.details ?: return
+        val wasFavorite = currentState.isFavorite
+        val nextFavorite = !wasFavorite
+        favoriteMutationVersion++
+        setState { copy(isFavorite = nextFavorite) }
+        libraryStore.setFavorite(
+            animeId = details.id,
+            title = details.title,
+            poster = details.poster?.toLibraryPoster(),
+            favorite = nextFavorite,
+        )
+        if (!currentState.isSignedIn) return
+
+        val result = runCatching { setAnimeFavorite(animeId, nextFavorite) }
+        if (result.isFailure) {
+            setState { copy(isFavorite = wasFavorite) }
+            libraryStore.setFavorite(
+                animeId = details.id,
+                title = details.title,
+                poster = details.poster?.toLibraryPoster(),
+                favorite = wasFavorite,
+            )
+        }
+    }
+
+    private fun load() {
+        viewModelScope.launch { loadDetails() }
+        viewModelScope.launch { loadExtras() }
+    }
+
+    private suspend fun loadExtras() {
+        val libraryVersion = libraryMutationVersion
+        val favoriteVersion = favoriteMutationVersion
+        runCatching { getAnimeCollections(animeId) }
+            .onSuccess { setState { copy(collections = it) } }
+        runCatching { getAnimeListState(animeId) }
+            .onSuccess {
+                setState {
+                    var next = this
+                    if (libraryVersion == libraryMutationVersion) {
+                        next = next.copy(
+                            isInLibrary = isInLibrary || it?.list != null,
+                            libraryList = it?.list,
+                        )
+                    }
+                    if (favoriteVersion == favoriteMutationVersion) {
+                        next = next.copy(isFavorite = isFavorite || it?.isFavorite == true)
+                    }
+                    next
+                }
+            }
+    }
+
+    private fun refreshSubscriptions() {
+        val userId = yaniUserIdState.value
+        if (userId <= 0) return
+        viewModelScope.launch { loadSubscriptions(userId) }
+    }
+
+    private suspend fun loadDetails() {
+        setState { copy(isLoading = true, error = null) }
+        runCatching { getAnimeDetails(animeId) }.fold(
+            onSuccess = { details ->
+                setState { copy(isLoading = false, details = details) }
+                libraryStore.refreshMetadata(
+                    animeId = details.id,
+                    title = details.title,
+                    poster = details.poster?.toLibraryPoster(),
+                )
+                loadVideos()
+            },
+            onFailure = { e ->
+                setState {
+                    copy(
+                        isLoading = false,
+                        error = e.message ?: stringProvider.get(R.string.details_load_error),
+                    )
+                }
+            },
+        )
+    }
+
+    private suspend fun loadVideos() {
+        setState { copy(videosState = VideosUiState.Loading) }
+        runCatching { getAnimeVideos(animeId) }.fold(
+            onSuccess = { videos ->
+                setState {
+                    copy(
+                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos),
+                        subscriptions = videos.toSubscriptionOptions(optimisticKeys = subscriptions.subscribedKeys()),
+                    )
+                }
+                refreshSubscriptions()
+                if (currentState.isWatchLaunchPending) {
+                    openInitialVideo(videos)
+                }
+            },
+            onFailure = { setState { copy(videosState = VideosUiState.Empty, isWatchLaunchPending = false) } },
+        )
+    }
+
+    private fun isSupportedPlayer(iframeUrl: String): Boolean =
+        iframeUrl.contains("kodik", ignoreCase = true) ||
+        iframeUrl.contains("aksor.tv", ignoreCase = true) ||
+        iframeUrl.contains("iframeCVH", ignoreCase = true) ||
+        iframeUrl.contains("alloha", ignoreCase = true)
+
+    private fun matchesPreferredPlayer(iframeUrl: String, preferred: PreferredPlayer): Boolean =
+        when (preferred) {
+            PreferredPlayer.NONE -> false
+            PreferredPlayer.KODIK -> iframeUrl.contains("kodik", ignoreCase = true)
+            PreferredPlayer.AKSOR -> iframeUrl.contains("aksor.tv", ignoreCase = true)
+            PreferredPlayer.ALLOHA -> iframeUrl.contains("alloha", ignoreCase = true)
+            PreferredPlayer.CVH -> iframeUrl.contains("iframeCVH", ignoreCase = true)
+        }
+
+    private fun onWatchSelected() {
+        when (val videosState = currentState.videosState) {
+            is VideosUiState.Content -> openInitialVideo(videosState.videos)
+            VideosUiState.Empty -> {
+                setState { copy(isWatchLaunchPending = true) }
+                viewModelScope.launch { loadVideos() }
+            }
+            VideosUiState.Loading -> setState { copy(isWatchLaunchPending = true) }
+        }
+    }
+
+    private fun openInitialVideo(videos: List<AnimeVideo>) {
+        val video = selectInitialVideo(videos)
+        setState { copy(isWatchLaunchPending = false) }
+        if (video != null) {
+            showBalancerPicker(video)
+        }
+    }
+
+    private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
+        val resumeEntry = currentState.watchProgress.values
+            .filter { it.animeId == animeId && it.positionMs > 0 }
+            .maxByOrNull { it.updatedAt }
+        val resumeVideo = resumeEntry?.let { entry ->
+            videos.firstOrNull { it.iframeUrl == entry.episodeUrl }
+        }
+        if (resumeVideo != null) return resumeVideo
+
+        val kodikVideos = videos.filter {
+            it.player.contains("kodik", ignoreCase = true) || it.iframeUrl.contains("kodik", ignoreCase = true)
+        }
+        val supportedVideos = videos.filter { isSupportedPlayer(it.iframeUrl) }
+        val source = kodikVideos.ifEmpty { supportedVideos.ifEmpty { videos } }
+        return source.groupBy { it.dubbing }
+            .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
+            ?.value
+            ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
+            ?: source.firstOrNull()
+    }
+
+    private suspend fun loadSubscriptions(userId: Int) {
+        val videos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        setState { copy(isSubscriptionsLoading = true) }
+        runCatching { getVideoSubscriptions(userId) }.fold(
+            onSuccess = { subscriptions ->
+                if (!currentState.isSignedIn) {
+                    setState { copy(isSubscriptionsLoading = false, subscriptions = emptyList()) }
+                    return@fold
+                }
+                val details = currentState.details
+                val animeSubscriptions = subscriptions
+                    .filter { it.matchesCurrentAnime(requestedAnimeId = animeId, details = details) }
+                setState {
+                    copy(
+                        isSubscriptionsLoading = false,
+                        subscriptions = videos.toSubscriptionOptions(
+                            remoteSubscriptions = animeSubscriptions,
+                            optimisticKeys = this.subscriptions.subscribedKeys(),
+                        ),
+                    )
+                }
+            },
+            onFailure = { setState { copy(isSubscriptionsLoading = false) } },
+        )
+    }
+
+    private fun toggleSubscription(key: String) {
+        if (!currentState.isSignedIn) return
+        val option = currentState.subscriptions.firstOrNull { it.key == key } ?: return
+        val wasSubscribed = option.isSubscribed
+        setSubscriptionState(key, !wasSubscribed)
+        viewModelScope.launch {
+            val result = runCatching { setVideoSubscription(option.representativeVideoId, !wasSubscribed) }
+            if (result.isFailure) {
+                setSubscriptionState(key, wasSubscribed)
+            } else {
+                delay(SUBSCRIPTION_REFRESH_DELAY_MS)
+                refreshSubscriptions()
+            }
+        }
+    }
+
+    private fun setSubscriptionState(key: String, subscribed: Boolean) {
+        setState {
+            copy(
+                subscriptions = subscriptions.map {
+                    if (it.key == key) it.copy(isSubscribed = subscribed) else it
+                }
+            )
+        }
+    }
+
+    private fun showBalancerPicker(video: AnimeVideo) {
+        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        val options = allVideos
+            .filter { it.episode == video.episode }
+            .groupBy { it.player }
+            .entries
+            .map { (playerName, playerVideos) ->
+                val supported = isSupportedPlayer(playerVideos.first().iframeUrl)
+                val rep = playerVideos.firstOrNull { it.dubbing == video.dubbing }
+                    ?: playerVideos.maxByOrNull { it.views ?: 0 }
+                    ?: playerVideos.first()
+                BalancerOption(playerName = playerName, video = rep, isSupported = supported)
+            }
+        val supportedOptions = options.filter { it.isSupported }
+
+        val preferredPlayer = preferredPlayerState.value
+        if (preferredPlayer != PreferredPlayer.NONE) {
+            val preferred = supportedOptions.firstOrNull { matchesPreferredPlayer(it.video.iframeUrl, preferredPlayer) }
+            if (preferred != null) {
+                navigateToPlayer(preferred.video)
+                return
+            }
+        }
+
+        when (supportedOptions.size) {
+            0 -> navigateToPlayer(video)
+            1 -> navigateToPlayer(supportedOptions.first().video)
+            else -> setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
+        }
+    }
+
+    private fun navigateToPlayer(video: AnimeVideo) {
+        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        val details = currentState.details
+        viewModelScope.launch(Dispatchers.Default) {
+            val episodeScreenshots = details?.screenshots.orEmpty()
+
+            val destination = playerNavigator.getPlayerDest(
+                video = video.toPlayerVideoSource(),
+                allVideos = allVideos.map { it.toPlayerVideoSource() },
+                animeTitle = details?.title ?: "",
+                animeId = animeId,
+                posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
+                screenshotByEpisode = episodeScreenshots.mapNotNull { screenshot ->
+                    screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
+                }.toMap(),
+            )
+            withContext(Dispatchers.Main) { nav.navigate(destination) }
+        }
+    }
+}
+
+private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
+    id = id,
+    episode = episode,
+    dubbing = dubbing,
+    player = player,
+    iframeUrl = iframeUrl,
+    views = views,
+    skips = skips.toPlayerSkips(),
+)
