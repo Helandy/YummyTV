@@ -8,10 +8,10 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 
-enum class TopBarFocusTarget {
+enum class MainMenuFocusTarget {
     SETTINGS_ACTION,
     SELECTED_TAB,
-    TRAILING_ACTION,
+    ACCOUNT_ACTION,
 }
 
 class NavigationManager(
@@ -21,7 +21,7 @@ class NavigationManager(
     var currentTab: SideTab by mutableStateOf(initialTab)
         private set
 
-    var pendingTopBarFocusTarget: TopBarFocusTarget? by mutableStateOf(null)
+    var pendingMainMenuFocusTarget: MainMenuFocusTarget? by mutableStateOf(null)
         private set
 
     private var stacks: Map<SideTab, MutableList<NavKey>> by mutableStateOf(
@@ -69,12 +69,12 @@ class NavigationManager(
         backStack += dest
     }
 
-    fun requestTopBarFocus(target: TopBarFocusTarget) {
-        pendingTopBarFocusTarget = target
+    fun requestMainMenuFocus(target: MainMenuFocusTarget) {
+        pendingMainMenuFocusTarget = target
     }
 
-    fun clearTopBarFocusRequest(target: TopBarFocusTarget?) {
-        if (pendingTopBarFocusTarget == target) pendingTopBarFocusTarget = null
+    fun clearMainMenuFocusRequest(target: MainMenuFocusTarget?) {
+        if (pendingMainMenuFocusTarget == target) pendingMainMenuFocusTarget = null
     }
 
     fun replace(dest: NavKey) {

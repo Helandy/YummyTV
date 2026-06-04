@@ -66,7 +66,7 @@ internal fun LibraryGrid(
     val posterQuality = LocalPosterQuality.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var gridHasFocus by remember { mutableStateOf(false) }
-    var restoringFromTopBar by remember { mutableStateOf(false) }
+    var restoringFromMainMenu by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingDeletedItemId by remember { mutableStateOf<Int?>(null) }
@@ -165,8 +165,8 @@ internal fun LibraryGrid(
             .focusRequester(gridFocusRequester)
             .focusProperties {
                 onEnter = {
-                    restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
-                    requestItemFocus(if (restoringFromTopBar) 0 else lastFocusedIndex)
+                    restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
+                    requestItemFocus(if (restoringFromMainMenu) 0 else lastFocusedIndex)
                 }
             }
             .onFocusChanged { state ->
@@ -174,18 +174,18 @@ internal fun LibraryGrid(
                 gridHasFocus = state.hasFocus
                 if (!state.hasFocus) {
                     isRestoringFocus = false
-                    restoringFromTopBar = false
+                    restoringFromMainMenu = false
                 }
                 if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
                     isRestoringFocus = true
                     scope.launch {
-                        val target = if (restoringFromTopBar) 0 else lastFocusedIndex.coerceIn(0, items.lastIndex)
+                        val target = if (restoringFromMainMenu) 0 else lastFocusedIndex.coerceIn(0, items.lastIndex)
                         gridState.scrollToItem(target)
                         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
                             .first { it }
                         runCatching { focusRequesters[target].requestFocus() }
                         isRestoringFocus = false
-                        restoringFromTopBar = false
+                        restoringFromMainMenu = false
                     }
                 }
             }

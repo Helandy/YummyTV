@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 
 @Composable
 internal fun LibrarySidePanelItem(
@@ -33,15 +33,16 @@ internal fun LibrarySidePanelItem(
     downFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
 ) {
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val shape = RoundedCornerShape(8.dp)
     Box(
         modifier = Modifier
             .width(if (expanded) 136.dp else 40.dp)
             .focusRequester(focusRequester)
             .focusProperties {
+                mainMenuFocusRequester?.let { left = it }
                 right = contentFocusRequester
-                (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                upFocusRequester?.let { up = it }
                 downFocusRequester?.let { down = it }
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }

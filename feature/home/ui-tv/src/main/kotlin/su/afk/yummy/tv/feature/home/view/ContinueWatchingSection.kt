@@ -35,7 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.feature.home.R
 
@@ -56,7 +56,7 @@ internal fun ContinueWatchingSection(
     val scope = rememberCoroutineScope()
     val rowHasFocus = remember { mutableStateOf(false) }
     val isRestoring = remember { mutableStateOf(false) }
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
     var handledRestoreFirstItemToken by rememberSaveable { mutableIntStateOf(0) }
@@ -95,7 +95,8 @@ internal fun ContinueWatchingSection(
             modifier = Modifier
                 .then(if (rowFocusRequester != null) Modifier.focusRequester(rowFocusRequester) else Modifier)
                 .focusProperties {
-                    (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                    upFocusRequester?.let { up = it }
+                    mainMenuFocusRequester?.let { left = it }
                     downFocusRequester?.let { down = it }
                 }
                 .onFocusChanged { state ->
@@ -119,7 +120,14 @@ internal fun ContinueWatchingSection(
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
-                        Key.DirectionLeft -> lastFocusedIndex <= 0
+                        Key.DirectionLeft -> {
+                            if (lastFocusedIndex <= 0) {
+                                mainMenuFocusRequester?.requestFocus()
+                                mainMenuFocusRequester != null
+                            } else {
+                                false
+                            }
+                        }
                         Key.DirectionRight -> lastFocusedIndex >= items.lastIndex
                         Key.DirectionUp -> {
                             onMoveUp?.invoke()
@@ -145,7 +153,7 @@ internal fun ContinueWatchingSection(
                         onItemSelected(entry)
                     },
                     modifier = Modifier.focusRequester(focusRequesters[index]),
-                    upFocusRequester = upFocusRequester ?: topBarFocusRequester,
+                    upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,
                 )
             }

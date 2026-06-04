@@ -45,7 +45,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
@@ -71,7 +70,6 @@ internal fun Top100Content(
 ) {
     val gridState = rememberLazyGridState()
     val gridFocusRequester = remember { FocusRequester() }
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
@@ -144,7 +142,7 @@ internal fun Top100Content(
             .background(MaterialTheme.colorScheme.background)
             .focusProperties {
                 onEnter = {
-                    if (requestedFocusDirection == FocusDirection.Down) {
+                    if (requestedFocusDirection == FocusDirection.Right) {
                         requestCardFocus(0)
                     } else {
                         requestLastFocusedCard()
@@ -241,10 +239,7 @@ internal fun Top100Content(
                                             }
                                             true
                                         }
-                                        event.key == Key.DirectionUp -> {
-                                            runCatching { topBarFocusRequester?.requestFocus() }
-                                            true
-                                        }
+                                        event.key == Key.DirectionUp -> false
                                         else -> true
                                     }
                                 }

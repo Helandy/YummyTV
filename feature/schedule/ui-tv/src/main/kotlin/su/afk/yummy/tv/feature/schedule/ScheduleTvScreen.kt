@@ -65,8 +65,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleItem
 import java.time.Duration
@@ -132,7 +132,7 @@ private fun ScheduleContent(
     val listState = rememberLazyListState()
     val releaseFocusRequesters = remember { mutableStateMapOf<String, FocusRequester>() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val preferredContentFocusRequester =
         focusedReleaseKey?.let { releaseFocusRequesters[it] } ?: selectedChipFocusRequester
 
@@ -180,7 +180,7 @@ private fun ScheduleContent(
             selectedEpochDay = selectedEpochDay,
             selectedFocusRequester = selectedChipFocusRequester,
             downFocusRequester = listFocusRequester,
-            upFocusRequester = topBarFocusRequester,
+            leftFocusRequester = mainMenuFocusRequester,
             onSelected = { selectedEpochDay = it },
         )
 
@@ -189,7 +189,10 @@ private fun ScheduleContent(
             modifier = Modifier
                 .fillMaxSize()
                 .focusRequester(listFocusRequester)
-                .focusProperties { up = selectedChipFocusRequester },
+                .focusProperties {
+                    mainMenuFocusRequester?.let { left = it }
+                    up = selectedChipFocusRequester
+                },
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -212,6 +215,7 @@ private fun ScheduleContent(
                     now = now,
                     zone = zone,
                     focusRequester = releaseFocusRequester,
+                    leftFocusRequester = mainMenuFocusRequester,
                     upFocusRequester = if (index == 0) selectedChipFocusRequester else null,
                     onFocused = {
                         focusedReleaseKey = releaseKey
@@ -234,7 +238,7 @@ private fun ScheduleDateChips(
     selectedEpochDay: Long,
     selectedFocusRequester: FocusRequester,
     downFocusRequester: FocusRequester,
-    upFocusRequester: FocusRequester?,
+    leftFocusRequester: FocusRequester?,
     onSelected: (Long) -> Unit,
 ) {
     LazyRow(
@@ -248,7 +252,7 @@ private fun ScheduleDateChips(
                 selected = selected,
                 focusRequester = if (selected) selectedFocusRequester else null,
                 downFocusRequester = downFocusRequester,
-                upFocusRequester = upFocusRequester,
+                leftFocusRequester = leftFocusRequester,
                 onSelected = { onSelected(group.date.toEpochDay()) },
             )
         }
@@ -261,7 +265,7 @@ private fun ScheduleDateChip(
     selected: Boolean,
     focusRequester: FocusRequester?,
     downFocusRequester: FocusRequester,
-    upFocusRequester: FocusRequester?,
+    leftFocusRequester: FocusRequester?,
     onSelected: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -285,7 +289,7 @@ private fun ScheduleDateChip(
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .focusProperties {
                 down = downFocusRequester
-                upFocusRequester?.let { up = it }
+                leftFocusRequester?.let { left = it }
             }
             .onFocusChanged { if (it.isFocused) onSelected() }
             .clip(shape)
@@ -344,6 +348,7 @@ private fun ScheduleReleaseRow(
     now: ZonedDateTime,
     zone: ZoneId,
     focusRequester: FocusRequester,
+    leftFocusRequester: FocusRequester?,
     upFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
     onClick: () -> Unit,
@@ -376,6 +381,7 @@ private fun ScheduleReleaseRow(
             .zIndex(if (focused) 1f else 0f)
             .focusRequester(focusRequester)
             .focusProperties {
+                leftFocusRequester?.let { left = it }
                 upFocusRequester?.let { up = it }
             }
             .onFocusChanged { if (it.isFocused) onFocused() }

@@ -68,7 +68,7 @@ internal fun ContinueWatchingGrid(
     val focusRequesters = remember(entryIds) { List(entries.size) { FocusRequester() } }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var gridHasFocus by remember { mutableStateOf(false) }
-    var restoringFromTopBar by remember { mutableStateOf(false) }
+    var restoringFromMainMenu by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingDeletedEntryId by remember { mutableStateOf<Int?>(null) }
@@ -167,8 +167,8 @@ internal fun ContinueWatchingGrid(
             .focusRequester(gridFocusRequester)
             .focusProperties {
                 onEnter = {
-                    restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
-                    requestEntryFocus(if (restoringFromTopBar) 0 else lastFocusedIndex)
+                    restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
+                    requestEntryFocus(if (restoringFromMainMenu) 0 else lastFocusedIndex)
                 }
             }
             .onFocusChanged { state ->
@@ -176,18 +176,18 @@ internal fun ContinueWatchingGrid(
                 gridHasFocus = state.hasFocus
                 if (!state.hasFocus) {
                     isRestoringFocus = false
-                    restoringFromTopBar = false
+                    restoringFromMainMenu = false
                 }
                 if (state.hasFocus && !hadFocus && entries.isNotEmpty()) {
                     isRestoringFocus = true
                     scope.launch {
-                        val target = if (restoringFromTopBar) 0 else lastFocusedIndex.coerceIn(0, entries.lastIndex)
+                        val target = if (restoringFromMainMenu) 0 else lastFocusedIndex.coerceIn(0, entries.lastIndex)
                         gridState.scrollToItem(target)
                         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
                             .first { it }
                         runCatching { focusRequesters[target].requestFocus() }
                         isRestoringFocus = false
-                        restoringFromTopBar = false
+                        restoringFromMainMenu = false
                     }
                 }
             }

@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 import su.afk.yummy.tv.feature.top100.R
 
@@ -138,7 +138,7 @@ private fun SidePanelItem(
     downFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
 ) {
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val shape = RoundedCornerShape(8.dp)
 
     Box(
@@ -147,7 +147,8 @@ private fun SidePanelItem(
             .focusRequester(focusRequester)
             .focusProperties {
                 right = contentFocusRequester
-                (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                mainMenuFocusRequester?.let { left = it }
+                upFocusRequester?.let { up = it }
                 downFocusRequester?.let { down = it }
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }

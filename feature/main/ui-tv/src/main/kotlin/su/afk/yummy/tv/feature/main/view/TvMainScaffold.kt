@@ -1,8 +1,9 @@
 package su.afk.yummy.tv.feature.main.view
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,8 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -54,12 +56,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
-import su.afk.yummy.tv.core.navigation.TopBarFocusTarget
+import su.afk.yummy.tv.core.navigation.MainMenuFocusTarget
 import su.afk.yummy.tv.feature.main.R
+
+private val SideMenuCollapsedWidth = 84.dp
+private val SideMenuExpandedWidth = 300.dp
+private val SideMenuItemHeight = 56.dp
+private val SideMenuShape = RoundedCornerShape(8.dp)
 
 data class TvMenuItem<T>(
     @param:StringRes val titleRes: Int,
@@ -77,52 +83,46 @@ fun <T> TvMainScaffold(
     accountAvatarUrl: String = "",
     unreadNotificationsCount: Int = 0,
     onAccountClick: () -> Unit = {},
-    showTopBar: Boolean = true,
-    requestedTopBarFocusTarget: TopBarFocusTarget? = null,
-    onTopBarFocusRequestHandled: (TopBarFocusTarget?) -> Unit = {},
+    showMainMenu: Boolean = true,
+    requestedMainMenuFocusTarget: MainMenuFocusTarget? = null,
+    onMainMenuFocusRequestHandled: (MainMenuFocusTarget?) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val topBarFocusRequester = remember { FocusRequester() }
+    val mainMenuFocusRequester = remember { FocusRequester() }
     val settingsFocusRequester = remember { FocusRequester() }
     val accountFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
     var preferredContentFocusRequester by remember { mutableStateOf<FocusRequester?>(null) }
     var hasInitialisedFocus by remember { mutableStateOf(false) }
-    var topBarHasFocus by remember { mutableStateOf(false) }
+    var mainMenuHasFocus by remember { mutableStateOf(false) }
     var skipNextContentRedirect by remember { mutableStateOf(false) }
-    val topBarDownFocusRequester = preferredContentFocusRequester ?: contentFocusRequester
+    val mainMenuRightFocusRequester = preferredContentFocusRequester ?: contentFocusRequester
 
-    // The top bar is removed from composition while a nested screen (e.g. details) is open
-    // and re-added on the way back. On the very first launch we hand focus to the top bar.
-    // On every return-to-root, Compose's built-in focus recovery sometimes lands on the top
-    // bar (settings) instead of the content. Watch for that for a short window after the
-    // return and pull focus back into the content so the screen can restore its card. We only
-    // act while focus is actually on the top bar, so a correct content focus is never disturbed.
-    LaunchedEffect(showTopBar, requestedTopBarFocusTarget) {
-        if (!showTopBar) return@LaunchedEffect
-        when (requestedTopBarFocusTarget) {
-            TopBarFocusTarget.SETTINGS_ACTION -> {
+    LaunchedEffect(showMainMenu, requestedMainMenuFocusTarget) {
+        if (!showMainMenu) return@LaunchedEffect
+        when (requestedMainMenuFocusTarget) {
+            MainMenuFocusTarget.SETTINGS_ACTION -> {
                 hasInitialisedFocus = true
                 skipNextContentRedirect = true
                 kotlinx.coroutines.delay(40)
                 runCatching { settingsFocusRequester.requestFocus() }
-                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                onMainMenuFocusRequestHandled(requestedMainMenuFocusTarget)
                 return@LaunchedEffect
             }
-            TopBarFocusTarget.TRAILING_ACTION -> {
+            MainMenuFocusTarget.ACCOUNT_ACTION -> {
                 hasInitialisedFocus = true
                 skipNextContentRedirect = true
                 kotlinx.coroutines.delay(40)
                 runCatching { accountFocusRequester.requestFocus() }
-                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                onMainMenuFocusRequestHandled(requestedMainMenuFocusTarget)
                 return@LaunchedEffect
             }
-            TopBarFocusTarget.SELECTED_TAB -> {
+            MainMenuFocusTarget.SELECTED_TAB -> {
                 hasInitialisedFocus = true
                 skipNextContentRedirect = true
                 kotlinx.coroutines.delay(40)
-                runCatching { topBarFocusRequester.requestFocus() }
-                onTopBarFocusRequestHandled(requestedTopBarFocusTarget)
+                runCatching { mainMenuFocusRequester.requestFocus() }
+                onMainMenuFocusRequestHandled(requestedMainMenuFocusTarget)
                 return@LaunchedEffect
             }
             null -> Unit
@@ -130,7 +130,7 @@ fun <T> TvMainScaffold(
 
         if (!hasInitialisedFocus) {
             hasInitialisedFocus = true
-            runCatching { topBarFocusRequester.requestFocus() }
+            runCatching { mainMenuRightFocusRequester.requestFocus() }
         } else if (skipNextContentRedirect) {
             skipNextContentRedirect = false
         } else {
@@ -139,7 +139,7 @@ fun <T> TvMainScaffold(
             var redirected = false
             while (attempts < 40) {
                 kotlinx.coroutines.delay(20)
-                if (topBarHasFocus) {
+                if (mainMenuHasFocus) {
                     runCatching { contentFocusRequester.requestFocus() }
                     redirected = true
                 } else if (redirected) {
@@ -151,17 +151,28 @@ fun <T> TvMainScaffold(
     }
 
     CompositionLocalProvider(
-        LocalTopBarFocusRequester provides topBarFocusRequester,
+        LocalMainMenuFocusRequester provides mainMenuFocusRequester,
         LocalContentFocusRequester provides contentFocusRequester,
         LocalPreferredContentFocusRequester provides { preferredContentFocusRequester = it },
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            if (showTopBar) {
-                TvTopBar(
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = if (showMainMenu) SideMenuCollapsedWidth else 0.dp)
+                    .focusRequester(contentFocusRequester)
+                    .focusProperties { left = mainMenuFocusRequester }
+                    .focusGroup(),
+            ) {
+                content()
+            }
+
+            if (showMainMenu) {
+                TvSideMenu(
                     selectedDestination = selectedDestination,
                     menuItems = menuItems,
                     onDestinationSelected = onDestinationSelected,
@@ -171,19 +182,11 @@ fun <T> TvMainScaffold(
                     unreadNotificationsCount = unreadNotificationsCount,
                     onAccountClick = onAccountClick,
                     settingsFocusRequester = settingsFocusRequester,
-                    selectedTabFocusRequester = topBarFocusRequester,
+                    selectedTabFocusRequester = mainMenuFocusRequester,
                     accountFocusRequester = accountFocusRequester,
-                    downFocusRequester = topBarDownFocusRequester,
-                    onFocusChanged = { topBarHasFocus = it },
+                    rightFocusRequester = mainMenuRightFocusRequester,
+                    onFocusChanged = { mainMenuHasFocus = it },
                 )
-            }
-            Box(
-                modifier = Modifier
-                    .focusRequester(contentFocusRequester)
-                    .focusProperties { up = topBarFocusRequester }
-                    .focusGroup(),
-            ) {
-                content()
             }
         }
     }
@@ -191,7 +194,7 @@ fun <T> TvMainScaffold(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun <T> TvTopBar(
+private fun <T> TvSideMenu(
     selectedDestination: T,
     menuItems: List<TvMenuItem<T>>,
     onDestinationSelected: (T) -> Unit,
@@ -203,212 +206,180 @@ private fun <T> TvTopBar(
     settingsFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     accountFocusRequester: FocusRequester,
-    downFocusRequester: FocusRequester,
+    rightFocusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
 ) {
-    val initialFocusRequester = selectedTabFocusRequester
+    var hasFocus by remember { mutableStateOf(false) }
+    val menuWidth by animateDpAsState(
+        targetValue = if (hasFocus) SideMenuExpandedWidth else SideMenuCollapsedWidth,
+        animationSpec = tween(durationMillis = 180),
+        label = "TvSideMenuWidth",
+    )
+    val backgroundColor = MaterialTheme.colorScheme.background
 
-    Row(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .onFocusChanged { onFocusChanged(it.hasFocus) }
+            .width(menuWidth)
+            .fillMaxHeight()
+            .clipToBounds()
+            .background(backgroundColor)
+            .onFocusChanged {
+                hasFocus = it.hasFocus
+                onFocusChanged(it.hasFocus)
+            }
             .focusGroup()
             .focusProperties { onEnter = { selectedTabFocusRequester.requestFocus() } }
-            .padding(horizontal = TvScreenPadding.Horizontal, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = 14.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TvSettingsButton(
-            focusRequester = settingsFocusRequester,
-            downFocusRequester = downFocusRequester,
-            onClick = onSettingsClick,
-        )
-
-        Row(
-            modifier = Modifier.weight(1f).focusGroup(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            menuItems.forEach { item ->
-                val isSelected = item.destination == selectedDestination
-                TvNavTab(
-                    label = stringResource(item.titleRes),
-                    icon = item.icon,
-                    selected = isSelected,
-                    onSelected = { onDestinationSelected(item.destination) },
-                    focusRequester = if (isSelected) initialFocusRequester else null,
-                    downFocusRequester = downFocusRequester,
-                )
-            }
-        }
-
-        TvAccountButton(
+        TvSideMenuAccountItem(
             label = accountLabel?.ifBlank { null } ?: stringResource(R.string.main_account_sign_in),
             signedIn = !accountLabel.isNullOrBlank(),
             avatarUrl = accountAvatarUrl,
             unreadNotificationsCount = unreadNotificationsCount,
+            expanded = hasFocus,
             focusRequester = accountFocusRequester,
-            downFocusRequester = downFocusRequester,
+            rightFocusRequester = rightFocusRequester,
             onClick = onAccountClick,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        menuItems.forEach { item ->
+            val isSelected = item.destination == selectedDestination
+            TvSideMenuItem(
+                label = stringResource(item.titleRes),
+                icon = item.icon,
+                selected = isSelected,
+                expanded = hasFocus,
+                onSelected = { onDestinationSelected(item.destination) },
+                focusRequester = if (isSelected) selectedTabFocusRequester else null,
+                rightFocusRequester = rightFocusRequester,
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        TvSideMenuItem(
+            label = stringResource(R.string.main_settings_content_description),
+            icon = Icons.Default.Settings,
+            selected = false,
+            expanded = hasFocus,
+            onSelected = onSettingsClick,
+            focusRequester = settingsFocusRequester,
+            rightFocusRequester = rightFocusRequester,
+            selectOnFocus = false,
         )
     }
 }
 
 @Composable
-private fun TvNavTab(
+private fun TvSideMenuItem(
     label: String,
     icon: ImageVector?,
     selected: Boolean,
+    expanded: Boolean,
     onSelected: () -> Unit,
     focusRequester: FocusRequester?,
-    downFocusRequester: FocusRequester,
+    rightFocusRequester: FocusRequester,
+    selectOnFocus: Boolean = true,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-
-    val contentColor = when {
-        focused -> MaterialTheme.colorScheme.primary
-        selected -> MaterialTheme.colorScheme.onBackground
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val indicatorColor = when {
-        focused -> MaterialTheme.colorScheme.primary
-        selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+    val backgroundColor = when {
+        focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f)
+        selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f)
         else -> Color.Transparent
     }
-
+    val contentColor = when {
+        focused -> MaterialTheme.colorScheme.surface
+        selected -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
     val focusRequesterModifier = if (focusRequester != null) {
         Modifier.focusRequester(focusRequester)
     } else {
         Modifier
     }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Row(
         modifier = focusRequesterModifier
-            .moveFocusDownOnKey(downFocusRequester)
-            .focusProperties {
-                down = downFocusRequester
-            }
-            .onFocusChanged { if (it.isFocused) onSelected() }
-            .background(
-                color = if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
-                shape = RoundedCornerShape(8.dp),
-            )
+            .height(SideMenuItemHeight)
+            .width(SideMenuExpandedWidth - 28.dp)
+            .moveFocusRightOnKey(rightFocusRequester)
+            .focusProperties { right = rightFocusRequester }
+            .onFocusChanged { if (selectOnFocus && it.isFocused) onSelected() }
+            .clip(SideMenuShape)
+            .background(backgroundColor)
             .clickable(interactionSource = interactionSource, indication = null) { onSelected() }
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
             if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     tint = contentColor,
                 )
             }
+        }
+        if (expanded) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = if (focused) FontWeight.Bold else FontWeight.Normal,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = if (focused || selected) FontWeight.Bold else FontWeight.SemiBold,
                 color = contentColor,
+                maxLines = 1,
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .width(24.dp)
-                .height(2.dp)
-                .background(color = indicatorColor, shape = RoundedCornerShape(1.dp)),
-        )
     }
 }
 
 @Composable
-private fun TvSettingsButton(
-    focusRequester: FocusRequester,
-    downFocusRequester: FocusRequester,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
-
-    Box(
-        modifier = modifier
-            .focusRequester(focusRequester)
-            .size(44.dp)
-            .moveFocusDownOnKey(downFocusRequester)
-            .focusProperties {
-                down = downFocusRequester
-            }
-            .border(
-                width = if (focused) 2.dp else 0.dp,
-                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = CircleShape,
-            )
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = Icons.Default.Settings,
-            contentDescription = stringResource(R.string.main_settings_content_description),
-            modifier = Modifier.size(24.dp),
-            tint = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun TvAccountButton(
+private fun TvSideMenuAccountItem(
     label: String,
     signedIn: Boolean,
     avatarUrl: String,
     unreadNotificationsCount: Int,
+    expanded: Boolean,
     focusRequester: FocusRequester,
-    downFocusRequester: FocusRequester,
-    modifier: Modifier = Modifier,
+    rightFocusRequester: FocusRequester,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val shape = RoundedCornerShape(22.dp)
-    val background = when {
-        focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-        signedIn -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
-        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+    val backgroundColor = when {
+        focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f)
+        signedIn -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        else -> Color.Transparent
     }
-    val contentColor = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = if (focused) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
-        modifier = modifier
+        modifier = Modifier
             .focusRequester(focusRequester)
-            .moveFocusDownOnKey(downFocusRequester)
-            .focusProperties {
-                down = downFocusRequester
-            }
-            .border(
-                width = if (focused) 2.dp else 0.dp,
-                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = shape,
-            )
-            .background(background, shape)
+            .height(SideMenuItemHeight)
+            .width(SideMenuExpandedWidth - 28.dp)
+            .moveFocusRightOnKey(rightFocusRequester)
+            .focusProperties { right = rightFocusRequester }
+            .clip(SideMenuShape)
+            .background(backgroundColor)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(26.dp)) {
+        Box(modifier = Modifier.size(28.dp)) {
             if (signedIn && avatarUrl.isNotBlank()) {
                 AsyncImage(
                     model = avatarUrl,
                     contentDescription = stringResource(R.string.main_account_content_description),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(28.dp)
                         .align(Alignment.Center)
                         .clip(CircleShape),
                 )
@@ -416,7 +387,7 @@ private fun TvAccountButton(
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = stringResource(R.string.main_account_content_description),
-                    modifier = Modifier.size(24.dp).align(Alignment.Center),
+                    modifier = Modifier.size(28.dp).align(Alignment.Center),
                     tint = contentColor,
                 )
             }
@@ -437,20 +408,22 @@ private fun TvAccountButton(
                 }
             }
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (focused) FontWeight.Bold else FontWeight.SemiBold,
-            color = contentColor,
-            maxLines = 1,
-        )
+        if (expanded) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = if (focused) FontWeight.Bold else FontWeight.SemiBold,
+                color = contentColor,
+                maxLines = 1,
+            )
+        }
     }
 }
 
-private fun Modifier.moveFocusDownOnKey(focusRequester: FocusRequester): Modifier =
+private fun Modifier.moveFocusRightOnKey(focusRequester: FocusRequester): Modifier =
     onPreviewKeyEvent { event ->
-        if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
-            runCatching { focusRequester.requestFocus(FocusDirection.Down) }
+        if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight) {
+            runCatching { focusRequester.requestFocus(FocusDirection.Right) }
             true
         } else {
             false

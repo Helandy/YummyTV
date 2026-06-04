@@ -80,7 +80,7 @@ internal fun HomeContent(
     }.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
 
     var columnHasFocus by remember { mutableStateOf(false) }
-    var restoringFromTopBar by remember { mutableStateOf(false) }
+    var restoringFromMainMenu by remember { mutableStateOf(false) }
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
     var handledContinueWatchingRestoreToken by rememberSaveable { mutableIntStateOf(0) }
     val homeContentFocusRequester = remember { FocusRequester() }
@@ -139,7 +139,7 @@ internal fun HomeContent(
         }
     }
 
-    fun topBarEnterIndex(): Int = if (hasContinueWatching) 0 else focusedLazyIndex()
+    fun mainMenuEnterIndex(): Int = if (hasContinueWatching) 0 else focusedLazyIndex()
 
     fun previousRowFocusRequester(index: Int): FocusRequester? =
         when {
@@ -155,7 +155,7 @@ internal fun HomeContent(
 
     fun restoreFocusRequester(direction: FocusDirection): FocusRequester = when {
         totalLazyItems <= 0 -> FocusRequester.Default
-        direction == FocusDirection.Down -> focusRequesterForLazyIndex(topBarEnterIndex())
+        direction == FocusDirection.Right -> focusRequesterForLazyIndex(mainMenuEnterIndex())
         else -> focusRequesterForLazyIndex(focusedLazyIndex())
     }
 
@@ -202,11 +202,11 @@ internal fun HomeContent(
             .background(MaterialTheme.colorScheme.background)
             .focusProperties {
                 onEnter = {
-                    restoringFromTopBar = requestedFocusDirection == FocusDirection.Down
+                    restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
                     if (consumeContinueWatchingRestoreIfPending()) {
                         requestRowFocus(0)
-                    } else if (restoringFromTopBar) {
-                        requestRowFocus(topBarEnterIndex())
+                    } else if (restoringFromMainMenu) {
+                        requestRowFocus(mainMenuEnterIndex())
                     } else {
                         restoreFocusRequester(requestedFocusDirection).requestFocus()
                     }
@@ -218,7 +218,7 @@ internal fun HomeContent(
                 if (state.hasFocus && !hadFocus && totalLazyItems > 0) {
                     val target = when {
                         consumeContinueWatchingRestoreIfPending() -> 0
-                        restoringFromTopBar -> topBarEnterIndex()
+                        restoringFromMainMenu -> mainMenuEnterIndex()
                         focusedItemId != null -> focusedLazyIndex()
                         else -> lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
                     }
@@ -228,10 +228,10 @@ internal fun HomeContent(
                             lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
                         }.first { it }
                         runCatching { focusRequesterForLazyIndex(target).requestFocus() }
-                        restoringFromTopBar = false
+                        restoringFromMainMenu = false
                     }
                 } else if (!state.hasFocus) {
-                    restoringFromTopBar = false
+                    restoringFromMainMenu = false
                 }
             }
             .focusGroup(),

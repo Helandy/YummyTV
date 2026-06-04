@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -60,7 +60,7 @@ internal fun HomeSection(
     val scope = rememberCoroutineScope()
     val rowHasFocusState = remember { mutableStateOf(false) }
     val isRestoringFocusState = remember { mutableStateOf(false) }
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var lastFocusedIndex by rememberSaveable(title) { mutableIntStateOf(0) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
 
@@ -85,7 +85,8 @@ internal fun HomeSection(
             modifier = Modifier
                 .then(if (rowFocusRequester != null) Modifier.focusRequester(rowFocusRequester) else Modifier)
                 .focusProperties {
-                    (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                    upFocusRequester?.let { up = it }
+                    mainMenuFocusRequester?.let { left = it }
                     downFocusRequester?.let { down = it }
                 }
                 .onFocusChanged { state ->
@@ -112,7 +113,14 @@ internal fun HomeSection(
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
-                        Key.DirectionLeft -> lastFocusedIndex <= 0
+                        Key.DirectionLeft -> {
+                            if (lastFocusedIndex <= 0) {
+                                mainMenuFocusRequester?.requestFocus()
+                                mainMenuFocusRequester != null
+                            } else {
+                                false
+                            }
+                        }
                         Key.DirectionRight -> lastFocusedIndex >= items.lastIndex
                         Key.DirectionUp -> {
                             onMoveUp?.invoke()
@@ -145,7 +153,7 @@ internal fun HomeSection(
                     preview = if (item.id == focusedItemId) focusedPreview else null,
                     onClick = stableClick,
                     onFocused = wrappedOnFocused,
-                    upFocusRequester = upFocusRequester ?: topBarFocusRequester,
+                    upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,
                     focusedScale = focusedCardScale,
                 )

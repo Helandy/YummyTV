@@ -57,8 +57,8 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalTopBarFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -82,6 +82,7 @@ internal fun HomeCarousel(
     onMoveDown: (() -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
 
     if (items.size == 1) {
         val item = items[0]
@@ -97,6 +98,10 @@ internal fun HomeCarousel(
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
+                        Key.DirectionLeft -> {
+                            mainMenuFocusRequester?.requestFocus()
+                            mainMenuFocusRequester != null
+                        }
                         Key.DirectionUp -> {
                             onMoveUp?.invoke()
                             onMoveUp != null
@@ -214,8 +219,10 @@ internal fun HomeCarousel(
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
                                 onCarouselFocused()
                             }
+                        } else {
+                            mainMenuFocusRequester?.requestFocus()
                         }
-                        true // always consume — keep focus inside carousel
+                        true
                     }
                     Key.DirectionRight -> {
                         if (pagerState.currentPage < items.size - 1 && !pagerState.isScrollInProgress) {
@@ -283,7 +290,7 @@ private fun HeroBannerPage(
     modifier: Modifier = Modifier,
 ) {
     val posterQuality = LocalPosterQuality.current
-    val topBarFocusRequester = LocalTopBarFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val surfaceColor = MaterialTheme.colorScheme.surface
     var isFocused by remember { mutableStateOf(false) }
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -304,7 +311,8 @@ private fun HeroBannerPage(
             .background(surfaceColor)
             .focusRequester(focusRequester)
             .focusProperties {
-                (upFocusRequester ?: topBarFocusRequester)?.let { up = it }
+                upFocusRequester?.let { up = it }
+                mainMenuFocusRequester?.let { left = it }
                 downFocusRequester?.let { down = it }
             }
             .onFocusChanged {

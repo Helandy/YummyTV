@@ -91,9 +91,9 @@ class TvMainGraph @Inject constructor(
                         accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         unreadNotificationsCount = state.unreadNotificationsCount,
                         onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
-                        showTopBar = atTabRoot,
-                        requestedTopBarFocusTarget = navManager.pendingTopBarFocusTarget,
-                        onTopBarFocusRequestHandled = { navManager.clearTopBarFocusRequest(it) },
+                        showMainMenu = atTabRoot,
+                        requestedMainMenuFocusTarget = navManager.pendingMainMenuFocusTarget,
+                        onMainMenuFocusRequestHandled = { navManager.clearMainMenuFocusRequest(it) },
                     ) {
                         AppNavHost(
                             navManager = navManager,
