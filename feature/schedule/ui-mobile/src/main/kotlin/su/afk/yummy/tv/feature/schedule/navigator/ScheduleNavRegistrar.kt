@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.schedule.navigator
+package su.afk.yummy.tv.feature.schedule.mobile.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.schedule.ScheduleMobileScreen
 import su.afk.yummy.tv.feature.schedule.ScheduleViewModel
+import su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination
 import javax.inject.Inject
 
 class ScheduleNavRegistrar @Inject constructor() : NavRegistrar {

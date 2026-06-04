@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.account.navigator
+package su.afk.yummy.tv.feature.account.tv.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.account.AccountTvScreen
 import su.afk.yummy.tv.feature.account.AccountViewModel
+import su.afk.yummy.tv.feature.account.navigator.AccountDestination
 import javax.inject.Inject
 
 class AccountNavRegistrar @Inject constructor() : NavRegistrar {

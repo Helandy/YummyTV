@@ -39,16 +39,6 @@ android {
             isDebuggable = false
         }
     }
-    flavorDimensions += "target"
-    productFlavors {
-        create("tv") {
-            dimension = "target"
-        }
-        create("mobile") {
-            dimension = "target"
-            applicationIdSuffix = ".mobile"
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -62,8 +52,7 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
-            val fileName = "YummyTV-${variant.flavorName?.takeIf { it.isNotEmpty() }?.let { "$it-" } ?: ""}" +
-                "${output.versionName.orNull ?: "1.0"}-${variant.buildType}.apk"
+            val fileName = "YummyTV-${output.versionName.orNull ?: "1.0"}-${variant.buildType}.apk"
             (output as? com.android.build.api.variant.impl.VariantOutputImpl)?.outputFileName?.set(fileName)
         }
     }
@@ -73,38 +62,57 @@ dependencies {
     implementation(project(":feature:main:api"))
 
     implementation(project(":core:network"))
+    implementation(project(":core:navigation"))
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))
     implementation(project(":core:deeplink"))
     implementation(project(":core:tv-api"))
     implementation(project(":feature:details:data"))
+    implementation(project(":feature:details:api"))
     implementation(project(":feature:home:data"))
+    implementation(project(":feature:home:api"))
     implementation(project(":feature:top100:data"))
+    implementation(project(":feature:top100:api"))
     implementation(project(":feature:search:data"))
+    implementation(project(":feature:search:api"))
     implementation(project(":feature:collection:data"))
+    implementation(project(":feature:collection:api"))
     implementation(project(":feature:account:data"))
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:schedule:data"))
+    implementation(project(":feature:schedule:api"))
+    implementation(project(":feature:library:api"))
+    implementation(project(":feature:player:api"))
+    implementation(project(":feature:settings:api"))
 
     implementation(project(":feature:commonScreen:presenter"))
     implementation(project(":feature:home:domain"))
 
-    add("tvImplementation", project(":feature:main:ui-tv"))
-    add("tvImplementation", project(":core:tv"))
-    add("tvImplementation", libs.androidx.tvprovider)
-    add("tvImplementation", project(":feature:account:ui-tv"))
-    add("tvImplementation", project(":feature:details:ui-tv"))
-    add("tvImplementation", project(":feature:player:ui-tv"))
-    add("tvImplementation", project(":feature:settings:ui-tv"))
-    add("tvImplementation", project(":feature:collection:ui-tv"))
-    add("tvImplementation", project(":feature:schedule:ui-tv"))
+    implementation(project(":feature:main:ui-tv"))
+    implementation(project(":core:tv"))
+    implementation(libs.androidx.tvprovider)
+    implementation(project(":feature:account:ui-tv"))
+    implementation(project(":feature:details:ui-tv"))
+    implementation(project(":feature:player:ui-tv"))
+    implementation(project(":feature:settings:ui-tv"))
+    implementation(project(":feature:collection:ui-tv"))
+    implementation(project(":feature:schedule:ui-tv"))
+    implementation(project(":feature:home:ui-tv"))
+    implementation(project(":feature:search:ui-tv"))
+    implementation(project(":feature:top100:ui-tv"))
+    implementation(project(":feature:library:ui-tv"))
 
-    add("mobileImplementation", project(":feature:main:ui-mobile"))
-    add("mobileImplementation", project(":feature:account:ui-mobile"))
-    add("mobileImplementation", project(":feature:details:ui-mobile"))
-    add("mobileImplementation", project(":feature:player:ui-mobile"))
-    add("mobileImplementation", project(":feature:settings:ui-mobile"))
-    add("mobileImplementation", project(":feature:collection:ui-mobile"))
-    add("mobileImplementation", project(":feature:schedule:ui-mobile"))
+    implementation(project(":feature:main:ui-mobile"))
+    implementation(project(":feature:account:ui-mobile"))
+    implementation(project(":feature:details:ui-mobile"))
+    implementation(project(":feature:player:ui-mobile"))
+    implementation(project(":feature:settings:ui-mobile"))
+    implementation(project(":feature:collection:ui-mobile"))
+    implementation(project(":feature:schedule:ui-mobile"))
+    implementation(project(":feature:home:ui-mobile"))
+    implementation(project(":feature:search:ui-mobile"))
+    implementation(project(":feature:top100:ui-mobile"))
+    implementation(project(":feature:library:ui-mobile"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

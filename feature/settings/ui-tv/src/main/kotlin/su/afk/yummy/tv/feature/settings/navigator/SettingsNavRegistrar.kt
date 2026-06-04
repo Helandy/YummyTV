@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.settings.navigator
+package su.afk.yummy.tv.feature.settings.tv.navigator
 
 import androidx.compose.runtime.DisposableEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.settings.SettingsTvScreen
 import su.afk.yummy.tv.feature.settings.SettingsViewModel
+import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
 import javax.inject.Inject
 
 class SettingsNavRegistrar @Inject constructor() : NavRegistrar {

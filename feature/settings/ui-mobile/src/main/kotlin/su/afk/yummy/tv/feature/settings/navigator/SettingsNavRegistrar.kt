@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.settings.navigator
+package su.afk.yummy.tv.feature.settings.mobile.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.settings.SettingsMobileScreen
 import su.afk.yummy.tv.feature.settings.SettingsViewModel
+import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
 import javax.inject.Inject
 
 class SettingsNavRegistrar @Inject constructor() : NavRegistrar {

@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.details.navigator
+package su.afk.yummy.tv.feature.details.tv.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -14,6 +14,15 @@ import su.afk.yummy.tv.feature.details.episodes.EpisodesTvScreen
 import su.afk.yummy.tv.feature.details.episodes.EpisodesViewModel
 import su.afk.yummy.tv.feature.details.full.FullDetailsTvScreen
 import su.afk.yummy.tv.feature.details.full.FullDetailsViewModel
+import su.afk.yummy.tv.feature.details.navigator.DetailsCollectionsDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodesDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsFullDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsSimilarDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsTrailersDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsViewingOrderDestination
 import su.afk.yummy.tv.feature.details.rating.RatingTvScreen
 import su.afk.yummy.tv.feature.details.rating.RatingViewModel
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsTvScreen

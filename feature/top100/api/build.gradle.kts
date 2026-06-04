@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 android {
@@ -14,4 +15,5 @@ android {
 
 dependencies {
     api(libs.jetbrains.navigation3.ui)
+    api(libs.kotlinx.serialization.json)
 }

@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.home.navigator
+package su.afk.yummy.tv.feature.home.mobile.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.home.HomeMobileScreen
 import su.afk.yummy.tv.feature.home.HomeViewModel
+import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import javax.inject.Inject
 
 class HomeNavRegistrar @Inject constructor() : NavRegistrar {

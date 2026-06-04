@@ -39,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.AppNavHost
+import su.afk.yummy.tv.core.navigation.MobileUi
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.tab.SideTab
@@ -54,7 +55,8 @@ class MobileMainGraph @Inject constructor(
     private val navManager: NavigationManager,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
-    private val registrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
 
     private val items = listOf(
@@ -108,7 +110,7 @@ class MobileMainGraph @Inject constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
-                            registrars = registrars,
+                            registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

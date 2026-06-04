@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.search.navigator
+package su.afk.yummy.tv.feature.search.tv.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.search.SearchTvScreen
 import su.afk.yummy.tv.feature.search.SearchViewModel
+import su.afk.yummy.tv.feature.search.navigator.SearchDestination
 import javax.inject.Inject
 
 class SearchNavRegistrar @Inject constructor() : NavRegistrar {

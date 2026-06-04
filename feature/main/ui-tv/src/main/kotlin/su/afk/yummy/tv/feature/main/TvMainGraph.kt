@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.AppNavHost
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.navigation.TvUi
 import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.account.IAccountNavigator
@@ -39,7 +40,8 @@ class TvMainGraph @Inject constructor(
     private val navManager: NavigationManager,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
-    private val registrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    @param:TvUi private val tvRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
 
     private val menuItems = listOf(
@@ -97,7 +99,7 @@ class TvMainGraph @Inject constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
-                            registrars = registrars,
+                            registrars = commonRegistrars + tvRegistrars,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

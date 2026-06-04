@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.navigator
+package su.afk.yummy.tv.feature.player.tv.navigator
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.player.PlayerTvScreen
 import su.afk.yummy.tv.feature.player.PlayerViewModel
+import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import javax.inject.Inject
 
 class PlayerNavRegistrar @Inject constructor() : NavRegistrar {

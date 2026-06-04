@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.top100.navigator
+package su.afk.yummy.tv.feature.top100.mobile.navigator
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.top100.Top100MobileScreen
 import su.afk.yummy.tv.feature.top100.Top100ViewModel
+import su.afk.yummy.tv.feature.top100.navigator.Top100Destination
 import javax.inject.Inject
 
 class Top100NavRegistrar @Inject constructor() : NavRegistrar {
