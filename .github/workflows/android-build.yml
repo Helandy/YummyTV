@@ -42,7 +42,7 @@ jobs:
           sdkmanager --install "platforms;android-36"
 
       - name: Build debug APK
-        run: ./gradlew :app:assembleTvDebug :app:assembleMobileDebug --stacktrace
+        run: ./gradlew :app:assembleDebug --stacktrace
 
       - name: Build release APK
-        run: ./gradlew :app:assembleTvRelease :app:assembleMobileRelease --stacktrace
+        run: ./gradlew :app:assembleRelease --stacktrace

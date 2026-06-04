@@ -1,3 +1,5 @@
+@file:JvmName("MobileContinueWatchingSectionKt")
+
 package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.foundation.layout.Arrangement
