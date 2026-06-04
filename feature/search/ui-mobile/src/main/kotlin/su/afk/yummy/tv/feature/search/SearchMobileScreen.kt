@@ -13,10 +13,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileContentPosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
+import su.afk.yummy.tv.feature.search.mobile.R
 
 @Composable
 fun SearchMobileScreen(
@@ -30,11 +32,11 @@ fun SearchMobileScreen(
                 value = state.query,
                 onValueChange = { onEvent(SearchState.Event.QueryChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Поиск") },
+                label = { Text(stringResource(R.string.search_mobile_query)) },
                 singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = { onEvent(SearchState.Event.OpenFilters) }) {
-                        Text("Ф")
+                        Text(stringResource(R.string.search_mobile_filters_short))
                     }
                 },
             )
@@ -44,7 +46,7 @@ fun SearchMobileScreen(
                 onClick = { onEvent(SearchState.Event.SearchSubmitted) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Найти")
+                Text(stringResource(R.string.search_mobile_submit))
             }
         }
         val error = state.error
@@ -55,7 +57,7 @@ fun SearchMobileScreen(
         }
         if (state.isLoading && state.items.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Text("Загрузка...", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.search_mobile_loading), style = MaterialTheme.typography.bodyMedium)
             }
         }
         items(state.items, key = { it.id }) { item ->
@@ -72,7 +74,13 @@ fun SearchMobileScreen(
                     onClick = { onEvent(SearchState.Event.LoadMore) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (state.isLoading) "Загрузка..." else "Показать ещё")
+                    Text(
+                        if (state.isLoading) {
+                            stringResource(R.string.search_mobile_loading)
+                        } else {
+                            stringResource(R.string.search_mobile_load_more)
+                        },
+                    )
                 }
             }
         }
@@ -83,10 +91,10 @@ fun SearchMobileScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(onClick = { onEvent(SearchState.Event.ApplyFilters) }, modifier = Modifier.weight(1f)) {
-                        Text("Применить")
+                        Text(stringResource(R.string.search_mobile_apply))
                     }
                     Button(onClick = { onEvent(SearchState.Event.ResetFilters) }, modifier = Modifier.weight(1f)) {
-                        Text("Сбросить")
+                        Text(stringResource(R.string.search_mobile_reset))
                     }
                 }
             }

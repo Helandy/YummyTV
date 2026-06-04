@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_mobile_title">Настройки</string>
+    <string name="settings_mobile_theme">Тема</string>
+    <string name="settings_mobile_poster_quality">Качество постеров</string>
+    <string name="settings_mobile_watch_next">Watch Next</string>
+    <string name="settings_mobile_auto_skip">Автопропуск опенингов/эндингов</string>
+    <string name="settings_mobile_default_player">Плеер по умолчанию</string>
+    <string name="settings_mobile_preview_cache">Кэш превью</string>
+    <string name="settings_mobile_yani_token">Yani application token</string>
+</resources>

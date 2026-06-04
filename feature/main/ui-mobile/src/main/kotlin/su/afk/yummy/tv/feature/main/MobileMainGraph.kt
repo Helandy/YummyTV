@@ -32,7 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -46,6 +46,8 @@ import su.afk.yummy.tv.core.navigation.tab.SideTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.IMainGraph
+import su.afk.yummy.tv.feature.main.mobile.R
+import su.afk.yummy.tv.feature.main.model.MobileMenuItem
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -58,18 +60,16 @@ class MobileMainGraph @Inject constructor(
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
-
-    private val items = listOf(
-        MobileMenuItem("Поиск", SideTab.SEARCH, Icons.Default.Search),
-        MobileMenuItem("Главная", SideTab.HOME, Icons.Default.Home),
-        MobileMenuItem("Расписание", SideTab.SCHEDULE, Icons.Default.DateRange),
-        MobileMenuItem("Топ", SideTab.TOP100, Icons.Default.Star),
-        MobileMenuItem("Библиотека", SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
-    )
-
     @Composable
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
+        val items = listOf(
+            MobileMenuItem(stringResource(R.string.main_mobile_tab_search), SideTab.SEARCH, Icons.Default.Search),
+            MobileMenuItem(stringResource(R.string.main_mobile_tab_home), SideTab.HOME, Icons.Default.Home),
+            MobileMenuItem(stringResource(R.string.main_mobile_tab_schedule), SideTab.SCHEDULE, Icons.Default.DateRange),
+            MobileMenuItem(stringResource(R.string.main_mobile_tab_top), SideTab.TOP100, Icons.Default.Star),
+            MobileMenuItem(stringResource(R.string.main_mobile_tab_library), SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
+        )
         var savedTab by rememberSaveable { mutableStateOf(navManager.currentTab) }
         var restoredTab by remember { mutableStateOf(false) }
         val atTabRoot = navManager.backStack.size <= 1
@@ -119,12 +119,6 @@ class MobileMainGraph @Inject constructor(
         }
     }
 }
-
-private data class MobileMenuItem<T>(
-    val label: String,
-    val destination: T,
-    val icon: ImageVector,
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

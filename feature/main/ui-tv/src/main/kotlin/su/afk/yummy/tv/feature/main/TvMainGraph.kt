@@ -34,6 +34,7 @@ import su.afk.yummy.tv.feature.main.view.TvMenuItem
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
+import su.afk.yummy.tv.feature.main.R
 
 @Singleton
 class TvMainGraph @Inject constructor(

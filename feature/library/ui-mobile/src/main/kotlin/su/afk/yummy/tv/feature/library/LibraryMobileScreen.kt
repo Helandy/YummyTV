@@ -13,17 +13,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileContentPosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
+import su.afk.yummy.tv.feature.library.mobile.R
+import su.afk.yummy.tv.feature.library.utils.mobileTitle
 
 @Composable
 fun LibraryMobileScreen(
+
     state: LibraryState.State,
     effect: Flow<LibraryState.Effect>,
     onEvent: (LibraryState.Event) -> Unit,
+
 ) {
     MobilePosterGrid(contentPadding = PaddingValues()) {
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -45,9 +50,9 @@ fun LibraryMobileScreen(
             LibraryTab.CONTINUE_WATCHING -> {
                 items(state.continueWatching, key = { "${it.animeId}-${it.episode}" }) { entry ->
                     MobilePosterCard(
-                        title = entry.animeTitle.ifBlank { "Эпизод ${entry.episode}" },
+                        title = entry.animeTitle.ifBlank { stringResource(R.string.library_mobile_episode, entry.episode) },
                         posterUrl = entry.posterUrl.ifBlank { null },
-                        subtitle = "Эпизод ${entry.episode}",
+                        subtitle = stringResource(R.string.library_mobile_episode, entry.episode),
                         onClick = { onEvent(LibraryState.Event.ContinueWatchingSelected(entry)) },
                     )
                 }
@@ -76,19 +81,9 @@ fun LibraryMobileScreen(
         if (state.remoteError != null) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(onClick = { onEvent(LibraryState.Event.ScreenResumed) }) {
-                    Text("Повторить: ${state.remoteError}")
+                    Text(stringResource(R.string.library_mobile_retry_error, state.remoteError.orEmpty()))
                 }
             }
         }
     }
-}
-
-private fun LibraryTab.mobileTitle(): String = when (this) {
-    LibraryTab.CONTINUE_WATCHING -> "Смотрю"
-    LibraryTab.FAVORITES -> "Избранное"
-    LibraryTab.WATCHING -> "В процессе"
-    LibraryTab.PLANNED -> "В планах"
-    LibraryTab.COMPLETED -> "Просмотрено"
-    LibraryTab.POSTPONED -> "Отложено"
-    LibraryTab.DROPPED -> "Брошено"
 }

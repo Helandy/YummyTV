@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchSort
-import su.afk.yummy.tv.feature.search.view.SearchContent
+import su.afk.yummy.tv.feature.search.view.SearchResultsPane
 
 @Composable
 fun SearchTvScreen(
@@ -33,7 +33,7 @@ fun SearchTvScreen(
     val onSortSelected = remember(onEvent) { { sort: SearchSort -> onEvent(SearchState.Event.SortSelected(sort)) } }
     val onSortDirectionToggled = remember(onEvent) { { onEvent(SearchState.Event.SortDirectionToggled) } }
 
-    SearchContent(
+    SearchResultsPane(
         query = state.query,
         items = state.items,
         isLoading = state.isLoading,

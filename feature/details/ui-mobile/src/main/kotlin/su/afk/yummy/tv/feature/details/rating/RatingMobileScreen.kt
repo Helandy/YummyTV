@@ -9,9 +9,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
+import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.view.DetailsMobileScaffold
 
 @Composable
@@ -20,7 +22,10 @@ fun RatingMobileScreen(
     effect: Flow<RatingState.Effect>,
     onEvent: (RatingState.Event) -> Unit,
 ) {
-    DetailsMobileScaffold(title = "Оценки", onBack = { onEvent(RatingState.Event.BackSelected) }) { padding ->
+    DetailsMobileScaffold(
+        title = stringResource(R.string.details_mobile_rating),
+        onBack = { onEvent(RatingState.Event.BackSelected) },
+    ) { padding ->
         MobileStateContent(
             isLoading = state.isLoading,
             error = state.error,
@@ -35,7 +40,14 @@ fun RatingMobileScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                item { Text("Ваша оценка: ${state.selectedUserRating ?: state.ratingSummary.userRating ?: "-"}") }
+                item {
+                    Text(
+                        stringResource(
+                            R.string.details_mobile_user_rating,
+                            state.selectedUserRating ?: state.ratingSummary.userRating ?: "-",
+                        ),
+                    )
+                }
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (1..10).forEach { rating ->
@@ -47,7 +59,7 @@ fun RatingMobileScreen(
                 }
                 item {
                     Button(onClick = { onEvent(RatingState.Event.RatingDeleted) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Удалить оценку")
+                        Text(stringResource(R.string.details_mobile_delete_rating))
                     }
                 }
                 item {

@@ -4,4 +4,14 @@
     <string name="schedule_empty">Расписание пустое</string>
     <string name="schedule_episode_aired">%1$d серия уже вышла</string>
     <string name="schedule_episode_future">%1$d серия выйдет через %2$s</string>
+    <string name="schedule_day_one">день</string>
+    <string name="schedule_day_few">дня</string>
+    <string name="schedule_day_many">дней</string>
+    <string name="schedule_hour_one">час</string>
+    <string name="schedule_hour_few">часа</string>
+    <string name="schedule_hour_many">часов</string>
+    <string name="schedule_minute_one">минута</string>
+    <string name="schedule_minute_few">минуты</string>
+    <string name="schedule_minute_many">минут</string>
+    <string name="schedule_less_than_minute">меньше чем минуту</string>
 </resources>

@@ -36,9 +36,10 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.feature.home.R
+import su.afk.yummy.tv.feature.home.utils.isLikelyImageUrl
 import su.afk.yummy.tv.feature.home.utils.msToTimeString
+import su.afk.yummy.tv.feature.home.utils.resolveEpisodeThumbnail
 
 private val CardWidth = 220.dp
 private val ThumbnailHeight = 124.dp
@@ -158,14 +159,3 @@ internal fun ContinueWatchingCard(
         }
     }
 }
-
-private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
-    val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
-    return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
-        ?: entry.episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
-}
-
-private fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
-
-private fun String.isLikelyImageUrl(): Boolean =
-    Regex("""\.(webp|avif|jpe?g|png)(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(this)

@@ -19,10 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -30,21 +28,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
-import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.feature.library.utils.signedInFavoriteItems
+import su.afk.yummy.tv.feature.library.utils.toLibraryEntry
+import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
 import su.afk.yummy.tv.feature.library.view.LibrarySidePanel
 
-internal val CollapsedPanelWidth = 52.dp
-internal val InProgressColor = Color(0xFF4CAF50)
-
 @Composable
 fun LibraryTvScreen(
+
     state: LibraryState.State,
     effect: Flow<LibraryState.Effect>,
     onEvent: (LibraryState.Event) -> Unit,
+
 ) {
     val gridFocusRequester = remember { FocusRequester() }
     val selectedTabFocusRequester = remember { FocusRequester() }
@@ -254,46 +251,4 @@ fun LibraryTvScreen(
             )
         }
     }
-}
-
-private fun LibraryState.State.signedInFavoriteItems(): List<LibraryEntry> {
-    val remoteFavorites = remoteItems[LibraryTab.FAVORITES].orEmpty()
-    val remoteIds = remoteFavorites.map { it.animeId }.toSet()
-    val localOnlyFavorites = items.filter { it.isFavorite && it.animeId !in remoteIds }
-    val remoteEntries = remoteFavorites.map {
-        LibraryEntry(
-            animeId = it.animeId,
-            title = it.title,
-            posterSmallUrl = it.poster?.small,
-            posterMediumUrl = it.poster?.medium,
-            posterBigUrl = it.poster?.big,
-            posterFullsizeUrl = it.poster?.fullsize,
-            posterMegaUrl = it.poster?.mega,
-            isFavorite = true,
-        )
-    }
-    return localOnlyFavorites + remoteEntries
-}
-
-private fun UserAnimeListItem.toLibraryEntry(): LibraryEntry =
-    LibraryEntry(
-        animeId = animeId,
-        title = title,
-        posterSmallUrl = poster?.small,
-        posterMediumUrl = poster?.medium,
-        posterBigUrl = poster?.big,
-        posterFullsizeUrl = poster?.fullsize,
-        posterMegaUrl = poster?.mega,
-        listId = list?.id ?: 0,
-        isFavorite = isFavorite,
-    )
-
-private fun LibraryTab.userAnimeListId(): Int? = when (this) {
-    LibraryTab.CONTINUE_WATCHING -> null
-    LibraryTab.FAVORITES -> null
-    LibraryTab.WATCHING -> UserAnimeList.WATCHING.id
-    LibraryTab.PLANNED -> UserAnimeList.PLANNED.id
-    LibraryTab.COMPLETED -> UserAnimeList.COMPLETED.id
-    LibraryTab.POSTPONED -> UserAnimeList.POSTPONED.id
-    LibraryTab.DROPPED -> UserAnimeList.DROPPED.id
 }

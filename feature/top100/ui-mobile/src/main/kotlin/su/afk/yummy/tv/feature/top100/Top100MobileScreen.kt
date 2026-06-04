@@ -10,11 +10,13 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileContentPosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
+import su.afk.yummy.tv.feature.top100.mobile.R
 
 @Composable
 fun Top100MobileScreen(
@@ -37,12 +39,12 @@ fun Top100MobileScreen(
         if (state.error != null) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(onClick = { onEvent(Top100State.Event.RetrySelected) }) {
-                    Text("Повторить: ${state.error}")
+                    Text(stringResource(R.string.top100_mobile_retry_error, state.error.orEmpty()))
                 }
             }
         }
         if (state.isLoading && state.items.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) { Text("Загрузка...") }
+            item(span = { GridItemSpan(maxLineSpan) }) { Text(stringResource(R.string.top100_mobile_loading)) }
         }
         items(state.items, key = { it.id }) { item ->
             MobileContentPosterCard(
@@ -58,7 +60,13 @@ fun Top100MobileScreen(
                     onClick = { onEvent(Top100State.Event.LoadMore) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (state.isLoadingMore) "Загрузка..." else "Показать ещё")
+                    Text(
+                        if (state.isLoadingMore) {
+                            stringResource(R.string.top100_mobile_loading)
+                        } else {
+                            stringResource(R.string.top100_mobile_load_more)
+                        },
+                    )
                 }
             }
         }

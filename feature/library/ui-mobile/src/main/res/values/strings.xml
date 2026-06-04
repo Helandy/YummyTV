@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_mobile_tab_continue_watching">Смотрю</string>
+    <string name="library_mobile_tab_favorites">Избранное</string>
+    <string name="library_mobile_tab_watching">В процессе</string>
+    <string name="library_mobile_tab_planned">В планах</string>
+    <string name="library_mobile_tab_completed">Просмотрено</string>
+    <string name="library_mobile_tab_postponed">Отложено</string>
+    <string name="library_mobile_tab_dropped">Брошено</string>
+    <string name="library_mobile_episode">Эпизод %1$s</string>
+    <string name="library_mobile_retry_error">Повторить: %1$s</string>
+</resources>

@@ -23,7 +23,7 @@ internal fun Int.formatViews(): String = when {
 internal fun AnimeEpisodes.formatAiredProgress(): String? {
     val airedCount = aired ?: return null
     val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
-    return stringResource(R.string.details_aired, "$airedCount из $totalCount")
+    return stringResource(R.string.details_aired, stringResource(R.string.details_aired_progress, airedCount, totalCount))
 }
 
 internal fun Int.formatDuration(): String {

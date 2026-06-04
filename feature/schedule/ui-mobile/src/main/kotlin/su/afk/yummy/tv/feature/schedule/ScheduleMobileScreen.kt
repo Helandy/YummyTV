@@ -7,19 +7,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import su.afk.yummy.tv.feature.schedule.mobile.R
+import su.afk.yummy.tv.feature.schedule.utils.formatAirTime
 
 @Composable
 fun ScheduleMobileScreen(
+
     state: ScheduleState.State,
     effect: Flow<ScheduleState.Effect>,
     onEvent: (ScheduleState.Event) -> Unit,
+
 ) {
     MobileStateContent(
         isLoading = state.isLoading,
@@ -38,7 +40,7 @@ fun ScheduleMobileScreen(
                         title = item.title,
                         posterUrl = item.posterUrl,
                         subtitle = item.nextDateEpochSeconds?.formatAirTime()
-                            ?: item.airedEpisodes?.let { "Вышло серий: $it" },
+                            ?: item.airedEpisodes?.let { stringResource(R.string.schedule_mobile_aired_episodes, it) },
                         onClick = { onEvent(ScheduleState.Event.AnimeSelected(item.animeId)) },
                     )
                 }
@@ -46,8 +48,3 @@ fun ScheduleMobileScreen(
         }
     }
 }
-
-private fun Long.formatAirTime(): String =
-    DateTimeFormatter.ofPattern("HH:mm")
-        .withZone(ZoneId.systemDefault())
-        .format(Instant.ofEpochSecond(this))

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_mobile_query">Поиск</string>
+    <string name="search_mobile_filters_short">Ф</string>
+    <string name="search_mobile_submit">Найти</string>
+    <string name="search_mobile_loading">Загрузка...</string>
+    <string name="search_mobile_load_more">Показать ещё</string>
+    <string name="search_mobile_apply">Применить</string>
+    <string name="search_mobile_reset">Сбросить</string>
+</resources>

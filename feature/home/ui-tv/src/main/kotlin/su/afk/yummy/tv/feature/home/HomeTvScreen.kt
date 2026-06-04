@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
-import su.afk.yummy.tv.feature.home.view.HomeContent
+import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
 
 @Composable
@@ -40,7 +40,7 @@ fun HomeTvScreen(
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
         )
         state.isLoading || !isInitialContentReady -> TvLoadingScreen()
-        else -> HomeContent(
+        else -> HomeDashboard(
             feed = feed,
             continueWatching = state.continueWatching,
             onContinueWatchingSelected = { entry ->

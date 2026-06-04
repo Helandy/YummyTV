@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.collection
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.feature.collection.view.CollectionContent
+import su.afk.yummy.tv.feature.collection.view.CollectionGridPane
 
 @Composable
 fun CollectionTvScreen(
@@ -16,7 +16,7 @@ fun CollectionTvScreen(
     val onScrollPositionChanged = remember(onEvent) { { index: Int, offset: Int -> onEvent(CollectionState.Event.GridScrolled(index, offset)) } }
     val onRetry = remember(onEvent) { { onEvent(CollectionState.Event.RetrySelected) } }
 
-    CollectionContent(
+    CollectionGridPane(
         collection = state.collection,
         isLoading = state.isLoading,
         error = state.error,

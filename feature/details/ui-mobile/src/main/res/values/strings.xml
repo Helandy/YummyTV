@@ -40,4 +40,18 @@
     <string name="details_mobile_cancel">Cancel</string>
     <string name="details_mobile_aired">Aired: %1$d of %2$s</string>
     <string name="details_mobile_unknown_count">?</string>
+    <string name="details_mobile_views">%1$d views</string>
+    <string name="details_mobile_episode">Episode %1$s</string>
+    <string name="details_mobile_screenshot">Screenshot</string>
+    <string name="details_mobile_trailer_number">Trailer %1$d</string>
+    <string name="details_mobile_other_titles">Other titles</string>
+    <string name="details_mobile_studios">Studios</string>
+    <string name="details_mobile_creators">Creators</string>
+    <string name="details_mobile_similar_source_ai">Source: AI</string>
+    <string name="details_mobile_similar_source_site">Source: site</string>
+    <string name="details_mobile_loading">Loading...</string>
+    <string name="details_mobile_similar_empty">No similar titles</string>
+    <string name="details_mobile_user_rating">Your rating: %1$s</string>
+    <string name="details_mobile_delete_rating">Delete rating</string>
+    <string name="details_mobile_title_universe">Title universe</string>
 </resources>

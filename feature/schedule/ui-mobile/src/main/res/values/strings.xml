@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="schedule_mobile_aired_episodes">Вышло серий: %1$d</string>
+</resources>

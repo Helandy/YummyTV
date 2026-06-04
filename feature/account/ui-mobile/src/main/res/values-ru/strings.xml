@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_mobile_title">Аккаунт</string>
+    <string name="account_mobile_login">Логин</string>
+    <string name="account_mobile_password">Пароль</string>
+    <string name="account_mobile_signing_in">Вход...</string>
+    <string name="account_mobile_sign_in">Войти</string>
+    <string name="account_mobile_captcha_required">Для входа требуется captcha. TV-версия пока открывает полный поток captcha.</string>
+    <string name="account_mobile_profile">Профиль</string>
+    <string name="account_mobile_refresh">Обновить</string>
+    <string name="account_mobile_logout">Выйти</string>
+    <string name="account_mobile_notifications">Уведомления</string>
+</resources>

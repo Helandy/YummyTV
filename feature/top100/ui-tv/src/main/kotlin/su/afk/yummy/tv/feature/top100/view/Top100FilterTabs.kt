@@ -32,14 +32,14 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
-import su.afk.yummy.tv.feature.top100.R
+import su.afk.yummy.tv.feature.top100.utils.label
+import su.afk.yummy.tv.feature.top100.utils.shortLabel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -171,18 +171,4 @@ private fun SidePanelItem(
             overflow = TextOverflow.Clip,
         )
     }
-}
-
-@Composable
-private fun AnimeTopType.label(): String = when (this) {
-    AnimeTopType.TV -> stringResource(R.string.top100_type_tv)
-    AnimeTopType.MOVIE -> stringResource(R.string.top100_type_movie)
-    AnimeTopType.ONA -> name
-}
-
-@Composable
-private fun AnimeTopType.shortLabel(): String = when (this) {
-    AnimeTopType.TV -> stringResource(R.string.top100_type_tv_short)
-    AnimeTopType.MOVIE -> stringResource(R.string.top100_type_movie_short)
-    AnimeTopType.ONA -> name
 }

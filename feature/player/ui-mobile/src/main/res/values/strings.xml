@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_mobile_settings_title">Настройки плеера</string>
+    <string name="player_mobile_quality">Качество</string>
+    <string name="player_mobile_speed">Скорость</string>
+    <string name="player_mobile_dubbing">Озвучка</string>
+    <string name="player_mobile_player">Плеер</string>
+    <string name="player_mobile_done">Готово</string>
+    <string name="player_mobile_previous_episode">Предыдущая</string>
+    <string name="player_mobile_next_episode">Следующая</string>
+    <string name="player_mobile_back">Назад</string>
+    <string name="player_mobile_forward">Дальше</string>
+</resources>

@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.player.view.player
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -72,9 +71,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
-import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.model.ActiveSkip
+import su.afk.yummy.tv.feature.player.model.ActiveSkipType
+import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.model.SeekDirection
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import java.util.Locale
@@ -808,18 +810,6 @@ internal fun ExoPlayerView(
 private const val STEP_SEEK_RESET_MS = 1_500L
 private val STEP_SEEK_OFFSETS_MS = longArrayOf(5_000L, 10_000L, 15_000L)
 
-private enum class SeekDirection(val sign: Int) {
-    Backward(-1),
-    Forward(1),
-}
-
-private enum class PanelReturnFocusTarget {
-    Quality,
-    Dubbing,
-    Balancer,
-    Speed,
-}
-
 private fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlFocusTarget =
     when (this) {
         PanelReturnFocusTarget.Quality -> PlayerControlFocusTarget.Quality
@@ -927,17 +917,6 @@ internal fun formatTime(ms: Long): String {
 
 internal fun Float.speedLabel(): String =
     if (this % 1f == 0f) "${toInt()}x" else "${this}x"
-
-private data class ActiveSkip(
-    val key: String,
-    val type: ActiveSkipType,
-    val segment: PlayerSkipSegment,
-)
-
-private enum class ActiveSkipType(@param:StringRes val skippedMessageRes: Int) {
-    Opening(R.string.player_opening_skipped),
-    Ending(R.string.player_ending_skipped),
-}
 
 private fun currentSkip(
     skips: PlayerSkips,

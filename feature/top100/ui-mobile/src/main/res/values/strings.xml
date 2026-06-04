@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="top100_mobile_retry_error">Повторить: %1$s</string>
+    <string name="top100_mobile_loading">Загрузка...</string>
+    <string name="top100_mobile_load_more">Показать ещё</string>
+</resources>

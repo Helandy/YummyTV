@@ -47,7 +47,7 @@ internal fun EpisodesSection(
             }
         }
         VideosUiState.Empty -> Unit
-        is VideosUiState.Content -> EpisodesContent(
+        is VideosUiState.Content -> EpisodesGrid(
             videos = state.videos,
             watchProgress = watchProgress,
             restoreFocusRequest = restoreFocusRequest,

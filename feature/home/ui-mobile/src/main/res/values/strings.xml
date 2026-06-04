@@ -1,0 +1,4 @@
+<resources>
+    <string name="home_mobile_continue_watching">Continue watching</string>
+    <string name="home_mobile_episode">Episode %1$s</string>
+</resources>
