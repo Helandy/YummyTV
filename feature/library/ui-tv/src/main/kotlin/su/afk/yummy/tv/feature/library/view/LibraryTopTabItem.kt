@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.library.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,32 +17,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 
 @Composable
-internal fun LibrarySidePanelItem(
+internal fun LibraryTopTabItem(
     label: String,
-    shortLabel: String,
     selected: Boolean,
-    expanded: Boolean,
     onSelected: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
-    upFocusRequester: FocusRequester?,
-    downFocusRequester: FocusRequester?,
+    leftFocusRequester: FocusRequester?,
+    rightFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
 ) {
-    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val shape = RoundedCornerShape(8.dp)
+
     Box(
         modifier = Modifier
-            .width(if (expanded) 136.dp else 40.dp)
             .focusRequester(focusRequester)
             .focusProperties {
-                mainMenuFocusRequester?.let { left = it }
-                right = contentFocusRequester
-                upFocusRequester?.let { up = it }
-                downFocusRequester?.let { down = it }
+                down = contentFocusRequester
+                leftFocusRequester?.let { left = it }
+                rightFocusRequester?.let { right = it }
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
@@ -52,17 +46,17 @@ internal fun LibrarySidePanelItem(
                 shape = shape,
             )
             .tvFocusableClick(onClick = onSelected, shape = shape)
-            .padding(horizontal = 10.dp, vertical = 10.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (expanded) label else shortLabel,
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             color = if (selected) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
-            overflow = TextOverflow.Clip,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

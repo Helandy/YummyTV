@@ -1,15 +1,12 @@
 package su.afk.yummy.tv.feature.top100.view
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,11 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -35,15 +30,13 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 import su.afk.yummy.tv.feature.top100.utils.label
-import su.afk.yummy.tv.feature.top100.utils.shortLabel
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun Top100FilterSidePanel(
+internal fun Top100FilterTabs(
     selectedType: AnimeTopType,
     onTypeSelected: (AnimeTopType) -> Unit,
     contentFocusRequester: FocusRequester,
@@ -51,31 +44,31 @@ internal fun Top100FilterSidePanel(
     onFocusChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val selectedIndex = AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0)
     var focusedIndex by remember { mutableIntStateOf(selectedIndex) }
-    val panelWidth by animateDpAsState(
-        targetValue = if (expanded) 148.dp else 52.dp,
-        animationSpec = tween(durationMillis = 200),
-        label = "side_panel_width",
-    )
 
     LaunchedEffect(selectedIndex) {
         focusedIndex = selectedIndex
     }
 
-    Column(
+    Row(
         modifier = modifier
-            .width(panelWidth)
-            .fillMaxHeight()
-            .onFocusChanged {
-                expanded = it.hasFocus
-                onFocusChange(it.hasFocus)
+            .fillMaxWidth()
+            .padding(
+                start = TvScreenPadding.Horizontal,
+                top = TvScreenPadding.Vertical,
+                end = TvScreenPadding.Horizontal,
+            )
+            .focusProperties {
+                onEnter = {
+                    typeFocusRequesters.getOrNull(selectedIndex)?.requestFocus()
+                }
             }
+            .onFocusChanged { onFocusChange(it.hasFocus) }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
-                    Key.DirectionUp -> {
+                    Key.DirectionLeft -> {
                         if (focusedIndex > 0) {
                             focusedIndex -= 1
                             typeFocusRequesters[focusedIndex].requestFocus()
@@ -84,41 +77,31 @@ internal fun Top100FilterSidePanel(
                             false
                         }
                     }
-                    Key.DirectionDown -> {
+
+                    Key.DirectionRight -> {
                         if (focusedIndex < typeFocusRequesters.lastIndex) {
                             focusedIndex += 1
                             typeFocusRequesters[focusedIndex].requestFocus()
                         }
                         true
                     }
+
                     else -> false
                 }
             }
-            .focusProperties {
-                onEnter = {
-                    typeFocusRequesters.getOrNull(selectedIndex)?.requestFocus()
-                }
-            }
-            .focusGroup()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
-            )
-            .padding(vertical = 24.dp, horizontal = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .focusGroup(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimeTopType.entries.forEachIndexed { index, type ->
-            SidePanelItem(
+            Top100FilterTabItem(
                 label = type.label(),
-                shortLabel = type.shortLabel(),
                 selected = selectedType == type,
-                expanded = expanded,
                 onSelected = { onTypeSelected(type) },
                 contentFocusRequester = contentFocusRequester,
                 focusRequester = typeFocusRequesters[index],
-                upFocusRequester = typeFocusRequesters.getOrNull(index - 1),
-                downFocusRequester = typeFocusRequesters.getOrNull(index + 1) ?: FocusRequester.Cancel,
+                leftFocusRequester = typeFocusRequesters.getOrNull(index - 1),
+                rightFocusRequester = typeFocusRequesters.getOrNull(index + 1),
                 onFocused = { focusedIndex = index },
             )
         }
@@ -126,30 +109,25 @@ internal fun Top100FilterSidePanel(
 }
 
 @Composable
-private fun SidePanelItem(
+private fun Top100FilterTabItem(
     label: String,
-    shortLabel: String,
     selected: Boolean,
-    expanded: Boolean,
     onSelected: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
-    upFocusRequester: FocusRequester?,
-    downFocusRequester: FocusRequester?,
+    leftFocusRequester: FocusRequester?,
+    rightFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
 ) {
-    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val shape = RoundedCornerShape(8.dp)
 
     Box(
         modifier = Modifier
-            .width(if (expanded) 136.dp else 40.dp)
             .focusRequester(focusRequester)
             .focusProperties {
-                right = contentFocusRequester
-                mainMenuFocusRequester?.let { left = it }
-                upFocusRequester?.let { up = it }
-                downFocusRequester?.let { down = it }
+                down = contentFocusRequester
+                leftFocusRequester?.let { left = it }
+                rightFocusRequester?.let { right = it }
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
@@ -158,17 +136,17 @@ private fun SidePanelItem(
                 shape = shape,
             )
             .tvFocusableClick(onClick = onSelected, shape = shape)
-            .padding(horizontal = 10.dp, vertical = 10.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (expanded) label else shortLabel,
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             color = if (selected) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
-            overflow = TextOverflow.Clip,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

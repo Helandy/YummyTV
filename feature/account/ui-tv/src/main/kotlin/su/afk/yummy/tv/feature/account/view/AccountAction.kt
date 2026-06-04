@@ -37,31 +37,46 @@ internal fun AccountAction(
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
-    val active = enabled && (focused || selected)
+    val containerColor = when {
+        focused && enabled -> MaterialTheme.colorScheme.primary
+        selected && enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+        !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.025f)
+        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
+    }
+    val contentColor = when {
+        focused && enabled -> MaterialTheme.colorScheme.onPrimary
+        selected && enabled -> MaterialTheme.colorScheme.primary
+        enabled -> MaterialTheme.colorScheme.onBackground
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val hintColor = when {
+        focused && enabled -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.78f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
     val actionModifier = modifier
         .fillMaxWidth()
         .clip(shape)
-        .border(
-            width = 2.dp,
-            color = if (focused && enabled) MaterialTheme.colorScheme.primary else Color.Transparent,
-            shape = shape,
-        )
         .background(
-            color = when {
-                focused && enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-                selected && enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.025f)
-                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
-            },
+            color = containerColor,
             shape = shape,
         )
         .let {
             if (enabled) {
-                it.tvFocusableClick(onClick = onClick, interactionSource = interactionSource, shape = shape)
+                it.tvFocusableClick(
+                    onClick = onClick,
+                    interactionSource = interactionSource,
+                    shape = shape
+                )
             } else {
                 it
             }
         }
+        .border(
+            width = if (focused && enabled) 3.dp else 2.dp,
+            color = if (focused && enabled) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
+            else Color.Transparent,
+            shape = shape,
+        )
         .padding(horizontal = 16.dp, vertical = 14.dp)
     Row(
         modifier = actionModifier,
@@ -72,11 +87,7 @@ internal fun AccountAction(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = when {
-                    active -> MaterialTheme.colorScheme.primary
-                    enabled -> MaterialTheme.colorScheme.onBackground
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -84,7 +95,7 @@ internal fun AccountAction(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = hintColor,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )

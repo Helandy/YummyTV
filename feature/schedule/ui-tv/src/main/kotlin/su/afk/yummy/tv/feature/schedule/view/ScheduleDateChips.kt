@@ -12,7 +12,7 @@ import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
 @Composable
 internal fun ScheduleDateChips(
     groups: List<ScheduleDayUi>,
-    selectedEpochDay: Long,
+    selectedEpochDay: Long?,
     selectedFocusRequester: FocusRequester,
     downFocusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
@@ -22,14 +22,14 @@ internal fun ScheduleDateChips(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
     ) {
-        itemsIndexed(groups, key = { _, group -> group.date.toEpochDay() }) { _, group ->
+        itemsIndexed(groups, key = { _, group -> group.date.toEpochDay() }) { index, group ->
             val selected = group.date.toEpochDay() == selectedEpochDay
             ScheduleDateChip(
                 group = group,
                 selected = selected,
                 focusRequester = if (selected) selectedFocusRequester else null,
                 downFocusRequester = downFocusRequester,
-                leftFocusRequester = leftFocusRequester,
+                leftFocusRequester = if (index == 0) leftFocusRequester else null,
                 onSelected = { onSelected(group.date.toEpochDay()) },
             )
         }

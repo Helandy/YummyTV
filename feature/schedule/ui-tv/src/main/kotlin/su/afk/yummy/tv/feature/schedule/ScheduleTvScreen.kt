@@ -31,11 +31,12 @@ fun ScheduleTvScreen(
                 text = state.error.orEmpty(),
                 color = MaterialTheme.colorScheme.error,
             )
-            state.days.isEmpty() -> Text(
+            state.tvSchedule.dayGroups.isEmpty() -> Text(
                 text = stringResource(R.string.schedule_empty),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            else -> ScheduleTimeline(state.days, onEvent)
+
+            else -> ScheduleTimeline(state.tvSchedule, onEvent)
         }
     }
 }

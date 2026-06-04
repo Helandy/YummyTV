@@ -2,8 +2,12 @@ package su.afk.yummy.tv.core.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -21,6 +25,18 @@ fun AppNavHost(
     registrars: Set<@JvmSuppressWildcards NavRegistrar>,
     modifier: Modifier = Modifier,
 ) {
+    var savedCurrentTab by rememberSaveable { mutableStateOf(navManager.currentTab) }
+
+    LaunchedEffect(Unit) {
+        navManager.restoreTab(savedCurrentTab)
+    }
+    LaunchedEffect(navManager.currentTab) {
+        savedCurrentTab = navManager.currentTab
+    }
+
+    val appBackStack = key("appBackStack") {
+        rememberNavBackStack()
+    }
     val homeBackStack = key(SideTab.HOME) {
         rememberNavBackStack(navManager.roots.getValue(SideTab.HOME))
     }
@@ -47,8 +63,11 @@ fun AppNavHost(
         )
     }
 
-    LaunchedEffect(homeBackStack, searchBackStack, scheduleBackStack, top100BackStack, libraryBackStack) {
-        navManager.attachBackStacks(tabStacks)
+    LaunchedEffect(appBackStack, tabStacks) {
+        navManager.attachBackStacks(
+            appBackStack = appBackStack,
+            tabStacks = tabStacks,
+        )
     }
 
     val provider = remember(registrars, navManager) {
@@ -108,13 +127,29 @@ fun AppNavHost(
         )
     }
 
-    val entriesToShow: List<NavEntry<NavKey>> = when (navManager.currentTab) {
-        SideTab.HOME -> homeEntries
-        SideTab.SEARCH -> homeEntries + searchEntries
-        SideTab.SCHEDULE -> homeEntries + scheduleEntries
-        SideTab.TOP100 -> homeEntries + top100Entries
-        SideTab.LIBRARY -> homeEntries + libraryEntries
+    val appEntries = key("appEntries") {
+        rememberDecoratedNavEntries(
+            backStack = appBackStack,
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            entryProvider = provider,
+        )
     }
+
+    val entriesToShow: List<NavEntry<NavKey>> =
+        if (appBackStack.isNotEmpty()) {
+            appEntries
+        } else {
+            when (navManager.currentTab) {
+                SideTab.HOME -> homeEntries
+                SideTab.SEARCH -> homeEntries + searchEntries
+                SideTab.SCHEDULE -> homeEntries + scheduleEntries
+                SideTab.TOP100 -> homeEntries + top100Entries
+                SideTab.LIBRARY -> homeEntries + libraryEntries
+            }
+        }
 
     NavDisplay(
         entries = entriesToShow,

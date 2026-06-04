@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +35,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -53,7 +59,7 @@ internal fun ContinueWatchingGrid(
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
-    sidePanelFocusRequester: FocusRequester,
+    selectedTabFocusRequester: FocusRequester,
     restoreFirstItemToken: Int,
     onEntrySelected: (WatchProgressEntry) -> Unit,
     onItemFocused: (Int) -> Unit,
@@ -134,7 +140,7 @@ internal fun ContinueWatchingGrid(
         isRestoringFocus = true
         if (entries.isEmpty()) {
             repeat(6) {
-                runCatching { sidePanelFocusRequester.requestFocus() }
+                runCatching { selectedTabFocusRequester.requestFocus() }
                 delay(16)
             }
         } else {
@@ -157,49 +163,60 @@ internal fun ContinueWatchingGrid(
         return
     }
 
-    LazyVerticalGrid(
-        state = gridState,
-        columns = GridCells.Adaptive(minSize = 172.dp),
-        modifier = modifier
-            .fillMaxSize()
-            .focusRequester(gridFocusRequester)
-            .focusProperties {
-                onEnter = {
-                    restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
-                    requestEntryFocus(if (restoringFromMainMenu) 0 else lastFocusedIndex)
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val horizontalSpacing = 16.dp
+        val gridHorizontalPadding = TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
+        val gridColumnCount =
+            (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
+                    (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+
+        LazyVerticalGrid(
+            state = gridState,
+            columns = GridCells.Adaptive(minSize = 172.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .focusRequester(gridFocusRequester)
+                .focusProperties {
+                    onEnter = {
+                        restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
+                        requestEntryFocus(if (restoringFromMainMenu) 0 else lastFocusedIndex)
+                    }
                 }
-            }
-            .onFocusChanged { state ->
-                val hadFocus = gridHasFocus
-                gridHasFocus = state.hasFocus
-                if (!state.hasFocus) {
-                    isRestoringFocus = false
-                    restoringFromMainMenu = false
-                }
-                if (state.hasFocus && !hadFocus && entries.isNotEmpty()) {
-                    isRestoringFocus = true
-                    scope.launch {
-                        val target = if (restoringFromMainMenu) 0 else lastFocusedIndex.coerceIn(0, entries.lastIndex)
-                        gridState.scrollToItem(target)
-                        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
-                            .first { it }
-                        runCatching { focusRequesters[target].requestFocus() }
+                .onFocusChanged { state ->
+                    val hadFocus = gridHasFocus
+                    gridHasFocus = state.hasFocus
+                    if (!state.hasFocus) {
                         isRestoringFocus = false
                         restoringFromMainMenu = false
                     }
+                    if (state.hasFocus && !hadFocus && entries.isNotEmpty()) {
+                        isRestoringFocus = true
+                        scope.launch {
+                            val target =
+                                if (restoringFromMainMenu) 0 else lastFocusedIndex.coerceIn(
+                                    0,
+                                    entries.lastIndex
+                                )
+                            gridState.scrollToItem(target)
+                            snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
+                                .first { it }
+                            runCatching { focusRequesters[target].requestFocus() }
+                            isRestoringFocus = false
+                            restoringFromMainMenu = false
+                        }
+                    }
                 }
-            }
-            .focusGroup(),
-        contentPadding = PaddingValues(
-            start = CollapsedPanelWidth + TvScreenPadding.Horizontal,
-            end = TvScreenPadding.Horizontal,
-            top = TvScreenPadding.Vertical,
-            bottom = TvScreenPadding.Vertical,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        itemsIndexed(entries, key = { _, entry -> entry.animeId }) { index, entry ->
+                .focusGroup(),
+            contentPadding = PaddingValues(
+                start = TvScreenPadding.Horizontal,
+                end = TvScreenPadding.Horizontal,
+                top = 16.dp,
+                bottom = TvScreenPadding.Vertical,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+        ) {
+            itemsIndexed(entries, key = { _, entry -> entry.animeId }) { index, entry ->
             var columnHasFocus by remember { mutableStateOf(false) }
             val progress = if (entry.durationMs > 0) entry.positionMs.toFloat() / entry.durationMs else 0f
             val episodeLabel = if (entry.episode.isNotBlank()) {
@@ -217,7 +234,7 @@ internal fun ContinueWatchingGrid(
                     if (immediateTarget >= 0) {
                         runCatching { focusRequesters[immediateTarget].requestFocus() }
                     } else {
-                        runCatching { sidePanelFocusRequester.requestFocus() }
+                        runCatching { selectedTabFocusRequester.requestFocus() }
                     }
                     onRemoveWatchProgress(entry.animeId)
                 }
@@ -242,14 +259,25 @@ internal fun ContinueWatchingGrid(
                     onClick = stableOnClick,
                     onFocused = stableOnFocused,
                     screenshotUrls = if (entry.animeId == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
-                    modifier = Modifier.focusProperties {
-                        if (index == 0 || index in leftEdgeIndexes) {
-                            left = sidePanelFocusRequester
-                        } else {
-                            focusRequesters.getOrNull(index - 1)?.let { left = it }
+                    modifier = Modifier
+                        .onPreviewKeyEvent { event ->
+                            if (
+                                event.type == KeyEventType.KeyDown &&
+                                event.key == Key.DirectionUp &&
+                                index < gridColumnCount
+                            ) {
+                                runCatching { selectedTabFocusRequester.requestFocus() }
+                                true
+                            } else {
+                                false
+                            }
                         }
-                        focusRequesters.getOrNull(index + 1)?.let { right = it }
-                    },
+                        .focusProperties {
+                            if (index !in leftEdgeIndexes) {
+                                focusRequesters.getOrNull(index - 1)?.let { left = it }
+                            }
+                            focusRequesters.getOrNull(index + 1)?.let { right = it }
+                        },
                     posterOverlay = {
                         Box(
                             modifier = Modifier
@@ -273,9 +301,7 @@ internal fun ContinueWatchingGrid(
                         modifier = Modifier
                             .width(TvPosterCardDefaults.Width)
                             .focusProperties {
-                                if (index == 0 || index in leftEdgeIndexes) {
-                                    left = sidePanelFocusRequester
-                                } else {
+                                if (index !in leftEdgeIndexes) {
                                     focusRequesters.getOrNull(index - 1)?.let { left = it }
                                 }
                                 focusRequesters.getOrNull(index + 1)?.let { right = it }
@@ -284,6 +310,7 @@ internal fun ContinueWatchingGrid(
                     )
                 }
             }
+        }
         }
     }
 }

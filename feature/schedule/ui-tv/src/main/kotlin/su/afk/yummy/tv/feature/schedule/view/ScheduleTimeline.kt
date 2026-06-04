@@ -13,49 +13,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 import su.afk.yummy.tv.feature.schedule.ScheduleState
-import su.afk.yummy.tv.feature.schedule.utils.toUiDayGroups
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import su.afk.yummy.tv.feature.schedule.model.ScheduleTimelineUi
 
 @Composable
 internal fun ScheduleTimeline(
-    days: List<AnimeScheduleDay>,
+    schedule: ScheduleTimelineUi,
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
-    val zone = remember { ZoneId.systemDefault() }
-    val now = remember { ZonedDateTime.now(zone) }
-    val today = now.toLocalDate()
-    val dayGroups = remember(days, zone, today) { days.toUiDayGroups(zone, today) }
-    val availableEpochDays = remember(dayGroups) { dayGroups.map { it.date.toEpochDay() } }
-    val initialEpochDay = remember(availableEpochDays, now) {
-        val todayEpochDay = today.toEpochDay()
-        availableEpochDays.firstOrNull { it == todayEpochDay }
-            ?: availableEpochDays.firstOrNull { it > todayEpochDay }
-            ?: availableEpochDays.first()
-    }
-    var selectedEpochDay by rememberSaveable { mutableLongStateOf(initialEpochDay) }
-    var focusedReleaseKey by rememberSaveable { mutableStateOf<String?>(null) }
-    var focusedReleaseEpochDay by rememberSaveable { mutableStateOf<Long?>(null) }
     var contentHasFocus by remember { mutableStateOf(false) }
-    val selectedGroup = dayGroups.firstOrNull { it.date.toEpochDay() == selectedEpochDay } ?: dayGroups.first()
+    val selectedGroup = schedule.selectedGroup ?: return
     val selectedChipFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
@@ -63,26 +46,24 @@ internal fun ScheduleTimeline(
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val preferredContentFocusRequester =
-        focusedReleaseKey?.let { releaseFocusRequesters[it] } ?: selectedChipFocusRequester
+        schedule.focusedReleaseKey?.let { releaseFocusRequesters[it] } ?: selectedChipFocusRequester
 
-    LaunchedEffect(availableEpochDays, initialEpochDay, focusedReleaseKey, focusedReleaseEpochDay) {
-        val restoredEpochDay = focusedReleaseEpochDay
-            ?.takeIf { focusedReleaseKey != null && it in availableEpochDays }
-        when {
-            restoredEpochDay != null -> selectedEpochDay = restoredEpochDay
-            selectedEpochDay !in availableEpochDays -> selectedEpochDay = initialEpochDay
-        }
-    }
-
-    LaunchedEffect(focusedReleaseKey, selectedEpochDay, selectedGroup.items, contentHasFocus) {
-        val releaseKey = focusedReleaseKey ?: return@LaunchedEffect
+    LaunchedEffect(
+        schedule.focusedReleaseKey,
+        schedule.selectedEpochDay,
+        selectedGroup.items,
+        contentHasFocus
+    ) {
+        val releaseKey = schedule.focusedReleaseKey ?: return@LaunchedEffect
         val releaseIndex = selectedGroup.items.indexOfFirst { it.focusKey == releaseKey }
         if (releaseIndex < 0) return@LaunchedEffect
 
         listState.scrollToItem(releaseIndex)
-        delay(50)
+        val releaseFocusRequester = snapshotFlow { releaseFocusRequesters[releaseKey] }
+            .filterNotNull()
+            .first()
         if (contentHasFocus) {
-            runCatching { releaseFocusRequesters[releaseKey]?.requestFocus() }
+            runCatching { releaseFocusRequester.requestFocus() }
         }
     }
 
@@ -105,12 +86,12 @@ internal fun ScheduleTimeline(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         ScheduleDateChips(
-            groups = dayGroups,
-            selectedEpochDay = selectedEpochDay,
+            groups = schedule.dayGroups,
+            selectedEpochDay = schedule.selectedEpochDay,
             selectedFocusRequester = selectedChipFocusRequester,
             downFocusRequester = listFocusRequester,
             leftFocusRequester = mainMenuFocusRequester,
-            onSelected = { selectedEpochDay = it },
+            onSelected = { onEvent(ScheduleState.Event.DateSelected(it)) },
         )
 
         LazyColumn(
@@ -141,18 +122,26 @@ internal fun ScheduleTimeline(
                 }
                 ScheduleReleaseRow(
                     release = release,
-                    now = now,
-                    zone = zone,
+                    now = schedule.now,
+                    zone = schedule.zone,
                     focusRequester = releaseFocusRequester,
                     leftFocusRequester = mainMenuFocusRequester,
                     upFocusRequester = if (index == 0) selectedChipFocusRequester else null,
                     onFocused = {
-                        focusedReleaseKey = releaseKey
-                        focusedReleaseEpochDay = selectedGroup.date.toEpochDay()
+                        onEvent(
+                            ScheduleState.Event.ReleaseFocused(
+                                releaseKey = releaseKey,
+                                epochDay = selectedGroup.date.toEpochDay(),
+                            )
+                        )
                     },
                     onClick = {
-                        focusedReleaseKey = releaseKey
-                        focusedReleaseEpochDay = selectedGroup.date.toEpochDay()
+                        onEvent(
+                            ScheduleState.Event.ReleaseFocused(
+                                releaseKey = releaseKey,
+                                epochDay = selectedGroup.date.toEpochDay(),
+                            )
+                        )
                         onEvent(ScheduleState.Event.AnimeSelected(release.item.animeId))
                     },
                 )

@@ -26,11 +26,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -70,18 +65,7 @@ class MobileMainGraph @Inject constructor(
             MobileMenuItem(stringResource(R.string.main_mobile_tab_top), SideTab.TOP100, Icons.Default.Star),
             MobileMenuItem(stringResource(R.string.main_mobile_tab_library), SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
         )
-        var savedTab by rememberSaveable { mutableStateOf(navManager.currentTab) }
-        var restoredTab by remember { mutableStateOf(false) }
-        val atTabRoot = navManager.backStack.size <= 1
-
-        LaunchedEffect(Unit) {
-            navManager.restoreTab(savedTab)
-            restoredTab = true
-        }
-
-        LaunchedEffect(navManager.currentTab, restoredTab) {
-            if (restoredTab) savedTab = navManager.currentTab
-        }
+        val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
 
         ScreenNavigator(viewModel) { state, effect, _ ->
             LaunchedEffect(Unit) {

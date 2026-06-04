@@ -9,6 +9,9 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.schedule.utils.toTimelineUi
+import su.afk.yummy.tv.feature.schedule.utils.withFocusedRelease
+import su.afk.yummy.tv.feature.schedule.utils.withSelectedDay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +33,13 @@ class ScheduleViewModel @Inject constructor(
     override fun onEvent(event: ScheduleState.Event) {
         when (event) {
             is ScheduleState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            is ScheduleState.Event.DateSelected -> setState {
+                copy(tvSchedule = tvSchedule.withSelectedDay(event.epochDay))
+            }
+
+            is ScheduleState.Event.ReleaseFocused -> setState {
+                copy(tvSchedule = tvSchedule.withFocusedRelease(event.releaseKey, event.epochDay))
+            }
             ScheduleState.Event.RetrySelected -> load()
         }
     }
@@ -38,7 +48,18 @@ class ScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             runCatching { getSchedule() }.fold(
-                onSuccess = { setState { copy(isLoading = false, days = it) } },
+                onSuccess = { days ->
+                    setState {
+                        copy(
+                            isLoading = false,
+                            days = days,
+                            tvSchedule = days.toTimelineUi(
+                                focusedReleaseKey = tvSchedule.focusedReleaseKey,
+                                focusedReleaseEpochDay = tvSchedule.focusedReleaseEpochDay,
+                            ),
+                        )
+                    }
+                },
                 onFailure = { setState { copy(isLoading = false, error = it.message ?: "Could not load schedule") } },
             )
         }

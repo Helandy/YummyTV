@@ -10,11 +10,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
@@ -22,6 +17,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.AppNavHost
+import su.afk.yummy.tv.core.navigation.MainMenuFocusTarget
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.TvUi
@@ -34,7 +30,6 @@ import su.afk.yummy.tv.feature.main.view.TvMenuItem
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
-import su.afk.yummy.tv.feature.main.R
 
 @Singleton
 class TvMainGraph @Inject constructor(
@@ -56,20 +51,21 @@ class TvMainGraph @Inject constructor(
     @Composable
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
-        var savedTab by rememberSaveable { mutableStateOf(navManager.currentTab) }
-        var restoredTab by remember { mutableStateOf(false) }
-        val atTabRoot = navManager.backStack.size <= 1
-
-        LaunchedEffect(Unit) {
-            navManager.restoreTab(savedTab)
-            restoredTab = true
+        val inAppFlow = navManager.appBackStack.isNotEmpty()
+        val atTabRoot = !inAppFlow && navManager.backStack.size <= 1
+        val settingsDestination = settingsNavigator.getSettingsDest()
+        val accountDestination = accountNavigator.getAccountDest()
+        val currentDestination = navManager.backStack.lastOrNull()
+        val currentDestinationIsMainAction =
+            currentDestination == settingsDestination || currentDestination == accountDestination
+        val showMainMenu = !inAppFlow && (atTabRoot || currentDestinationIsMainAction)
+        val currentMainMenuFocusTarget = when (currentDestination) {
+            settingsDestination -> MainMenuFocusTarget.SETTINGS_ACTION
+            accountDestination -> MainMenuFocusTarget.ACCOUNT_ACTION
+            else -> MainMenuFocusTarget.SELECTED_TAB
         }
 
-        LaunchedEffect(navManager.currentTab, restoredTab) {
-            if (restoredTab) savedTab = navManager.currentTab
-        }
-
-        ScreenNavigator(viewModel) { state, effect, _ ->
+        ScreenNavigator(viewModel) { state, effect, onEvent ->
             LaunchedEffect(Unit) {
                 effect.collect { eff ->
                     when (eff) {
@@ -80,23 +76,29 @@ class TvMainGraph @Inject constructor(
                 }
             }
 
+            LaunchedEffect(currentMainMenuFocusTarget) {
+                onEvent(MainState.Event.TvRouteMenuTargetChanged(currentMainMenuFocusTarget))
+            }
+
+            LaunchedEffect(showMainMenu, navManager.pendingMainMenuFocusTarget) {
+                val target = navManager.pendingMainMenuFocusTarget ?: return@LaunchedEffect
+                if (!showMainMenu) return@LaunchedEffect
+                onEvent(MainState.Event.TvMenuFocusRequested(target))
+                navManager.clearMainMenuFocusRequest(target)
+            }
+
             YummyTvTheme(appTheme = state.appTheme) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalShowScreenshotsOnFocus provides state.showScreenshotsOnFocus,
                 ) {
                     TvMainScaffold(
-                        selectedDestination = navManager.currentTab,
+                        selectedTab = navManager.currentTab,
+                        contentFocusKey = navManager.currentTab to currentDestination,
                         menuItems = menuItems,
-                        onDestinationSelected = { navManager.switchTab(it) },
-                        onSettingsClick = { navManager.navigate(settingsNavigator.getSettingsDest()) },
-                        accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null,
-                        accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
-                        unreadNotificationsCount = state.unreadNotificationsCount,
-                        onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
-                        showMainMenu = atTabRoot,
-                        requestedMainMenuFocusTarget = navManager.pendingMainMenuFocusTarget,
-                        onMainMenuFocusRequestHandled = { navManager.clearMainMenuFocusRequest(it) },
+                        state = state,
+                        showMainMenu = showMainMenu,
+                        onEvent = onEvent,
                     ) {
                         AppNavHost(
                             navManager = navManager,

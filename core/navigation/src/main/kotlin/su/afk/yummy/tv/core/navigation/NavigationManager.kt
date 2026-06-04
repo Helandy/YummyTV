@@ -18,6 +18,9 @@ class NavigationManager(
     val roots: Map<SideTab, NavKey>,
     initialTab: SideTab,
 ) {
+    var appBackStack: MutableList<NavKey> by mutableStateOf(mutableStateListOf())
+        private set
+
     var currentTab: SideTab by mutableStateOf(initialTab)
         private set
 
@@ -29,7 +32,7 @@ class NavigationManager(
     )
 
     val backStack: MutableList<NavKey>
-        get() = stacks.getValue(currentTab)
+        get() = if (appBackStack.isNotEmpty()) appBackStack else stacks.getValue(currentTab)
 
     fun stack(tab: SideTab): MutableList<NavKey> = stacks.getValue(tab)
 
@@ -40,7 +43,14 @@ class NavigationManager(
         }
     }
 
-    fun attachBackStacks(tabStacks: Map<SideTab, NavBackStack<NavKey>>) {
+    fun attachBackStacks(
+        appBackStack: NavBackStack<NavKey>,
+        tabStacks: Map<SideTab, NavBackStack<NavKey>>,
+    ) {
+        if (this.appBackStack.hasPendingAppNavigation() && appBackStack.isInitialAppStack()) {
+            appBackStack.replaceWith(this.appBackStack)
+        }
+
         SideTab.entries.forEach { tab ->
             val root = roots.getValue(tab)
             val currentStack = stacks.getValue(tab)
@@ -49,6 +59,8 @@ class NavigationManager(
                 saveableStack.replaceWith(currentStack)
             }
         }
+
+        this.appBackStack = appBackStack
         stacks = tabStacks
     }
 
@@ -69,6 +81,11 @@ class NavigationManager(
         backStack += dest
     }
 
+    fun navigateApp(dest: NavKey) {
+        if (appBackStack.lastOrNull() == dest) return
+        appBackStack += dest
+    }
+
     fun requestMainMenuFocus(target: MainMenuFocusTarget) {
         pendingMainMenuFocusTarget = target
     }
@@ -83,6 +100,10 @@ class NavigationManager(
     }
 
     fun back() {
+        if (appBackStack.isNotEmpty()) {
+            appBackStack.removeAt(appBackStack.lastIndex)
+            return
+        }
         if (backStack.size > 1) {
             backStack.removeAt(backStack.lastIndex)
             return
@@ -91,6 +112,12 @@ class NavigationManager(
     }
 
     fun backTwo() {
+        if (appBackStack.isNotEmpty()) {
+            repeat(2) {
+                if (appBackStack.isNotEmpty()) appBackStack.removeAt(appBackStack.lastIndex)
+            }
+            return
+        }
         repeat(2) {
             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
             else {
@@ -108,16 +135,19 @@ class NavigationManager(
         for (i in backStack.lastIndex downTo removeFrom) {
             backStack.removeAt(i)
         }
+        if (appBackStack.isNotEmpty()) return
         if (backStack.isEmpty()) backStack += roots.getValue(currentTab)
     }
 
     fun popToRoot() {
+        appBackStack.clear()
         val root = roots.getValue(currentTab)
         backStack.clear()
         backStack += root
     }
 
     fun resetAllTabs() {
+        appBackStack.clear()
         SideTab.entries.forEach { tab ->
             stacks.getValue(tab).apply {
                 clear()
@@ -130,8 +160,12 @@ class NavigationManager(
     private fun List<NavKey>.isInitialStack(root: NavKey): Boolean =
         size == 1 && firstOrNull() == root
 
+    private fun List<NavKey>.isInitialAppStack(): Boolean = isEmpty()
+
     private fun List<NavKey>.hasPendingNavigation(root: NavKey): Boolean =
         !isInitialStack(root)
+
+    private fun List<NavKey>.hasPendingAppNavigation(): Boolean = isNotEmpty()
 
     private fun MutableList<NavKey>.replaceWith(items: List<NavKey>) {
         clear()

@@ -18,9 +18,12 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
+    implementation(project(":core:navigation"))
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))
     implementation(project(":core:update"))
+    implementation(project(":feature:settings:api"))
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(libs.compose.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)

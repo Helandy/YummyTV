@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.library
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -33,7 +34,7 @@ import su.afk.yummy.tv.feature.library.utils.toLibraryEntry
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
-import su.afk.yummy.tv.feature.library.view.LibrarySidePanel
+import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
 
 @Composable
 fun LibraryTvScreen(
@@ -124,131 +125,151 @@ fun LibraryTvScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center,
     ) {
-        when (state.selectedTab) {
-            LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
-                entries = state.continueWatching,
-                focusedItemId = state.focusedItemId,
-                focusedPreview = state.focusedPreview,
-                gridFocusRequester = gridFocusRequester,
-                sidePanelFocusRequester = selectedTabFocusRequester,
-                restoreFirstItemToken = continueWatchingRestoreFirstToken,
-                onEntrySelected = {
-                    restoreGridFocusOnResume = true
-                    restoreContinueWatchingFirstOnResume = true
-                    onEvent(LibraryState.Event.ContinueWatchingSelected(it))
-                },
-                onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
-                onRemoveWatchProgress = { onEvent(LibraryState.Event.RemoveWatchProgress(it)) },
-            )
-	            LibraryTab.FAVORITES -> {
-	                if (!state.isSignedIn) {
-	                    val favoriteItems = remember(state.items) { state.items.filter { it.isFavorite } }
-	                    LibraryGrid(
-	                        items = favoriteItems,
-                        focusedItemId = state.focusedItemId,
-                        focusedPreview = state.focusedPreview,
-                        gridFocusRequester = gridFocusRequester,
-                        sidePanelFocusRequester = selectedTabFocusRequester,
-                        restoreFocusedItemToken = restoreFocusedItemToken,
-                        onAnimeSelected = {
-                            restoreGridFocusOnResume = true
-                            onEvent(LibraryState.Event.AnimeSelected(it))
-                        },
-                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
-                        onRemoveLibraryEntry = { onEvent(LibraryState.Event.RemoveFavoriteEntry(it)) },
-                    )
-                } else {
-                    LibraryGrid(
-                        items = signedInFavoriteItems,
-                        focusedItemId = state.focusedItemId,
-                        focusedPreview = state.focusedPreview,
-                        gridFocusRequester = gridFocusRequester,
-                        sidePanelFocusRequester = selectedTabFocusRequester,
-                        restoreFocusedItemToken = restoreFocusedItemToken,
-                        onAnimeSelected = {
-                            restoreGridFocusOnResume = true
-                            onEvent(LibraryState.Event.RemoteAnimeSelected(it))
-                        },
-                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
-                        onRemoveLibraryEntry = {
-                            if (it in remoteFavoriteIds) {
+        LibraryTopTabs(
+            selectedTab = state.selectedTab,
+            onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
+            contentFocusRequester = gridFocusRequester,
+            selectedTabFocusRequester = selectedTabFocusRequester,
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            contentAlignment = Alignment.Center,
+        ) {
+            when (state.selectedTab) {
+                LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
+                    entries = state.continueWatching,
+                    focusedItemId = state.focusedItemId,
+                    focusedPreview = state.focusedPreview,
+                    gridFocusRequester = gridFocusRequester,
+                    selectedTabFocusRequester = selectedTabFocusRequester,
+                    restoreFirstItemToken = continueWatchingRestoreFirstToken,
+                    onEntrySelected = {
+                        restoreGridFocusOnResume = true
+                        restoreContinueWatchingFirstOnResume = true
+                        onEvent(LibraryState.Event.ContinueWatchingSelected(it))
+                    },
+                    onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                    onRemoveWatchProgress = { onEvent(LibraryState.Event.RemoveWatchProgress(it)) },
+                )
+
+                LibraryTab.FAVORITES -> {
+                    if (!state.isSignedIn) {
+                        val favoriteItems =
+                            remember(state.items) { state.items.filter { it.isFavorite } }
+                        LibraryGrid(
+                            items = favoriteItems,
+                            focusedItemId = state.focusedItemId,
+                            focusedPreview = state.focusedPreview,
+                            gridFocusRequester = gridFocusRequester,
+                            selectedTabFocusRequester = selectedTabFocusRequester,
+                            restoreFocusedItemToken = restoreFocusedItemToken,
+                            onAnimeSelected = {
+                                restoreGridFocusOnResume = true
+                                onEvent(LibraryState.Event.AnimeSelected(it))
+                            },
+                            onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                            onRemoveLibraryEntry = {
+                                onEvent(
+                                    LibraryState.Event.RemoveFavoriteEntry(
+                                        it
+                                    )
+                                )
+                            },
+                        )
+                    } else {
+                        LibraryGrid(
+                            items = signedInFavoriteItems,
+                            focusedItemId = state.focusedItemId,
+                            focusedPreview = state.focusedPreview,
+                            gridFocusRequester = gridFocusRequester,
+                            selectedTabFocusRequester = selectedTabFocusRequester,
+                            restoreFocusedItemToken = restoreFocusedItemToken,
+                            onAnimeSelected = {
+                                restoreGridFocusOnResume = true
+                                onEvent(LibraryState.Event.RemoteAnimeSelected(it))
+                            },
+                            onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                            onRemoveLibraryEntry = {
+                                if (it in remoteFavoriteIds) {
+                                    onEvent(
+                                        LibraryState.Event.RemoveRemoteEntry(
+                                            animeId = it,
+                                            favorite = true,
+                                        )
+                                    )
+                                } else {
+                                    onEvent(LibraryState.Event.RemoveFavoriteEntry(it))
+                                }
+                            },
+                        )
+                    }
+                }
+
+                LibraryTab.WATCHING,
+                LibraryTab.PLANNED,
+                LibraryTab.COMPLETED,
+                LibraryTab.POSTPONED,
+                LibraryTab.DROPPED -> {
+                    if (!state.isSignedIn) {
+                        val localListId = state.selectedTab.userAnimeListId()
+                        val localItems = remember(state.items, localListId) {
+                            state.items.filter { it.listId == localListId }
+                        }
+                        LibraryGrid(
+                            items = localItems,
+                            focusedItemId = state.focusedItemId,
+                            focusedPreview = state.focusedPreview,
+                            gridFocusRequester = gridFocusRequester,
+                            selectedTabFocusRequester = selectedTabFocusRequester,
+                            restoreFocusedItemToken = restoreFocusedItemToken,
+                            onAnimeSelected = {
+                                restoreGridFocusOnResume = true
+                                onEvent(LibraryState.Event.AnimeSelected(it))
+                            },
+                            onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                            onRemoveLibraryEntry = {
+                                onEvent(
+                                    LibraryState.Event.RemoveLibraryEntry(
+                                        it
+                                    )
+                                )
+                            },
+                        )
+                    } else {
+                        val remoteItems = state.remoteItems[state.selectedTab].orEmpty()
+                        val remoteLibraryItems =
+                            remember(remoteItems) { remoteItems.map { it.toLibraryEntry() } }
+                        LibraryGrid(
+                            items = remoteLibraryItems,
+                            focusedItemId = state.focusedItemId,
+                            focusedPreview = state.focusedPreview,
+                            gridFocusRequester = gridFocusRequester,
+                            selectedTabFocusRequester = selectedTabFocusRequester,
+                            restoreFocusedItemToken = restoreFocusedItemToken,
+                            onAnimeSelected = {
+                                restoreGridFocusOnResume = true
+                                onEvent(LibraryState.Event.RemoteAnimeSelected(it))
+                            },
+                            onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
+                            onRemoveLibraryEntry = {
                                 onEvent(
                                     LibraryState.Event.RemoveRemoteEntry(
                                         animeId = it,
-                                        favorite = true,
                                     )
                                 )
-                            } else {
-                                onEvent(LibraryState.Event.RemoveFavoriteEntry(it))
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
-            LibraryTab.WATCHING,
-            LibraryTab.PLANNED,
-            LibraryTab.COMPLETED,
-            LibraryTab.POSTPONED,
-            LibraryTab.DROPPED -> {
-	                if (!state.isSignedIn) {
-	                    val localListId = state.selectedTab.userAnimeListId()
-	                    val localItems = remember(state.items, localListId) {
-	                        state.items.filter { it.listId == localListId }
-	                    }
-	                    LibraryGrid(
-	                        items = localItems,
-                        focusedItemId = state.focusedItemId,
-                        focusedPreview = state.focusedPreview,
-                        gridFocusRequester = gridFocusRequester,
-                        sidePanelFocusRequester = selectedTabFocusRequester,
-                        restoreFocusedItemToken = restoreFocusedItemToken,
-                        onAnimeSelected = {
-                            restoreGridFocusOnResume = true
-                            onEvent(LibraryState.Event.AnimeSelected(it))
-                        },
-                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
-                        onRemoveLibraryEntry = { onEvent(LibraryState.Event.RemoveLibraryEntry(it)) },
-                    )
-	                } else {
-	                    val remoteItems = state.remoteItems[state.selectedTab].orEmpty()
-	                    val remoteLibraryItems = remember(remoteItems) { remoteItems.map { it.toLibraryEntry() } }
-	                    LibraryGrid(
-	                        items = remoteLibraryItems,
-                        focusedItemId = state.focusedItemId,
-                        focusedPreview = state.focusedPreview,
-                        gridFocusRequester = gridFocusRequester,
-                        sidePanelFocusRequester = selectedTabFocusRequester,
-                        restoreFocusedItemToken = restoreFocusedItemToken,
-                        onAnimeSelected = {
-                            restoreGridFocusOnResume = true
-                            onEvent(LibraryState.Event.RemoteAnimeSelected(it))
-                        },
-                        onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
-                        onRemoveLibraryEntry = {
-                            onEvent(
-                                LibraryState.Event.RemoveRemoteEntry(
-                                    animeId = it,
-                                )
-                            )
-                        },
-                    )
-                }
-            }
-        }
-
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-            LibrarySidePanel(
-                selectedTab = state.selectedTab,
-                onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
-                contentFocusRequester = gridFocusRequester,
-                selectedTabFocusRequester = selectedTabFocusRequester,
-            )
         }
     }
 }

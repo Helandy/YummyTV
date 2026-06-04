@@ -5,6 +5,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -49,8 +50,6 @@ import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top100.model.AnimeTopType
 
-private val CollapsedPanelWidth = 52.dp
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun Top100Browser(
@@ -77,7 +76,7 @@ internal fun Top100Browser(
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
-    var sidePanelHasFocus by remember { mutableStateOf(false) }
+    var filterTabsHasFocus by remember { mutableStateOf(false) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
     val preferredContentFocusRequester = focusRequesters.firstOrNull()
     val selectedTypeFocusRequester =
@@ -99,9 +98,9 @@ internal fun Top100Browser(
         requestCardFocus(lastFocusedIndex)
     }
 
-    // When loading finishes and focus is stuck on side panel, move it to first card
+    // When loading finishes and focus is still on filters, move it to the current card.
     LaunchedEffect(isLoading) {
-        if (!isLoading && sidePanelHasFocus && items.isNotEmpty()) {
+        if (!isLoading && filterTabsHasFocus && items.isNotEmpty()) {
             val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
             snapshotFlow {
                 gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
@@ -136,7 +135,7 @@ internal fun Top100Browser(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -150,124 +149,129 @@ internal fun Top100Browser(
                 }
             }
             .focusGroup(),
-        contentAlignment = Alignment.Center,
     ) {
-        when {
-            isLoading -> CircularProgressIndicator()
+        Top100FilterTabs(
+            selectedType = selectedType,
+            onTypeSelected = onTypeSelected,
+            contentFocusRequester = gridFocusRequester,
+            typeFocusRequesters = typeFocusRequesters,
+            onFocusChange = { filterTabsHasFocus = it },
+        )
 
-            error != null && items.isEmpty() -> Text(text = error)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            contentAlignment = Alignment.Center,
+        ) {
+            when {
+                isLoading -> CircularProgressIndicator()
 
-            else -> BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val horizontalSpacing = 16.dp
-                val gridHorizontalPadding = CollapsedPanelWidth + TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
-                val gridColumnCount = (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                        (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+                error != null && items.isEmpty() -> Text(text = error)
 
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 172.dp),
-                    state = gridState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .focusRequester(gridFocusRequester)
-                        .focusProperties {
-                            onEnter = {
-                                requestLastFocusedCard()
+                else -> BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    val horizontalSpacing = 16.dp
+                    val gridHorizontalPadding =
+                        TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
+                    val gridColumnCount =
+                        (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
+                                (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 172.dp),
+                        state = gridState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .focusRequester(gridFocusRequester)
+                            .focusProperties {
+                                onEnter = {
+                                    requestLastFocusedCard()
+                                }
                             }
-                        }
-                        .onFocusChanged { state ->
-                            val hadFocus = gridHasFocus
-                            gridHasFocus = state.hasFocus
-                            if (!state.hasFocus) {
-                                isRestoringFocus = false
-                            }
-                            if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
-                                isRestoringFocus = true
-                                scope.launch {
-                                    val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
-                                    gridState.scrollToItem(target)
-                                    snapshotFlow {
-                                        gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                    }.first { it }
-                                    runCatching { focusRequesters[target].requestFocus() }
+                            .onFocusChanged { state ->
+                                val hadFocus = gridHasFocus
+                                gridHasFocus = state.hasFocus
+                                if (!state.hasFocus) {
                                     isRestoringFocus = false
                                 }
-                            }
-                        }
-                        .focusGroup(),
-                    contentPadding = PaddingValues(
-                        start = CollapsedPanelWidth + TvScreenPadding.Horizontal,
-                        end = TvScreenPadding.Horizontal,
-                        top = TvScreenPadding.Vertical,
-                        bottom = TvScreenPadding.Vertical,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
-                ) {
-                    itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                        val stableOnClick = remember(item.id) { { onItemSelected(item) } }
-                        val stableOnFocused = remember(item.id) { { onItemFocused(item.id) } }
-                        Top100AnimeCard(
-                            item = item,
-                            rank = index + 1,
-                            onClick = stableOnClick,
-                            onFocused = stableOnFocused,
-                            screenshotUrls = if (item.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
-                            modifier = Modifier
-                                .focusRequester(focusRequesters[index])
-                                .onPreviewKeyEvent { event ->
-                                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                                    val target = when (event.key) {
-                                        Key.DirectionUp -> index - gridColumnCount
-                                        Key.DirectionDown -> index + gridColumnCount
-                                        Key.DirectionLeft -> {
-                                            if (index % gridColumnCount == 0) {
-                                                runCatching { selectedTypeFocusRequester?.requestFocus() }
-                                                return@onPreviewKeyEvent true
-                                            }
-                                            return@onPreviewKeyEvent false
-                                        }
-                                        else -> return@onPreviewKeyEvent false
-                                    }
-                                    when {
-                                        target in items.indices -> {
-                                            scope.launch {
-                                                gridState.animateScrollToItem(target)
-                                                snapshotFlow {
-                                                    gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                                }.first { it }
-                                                runCatching { focusRequesters[target].requestFocus() }
-                                            }
-                                            true
-                                        }
-                                        event.key == Key.DirectionUp -> false
-                                        else -> true
+                                if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                                    isRestoringFocus = true
+                                    scope.launch {
+                                        val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+                                        gridState.scrollToItem(target)
+                                        snapshotFlow {
+                                            gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
+                                        }.first { it }
+                                        runCatching { focusRequesters[target].requestFocus() }
+                                        isRestoringFocus = false
                                     }
                                 }
-                                .onFocusChanged { state ->
-                                    if (state.hasFocus && !isRestoringFocus) {
-                                        lastFocusedIndex = index
-                                    }
-                                },
-                        )
-                    }
+                            }
+                            .focusGroup(),
+                        contentPadding = PaddingValues(
+                            start = TvScreenPadding.Horizontal,
+                            end = TvScreenPadding.Horizontal,
+                            top = 16.dp,
+                            bottom = TvScreenPadding.Vertical,
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+                    ) {
+                        itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                            val stableOnClick = remember(item.id) { { onItemSelected(item) } }
+                            val stableOnFocused = remember(item.id) { { onItemFocused(item.id) } }
+                            Top100AnimeCard(
+                                item = item,
+                                rank = index + 1,
+                                onClick = stableOnClick,
+                                onFocused = stableOnFocused,
+                                screenshotUrls = if (item.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
+                                modifier = Modifier
+                                    .focusRequester(focusRequesters[index])
+                                    .onPreviewKeyEvent { event ->
+                                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                                        if (event.key == Key.DirectionUp && index < gridColumnCount) {
+                                            runCatching { selectedTypeFocusRequester?.requestFocus() }
+                                            return@onPreviewKeyEvent true
+                                        }
+                                        val target = when (event.key) {
+                                            Key.DirectionUp -> index - gridColumnCount
+                                            Key.DirectionDown -> index + gridColumnCount
+                                            Key.DirectionLeft -> return@onPreviewKeyEvent false
+                                            else -> return@onPreviewKeyEvent false
+                                        }
+                                        when {
+                                            target in items.indices -> {
+                                                scope.launch {
+                                                    gridState.animateScrollToItem(target)
+                                                    snapshotFlow {
+                                                        gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
+                                                    }.first { it }
+                                                    runCatching { focusRequesters[target].requestFocus() }
+                                                }
+                                                true
+                                            }
 
-                    if (isLoadingMore) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            TvLoadingFooter()
+                                            event.key == Key.DirectionUp -> false
+                                            else -> true
+                                        }
+                                    }
+                                    .onFocusChanged { state ->
+                                        if (state.hasFocus && !isRestoringFocus) {
+                                            lastFocusedIndex = index
+                                        }
+                                    },
+                            )
+                        }
+
+                        if (isLoadingMore) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                TvLoadingFooter()
+                            }
                         }
                     }
                 }
             }
-        }
-
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-            Top100FilterSidePanel(
-                selectedType = selectedType,
-                onTypeSelected = onTypeSelected,
-                contentFocusRequester = gridFocusRequester,
-                typeFocusRequesters = typeFocusRequesters,
-                onFocusChange = { sidePanelHasFocus = it },
-            )
         }
     }
 }
