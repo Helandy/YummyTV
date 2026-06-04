@@ -29,12 +29,11 @@ internal class WatchNextManager @Inject constructor(
 
     suspend fun sync(entries: List<WatchProgressEntry>) {
         deleteAll()
-        entries
-            .filter { it.animeId > 0 }
-            .filter { WatchProgressStore.isContinueWatchingEntry(it) }
-            .groupBy { it.animeId }
-            .values
-            .map { group -> group.maxBy { it.updatedAt } }
+        WatchProgressStore.latestByAnime(
+            entries
+                .filter { it.animeId > 0 }
+                .filter { WatchProgressStore.isContinueWatchingEntry(it) }
+        )
             .forEach { entry ->
                 val episodeThumbnail = resolveEpisodeThumbnail(entry)
                 insert(entry, episodeThumbnail)

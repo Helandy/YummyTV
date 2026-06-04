@@ -12,6 +12,13 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             entry.durationMs > 0 &&
                 entry.positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS &&
                 entry.positionMs.toFloat() / entry.durationMs < MAX_CONTINUE_WATCHING_PROGRESS
+
+        fun latestByAnime(entries: List<WatchProgressEntry>): List<WatchProgressEntry> =
+            entries
+                .groupBy { it.animeId }
+                .values
+                .map { group -> group.maxBy { it.updatedAt } }
+                .sortedByDescending { it.updatedAt }
     }
 
     suspend fun get(animeId: Int, episode: String): WatchProgressEntry? = dao.get(animeId, episode)

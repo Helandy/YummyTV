@@ -75,11 +75,7 @@ class LibraryViewModel @Inject constructor(
 
         watchProgressStore.observeContinueWatching()
             .map { entries ->
-                entries
-                    .groupBy { it.animeId }
-                    .values
-                    .map { group -> group.maxBy { it.updatedAt } }
-                    .sortedByDescending { it.updatedAt }
+                WatchProgressStore.latestByAnime(entries)
             }
             .flowOn(Dispatchers.Default)
             .onEach { entries -> setState { copy(continueWatching = entries) } }

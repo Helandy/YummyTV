@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
         load()
         watchProgressStore.observeContinueWatching()
             .map { entries ->
-                entries.distinctBy { it.animeId to it.episode }
+                WatchProgressStore.latestByAnime(entries)
             }
             .flowOn(Dispatchers.Default)
             .onEach { inProgress ->
