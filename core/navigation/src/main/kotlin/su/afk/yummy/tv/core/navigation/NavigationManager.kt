@@ -6,74 +6,65 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import su.afk.yummy.tv.core.navigation.tab.SideTab
-
-enum class MainMenuFocusTarget {
-    SETTINGS_ACTION,
-    SELECTED_TAB,
-    ACCOUNT_ACTION,
-}
+import su.afk.yummy.tv.core.navigation.root.RootTab
 
 class NavigationManager(
-    val roots: Map<SideTab, NavKey>,
-    initialTab: SideTab,
+    val roots: Map<RootTab, NavKey>,
+    initialRoot: RootTab,
 ) {
     var appBackStack: MutableList<NavKey> by mutableStateOf(mutableStateListOf())
         private set
 
-    var currentTab: SideTab by mutableStateOf(initialTab)
+    var currentRoot: RootTab by mutableStateOf(initialRoot)
         private set
 
-    var pendingMainMenuFocusTarget: MainMenuFocusTarget? by mutableStateOf(null)
-        private set
-
-    private var stacks: Map<SideTab, MutableList<NavKey>> by mutableStateOf(
-        SideTab.entries.associateWith { mutableStateListOf<NavKey>() }
+    private var stacks: Map<RootTab, MutableList<NavKey>> by mutableStateOf(
+        RootTab.entries.associateWith { mutableStateListOf<NavKey>() }
     )
 
     val backStack: MutableList<NavKey>
-        get() = if (appBackStack.isNotEmpty()) appBackStack else stacks.getValue(currentTab)
+        get() = if (appBackStack.isNotEmpty()) appBackStack else stacks.getValue(currentRoot)
 
-    fun stack(tab: SideTab): MutableList<NavKey> = stacks.getValue(tab)
+    fun stack(root: RootTab): MutableList<NavKey> = stacks.getValue(root)
 
     init {
-        SideTab.entries.forEach { tab ->
-            val stack = stacks.getValue(tab)
-            if (stack.isEmpty()) stack += roots.getValue(tab)
+        RootTab.entries.forEach { root ->
+            val stack = stacks.getValue(root)
+            if (stack.isEmpty()) stack += roots.getValue(root)
         }
     }
 
     fun attachBackStacks(
         appBackStack: NavBackStack<NavKey>,
-        tabStacks: Map<SideTab, NavBackStack<NavKey>>,
+        rootStacks: Map<RootTab, NavBackStack<NavKey>>,
     ) {
         if (this.appBackStack.hasPendingAppNavigation() && appBackStack.isInitialAppStack()) {
             appBackStack.replaceWith(this.appBackStack)
         }
 
-        SideTab.entries.forEach { tab ->
-            val root = roots.getValue(tab)
-            val currentStack = stacks.getValue(tab)
-            val saveableStack = tabStacks.getValue(tab)
+        RootTab.entries.forEach { rootTab ->
+            val root = roots.getValue(rootTab)
+            val currentStack = stacks.getValue(rootTab)
+            val saveableStack = rootStacks.getValue(rootTab)
             if (currentStack.hasPendingNavigation(root) && saveableStack.isInitialStack(root)) {
                 saveableStack.replaceWith(currentStack)
             }
         }
 
         this.appBackStack = appBackStack
-        stacks = tabStacks
+        stacks = rootStacks
     }
 
-    fun switchTab(tab: SideTab, reselectPopToRoot: Boolean = true) {
-        if (tab == currentTab) {
+    fun switchRoot(root: RootTab, reselectPopToRoot: Boolean = true) {
+        if (root == currentRoot) {
             if (reselectPopToRoot) popToRoot()
             return
         }
-        currentTab = tab
+        currentRoot = root
     }
 
-    fun restoreTab(tab: SideTab) {
-        currentTab = tab
+    fun restoreRoot(root: RootTab) {
+        currentRoot = root
     }
 
     fun navigate(dest: NavKey) {
@@ -84,14 +75,6 @@ class NavigationManager(
     fun navigateApp(dest: NavKey) {
         if (appBackStack.lastOrNull() == dest) return
         appBackStack += dest
-    }
-
-    fun requestMainMenuFocus(target: MainMenuFocusTarget) {
-        pendingMainMenuFocusTarget = target
-    }
-
-    fun clearMainMenuFocusRequest(target: MainMenuFocusTarget?) {
-        if (pendingMainMenuFocusTarget == target) pendingMainMenuFocusTarget = null
     }
 
     fun replace(dest: NavKey) {
@@ -108,7 +91,7 @@ class NavigationManager(
             backStack.removeAt(backStack.lastIndex)
             return
         }
-        if (currentTab != SideTab.HOME) currentTab = SideTab.HOME
+        if (currentRoot != RootTab.HOME) currentRoot = RootTab.HOME
     }
 
     fun backTwo() {
@@ -121,11 +104,11 @@ class NavigationManager(
         repeat(2) {
             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
             else {
-                if (backStack.isEmpty()) backStack += roots.getValue(currentTab)
+                if (backStack.isEmpty()) backStack += roots.getValue(currentRoot)
                 return
             }
         }
-        if (backStack.isEmpty()) backStack += roots.getValue(currentTab)
+        if (backStack.isEmpty()) backStack += roots.getValue(currentRoot)
     }
 
     fun popBackTo(dest: NavKey, inclusive: Boolean = false) {
@@ -136,25 +119,25 @@ class NavigationManager(
             backStack.removeAt(i)
         }
         if (appBackStack.isNotEmpty()) return
-        if (backStack.isEmpty()) backStack += roots.getValue(currentTab)
+        if (backStack.isEmpty()) backStack += roots.getValue(currentRoot)
     }
 
     fun popToRoot() {
         appBackStack.clear()
-        val root = roots.getValue(currentTab)
+        val root = roots.getValue(currentRoot)
         backStack.clear()
         backStack += root
     }
 
-    fun resetAllTabs() {
+    fun resetAllRoots() {
         appBackStack.clear()
-        SideTab.entries.forEach { tab ->
-            stacks.getValue(tab).apply {
+        RootTab.entries.forEach { rootTab ->
+            stacks.getValue(rootTab).apply {
                 clear()
-                add(roots.getValue(tab))
+                add(roots.getValue(rootTab))
             }
         }
-        currentTab = SideTab.HOME
+        currentRoot = RootTab.HOME
     }
 
     private fun List<NavKey>.isInitialStack(root: NavKey): Boolean =

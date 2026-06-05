@@ -9,7 +9,7 @@ import dagger.multibindings.IntoSet
 import su.afk.yummy.tv.core.navigation.MobileUi
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.TvUi
-import su.afk.yummy.tv.core.navigation.tab.SideTab
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -27,12 +27,14 @@ import javax.inject.Singleton
 object UniversalNavigationModule {
 
     @Provides
-    fun provideTabRoots(): @JvmSuppressWildcards Map<SideTab, NavKey> = mapOf(
-        SideTab.HOME to su.afk.yummy.tv.feature.home.navigator.HomeDestination,
-        SideTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination,
-        SideTab.SCHEDULE to su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination,
-        SideTab.TOP100 to su.afk.yummy.tv.feature.top100.navigator.Top100Destination,
-        SideTab.LIBRARY to su.afk.yummy.tv.feature.library.navigator.LibraryDestination,
+    fun provideRootTabs(): @JvmSuppressWildcards Map<RootTab, NavKey> = mapOf(
+        RootTab.ACCOUNT to su.afk.yummy.tv.feature.account.navigator.AccountDestination,
+        RootTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination,
+        RootTab.HOME to su.afk.yummy.tv.feature.home.navigator.HomeDestination,
+        RootTab.SCHEDULE to su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination,
+        RootTab.TOP100 to su.afk.yummy.tv.feature.top100.navigator.Top100Destination,
+        RootTab.LIBRARY to su.afk.yummy.tv.feature.library.navigator.LibraryDestination,
+        RootTab.SETTINGS to su.afk.yummy.tv.feature.settings.navigator.SettingsDestination,
     )
 
     @Provides

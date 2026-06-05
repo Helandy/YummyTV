@@ -23,6 +23,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -65,6 +68,14 @@ fun SettingsTvScreen(
     val tabFocusRequesters = remember {
         SettingsTab.entries.associateWith { FocusRequester() }
     }
+    val selectedTabFocusRequester = tabFocusRequesters.getValue(selectedTab)
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+
+    DisposableEffect(selectedTabFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(selectedTabFocusRequester)
+        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
 
     Column(
         modifier = Modifier
@@ -80,15 +91,23 @@ fun SettingsTvScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SettingsTab.entries.forEach { tab ->
+            SettingsTab.entries.forEachIndexed { index, tab ->
                 SettingsTabItem(
                     label = stringResource(tab.labelRes),
                     selected = tab == selectedTab,
                     modifier = Modifier.focusRequester(tabFocusRequesters.getValue(tab)),
                     contentFocusRequester = contentFocusRequester,
+                    leftFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index - 1)]
+                        ?: mainMenuFocusRequester.takeIf { index == 0 },
+                    rightFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index + 1)],
                     onSelected = {
                         selectedTab = tab
                         contentAnchorTab = tab
+                    },
+                    onActivated = {
+                        selectedTab = tab
+                        contentAnchorTab = tab
+                        runCatching { contentFocusRequester.requestFocus() }
                     },
                 )
             }

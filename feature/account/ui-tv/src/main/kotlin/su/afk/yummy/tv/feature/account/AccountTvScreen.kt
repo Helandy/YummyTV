@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
 import su.afk.yummy.tv.feature.account.view.LoginPanel
 
@@ -25,6 +29,13 @@ fun AccountTvScreen(
 ) {
     BackHandler { onEvent(AccountState.Event.BackSelected) }
     val horizontalPadding = if (state.isSignedIn) 32.dp else TvScreenPadding.Horizontal
+    val preferredFocusRequester = remember { FocusRequester() }
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+
+    DisposableEffect(preferredFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(preferredFocusRequester)
+        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
 
     Box(
         modifier = Modifier
@@ -36,12 +47,14 @@ fun AccountTvScreen(
             LoginPanel(
                 state = state,
                 onEvent = onEvent,
+                initialFocusRequester = preferredFocusRequester,
                 modifier = Modifier.align(Alignment.Center),
             )
         } else {
             AccountHubPanel(
                 state = state,
                 onEvent = onEvent,
+                initialFocusRequester = preferredFocusRequester,
                 modifier = Modifier.align(Alignment.TopCenter),
             )
         }

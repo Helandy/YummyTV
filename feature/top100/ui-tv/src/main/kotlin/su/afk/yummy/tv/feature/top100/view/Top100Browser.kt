@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top100.model.AnimeTopItem
@@ -70,17 +71,17 @@ internal fun Top100Browser(
     val gridState = rememberLazyGridState()
     val gridFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
 
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
-    var filterTabsHasFocus by remember { mutableStateOf(false) }
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
-    val preferredContentFocusRequester = focusRequesters.firstOrNull()
     val selectedTypeFocusRequester =
         typeFocusRequesters.getOrNull(AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0))
+    val preferredContentFocusRequester = selectedTypeFocusRequester ?: gridFocusRequester
     val requestCardFocus = { index: Int ->
         if (items.isNotEmpty()) {
             val target = index.coerceIn(0, items.lastIndex)
@@ -96,17 +97,6 @@ internal fun Top100Browser(
     }
     val requestLastFocusedCard = {
         requestCardFocus(lastFocusedIndex)
-    }
-
-    // When loading finishes and focus is still on filters, move it to the current card.
-    LaunchedEffect(isLoading) {
-        if (!isLoading && filterTabsHasFocus && items.isNotEmpty()) {
-            val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
-            snapshotFlow {
-                gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-            }.first { it }
-            runCatching { focusRequesters[target].requestFocus() }
-        }
     }
 
     // Lift the focused card's row to the top, but only once focus has settled.
@@ -142,7 +132,7 @@ internal fun Top100Browser(
             .focusProperties {
                 onEnter = {
                     if (requestedFocusDirection == FocusDirection.Right) {
-                        requestCardFocus(0)
+                        selectedTypeFocusRequester?.requestFocus() ?: requestLastFocusedCard()
                     } else {
                         requestLastFocusedCard()
                     }
@@ -155,7 +145,7 @@ internal fun Top100Browser(
             onTypeSelected = onTypeSelected,
             contentFocusRequester = gridFocusRequester,
             typeFocusRequesters = typeFocusRequesters,
-            onFocusChange = { filterTabsHasFocus = it },
+            mainMenuFocusRequester = mainMenuFocusRequester,
         )
 
         Box(

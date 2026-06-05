@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
-import su.afk.yummy.tv.core.navigation.MainMenuFocusTarget
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -87,7 +86,6 @@ class AccountViewModel @Inject constructor(
     override fun onEvent(event: AccountState.Event) {
         when (event) {
             AccountState.Event.BackSelected -> {
-                nav.requestMainMenuFocus(MainMenuFocusTarget.ACCOUNT_ACTION)
                 nav.back()
             }
             is AccountState.Event.TabSelected -> setState { copy(selectedTab = event.tab) }
@@ -152,7 +150,6 @@ class AccountViewModel @Inject constructor(
                                 hubError = null,
                             )
                         }
-                        nav.requestMainMenuFocus(MainMenuFocusTarget.ACCOUNT_ACTION)
                         nav.back()
                     },
                     onFailure = { setState { copy(isLoading = false, error = it.message) } },

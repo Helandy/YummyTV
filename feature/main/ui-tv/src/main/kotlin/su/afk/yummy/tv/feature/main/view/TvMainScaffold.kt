@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -36,12 +35,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -51,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
@@ -58,12 +58,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.navigation.MainMenuFocusTarget
-import su.afk.yummy.tv.core.navigation.tab.SideTab
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.R
 
@@ -72,15 +70,20 @@ private val SideMenuExpandedWidth = 300.dp
 private val SideMenuItemHeight = 56.dp
 private val SideMenuShape = RoundedCornerShape(8.dp)
 
+private data class PendingContentFocusRequest(
+    val root: RootTab,
+    val requester: FocusRequester?,
+)
+
 data class TvMenuItem(
     @param:StringRes val titleRes: Int,
-    val destination: SideTab,
+    val destination: RootTab,
     val icon: ImageVector? = null,
 )
 
 @Composable
 fun TvMainScaffold(
-    selectedTab: SideTab,
+    selectedRoot: RootTab,
     contentFocusKey: Any?,
     menuItems: List<TvMenuItem>,
     state: MainState.State,
@@ -88,66 +91,22 @@ fun TvMainScaffold(
     onEvent: (MainState.Event) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val tabFocusRequesters = remember {
-        SideTab.entries.associateWith { FocusRequester() }
+    val rootFocusRequesters = remember {
+        RootTab.entries.associateWith { FocusRequester() }
     }
-    val settingsFocusRequester = remember { FocusRequester() }
-    val accountFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
     var preferredContentFocusRequester by remember { mutableStateOf<FocusRequester?>(null) }
     var preferredContentFocusKey by remember { mutableStateOf<Any?>(null) }
     var initialContentFocusRequested by remember { mutableStateOf(false) }
-    val tvMenuState = state.tvMenu
+    var pendingContentFocusRequest by remember { mutableStateOf<PendingContentFocusRequest?>(null) }
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     val currentPreferredContentFocusRequester =
         preferredContentFocusRequester.takeIf { preferredContentFocusKey == contentFocusKey }
     val mainMenuRightFocusRequester = currentPreferredContentFocusRequester ?: contentFocusRequester
-    val selectedTabFocusRequester = tabFocusRequesters.getValue(selectedTab)
-    val focusRequesterForTarget = { target: MainMenuFocusTarget ->
-        when (target) {
-            MainMenuFocusTarget.SETTINGS_ACTION -> settingsFocusRequester
-            MainMenuFocusTarget.ACCOUNT_ACTION -> accountFocusRequester
-            MainMenuFocusTarget.SELECTED_TAB -> selectedTabFocusRequester
-        }
-    }
-    val mainMenuEnterFocusRequester = focusRequesterForTarget(tvMenuState.currentMenuFocusTarget)
-
-    LaunchedEffect(showMainMenu, currentPreferredContentFocusRequester) {
-        if (!showMainMenu || initialContentFocusRequested) return@LaunchedEffect
-        initialContentFocusRequested = true
-        delay(40)
-        runCatching { mainMenuRightFocusRequester.requestFocus() }
-    }
-
-    LaunchedEffect(tvMenuState.menuFocusRequestId, showMainMenu) {
-        if (!showMainMenu || tvMenuState.menuFocusRequestId <= 0L) return@LaunchedEffect
-        val target = tvMenuState.currentMenuFocusTarget
-        repeat(24) {
-            runCatching { focusRequesterForTarget(target).requestFocus() }
-            delay(25)
-        }
-        if (tvMenuState.pendingMenuFocusTarget == target) {
-            onEvent(MainState.Event.TvMenuFocusConsumed(target))
-        }
-    }
-
-    LaunchedEffect(tvMenuState.contentFocusRequestId, showMainMenu, contentFocusKey) {
-        if (!showMainMenu || tvMenuState.contentFocusRequestId <= 0L) return@LaunchedEffect
-        delay(40)
-        repeat(12) {
-            val focusRequester = preferredContentFocusRequester
-                .takeIf { preferredContentFocusKey == contentFocusKey }
-                ?: contentFocusRequester
-            runCatching { focusRequester.requestFocus(FocusDirection.Right) }
-            delay(25)
-        }
-    }
-
-    CompositionLocalProvider(
-        LocalMainMenuFocusRequester provides selectedTabFocusRequester,
-        LocalContentFocusRequester provides contentFocusRequester,
-        LocalPreferredContentFocusRequester provides { requester ->
+    val selectedRootFocusRequester = rootFocusRequesters.getValue(selectedRoot)
+    val registerPreferredContentFocusRequester = remember(contentFocusKey) {
+        { requester: FocusRequester? ->
             if (requester != null) {
                 preferredContentFocusKey = contentFocusKey
                 preferredContentFocusRequester = requester
@@ -155,7 +114,46 @@ fun TvMainScaffold(
                 preferredContentFocusRequester = null
                 preferredContentFocusKey = null
             }
-        },
+        }
+    }
+    val requestContentFocus: (RootTab) -> Unit = { root ->
+        pendingContentFocusRequest = PendingContentFocusRequest(
+            root = root,
+            requester = currentPreferredContentFocusRequester.takeIf { root == selectedRoot },
+        )
+    }
+
+    LaunchedEffect(showMainMenu, contentFocusKey, currentPreferredContentFocusRequester) {
+        val initialRequester = currentPreferredContentFocusRequester
+        if (!showMainMenu || initialContentFocusRequested || initialRequester == null) return@LaunchedEffect
+        initialContentFocusRequested = true
+        withFrameNanos { }
+        withFrameNanos { }
+        runCatching { initialRequester.requestFocus() }
+    }
+
+    LaunchedEffect(pendingContentFocusRequest, selectedRoot, contentFocusKey) {
+        val request = pendingContentFocusRequest ?: return@LaunchedEffect
+        if (request.root != selectedRoot) {
+            withFrameNanos { }
+            withFrameNanos { }
+            if (request.root != selectedRoot) {
+                pendingContentFocusRequest = null
+            }
+            return@LaunchedEffect
+        }
+        withFrameNanos { }
+        withFrameNanos { }
+        (request.requester ?: preferredContentFocusRequester
+            .takeIf { preferredContentFocusKey == contentFocusKey })
+            ?.let { runCatching { it.requestFocus() } }
+        pendingContentFocusRequest = null
+    }
+
+    CompositionLocalProvider(
+        LocalMainMenuFocusRequester provides selectedRootFocusRequester,
+        LocalContentFocusRequester provides contentFocusRequester,
+        LocalPreferredContentFocusRequester provides registerPreferredContentFocusRequester,
     ) {
         Box(
             modifier = Modifier
@@ -167,27 +165,28 @@ fun TvMainScaffold(
                     .fillMaxSize()
                     .padding(start = if (showMainMenu) SideMenuCollapsedWidth else 0.dp)
                     .focusRequester(contentFocusRequester)
-                    .focusProperties { left = selectedTabFocusRequester }
-                    .focusGroup()
-                    .focusable(),
+                    .focusProperties { left = selectedRootFocusRequester }
+                    .moveUnhandledLeftFocusToMenu(
+                        enabled = showMainMenu,
+                        menuFocusRequester = selectedRootFocusRequester,
+                    )
+                    .focusGroup(),
             ) {
                 content()
             }
 
             if (showMainMenu) {
                 TvSideMenu(
-                    selectedTab = selectedTab,
+                    selectedRoot = selectedRoot,
                     menuItems = menuItems,
                     accountLabel = accountLabel,
                     accountAvatarUrl = accountAvatarUrl,
                     unreadNotificationsCount = state.unreadNotificationsCount,
                     onEvent = onEvent,
-                    settingsFocusRequester = settingsFocusRequester,
-                    tabFocusRequesters = tabFocusRequesters,
-                    menuEnterFocusRequester = mainMenuEnterFocusRequester,
-                    accountFocusRequester = accountFocusRequester,
+                    rootFocusRequesters = rootFocusRequesters,
+                    menuEnterFocusRequester = selectedRootFocusRequester,
                     rightFocusRequester = mainMenuRightFocusRequester,
-                    showSelectedTabBackground = tvMenuState.showSelectedTabBackground,
+                    onMoveToContent = requestContentFocus,
                 )
             }
         }
@@ -197,30 +196,40 @@ fun TvMainScaffold(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TvSideMenu(
-    selectedTab: SideTab,
+    selectedRoot: RootTab,
     menuItems: List<TvMenuItem>,
     accountLabel: String?,
     accountAvatarUrl: String,
     unreadNotificationsCount: Int,
     onEvent: (MainState.Event) -> Unit,
-    settingsFocusRequester: FocusRequester,
-    tabFocusRequesters: Map<SideTab, FocusRequester>,
+    rootFocusRequesters: Map<RootTab, FocusRequester>,
     menuEnterFocusRequester: FocusRequester,
-    accountFocusRequester: FocusRequester,
     rightFocusRequester: FocusRequester,
-    showSelectedTabBackground: Boolean,
+    onMoveToContent: (RootTab) -> Unit,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
-    var focusedIndex by remember { mutableIntStateOf(menuItems.indexOfFirst { it.destination == selectedTab } + 1) }
-    val rowFocusRequesters = listOf(accountFocusRequester) +
-            menuItems.map { tabFocusRequesters.getValue(it.destination) } +
-            settingsFocusRequester
+    val rowFocusRequesters = listOf(rootFocusRequesters.getValue(RootTab.ACCOUNT)) +
+            menuItems.map { rootFocusRequesters.getValue(it.destination) } +
+            rootFocusRequesters.getValue(RootTab.SETTINGS)
+
+    fun focusedIndexFor(root: RootTab): Int = when (root) {
+        RootTab.ACCOUNT -> 0
+        RootTab.SETTINGS -> rowFocusRequesters.lastIndex
+        else -> (menuItems.indexOfFirst { it.destination == root } + 1)
+            .coerceIn(1, rowFocusRequesters.lastIndex - 1)
+    }
+
+    var focusedIndex by remember { mutableIntStateOf(focusedIndexFor(selectedRoot)) }
     val menuWidth by animateDpAsState(
         targetValue = if (hasFocus) SideMenuExpandedWidth else SideMenuCollapsedWidth,
         animationSpec = tween(durationMillis = 180),
         label = "TvSideMenuWidth",
     )
     val backgroundColor = MaterialTheme.colorScheme.background
+
+    LaunchedEffect(selectedRoot, hasFocus) {
+        if (!hasFocus) focusedIndex = focusedIndexFor(selectedRoot)
+    }
 
     Column(
         modifier = Modifier
@@ -266,39 +275,42 @@ private fun TvSideMenu(
             avatarUrl = accountAvatarUrl,
             unreadNotificationsCount = unreadNotificationsCount,
             expanded = hasFocus,
-            focusRequester = accountFocusRequester,
+            selected = selectedRoot == RootTab.ACCOUNT,
+            focusRequester = rootFocusRequesters.getValue(RootTab.ACCOUNT),
             downFocusRequester = rowFocusRequesters.getOrNull(1),
             rightFocusRequester = rightFocusRequester,
             onFocusedSelected = {
                 focusedIndex = 0
-                onEvent(MainState.Event.TvAccountFocused)
+                onEvent(MainState.Event.TvRootFocused(RootTab.ACCOUNT))
             },
-            onMoveRight = { onEvent(MainState.Event.TvContentFocusRequestedFromMenu) },
+            onMoveToContent = { onMoveToContent(RootTab.ACCOUNT) },
             onClick = {
-                onEvent(MainState.Event.TvAccountActivated)
+                onEvent(MainState.Event.TvRootFocused(RootTab.ACCOUNT))
+                onMoveToContent(RootTab.ACCOUNT)
             },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         menuItems.forEachIndexed { index, item ->
-            val isSelected = item.destination == selectedTab
+            val isSelected = item.destination == selectedRoot
             val rowIndex = index + 1
             TvSideMenuItem(
                 label = stringResource(item.titleRes),
                 icon = item.icon,
-                selected = showSelectedTabBackground && isSelected,
+                selected = isSelected,
                 expanded = hasFocus,
-                onFocusedSelected = { onEvent(MainState.Event.TvTabFocused(item.destination)) },
+                onFocusedSelected = { onEvent(MainState.Event.TvRootFocused(item.destination)) },
                 onActivated = {
-                    onEvent(MainState.Event.TvTabActivated(item.destination))
+                    onEvent(MainState.Event.TvRootFocused(item.destination))
+                    onMoveToContent(item.destination)
                 },
-                focusRequester = tabFocusRequesters.getValue(item.destination),
+                focusRequester = rootFocusRequesters.getValue(item.destination),
                 upFocusRequester = rowFocusRequesters.getOrNull(rowIndex - 1),
                 downFocusRequester = rowFocusRequesters.getOrNull(rowIndex + 1),
                 rightFocusRequester = rightFocusRequester,
                 onFocused = { focusedIndex = rowIndex },
-                onMoveRight = { onEvent(MainState.Event.TvContentFocusRequestedFromMenu) },
+                onMoveToContent = { onMoveToContent(item.destination) },
             )
         }
 
@@ -307,17 +319,18 @@ private fun TvSideMenu(
         TvSideMenuItem(
             label = stringResource(R.string.main_settings_content_description),
             icon = Icons.Default.Settings,
-            selected = false,
+            selected = selectedRoot == RootTab.SETTINGS,
             expanded = hasFocus,
-            onFocusedSelected = { onEvent(MainState.Event.TvSettingsFocused) },
+            onFocusedSelected = { onEvent(MainState.Event.TvRootFocused(RootTab.SETTINGS)) },
             onActivated = {
-                onEvent(MainState.Event.TvSettingsActivated)
+                onEvent(MainState.Event.TvRootFocused(RootTab.SETTINGS))
+                onMoveToContent(RootTab.SETTINGS)
             },
-            focusRequester = settingsFocusRequester,
+            focusRequester = rootFocusRequesters.getValue(RootTab.SETTINGS),
             upFocusRequester = rowFocusRequesters.getOrNull(rowFocusRequesters.lastIndex - 1),
             rightFocusRequester = rightFocusRequester,
             onFocused = { focusedIndex = rowFocusRequesters.lastIndex },
-            onMoveRight = { onEvent(MainState.Event.TvContentFocusRequestedFromMenu) },
+            onMoveToContent = { onMoveToContent(RootTab.SETTINGS) },
         )
     }
 }
@@ -335,7 +348,7 @@ private fun TvSideMenuItem(
     downFocusRequester: FocusRequester? = null,
     rightFocusRequester: FocusRequester,
     onFocused: () -> Unit,
-    onMoveRight: () -> Unit,
+    onMoveToContent: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -355,7 +368,7 @@ private fun TvSideMenuItem(
             .focusRequester(focusRequester)
             .height(SideMenuItemHeight)
             .width(SideMenuExpandedWidth - 28.dp)
-            .moveFocusRightOnKey(onMoveRight)
+            .moveFocusToContentOnKey(onMoveToContent)
             .focusProperties {
                 right = rightFocusRequester
                 upFocusRequester?.let { up = it }
@@ -403,27 +416,33 @@ private fun TvSideMenuAccountItem(
     avatarUrl: String,
     unreadNotificationsCount: Int,
     expanded: Boolean,
+    selected: Boolean,
     focusRequester: FocusRequester,
     downFocusRequester: FocusRequester?,
     rightFocusRequester: FocusRequester,
     onFocusedSelected: () -> Unit,
-    onMoveRight: () -> Unit,
+    onMoveToContent: () -> Unit,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val backgroundColor = when {
         focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.92f)
+        selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f)
         else -> Color.Transparent
     }
-    val contentColor = if (focused) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = when {
+        focused -> MaterialTheme.colorScheme.surface
+        selected -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
     Row(
         modifier = Modifier
             .focusRequester(focusRequester)
             .height(SideMenuItemHeight)
             .width(SideMenuExpandedWidth - 28.dp)
-            .moveFocusRightOnKey(onMoveRight)
+            .moveFocusToContentOnKey(onMoveToContent)
             .focusProperties {
                 right = rightFocusRequester
                 downFocusRequester?.let { down = it }
@@ -478,7 +497,7 @@ private fun TvSideMenuAccountItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = if (focused) FontWeight.Bold else FontWeight.SemiBold,
+                fontWeight = if (focused || selected) FontWeight.Bold else FontWeight.SemiBold,
                 color = contentColor,
                 maxLines = 1,
             )
@@ -486,14 +505,32 @@ private fun TvSideMenuAccountItem(
     }
 }
 
-private fun Modifier.moveFocusRightOnKey(
-    onMoveRight: () -> Unit,
+private fun Modifier.moveFocusToContentOnKey(
+    onMoveToContent: () -> Unit,
 ): Modifier =
     onPreviewKeyEvent { event ->
-        if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight) {
-            onMoveRight()
-            true
-        } else {
-            false
+        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+        when (event.key) {
+            Key.DirectionRight,
+            Key.DirectionCenter,
+            Key.Enter,
+            Key.NumPadEnter,
+                -> {
+                onMoveToContent()
+                true
+            }
+
+            else -> false
         }
+    }
+
+private fun Modifier.moveUnhandledLeftFocusToMenu(
+    enabled: Boolean,
+    menuFocusRequester: FocusRequester,
+): Modifier =
+    onKeyEvent { event ->
+        if (!enabled || event.type != KeyEventType.KeyDown) return@onKeyEvent false
+        if (event.key != Key.DirectionLeft) return@onKeyEvent false
+        runCatching { menuFocusRequester.requestFocus() }
+        true
     }

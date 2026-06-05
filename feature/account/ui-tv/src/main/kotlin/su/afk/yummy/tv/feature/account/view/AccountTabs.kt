@@ -14,6 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.AccountState
@@ -23,16 +29,30 @@ import su.afk.yummy.tv.feature.account.R
 internal fun AccountTabs(
     selected: AccountState.AccountTab,
     onSelected: (AccountState.AccountTab) -> Unit,
+    selectedTabFocusRequester: FocusRequester? = null,
+    contentFocusRequester: FocusRequester? = null,
     onMarkAllRead: (() -> Unit)? = null,
     markAllReadEnabled: Boolean = true,
 ) {
     val statsFocusRequester = remember { FocusRequester() }
     val notificationsFocusRequester = remember { FocusRequester() }
     val markAllReadFocusRequester = remember { FocusRequester() }
+    val statsRequester =
+        if (selected == AccountState.AccountTab.STATS && selectedTabFocusRequester != null) {
+            selectedTabFocusRequester
+        } else {
+            statsFocusRequester
+        }
+    val notificationsRequester =
+        if (selected == AccountState.AccountTab.NOTIFICATIONS && selectedTabFocusRequester != null) {
+            selectedTabFocusRequester
+        } else {
+            notificationsFocusRequester
+        }
 
     LaunchedEffect(selected, onMarkAllRead != null) {
         if (selected == AccountState.AccountTab.NOTIFICATIONS && onMarkAllRead != null) {
-            runCatching { notificationsFocusRequester.requestFocus() }
+            runCatching { notificationsRequester.requestFocus() }
         }
     }
 
@@ -50,21 +70,36 @@ internal fun AccountTabs(
                 selected = selected == AccountState.AccountTab.STATS,
                 onClick = { onSelected(AccountState.AccountTab.STATS) },
                 modifier = Modifier
-                    .focusRequester(statsFocusRequester)
-                    .focusProperties { right = notificationsFocusRequester },
+                    .focusRequester(statsRequester)
+                    .accountTabFocus(
+                        contentFocusRequester = contentFocusRequester,
+                        leftFocusRequester = null,
+                        rightFocusRequester = notificationsRequester,
+                        onFocusSelected = { onSelected(AccountState.AccountTab.STATS) },
+                        onActivated = {
+                            onSelected(AccountState.AccountTab.STATS)
+                            contentFocusRequester?.let { runCatching { it.requestFocus() } }
+                        },
+                    )
+                    .onFocusChanged { if (it.isFocused) onSelected(AccountState.AccountTab.STATS) },
             )
             AccountTabButton(
                 label = stringResource(R.string.account_tab_notifications),
                 selected = selected == AccountState.AccountTab.NOTIFICATIONS,
                 onClick = { onSelected(AccountState.AccountTab.NOTIFICATIONS) },
                 modifier = Modifier
-                    .focusRequester(notificationsFocusRequester)
-                    .focusProperties {
-                        left = statsFocusRequester
-                        if (onMarkAllRead != null) {
-                            right = markAllReadFocusRequester
-                        }
-                    },
+                    .focusRequester(notificationsRequester)
+                    .accountTabFocus(
+                        contentFocusRequester = contentFocusRequester,
+                        leftFocusRequester = statsRequester,
+                        rightFocusRequester = markAllReadFocusRequester.takeIf { onMarkAllRead != null },
+                        onFocusSelected = { onSelected(AccountState.AccountTab.NOTIFICATIONS) },
+                        onActivated = {
+                            onSelected(AccountState.AccountTab.NOTIFICATIONS)
+                            contentFocusRequester?.let { runCatching { it.requestFocus() } }
+                        },
+                    )
+                    .onFocusChanged { if (it.isFocused) onSelected(AccountState.AccountTab.NOTIFICATIONS) },
             )
         }
         if (onMarkAllRead != null) {
@@ -74,9 +109,50 @@ internal fun AccountTabs(
                 modifier = Modifier
                     .width(260.dp)
                     .focusRequester(markAllReadFocusRequester)
-                    .focusProperties { left = notificationsFocusRequester },
+                    .focusProperties { left = notificationsRequester },
                 enabled = markAllReadEnabled,
             )
         }
     }
 }
+
+private fun Modifier.accountTabFocus(
+    contentFocusRequester: FocusRequester?,
+    leftFocusRequester: FocusRequester?,
+    rightFocusRequester: FocusRequester?,
+    onFocusSelected: () -> Unit,
+    onActivated: () -> Unit,
+): Modifier = this
+    .focusProperties {
+        contentFocusRequester?.let { down = it }
+        leftFocusRequester?.let { left = it }
+        rightFocusRequester?.let { right = it }
+    }
+    .onPreviewKeyEvent { event ->
+        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+        when (event.key) {
+            Key.DirectionLeft -> {
+                leftFocusRequester?.let {
+                    runCatching { it.requestFocus() }
+                    true
+                } ?: false
+            }
+
+            Key.DirectionRight -> {
+                rightFocusRequester?.let {
+                    runCatching { it.requestFocus() }
+                }
+                true
+            }
+
+            Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                onActivated()
+                true
+            }
+
+            else -> false
+        }
+    }
+    .onFocusChanged {
+        if (it.isFocused) onFocusSelected()
+    }

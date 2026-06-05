@@ -37,7 +37,7 @@ import su.afk.yummy.tv.core.navigation.AppNavHost
 import su.afk.yummy.tv.core.navigation.MobileUi
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.navigation.tab.SideTab
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.IMainGraph
@@ -59,11 +59,31 @@ class MobileMainGraph @Inject constructor(
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
         val items = listOf(
-            MobileMenuItem(stringResource(R.string.main_mobile_tab_search), SideTab.SEARCH, Icons.Default.Search),
-            MobileMenuItem(stringResource(R.string.main_mobile_tab_home), SideTab.HOME, Icons.Default.Home),
-            MobileMenuItem(stringResource(R.string.main_mobile_tab_schedule), SideTab.SCHEDULE, Icons.Default.DateRange),
-            MobileMenuItem(stringResource(R.string.main_mobile_tab_top), SideTab.TOP100, Icons.Default.Star),
-            MobileMenuItem(stringResource(R.string.main_mobile_tab_library), SideTab.LIBRARY, Icons.AutoMirrored.Filled.List),
+            MobileMenuItem(
+                stringResource(R.string.main_mobile_tab_search),
+                RootTab.SEARCH,
+                Icons.Default.Search
+            ),
+            MobileMenuItem(
+                stringResource(R.string.main_mobile_tab_home),
+                RootTab.HOME,
+                Icons.Default.Home
+            ),
+            MobileMenuItem(
+                stringResource(R.string.main_mobile_tab_schedule),
+                RootTab.SCHEDULE,
+                Icons.Default.DateRange
+            ),
+            MobileMenuItem(
+                stringResource(R.string.main_mobile_tab_top),
+                RootTab.TOP100,
+                Icons.Default.Star
+            ),
+            MobileMenuItem(
+                stringResource(R.string.main_mobile_tab_library),
+                RootTab.LIBRARY,
+                Icons.AutoMirrored.Filled.List
+            ),
         )
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
 
@@ -84,11 +104,11 @@ class MobileMainGraph @Inject constructor(
                     LocalShowScreenshotsOnFocus provides false,
                 ) {
                     MobileMainScaffold(
-                        selectedDestination = navManager.currentTab,
+                        selectedDestination = navManager.currentRoot,
                         menuItems = items,
                         showBars = atTabRoot,
                         unreadNotificationsCount = state.unreadNotificationsCount,
-                        onDestinationSelected = { navManager.switchTab(it) },
+                        onDestinationSelected = { navManager.switchRoot(it) },
                         onSettingsClick = { navManager.navigate(settingsNavigator.getSettingsDest()) },
                         onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
                     ) {

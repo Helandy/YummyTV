@@ -13,6 +13,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,7 +27,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 internal fun LibraryTopTabItem(
     label: String,
     selected: Boolean,
-    onSelected: () -> Unit,
+    onActivated: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
@@ -39,13 +44,38 @@ internal fun LibraryTopTabItem(
                 leftFocusRequester?.let { left = it }
                 rightFocusRequester?.let { right = it }
             }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionLeft -> {
+                        leftFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                            true
+                        } ?: false
+                    }
+
+                    Key.DirectionRight -> {
+                        rightFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                        }
+                        true
+                    }
+
+                    Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                        onActivated()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
                 color = if (selected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
                 shape = shape,
             )
-            .tvFocusableClick(onClick = onSelected, shape = shape)
+            .tvFocusableClick(onClick = onActivated, shape = shape)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {

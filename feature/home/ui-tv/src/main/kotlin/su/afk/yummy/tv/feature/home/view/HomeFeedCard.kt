@@ -33,6 +33,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +47,7 @@ import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.HomeFeedCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
@@ -62,6 +68,7 @@ internal fun HomeFeedCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val showScreenshots = LocalShowScreenshotsOnFocus.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
 
     val screenshots = preview?.screenshotUrls.orEmpty()
@@ -90,7 +97,17 @@ internal fun HomeFeedCard(
             }
             .focusProperties {
                 upFocusRequester?.let { up = it }
+                mainMenuFocusRequester?.let { left = it }
                 downFocusRequester?.let { down = it }
+            }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
+                    return@onPreviewKeyEvent false
+                }
+                val focusHandled = mainMenuFocusRequester?.let {
+                    runCatching { it.requestFocus() }.isSuccess
+                } == true
+                focusHandled
             }
             .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale),
         shape = shape,

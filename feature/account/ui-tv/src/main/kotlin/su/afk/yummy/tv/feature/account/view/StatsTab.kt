@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -30,16 +29,13 @@ import su.afk.yummy.tv.feature.account.utils.isEmpty
 internal fun StatsTab(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
+    selectedTabFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
 ) {
     val stats = state.stats
     val listState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        runCatching { focusRequester.requestFocus() }
-    }
 
     LazyColumn(
         state = listState,
@@ -54,6 +50,7 @@ internal fun StatsTab(
                         onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.NOTIFICATIONS))
                         true
                     }
+
                     Key.DirectionDown -> {
                         val last = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                         if (listState.firstVisibleItemIndex >= last) return@onPreviewKeyEvent false
@@ -61,12 +58,14 @@ internal fun StatsTab(
                         scope.launch { listState.animateScrollToItem(next) }
                         true
                     }
+
                     Key.DirectionUp -> {
                         if (listState.firstVisibleItemIndex == 0) return@onPreviewKeyEvent false
                         val previous = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
                         scope.launch { listState.animateScrollToItem(previous) }
                         true
                     }
+
                     else -> false
                 }
             },
@@ -75,7 +74,12 @@ internal fun StatsTab(
             AccountHeader(state = state, onEvent = onEvent)
         }
         item {
-            AccountTabs(selected = state.selectedTab, onSelected = { onEvent(AccountState.Event.TabSelected(it)) })
+            AccountTabs(
+                selected = state.selectedTab,
+                onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
+                selectedTabFocusRequester = selectedTabFocusRequester,
+                contentFocusRequester = focusRequester,
+            )
         }
         item {
             ErrorText(state.error ?: state.hubError)

@@ -22,6 +22,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -31,7 +36,10 @@ internal fun SettingsTabItem(
     selected: Boolean,
     modifier: Modifier = Modifier,
     contentFocusRequester: FocusRequester,
+    leftFocusRequester: FocusRequester? = null,
+    rightFocusRequester: FocusRequester? = null,
     onSelected: () -> Unit,
+    onActivated: () -> Unit = onSelected,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -52,14 +60,41 @@ internal fun SettingsTabItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .focusProperties {
+                leftFocusRequester?.let { left = it }
+                rightFocusRequester?.let { right = it }
                 down = contentFocusRequester
+            }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionLeft -> {
+                        leftFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                            true
+                        } ?: false
+                    }
+
+                    Key.DirectionRight -> {
+                        rightFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                        }
+                        true
+                    }
+
+                    Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                        onActivated()
+                        true
+                    }
+
+                    else -> false
+                }
             }
             .onFocusChanged { if (it.isFocused) onSelected() }
             .background(
                 color = if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
                 shape = RoundedCornerShape(8.dp),
             )
-            .clickable(interactionSource = interactionSource, indication = null) { onSelected() }
+            .clickable(interactionSource = interactionSource, indication = null) { onActivated() }
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(

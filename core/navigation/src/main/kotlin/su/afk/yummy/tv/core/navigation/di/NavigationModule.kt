@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.navigation.tab.SideTab
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import javax.inject.Singleton
 
 @Module
@@ -14,12 +14,12 @@ import javax.inject.Singleton
 object NavigationModule {
 
     @Provides
-    fun provideInitialTab(): SideTab = SideTab.HOME
+    fun provideInitialRoot(): RootTab = RootTab.HOME
 
     @Provides
     @Singleton
     fun provideNavigationManager(
-        roots: @JvmSuppressWildcards Map<SideTab, NavKey>,
-        initialTab: SideTab,
-    ): NavigationManager = NavigationManager(roots = roots, initialTab = initialTab)
+        roots: @JvmSuppressWildcards Map<RootTab, NavKey>,
+        initialRoot: RootTab,
+    ): NavigationManager = NavigationManager(roots = roots, initialRoot = initialRoot)
 }

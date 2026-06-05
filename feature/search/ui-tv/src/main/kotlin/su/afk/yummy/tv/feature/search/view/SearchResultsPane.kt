@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -66,6 +67,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
@@ -129,8 +131,10 @@ internal fun SearchResultsPane(
     }
 
     val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val searchFieldFocusRequester = remember { FocusRequester() }
     val filterButtonFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
     var lastFocusedIndex by rememberSaveable {
         val idx = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }?.coerceAtLeast(0) ?: 0
@@ -141,8 +145,8 @@ internal fun SearchResultsPane(
     var isRestoringFocus by remember { mutableStateOf(false) }
     var restoreFilterButtonFocusToken by rememberSaveable { mutableIntStateOf(0) }
 
-    DisposableEffect(filterButtonFocusRequester, registerPreferredContentFocusRequester) {
-        registerPreferredContentFocusRequester?.invoke(filterButtonFocusRequester)
+    DisposableEffect(searchFieldFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(searchFieldFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
@@ -186,6 +190,10 @@ internal fun SearchResultsPane(
                 }),
                 modifier = Modifier
                     .weight(1f)
+                    .focusRequester(searchFieldFocusRequester)
+                    .focusProperties {
+                        mainMenuFocusRequester?.let { left = it }
+                    }
                     .onFocusChanged { if (!it.isFocused) searchEditing = false }
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
@@ -193,7 +201,7 @@ internal fun SearchResultsPane(
                             Key.DirectionCenter,
                             Key.Enter,
                             Key.NumPadEnter,
-                            -> {
+                                -> {
                                 if (!searchEditing) {
                                     searchEditing = true
                                     keyboardController?.show()
@@ -202,6 +210,7 @@ internal fun SearchResultsPane(
                                     false
                                 }
                             }
+
                             Key.Back -> {
                                 if (searchEditing) {
                                     keyboardController?.hide()
@@ -211,6 +220,7 @@ internal fun SearchResultsPane(
                                     false
                                 }
                             }
+
                             else -> false
                         }
                     },
@@ -218,7 +228,9 @@ internal fun SearchResultsPane(
             FilterButton(
                 activeCount = filters.activeCount,
                 onClick = onOpenFilters,
-                modifier = Modifier.focusRequester(filterButtonFocusRequester),
+                modifier = Modifier
+                    .focusRequester(filterButtonFocusRequester)
+                    .focusProperties { left = searchFieldFocusRequester },
             )
         }
 
@@ -320,7 +332,10 @@ internal fun SearchResultsPane(
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
                                                 .padding(4.dp)
-                                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary,
+                                                    RoundedCornerShape(4.dp)
+                                                )
                                                 .padding(horizontal = 5.dp, vertical = 2.dp),
                                         )
                                     }
@@ -769,7 +784,7 @@ private fun YearField(
                     Key.DirectionCenter,
                     Key.Enter,
                     Key.NumPadEnter,
-                    -> {
+                        -> {
                         if (!editing) {
                             editing = true
                             keyboardController?.show()
@@ -778,6 +793,7 @@ private fun YearField(
                             false
                         }
                     }
+
                     Key.Back -> {
                         if (editing) {
                             keyboardController?.hide()
@@ -787,6 +803,7 @@ private fun YearField(
                             false
                         }
                     }
+
                     else -> false
                 }
             },

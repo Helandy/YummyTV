@@ -33,6 +33,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -55,6 +56,7 @@ internal fun HomeDashboard(
 ) {
     val lazyColumnState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
 
     val hasContinueWatching = continueWatching.isNotEmpty()
     val hasHero = feed.heroItems.isNotEmpty()
@@ -187,7 +189,7 @@ internal fun HomeDashboard(
     }
 
     val preferredContentFocusRequester =
-        if (totalLazyItems > 0) homeContentFocusRequester else null
+        if (totalLazyItems > 0) focusRequesterForLazyIndex(mainMenuEnterIndex()) else null
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
@@ -201,6 +203,7 @@ internal fun HomeDashboard(
             .focusRequester(homeContentFocusRequester)
             .background(MaterialTheme.colorScheme.background)
             .focusProperties {
+                mainMenuFocusRequester?.let { left = it }
                 onEnter = {
                     restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
                     if (consumeContinueWatchingRestoreIfPending()) {

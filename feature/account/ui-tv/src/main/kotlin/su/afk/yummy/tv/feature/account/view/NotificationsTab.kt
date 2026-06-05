@@ -2,6 +2,7 @@
 
 package su.afk.yummy.tv.feature.account.view
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -23,10 +26,20 @@ import su.afk.yummy.tv.feature.account.R
 internal fun NotificationsTab(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
+    contentFocusRequester: FocusRequester? = null,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .then(
+                if (contentFocusRequester != null) {
+                    Modifier
+                        .focusRequester(contentFocusRequester)
+                        .focusable()
+                } else {
+                    Modifier
+                },
+            )
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
                     onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.STATS))
@@ -34,7 +47,7 @@ internal fun NotificationsTab(
                 } else {
                     false
                 }
-        },
+            },
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (state.isNotificationsLoading && state.notifications.isEmpty()) {

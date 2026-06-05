@@ -28,7 +28,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.signedInFavoriteItems
 import su.afk.yummy.tv.feature.library.utils.toLibraryEntry
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
@@ -45,8 +47,12 @@ fun LibraryTvScreen(
 
 ) {
     val gridFocusRequester = remember { FocusRequester() }
-    val selectedTabFocusRequester = remember { FocusRequester() }
+    val tabFocusRequesters = remember {
+        libraryTabsDisplayOrder().associateWith { FocusRequester() }
+    }
+    val selectedTabFocusRequester = tabFocusRequesters.getValue(state.selectedTab)
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val itemRemovedText = stringResource(R.string.library_remove_success)
@@ -80,15 +86,14 @@ fun LibraryTvScreen(
         }
     }
 
+    val preferredContentFocusRequester =
+        if (hasFocusableGridContent) gridFocusRequester else selectedTabFocusRequester
+
     DisposableEffect(
-        gridFocusRequester,
-        selectedTabFocusRequester,
-        hasFocusableGridContent,
+        preferredContentFocusRequester,
         registerPreferredContentFocusRequester,
     ) {
-        registerPreferredContentFocusRequester?.invoke(
-            if (hasFocusableGridContent) gridFocusRequester else selectedTabFocusRequester,
-        )
+        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
@@ -134,7 +139,8 @@ fun LibraryTvScreen(
             selectedTab = state.selectedTab,
             onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
             contentFocusRequester = gridFocusRequester,
-            selectedTabFocusRequester = selectedTabFocusRequester,
+            tabFocusRequesters = tabFocusRequesters,
+            mainMenuFocusRequester = mainMenuFocusRequester,
         )
 
         Box(

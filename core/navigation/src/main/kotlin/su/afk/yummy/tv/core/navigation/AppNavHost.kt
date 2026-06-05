@@ -17,7 +17,7 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import su.afk.yummy.tv.core.navigation.tab.SideTab
+import su.afk.yummy.tv.core.navigation.root.RootTab
 
 @Composable
 fun AppNavHost(
@@ -25,48 +25,28 @@ fun AppNavHost(
     registrars: Set<@JvmSuppressWildcards NavRegistrar>,
     modifier: Modifier = Modifier,
 ) {
-    var savedCurrentTab by rememberSaveable { mutableStateOf(navManager.currentTab) }
+    var savedCurrentRoot by rememberSaveable { mutableStateOf(navManager.currentRoot) }
 
     LaunchedEffect(Unit) {
-        navManager.restoreTab(savedCurrentTab)
+        navManager.restoreRoot(savedCurrentRoot)
     }
-    LaunchedEffect(navManager.currentTab) {
-        savedCurrentTab = navManager.currentTab
+    LaunchedEffect(navManager.currentRoot) {
+        savedCurrentRoot = navManager.currentRoot
     }
 
     val appBackStack = key("appBackStack") {
         rememberNavBackStack()
     }
-    val homeBackStack = key(SideTab.HOME) {
-        rememberNavBackStack(navManager.roots.getValue(SideTab.HOME))
-    }
-    val searchBackStack = key(SideTab.SEARCH) {
-        rememberNavBackStack(navManager.roots.getValue(SideTab.SEARCH))
-    }
-    val scheduleBackStack = key(SideTab.SCHEDULE) {
-        rememberNavBackStack(navManager.roots.getValue(SideTab.SCHEDULE))
-    }
-    val top100BackStack = key(SideTab.TOP100) {
-        rememberNavBackStack(navManager.roots.getValue(SideTab.TOP100))
-    }
-    val libraryBackStack = key(SideTab.LIBRARY) {
-        rememberNavBackStack(navManager.roots.getValue(SideTab.LIBRARY))
+    val rootBackStacks = RootTab.entries.associateWith { root ->
+        key(root) {
+            rememberNavBackStack(navManager.roots.getValue(root))
+        }
     }
 
-    val tabStacks = remember(homeBackStack, searchBackStack, scheduleBackStack, top100BackStack, libraryBackStack) {
-        mapOf(
-            SideTab.HOME to homeBackStack,
-            SideTab.SEARCH to searchBackStack,
-            SideTab.SCHEDULE to scheduleBackStack,
-            SideTab.TOP100 to top100BackStack,
-            SideTab.LIBRARY to libraryBackStack,
-        )
-    }
-
-    LaunchedEffect(appBackStack, tabStacks) {
+    LaunchedEffect(appBackStack, rootBackStacks) {
         navManager.attachBackStacks(
             appBackStack = appBackStack,
-            tabStacks = tabStacks,
+            rootStacks = rootBackStacks,
         )
     }
 
@@ -76,55 +56,17 @@ fun AppNavHost(
         }
     }
 
-    val homeEntries = key(SideTab.HOME) {
-        rememberDecoratedNavEntries(
-            backStack = homeBackStack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = provider,
-        )
-    }
-    val searchEntries = key(SideTab.SEARCH) {
-        rememberDecoratedNavEntries(
-            backStack = searchBackStack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = provider,
-        )
-    }
-    val top100Entries = key(SideTab.TOP100) {
-        rememberDecoratedNavEntries(
-            backStack = top100BackStack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = provider,
-        )
-    }
-    val scheduleEntries = key(SideTab.SCHEDULE) {
-        rememberDecoratedNavEntries(
-            backStack = scheduleBackStack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = provider,
-        )
-    }
-    val libraryEntries = key(SideTab.LIBRARY) {
-        rememberDecoratedNavEntries(
-            backStack = libraryBackStack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = provider,
-        )
+    val rootEntries = RootTab.entries.associateWith { root ->
+        key(root) {
+            rememberDecoratedNavEntries(
+                backStack = rootBackStacks.getValue(root),
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator()
+                ),
+                entryProvider = provider,
+            )
+        }
     }
 
     val appEntries = key("appEntries") {
@@ -142,13 +84,7 @@ fun AppNavHost(
         if (appBackStack.isNotEmpty()) {
             appEntries
         } else {
-            when (navManager.currentTab) {
-                SideTab.HOME -> homeEntries
-                SideTab.SEARCH -> homeEntries + searchEntries
-                SideTab.SCHEDULE -> homeEntries + scheduleEntries
-                SideTab.TOP100 -> homeEntries + top100Entries
-                SideTab.LIBRARY -> homeEntries + libraryEntries
-            }
+            rootEntries.getValue(navManager.currentRoot)
         }
 
     NavDisplay(

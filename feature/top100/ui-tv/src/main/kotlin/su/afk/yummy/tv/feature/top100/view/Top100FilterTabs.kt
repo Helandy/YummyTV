@@ -11,11 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,15 +36,10 @@ internal fun Top100FilterTabs(
     onTypeSelected: (AnimeTopType) -> Unit,
     contentFocusRequester: FocusRequester,
     typeFocusRequesters: List<FocusRequester>,
-    onFocusChange: (Boolean) -> Unit = {},
+    mainMenuFocusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
 ) {
     val selectedIndex = AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0)
-    var focusedIndex by remember { mutableIntStateOf(selectedIndex) }
-
-    LaunchedEffect(selectedIndex) {
-        focusedIndex = selectedIndex
-    }
 
     Row(
         modifier = modifier
@@ -64,31 +54,6 @@ internal fun Top100FilterTabs(
                     typeFocusRequesters.getOrNull(selectedIndex)?.requestFocus()
                 }
             }
-            .onFocusChanged { onFocusChange(it.hasFocus) }
-            .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                when (event.key) {
-                    Key.DirectionLeft -> {
-                        if (focusedIndex > 0) {
-                            focusedIndex -= 1
-                            typeFocusRequesters[focusedIndex].requestFocus()
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    Key.DirectionRight -> {
-                        if (focusedIndex < typeFocusRequesters.lastIndex) {
-                            focusedIndex += 1
-                            typeFocusRequesters[focusedIndex].requestFocus()
-                        }
-                        true
-                    }
-
-                    else -> false
-                }
-            }
             .focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -97,12 +62,18 @@ internal fun Top100FilterTabs(
             Top100FilterTabItem(
                 label = type.label(),
                 selected = selectedType == type,
-                onSelected = { onTypeSelected(type) },
+                onActivated = {
+                    onTypeSelected(type)
+                    runCatching { contentFocusRequester.requestFocus() }
+                },
                 contentFocusRequester = contentFocusRequester,
                 focusRequester = typeFocusRequesters[index],
-                leftFocusRequester = typeFocusRequesters.getOrNull(index - 1),
+                leftFocusRequester = typeFocusRequesters.getOrNull(index - 1)
+                    ?: mainMenuFocusRequester.takeIf { index == 0 },
                 rightFocusRequester = typeFocusRequesters.getOrNull(index + 1),
-                onFocused = { focusedIndex = index },
+                onFocused = {
+                    if (selectedType != type) onTypeSelected(type)
+                },
             )
         }
     }
@@ -112,7 +83,7 @@ internal fun Top100FilterTabs(
 private fun Top100FilterTabItem(
     label: String,
     selected: Boolean,
-    onSelected: () -> Unit,
+    onActivated: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
@@ -129,13 +100,38 @@ private fun Top100FilterTabItem(
                 leftFocusRequester?.let { left = it }
                 rightFocusRequester?.let { right = it }
             }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionLeft -> {
+                        leftFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                            true
+                        } ?: false
+                    }
+
+                    Key.DirectionRight -> {
+                        rightFocusRequester?.let {
+                            runCatching { it.requestFocus() }
+                        }
+                        true
+                    }
+
+                    Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                        onActivated()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
                 color = if (selected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
                 shape = shape,
             )
-            .tvFocusableClick(onClick = onSelected, shape = shape)
+            .tvFocusableClick(onClick = onActivated, shape = shape)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {

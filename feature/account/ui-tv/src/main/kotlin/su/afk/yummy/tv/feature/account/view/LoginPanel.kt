@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -24,6 +26,7 @@ import su.afk.yummy.tv.feature.account.R
 internal fun LoginPanel(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
+    initialFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -46,7 +49,13 @@ internal fun LoginPanel(
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (initialFocusRequester != null) Modifier.focusRequester(
+                        initialFocusRequester
+                    ) else Modifier
+                ),
         )
         OutlinedTextField(
             value = state.password,
