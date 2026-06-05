@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_mobile_title">Детали</string>
     <string name="details_mobile_empty">Тайтл не найден</string>
     <string name="details_mobile_back">Назад</string>
     <string name="details_mobile_retry">Повторить</string>
@@ -42,16 +43,28 @@
     <string name="details_mobile_unknown_count">?</string>
     <string name="details_mobile_views">%1$d просмотров</string>
     <string name="details_mobile_episode">Эпизод %1$s</string>
+    <string name="details_mobile_episode_dubbings_action">Информация о серии</string>
+    <string name="details_mobile_episode_dubbings_title">Эпизод %1$s</string>
+    <string name="details_mobile_episode_dubbings_empty">Озвучки не найдены</string>
+    <string name="details_mobile_episodes_count_short">%1$d эп.</string>
     <string name="details_mobile_screenshot">Скриншот</string>
     <string name="details_mobile_trailer_number">Трейлер %1$d</string>
     <string name="details_mobile_other_titles">Другие названия</string>
     <string name="details_mobile_studios">Студии</string>
     <string name="details_mobile_creators">Создатели</string>
-    <string name="details_mobile_similar_source_ai">Источник: AI</string>
-    <string name="details_mobile_similar_source_site">Источник: сайт</string>
+    <string name="details_mobile_similar_source_ai">Нейросеть</string>
+    <string name="details_mobile_similar_source_site">Пользователи</string>
     <string name="details_mobile_loading">Загрузка...</string>
     <string name="details_mobile_similar_empty">Похожих тайтлов нет</string>
     <string name="details_mobile_user_rating">Ваша оценка: %1$s</string>
     <string name="details_mobile_delete_rating">Удалить оценку</string>
+    <string name="details_mobile_rating_not_set">Вы ещё не оценивали</string>
+    <string name="details_mobile_rating_pick">Выберите оценку</string>
+    <string name="details_mobile_rating_average">Средняя %1$s</string>
+    <string name="details_mobile_rating_votes">%1$s оценок</string>
+    <string name="details_mobile_rating_empty">Оценок пока нет</string>
+    <string name="details_mobile_rating_distribution">Распределение</string>
+    <string name="details_mobile_rating_percent">%1$s%%</string>
+    <string name="details_mobile_list_stats">В списках</string>
     <string name="details_mobile_title_universe">Вселенная тайтла</string>
 </resources>

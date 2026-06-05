@@ -32,7 +32,9 @@ import su.afk.yummy.tv.feature.player.presentation.R
 @Composable
 internal fun StreamLoadingView() {
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -90,7 +92,7 @@ internal fun StreamErrorOverlay(
             .background(Color.Black.copy(alpha = 0.80f))
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = message,

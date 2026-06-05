@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -16,8 +18,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileProgressMediaCar
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.feature.home.mobile.R
-import su.afk.yummy.tv.feature.home.utils.bestImageUrl
-import su.afk.yummy.tv.feature.home.utils.progressSubtitle
+import su.afk.yummy.tv.feature.home.utils.episodeSubtitle
+import su.afk.yummy.tv.feature.home.utils.resolveMobileContinueWatchingImage
+import su.afk.yummy.tv.feature.home.utils.timingSubtitle
 import su.afk.yummy.tv.feature.home.utils.watchProgress
 
 @Composable
@@ -37,10 +40,19 @@ internal fun ContinueWatchingSection(
         ) {
             items(entries, key = { "${it.animeId}-${it.episode}-${it.videoId}" }) { entry ->
                 val episodeTitle = stringResource(R.string.home_mobile_episode, entry.episode)
+                val imageUrl by produceState<String?>(
+                    null,
+                    entry.screenshotUrl,
+                    entry.episodeUrl,
+                    entry.posterUrl
+                ) {
+                    value = entry.resolveMobileContinueWatchingImage()
+                }
                 MobileProgressMediaCard(
                     title = entry.animeTitle.ifBlank { episodeTitle },
-                    imageUrl = entry.bestImageUrl(),
-                    subtitle = entry.progressSubtitle(),
+                    imageUrl = imageUrl,
+                    subtitle = entry.episodeSubtitle(),
+                    trailingSubtitle = entry.timingSubtitle(),
                     progress = entry.watchProgress(),
                     onClick = { onEntrySelected(entry) },
                 )

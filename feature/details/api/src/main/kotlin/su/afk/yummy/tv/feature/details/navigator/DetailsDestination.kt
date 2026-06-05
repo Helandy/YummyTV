@@ -13,6 +13,9 @@ data class DetailsFullDestination(val animeId: Int) : NavKey
 data class DetailsEpisodesDestination(val animeId: Int) : NavKey
 
 @Serializable
+data class DetailsEpisodeDubbingsDestination(val animeId: Int, val episode: String) : NavKey
+
+@Serializable
 data class DetailsTrailersDestination(val animeId: Int) : NavKey
 
 @Serializable

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_mobile_title">Details</string>
     <string name="details_mobile_empty">Title not found</string>
     <string name="details_mobile_back">Back</string>
     <string name="details_mobile_retry">Retry</string>
@@ -42,16 +43,28 @@
     <string name="details_mobile_unknown_count">?</string>
     <string name="details_mobile_views">%1$d views</string>
     <string name="details_mobile_episode">Episode %1$s</string>
+    <string name="details_mobile_episode_dubbings_action">Episode info</string>
+    <string name="details_mobile_episode_dubbings_title">Episode %1$s</string>
+    <string name="details_mobile_episode_dubbings_empty">No dubbings found</string>
+    <string name="details_mobile_episodes_count_short">%1$d ep.</string>
     <string name="details_mobile_screenshot">Screenshot</string>
     <string name="details_mobile_trailer_number">Trailer %1$d</string>
     <string name="details_mobile_other_titles">Other titles</string>
     <string name="details_mobile_studios">Studios</string>
     <string name="details_mobile_creators">Creators</string>
-    <string name="details_mobile_similar_source_ai">Source: AI</string>
-    <string name="details_mobile_similar_source_site">Source: site</string>
+    <string name="details_mobile_similar_source_ai">AI</string>
+    <string name="details_mobile_similar_source_site">Users</string>
     <string name="details_mobile_loading">Loading...</string>
     <string name="details_mobile_similar_empty">No similar titles</string>
     <string name="details_mobile_user_rating">Your rating: %1$s</string>
     <string name="details_mobile_delete_rating">Delete rating</string>
+    <string name="details_mobile_rating_not_set">Not rated yet</string>
+    <string name="details_mobile_rating_pick">Pick your rating</string>
+    <string name="details_mobile_rating_average">%1$s average</string>
+    <string name="details_mobile_rating_votes">%1$s ratings</string>
+    <string name="details_mobile_rating_empty">No ratings yet</string>
+    <string name="details_mobile_rating_distribution">Distribution</string>
+    <string name="details_mobile_rating_percent">%1$s%%</string>
+    <string name="details_mobile_list_stats">In lists</string>
     <string name="details_mobile_title_universe">Title universe</string>
 </resources>

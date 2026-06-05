@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.view.common.isAlloha
 
 internal sealed interface EpisodeWatchStatus {
@@ -60,13 +61,6 @@ internal fun EpisodesGrid(
     onVideoSelected: (AnimeVideo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val kodikIframeByEpisode = remember(videos) {
-        videos
-            .filter { it.iframeUrl.contains("kodik", ignoreCase = true) }
-            .groupBy { it.episode }
-            .mapValues { (_, v) -> v.first().iframeUrl }
-    }
-
     // Best dubbing by total views among kodik sources
     val bestDubbing = remember(videos) {
         val source = videos.filter { it.iframeUrl.contains("kodik", ignoreCase = true) }.ifEmpty { videos }
@@ -151,7 +145,7 @@ internal fun EpisodesGrid(
             EpisodeCard(
                 video = representative,
                 watchStatus = bestWatchStatus(groupVideos, watchProgress),
-                kodikIframeUrl = kodikIframeByEpisode[representative.episode],
+                kodikIframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing),
                 onClick = {
                     val kodikOpts = groupVideos.filter {
                         it.iframeUrl.contains("kodik", ignoreCase = true) && !it.isAlloha()

@@ -30,6 +30,7 @@ internal fun LibraryTopTabItem(
     onActivated: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
+    contentCanFocus: Boolean,
     leftFocusRequester: FocusRequester?,
     rightFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
@@ -40,7 +41,9 @@ internal fun LibraryTopTabItem(
         modifier = Modifier
             .focusRequester(focusRequester)
             .focusProperties {
-                down = contentFocusRequester
+                if (contentCanFocus) {
+                    down = contentFocusRequester
+                }
                 leftFocusRequester?.let { left = it }
                 rightFocusRequester?.let { right = it }
             }
@@ -62,7 +65,11 @@ internal fun LibraryTopTabItem(
                     }
 
                     Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                        onActivated()
+                        if (contentCanFocus) {
+                            onActivated()
+                        } else {
+                            onFocused()
+                        }
                         true
                     }
 

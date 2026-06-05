@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="player_mobile_settings_title">Настройки плеера</string>
+    <string name="player_mobile_track_settings_title">Озвучка и плеер</string>
+    <string name="player_mobile_playback_settings_title">Качество и скорость</string>
     <string name="player_mobile_quality">Качество</string>
     <string name="player_mobile_speed">Скорость</string>
     <string name="player_mobile_dubbing">Озвучка</string>

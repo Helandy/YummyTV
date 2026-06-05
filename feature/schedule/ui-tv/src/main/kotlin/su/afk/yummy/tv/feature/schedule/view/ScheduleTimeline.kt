@@ -13,25 +13,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.feature.schedule.ScheduleState
 import su.afk.yummy.tv.feature.schedule.model.ScheduleTimelineUi
+import su.afk.yummy.tv.feature.schedule.utils.launchRestoreTimelineFocus
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun ScheduleTimeline(
     schedule: ScheduleTimelineUi,
@@ -42,28 +48,52 @@ internal fun ScheduleTimeline(
     val selectedChipFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     val releaseFocusRequesters = remember { mutableStateMapOf<String, FocusRequester>() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var restoreFocusRequestToken by remember { mutableIntStateOf(0) }
+    var handledRestoreFocusRequestToken by remember { mutableIntStateOf(0) }
+    var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
     val preferredContentFocusRequester =
         schedule.focusedReleaseKey?.let { releaseFocusRequesters[it] } ?: selectedChipFocusRequester
+
+    DisposableEffect(Unit) {
+        onDispose { restoreFocusJob?.cancel() }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                restoreFocusRequestToken += 1
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     LaunchedEffect(
         schedule.focusedReleaseKey,
         schedule.selectedEpochDay,
         selectedGroup.items,
-        contentHasFocus
+        contentHasFocus,
+        restoreFocusRequestToken,
     ) {
-        val releaseKey = schedule.focusedReleaseKey ?: return@LaunchedEffect
-        val releaseIndex = selectedGroup.items.indexOfFirst { it.focusKey == releaseKey }
-        if (releaseIndex < 0) return@LaunchedEffect
-
-        listState.scrollToItem(releaseIndex)
-        val releaseFocusRequester = snapshotFlow { releaseFocusRequesters[releaseKey] }
-            .filterNotNull()
-            .first()
-        if (contentHasFocus) {
-            runCatching { releaseFocusRequester.requestFocus() }
+        val hasPendingResumeRestore = restoreFocusRequestToken != handledRestoreFocusRequestToken
+        if (contentHasFocus || hasPendingResumeRestore) {
+            if (hasPendingResumeRestore) {
+                handledRestoreFocusRequestToken = restoreFocusRequestToken
+            }
+            restoreFocusJob = launchRestoreTimelineFocus(
+                previousJob = restoreFocusJob,
+                scope = scope,
+                focusedReleaseKey = schedule.focusedReleaseKey,
+                selectedGroup = selectedGroup,
+                listState = listState,
+                releaseFocusRequesters = releaseFocusRequesters,
+                fallbackFocusRequester = selectedChipFocusRequester,
+            )
         }
     }
 
@@ -76,6 +106,19 @@ internal fun ScheduleTimeline(
         modifier = Modifier
             .fillMaxSize()
             .onFocusChanged { contentHasFocus = it.hasFocus }
+            .focusProperties {
+                onEnter = {
+                    restoreFocusJob = launchRestoreTimelineFocus(
+                        previousJob = restoreFocusJob,
+                        scope = scope,
+                        focusedReleaseKey = schedule.focusedReleaseKey,
+                        selectedGroup = selectedGroup,
+                        listState = listState,
+                        releaseFocusRequesters = releaseFocusRequesters,
+                        fallbackFocusRequester = selectedChipFocusRequester,
+                    )
+                }
+            }
             .focusGroup()
             .padding(
                 start = TvScreenPadding.Horizontal,
@@ -102,6 +145,17 @@ internal fun ScheduleTimeline(
                 .focusProperties {
                     mainMenuFocusRequester?.let { left = it }
                     up = selectedChipFocusRequester
+                    onEnter = {
+                        restoreFocusJob = launchRestoreTimelineFocus(
+                            previousJob = restoreFocusJob,
+                            scope = scope,
+                            focusedReleaseKey = schedule.focusedReleaseKey,
+                            selectedGroup = selectedGroup,
+                            listState = listState,
+                            releaseFocusRequesters = releaseFocusRequesters,
+                            fallbackFocusRequester = selectedChipFocusRequester,
+                        )
+                    }
                 },
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),

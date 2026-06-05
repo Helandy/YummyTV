@@ -17,6 +17,7 @@ class EpisodesState {
 
     sealed interface Event : UiEvent {
         data object BackSelected : Event
+        data class EpisodeDubbingsSelected(val episode: String) : Event
         data class VideoSelected(val video: AnimeVideo) : Event
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event

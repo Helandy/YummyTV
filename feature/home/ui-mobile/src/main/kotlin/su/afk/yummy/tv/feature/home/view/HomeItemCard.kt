@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.runtime.Composable
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileContentPosterCard
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.utils.bestUrl
 
@@ -11,12 +11,12 @@ internal fun HomeItemCard(
     showMetadata: Boolean,
     onClick: () -> Unit,
 ) {
-    MobileContentPosterCard(
+    MobilePosterCard(
         title = item.title,
         posterUrl = item.poster.bestUrl(),
-        description = item.description,
-        rating = item.rating,
-        showMetadata = showMetadata,
+        subtitle = item.description.takeIf { showMetadata && it.isNotBlank() },
+        rating = item.rating.takeIf { showMetadata },
+        titleMinLines = if (showMetadata) 1 else 2,
         onClick = onClick,
     )
 }

@@ -18,7 +18,13 @@ class Top100NavRegistrar @Inject constructor() : NavRegistrar {
             entry<Top100Destination> { _ ->
                 val viewModel = hiltViewModel<Top100ViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    Top100TvScreen(state = state, effect = effect, onEvent = onEvent)
+                    Top100TvScreen(
+                        state = state,
+                        effect = effect,
+                        isActiveDestination = nav.appBackStack.isEmpty() &&
+                                nav.backStack.lastOrNull() == Top100Destination,
+                        onEvent = onEvent,
+                    )
                 }
             }
         }

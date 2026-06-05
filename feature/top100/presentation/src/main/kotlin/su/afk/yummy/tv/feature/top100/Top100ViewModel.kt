@@ -50,8 +50,16 @@ class Top100ViewModel @Inject constructor(
                     load(event.type, offset = 0, replace = true)
                 }
             }
-            is Top100State.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            is Top100State.Event.AnimeSelected -> {
+                setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
+                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            }
             is Top100State.Event.ItemFocused -> onItemFocused(event.animeId)
+            Top100State.Event.FocusedItemRestoreHandled -> {
+                if (currentState.restoreFocusedItemOnEnter) {
+                    setState { copy(restoreFocusedItemOnEnter = false) }
+                }
+            }
             Top100State.Event.LoadMore -> {
                 val s = currentState
                 if (!s.isLoadingMore && !s.isLoading && s.canLoadMore) {

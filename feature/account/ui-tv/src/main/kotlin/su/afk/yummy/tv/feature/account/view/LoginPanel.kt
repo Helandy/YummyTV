@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.components.AppBrandIcon
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
 
@@ -35,6 +37,7 @@ internal fun LoginPanel(
             .widthIn(max = 680.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
+        AppBrandIcon(modifier = Modifier.size(92.dp))
         AccountTitle()
         Text(
             text = stringResource(R.string.account_signed_out),

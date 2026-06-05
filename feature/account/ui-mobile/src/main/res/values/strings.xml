@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="account_mobile_title">Аккаунт</string>
-    <string name="account_mobile_login">Логин</string>
-    <string name="account_mobile_password">Пароль</string>
-    <string name="account_mobile_signing_in">Вход...</string>
-    <string name="account_mobile_sign_in">Войти</string>
-    <string name="account_mobile_captcha_required">Для входа требуется captcha. TV-версия пока открывает полный поток captcha.</string>
-    <string name="account_mobile_profile">Профиль</string>
-    <string name="account_mobile_refresh">Обновить</string>
-    <string name="account_mobile_logout">Выйти</string>
-    <string name="account_mobile_notifications">Уведомления</string>
+    <string name="account_mobile_title">Account</string>
+    <string name="account_signed_out">Sign in to sync library, ratings, and subscriptions</string>
+    <string name="account_unknown_user">Unknown user</string>
+    <string name="account_refresh">Refresh profile</string>
+    <string name="account_logout">Log out</string>
+    <string name="account_login">Sign in</string>
+    <string name="account_login_placeholder">Email or nickname</string>
+    <string name="account_password_placeholder">Password</string>
+    <string name="account_loading">Loading...</string>
+    <string name="account_captcha_hint">Complete the captcha to continue signing in. If it does not open here, sign in from the TV flow.</string>
+    <string name="account_user_id">ID %1$d</string>
+    <string name="account_tab_stats">Statistics</string>
+    <string name="account_tab_notifications">Notifications</string>
+    <string name="account_open">Open</string>
+    <string name="account_unread_count">Unread: %1$d</string>
+    <string name="account_stats_empty">No statistics yet</string>
+    <string name="account_notifications_empty">No notifications yet</string>
+    <string name="account_stats_genres">Favorite genres</string>
+    <string name="account_stats_ratings">Ratings</string>
+    <string name="account_stats_types">Anime types</string>
+    <string name="account_mark_read">Mark read</string>
+    <string name="account_mark_all_read">Mark all read</string>
+    <string name="account_delete">Delete</string>
+    <string name="account_logout_confirm_title">Log out?</string>
+    <string name="account_logout_confirm_message">Your local library and watch progress will stay on this device.</string>
+    <string name="account_logout_confirm_action">Log out</string>
+    <string name="account_logout_confirm_cancel">Cancel</string>
 </resources>

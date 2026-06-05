@@ -212,6 +212,32 @@ class PlayerViewModel @AssistedInject constructor(
                 }
                 loadStream()
             }
+            is PlayerState.Event.QualitySelected -> {
+                val position = event.currentPosMs.coerceAtLeast(0L)
+                setState {
+                    copy(
+                        selectedQuality = event.quality,
+                        resumeFromMs = position,
+                        playbackPositionMs = position,
+                    )
+                }
+            }
+
+            is PlayerState.Event.SpeedSelected -> {
+                setState { copy(selectedSpeed = event.speed.coerceAtLeast(0.1f)) }
+            }
+
+            is PlayerState.Event.PlaybackPositionChanged -> {
+                val position = event.positionMs.coerceAtLeast(0L)
+                val duration = event.durationMs.coerceAtLeast(0L)
+                setState {
+                    copy(
+                        resumeFromMs = position,
+                        playbackPositionMs = position,
+                        playbackDurationMs = duration,
+                    )
+                }
+            }
             is PlayerState.Event.SaveProgress -> {
                 val s = currentState
                 val snapshot = event.snapshot
@@ -270,6 +296,8 @@ class PlayerViewModel @AssistedInject constructor(
                     playerError = null,
                     kodikBlockedError = null,
                     resumeFromMs = 0L,
+                    playbackPositionMs = 0L,
+                    playbackDurationMs = 0L,
                 )
             }
             val s = currentState

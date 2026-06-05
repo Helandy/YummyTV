@@ -9,10 +9,16 @@ plugins {
 android {
     namespace = "su.afk.yummy.tv.feature.settings.mobile"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        buildConfigField("String", "VERSION_NAME", "\"${libs.versions.appVersionName.get()}\"")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -26,6 +32,7 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)

@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileRatingBadge
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.feature.home.utils.asRatingBadge
 import su.afk.yummy.tv.feature.home.utils.bestUrl
 
 @Composable
@@ -63,6 +63,14 @@ internal fun HomeHeroCard(
                         ),
                     ),
             )
+            item.rating?.let { rating ->
+                MobileRatingBadge(
+                    rating = rating,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                )
+            }
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -70,17 +78,6 @@ internal fun HomeHeroCard(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item.rating?.let { rating ->
-                    Text(
-                        text = rating.asRatingBadge(),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 7.dp, vertical = 3.dp),
-                    )
-                }
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.headlineSmall,

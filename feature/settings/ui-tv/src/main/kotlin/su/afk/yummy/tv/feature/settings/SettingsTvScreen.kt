@@ -99,7 +99,8 @@ fun SettingsTvScreen(
                     contentFocusRequester = contentFocusRequester,
                     leftFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index - 1)]
                         ?: mainMenuFocusRequester.takeIf { index == 0 },
-                    rightFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index + 1)],
+                    rightFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index + 1)]
+                        ?: contentFocusRequester,
                     onSelected = {
                         selectedTab = tab
                         contentAnchorTab = tab

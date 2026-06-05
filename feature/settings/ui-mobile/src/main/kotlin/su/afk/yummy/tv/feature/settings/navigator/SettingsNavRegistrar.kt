@@ -6,9 +6,11 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.feature.settings.SettingsDetailsButtonOrderMobileScreen
 import su.afk.yummy.tv.feature.settings.SettingsMobileScreen
 import su.afk.yummy.tv.feature.settings.SettingsViewModel
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import javax.inject.Inject
 
 class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
@@ -17,7 +19,28 @@ class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
             entry<SettingsDestination> {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    SettingsMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                    SettingsMobileScreen(
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent,
+                        onBack = { nav.back() },
+                        onDetailsButtonOrderClick = {
+                            nav.navigate(
+                                SettingsDetailsButtonOrderDestination
+                            )
+                        },
+                    )
+                }
+            }
+            entry<SettingsDetailsButtonOrderDestination> {
+                val viewModel = hiltViewModel<SettingsViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    SettingsDetailsButtonOrderMobileScreen(
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent,
+                        onBack = { nav.back() },
+                    )
                 }
             }
         }

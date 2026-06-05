@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="schedule_mobile_aired_episodes">Вышло серий: %1$d</string>
+    <string name="schedule_mobile_title">Расписание</string>
+    <string name="schedule_mobile_retry">Повторить</string>
+    <string name="schedule_mobile_episode_aired">%1$d серия уже вышла</string>
+    <string name="schedule_mobile_episode_future">%1$d серия выйдет через %2$s</string>
+    <string name="schedule_mobile_day_one">день</string>
+    <string name="schedule_mobile_day_few">дня</string>
+    <string name="schedule_mobile_day_many">дней</string>
+    <string name="schedule_mobile_hour_one">час</string>
+    <string name="schedule_mobile_hour_few">часа</string>
+    <string name="schedule_mobile_hour_many">часов</string>
+    <string name="schedule_mobile_minute_one">минута</string>
+    <string name="schedule_mobile_minute_few">минуты</string>
+    <string name="schedule_mobile_minute_many">минут</string>
+    <string name="schedule_mobile_less_than_minute">меньше чем минуту</string>
 </resources>

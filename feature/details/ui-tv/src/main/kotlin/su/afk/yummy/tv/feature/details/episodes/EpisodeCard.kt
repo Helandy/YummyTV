@@ -39,7 +39,6 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.view.common.formatDuration
 
-private val WatchedColor = Color(0xFF9E9E9E)
 private val InProgressColor = Color(0xFF4CAF50)
 
 private val CardWidth = 220.dp
@@ -96,15 +95,21 @@ internal fun EpisodeCard(
 
                 // Watch status indicator (top-right)
                 when (watchStatus) {
-                    EpisodeWatchStatus.Watched -> Icon(
-                        imageVector = Icons.Filled.VisibilityOff,
-                        contentDescription = null,
-                        tint = WatchedColor,
+                    EpisodeWatchStatus.Watched -> Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(6.dp)
-                            .size(14.dp),
-                    )
+                            .size(24.dp)
+                            .background(Color.Black.copy(alpha = 0.72f), CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.VisibilityOff,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                     is EpisodeWatchStatus.InProgress -> Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)

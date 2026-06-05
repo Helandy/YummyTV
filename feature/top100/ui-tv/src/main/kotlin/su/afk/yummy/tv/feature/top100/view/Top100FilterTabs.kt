@@ -33,6 +33,7 @@ import su.afk.yummy.tv.feature.top100.utils.label
 @Composable
 internal fun Top100FilterTabs(
     selectedType: AnimeTopType,
+    contentCanFocus: Boolean,
     onTypeSelected: (AnimeTopType) -> Unit,
     contentFocusRequester: FocusRequester,
     typeFocusRequesters: List<FocusRequester>,
@@ -68,6 +69,7 @@ internal fun Top100FilterTabs(
                 },
                 contentFocusRequester = contentFocusRequester,
                 focusRequester = typeFocusRequesters[index],
+                contentCanFocus = contentCanFocus,
                 leftFocusRequester = typeFocusRequesters.getOrNull(index - 1)
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
                 rightFocusRequester = typeFocusRequesters.getOrNull(index + 1),
@@ -86,6 +88,7 @@ private fun Top100FilterTabItem(
     onActivated: () -> Unit,
     contentFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
+    contentCanFocus: Boolean,
     leftFocusRequester: FocusRequester?,
     rightFocusRequester: FocusRequester?,
     onFocused: () -> Unit,
@@ -96,7 +99,9 @@ private fun Top100FilterTabItem(
         modifier = Modifier
             .focusRequester(focusRequester)
             .focusProperties {
-                down = contentFocusRequester
+                if (contentCanFocus) {
+                    down = contentFocusRequester
+                }
                 leftFocusRequester?.let { left = it }
                 rightFocusRequester?.let { right = it }
             }
@@ -118,7 +123,11 @@ private fun Top100FilterTabItem(
                     }
 
                     Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                        onActivated()
+                        if (contentCanFocus) {
+                            onActivated()
+                        } else {
+                            onFocused()
+                        }
                         true
                     }
 

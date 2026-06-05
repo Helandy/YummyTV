@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.BalancerOption
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.VideosUiState
@@ -39,6 +40,7 @@ class EpisodesViewModel @AssistedInject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
+    private val detailsNavigator: IDetailsNavigator,
     private val playerNavigator: IPlayerNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
@@ -76,6 +78,8 @@ class EpisodesViewModel @AssistedInject constructor(
     override fun onEvent(event: EpisodesState.Event) {
         when (event) {
             EpisodesState.Event.BackSelected -> nav.back()
+            is EpisodesState.Event.EpisodeDubbingsSelected ->
+                nav.navigate(detailsNavigator.getEpisodeDubbingsDest(animeId, event.episode))
             is EpisodesState.Event.VideoSelected -> showBalancerPicker(event.video)
             is EpisodesState.Event.BalancerConfirmed -> {
                 setState { copy(pendingBalancerSelection = null) }

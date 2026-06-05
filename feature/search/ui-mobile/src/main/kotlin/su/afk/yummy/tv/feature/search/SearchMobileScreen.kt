@@ -1,13 +1,11 @@
 package su.afk.yummy.tv.feature.search
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -16,88 +14,123 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileContentPosterCard
+import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
+import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.mobile.R
+import su.afk.yummy.tv.feature.search.view.SearchMobileFilterButton
+import su.afk.yummy.tv.feature.search.view.SearchMobileFilterSheet
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun SearchMobileScreen(
     state: SearchState.State,
     effect: Flow<SearchState.Effect>,
     onEvent: (SearchState.Event) -> Unit,
 ) {
-    MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            OutlinedTextField(
-                value = state.query,
-                onValueChange = { onEvent(SearchState.Event.QueryChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_mobile_query)) },
-                singleLine = true,
-                trailingIcon = {
-                    IconButton(onClick = { onEvent(SearchState.Event.OpenFilters) }) {
-                        Text(stringResource(R.string.search_mobile_filters_short))
-                    }
-                },
-            )
-        }
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Button(
-                onClick = { onEvent(SearchState.Event.SearchSubmitted) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.search_mobile_submit))
+    val initialError = state.error?.takeIf { state.items.isEmpty() }
+    BaseScreen(
+        isScroll = false,
+        topBar = { Text(stringResource(R.string.search_mobile_title)) },
+        isLoading = state.isLoading && state.items.isEmpty(),
+        error = initialError?.let { ErrorItem(title = it, message = it) },
+        onRetry = { onEvent(SearchState.Event.SearchSubmitted) },
+        errorContent = initialError?.let { message ->
+            { _, retry ->
+                MobileMessage(
+                    title = message,
+                    actionLabel = stringResource(R.string.search_mobile_submit),
+                    onAction = retry,
+                )
             }
-        }
-        val error = state.error
-        if (error != null) {
+        },
+    ) {
+        MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(error, color = MaterialTheme.colorScheme.error)
+                OutlinedTextField(
+                    value = state.query,
+                    onValueChange = { onEvent(SearchState.Event.QueryChanged(it)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.search_mobile_query)) },
+                    singleLine = true,
+                    trailingIcon = {
+                        SearchMobileFilterButton(
+                            activeCount = state.filters.activeCount,
+                            onClick = { onEvent(SearchState.Event.OpenFilters) },
+                        )
+                    },
+                )
             }
-        }
-        if (state.isLoading && state.items.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(stringResource(R.string.search_mobile_loading), style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        items(state.items, key = { it.id }) { item ->
-            MobileContentPosterCard(
-                title = item.title,
-                posterUrl = item.posterUrl,
-                rating = item.rating,
-                onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
-            )
-        }
-        if (state.canLoadMore) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(
-                    onClick = { onEvent(SearchState.Event.LoadMore) },
+                    onClick = { onEvent(SearchState.Event.SearchSubmitted) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        if (state.isLoading) {
-                            stringResource(R.string.search_mobile_loading)
+                        if (state.filters.activeCount > 0) {
+                            stringResource(
+                                R.string.search_mobile_submit_with_filters,
+                                state.filters.activeCount
+                            )
                         } else {
-                            stringResource(R.string.search_mobile_load_more)
+                            stringResource(R.string.search_mobile_submit)
                         },
                     )
                 }
             }
-        }
-        if (state.isFilterPanelOpen) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Button(onClick = { onEvent(SearchState.Event.ApplyFilters) }, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.search_mobile_apply))
-                    }
-                    Button(onClick = { onEvent(SearchState.Event.ResetFilters) }, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.search_mobile_reset))
+            val error = state.error
+            if (error != null && state.items.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(error, color = MaterialTheme.colorScheme.error)
+                }
+            }
+            items(state.items, key = { it.id }) { item ->
+                MobilePosterCard(
+                    title = item.title,
+                    posterUrl = item.posterUrl,
+                    rating = item.rating,
+                    onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
+                )
+            }
+            if (state.canLoadMore) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Button(
+                        onClick = { onEvent(SearchState.Event.LoadMore) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            if (state.isLoading) {
+                                stringResource(R.string.search_mobile_loading)
+                            } else {
+                                stringResource(R.string.search_mobile_load_more)
+                            },
+                        )
                     }
                 }
             }
         }
+    }
+
+    if (state.isFilterPanelOpen) {
+        SearchMobileFilterSheet(
+            draftFilters = state.draftFilters,
+            filterOptions = state.filterOptions,
+            isLoadingFilterOptions = state.isLoadingFilterOptions,
+            onClose = { onEvent(SearchState.Event.CloseFilters) },
+            onApply = { onEvent(SearchState.Event.ApplyFilters) },
+            onReset = { onEvent(SearchState.Event.ResetFilters) },
+            onGenreToggled = { onEvent(SearchState.Event.GenreToggled(it)) },
+            onExcludedGenreToggled = { onEvent(SearchState.Event.ExcludedGenreToggled(it)) },
+            onTypeToggled = { onEvent(SearchState.Event.TypeToggled(it)) },
+            onStatusToggled = { onEvent(SearchState.Event.StatusToggled(it)) },
+            onSeasonToggled = { onEvent(SearchState.Event.SeasonToggled(it)) },
+            onAgeRatingToggled = { onEvent(SearchState.Event.AgeRatingToggled(it)) },
+            onFromYearChanged = { onEvent(SearchState.Event.FromYearChanged(it)) },
+            onToYearChanged = { onEvent(SearchState.Event.ToYearChanged(it)) },
+            onSortSelected = { onEvent(SearchState.Event.SortSelected(it)) },
+            onSortDirectionToggled = { onEvent(SearchState.Event.SortDirectionToggled) },
+        )
     }
 }

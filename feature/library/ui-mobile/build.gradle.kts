@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":feature:library:api"))
     implementation(project(":feature:library:presentation"))
     implementation(project(":feature:details:api"))
+    implementation(libs.androidx.material.icons.core)
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)

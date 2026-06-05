@@ -63,7 +63,23 @@ class LibraryViewModel @Inject constructor(
     private val getAnimeVideos: GetAnimeVideosUseCase,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
-    override fun createInitialState() = LibraryState.State()
+    override fun createInitialState() = LibraryState.State(
+        selectedTab = savedStateHandle.get<String>(KEY_SELECTED_TAB)
+            ?.let { runCatching { LibraryTab.valueOf(it) }.getOrNull() }
+            ?: LibraryTab.CONTINUE_WATCHING,
+        focusedItemId = savedStateHandle.get<Int>(KEY_FOCUSED_ITEM_ID),
+    )
+
+    override fun saveToSavedState(state: LibraryState.State) {
+        savedStateHandle[KEY_SELECTED_TAB] = state.selectedTab.name
+        state.focusedItemId?.let { savedStateHandle[KEY_FOCUSED_ITEM_ID] = it }
+            ?: savedStateHandle.remove<Int>(KEY_FOCUSED_ITEM_ID)
+    }
+
+    private companion object {
+        const val KEY_SELECTED_TAB = "selectedTab"
+        const val KEY_FOCUSED_ITEM_ID = "focusedItemId"
+    }
 
     private var previewJob: Job? = null
     private var signedInUserId: Int = 0
@@ -92,15 +108,30 @@ class LibraryViewModel @Inject constructor(
     override fun onEvent(event: LibraryState.Event) {
         when (event) {
             is LibraryState.Event.AnimeSelected ->
-                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+                openDetails(event.animeId)
             is LibraryState.Event.RemoteAnimeSelected ->
-                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+                openDetails(event.animeId)
             is LibraryState.Event.ContinueWatchingSelected ->
                 launchContinueWatching(event.entry)
             is LibraryState.Event.ItemFocused ->
                 onItemFocused(event.animeId)
-            is LibraryState.Event.TabSelected ->
-                setState { copy(selectedTab = event.tab, focusedItemId = null, focusedPreview = null) }
+            is LibraryState.Event.TabSelected -> {
+                if (event.tab != currentState.selectedTab) {
+                    setState {
+                        copy(
+                            selectedTab = event.tab,
+                            focusedItemId = null,
+                            focusedPreview = null
+                        )
+                    }
+                }
+            }
+
+            LibraryState.Event.FocusedItemRestoreHandled -> {
+                if (currentState.restoreFocusedItemOnEnter) {
+                    setState { copy(restoreFocusedItemOnEnter = false) }
+                }
+            }
             LibraryState.Event.ScreenResumed -> refreshRemoteLists()
             is LibraryState.Event.RemoveLibraryEntry ->
                 viewModelScope.launch {
@@ -123,6 +154,17 @@ class LibraryViewModel @Inject constructor(
                 }
             is LibraryState.Event.RemoveRemoteEntry -> removeRemoteEntry(event)
         }
+    }
+
+    private fun openDetails(animeId: Int) {
+        setState {
+            copy(
+                focusedItemId = animeId,
+                focusedPreview = null,
+                restoreFocusedItemOnEnter = true
+            )
+        }
+        nav.navigate(detailsNavigator.getDetailsDest(animeId))
     }
 
     private fun refreshRemoteLists() {

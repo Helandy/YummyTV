@@ -20,6 +20,7 @@ import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 @Composable
 internal fun LibraryTopTabs(
     selectedTab: LibraryTab,
+    contentCanFocus: Boolean,
     onTabSelected: (LibraryTab) -> Unit,
     contentFocusRequester: FocusRequester,
     tabFocusRequesters: Map<LibraryTab, FocusRequester>,
@@ -53,10 +54,13 @@ internal fun LibraryTopTabs(
                 selected = selectedTab == tab,
                 onActivated = {
                     onTabSelected(tab)
-                    runCatching { contentFocusRequester.requestFocus() }
+                    if (contentCanFocus) {
+                        runCatching { contentFocusRequester.requestFocus() }
+                    }
                 },
                 contentFocusRequester = contentFocusRequester,
                 focusRequester = effectiveFocusRequesters[index],
+                contentCanFocus = contentCanFocus,
                 leftFocusRequester = effectiveFocusRequesters.getOrNull(index - 1)
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
                 rightFocusRequester = effectiveFocusRequesters.getOrNull(index + 1),

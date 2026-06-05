@@ -12,10 +12,13 @@ import su.afk.yummy.tv.feature.details.details.DetailsMobileScreen
 import su.afk.yummy.tv.feature.details.details.DetailsViewModel
 import su.afk.yummy.tv.feature.details.episodes.EpisodesMobileScreen
 import su.afk.yummy.tv.feature.details.episodes.EpisodesViewModel
+import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsMobileScreen
+import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsViewModel
 import su.afk.yummy.tv.feature.details.full.FullDetailsMobileScreen
 import su.afk.yummy.tv.feature.details.full.FullDetailsViewModel
 import su.afk.yummy.tv.feature.details.navigator.DetailsCollectionsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodeDubbingsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodesDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsFullDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
@@ -63,6 +66,21 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     EpisodesMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<DetailsEpisodeDubbingsDestination> { dest ->
+                val viewModel =
+                    hiltViewModel<EpisodeDubbingsViewModel, EpisodeDubbingsViewModel.Factory>(
+                        key = "mobile-episode-dubbings-${dest.animeId}-${dest.episode}",
+                        creationCallback = { factory ->
+                            factory.create(
+                                dest.animeId,
+                                dest.episode
+                            )
+                        },
+                    )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    EpisodeDubbingsMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
             entry<DetailsTrailersDestination> { dest ->

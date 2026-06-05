@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="account_mobile_title">Аккаунт</string>
-    <string name="account_mobile_login">Логин</string>
-    <string name="account_mobile_password">Пароль</string>
-    <string name="account_mobile_signing_in">Вход...</string>
-    <string name="account_mobile_sign_in">Войти</string>
-    <string name="account_mobile_captcha_required">Для входа требуется captcha. TV-версия пока открывает полный поток captcha.</string>
-    <string name="account_mobile_profile">Профиль</string>
-    <string name="account_mobile_refresh">Обновить</string>
-    <string name="account_mobile_logout">Выйти</string>
-    <string name="account_mobile_notifications">Уведомления</string>
+    <string name="account_signed_out">Войдите, чтобы синхронизировать библиотеку, оценки и подписки</string>
+    <string name="account_unknown_user">Неизвестный пользователь</string>
+    <string name="account_refresh">Обновить профиль</string>
+    <string name="account_logout">Выйти</string>
+    <string name="account_login">Войти</string>
+    <string name="account_login_placeholder">Email или никнейм</string>
+    <string name="account_password_placeholder">Пароль</string>
+    <string name="account_loading">Загрузка...</string>
+    <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход. Если она не открылась здесь, используйте TV-поток входа.</string>
+    <string name="account_user_id">ID %1$d</string>
+    <string name="account_tab_stats">Статистика</string>
+    <string name="account_tab_notifications">Уведомления</string>
+    <string name="account_open">Открыть</string>
+    <string name="account_unread_count">Непрочитано: %1$d</string>
+    <string name="account_stats_empty">Статистики пока нет</string>
+    <string name="account_notifications_empty">Уведомлений пока нет</string>
+    <string name="account_stats_genres">Любимые жанры</string>
+    <string name="account_stats_ratings">Оценки</string>
+    <string name="account_stats_types">Типы аниме</string>
+    <string name="account_mark_read">Прочитано</string>
+    <string name="account_mark_all_read">Прочитать все</string>
+    <string name="account_delete">Удалить</string>
+    <string name="account_logout_confirm_title">Выйти из аккаунта?</string>
+    <string name="account_logout_confirm_message">Локальная библиотека и прогресс просмотра останутся на этом устройстве.</string>
+    <string name="account_logout_confirm_action">Выйти</string>
+    <string name="account_logout_confirm_cancel">Отмена</string>
 </resources>

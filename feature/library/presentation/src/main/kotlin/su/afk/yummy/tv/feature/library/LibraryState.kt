@@ -29,6 +29,7 @@ class LibraryState {
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
         val focusedItemId: Int? = null,
         val focusedPreview: AnimePreview? = null,
+        val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -37,6 +38,7 @@ class LibraryState {
         data class RemoteAnimeSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
         data class TabSelected(val tab: LibraryTab) : Event
+        data object FocusedItemRestoreHandled : Event
         data object ScreenResumed : Event
         data class RemoveLibraryEntry(val animeId: Int) : Event
         data class RemoveFavoriteEntry(val animeId: Int) : Event

@@ -7,6 +7,8 @@ class DetailsNavigator : IDetailsNavigator {
     override fun getDetailsDest(animeId: Int): NavKey = DetailsDestination(animeId)
     override fun getFullDetailsDest(animeId: Int): NavKey = DetailsFullDestination(animeId)
     override fun getEpisodesDest(animeId: Int): NavKey = DetailsEpisodesDestination(animeId)
+    override fun getEpisodeDubbingsDest(animeId: Int, episode: String): NavKey =
+        DetailsEpisodeDubbingsDestination(animeId = animeId, episode = episode)
     override fun getTrailersDest(animeId: Int): NavKey = DetailsTrailersDestination(animeId)
     override fun getSimilarDest(animeId: Int): NavKey = DetailsSimilarDestination(animeId)
     override fun getViewingOrderDest(animeId: Int): NavKey = DetailsViewingOrderDestination(animeId)

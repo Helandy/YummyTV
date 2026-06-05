@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)

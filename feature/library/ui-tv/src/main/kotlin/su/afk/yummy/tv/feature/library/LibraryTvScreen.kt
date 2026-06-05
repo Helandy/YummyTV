@@ -107,6 +107,23 @@ fun LibraryTvScreen(
         }
     }
 
+    LaunchedEffect(
+        state.restoreFocusedItemOnEnter,
+        state.selectedTab,
+        state.focusedItemId,
+        hasFocusableGridContent,
+    ) {
+        if (!state.restoreFocusedItemOnEnter) return@LaunchedEffect
+        if (hasFocusableGridContent) {
+            restoreFocusedItemToken += 1
+            delay(60)
+            runCatching { gridFocusRequester.requestFocus() }
+        } else {
+            runCatching { selectedTabFocusRequester.requestFocus() }
+        }
+        currentOnEvent(LibraryState.Event.FocusedItemRestoreHandled)
+    }
+
     DisposableEffect(lifecycleOwner, hasFocusableGridContent) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -137,6 +154,7 @@ fun LibraryTvScreen(
     ) {
         LibraryTopTabs(
             selectedTab = state.selectedTab,
+            contentCanFocus = hasFocusableGridContent,
             onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
             contentFocusRequester = gridFocusRequester,
             tabFocusRequesters = tabFocusRequesters,

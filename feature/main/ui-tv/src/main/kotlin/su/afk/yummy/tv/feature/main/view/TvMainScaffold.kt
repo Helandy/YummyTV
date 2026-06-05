@@ -58,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
@@ -69,10 +70,12 @@ private val SideMenuCollapsedWidth = 84.dp
 private val SideMenuExpandedWidth = 300.dp
 private val SideMenuItemHeight = 56.dp
 private val SideMenuShape = RoundedCornerShape(8.dp)
+private const val ContentFocusRestoreTimeoutMillis = 500L
 
 private data class PendingContentFocusRequest(
     val root: RootTab,
     val requester: FocusRequester?,
+    val token: Int,
 )
 
 data class TvMenuItem(
@@ -99,6 +102,10 @@ fun TvMainScaffold(
     var preferredContentFocusKey by remember { mutableStateOf<Any?>(null) }
     var initialContentFocusRequested by remember { mutableStateOf(false) }
     var pendingContentFocusRequest by remember { mutableStateOf<PendingContentFocusRequest?>(null) }
+    var contentFocusRequestToken by remember { mutableIntStateOf(0) }
+    var previousShowMainMenu by remember { mutableStateOf(showMainMenu) }
+    var restoreContentFocusAfterMenuShown by remember { mutableStateOf(false) }
+    val menuCanFocus = !restoreContentFocusAfterMenuShown
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     val currentPreferredContentFocusRequester =
@@ -117,9 +124,11 @@ fun TvMainScaffold(
         }
     }
     val requestContentFocus: (RootTab) -> Unit = { root ->
+        contentFocusRequestToken += 1
         pendingContentFocusRequest = PendingContentFocusRequest(
             root = root,
             requester = currentPreferredContentFocusRequester.takeIf { root == selectedRoot },
+            token = contentFocusRequestToken,
         )
     }
 
@@ -132,7 +141,31 @@ fun TvMainScaffold(
         runCatching { initialRequester.requestFocus() }
     }
 
-    LaunchedEffect(pendingContentFocusRequest, selectedRoot, contentFocusKey) {
+    LaunchedEffect(showMainMenu) {
+        if (showMainMenu && !previousShowMainMenu) {
+            restoreContentFocusAfterMenuShown = true
+        }
+        previousShowMainMenu = showMainMenu
+    }
+
+    LaunchedEffect(
+        showMainMenu,
+        contentFocusKey,
+        currentPreferredContentFocusRequester,
+        restoreContentFocusAfterMenuShown
+    ) {
+        if (!showMainMenu || !restoreContentFocusAfterMenuShown) return@LaunchedEffect
+        val requester = currentPreferredContentFocusRequester ?: contentFocusRequester
+        requestFocusOnFrameBoundary(requester)
+        restoreContentFocusAfterMenuShown = false
+    }
+
+    LaunchedEffect(
+        pendingContentFocusRequest,
+        selectedRoot,
+        contentFocusKey,
+        currentPreferredContentFocusRequester,
+    ) {
         val request = pendingContentFocusRequest ?: return@LaunchedEffect
         if (request.root != selectedRoot) {
             withFrameNanos { }
@@ -144,9 +177,14 @@ fun TvMainScaffold(
         }
         withFrameNanos { }
         withFrameNanos { }
-        (request.requester ?: preferredContentFocusRequester
-            .takeIf { preferredContentFocusKey == contentFocusKey })
-            ?.let { runCatching { it.requestFocus() } }
+        val requester = request.requester
+            ?: currentPreferredContentFocusRequester
+            ?: preferredContentFocusRequester.takeIf { preferredContentFocusKey == contentFocusKey }
+            ?: return@LaunchedEffect
+        repeat(4) {
+            runCatching { requester.requestFocus() }
+            withFrameNanos { }
+        }
         pendingContentFocusRequest = null
     }
 
@@ -186,6 +224,7 @@ fun TvMainScaffold(
                     rootFocusRequesters = rootFocusRequesters,
                     menuEnterFocusRequester = selectedRootFocusRequester,
                     rightFocusRequester = mainMenuRightFocusRequester,
+                    canFocus = menuCanFocus,
                     onMoveToContent = requestContentFocus,
                 )
             }
@@ -205,6 +244,7 @@ private fun TvSideMenu(
     rootFocusRequesters: Map<RootTab, FocusRequester>,
     menuEnterFocusRequester: FocusRequester,
     rightFocusRequester: FocusRequester,
+    canFocus: Boolean,
     onMoveToContent: (RootTab) -> Unit,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
@@ -217,6 +257,11 @@ private fun TvSideMenu(
         RootTab.SETTINGS -> rowFocusRequesters.lastIndex
         else -> (menuItems.indexOfFirst { it.destination == root } + 1)
             .coerceIn(1, rowFocusRequesters.lastIndex - 1)
+    }
+    fun rootForFocusedIndex(index: Int): RootTab = when (index) {
+        0 -> RootTab.ACCOUNT
+        rowFocusRequesters.lastIndex -> RootTab.SETTINGS
+        else -> menuItems.getOrNull(index - 1)?.destination ?: selectedRoot
     }
 
     var focusedIndex by remember { mutableIntStateOf(focusedIndexFor(selectedRoot)) }
@@ -248,6 +293,7 @@ private fun TvSideMenu(
                         if (target != focusedIndex) {
                             focusedIndex = target
                             runCatching { rowFocusRequesters[target].requestFocus() }
+                            onEvent(MainState.Event.TvRootFocused(rootForFocusedIndex(target)))
                         }
                         true
                     }
@@ -257,7 +303,15 @@ private fun TvSideMenu(
                         if (target != focusedIndex) {
                             focusedIndex = target
                             runCatching { rowFocusRequesters[target].requestFocus() }
+                            onEvent(MainState.Event.TvRootFocused(rootForFocusedIndex(target)))
                         }
+                        true
+                    }
+
+                    Key.DirectionRight -> {
+                        val targetRoot = rootForFocusedIndex(focusedIndex)
+                        onEvent(MainState.Event.TvRootFocused(targetRoot))
+                        onMoveToContent(targetRoot)
                         true
                     }
 
@@ -265,7 +319,14 @@ private fun TvSideMenu(
                 }
             }
             .focusGroup()
-            .focusProperties { onEnter = { menuEnterFocusRequester.requestFocus() } }
+            .focusProperties {
+                this.canFocus = canFocus
+                onEnter = {
+                    if (canFocus) {
+                        menuEnterFocusRequester.requestFocus()
+                    }
+                }
+            }
             .padding(horizontal = 14.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -279,11 +340,12 @@ private fun TvSideMenu(
             focusRequester = rootFocusRequesters.getValue(RootTab.ACCOUNT),
             downFocusRequester = rowFocusRequesters.getOrNull(1),
             rightFocusRequester = rightFocusRequester,
-            onFocusedSelected = {
-                focusedIndex = 0
+            canFocus = canFocus,
+            onFocused = { focusedIndex = 0 },
+            onMoveToContent = {
                 onEvent(MainState.Event.TvRootFocused(RootTab.ACCOUNT))
+                onMoveToContent(RootTab.ACCOUNT)
             },
-            onMoveToContent = { onMoveToContent(RootTab.ACCOUNT) },
             onClick = {
                 onEvent(MainState.Event.TvRootFocused(RootTab.ACCOUNT))
                 onMoveToContent(RootTab.ACCOUNT)
@@ -300,7 +362,6 @@ private fun TvSideMenu(
                 icon = item.icon,
                 selected = isSelected,
                 expanded = hasFocus,
-                onFocusedSelected = { onEvent(MainState.Event.TvRootFocused(item.destination)) },
                 onActivated = {
                     onEvent(MainState.Event.TvRootFocused(item.destination))
                     onMoveToContent(item.destination)
@@ -309,8 +370,12 @@ private fun TvSideMenu(
                 upFocusRequester = rowFocusRequesters.getOrNull(rowIndex - 1),
                 downFocusRequester = rowFocusRequesters.getOrNull(rowIndex + 1),
                 rightFocusRequester = rightFocusRequester,
+                canFocus = canFocus,
                 onFocused = { focusedIndex = rowIndex },
-                onMoveToContent = { onMoveToContent(item.destination) },
+                onMoveToContent = {
+                    onEvent(MainState.Event.TvRootFocused(item.destination))
+                    onMoveToContent(item.destination)
+                },
             )
         }
 
@@ -321,7 +386,6 @@ private fun TvSideMenu(
             icon = Icons.Default.Settings,
             selected = selectedRoot == RootTab.SETTINGS,
             expanded = hasFocus,
-            onFocusedSelected = { onEvent(MainState.Event.TvRootFocused(RootTab.SETTINGS)) },
             onActivated = {
                 onEvent(MainState.Event.TvRootFocused(RootTab.SETTINGS))
                 onMoveToContent(RootTab.SETTINGS)
@@ -329,8 +393,12 @@ private fun TvSideMenu(
             focusRequester = rootFocusRequesters.getValue(RootTab.SETTINGS),
             upFocusRequester = rowFocusRequesters.getOrNull(rowFocusRequesters.lastIndex - 1),
             rightFocusRequester = rightFocusRequester,
+            canFocus = canFocus,
             onFocused = { focusedIndex = rowFocusRequesters.lastIndex },
-            onMoveToContent = { onMoveToContent(RootTab.SETTINGS) },
+            onMoveToContent = {
+                onEvent(MainState.Event.TvRootFocused(RootTab.SETTINGS))
+                onMoveToContent(RootTab.SETTINGS)
+            },
         )
     }
 }
@@ -341,12 +409,12 @@ private fun TvSideMenuItem(
     icon: ImageVector?,
     selected: Boolean,
     expanded: Boolean,
-    onFocusedSelected: () -> Unit,
     onActivated: () -> Unit,
     focusRequester: FocusRequester,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     rightFocusRequester: FocusRequester,
+    canFocus: Boolean,
     onFocused: () -> Unit,
     onMoveToContent: () -> Unit,
 ) {
@@ -370,6 +438,7 @@ private fun TvSideMenuItem(
             .width(SideMenuExpandedWidth - 28.dp)
             .moveFocusToContentOnKey(onMoveToContent)
             .focusProperties {
+                this.canFocus = canFocus
                 right = rightFocusRequester
                 upFocusRequester?.let { up = it }
                 downFocusRequester?.let { down = it }
@@ -377,7 +446,6 @@ private fun TvSideMenuItem(
             .onFocusChanged {
                 if (it.isFocused) {
                     onFocused()
-                    onFocusedSelected()
                 }
             }
             .clip(SideMenuShape)
@@ -420,7 +488,8 @@ private fun TvSideMenuAccountItem(
     focusRequester: FocusRequester,
     downFocusRequester: FocusRequester?,
     rightFocusRequester: FocusRequester,
-    onFocusedSelected: () -> Unit,
+    canFocus: Boolean,
+    onFocused: () -> Unit,
     onMoveToContent: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -444,10 +513,11 @@ private fun TvSideMenuAccountItem(
             .width(SideMenuExpandedWidth - 28.dp)
             .moveFocusToContentOnKey(onMoveToContent)
             .focusProperties {
+                this.canFocus = canFocus
                 right = rightFocusRequester
                 downFocusRequester?.let { down = it }
             }
-            .onFocusChanged { if (it.isFocused) onFocusedSelected() }
+            .onFocusChanged { if (it.isFocused) onFocused() }
             .clip(SideMenuShape)
             .background(backgroundColor)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
@@ -534,3 +604,16 @@ private fun Modifier.moveUnhandledLeftFocusToMenu(
         runCatching { menuFocusRequester.requestFocus() }
         true
     }
+
+private suspend fun requestFocusOnFrameBoundary(
+    requester: FocusRequester,
+): Boolean =
+    withTimeoutOrNull<Boolean>(ContentFocusRestoreTimeoutMillis) {
+        repeat(2) { withFrameNanos { } }
+        var focused = false
+        while (!focused) {
+            focused = runCatching { requester.requestFocus() }.getOrDefault(false)
+            withFrameNanos { }
+        }
+        focused
+    } ?: false

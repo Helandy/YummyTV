@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    api(project(":core:model"))
     implementation(project(":core:error"))
     implementation(project(":core:storage"))
     implementation(project(":core:preferences"))

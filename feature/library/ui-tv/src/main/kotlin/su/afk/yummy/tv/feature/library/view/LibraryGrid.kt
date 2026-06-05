@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.library.view
 
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -67,9 +68,13 @@ internal fun LibraryGrid(
 ) {
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val itemIds = remember(items) { items.map { it.animeId } }
+    val focusStateKey = remember(itemIds) { itemIds.joinToString(separator = "|") }
+    val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
     val posterQuality = LocalPosterQuality.current
-    var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var lastFocusedIndex by rememberSaveable(focusStateKey) {
+        mutableIntStateOf(focusedItemId?.let(itemIds::indexOf)?.takeIf { it >= 0 } ?: 0)
+    }
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoringFromMainMenu by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
@@ -205,7 +210,8 @@ internal fun LibraryGrid(
                         }
                     }
                 }
-                .focusGroup(),
+                .focusGroup()
+                .focusable(),
             contentPadding = PaddingValues(
                 start = TvScreenPadding.Horizontal,
                 end = TvScreenPadding.Horizontal,
@@ -236,6 +242,14 @@ internal fun LibraryGrid(
                 modifier = Modifier
                     .width(TvPosterCardDefaults.Width)
                     .focusRequester(focusRequesters[index])
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
+                            return@onPreviewKeyEvent false
+                        }
+                        if (index <= 0) return@onPreviewKeyEvent false
+                        requestItemFocus(index - 1)
+                        true
+                    }
                     .onFocusChanged { state ->
                         columnHasFocus = state.hasFocus
                         if (state.hasFocus && gridHasFocus && !isRestoringFocus) {

@@ -24,6 +24,11 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
@@ -36,6 +41,7 @@ internal fun ScheduleDateChip(
     focusRequester: FocusRequester?,
     downFocusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
+    onMoveLeft: (() -> Boolean)?,
     onSelected: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -61,6 +67,12 @@ internal fun ScheduleDateChip(
                 down = downFocusRequester
                 leftFocusRequester?.let { left = it }
             }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
+                    return@onPreviewKeyEvent false
+                }
+                onMoveLeft?.invoke() ?: false
+            }
             .onFocusChanged { if (it.isFocused) onSelected() }
             .clip(shape)
             .background(background, shape)
@@ -69,7 +81,11 @@ internal fun ScheduleDateChip(
                 color = if (focused && !selected) MaterialTheme.colorScheme.primary else Color.Transparent,
                 shape = shape,
             )
-            .tvFocusableClick(onClick = onSelected, interactionSource = interactionSource, shape = shape)
+            .tvFocusableClick(
+                onClick = onSelected,
+                interactionSource = interactionSource,
+                shape = shape
+            )
             .padding(8.dp),
     ) {
         Column(

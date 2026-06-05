@@ -18,12 +18,14 @@ class Top100State {
         val offset: Int = 0,
         val focusedItemId: Int? = null,
         val focusedPreview: AnimePreview? = null,
+        val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
         data class TypeSelected(val type: AnimeTopType) : Event
         data class AnimeSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
+        data object FocusedItemRestoreHandled : Event
         data object LoadMore : Event
         data object RetrySelected : Event
     }

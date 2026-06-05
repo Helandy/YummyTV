@@ -50,9 +50,13 @@ class PlayerState {
         val streamUrl: String? = null,
         val streamHeaders: Map<String, String> = emptyMap(),
         val streamQualityMap: LinkedHashMap<String, String>? = null,
+        val selectedQuality: String? = null,
+        val selectedSpeed: Float = 1f,
         val playerError: String? = null,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
+        val playbackPositionMs: Long = 0L,
+        val playbackDurationMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
     ) : UiState
 
@@ -62,6 +66,9 @@ class PlayerState {
         data object NextEpisode : Event
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
+        data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
+        data class SpeedSelected(val speed: Float) : Event
+        data class PlaybackPositionChanged(val positionMs: Long, val durationMs: Long) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
         data class PlaybackError(val message: String) : Event
         data object RetryStream : Event

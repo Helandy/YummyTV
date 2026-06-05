@@ -5,3 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data object SettingsDestination : NavKey
+
+@Serializable
+data object SettingsDetailsButtonOrderDestination : NavKey

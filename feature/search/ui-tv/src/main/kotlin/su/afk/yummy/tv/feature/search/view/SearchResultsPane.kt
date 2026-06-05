@@ -193,11 +193,17 @@ internal fun SearchResultsPane(
                     .focusRequester(searchFieldFocusRequester)
                     .focusProperties {
                         mainMenuFocusRequester?.let { left = it }
+                        right = filterButtonFocusRequester
                     }
                     .onFocusChanged { if (!it.isFocused) searchEditing = false }
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         when (event.key) {
+                            Key.DirectionRight -> {
+                                runCatching { filterButtonFocusRequester.requestFocus() }
+                                true
+                            }
+
                             Key.DirectionCenter,
                             Key.Enter,
                             Key.NumPadEnter,

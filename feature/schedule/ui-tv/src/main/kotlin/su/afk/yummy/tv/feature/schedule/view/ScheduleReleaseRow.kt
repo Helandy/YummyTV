@@ -35,6 +35,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -92,6 +97,12 @@ internal fun ScheduleReleaseRow(
             .focusProperties {
                 leftFocusRequester?.let { left = it }
                 upFocusRequester?.let { up = it }
+            }
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
+                    return@onPreviewKeyEvent false
+                }
+                leftFocusRequester?.requestFocus() == true
             }
             .onFocusChanged { if (it.isFocused) onFocused() }
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),

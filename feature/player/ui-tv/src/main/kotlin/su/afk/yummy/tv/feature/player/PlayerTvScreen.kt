@@ -82,6 +82,28 @@ fun PlayerTvScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
+            kodikBlockedError != null -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+            ) {
+                KodikBlockedOverlay(
+                    message = kodikBlockedError,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+
+            playerError != null -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+            ) {
+                StreamErrorOverlay(
+                    message = playerError,
+                    modifier = Modifier.align(Alignment.Center),
+                    onRetry = { onEvent(PlayerState.Event.RetryStream) },
+                )
+            }
             streamUrl != null -> ExoPlayerView(
                 streamUrl = streamUrl,
                 streamHeaders = state.streamHeaders,
@@ -123,23 +145,6 @@ fun PlayerTvScreen(
                 skips = uiState.activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
             )
-            kodikBlockedError != null -> Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black),
-            ) {
-                KodikBlockedOverlay(
-                    message = kodikBlockedError,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            }
-            playerError != null -> Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black),
-            ) {
-                StreamErrorOverlay(
-                    message = playerError,
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    onRetry = { onEvent(PlayerState.Event.RetryStream) },
-                )
-            }
             else -> StreamLoadingView()
         }
         PlayerInlineToast(

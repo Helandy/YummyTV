@@ -39,11 +39,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.model.ErrorItem
-import su.afk.yummy.tv.core.error.view.DefaultErrorContent
 import su.afk.yummy.tv.core.designsystem.R
+import su.afk.yummy.tv.core.error.view.DefaultErrorContent
+import su.afk.yummy.tv.core.model.ErrorItem
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("OPT_IN_USAGE_IN_SIGNATURE")
 @Composable
 fun BaseScreen(
     contentAlignment: Alignment = Alignment.TopStart,

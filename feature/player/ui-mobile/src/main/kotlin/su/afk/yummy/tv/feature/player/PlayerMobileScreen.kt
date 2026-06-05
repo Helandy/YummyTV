@@ -24,7 +24,6 @@ import su.afk.yummy.tv.feature.player.view.PlayerMessage
 @OptIn(UnstableApi::class)
 @Composable
 fun PlayerMobileScreen(
-
     state: PlayerState.State,
     effect: Flow<PlayerState.Effect>,
     onEvent: (PlayerState.Event) -> Unit,
