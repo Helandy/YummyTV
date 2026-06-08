@@ -41,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,7 +61,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
@@ -154,7 +154,7 @@ internal fun SearchResultsPane(
         if (restoreFilterButtonFocusToken <= 0 || isFilterPanelOpen) return@LaunchedEffect
         repeat(6) {
             runCatching { filterButtonFocusRequester.requestFocus() }
-            delay(16)
+            withFrameNanos { }
         }
     }
 
@@ -415,7 +415,7 @@ private fun FilterPanel(
     LaunchedEffect(Unit) {
         repeat(6) {
             runCatching { initialFocusRequester.requestFocus() }
-            delay(16)
+            withFrameNanos { }
         }
     }
 

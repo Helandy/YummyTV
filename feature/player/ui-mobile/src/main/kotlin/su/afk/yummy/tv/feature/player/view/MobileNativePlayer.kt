@@ -57,7 +57,7 @@ internal fun MobileNativePlayer(
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
     val ui = remember(state) { MobilePlayerUiState.from(state) }
     val qualities = remember(streamUrl, state.streamQualityMap) {
-        state.streamQualityMap?.takeIf { it.isNotEmpty() } ?: linkedMapOf("auto" to streamUrl)
+        state.streamQualityMap?.takeIf { it.isNotEmpty() } ?: deriveQualityUrls(streamUrl)
     }
     val selectedQuality = state.selectedQuality?.takeIf { it in qualities } ?: qualities.keys.last()
     val selectedSpeed = state.selectedSpeed

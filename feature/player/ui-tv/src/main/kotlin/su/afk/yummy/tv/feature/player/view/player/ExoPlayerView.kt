@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -401,10 +402,10 @@ internal fun ExoPlayerView(
         restoreControlFocusTarget,
     ) {
         if (showNextEpisodePrompt) {
-            delay(50)
+            withFrameNanos { }
             try { nextEpisodeFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (showRateTitlePrompt) {
-            delay(50)
+            withFrameNanos { }
             try { rateTitleFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel) {
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
@@ -421,16 +422,40 @@ internal fun ExoPlayerView(
     }
 
     LaunchedEffect(showQualityPanel) {
-        if (showQualityPanel) { delay(50); try { selectedQualityFocusRequester.requestFocus() } catch (_: Exception) {} }
+        if (showQualityPanel) {
+            withFrameNanos { }
+            try {
+                selectedQualityFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
     }
     LaunchedEffect(showDubbingPanel) {
-        if (showDubbingPanel) { delay(50); try { selectedDubbingFocusRequester.requestFocus() } catch (_: Exception) {} }
+        if (showDubbingPanel) {
+            withFrameNanos { }
+            try {
+                selectedDubbingFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
     }
     LaunchedEffect(showBalancerPanel) {
-        if (showBalancerPanel) { delay(50); try { selectedBalancerFocusRequester.requestFocus() } catch (_: Exception) {} }
+        if (showBalancerPanel) {
+            withFrameNanos { }
+            try {
+                selectedBalancerFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
     }
     LaunchedEffect(showSpeedPanel) {
-        if (showSpeedPanel) { delay(50); try { selectedSpeedFocusRequester.requestFocus() } catch (_: Exception) {} }
+        if (showSpeedPanel) {
+            withFrameNanos { }
+            try {
+                selectedSpeedFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
     }
     LaunchedEffect(activeSkipKey, autoSkipOpeningsEndings) {
         val skip = activeSkip ?: return@LaunchedEffect
@@ -440,7 +465,7 @@ internal fun ExoPlayerView(
             highlightedSkipKey = skip.key
             controllerVisible = true
             hideJob?.cancel()
-            delay(50)
+            withFrameNanos { }
             try { skipFocusRequester.requestFocus() } catch (_: Exception) {}
             delay(10_000)
             if (highlightedSkipKey == skip.key) highlightedSkipKey = null
@@ -496,10 +521,12 @@ internal fun ExoPlayerView(
                                 stepSeek(SeekDirection.Backward)
                                 true
                             }
+
                             Key.DirectionRight -> {
                                 stepSeek(SeekDirection.Forward)
                                 true
                             }
+
                             else -> {
                                 onInteraction()
                                 true
@@ -525,14 +552,23 @@ internal fun ExoPlayerView(
 
         AnimatedVisibility(
             visible = controllerVisible,
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth(),
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.88f)))),
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.88f)
+                            )
+                        )
+                    ),
             ) {
                 Column(
                     modifier = Modifier
@@ -638,7 +674,9 @@ internal fun ExoPlayerView(
             items = qualities.keys.toList(),
             selectedIndex = qualities.keys.indexOf(selectedQuality),
             selectedFocusRequester = selectedQualityFocusRequester,
-            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 48.dp, bottom = 72.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
             itemMeta = { stringResource(R.string.player_quality_meta) },
             onItemSelected = { idx ->
                 val quality = qualities.keys.toList()[idx]
@@ -657,7 +695,9 @@ internal fun ExoPlayerView(
             items = allDubbingNames,
             selectedIndex = currentDubbingIndex,
             selectedFocusRequester = selectedDubbingFocusRequester,
-            modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 48.dp, bottom = 72.dp),
             itemMetaContent = { idx, contentColor ->
                 val views = allDubbingViews.getOrElse(idx) { 0 }
                 val episodeCount = allDubbingEpisodeCounts.getOrElse(idx) { 0 }
@@ -681,7 +721,9 @@ internal fun ExoPlayerView(
             items = speeds.map { it.speedLabel() },
             selectedIndex = speeds.indexOf(selectedSpeed).coerceAtLeast(0),
             selectedFocusRequester = selectedSpeedFocusRequester,
-            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 48.dp, bottom = 72.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
             itemMeta = { stringResource(R.string.player_speed_meta) },
             onItemSelected = { idx ->
                 selectedSpeed = speeds[idx]
@@ -696,7 +738,9 @@ internal fun ExoPlayerView(
             items = allBalancerNames.map { it.removePrefix(stringResource(R.string.player_name_prefix)) },
             selectedIndex = currentBalancerIndex,
             selectedFocusRequester = selectedBalancerFocusRequester,
-            modifier = Modifier.align(Alignment.BottomStart).padding(start = 48.dp, bottom = 72.dp),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 48.dp, bottom = 72.dp),
             itemMeta = { stringResource(R.string.player_balancer_meta) },
             onItemSelected = { idx ->
                 onBalancerSelected(idx, exoPlayer.currentPosition)

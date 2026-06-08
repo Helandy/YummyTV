@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -43,7 +44,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
@@ -122,7 +122,7 @@ internal fun ContinueWatchingGrid(
             .first { it }
         repeat(6) {
             runCatching { focusRequesters[target].requestFocus() }
-            delay(16)
+            withFrameNanos { }
         }
     }
 
@@ -145,7 +145,7 @@ internal fun ContinueWatchingGrid(
         if (entries.isEmpty()) {
             repeat(6) {
                 runCatching { selectedTabFocusRequester.requestFocus() }
-                delay(16)
+                withFrameNanos { }
             }
         } else {
             val target = pendingIndex.coerceIn(0, entries.lastIndex)

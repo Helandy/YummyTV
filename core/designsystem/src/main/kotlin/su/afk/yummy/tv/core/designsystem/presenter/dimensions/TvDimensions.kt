@@ -3,7 +3,7 @@ package su.afk.yummy.tv.core.designsystem.presenter.dimensions
 import androidx.compose.ui.unit.dp
 
 object TvScreenPadding {
-    val Horizontal = 48.dp
+    val Horizontal = 32.dp
     val Vertical = 32.dp
 }
 

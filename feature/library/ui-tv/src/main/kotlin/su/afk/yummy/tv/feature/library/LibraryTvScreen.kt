@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -25,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -116,7 +116,7 @@ fun LibraryTvScreen(
         if (!state.restoreFocusedItemOnEnter) return@LaunchedEffect
         if (hasFocusableGridContent) {
             restoreFocusedItemToken += 1
-            delay(60)
+            withFrameNanos { }
             runCatching { gridFocusRequester.requestFocus() }
         } else {
             runCatching { selectedTabFocusRequester.requestFocus() }
@@ -137,7 +137,7 @@ fun LibraryTvScreen(
                     }
                     restoreGridFocusOnResume = false
                     scope.launch {
-                        delay(60)
+                        withFrameNanos { }
                         runCatching { gridFocusRequester.requestFocus() }
                     }
                 }
