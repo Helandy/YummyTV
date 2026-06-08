@@ -72,7 +72,7 @@ class MobileMainGraph @Inject constructor(
             ),
             MobileMenuItem(
                 stringResource(R.string.main_mobile_tab_top),
-                RootTab.TOP100,
+                RootTab.TOP,
                 Icons.Default.Star
             ),
             MobileMenuItem(

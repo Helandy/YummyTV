@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="top_type_tv">Сериалы</string>
+    <string name="top_type_movie">Фильмы</string>
+    <string name="top_type_tv_short">Сер</string>
+    <string name="top_type_movie_short">Фил</string>
+</resources>

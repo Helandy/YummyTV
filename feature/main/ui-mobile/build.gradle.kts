@@ -27,7 +27,7 @@ dependencies {
     implementation(project(":feature:home:ui-mobile"))
     implementation(project(":feature:search:ui-mobile"))
     implementation(project(":feature:schedule:ui-mobile"))
-    implementation(project(":feature:top100:ui-mobile"))
+    implementation(project(":feature:top:ui-mobile"))
     implementation(project(":feature:library:ui-mobile"))
 
     implementation(libs.hilt.android)

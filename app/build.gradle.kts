@@ -71,8 +71,8 @@ dependencies {
     implementation(project(":feature:details:api"))
     implementation(project(":feature:home:data"))
     implementation(project(":feature:home:api"))
-    implementation(project(":feature:top100:data"))
-    implementation(project(":feature:top100:api"))
+    implementation(project(":feature:top:data"))
+    implementation(project(":feature:top:api"))
     implementation(project(":feature:search:data"))
     implementation(project(":feature:search:api"))
     implementation(project(":feature:collection:data"))
@@ -99,7 +99,7 @@ dependencies {
     implementation(project(":feature:schedule:ui-tv"))
     implementation(project(":feature:home:ui-tv"))
     implementation(project(":feature:search:ui-tv"))
-    implementation(project(":feature:top100:ui-tv"))
+    implementation(project(":feature:top:ui-tv"))
     implementation(project(":feature:library:ui-tv"))
 
     implementation(project(":feature:main:ui-mobile"))
@@ -111,7 +111,7 @@ dependencies {
     implementation(project(":feature:schedule:ui-mobile"))
     implementation(project(":feature:home:ui-mobile"))
     implementation(project(":feature:search:ui-mobile"))
-    implementation(project(":feature:top100:ui-mobile"))
+    implementation(project(":feature:top:ui-mobile"))
     implementation(project(":feature:library:ui-mobile"))
 
     implementation(libs.hilt.android)

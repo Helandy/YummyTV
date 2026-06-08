@@ -51,9 +51,9 @@ YummyTV is a native Android TV app that makes watching anime from yummyani.me mo
 
 ## Screenshots
 
-| Home | Details | Top |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/Home.webp" width="320" alt="Home" /> | <img src="docs/screenshots/Details.webp" width="320" alt="Details" /> | <img src="docs/screenshots/Top100.webp" width="320" alt="Top" /> |
+|                              Home                               |                                Details                                |                              Top                              |
+|:---------------------------------------------------------------:|:---------------------------------------------------------------------:|:-------------------------------------------------------------:|
+| <img src="docs/screenshots/Home.webp" width="320" alt="Home" /> | <img src="docs/screenshots/Details.webp" width="320" alt="Details" /> | <img src="docs/screenshots/Top.webp" width="320" alt="Top" /> |
 
 | Series | Continue Watching | Similar |
 |:---:|:---:|:---:|

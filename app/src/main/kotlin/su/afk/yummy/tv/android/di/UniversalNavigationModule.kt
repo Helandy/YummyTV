@@ -19,7 +19,7 @@ import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
-import su.afk.yummy.tv.feature.top100.ITop100Navigator
+import su.afk.yummy.tv.feature.top.ITopNavigator
 import javax.inject.Singleton
 
 @Module
@@ -32,7 +32,7 @@ object UniversalNavigationModule {
         RootTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination,
         RootTab.HOME to su.afk.yummy.tv.feature.home.navigator.HomeDestination,
         RootTab.SCHEDULE to su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination,
-        RootTab.TOP100 to su.afk.yummy.tv.feature.top100.navigator.Top100Destination,
+        RootTab.TOP to su.afk.yummy.tv.feature.top.navigator.TopDestination,
         RootTab.LIBRARY to su.afk.yummy.tv.feature.library.navigator.LibraryDestination,
         RootTab.SETTINGS to su.afk.yummy.tv.feature.settings.navigator.SettingsDestination,
     )
@@ -84,8 +84,8 @@ object UniversalNavigationModule {
 
     @Provides
     @Singleton
-    fun provideTop100Navigator(): ITop100Navigator =
-        su.afk.yummy.tv.feature.top100.navigator.Top100Navigator()
+    fun provideTopNavigator(): ITopNavigator =
+        su.afk.yummy.tv.feature.top.navigator.TopNavigator()
 
     @Provides @IntoSet @MobileUi
     fun provideMobileAccountNavRegistrar(): NavRegistrar =
@@ -124,8 +124,8 @@ object UniversalNavigationModule {
         su.afk.yummy.tv.feature.settings.mobile.navigator.SettingsNavRegistrar()
 
     @Provides @IntoSet @MobileUi
-    fun provideMobileTop100NavRegistrar(): NavRegistrar =
-        su.afk.yummy.tv.feature.top100.mobile.navigator.Top100NavRegistrar()
+    fun provideMobileTopNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.top.mobile.navigator.TopNavRegistrar()
 
     @Provides @IntoSet @TvUi
     fun provideTvAccountNavRegistrar(): NavRegistrar =
@@ -164,6 +164,6 @@ object UniversalNavigationModule {
         su.afk.yummy.tv.feature.settings.tv.navigator.SettingsNavRegistrar()
 
     @Provides @IntoSet @TvUi
-    fun provideTvTop100NavRegistrar(): NavRegistrar =
-        su.afk.yummy.tv.feature.top100.tv.navigator.Top100NavRegistrar()
+    fun provideTvTopNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.top.tv.navigator.TopNavRegistrar()
 }

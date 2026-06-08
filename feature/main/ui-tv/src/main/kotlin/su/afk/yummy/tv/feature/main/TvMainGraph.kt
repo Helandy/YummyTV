@@ -39,7 +39,7 @@ class TvMainGraph @Inject constructor(
         TvMenuItem(R.string.main_tab_search, RootTab.SEARCH, Icons.Default.Search),
         TvMenuItem(R.string.main_tab_home, RootTab.HOME, Icons.Default.Home),
         TvMenuItem(R.string.main_tab_schedule, RootTab.SCHEDULE, Icons.Default.DateRange),
-        TvMenuItem(R.string.main_tab_top100, RootTab.TOP100, Icons.Default.Star),
+        TvMenuItem(R.string.main_tab_top, RootTab.TOP, Icons.Default.Star),
         TvMenuItem(R.string.main_tab_library, RootTab.LIBRARY, Icons.AutoMirrored.Filled.List),
     )
 

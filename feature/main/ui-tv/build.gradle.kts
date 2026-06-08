@@ -30,7 +30,7 @@ dependencies {
     implementation(project(":feature:home:ui-tv"))
     implementation(project(":feature:search:ui-tv"))
     implementation(project(":feature:schedule:ui-tv"))
-    implementation(project(":feature:top100:ui-tv"))
+    implementation(project(":feature:top:ui-tv"))
     implementation(project(":feature:library:ui-tv"))
 
     implementation(libs.hilt.android)

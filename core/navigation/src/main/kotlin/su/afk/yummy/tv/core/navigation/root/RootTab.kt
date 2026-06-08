@@ -5,7 +5,7 @@ enum class RootTab {
     SEARCH,
     HOME,
     SCHEDULE,
-    TOP100,
+    TOP,
     LIBRARY,
     SETTINGS,
 }

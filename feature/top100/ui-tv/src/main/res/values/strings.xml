@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="top100_type_tv">Series</string>
-    <string name="top100_type_movie">Movies</string>
-    <string name="top100_type_tv_short">Ser</string>
-    <string name="top100_type_movie_short">Mov</string>
-</resources>
