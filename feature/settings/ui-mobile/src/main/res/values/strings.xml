@@ -64,6 +64,8 @@
     <string name="settings_preferred_player_alloha_hint">Alloha</string>
     <string name="settings_preferred_player_cvh">CVH</string>
     <string name="settings_preferred_player_cvh_hint">CVH</string>
+    <string name="settings_preferred_player_vk">VK</string>
+    <string name="settings_preferred_player_vk_hint">VK</string>
     <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_cache_size_min">Minimum</string>

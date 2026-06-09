@@ -6,4 +6,5 @@ enum class PreferredPlayer {
     AKSOR,
     ALLOHA,
     CVH,
+    VK,
 }

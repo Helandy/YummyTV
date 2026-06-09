@@ -110,6 +110,7 @@ internal fun PreferredPlayer.label(): String = when (this) {
     PreferredPlayer.AKSOR -> stringResource(R.string.settings_preferred_player_aksor)
     PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha)
     PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh)
+    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk)
 }
 
 @Composable
@@ -119,6 +120,7 @@ internal fun PreferredPlayer.hint(): String = when (this) {
     PreferredPlayer.AKSOR -> stringResource(R.string.settings_preferred_player_aksor_hint)
     PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha_hint)
     PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh_hint)
+    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk_hint)
 }
 
 @Composable

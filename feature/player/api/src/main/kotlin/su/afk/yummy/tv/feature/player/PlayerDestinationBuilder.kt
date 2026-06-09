@@ -144,11 +144,3 @@ private fun List<PlayerVideoSource>.sortedByEpisode(): List<PlayerVideoSource> =
     sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
 
 private fun List<PlayerVideoSource>.sumViews(): Int = sumOf { it.views ?: 0 }
-
-private fun String.isKodikPlayerUrl(): Boolean = contains("kodik", ignoreCase = true)
-
-private fun String.isSupportedPlayerUrl(): Boolean =
-    contains("kodik", ignoreCase = true) ||
-        contains("aksor.tv", ignoreCase = true) ||
-        contains("iframeCVH", ignoreCase = true) ||
-        contains("alloha", ignoreCase = true)

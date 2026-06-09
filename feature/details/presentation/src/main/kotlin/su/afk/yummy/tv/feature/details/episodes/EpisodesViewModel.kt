@@ -32,6 +32,12 @@ import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
+import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
+import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
+import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
+import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.feature.player.isVkPlayerUrl
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject constructor(
@@ -112,19 +118,16 @@ class EpisodesViewModel @AssistedInject constructor(
         )
     }
 
-    private fun isSupportedPlayer(iframeUrl: String): Boolean =
-        iframeUrl.contains("kodik", ignoreCase = true) ||
-        iframeUrl.contains("aksor.tv", ignoreCase = true) ||
-        iframeUrl.contains("iframeCVH", ignoreCase = true) ||
-        iframeUrl.contains("alloha", ignoreCase = true)
+    private fun isSupportedPlayer(iframeUrl: String): Boolean = iframeUrl.isSupportedPlayerUrl()
 
     private fun matchesPreferredPlayer(iframeUrl: String, preferred: PreferredPlayer): Boolean =
         when (preferred) {
             PreferredPlayer.NONE -> false
-            PreferredPlayer.KODIK -> iframeUrl.contains("kodik", ignoreCase = true)
-            PreferredPlayer.AKSOR -> iframeUrl.contains("aksor.tv", ignoreCase = true)
-            PreferredPlayer.ALLOHA -> iframeUrl.contains("alloha", ignoreCase = true)
-            PreferredPlayer.CVH -> iframeUrl.contains("iframeCVH", ignoreCase = true)
+            PreferredPlayer.KODIK -> iframeUrl.isKodikPlayerUrl()
+            PreferredPlayer.AKSOR -> iframeUrl.isAksorPlayerUrl()
+            PreferredPlayer.ALLOHA -> iframeUrl.isAllohaPlayerUrl()
+            PreferredPlayer.CVH -> iframeUrl.isCvhPlayerUrl()
+            PreferredPlayer.VK -> iframeUrl.isVkPlayerUrl()
         }
 
     private fun showBalancerPicker(video: AnimeVideo) {

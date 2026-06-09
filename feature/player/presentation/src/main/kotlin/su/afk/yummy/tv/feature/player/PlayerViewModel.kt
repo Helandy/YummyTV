@@ -24,6 +24,7 @@ import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
 import su.afk.yummy.tv.feature.player.extractor.CvhExtractor
 import su.afk.yummy.tv.feature.player.extractor.KodikExtractor
 import su.afk.yummy.tv.feature.player.extractor.KodikResult
+import su.afk.yummy.tv.feature.player.extractor.VkExtractor
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -303,7 +304,7 @@ class PlayerViewModel @AssistedInject constructor(
             val s = currentState
             val url = activeIframeUrl(s)
 
-            if (url.contains("alloha", ignoreCase = true)) {
+            if (url.isAllohaPlayerUrl()) {
                 val result = AllohaExtractor.extract(url, context)
                 if (result != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
@@ -321,7 +322,7 @@ class PlayerViewModel @AssistedInject constructor(
                 return@launch
             }
 
-            if (url.contains("kodik", ignoreCase = true)) {
+            if (url.isKodikPlayerUrl()) {
                 when (val result = KodikExtractor.extract(
                     iframeUrl = url,
                     blockedFallback = context.getString(R.string.player_kodik_blocked),
@@ -337,7 +338,7 @@ class PlayerViewModel @AssistedInject constructor(
                 return@launch
             }
 
-            if (url.contains("aksor.tv", ignoreCase = true)) {
+            if (url.isAksorPlayerUrl()) {
                 val result = AksorExtractor.extract(url)
                 if (result != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
@@ -355,13 +356,34 @@ class PlayerViewModel @AssistedInject constructor(
                 return@launch
             }
 
-            if (url.contains("iframeCVH", ignoreCase = true) ||
-                url.contains("yummyani.me", ignoreCase = true)
-            ) {
+            if (url.isCvhPlayerUrl()) {
                 val qualities = CvhExtractor.extract(url, context.getString(R.string.player_quality_auto))
                 if (qualities != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
                     setState { copy(streamQualityMap = qualities, streamUrl = qualities.values.last(), resumeFromMs = resume) }
+                } else {
+                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
+                }
+                return@launch
+            }
+
+            if (url.isVkPlayerUrl()) {
+                val result = VkExtractor.extract(
+                    iframeUrl = url,
+                    autoQualityLabel = context.getString(R.string.player_quality_auto),
+                )
+                if (result != null) {
+                    val resume =
+                        consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s))
+                        ?: 0L
+                    setState {
+                        copy(
+                            streamHeaders = result.headers,
+                            streamQualityMap = result.qualities,
+                            streamUrl = result.url,
+                            resumeFromMs = resume,
+                        )
+                    }
                 } else {
                     setState { copy(playerError = context.getString(R.string.player_stream_error)) }
                 }
