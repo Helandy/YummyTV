@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
 import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
+import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.isVkPlayerUrl
 
@@ -128,6 +129,7 @@ class EpisodesViewModel @AssistedInject constructor(
             PreferredPlayer.ALLOHA -> iframeUrl.isAllohaPlayerUrl()
             PreferredPlayer.CVH -> iframeUrl.isCvhPlayerUrl()
             PreferredPlayer.VK -> iframeUrl.isVkPlayerUrl()
+            PreferredPlayer.RUTUBE -> iframeUrl.isRutubePlayerUrl()
         }
 
     private fun showBalancerPicker(video: AnimeVideo) {

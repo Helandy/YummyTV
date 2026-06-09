@@ -18,9 +18,13 @@ fun String.isVkPlayerUrl(): Boolean =
             contains("video_ext.php", ignoreCase = true) ||
             contains("iframevk", ignoreCase = true)
 
+fun String.isRutubePlayerUrl(): Boolean =
+    contains("rutube.ru", ignoreCase = true)
+
 fun String.isSupportedPlayerUrl(): Boolean =
     isKodikPlayerUrl() ||
             isAksorPlayerUrl() ||
             isCvhPlayerUrl() ||
             isAllohaPlayerUrl() ||
-            isVkPlayerUrl()
+            isVkPlayerUrl() ||
+            isRutubePlayerUrl()

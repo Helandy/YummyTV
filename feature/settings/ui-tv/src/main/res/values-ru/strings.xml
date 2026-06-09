@@ -68,6 +68,8 @@
     <string name="settings_preferred_player_cvh_hint">CVH</string>
     <string name="settings_preferred_player_vk">VK</string>
     <string name="settings_preferred_player_vk_hint">VK</string>
+    <string name="settings_preferred_player_rutube">Rutube</string>
+    <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
     <string name="settings_cache_size_min">Минимальный</string>
