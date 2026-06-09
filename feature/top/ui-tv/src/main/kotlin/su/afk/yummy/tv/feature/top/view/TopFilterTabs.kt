@@ -72,7 +72,8 @@ internal fun TopFilterTabs(
                 contentCanFocus = contentCanFocus,
                 leftFocusRequester = typeFocusRequesters.getOrNull(index - 1)
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
-                rightFocusRequester = typeFocusRequesters.getOrNull(index + 1),
+                rightFocusRequester = typeFocusRequesters.getOrNull(index + 1)
+                    ?: contentFocusRequester.takeIf { contentCanFocus },
                 onFocused = {
                     if (selectedType != type) onTypeSelected(type)
                 },

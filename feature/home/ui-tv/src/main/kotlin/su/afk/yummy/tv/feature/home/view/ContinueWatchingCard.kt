@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.feature.home.R
 import su.afk.yummy.tv.feature.home.utils.isLikelyImageUrl
@@ -55,6 +58,7 @@ internal fun ContinueWatchingCard(
     downFocusRequester: FocusRequester? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
     val progress = if (entry.durationMs > 0) entry.positionMs.toFloat() / entry.durationMs else 0f
     val positionLabel = entry.positionMs.msToTimeString()
     val durationLabel = entry.durationMs.msToTimeString()
@@ -68,6 +72,7 @@ internal fun ContinueWatchingCard(
         ?: entry.posterUrl.ifBlank { null }
 
     val shape = RoundedCornerShape(8.dp)
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
 
     Column(modifier = modifier.width(CardWidth)) {
         Text(
@@ -81,9 +86,11 @@ internal fun ContinueWatchingCard(
         )
         Card(
             modifier = Modifier
+                .focusable(interactionSource = interactionSource)
                 .fillMaxWidth()
                 .focusProperties {
                     upFocusRequester?.let { up = it }
+                    mainMenuFocusRequester?.let { left = it }
                     downFocusRequester?.let { down = it }
                 }
                 .onFocusChanged { state ->
@@ -91,7 +98,11 @@ internal fun ContinueWatchingCard(
                     if (focused && !isFocused) onFocused()
                     isFocused = focused
                 }
-                .tvFocusableClick(onClick = onClick, shape = shape),
+                .tvFocusableClick(
+                    onClick = onClick,
+                    shape = shape,
+                    interactionSource = interactionSource,
+                ),
             shape = shape,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,

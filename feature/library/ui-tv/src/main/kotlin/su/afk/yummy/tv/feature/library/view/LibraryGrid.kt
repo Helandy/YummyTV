@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -46,6 +47,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
@@ -71,6 +73,7 @@ internal fun LibraryGrid(
     val itemIds = remember(items) { items.map { it.animeId } }
     val focusStateKey = remember(itemIds) { itemIds.joinToString(separator = "|") }
     val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val posterQuality = LocalPosterQuality.current
     var lastFocusedIndex by rememberSaveable(focusStateKey) {
         mutableIntStateOf(focusedItemId?.let(itemIds::indexOf)?.takeIf { it >= 0 } ?: 0)
@@ -246,9 +249,13 @@ internal fun LibraryGrid(
                         if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
                             return@onPreviewKeyEvent false
                         }
-                        if (index <= 0) return@onPreviewKeyEvent false
-                        requestItemFocus(index - 1)
-                        true
+                        if (index !in leftEdgeIndexes) {
+                            requestItemFocus(index - 1)
+                            true
+                        } else {
+                            runCatching { mainMenuFocusRequester?.requestFocus() }
+                            mainMenuFocusRequester != null
+                        }
                     }
                     .onFocusChanged { state ->
                         columnHasFocus = state.hasFocus
@@ -289,6 +296,7 @@ internal fun LibraryGrid(
                     LibraryDeleteButton(
                         onClick = stableOnDelete,
                         modifier = Modifier
+                            .padding(top = 8.dp)
                             .width(TvPosterCardDefaults.Width)
                             .focusProperties {
                                 if (index !in leftEdgeIndexes) {

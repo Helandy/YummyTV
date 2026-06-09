@@ -22,6 +22,9 @@ class AccountState {
         val stats: UserStats? = null,
         val notifications: List<ProfileNotification> = emptyList(),
         val notificationCounts: List<NotificationCount> = emptyList(),
+        val focusedNotificationId: Int? = null,
+        val restoreFocusedNotificationOnEnter: Boolean = false,
+        val focusedNotificationRestoreToken: Int = 0,
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
         val isCaptchaRequired: Boolean = false,
@@ -50,6 +53,8 @@ class AccountState {
         data object RefreshProfileSelected : Event
         data object RefreshHubSelected : Event
         data class NotificationSelected(val id: Int) : Event
+        data class NotificationFocused(val id: Int) : Event
+        data object NotificationFocusRestoreHandled : Event
         data class NotificationReadSelected(val id: Int) : Event
         data object AllNotificationsReadSelected : Event
         data class NotificationDeleteSelected(val id: Int) : Event

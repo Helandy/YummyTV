@@ -12,6 +12,7 @@ class CollectionState {
         val collection: CollectionDetail? = null,
         val error: String? = null,
         val focusedItemId: Int? = null,
+        val restoreFocusedItemOnEnter: Boolean = false,
         val focusedPreview: AnimePreview? = null,
         val firstVisibleItemIndex: Int = 0,
         val firstVisibleItemScrollOffset: Int = 0,
@@ -23,6 +24,7 @@ class CollectionState {
         data class AnimeSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
         data class GridScrolled(val index: Int, val offset: Int) : Event
+        data object FocusedItemRestoreHandled : Event
     }
 
     sealed interface Effect : UiEffect

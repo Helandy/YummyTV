@@ -36,22 +36,22 @@ internal fun NotificationRow(
     onClick: () -> Unit,
     onRead: () -> Unit,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    readModifier: Modifier = Modifier,
+    deleteModifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val isOpenable = notification.isNewEpisode && notification.animeSlug != null
-    val rowModifier = if (isOpenable) {
-        Modifier
-            .fillMaxWidth()
-            .tvFocusableClick(
-                onClick = onClick,
-                interactionSource = interactionSource,
-                shape = shape,
-                focusedScale = 1.01f,
-            )
-    } else {
-        Modifier.fillMaxWidth()
-    }
+    val rowModifier = modifier
+        .fillMaxWidth()
+        .tvFocusableClick(
+            onClick = if (isOpenable) onClick else ({ }),
+            interactionSource = interactionSource,
+            shape = shape,
+            focusedScale = 1.01f,
+            focusedBorderDurationMillis = 0,
+        )
 
     SurfacePanel(modifier = rowModifier) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -90,13 +90,13 @@ internal fun NotificationRow(
                 AccountAction(
                     label = stringResource(R.string.account_mark_read),
                     onClick = onRead,
-                    modifier = Modifier.width(170.dp),
+                    modifier = readModifier.width(170.dp),
                 )
             }
             AccountAction(
                 label = stringResource(R.string.account_delete),
                 onClick = onDelete,
-                modifier = Modifier.width(140.dp),
+                modifier = deleteModifier.width(140.dp),
             )
         }
     }

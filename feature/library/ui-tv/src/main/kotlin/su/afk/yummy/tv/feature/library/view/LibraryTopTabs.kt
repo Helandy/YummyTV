@@ -63,7 +63,8 @@ internal fun LibraryTopTabs(
                 contentCanFocus = contentCanFocus,
                 leftFocusRequester = effectiveFocusRequesters.getOrNull(index - 1)
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
-                rightFocusRequester = effectiveFocusRequesters.getOrNull(index + 1),
+                rightFocusRequester = effectiveFocusRequesters.getOrNull(index + 1)
+                    ?: contentFocusRequester.takeIf { contentCanFocus },
                 onFocused = {
                     if (selectedTab != tab) onTabSelected(tab)
                 },

@@ -39,7 +39,6 @@ internal fun LibraryTopTabItem(
 
     Box(
         modifier = Modifier
-            .focusRequester(focusRequester)
             .focusProperties {
                 if (contentCanFocus) {
                     down = contentFocusRequester
@@ -82,6 +81,7 @@ internal fun LibraryTopTabItem(
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
                 shape = shape,
             )
+            .focusRequester(focusRequester)
             .tvFocusableClick(onClick = onActivated, shape = shape)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,

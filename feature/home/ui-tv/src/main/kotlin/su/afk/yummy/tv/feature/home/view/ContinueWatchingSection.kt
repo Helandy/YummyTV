@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -57,10 +58,32 @@ internal fun ContinueWatchingSection(
     val rowHasFocus = remember { mutableStateOf(false) }
     val isRestoring = remember { mutableStateOf(false) }
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
     var handledRestoreFirstItemToken by rememberSaveable { mutableIntStateOf(0) }
-    val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val focusRequesters = remember(items.size, rowFocusRequester) {
+        List(items.size) { index ->
+            if (index == 0) rowFocusRequester ?: FocusRequester() else FocusRequester()
+        }
+    }
+
+    fun moveFocusToIndex(targetIndex: Int) {
+        if (items.isEmpty()) return
+        val clamped = targetIndex.coerceIn(0, items.lastIndex)
+        lastFocusedIndex = clamped
+        focusMoveJob?.cancel()
+        focusMoveJob = scope.launch {
+            listState.animateScrollToItem(clamped)
+            runCatching { focusRequesters[clamped].requestFocus() }
+        }
+    }
+
+    fun cancelPendingFocusMove() {
+        focusMoveJob?.cancel()
+        focusMoveJob = null
+        isRestoring.value = false
+    }
 
     fun WatchProgressEntry.focusKey(): String = "$animeId:$episode"
 
@@ -93,7 +116,6 @@ internal fun ContinueWatchingSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(horizontal = TvScreenPadding.Horizontal, vertical = 8.dp),
             modifier = Modifier
-                .then(if (rowFocusRequester != null) Modifier.focusRequester(rowFocusRequester) else Modifier)
                 .focusProperties {
                     upFocusRequester?.let { up = it }
                     mainMenuFocusRequester?.let { left = it }
@@ -102,15 +124,16 @@ internal fun ContinueWatchingSection(
                 .onFocusChanged { state ->
                     val hadFocus = rowHasFocus.value
                     rowHasFocus.value = state.hasFocus
-                    if (!state.hasFocus) isRestoring.value = false
-                    if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                    if (!state.hasFocus) cancelPendingFocusMove()
+                    if (state.hasFocus && !hadFocus) {
                         isRestoring.value = true
-                        scope.launch {
-                            val target = restoreIndex()
+                        focusMoveJob?.cancel()
+                        focusMoveJob = scope.launch {
                             if (hasPendingFirstItemRestore()) {
                                 handledRestoreFirstItemToken = restoreFirstItemToken
                                 rememberFocusedItem(0, items.first())
                             }
+                            val target = restoreIndex().coerceIn(0, items.lastIndex)
                             listState.scrollToItem(target)
                             runCatching { focusRequesters[target].requestFocus() }
                             isRestoring.value = false
@@ -122,21 +145,36 @@ internal fun ContinueWatchingSection(
                     when (event.key) {
                         Key.DirectionLeft -> {
                             if (lastFocusedIndex <= 0) {
+                                cancelPendingFocusMove()
                                 mainMenuFocusRequester?.requestFocus()
                                 mainMenuFocusRequester != null
+                            } else {
+                                moveFocusToIndex(lastFocusedIndex - 1)
+                                true
+                            }
+                        }
+
+                        Key.DirectionRight -> {
+                            if (lastFocusedIndex < items.lastIndex) {
+                                moveFocusToIndex(lastFocusedIndex + 1)
+                                true
                             } else {
                                 false
                             }
                         }
-                        Key.DirectionRight -> lastFocusedIndex >= items.lastIndex
+
                         Key.DirectionUp -> {
+                            cancelPendingFocusMove()
                             onMoveUp?.invoke()
                             onMoveUp != null
                         }
+
                         Key.DirectionDown -> {
+                            cancelPendingFocusMove()
                             onMoveDown?.invoke()
                             onMoveDown != null
                         }
+
                         else -> false
                     }
                 }

@@ -57,6 +57,7 @@ internal fun AccountHubPanel(
                 state = state,
                 onEvent = onEvent,
                 contentFocusRequester = notificationsContentFocusRequester,
+                upFocusRequester = initialFocusRequester,
             )
         }
     }

@@ -40,6 +40,7 @@ fun Modifier.tvFocusableClick(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onLongClick: (() -> Unit)? = null,
     focusedScale: Float = 1.04f,
+    focusedBorderDurationMillis: Int = 150,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
 
@@ -53,7 +54,10 @@ fun Modifier.tvFocusableClick(
     )
     val borderColor by animateColorAsState(
         targetValue = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
+        animationSpec = tween(
+            durationMillis = focusedBorderDurationMillis,
+            easing = FastOutSlowInEasing
+        ),
         label = "card_border",
     )
 

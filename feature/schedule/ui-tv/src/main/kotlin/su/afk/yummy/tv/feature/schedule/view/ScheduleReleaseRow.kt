@@ -63,6 +63,7 @@ internal fun ScheduleReleaseRow(
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
     upFocusRequester: FocusRequester?,
+    selected: Boolean,
     onFocused: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -73,6 +74,7 @@ internal fun ScheduleReleaseRow(
     val accentColor = if (aired) AiredColor else MaterialTheme.colorScheme.onSurfaceVariant
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
+    val active = focused || selected
     val shape = RoundedCornerShape(8.dp)
     val rowScale by animateFloatAsState(
         targetValue = if (focused) 1.025f else 1f,
@@ -84,6 +86,7 @@ internal fun ScheduleReleaseRow(
     )
     val rowBackground = when {
         focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.09f)
         aired -> AiredColor.copy(alpha = 0.10f)
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.045f)
     }
@@ -117,8 +120,8 @@ internal fun ScheduleReleaseRow(
                 .clip(shape)
                 .background(rowBackground, shape)
                 .border(
-                    width = if (focused) 2.dp else 0.dp,
-                    color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    width = if (active) 2.dp else 0.dp,
+                    color = if (active) MaterialTheme.colorScheme.primary else Color.Transparent,
                     shape = shape,
                 ),
         )
@@ -151,7 +154,7 @@ internal fun ScheduleReleaseRow(
                     text = item.title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                    color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )

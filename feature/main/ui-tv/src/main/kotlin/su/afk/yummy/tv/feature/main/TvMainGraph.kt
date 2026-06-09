@@ -23,8 +23,8 @@ import su.afk.yummy.tv.core.navigation.TvUi
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.main.api.IMainGraph
+import su.afk.yummy.tv.feature.main.model.TvMenuItem
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
-import su.afk.yummy.tv.feature.main.view.TvMenuItem
 import javax.inject.Inject
 import javax.inject.Singleton
 

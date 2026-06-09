@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.schedule.view
 
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -43,21 +44,19 @@ internal fun ScheduleTimeline(
     schedule: ScheduleTimelineUi,
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
-    var contentHasFocus by remember { mutableStateOf(false) }
     val selectedGroup = schedule.selectedGroup ?: return
     val selectedChipFocusRequester = remember { FocusRequester() }
+    val timelineEntryFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val releaseFocusRequesters = remember { mutableStateMapOf<String, FocusRequester>() }
-    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var restoreFocusRequestToken by remember { mutableIntStateOf(0) }
     var handledRestoreFocusRequestToken by remember { mutableIntStateOf(0) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
-    val preferredContentFocusRequester =
-        schedule.focusedReleaseKey?.let { releaseFocusRequesters[it] } ?: selectedChipFocusRequester
 
     DisposableEffect(Unit) {
         onDispose { restoreFocusJob?.cancel() }
@@ -77,11 +76,10 @@ internal fun ScheduleTimeline(
         schedule.focusedReleaseKey,
         schedule.selectedEpochDay,
         selectedGroup.items,
-        contentHasFocus,
         restoreFocusRequestToken,
     ) {
         val hasPendingResumeRestore = restoreFocusRequestToken != handledRestoreFocusRequestToken
-        if (contentHasFocus || hasPendingResumeRestore) {
+        if (hasPendingResumeRestore) {
             if (hasPendingResumeRestore) {
                 handledRestoreFocusRequestToken = restoreFocusRequestToken
             }
@@ -97,26 +95,19 @@ internal fun ScheduleTimeline(
         }
     }
 
-    DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
-        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
-        onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    DisposableEffect(timelineEntryFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(timelineEntryFocusRequester)
+        onDispose {
+            registerPreferredContentFocusRequester?.invoke(null)
+        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .onFocusChanged { contentHasFocus = it.hasFocus }
             .focusProperties {
                 onEnter = {
-                    restoreFocusJob = launchRestoreTimelineFocus(
-                        previousJob = restoreFocusJob,
-                        scope = scope,
-                        focusedReleaseKey = schedule.focusedReleaseKey,
-                        selectedGroup = selectedGroup,
-                        listState = listState,
-                        releaseFocusRequesters = releaseFocusRequesters,
-                        fallbackFocusRequester = selectedChipFocusRequester,
-                    )
+                    runCatching { selectedChipFocusRequester.requestFocus() }
                 }
             }
             .focusGroup()
@@ -128,14 +119,27 @@ internal fun ScheduleTimeline(
             ),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        ScheduleDateChips(
-            groups = schedule.dayGroups,
-            selectedEpochDay = schedule.selectedEpochDay,
-            selectedFocusRequester = selectedChipFocusRequester,
-            downFocusRequester = listFocusRequester,
-            leftFocusRequester = mainMenuFocusRequester,
-            onSelected = { onEvent(ScheduleState.Event.DateSelected(it)) },
-        )
+        Box(
+            modifier = Modifier
+                .focusRequester(timelineEntryFocusRequester)
+                .focusProperties {
+                    down = listFocusRequester
+                    mainMenuFocusRequester?.let { left = it }
+                    onEnter = {
+                        runCatching { selectedChipFocusRequester.requestFocus() }
+                    }
+                }
+                .focusable(),
+        ) {
+            ScheduleDateChips(
+                groups = schedule.dayGroups,
+                selectedEpochDay = schedule.selectedEpochDay,
+                selectedFocusRequester = selectedChipFocusRequester,
+                downFocusRequester = listFocusRequester,
+                leftFocusRequester = mainMenuFocusRequester,
+                onSelected = { onEvent(ScheduleState.Event.DateSelected(it)) },
+            )
+        }
 
         LazyColumn(
             state = listState,
@@ -181,6 +185,7 @@ internal fun ScheduleTimeline(
                     focusRequester = releaseFocusRequester,
                     leftFocusRequester = mainMenuFocusRequester,
                     upFocusRequester = if (index == 0) selectedChipFocusRequester else null,
+                    selected = releaseKey == schedule.focusedReleaseKey,
                     onFocused = {
                         onEvent(
                             ScheduleState.Event.ReleaseFocused(

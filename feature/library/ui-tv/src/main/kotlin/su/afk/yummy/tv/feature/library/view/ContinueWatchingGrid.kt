@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -49,6 +50,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.R
@@ -72,6 +74,7 @@ internal fun ContinueWatchingGrid(
     val entryIds = remember(entries) { entries.map { it.animeId } }
     val focusStateKey = remember(entryIds) { entryIds.joinToString(separator = "|") }
     val focusRequesters = remember(entryIds) { List(entries.size) { FocusRequester() } }
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var lastFocusedIndex by rememberSaveable(focusStateKey) {
         mutableIntStateOf(focusedItemId?.let(entryIds::indexOf)?.takeIf { it >= 0 } ?: 0)
     }
@@ -252,9 +255,13 @@ internal fun ContinueWatchingGrid(
                         if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
                             return@onPreviewKeyEvent false
                         }
-                        if (index <= 0) return@onPreviewKeyEvent false
-                        requestEntryFocus(index - 1)
-                        true
+                        if (index !in leftEdgeIndexes) {
+                            requestEntryFocus(index - 1)
+                            true
+                        } else {
+                            runCatching { mainMenuFocusRequester?.requestFocus() }
+                            mainMenuFocusRequester != null
+                        }
                     }
                     .onFocusChanged { state ->
                         columnHasFocus = state.hasFocus
@@ -312,6 +319,7 @@ internal fun ContinueWatchingGrid(
                     LibraryDeleteButton(
                         onClick = stableOnDelete,
                         modifier = Modifier
+                            .padding(top = 8.dp)
                             .width(TvPosterCardDefaults.Width)
                             .focusProperties {
                                 if (index !in leftEdgeIndexes) {

@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -121,6 +122,7 @@ fun SettingsTvScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .focusRequester(contentFocusRequester)
+                .focusable()
                 .focusProperties {
                     up = tabFocusRequesters.getValue(contentAnchorTab)
                 }

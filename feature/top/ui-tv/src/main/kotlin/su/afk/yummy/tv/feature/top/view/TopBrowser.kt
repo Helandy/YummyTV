@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.top.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -78,6 +79,7 @@ internal fun TopBrowser(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
+    var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
 
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var isRestoringFocus by remember { mutableStateOf(false) }
@@ -97,7 +99,7 @@ internal fun TopBrowser(
             null
         }
     val preferredContentFocusRequester =
-        restoreItemFocusRequester ?: selectedTypeFocusRequester ?: gridFocusRequester
+        restoreItemFocusRequester ?: gridFocusRequester
     val targetFocusedIndex = {
         if (focusedItemIndex in items.indices) {
             focusedItemIndex
@@ -139,6 +141,18 @@ internal fun TopBrowser(
         requestCardFocus(lastFocusedIndex)
     }
 
+    LaunchedEffect(gridState, items.size) {
+        snapshotFlow {
+            val visibleItems = gridState.layoutInfo.visibleItemsInfo
+            val minX = visibleItems.minOfOrNull { it.offset.x }
+            if (minX == null) {
+                emptySet()
+            } else {
+                visibleItems.filter { it.offset.x == minX }.map { it.index }.toSet()
+            }
+        }.collect { leftEdgeIndexes = it }
+    }
+
     DisposableEffect(Unit) {
         onDispose { restoreFocusJob?.cancel() }
     }
@@ -176,10 +190,8 @@ internal fun TopBrowser(
         }
     }
 
-    // Lift the focused card's row to the top, but only once focus has settled.
-    // Running this as a cancellable effect (instead of launching a scroll on every
-    // focus event) keeps the focused row pinned at the top so the row below stays
-    // composed and DPAD-down preserves the column.
+    // Keep focused card row at a stable position so next/previous row navigation
+    // doesn't jump unpredictably during row changes.
     LaunchedEffect(lastFocusedIndex, gridHasFocus) {
         if (gridHasFocus && !isRestoringFocus && items.isNotEmpty()) {
             gridState.animateScrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
@@ -266,7 +278,12 @@ internal fun TopBrowser(
                                 if (!state.hasFocus) {
                                     isRestoringFocus = false
                                 }
-                                if (state.hasFocus && !hadFocus && !restoreFocusedItemOnEnter && items.isNotEmpty()) {
+                                if (
+                                    state.hasFocus &&
+                                    !hadFocus &&
+                                    !restoreFocusedItemOnEnter &&
+                                    items.isNotEmpty()
+                                ) {
                                     launchItemFocusRestore(
                                         lastFocusedIndex.coerceIn(0, items.lastIndex),
                                         gridFocusRequester,
@@ -274,7 +291,8 @@ internal fun TopBrowser(
                                     )
                                 }
                             }
-                            .focusGroup(),
+                            .focusGroup()
+                            .focusable(),
                         contentPadding = PaddingValues(
                             start = TvScreenPadding.Horizontal,
                             end = TvScreenPadding.Horizontal,
@@ -303,30 +321,54 @@ internal fun TopBrowser(
                                     .focusRequester(focusRequesters[index])
                                     .onPreviewKeyEvent { event ->
                                         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                                        if (event.key == Key.DirectionUp && index < gridColumnCount) {
-                                            runCatching { selectedTypeFocusRequester?.requestFocus() }
-                                            return@onPreviewKeyEvent true
-                                        }
-                                        val target = when (event.key) {
-                                            Key.DirectionUp -> index - gridColumnCount
-                                            Key.DirectionDown -> index + gridColumnCount
-                                            Key.DirectionLeft -> index - 1
-                                            else -> return@onPreviewKeyEvent false
-                                        }
-                                        when {
-                                            target in items.indices -> {
-                                                scope.launch {
-                                                    gridState.animateScrollToItem(target)
-                                                    snapshotFlow {
-                                                        gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                                    }.first { it }
-                                                    runCatching { focusRequesters[target].requestFocus() }
+                                        when (event.key) {
+                                            Key.DirectionUp -> {
+                                                if (index < gridColumnCount) {
+                                                    runCatching { selectedTypeFocusRequester?.requestFocus() }
+                                                    true
+                                                } else {
+                                                    false
                                                 }
-                                                true
                                             }
 
-                                            event.key == Key.DirectionUp || event.key == Key.DirectionLeft -> false
-                                            else -> true
+                                            Key.DirectionLeft -> {
+                                                if (index !in leftEdgeIndexes) {
+                                                    val target = index - 1
+                                                    scope.launch {
+                                                        gridState.animateScrollToItem(target)
+                                                        snapshotFlow {
+                                                            gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
+                                                        }.first { it }
+                                                        runCatching { focusRequesters[target].requestFocus() }
+                                                    }
+                                                    true
+                                                } else {
+                                                    runCatching { mainMenuFocusRequester?.requestFocus() }
+                                                    mainMenuFocusRequester != null
+                                                }
+                                            }
+
+                                            else -> {
+                                                val target = when (event.key) {
+                                                    Key.DirectionDown -> index + gridColumnCount
+                                                    Key.DirectionUp -> index - gridColumnCount
+                                                    else -> return@onPreviewKeyEvent false
+                                                }
+                                                when {
+                                                    target in items.indices -> {
+                                                        scope.launch {
+                                                            gridState.animateScrollToItem(target)
+                                                            snapshotFlow {
+                                                                gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
+                                                            }.first { it }
+                                                            runCatching { focusRequesters[target].requestFocus() }
+                                                        }
+                                                        true
+                                                    }
+
+                                                    else -> false
+                                                }
+                                            }
                                         }
                                     }
                                     .onFocusChanged { state ->

@@ -3,6 +3,9 @@ package su.afk.yummy.tv.feature.home.view
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,11 +36,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,8 +63,11 @@ internal fun HomeFeedCard(
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     focusedScale: Float = 1.04f,
+    forceFocused: Boolean = false,
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val active = isFocused || forceFocused
     val showScreenshots = LocalShowScreenshotsOnFocus.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
@@ -74,8 +75,8 @@ internal fun HomeFeedCard(
     val screenshots = preview?.screenshotUrls.orEmpty()
     var slideIndex by remember(item.id) { mutableIntStateOf(0) }
 
-    LaunchedEffect(isFocused, showScreenshots, screenshots) {
-        if (isFocused && showScreenshots && screenshots.size > 1) {
+    LaunchedEffect(active, showScreenshots, screenshots) {
+        if (active && showScreenshots && screenshots.size > 1) {
             while (true) {
                 delay(2000)
                 slideIndex = (slideIndex + 1) % screenshots.size
@@ -95,21 +96,23 @@ internal fun HomeFeedCard(
                 if (focused && !isFocused) onFocused(item.id, animeId)
                 isFocused = focused
             }
+            .focusable(interactionSource = interactionSource)
             .focusProperties {
                 upFocusRequester?.let { up = it }
                 mainMenuFocusRequester?.let { left = it }
                 downFocusRequester?.let { down = it }
             }
-            .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
-                    return@onPreviewKeyEvent false
-                }
-                val focusHandled = mainMenuFocusRequester?.let {
-                    runCatching { it.requestFocus() }.isSuccess
-                } == true
-                focusHandled
-            }
-            .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale),
+            .tvFocusableClick(
+                onClick = onClick,
+                shape = shape,
+                interactionSource = interactionSource,
+                focusedScale = focusedScale,
+            )
+            .border(
+                width = 3.dp,
+                color = if (active) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            ),
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -124,7 +127,7 @@ internal fun HomeFeedCard(
                 contentAlignment = Alignment.Center,
             ) {
                 val imageUrl = when {
-                    isFocused && showScreenshots && screenshots.isNotEmpty() -> screenshots[slideIndex]
+                    active && showScreenshots && screenshots.isNotEmpty() -> screenshots[slideIndex]
                     else -> item.posterUrl(LocalPosterQuality.current)
                 }
 
@@ -181,7 +184,7 @@ internal fun HomeFeedCard(
                     fontWeight = FontWeight.Bold,
                     minLines = 2,
                     maxLines = 2,
-                    isFocused = isFocused,
+                    isFocused = active,
                 )
             }
         }

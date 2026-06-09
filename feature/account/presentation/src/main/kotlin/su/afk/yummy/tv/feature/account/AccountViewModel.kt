@@ -168,6 +168,17 @@ class AccountViewModel @Inject constructor(
             }
             AccountState.Event.RefreshHubSelected -> maybeLoadHub(force = true)
             is AccountState.Event.NotificationSelected -> openNotification(event.id)
+            is AccountState.Event.NotificationFocused -> {
+                if (currentState.focusedNotificationId != event.id) {
+                    setState { copy(focusedNotificationId = event.id) }
+                }
+            }
+
+            AccountState.Event.NotificationFocusRestoreHandled -> {
+                if (currentState.restoreFocusedNotificationOnEnter) {
+                    setState { copy(restoreFocusedNotificationOnEnter = false) }
+                }
+            }
             is AccountState.Event.NotificationReadSelected -> updateNotification(event.id) {
                 markNotificationRead(event.id)
             }
@@ -183,7 +194,14 @@ class AccountViewModel @Inject constructor(
         if (!notification.isNewEpisode) return
         val slug = notification.animeSlug ?: return
         viewModelScope.launch {
-            setState { copy(hubError = null) }
+            setState {
+                copy(
+                    focusedNotificationId = id,
+                    restoreFocusedNotificationOnEnter = true,
+                    focusedNotificationRestoreToken = focusedNotificationRestoreToken + 1,
+                    hubError = null,
+                )
+            }
             runCatching { resolveNotificationAnimeId(slug) }.fold(
                 onSuccess = { animeId ->
                     if (animeId != null) {

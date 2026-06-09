@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,6 +39,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -61,6 +63,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
@@ -114,9 +119,12 @@ internal fun SearchResultsPane(
     onToYearChanged: (Int?) -> Unit,
     onSortSelected: (SearchSort) -> Unit,
     onSortDirectionToggled: () -> Unit,
+    restoreFocusedItemOnEnter: Boolean = false,
+    onFocusedItemRestoreHandled: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     val shouldLoadMore by remember {
@@ -136,18 +144,73 @@ internal fun SearchResultsPane(
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
+    val focusedItemIndex = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } } ?: -1
     var lastFocusedIndex by rememberSaveable {
-        val idx = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }?.coerceAtLeast(0) ?: 0
+        val idx = focusedItemIndex.coerceAtLeast(0)
         mutableIntStateOf(idx)
     }
     var searchEditing by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var restoreFilterButtonFocusToken by rememberSaveable { mutableIntStateOf(0) }
+    var restoreFocusedItemToken by rememberSaveable { mutableIntStateOf(0) }
+    val currentRestoreFocusedItemOnEnter by rememberUpdatedState(restoreFocusedItemOnEnter)
+    val currentFocusedItemIndex by rememberUpdatedState(focusedItemIndex)
 
-    DisposableEffect(searchFieldFocusRequester, registerPreferredContentFocusRequester) {
-        registerPreferredContentFocusRequester?.invoke(searchFieldFocusRequester)
+    LaunchedEffect(focusedItemId, items) {
+        val focusedIndex = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }
+        if (focusedIndex != null && focusedIndex >= 0) {
+            lastFocusedIndex = focusedIndex
+        }
+    }
+
+    val preferredContentFocusRequester = if (
+        restoreFocusedItemOnEnter &&
+        focusedItemIndex in items.indices
+    ) {
+        focusRequesters.getOrNull(focusedItemIndex)
+    } else {
+        searchFieldFocusRequester
+    }
+
+    DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (
+                event == Lifecycle.Event.ON_RESUME &&
+                currentRestoreFocusedItemOnEnter &&
+                currentFocusedItemIndex >= 0
+            ) {
+                restoreFocusedItemToken += 1
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(restoreFocusedItemToken, focusedItemIndex, items, focusRequesters) {
+        if (
+            restoreFocusedItemToken <= 0 ||
+            !restoreFocusedItemOnEnter ||
+            focusedItemIndex !in items.indices
+        ) {
+            return@LaunchedEffect
+        }
+        isRestoringFocus = true
+        gridState.scrollToItem(focusedItemIndex)
+        snapshotFlow {
+            gridState.layoutInfo.visibleItemsInfo.any { it.index == focusedItemIndex }
+        }.first { it }
+        repeat(6) {
+            runCatching { focusRequesters[focusedItemIndex].requestFocus() }
+            withFrameNanos { }
+        }
+        isRestoringFocus = false
+        onFocusedItemRestoreHandled()
     }
 
     LaunchedEffect(restoreFilterButtonFocusToken, isFilterPanelOpen) {
@@ -278,83 +341,120 @@ internal fun SearchResultsPane(
                     )
                 }
                 else -> {
-                    LazyVerticalGrid(
-                        state = gridState,
-                        columns = GridCells.Adaptive(minSize = 172.dp),
-                        contentPadding = PaddingValues(
-                            start = TvScreenPadding.Horizontal,
-                            end = TvScreenPadding.Horizontal,
-                            top = 8.dp,
-                            bottom = TvScreenPadding.Vertical,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onFocusChanged { state ->
-                                val hadFocus = gridHasFocus
-                                gridHasFocus = state.hasFocus
-                                if (!state.hasFocus) {
-                                    isRestoringFocus = false
-                                }
-                                if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
-                                    isRestoringFocus = true
-                                    scope.launch {
-                                        val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
-                                        gridState.scrollToItem(target)
-                                        snapshotFlow {
-                                            gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                        }.first { it }
-                                        runCatching { focusRequesters[target].requestFocus() }
+                    BoxWithConstraints(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        val horizontalSpacing = 16.dp
+                        val gridColumnCount =
+                            (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
+                                    (172.dp.value + horizontalSpacing.value)).toInt()
+                                .coerceAtLeast(1)
+                        LazyVerticalGrid(
+                            state = gridState,
+                            columns = GridCells.Adaptive(minSize = 172.dp),
+                            contentPadding = PaddingValues(
+                                start = TvScreenPadding.Horizontal,
+                                end = TvScreenPadding.Horizontal,
+                                top = 8.dp,
+                                bottom = TvScreenPadding.Vertical,
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .onFocusChanged { state ->
+                                    val hadFocus = gridHasFocus
+                                    gridHasFocus = state.hasFocus
+                                    if (!state.hasFocus) {
                                         isRestoringFocus = false
                                     }
+                                    if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                                        isRestoringFocus = true
+                                        scope.launch {
+                                            val focusedIndex = focusedItemId?.let { id ->
+                                                items.indexOfFirst { it.id == id }
+                                            }?.takeIf { it >= 0 }
+                                            val target = focusedIndex ?: lastFocusedIndex.coerceIn(
+                                                0,
+                                                items.lastIndex
+                                            )
+                                            gridState.scrollToItem(target)
+                                            snapshotFlow {
+                                                gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
+                                            }.first { it }
+                                            runCatching { focusRequesters[target].requestFocus() }
+                                            isRestoringFocus = false
+                                            if (restoreFocusedItemOnEnter) {
+                                                onFocusedItemRestoreHandled()
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            .focusGroup(),
-                    ) {
-                        itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                            val stableOnClick = remember(item.id) { { onItemSelected(item) } }
-                            val stableOnFocused = remember(item.id) { { onItemFocused(item.id) } }
-                            TvTitleCard(
-                                title = item.title,
-                                posterUrl = item.posterUrl,
-                                onClick = stableOnClick,
-                                screenshotUrls = if (item.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
-                                onFocused = stableOnFocused,
-                                modifier = Modifier
-                                    .focusRequester(focusRequesters[index])
-                                    .onFocusChanged { state ->
-                                        if (state.hasFocus && !isRestoringFocus) {
-                                            lastFocusedIndex = index
+                                .focusGroup(),
+                        ) {
+                            itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                                val stableOnClick = remember(item.id, index) {
+                                    {
+                                        lastFocusedIndex = index
+                                        onItemFocused(item.id)
+                                        onItemSelected(item)
+                                    }
+                                }
+                                val stableOnFocused =
+                                    remember(item.id) { { onItemFocused(item.id) } }
+                                TvTitleCard(
+                                    title = item.title,
+                                    posterUrl = item.posterUrl,
+                                    onClick = stableOnClick,
+                                    screenshotUrls = if (item.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
+                                    onFocused = stableOnFocused,
+                                    modifier = Modifier
+                                        .focusRequester(focusRequesters[index])
+                                        .onPreviewKeyEvent { event ->
+                                            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                                            if (event.key != Key.DirectionLeft) return@onPreviewKeyEvent false
+                                            if (index % gridColumnCount != 0) return@onPreviewKeyEvent false
+                                            runCatching { mainMenuFocusRequester?.requestFocus() }
+                                            mainMenuFocusRequester != null
+                                        }
+                                        .onFocusChanged { state ->
+                                            if (state.hasFocus) {
+                                                if (!isRestoringFocus) {
+                                                    lastFocusedIndex = index
+                                                }
+                                                if (restoreFocusedItemOnEnter && item.id == focusedItemId) {
+                                                    onFocusedItemRestoreHandled()
+                                                }
+                                            }
+                                        },
+                                    posterOverlay = item.rating?.let { rating ->
+                                        {
+                                            Text(
+                                                text = "%.2f".format(rating),
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                modifier = Modifier
+                                                    .align(Alignment.TopEnd)
+                                                    .padding(4.dp)
+                                                    .background(
+                                                        MaterialTheme.colorScheme.primary,
+                                                        RoundedCornerShape(4.dp)
+                                                    )
+                                                    .padding(horizontal = 5.dp, vertical = 2.dp),
+                                            )
                                         }
                                     },
-                                posterOverlay = item.rating?.let { rating ->
-                                    {
-                                        Text(
-                                            text = "%.2f".format(rating),
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(4.dp)
-                                                .background(
-                                                    MaterialTheme.colorScheme.primary,
-                                                    RoundedCornerShape(4.dp)
-                                                )
-                                                .padding(horizontal = 5.dp, vertical = 2.dp),
-                                        )
+                                )
+                            }
+                            if (isLoading && items.isNotEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        TvLoadingFooter()
                                     }
-                                },
-                            )
-                        }
-                        if (isLoading && items.isNotEmpty()) {
-                            item {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    TvLoadingFooter()
                                 }
                             }
                         }

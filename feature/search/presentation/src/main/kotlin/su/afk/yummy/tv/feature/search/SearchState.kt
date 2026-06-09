@@ -18,6 +18,7 @@ class SearchState {
         val canLoadMore: Boolean = false,
         val offset: Int = 0,
         val focusedItemId: Int? = null,
+        val restoreFocusedItemOnEnter: Boolean = false,
         val focusedPreview: AnimePreview? = null,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,
@@ -46,6 +47,7 @@ class SearchState {
         data class ToYearChanged(val year: Int?) : Event
         data class SortSelected(val sort: SearchSort) : Event
         data object SortDirectionToggled : Event
+        data object FocusedItemRestoreHandled : Event
     }
 
     sealed interface Effect : UiEffect

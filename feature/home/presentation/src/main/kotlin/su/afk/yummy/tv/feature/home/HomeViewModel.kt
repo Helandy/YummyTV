@@ -81,47 +81,90 @@ class HomeViewModel @Inject constructor(
 
     override fun onEvent(event: HomeState.Event) {
         when (event) {
-            is HomeState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
-            is HomeState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            is HomeState.Event.AnimeSelected -> {
+                setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
+                nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
+            }
+
+            is HomeState.Event.CollectionSelected -> {
+                setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
+                nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            }
             is HomeState.Event.VideoSelected -> Unit
             is HomeState.Event.ContinueWatchingSelected -> {
                 setState {
                     copy(
                         continueWatchingRestoreToken = continueWatchingRestoreToken + 1,
                         focusedItemId = null,
+                        focusedSectionId = null,
                         focusedPreview = null,
                     )
                 }
                 launchContinueWatching(event.entry)
             }
             HomeState.Event.RetrySelected -> load()
-            is HomeState.Event.ItemFocused -> onItemFocused(event.displayId, event.animeId)
+            is HomeState.Event.ItemFocused -> onItemFocused(
+                event.sectionId,
+                event.displayId,
+                event.animeId
+            )
             is HomeState.Event.HeroItemVisible -> prefetchHeroPreviewWindow(event.displayId)
+            HomeState.Event.FocusedItemRestoreHandled -> {
+                if (currentState.restoreFocusedItemOnEnter) {
+                    setState { copy(restoreFocusedItemOnEnter = false) }
+                }
+            }
         }
     }
 
-    private fun onItemFocused(displayId: Int, animeId: Int?) {
-        if (currentState.focusedItemId == displayId) return
+    private fun onItemFocused(sectionId: String, displayId: Int, animeId: Int?) {
+        if (currentState.focusedSectionId == sectionId && currentState.focusedItemId == displayId) return
         previewJob?.cancel()
         prefetchHeroPreviewWindow(displayId)
         if (animeId == null) {
-            setState { copy(focusedItemId = displayId, focusedPreview = null) }
+            setState {
+                copy(
+                    focusedSectionId = sectionId,
+                    focusedItemId = displayId,
+                    focusedPreview = null,
+                )
+            }
             return
         }
         val cachedPreview = previewCache[animeId]
-        setState { copy(focusedItemId = displayId, focusedPreview = cachedPreview, animePreviews = previewCache.toMap()) }
+        setState {
+            copy(
+                focusedSectionId = sectionId,
+                focusedItemId = displayId,
+                focusedPreview = cachedPreview,
+                animePreviews = previewCache.toMap(),
+            )
+        }
         if (cachedPreview != null) return
         previewJob = viewModelScope.launch {
             delay(PREVIEW_FOCUS_DEBOUNCE_MS)
             runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
                 previewCache[animeId] = preview
                 val previews = previewCache.toMap()
-                if (currentState.focusedItemId == displayId) {
+                if (
+                    currentState.focusedItemId == displayId &&
+                    currentState.focusedSectionId == sectionId
+                ) {
                     setState { copy(focusedPreview = preview, animePreviews = previews) }
                 } else {
                     setState { copy(animePreviews = previews) }
                 }
             }
+        }
+    }
+
+    private fun setSelectedItemRestoreState(sourceSectionId: String?, displayId: Int?) {
+        setState {
+            copy(
+                focusedSectionId = sourceSectionId ?: focusedSectionId,
+                focusedItemId = displayId ?: focusedItemId,
+                restoreFocusedItemOnEnter = true,
+            )
         }
     }
 

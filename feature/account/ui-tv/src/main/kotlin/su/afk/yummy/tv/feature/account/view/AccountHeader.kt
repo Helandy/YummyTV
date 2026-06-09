@@ -55,15 +55,6 @@ internal fun AccountHeader(
                 hint = stringResource(R.string.account_logout_hint),
                 onClick = { onEvent(AccountState.Event.LogoutSelected) },
             )
-            AccountAction(
-                label = stringResource(R.string.account_refresh),
-                hint = if (state.isLoading || state.isStatsLoading || state.isNotificationsLoading) {
-                    stringResource(R.string.account_loading)
-                } else {
-                    stringResource(R.string.account_refresh_hint)
-                },
-                onClick = { onEvent(AccountState.Event.RefreshProfileSelected) },
-            )
         }
     }
 }

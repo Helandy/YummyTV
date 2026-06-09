@@ -32,6 +32,9 @@ fun SearchTvScreen(
     val onToYearChanged = remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.ToYearChanged(year)) } }
     val onSortSelected = remember(onEvent) { { sort: SearchSort -> onEvent(SearchState.Event.SortSelected(sort)) } }
     val onSortDirectionToggled = remember(onEvent) { { onEvent(SearchState.Event.SortDirectionToggled) } }
+    val onFocusedItemRestoreHandled = remember(onEvent) {
+        { onEvent(SearchState.Event.FocusedItemRestoreHandled) }
+    }
 
     SearchResultsPane(
         query = state.query,
@@ -40,6 +43,7 @@ fun SearchTvScreen(
         canLoadMore = state.canLoadMore,
         focusedItemId = state.focusedItemId,
         focusedPreview = state.focusedPreview,
+        restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         filters = state.filters,
         draftFilters = state.draftFilters,
         filterOptions = state.filterOptions,
@@ -64,5 +68,6 @@ fun SearchTvScreen(
         onToYearChanged = onToYearChanged,
         onSortSelected = onSortSelected,
         onSortDirectionToggled = onSortDirectionToggled,
+        onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
     )
 }

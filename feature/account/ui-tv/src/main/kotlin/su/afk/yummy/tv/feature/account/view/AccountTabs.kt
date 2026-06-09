@@ -50,9 +50,15 @@ internal fun AccountTabs(
             notificationsFocusRequester
         }
 
-    LaunchedEffect(selected, onMarkAllRead != null) {
-        if (selected == AccountState.AccountTab.NOTIFICATIONS && onMarkAllRead != null) {
-            runCatching { notificationsRequester.requestFocus() }
+    LaunchedEffect(selected) {
+        when (selected) {
+            AccountState.AccountTab.STATS -> {
+                runCatching { statsRequester.requestFocus() }
+            }
+
+            AccountState.AccountTab.NOTIFICATIONS -> {
+                runCatching { notificationsRequester.requestFocus() }
+            }
         }
     }
 

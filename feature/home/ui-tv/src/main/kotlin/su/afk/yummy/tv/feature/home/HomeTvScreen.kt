@@ -15,20 +15,37 @@ fun HomeTvScreen(
     effect: Flow<HomeState.Effect>,
     onEvent: (HomeState.Event) -> Unit,
 ) {
-    val onItemSelected: (HomeFeedItem) -> Unit = remember(onEvent) {
-        { item ->
+    val onItemSelected: (String, HomeFeedItem) -> Unit = remember(onEvent) {
+        { sectionId, item ->
             when (val action = item.action) {
-                is HomeFeedItemAction.OpenSeries -> onEvent(HomeState.Event.AnimeSelected(action.seriesId))
+                is HomeFeedItemAction.OpenSeries -> onEvent(
+                    HomeState.Event.AnimeSelected(
+                        seriesId = action.seriesId,
+                        sourceSectionId = sectionId,
+                        displayId = item.id,
+                    ),
+                )
                 is HomeFeedItemAction.OpenVideo -> onEvent(HomeState.Event.VideoSelected(action.videoId))
-                is HomeFeedItemAction.OpenCollection -> onEvent(HomeState.Event.CollectionSelected(action.collectionId))
+                is HomeFeedItemAction.OpenCollection -> onEvent(
+                    HomeState.Event.CollectionSelected(
+                        collectionId = action.collectionId,
+                        sourceSectionId = sectionId,
+                        displayId = item.id,
+                    ),
+                )
             }
         }
     }
-    val onItemFocused: (Int, Int?) -> Unit = remember(onEvent) {
-        { displayId, animeId -> onEvent(HomeState.Event.ItemFocused(displayId, animeId)) }
+    val onItemFocused: (String, Int, Int?) -> Unit = remember(onEvent) {
+        { sectionId, displayId, animeId ->
+            onEvent(HomeState.Event.ItemFocused(sectionId, displayId, animeId))
+        }
     }
     val onHeroItemVisible: (Int) -> Unit = remember(onEvent) {
         { displayId -> onEvent(HomeState.Event.HeroItemVisible(displayId)) }
+    }
+    val onFocusedItemRestoreHandled: () -> Unit = remember(onEvent) {
+        { onEvent(HomeState.Event.FocusedItemRestoreHandled) }
     }
 
     val error = state.error
@@ -48,11 +65,14 @@ fun HomeTvScreen(
             },
             onItemSelected = onItemSelected,
             onItemFocused = onItemFocused,
+            focusedSectionId = state.focusedSectionId,
             onHeroItemVisible = onHeroItemVisible,
+            restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
             focusedItemId = state.focusedItemId,
             focusedPreview = state.focusedPreview,
             animePreviews = state.animePreviews,
             continueWatchingRestoreToken = state.continueWatchingRestoreToken,
+            onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
         )
     }
 }

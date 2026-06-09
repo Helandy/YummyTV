@@ -11,9 +11,9 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchPage
+import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.search.presentation.R
@@ -56,7 +56,10 @@ class SearchViewModel @Inject constructor(
     override fun onEvent(event: SearchState.Event) {
         when (event) {
             is SearchState.Event.QueryChanged -> onQueryChanged(event.query)
-            is SearchState.Event.ItemSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            is SearchState.Event.ItemSelected -> {
+                setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
+                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            }
             is SearchState.Event.ItemFocused -> onItemFocused(event.animeId)
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
             SearchState.Event.LoadMore -> loadMore()
@@ -84,6 +87,11 @@ class SearchViewModel @Inject constructor(
             is SearchState.Event.ToYearChanged -> updateDraft { copy(toYear = event.year) }
             is SearchState.Event.SortSelected -> updateDraft { copy(sort = event.sort) }
             SearchState.Event.SortDirectionToggled -> updateDraft { copy(sortForward = !sortForward) }
+            SearchState.Event.FocusedItemRestoreHandled -> {
+                if (currentState.restoreFocusedItemOnEnter) {
+                    setState { copy(restoreFocusedItemOnEnter = false) }
+                }
+            }
         }
     }
 

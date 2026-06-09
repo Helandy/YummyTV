@@ -52,13 +52,7 @@ internal fun LoginPanel(
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (initialFocusRequester != null) Modifier.focusRequester(
-                        initialFocusRequester
-                    ) else Modifier
-                ),
+            modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = state.password,
@@ -74,6 +68,11 @@ internal fun LoginPanel(
             label = stringResource(R.string.account_login),
             hint = if (state.isLoading) stringResource(R.string.account_loading) else stringResource(R.string.account_login_hint),
             onClick = { onEvent(AccountState.Event.LoginSelected) },
+            modifier = if (initialFocusRequester != null) {
+                Modifier.focusRequester(initialFocusRequester)
+            } else {
+                Modifier
+            },
         )
         if (state.isCaptchaRequired) {
             key(state.captchaChallengeId) {

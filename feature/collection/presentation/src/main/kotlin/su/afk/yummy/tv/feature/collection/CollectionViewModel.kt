@@ -48,10 +48,23 @@ class CollectionViewModel @AssistedInject constructor(
         when (event) {
             CollectionState.Event.BackSelected -> nav.back()
             CollectionState.Event.RetrySelected -> load()
-            is CollectionState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            is CollectionState.Event.AnimeSelected -> {
+                setState {
+                    copy(
+                        focusedItemId = event.animeId,
+                        restoreFocusedItemOnEnter = true,
+                    )
+                }
+                nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            }
             is CollectionState.Event.ItemFocused -> onItemFocused(event.animeId)
             is CollectionState.Event.GridScrolled -> setState {
                 copy(firstVisibleItemIndex = event.index, firstVisibleItemScrollOffset = event.offset)
+            }
+            CollectionState.Event.FocusedItemRestoreHandled -> {
+                if (currentState.restoreFocusedItemOnEnter) {
+                    setState { copy(restoreFocusedItemOnEnter = false) }
+                }
             }
         }
     }

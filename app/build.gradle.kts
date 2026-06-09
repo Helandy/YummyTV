@@ -124,6 +124,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.runtime)
     implementation(libs.work.runtime.ktx)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor3)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
