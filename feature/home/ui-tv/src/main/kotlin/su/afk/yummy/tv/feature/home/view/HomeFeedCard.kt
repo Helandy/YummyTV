@@ -38,11 +38,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
-import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -134,7 +134,7 @@ internal fun HomeFeedCard(
 
                 Crossfade(
                     targetState = imageUrl,
-                    animationSpec = tween(400),
+                    animationSpec = tween(150),
                     label = "card_image",
                 ) { url ->
                     AsyncImage(
@@ -179,13 +179,14 @@ internal fun HomeFeedCard(
             }
 
             Column(modifier = Modifier.padding(10.dp)) {
-                MarqueeTitleText(
+                Text(
                     text = item.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     minLines = 2,
                     maxLines = 2,
-                    isFocused = active,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

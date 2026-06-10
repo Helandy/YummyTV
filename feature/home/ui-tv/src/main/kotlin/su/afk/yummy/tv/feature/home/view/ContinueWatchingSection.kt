@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -69,14 +70,25 @@ internal fun ContinueWatchingSection(
         }
     }
 
+    suspend fun requestItemFocus(index: Int) {
+        val target = index.coerceIn(0, items.lastIndex)
+        val isVisible = listState.layoutInfo.visibleItemsInfo.any { it.index == target }
+        if (!isVisible) {
+            listState.scrollToItem(target)
+            withFrameNanos { }
+        }
+        runCatching { focusRequesters[target].requestFocus() }
+        withFrameNanos { }
+        runCatching { focusRequesters[target].requestFocus() }
+    }
+
     fun moveFocusToIndex(targetIndex: Int) {
         if (items.isEmpty()) return
         val clamped = targetIndex.coerceIn(0, items.lastIndex)
         lastFocusedIndex = clamped
         focusMoveJob?.cancel()
         focusMoveJob = scope.launch {
-            listState.animateScrollToItem(clamped)
-            runCatching { focusRequesters[clamped].requestFocus() }
+            requestItemFocus(clamped)
         }
     }
 
@@ -135,8 +147,7 @@ internal fun ContinueWatchingSection(
                                 rememberFocusedItem(0, items.first())
                             }
                             val target = restoreIndex().coerceIn(0, items.lastIndex)
-                            listState.scrollToItem(target)
-                            runCatching { focusRequesters[target].requestFocus() }
+                            requestItemFocus(target)
                             isRestoring.value = false
                         }
                     }

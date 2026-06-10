@@ -65,7 +65,7 @@ internal fun HomeDashboard(
     val hasContinueWatching = continueWatching.isNotEmpty()
     val hasHero = feed.heroItems.isNotEmpty()
 
-    // LazyColumn item indices (needed for animateScrollToItem)
+    // LazyColumn item indices used for row-level focus restoration.
     val heroLazyIdx = if (hasContinueWatching) 1 else 0
     val sectionsBaseLazyIdx = heroLazyIdx + if (hasHero) 1 else 0
     val totalLazyItems = sectionsBaseLazyIdx + feed.sections.size

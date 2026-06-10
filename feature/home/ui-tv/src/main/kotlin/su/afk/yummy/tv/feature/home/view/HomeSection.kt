@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
@@ -78,21 +76,16 @@ internal fun HomeSection(
         List(items.size) { FocusRequester() }
     }
 
-    suspend fun requestItemFocus(index: Int, animateScroll: Boolean = false) {
+    suspend fun requestItemFocus(index: Int) {
         val target = index.coerceIn(0, items.lastIndex)
-        if (animateScroll) {
-            listState.animateScrollToItem(target)
-        } else {
+        val isVisible = listState.layoutInfo.visibleItemsInfo.any { it.index == target }
+        if (!isVisible) {
             listState.scrollToItem(target)
-        }
-        snapshotFlow {
-            listState.layoutInfo.visibleItemsInfo.any { it.index == target }
-        }.first { it }
-        withFrameNanos { }
-        repeat(3) {
-            runCatching { focusRequesters[target].requestFocus() }
             withFrameNanos { }
         }
+        runCatching { focusRequesters[target].requestFocus() }
+        withFrameNanos { }
+        runCatching { focusRequesters[target].requestFocus() }
     }
 
     fun moveFocusToIndex(targetIndex: Int) {
@@ -101,7 +94,7 @@ internal fun HomeSection(
         lastFocusedIndex = clamped
         focusMoveJob?.cancel()
         focusMoveJob = scope.launch {
-            requestItemFocus(clamped, animateScroll = true)
+            requestItemFocus(clamped)
         }
     }
 
