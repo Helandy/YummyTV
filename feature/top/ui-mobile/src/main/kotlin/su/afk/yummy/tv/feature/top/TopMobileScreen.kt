@@ -1,31 +1,29 @@
 package su.afk.yummy.tv.feature.top
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
-import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.feature.top.mobile.R
+import su.afk.yummy.tv.feature.top.view.TopMobileGrid
 import su.afk.yummy.tv.feature.top.view.TopMobileTypeTabs
+
+private val topMobileTypes: List<AnimeTopType>
+    get() = AnimeTopType.entries
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,93 +32,71 @@ fun TopMobileScreen(
     effect: Flow<TopState.Effect>,
     onEvent: (TopState.Event) -> Unit,
 ) {
-    val initialError = state.error?.takeIf { state.items.isEmpty() }
+    val pagerState = rememberPagerState(
+        initialPage = state.selectedType.toTopTypePage(),
+        pageCount = { topMobileTypes.size },
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.selectedType) {
+        val targetPage = state.selectedType.toTopTypePage()
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        val selectedType = pagerState.currentPage.toTopType()
+        if (selectedType != state.selectedType) {
+            onEvent(TopState.Event.TypeSelected(selectedType))
+        }
+    }
+
     BaseScreen(
         isScroll = false,
         topBar = { Text(stringResource(R.string.top_mobile_title)) },
-        isLoading = state.isLoading && state.items.isEmpty(),
-        error = initialError?.let { ErrorItem(title = it, message = it) },
-        onRetry = { onEvent(TopState.Event.RetrySelected) },
-        errorContent = initialError?.let { message ->
-            { _, retry ->
-                MobileMessage(
-                    title = message,
-                    actionLabel = stringResource(R.string.top_mobile_retry),
-                    onAction = retry,
-                )
-            }
-        },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                TopMobileTypeTabs(
-                    selectedType = state.selectedType,
-                    onTypeSelected = { onEvent(TopState.Event.TypeSelected(it)) },
-                )
-            }
-
-            if (state.error != null && state.items.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Button(onClick = { onEvent(TopState.Event.RetrySelected) }) {
-                        Text(
-                            stringResource(
-                                R.string.top_mobile_retry_error,
-                                state.error.orEmpty()
-                            )
-                        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
+        ) {
+            TopMobileTypeTabs(
+                selectedType = pagerState.currentPage.toTopType(),
+                onTypeSelected = { type ->
+                    val targetPage = type.toTopTypePage()
+                    if (pagerState.currentPage != targetPage) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(targetPage)
+                        }
                     }
-                }
-            }
+                },
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
+            )
 
-            itemsIndexed(state.items, key = { _, item -> item.id }) { index, item ->
-                MobilePosterCard(
-                    title = item.title,
-                    posterUrl = item.posterUrl,
-                    rating = item.rating,
-                    posterOverlay = {
-                        TopMobileRankBadge(
-                            rank = index + 1,
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .padding(4.dp),
-                        )
-                    },
-                    onClick = { onEvent(TopState.Event.AnimeSelected(item.id)) },
+            HorizontalPager(
+                state = pagerState,
+                key = { page -> page.toTopType().apiValue },
+                modifier = Modifier.weight(1f),
+            ) { page ->
+                val pageType = page.toTopType()
+                TopMobileGrid(
+                    items = if (pageType == state.selectedType) state.items else emptyList(),
+                    isLoading = pageType != state.selectedType || state.isLoading,
+                    isLoadingMore = pageType == state.selectedType && state.isLoadingMore,
+                    error = state.error.takeIf { pageType == state.selectedType },
+                    canLoadMore = pageType == state.selectedType && state.canLoadMore,
+                    onAnimeSelected = { id -> onEvent(TopState.Event.AnimeSelected(id)) },
+                    onRetry = { onEvent(TopState.Event.RetrySelected) },
+                    onLoadMore = { onEvent(TopState.Event.LoadMore) },
                 )
-            }
-
-            if (state.canLoadMore) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Button(
-                        onClick = { onEvent(TopState.Event.LoadMore) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            if (state.isLoadingMore) {
-                                stringResource(R.string.top_mobile_loading)
-                            } else {
-                                stringResource(R.string.top_mobile_load_more)
-                            },
-                        )
-                    }
-                }
             }
         }
     }
 }
 
-@Composable
-private fun TopMobileRankBadge(
-    rank: Int,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = "#$rank",
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.White,
-        modifier = modifier
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-            .padding(horizontal = 5.dp, vertical = 2.dp),
-    )
-}
+private fun AnimeTopType.toTopTypePage(): Int =
+    topMobileTypes.indexOf(this).coerceAtLeast(0)
+
+private fun Int.toTopType(): AnimeTopType =
+    topMobileTypes.getOrElse(this) { AnimeTopType.TV }

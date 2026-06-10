@@ -107,23 +107,34 @@ class TopViewModel @Inject constructor(
             runCatching { loadVisiblePage(type, offset) }.fold(
                 onSuccess = { page ->
                     setState {
-                        copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            items = if (replace) page.items else items + page.items,
-                            offset = page.nextOffset,
-                            canLoadMore = page.canLoadMore,
-                        )
+                        if (selectedType == type) {
+                            copy(
+                                isLoading = false,
+                                isLoadingMore = false,
+                                items = if (replace) page.items else items + page.items,
+                                offset = page.nextOffset,
+                                canLoadMore = page.canLoadMore,
+                            )
+                        } else {
+                            this
+                        }
                     }
                 },
                 onFailure = { e ->
                     setState {
-                        copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            error = if (replace) e.message
-                                ?: stringProvider.get(R.string.top_load_error) else error,
-                        )
+                        if (selectedType == type) {
+                            copy(
+                                isLoading = false,
+                                isLoadingMore = false,
+                                error = if (replace) {
+                                    e.message ?: stringProvider.get(R.string.top_load_error)
+                                } else {
+                                    error
+                                },
+                            )
+                        } else {
+                            this
+                        }
                     }
                 },
             )

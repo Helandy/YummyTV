@@ -48,11 +48,15 @@ class SimilarViewModel @AssistedInject constructor(
             is SimilarState.Event.AnimeSelected ->
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             is SimilarState.Event.ItemFocused -> onItemFocused(event.animeId)
-            SimilarState.Event.SourceToggled -> {
-                setState { copy(fromAi = !fromAi, similarState = SimilarUiState.Loading) }
-                viewModelScope.launch { load() }
-            }
+            is SimilarState.Event.SourceSelected -> selectSource(event.fromAi)
+            SimilarState.Event.SourceToggled -> selectSource(!currentState.fromAi)
         }
+    }
+
+    private fun selectSource(fromAi: Boolean) {
+        if (currentState.fromAi == fromAi) return
+        setState { copy(fromAi = fromAi) }
+        viewModelScope.launch { load(fromAi) }
     }
 
     private fun onItemFocused(id: Int) {
@@ -67,15 +71,28 @@ class SimilarViewModel @AssistedInject constructor(
         }
     }
 
-    private suspend fun load() {
+    private suspend fun load(fromAi: Boolean = currentState.fromAi) {
         setState { copy(similarState = SimilarUiState.Loading) }
-        runCatching { getAnimeRecommendations(animeId, currentState.fromAi) }.fold(
+        runCatching { getAnimeRecommendations(animeId, fromAi) }.fold(
             onSuccess = { items ->
                 setState {
-                    copy(similarState = if (items.isEmpty()) SimilarUiState.Empty else SimilarUiState.Content(items))
+                    if (this.fromAi == fromAi) {
+                        val nextState = if (items.isEmpty()) {
+                            SimilarUiState.Empty
+                        } else {
+                            SimilarUiState.Content(items)
+                        }
+                        copy(similarState = nextState)
+                    } else {
+                        this
+                    }
                 }
             },
-            onFailure = { setState { copy(similarState = SimilarUiState.Empty) } },
+            onFailure = {
+                setState {
+                    if (this.fromAi == fromAi) copy(similarState = SimilarUiState.Empty) else this
+                }
+            },
         )
     }
 }

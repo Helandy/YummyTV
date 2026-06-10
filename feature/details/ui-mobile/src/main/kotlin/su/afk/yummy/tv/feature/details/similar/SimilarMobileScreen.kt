@@ -1,28 +1,30 @@
 package su.afk.yummy.tv.feature.details.similar
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
-import su.afk.yummy.tv.feature.details.similar.utils.bestUrl
+import su.afk.yummy.tv.feature.details.similar.view.SimilarRecommendationsGrid
+import su.afk.yummy.tv.feature.details.similar.view.SimilarSourceTabs
+
+private const val SIMILAR_SOURCE_PAGE_COUNT = 2
+private const val SIMILAR_SOURCE_SITE_PAGE = 0
+private const val SIMILAR_SOURCE_AI_PAGE = 1
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,6 +35,26 @@ fun SimilarMobileScreen(
     onEvent: (SimilarState.Event) -> Unit,
 
 ) {
+    val pagerState = rememberPagerState(
+        initialPage = state.fromAi.toSimilarSourcePage(),
+        pageCount = { SIMILAR_SOURCE_PAGE_COUNT },
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.fromAi) {
+        val targetPage = state.fromAi.toSimilarSourcePage()
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        val selectedFromAi = pagerState.currentPage.toSimilarSourceFromAi()
+        if (selectedFromAi != state.fromAi) {
+            onEvent(SimilarState.Event.SourceSelected(selectedFromAi))
+        }
+    }
+
     BaseScreen(
         isScroll = false,
         customTopBar = {
@@ -42,62 +64,45 @@ fun SimilarMobileScreen(
             )
         },
     ) {
-        MobilePosterGrid(
-            contentPadding = PaddingValues(bottom = 8.dp),
-            modifier = Modifier.navigationBarsPadding(),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    if (state.fromAi) {
-                        OutlinedButton(
-                            onClick = { onEvent(SimilarState.Event.SourceToggled) },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.details_mobile_similar_source_site))
+            SimilarSourceTabs(
+                fromAi = pagerState.currentPage.toSimilarSourceFromAi(),
+                onSourceSelected = { fromAi ->
+                    val targetPage = fromAi.toSimilarSourcePage()
+                    if (pagerState.currentPage != targetPage) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(targetPage)
                         }
-                        Button(
-                            onClick = {},
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.details_mobile_similar_source_ai))
-                        }
+                    }
+                },
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
+            )
+
+            HorizontalPager(
+                state = pagerState,
+                key = { page -> page },
+                modifier = Modifier.weight(1f),
+            ) { page ->
+                val pageFromAi = page.toSimilarSourceFromAi()
+                SimilarRecommendationsGrid(
+                    similarState = if (pageFromAi == state.fromAi) {
+                        state.similarState
                     } else {
-                        Button(
-                            onClick = {},
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.details_mobile_similar_source_site))
-                        }
-                        OutlinedButton(
-                            onClick = { onEvent(SimilarState.Event.SourceToggled) },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.details_mobile_similar_source_ai))
-                        }
-                    }
-                }
-            }
-            when (val similar = state.similarState) {
-                SimilarUiState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(stringResource(R.string.details_mobile_loading))
-                }
-                SimilarUiState.Empty -> item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(stringResource(R.string.details_mobile_similar_empty))
-                }
-                is SimilarUiState.Content -> {
-                    items(similar.items, key = { it.animeId }) { item ->
-                        MobilePosterCard(
-                            title = item.title,
-                            posterUrl = item.poster.bestUrl(),
-                            rating = item.rating,
-                            onClick = { onEvent(SimilarState.Event.AnimeSelected(item.animeId)) },
-                        )
-                    }
-                }
+                        SimilarUiState.Loading
+                    },
+                    onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
+                )
             }
         }
     }
 }
+
+private fun Boolean.toSimilarSourcePage(): Int =
+    if (this) SIMILAR_SOURCE_AI_PAGE else SIMILAR_SOURCE_SITE_PAGE
+
+private fun Int.toSimilarSourceFromAi(): Boolean =
+    this == SIMILAR_SOURCE_AI_PAGE

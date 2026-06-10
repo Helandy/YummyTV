@@ -18,6 +18,7 @@ class SimilarState {
         data object BackSelected : Event
         data class AnimeSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
+        data class SourceSelected(val fromAi: Boolean) : Event
         data object SourceToggled : Event
     }
 
