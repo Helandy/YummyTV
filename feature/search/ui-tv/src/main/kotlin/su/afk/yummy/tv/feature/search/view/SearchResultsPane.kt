@@ -71,6 +71,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -346,7 +347,7 @@ internal fun SearchResultsPane(
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        val horizontalSpacing = 16.dp
+                        val horizontalSpacing = TvCardSpacing.Horizontal
                         val gridColumnCount =
                             (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
                                     (cardWidth.value + horizontalSpacing.value)).toInt()
@@ -361,7 +362,7 @@ internal fun SearchResultsPane(
                                 bottom = TvScreenPadding.Vertical,
                             ),
                             horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .onFocusChanged { state ->

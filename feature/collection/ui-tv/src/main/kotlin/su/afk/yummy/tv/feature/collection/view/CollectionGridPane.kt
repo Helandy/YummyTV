@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -160,7 +161,7 @@ private fun CollectionGrid(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val horizontalSpacing = 16.dp
+        val horizontalSpacing = TvCardSpacing.Horizontal
         val gridColumnCount =
             (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
                     (cardWidth.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
@@ -211,7 +212,7 @@ private fun CollectionGrid(
                 top = TvScreenPadding.Vertical,
                 bottom = TvScreenPadding.Vertical,
             ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
             horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {

@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerContainer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
@@ -65,7 +66,7 @@ internal fun TrailerTab(
         )
         LazyRow(
             state = rememberLazyListState(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
             contentPadding = PaddingValues(horizontal = 24.dp),
             modifier = Modifier.focusRestorerContainer(restorerState),
         ) {

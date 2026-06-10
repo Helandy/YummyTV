@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -172,7 +173,7 @@ internal fun LibraryGrid(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val horizontalSpacing = 16.dp
+        val horizontalSpacing = TvCardSpacing.Horizontal
         val gridHorizontalPadding = TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
         val gridColumnCount =
             (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
@@ -222,7 +223,7 @@ internal fun LibraryGrid(
                 top = 16.dp,
                 bottom = TvScreenPadding.Vertical,
             ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
             horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
         ) {
             itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
@@ -113,7 +114,7 @@ internal fun ContinueWatchingSection(
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
             state = listState,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
             contentPadding = PaddingValues(horizontal = TvScreenPadding.Horizontal, vertical = 8.dp),
             modifier = Modifier
                 .focusProperties {

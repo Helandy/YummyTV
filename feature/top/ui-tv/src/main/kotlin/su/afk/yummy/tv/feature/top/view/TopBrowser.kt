@@ -45,6 +45,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -256,7 +257,7 @@ internal fun TopBrowser(
                 error != null && items.isEmpty() -> Text(text = error)
 
                 else -> BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    val horizontalSpacing = 16.dp
+                    val horizontalSpacing = TvCardSpacing.Horizontal
                     val gridHorizontalPadding =
                         TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
                     val gridColumnCount =
@@ -302,7 +303,7 @@ internal fun TopBrowser(
                             top = 16.dp,
                             bottom = TvScreenPadding.Vertical,
                         ),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                         horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
                     ) {
                         itemsIndexed(items, key = { _, item -> item.id }) { index, item ->

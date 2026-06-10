@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
@@ -62,8 +63,8 @@ fun ScreenshotsTvScreen(
                         end = TvScreenPadding.Horizontal,
                         bottom = TvScreenPadding.Vertical,
                     ),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
+                    verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {

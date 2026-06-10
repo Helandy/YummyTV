@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -133,7 +134,7 @@ internal fun HomeSection(
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
             state = listState,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
             contentPadding = PaddingValues(
                 start = TvScreenPadding.Horizontal,
                 end = TvScreenPadding.Horizontal,

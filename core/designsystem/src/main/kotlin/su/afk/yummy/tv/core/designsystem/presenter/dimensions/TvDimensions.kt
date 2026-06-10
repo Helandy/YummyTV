@@ -11,6 +11,11 @@ object TvScreenPadding {
     val Vertical = 32.dp
 }
 
+object TvCardSpacing {
+    val Horizontal = 12.dp
+    val Vertical = 12.dp
+}
+
 data class PosterCardDimensions(
     val width: Dp,
     val posterHeight: Dp,

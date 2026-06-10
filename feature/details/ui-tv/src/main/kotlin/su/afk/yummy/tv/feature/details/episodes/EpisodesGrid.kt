@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
@@ -125,8 +126,8 @@ internal fun EpisodesGrid(
             end = TvScreenPadding.Horizontal,
             bottom = TvScreenPadding.Vertical,
         ),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
+        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
