@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
@@ -56,6 +57,7 @@ import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.isVkPlayerUrl
+import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject constructor(
@@ -334,6 +336,24 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private fun openInitialVideo(videos: List<AnimeVideo>) {
+        val resumeEntry = latestResumeEntry()
+        if (resumeEntry != null) {
+            val videoSources = videos.map { it.toPlayerVideoSource() }
+            val targetVideo = videoSources.selectContinueWatchingVideo(
+                videoId = resumeEntry.videoId,
+                episodeUrl = resumeEntry.episodeUrl,
+                episode = resumeEntry.episode,
+                playerName = resumeEntry.playerName,
+                dubbing = resumeEntry.dubbing,
+            ) ?: videoSources.firstOrNull()
+
+            setState { copy(isWatchLaunchPending = false) }
+            if (targetVideo != null) {
+                navigateToPlayer(targetVideo)
+            }
+            return
+        }
+
         val video = selectInitialVideo(videos)
         setState { copy(isWatchLaunchPending = false) }
         if (video != null) {
@@ -341,15 +361,12 @@ class DetailsViewModel @AssistedInject constructor(
         }
     }
 
-    private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
-        val resumeEntry = currentState.watchProgress.values
+    private fun latestResumeEntry(): WatchProgressEntry? =
+        currentState.watchProgress.values
             .filter { it.animeId == animeId && it.positionMs > 0 }
             .maxByOrNull { it.updatedAt }
-        val resumeVideo = resumeEntry?.let { entry ->
-            videos.firstOrNull { it.iframeUrl == entry.episodeUrl }
-        }
-        if (resumeVideo != null) return resumeVideo
 
+    private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
         val kodikVideos =
             videos.filter { it.iframeUrl.isKodikPlayerUrl() || it.player.isKodikPlayerUrl() }
         val supportedVideos = videos.filter { isSupportedPlayer(it.iframeUrl) }
@@ -445,13 +462,17 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
+        navigateToPlayer(video.toPlayerVideoSource())
+    }
+
+    private fun navigateToPlayer(video: PlayerVideoSource) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val details = currentState.details
         viewModelScope.launch(Dispatchers.Default) {
             val episodeScreenshots = details?.screenshots.orEmpty()
 
             val destination = playerNavigator.getPlayerDest(
-                video = video.toPlayerVideoSource(),
+                video = video,
                 allVideos = allVideos.map { it.toPlayerVideoSource() },
                 animeTitle = details?.title ?: "",
                 animeId = animeId,

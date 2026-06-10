@@ -13,8 +13,6 @@
     <string name="settings_mobile_poster_quality">Poster quality</string>
     <string name="settings_mobile_default_player">Default player</string>
     <string name="settings_mobile_preview_cache">Preview cache</string>
-    <string name="settings_show_screenshots_label">Screens on focus</string>
-    <string name="settings_show_screenshots_hint">Show title screenshots when a card is selected</string>
     <string name="settings_details_buttons_reset">Reset button order</string>
     <string name="settings_details_buttons_order">Details button order</string>
     <string name="settings_details_buttons_order_hint">Choose which title actions are shown first</string>

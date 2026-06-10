@@ -80,12 +80,6 @@ fun SettingsMobileScreen(
                         hint = state.posterQuality.hint(),
                         onClick = { activePicker = SettingsMobilePicker.POSTER_QUALITY },
                     )
-                    SettingsMobileToggleRow(
-                        label = stringResource(R.string.settings_show_screenshots_label),
-                        hint = stringResource(R.string.settings_show_screenshots_hint),
-                        enabled = state.showScreenshotsOnFocus,
-                        onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
-                    )
                 }
             }
 
