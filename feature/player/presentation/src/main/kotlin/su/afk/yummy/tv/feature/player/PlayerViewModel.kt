@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
@@ -83,6 +84,9 @@ class PlayerViewModel @AssistedInject constructor(
                 balancerIndex = newDest.currentBalancerIndex,
                 dubbingIndex = newDest.currentDubbingIndex,
                 episodeIndex = newDest.currentEpisodeIndex,
+                resizeMode = resizeMode,
+                zoomLevel = zoomLevel,
+                autoSkipOpeningsEndings = autoSkipOpeningsEndings,
             )
         }
         loadStream()
@@ -126,6 +130,12 @@ class PlayerViewModel @AssistedInject constructor(
     init {
         settingsStore.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
+            .launchIn(viewModelScope)
+        settingsStore.playerResizeMode
+            .onEach { mode -> setState { copy(resizeMode = mode) } }
+            .launchIn(viewModelScope)
+        settingsStore.playerZoomLevel
+            .onEach { level -> setState { copy(zoomLevel = level) } }
             .launchIn(viewModelScope)
         loadStream()
     }
@@ -227,6 +237,21 @@ class PlayerViewModel @AssistedInject constructor(
 
             is PlayerState.Event.SpeedSelected -> {
                 setState { copy(selectedSpeed = event.speed.coerceAtLeast(0.1f)) }
+            }
+
+            is PlayerState.Event.ResizeModeSelected -> {
+                setState { copy(resizeMode = event.mode) }
+                viewModelScope.launch {
+                    settingsStore.setPlayerResizeMode(event.mode)
+                }
+            }
+
+            is PlayerState.Event.ZoomLevelSelected -> {
+                setState { copy(resizeMode = PlayerResizeMode.ZOOM, zoomLevel = event.level) }
+                viewModelScope.launch {
+                    settingsStore.setPlayerResizeMode(PlayerResizeMode.ZOOM)
+                    settingsStore.setPlayerZoomLevel(event.level)
+                }
             }
 
             is PlayerState.Event.PlaybackPositionChanged -> {

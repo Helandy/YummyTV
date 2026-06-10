@@ -1,10 +1,15 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +38,7 @@ internal fun PlayerEpisodeRow(
     qualityFocusRequester: FocusRequester? = null,
     dubbingFocusRequester: FocusRequester? = null,
     balancerFocusRequester: FocusRequester? = null,
+    resizeFocusRequester: FocusRequester? = null,
     speedFocusRequester: FocusRequester? = null,
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
@@ -41,6 +47,7 @@ internal fun PlayerEpisodeRow(
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
+    onToggleResize: () -> Unit,
     onToggleSpeed: () -> Unit,
 ) {
     Row(
@@ -54,7 +61,9 @@ internal fun PlayerEpisodeRow(
         }
         Spacer(Modifier.weight(1f))
         if (allDubbingNames.size > 1) {
-            val label = allDubbingNames.getOrElse(currentDubbingIndex) { dubbing }
+            val label = allDubbingNames
+                .getOrElse(currentDubbingIndex) { dubbing }
+                .withoutDubbingTitlePrefix(stringResource(R.string.player_dubbing_title))
             ControlButton(
                 onClick = onToggleDubbing,
                 onFocused = onInteraction,
@@ -69,7 +78,7 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (allBalancerNames.size > 1 || qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
         }
         if (allBalancerNames.size > 1) {
             val label = allBalancerNames.getOrElse(currentBalancerIndex) { playerName }
@@ -88,7 +97,7 @@ internal fun PlayerEpisodeRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            if (qualityCount > 0 || hasNextEpisode || canRateTitle) Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
         }
         if (qualityCount > 0) {
             ControlButton(
@@ -107,6 +116,21 @@ internal fun PlayerEpisodeRow(
             }
             Spacer(Modifier.width(8.dp))
         }
+        ControlButton(
+            onClick = onToggleResize,
+            onFocused = onInteraction,
+            focusRequester = resizeFocusRequester,
+            modifier = Modifier.width(48.dp),
+            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
+        ) { color ->
+            Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(R.string.player_resize_title),
+                tint = color,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        Spacer(Modifier.width(8.dp))
         ControlButton(
             onClick = onToggleSpeed,
             onFocused = onInteraction,
@@ -134,4 +158,17 @@ internal fun PlayerEpisodeRow(
             }
         }
     }
+}
+
+private fun String.withoutDubbingTitlePrefix(title: String): String {
+    val trimmed = trim()
+    if (!trimmed.startsWith(title, ignoreCase = true)) return trimmed
+
+    val withoutTitle = trimmed
+        .drop(title.length)
+        .trimStart()
+        .trimStart(':', '-')
+        .trimStart()
+
+    return withoutTitle.ifBlank { trimmed }
 }

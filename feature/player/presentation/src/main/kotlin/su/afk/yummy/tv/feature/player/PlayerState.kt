@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.player
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 
 data class PlayerProgressSnapshot(
     val episode: String,
@@ -52,6 +54,8 @@ class PlayerState {
         val streamQualityMap: LinkedHashMap<String, String>? = null,
         val selectedQuality: String? = null,
         val selectedSpeed: Float = 1f,
+        val resizeMode: PlayerResizeMode = PlayerResizeMode.FIT,
+        val zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
         val playerError: String? = null,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
@@ -68,6 +72,8 @@ class PlayerState {
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
         data class SpeedSelected(val speed: Float) : Event
+        data class ResizeModeSelected(val mode: PlayerResizeMode) : Event
+        data class ZoomLevelSelected(val level: PlayerZoomLevel) : Event
         data class PlaybackPositionChanged(val positionMs: Long, val durationMs: Long) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
         data class PlaybackError(val message: String) : Event

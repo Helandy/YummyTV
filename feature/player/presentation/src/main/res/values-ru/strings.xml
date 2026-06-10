@@ -21,10 +21,17 @@
     <string name="player_dubbing_title">Озвучка</string>
     <string name="player_balancer_title">Плеер</string>
     <string name="player_speed_title">Скорость</string>
+    <string name="player_resize_title">Масштаб</string>
     <string name="player_quality_meta">Поток видео</string>
     <string name="player_dubbing_meta">Дорожка озвучки</string>
     <string name="player_balancer_meta">Балансер воспроизведения</string>
     <string name="player_speed_meta">Темп воспроизведения</string>
+    <string name="player_resize_fit">Оригинальный размер</string>
+    <string name="player_resize_zoom">Зум</string>
+    <string name="player_resize_fit_meta">Показывать всё видео</string>
+    <string name="player_resize_zoom_meta">Увеличить кадр</string>
+    <string name="player_zoom_level_title">Сила зума</string>
+    <string name="player_zoom_level_percent">%1$d%%</string>
     <string name="player_count_thousands">%1$sк</string>
     <string name="player_count_millions">%1$sм</string>
     <string name="player_skip_segment">Пропустить</string>

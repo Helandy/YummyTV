@@ -175,6 +175,14 @@ internal fun ContinueWatchingSection(
                             onMoveDown != null
                         }
 
+                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                            items.getOrNull(lastFocusedIndex)?.let { entry ->
+                                rememberFocusedItem(lastFocusedIndex, entry)
+                                onItemSelected(entry)
+                            }
+                            true
+                        }
+
                         else -> false
                     }
                 }

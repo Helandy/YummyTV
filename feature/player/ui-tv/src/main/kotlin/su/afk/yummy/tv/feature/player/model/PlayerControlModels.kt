@@ -13,6 +13,7 @@ internal enum class PanelReturnFocusTarget {
     Quality,
     Dubbing,
     Balancer,
+    Resize,
     Speed,
 }
 

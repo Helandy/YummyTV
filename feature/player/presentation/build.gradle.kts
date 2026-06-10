@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
-    implementation(project(":core:preferences"))
+    api(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))

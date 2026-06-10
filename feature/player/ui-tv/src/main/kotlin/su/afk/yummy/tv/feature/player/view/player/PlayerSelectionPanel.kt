@@ -35,6 +35,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +68,7 @@ internal fun PlayerSelectionPanel(
             )
         }
     },
+    onExitDown: (() -> Unit)? = null,
     onItemSelected: (index: Int) -> Unit,
 ) {
     AnimatedVisibility(
@@ -111,6 +117,7 @@ internal fun PlayerSelectionPanel(
                         metaContent = { contentColor -> itemMetaContent(idx, contentColor) },
                         selected = selected,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
+                        onExitDown = if (idx == items.lastIndex) onExitDown else null,
                         onClick = { onItemSelected(idx) },
                     )
                 }
@@ -125,6 +132,7 @@ private fun PlayerSelectionItem(
     metaContent: @Composable (contentColor: Color) -> Unit,
     selected: Boolean,
     modifier: Modifier = Modifier,
+    onExitDown: (() -> Unit)?,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -153,6 +161,18 @@ private fun PlayerSelectionItem(
         Row(
             modifier = modifier
                 .fillMaxWidth()
+                .onPreviewKeyEvent { event ->
+                    if (
+                        event.type == KeyEventType.KeyDown &&
+                        event.key == Key.DirectionDown &&
+                        onExitDown != null
+                    ) {
+                        onExitDown()
+                        true
+                    } else {
+                        false
+                    }
+                }
                 .clip(shape)
                 .background(background)
                 .border(2.dp, borderColor, shape)

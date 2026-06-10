@@ -4,5 +4,6 @@ internal enum class PlayerControlFocusTarget {
     Dubbing,
     Balancer,
     Quality,
+    Resize,
     Speed,
 }

@@ -142,6 +142,10 @@ fun PlayerTvScreen(
                 },
                 restoreControlFocusTarget = pendingControlFocusTarget,
                 onControlFocusRestored = { pendingControlFocusTarget = null },
+                resizeMode = state.resizeMode,
+                onResizeModeSelected = { mode -> onEvent(PlayerState.Event.ResizeModeSelected(mode)) },
+                zoomLevel = state.zoomLevel,
+                onZoomLevelSelected = { level -> onEvent(PlayerState.Event.ZoomLevelSelected(level)) },
                 skips = uiState.activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
             )

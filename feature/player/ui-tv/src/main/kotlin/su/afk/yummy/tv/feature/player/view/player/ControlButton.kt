@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ internal fun ControlButton(
     focusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
     primary: Boolean = false,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -47,7 +49,7 @@ internal fun ControlButton(
             .border(1.5.dp, borderColor, shape)
             .background(bgColor, shape)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 10.dp),
+            .padding(contentPadding),
     ) {
         content(textColor)
     }

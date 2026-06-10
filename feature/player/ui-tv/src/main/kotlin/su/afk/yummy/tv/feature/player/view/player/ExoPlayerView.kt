@@ -71,6 +71,8 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.model.ActiveSkip
@@ -79,6 +81,7 @@ import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.SeekDirection
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.applyTvResizeMode
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import java.util.Locale
 
@@ -115,6 +118,10 @@ internal fun ExoPlayerView(
     onControlFocusRestored: () -> Unit = {},
     streamHeaders: Map<String, String> = emptyMap(),
     qualityOverrides: LinkedHashMap<String, String>? = null,
+    resizeMode: PlayerResizeMode = PlayerResizeMode.FIT,
+    onResizeModeSelected: (PlayerResizeMode) -> Unit = {},
+    zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
+    onZoomLevelSelected: (PlayerZoomLevel) -> Unit = {},
     skips: PlayerSkips = PlayerSkips.Empty,
     autoSkipOpeningsEndings: Boolean = false,
 ) {
@@ -140,6 +147,7 @@ internal fun ExoPlayerView(
     var showDubbingPanel by remember { mutableStateOf(false) }
     var showBalancerPanel by remember { mutableStateOf(false) }
     var showSpeedPanel by remember { mutableStateOf(false) }
+    var showResizePanel by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
     var showRateTitlePrompt by remember { mutableStateOf(false) }
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
@@ -151,11 +159,13 @@ internal fun ExoPlayerView(
     val dubbingButtonFocusRequester = remember { FocusRequester() }
     val balancerButtonFocusRequester = remember { FocusRequester() }
     val speedButtonFocusRequester = remember { FocusRequester() }
+    val resizeButtonFocusRequester = remember { FocusRequester() }
     val overlayFocusRequester = remember { FocusRequester() }
     val selectedQualityFocusRequester = remember { FocusRequester() }
     val selectedDubbingFocusRequester = remember { FocusRequester() }
     val selectedBalancerFocusRequester = remember { FocusRequester() }
     val selectedSpeedFocusRequester = remember { FocusRequester() }
+    val selectedResizeFocusRequester = remember { FocusRequester() }
     val skipFocusRequester = remember { FocusRequester() }
     val nextEpisodeFocusRequester = remember { FocusRequester() }
     val rateTitleFocusRequester = remember { FocusRequester() }
@@ -171,7 +181,7 @@ internal fun ExoPlayerView(
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
             delay(4_000)
-            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showNextEpisodePrompt && !showRateTitlePrompt) {
+            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel && !showNextEpisodePrompt && !showRateTitlePrompt) {
                 controllerVisible = false
             }
         }
@@ -180,7 +190,7 @@ internal fun ExoPlayerView(
     fun onInteraction() {
         controllerVisible = true
         when {
-            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showNextEpisodePrompt || showRateTitlePrompt -> hideJob?.cancel()
+            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showResizePanel || showNextEpisodePrompt || showRateTitlePrompt -> hideJob?.cancel()
             wantsPlay -> scheduleHide()
             else -> hideJob?.cancel()
         }
@@ -263,6 +273,12 @@ internal fun ExoPlayerView(
         showDubbingPanel = false
         showBalancerPanel = false
         showSpeedPanel = false
+        showResizePanel = false
+    }
+
+    fun exitPanelDown(returnFocusTarget: PanelReturnFocusTarget) {
+        closePanels(returnFocusTarget)
+        onInteraction()
     }
 
     fun requestControlFocus(target: PlayerControlFocusTarget): Boolean {
@@ -270,6 +286,7 @@ internal fun ExoPlayerView(
             PlayerControlFocusTarget.Quality -> qualityButtonFocusRequester
             PlayerControlFocusTarget.Dubbing -> dubbingButtonFocusRequester
             PlayerControlFocusTarget.Balancer -> balancerButtonFocusRequester
+            PlayerControlFocusTarget.Resize -> resizeButtonFocusRequester
             PlayerControlFocusTarget.Speed -> speedButtonFocusRequester
         }
         return runCatching { requester.requestFocus() }.isSuccess
@@ -397,6 +414,7 @@ internal fun ExoPlayerView(
         showDubbingPanel,
         showBalancerPanel,
         showSpeedPanel,
+        showResizePanel,
         showNextEpisodePrompt,
         showRateTitlePrompt,
         restoreControlFocusTarget,
@@ -407,7 +425,7 @@ internal fun ExoPlayerView(
         } else if (showRateTitlePrompt) {
             withFrameNanos { }
             try { rateTitleFocusRequester.requestFocus() } catch (_: Exception) {}
-        } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel) {
+        } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel) {
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
                 requestControlFocus(target).also { restored ->
                     if (restored) onControlFocusRestored()
@@ -457,6 +475,15 @@ internal fun ExoPlayerView(
             }
         }
     }
+    LaunchedEffect(showResizePanel) {
+        if (showResizePanel) {
+            withFrameNanos { }
+            try {
+                selectedResizeFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
+    }
     LaunchedEffect(activeSkipKey, autoSkipOpeningsEndings) {
         val skip = activeSkip ?: return@LaunchedEffect
         if (autoSkipOpeningsEndings) {
@@ -479,6 +506,7 @@ internal fun ExoPlayerView(
             showDubbingPanel ||
             showBalancerPanel ||
             showSpeedPanel ||
+                showResizePanel ||
             showNextEpisodePrompt ||
             showRateTitlePrompt,
     ) {
@@ -490,10 +518,14 @@ internal fun ExoPlayerView(
                 showDubbingPanel -> PanelReturnFocusTarget.Dubbing
                 showBalancerPanel -> PanelReturnFocusTarget.Balancer
                 showSpeedPanel -> PanelReturnFocusTarget.Speed
+                showResizePanel -> PanelReturnFocusTarget.Resize
                 else -> null
             }
         )
     }
+
+    val resizeModes = PlayerResizeMode.entries.toList()
+    val zoomLevels = PlayerZoomLevel.entries.toList()
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -502,9 +534,13 @@ internal fun ExoPlayerView(
                     useController = false
                     keepScreenOn = true
                     setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                    applyTvResizeMode(resizeMode, zoomLevel)
                 }.also { it.post { it.requestFocus() } }
             },
-            update = { pv -> if (pv.player !== exoPlayer) pv.player = exoPlayer },
+            update = { pv ->
+                if (pv.player !== exoPlayer) pv.player = exoPlayer
+                pv.applyTvResizeMode(resizeMode, zoomLevel)
+            },
             modifier = Modifier.fillMaxSize(),
         )
 
@@ -635,6 +671,7 @@ internal fun ExoPlayerView(
                             showDubbingPanel = false
                             showBalancerPanel = false
                             showSpeedPanel = false
+                            showResizePanel = false
                             if (!showQualityPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Quality
                             if (showQualityPanel) hideJob?.cancel() else onInteraction()
                         },
@@ -643,6 +680,7 @@ internal fun ExoPlayerView(
                             showQualityPanel = false
                             showBalancerPanel = false
                             showSpeedPanel = false
+                            showResizePanel = false
                             if (!showDubbingPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Dubbing
                             if (showDubbingPanel) hideJob?.cancel() else onInteraction()
                         },
@@ -651,8 +689,20 @@ internal fun ExoPlayerView(
                             showDubbingPanel = false
                             showQualityPanel = false
                             showSpeedPanel = false
+                            showResizePanel = false
                             if (!showBalancerPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Balancer
                             if (showBalancerPanel) hideJob?.cancel() else onInteraction()
+                        },
+                        resizeFocusRequester = resizeButtonFocusRequester,
+                        onToggleResize = {
+                            showResizePanel = !showResizePanel
+                            showBalancerPanel = false
+                            showDubbingPanel = false
+                            showQualityPanel = false
+                            showSpeedPanel = false
+                            if (!showResizePanel) pendingPanelReturnFocusTarget =
+                                PanelReturnFocusTarget.Resize
+                            if (showResizePanel) hideJob?.cancel() else onInteraction()
                         },
                         currentSpeedLabel = selectedSpeed.speedLabel(),
                         onToggleSpeed = {
@@ -660,6 +710,7 @@ internal fun ExoPlayerView(
                             showBalancerPanel = false
                             showDubbingPanel = false
                             showQualityPanel = false
+                            showResizePanel = false
                             if (!showSpeedPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Speed
                             if (showSpeedPanel) hideJob?.cancel() else onInteraction()
                         },
@@ -687,6 +738,7 @@ internal fun ExoPlayerView(
                 closePanels(PanelReturnFocusTarget.Quality)
                 onInteraction()
             },
+            onExitDown = { exitPanelDown(PanelReturnFocusTarget.Quality) },
         )
 
         PlayerSelectionPanel(
@@ -713,6 +765,7 @@ internal fun ExoPlayerView(
                 closePanels(PanelReturnFocusTarget.Dubbing)
                 onInteraction()
             },
+            onExitDown = { exitPanelDown(PanelReturnFocusTarget.Dubbing) },
         )
 
         PlayerSelectionPanel(
@@ -730,6 +783,30 @@ internal fun ExoPlayerView(
                 closePanels(PanelReturnFocusTarget.Speed)
                 onInteraction()
             },
+            onExitDown = { exitPanelDown(PanelReturnFocusTarget.Speed) },
+        )
+
+        PlayerResizeSettingsPanel(
+            visible = showResizePanel,
+            resizeModes = resizeModes,
+            selectedResizeMode = resizeMode,
+            zoomLevels = zoomLevels,
+            selectedZoomLevel = zoomLevel,
+            selectedResizeFocusRequester = selectedResizeFocusRequester,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
+            onResizeModeSelected = { mode ->
+                if (mode != resizeMode) onResizeModeSelected(mode)
+                onInteraction()
+            },
+            onZoomLevelSelected = { level ->
+                if (level != zoomLevel || resizeMode != PlayerResizeMode.ZOOM) onZoomLevelSelected(
+                    level
+                )
+                onInteraction()
+            },
+            onExitDown = { exitPanelDown(PanelReturnFocusTarget.Resize) },
         )
 
         PlayerSelectionPanel(
@@ -747,6 +824,7 @@ internal fun ExoPlayerView(
                 closePanels(PanelReturnFocusTarget.Balancer)
                 onInteraction()
             },
+            onExitDown = { exitPanelDown(PanelReturnFocusTarget.Balancer) },
         )
 
         AnimatedVisibility(
@@ -859,6 +937,7 @@ private fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlFo
         PanelReturnFocusTarget.Quality -> PlayerControlFocusTarget.Quality
         PanelReturnFocusTarget.Dubbing -> PlayerControlFocusTarget.Dubbing
         PanelReturnFocusTarget.Balancer -> PlayerControlFocusTarget.Balancer
+        PanelReturnFocusTarget.Resize -> PlayerControlFocusTarget.Resize
         PanelReturnFocusTarget.Speed -> PlayerControlFocusTarget.Speed
     }
 

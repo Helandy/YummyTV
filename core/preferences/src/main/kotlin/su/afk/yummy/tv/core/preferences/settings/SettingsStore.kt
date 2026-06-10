@@ -29,6 +29,8 @@ class SettingsStore(private val context: Context) {
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
+    private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
     private val appThemeKey = stringPreferencesKey("app_theme")
     private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
@@ -78,6 +80,18 @@ class SettingsStore(private val context: Context) {
 
     val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[autoSkipOpeningsEndingsKey] ?: false
+    }
+
+    val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
+        prefs[playerResizeModeKey]?.let { name ->
+            runCatching { PlayerResizeMode.valueOf(name) }.getOrNull()
+        } ?: PlayerResizeMode.FIT
+    }
+
+    val playerZoomLevel: Flow<PlayerZoomLevel> = context.dataStore.data.map { prefs ->
+        prefs[playerZoomLevelKey]?.let { name ->
+            runCatching { PlayerZoomLevel.valueOf(name) }.getOrNull()
+        } ?: PlayerZoomLevel.PERCENT_10
     }
 
     val appTheme: Flow<AppTheme> = context.dataStore.data.map { prefs ->
@@ -149,6 +163,14 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
+    }
+
+    suspend fun setPlayerResizeMode(mode: PlayerResizeMode) {
+        context.dataStore.edit { prefs -> prefs[playerResizeModeKey] = mode.name }
+    }
+
+    suspend fun setPlayerZoomLevel(level: PlayerZoomLevel) {
+        context.dataStore.edit { prefs -> prefs[playerZoomLevelKey] = level.name }
     }
 
     suspend fun setAppTheme(theme: AppTheme) {
