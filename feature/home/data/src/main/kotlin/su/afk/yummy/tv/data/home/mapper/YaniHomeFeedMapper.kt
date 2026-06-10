@@ -16,8 +16,12 @@ import su.afk.yummy.tv.domain.home.model.HomePoster
 internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
     val heroItems = response.topCarousel.items.mapNotNull { it.toSeriesItem() }
     val newSection = response.newVideos.toNewVideosSection(stringProvider.get(R.string.home_section_new), stringProvider)
+    val recommendsSection = response.recommends
+        .mapNotNull { it.toSeriesItem() }
+        .toItemSection(stringProvider.get(R.string.home_section_recommends))
     val sections = listOfNotNull(
         newSection,
+        recommendsSection,
         response.collections.mapNotNull { it.toCollectionItem() }.toItemSection(stringProvider.get(R.string.home_section_collections)),
     )
 

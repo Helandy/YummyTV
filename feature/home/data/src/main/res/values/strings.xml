@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home_section_new">New releases</string>
+    <string name="home_section_recommends">Recommendations</string>
     <string name="home_section_collections">Collections</string>
     <string name="home_episode_number">Episode %1$s</string>
 </resources>

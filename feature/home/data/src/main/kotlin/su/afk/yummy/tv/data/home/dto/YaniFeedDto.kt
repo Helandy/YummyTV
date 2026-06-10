@@ -13,6 +13,7 @@ data class YaniFeedResponseDto(
     val announcements: List<YaniAnimeDto> = emptyList(),
     @SerialName("top_carousel") val topCarousel: YaniCarouselDto = YaniCarouselDto(),
     val new: List<YaniAnimeDto> = emptyList(),
+    val recommends: List<YaniAnimeDto> = emptyList(),
     @SerialName("new_videos") val newVideos: List<YaniVideoDto> = emptyList(),
     val schedule: List<YaniAnimeDto> = emptyList(),
     val posts: YaniPostsDto = YaniPostsDto(),
