@@ -345,6 +345,7 @@ internal fun HomeDashboard(
                         animePreviews = animePreviews,
                         rowFocusRequester = heroFocusRequester,
                         rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
+                        restoreFocusedPageOnEnter = restoreFocusedItemOnEnter && focusedSectionId == SECTION_HERO,
                         upFocusRequester = previousRowFocusRequester(heroLazyIdx),
                         downFocusRequester = nextRowFocusRequester(heroLazyIdx),
                         onCarouselFocused = {

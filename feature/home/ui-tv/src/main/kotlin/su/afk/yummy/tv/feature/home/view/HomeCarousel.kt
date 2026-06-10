@@ -80,6 +80,7 @@ internal fun HomeCarousel(
     modifier: Modifier = Modifier,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
+    restoreFocusedPageOnEnter: Boolean = false,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onCarouselFocused: () -> Unit = {},
@@ -307,7 +308,11 @@ internal fun HomeCarousel(
                     onCarouselFocused()
                     isRestoringFocus = true
                     scope.launch {
-                        val target = focusedPageIndex().coerceIn(0, items.lastIndex)
+                        val target = if (restoreFocusedPageOnEnter) {
+                            focusedPageIndex()
+                        } else {
+                            pagerState.currentPage
+                        }.coerceIn(0, items.lastIndex)
                         requestPageFocus(target)
                         isRestoringFocus = false
                     }
