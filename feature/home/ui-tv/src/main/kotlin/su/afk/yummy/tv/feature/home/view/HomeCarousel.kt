@@ -152,6 +152,7 @@ internal fun HomeCarousel(
     val pagerState = rememberPagerState { items.size }
     val scope = rememberCoroutineScope()
     var isCarouselFocused by remember { mutableStateOf(false) }
+    var pageHasFocus by remember { mutableStateOf(false) }
     var showCarouselFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     val pageRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
@@ -243,11 +244,11 @@ internal fun HomeCarousel(
         }
     }
 
-    LaunchedEffect(isCarouselFocused) {
-        if (isCarouselFocused) return@LaunchedEffect
+    LaunchedEffect(isCarouselFocused, pageHasFocus, rowIsFocused) {
+        if (isCarouselFocused || pageHasFocus || rowIsFocused) return@LaunchedEffect
         while (true) {
             delay(5_000L)
-            if (!pagerState.isScrollInProgress) {
+            if (!pagerState.isScrollInProgress && !pageHasFocus && !rowIsFocused) {
                 val next = (pagerState.currentPage + 1) % items.size
                 pagerState.animateScrollToPage(next)
             }
@@ -349,9 +350,17 @@ internal fun HomeCarousel(
                 onMoveLeft = ::moveToPreviousPage,
                 onMoveRight = ::moveToNextPage,
                 onFocused = {
+                    pageHasFocus = true
+                    showCarouselFocus = true
                     onCarouselFocused()
                     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
                     onItemFocused(sectionKey, item.id, animeId)
+                },
+                onFocusChanged = { focused ->
+                    pageHasFocus = focused
+                    if (focused) {
+                        showCarouselFocus = true
+                    }
                 },
             )
         }
@@ -382,6 +391,7 @@ private fun HeroBannerPage(
     onMoveLeft: () -> Unit,
     onMoveRight: () -> Unit,
     onFocused: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val posterQuality = LocalPosterQuality.current
@@ -434,6 +444,7 @@ private fun HeroBannerPage(
             .onFocusChanged {
                 val focused = it.isFocused || it.hasFocus
                 if (focused && !isFocused) onFocused()
+                if (focused != isFocused) onFocusChanged(focused)
                 isFocused = focused
             }
             .focusable(interactionSource = interactionSource)
