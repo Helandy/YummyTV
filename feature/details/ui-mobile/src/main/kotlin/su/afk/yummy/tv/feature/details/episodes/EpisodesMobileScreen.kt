@@ -2,11 +2,13 @@ package su.afk.yummy.tv.feature.details.episodes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +50,7 @@ fun EpisodesMobileScreen(
             empty = state.videosState is VideosUiState.Empty,
         ) {
             LazyColumn(
+                modifier = Modifier.navigationBarsPadding(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 12.dp,

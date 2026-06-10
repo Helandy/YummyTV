@@ -1,9 +1,11 @@
 package su.afk.yummy.tv.feature.details.collections
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +38,10 @@ fun CollectionsMobileScreen(
             onRetry = { onEvent(CollectionsState.Event.RetrySelected) },
             empty = state.collections.isEmpty() && !state.isLoading,
         ) {
-            MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
+            MobilePosterGrid(
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.navigationBarsPadding(),
+            ) {
                 items(state.collections, key = { it.id }) { item ->
                     MobilePosterCard(
                         title = item.title,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
@@ -41,7 +42,10 @@ fun SimilarMobileScreen(
             )
         },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues(bottom = 8.dp)) {
+        MobilePosterGrid(
+            contentPadding = PaddingValues(bottom = 8.dp),
+            modifier = Modifier.navigationBarsPadding(),
+        ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

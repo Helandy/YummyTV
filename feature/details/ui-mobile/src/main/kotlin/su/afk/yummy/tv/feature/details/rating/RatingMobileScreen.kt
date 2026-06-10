@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.rating
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +44,7 @@ fun RatingMobileScreen(
             onRetry = { onEvent(RatingState.Event.RetrySelected) },
         ) {
             LazyColumn(
+                modifier = Modifier.navigationBarsPadding(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 16.dp,
