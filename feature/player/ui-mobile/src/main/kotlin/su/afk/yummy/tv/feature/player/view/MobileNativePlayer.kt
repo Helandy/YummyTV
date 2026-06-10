@@ -2,15 +2,15 @@ package su.afk.yummy.tv.feature.player.view
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,8 +18,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -40,15 +44,25 @@ import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
+import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
+import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
+import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS
+import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_RESET_MS
+import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
+import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
+import su.afk.yummy.tv.feature.player.utils.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.utils.mediaItemFor
 import su.afk.yummy.tv.feature.player.utils.segments
+import su.afk.yummy.tv.feature.player.utils.toastIcon
 
 @OptIn(UnstableApi::class)
 @Composable
 internal fun MobileNativePlayer(
     state: PlayerState.State,
     streamUrl: String,
+    videoTransform: MobileVideoTransform,
+    onVideoTransformChanged: (MobileVideoTransform) -> Unit,
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     val context = LocalContext.current
@@ -70,10 +84,18 @@ internal fun MobileNativePlayer(
     var resumeAfterLifecyclePause by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
+    var playerSize by remember { mutableStateOf(IntSize.Zero) }
+    var lastStepSeekTime by remember(streamUrl) { mutableLongStateOf(0L) }
+    var stepSeekCount by remember(streamUrl) { mutableStateOf(0) }
+    var stepSeekTotalOffset by remember(streamUrl) { mutableLongStateOf(0L) }
+    var lastStepSeekDirection by remember(streamUrl) { mutableStateOf<MobileSeekDirection?>(null) }
+    var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
+    var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
     val currentUrl = qualities[selectedQuality] ?: streamUrl
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
+    var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
 
     DisposableEffect(Unit) {
         MobilePlayerPipController.setPlayerActive(true)
@@ -102,6 +124,18 @@ internal fun MobileNativePlayer(
         } else {
             showOverlay()
         }
+    }
+
+    fun applyVideoTransform(centroid: Offset, pan: Offset, zoomChange: Float) {
+        val transform = calculateMobileVideoTransform(
+            currentScale = videoTransform.scale,
+            currentOffset = videoTransform.offset,
+            playerSize = playerSize,
+            centroid = centroid,
+            pan = pan,
+            zoomChange = zoomChange,
+        )
+        onVideoTransformChanged(transform)
     }
 
     val exoPlayer = remember(currentUrl, state.streamHeaders) {
@@ -145,6 +179,49 @@ internal fun MobileNativePlayer(
         lastSaveTime = System.currentTimeMillis()
     }
 
+    fun seekToPosition(positionMs: Long) {
+        val playerDuration = exoPlayer.duration.takeIf { it > 0 } ?: duration
+        val clamped = if (playerDuration > 0) {
+            positionMs.coerceIn(0L, playerDuration)
+        } else {
+            positionMs.coerceAtLeast(0L)
+        }
+        exoPlayer.seekTo(clamped)
+        onEvent(
+            PlayerState.Event.PlaybackPositionChanged(
+                clamped,
+                playerDuration.coerceAtLeast(0L)
+            )
+        )
+        saveProgress(clamped, playerDuration)
+    }
+
+    fun stepSeek(direction: MobileSeekDirection) {
+        val now = System.currentTimeMillis()
+        if (
+            now - lastStepSeekTime > MOBILE_PLAYER_STEP_SEEK_RESET_MS ||
+            lastStepSeekDirection != direction
+        ) {
+            stepSeekCount = 0
+            stepSeekTotalOffset = 0L
+        }
+
+        stepSeekCount = (stepSeekCount + 1).coerceAtMost(MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS.size)
+        lastStepSeekTime = now
+        lastStepSeekDirection = direction
+
+        val offset = MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS[stepSeekCount - 1] * direction.sign
+        stepSeekTotalOffset += offset
+        seekToPosition(exoPlayer.currentPosition + offset)
+        stepSeekToastText = stepSeekTotalOffset.formatSignedSeconds()
+        stepSeekToastIcon = direction.toastIcon
+        stepSeekToastJob?.cancel()
+        stepSeekToastJob = coroutineScope.launch {
+            delay(MOBILE_PLAYER_SEEK_TOAST_DURATION_MS)
+            stepSeekToastText = null
+        }
+    }
+
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -169,6 +246,7 @@ internal fun MobileNativePlayer(
         if (wantsPlay) scheduleOverlayHide()
         onDispose {
             hideJob?.cancel()
+            stepSeekToastJob?.cancel()
             MobilePlayerPipController.setPlaying(false, activity)
             MobilePlayerPipController.setPlayPauseAction(null)
             val position = exoPlayer.currentPosition.coerceAtLeast(0)
@@ -208,7 +286,9 @@ internal fun MobileNativePlayer(
         if (isInPictureInPictureMode) {
             overlayVisible = false
             settingsMode = null
+            stepSeekToastText = null
             hideJob?.cancel()
+            stepSeekToastJob?.cancel()
         }
     }
 
@@ -260,7 +340,8 @@ internal fun MobileNativePlayer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
+            .onSizeChanged { playerSize = it },
     ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -269,23 +350,25 @@ internal fun MobileNativePlayer(
                     player = exoPlayer
                     useController = false
                     keepScreenOn = true
+                    clipChildren = true
+                    clipToPadding = true
                     setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                     setShowNextButton(false)
                     setShowPreviousButton(false)
+                    applyMobileVideoTransform(videoTransform.scale, videoTransform.offset)
                 }
             },
-            update = { it.player = exoPlayer },
+            update = {
+                it.player = exoPlayer
+                it.applyMobileVideoTransform(videoTransform.scale, videoTransform.offset)
+            },
         )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    enabled = !isInPictureInPictureMode,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { toggleOverlay() },
-                ),
+        MobilePlayerGestureLayer(
+            enabled = !isInPictureInPictureMode,
+            onTap = { toggleOverlay() },
+            onDoubleTap = ::stepSeek,
+            onTransform = ::applyVideoTransform,
         )
 
         MobilePlayerTopBar(
@@ -340,6 +423,14 @@ internal fun MobileNativePlayer(
                 overlayVisible = true
                 hideJob?.cancel()
             },
+        )
+
+        MobilePlayerSeekToast(
+            text = stepSeekToastText.takeUnless { isInPictureInPictureMode },
+            icon = stepSeekToastIcon,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = if (overlayVisible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
         val activeSettingsMode = settingsMode
