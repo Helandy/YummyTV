@@ -7,6 +7,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
@@ -80,6 +81,24 @@ internal fun DetailsButtonAction.label(): String = stringResource(
         DetailsButtonAction.RATING -> R.string.settings_details_button_rating
         DetailsButtonAction.COLLECTIONS -> R.string.settings_details_button_collections
         DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
+    },
+)
+
+@Composable
+internal fun PosterCardSize.label(): String = stringResource(
+    when (this) {
+        PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact
+        PosterCardSize.STANDARD -> R.string.settings_poster_card_size_standard
+        PosterCardSize.LARGE -> R.string.settings_poster_card_size_large
+    },
+)
+
+@Composable
+internal fun PosterCardSize.hint(): String = stringResource(
+    when (this) {
+        PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact_hint
+        PosterCardSize.STANDARD -> R.string.settings_poster_card_size_standard_hint
+        PosterCardSize.LARGE -> R.string.settings_poster_card_size_large_hint
     },
 )
 

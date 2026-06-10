@@ -24,12 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentMobilePosterWidth
 
 @Composable
 fun MobilePosterCard(
     title: String,
     posterUrl: String?,
-    modifier: Modifier = Modifier.width(140.dp),
+    modifier: Modifier = Modifier.width(currentMobilePosterWidth()),
     subtitle: String? = null,
     badge: String? = null,
     rating: Double? = null,

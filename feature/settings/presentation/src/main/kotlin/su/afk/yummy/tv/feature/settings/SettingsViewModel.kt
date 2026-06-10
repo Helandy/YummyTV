@@ -31,6 +31,9 @@ class SettingsViewModel @Inject constructor(
         settingsStore.posterQuality
             .onEach { setState { copy(posterQuality = it) } }
             .launchIn(viewModelScope)
+        settingsStore.posterCardSize
+            .onEach { setState { copy(posterCardSize = it) } }
+            .launchIn(viewModelScope)
         settingsStore.showScreenshotsOnFocus
             .onEach { setState { copy(showScreenshotsOnFocus = it) } }
             .launchIn(viewModelScope)
@@ -64,6 +67,9 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsState.Event.PosterQualitySelected -> viewModelScope.launch {
                 settingsStore.setPosterQuality(event.quality)
+            }
+            is SettingsState.Event.PosterCardSizeSelected -> viewModelScope.launch {
+                settingsStore.setPosterCardSize(event.size)
             }
             SettingsState.Event.ShowScreenshotsOnFocusToggled -> viewModelScope.launch {
                 settingsStore.setShowScreenshotsOnFocus(!currentState.showScreenshotsOnFocus)

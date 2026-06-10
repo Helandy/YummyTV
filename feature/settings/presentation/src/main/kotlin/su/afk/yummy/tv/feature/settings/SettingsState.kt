@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
@@ -19,6 +20,7 @@ class SettingsState {
     data class State(
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
+        val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val showScreenshotsOnFocus: Boolean = false,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val isPreviewChannelBrowsable: Boolean = false,
@@ -32,6 +34,7 @@ class SettingsState {
     sealed interface Event : UiEvent {
         data class AppThemeSelected(val theme: AppTheme) : Event
         data class PosterQualitySelected(val quality: PosterQuality) : Event
+        data class PosterCardSizeSelected(val size: PosterCardSize) : Event
         data object ShowScreenshotsOnFocusToggled : Event
         data class PreferredPlayerSelected(val player: PreferredPlayer) : Event
         data object RequestPreviewChannelBrowsable : Event

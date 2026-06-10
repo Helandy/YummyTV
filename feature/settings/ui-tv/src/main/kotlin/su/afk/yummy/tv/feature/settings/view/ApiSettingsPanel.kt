@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -23,6 +24,7 @@ import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
 internal fun ApiSettingsPanel(
     token: String,
     upFocusRequester: FocusRequester,
+    contentFocusRequester: FocusRequester,
     onTokenChanged: (String) -> Unit,
 ) {
     Column(
@@ -46,6 +48,7 @@ internal fun ApiSettingsPanel(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             modifier = Modifier
                 .fillMaxWidth()
+                .focusRequester(contentFocusRequester)
                 .restoreTabFocusOnUp(upFocusRequester),
         )
         Text(

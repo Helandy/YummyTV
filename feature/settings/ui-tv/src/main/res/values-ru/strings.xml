@@ -11,6 +11,7 @@
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">О приложении</string>
     <string name="settings_poster_size_title">Размер постеров на экране</string>
+    <string name="settings_poster_quality_title">Качество изображений постеров</string>
     <string name="settings_poster_cache_size_title">Размер кэша постеров на устройстве</string>
     <string name="settings_show_screenshots_label">Скрины при фокусе</string>
     <string name="settings_show_screenshots_hint">Показывать скриншоты тайтла при выборе карточки</string>
@@ -48,6 +49,12 @@
     <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
     <string name="settings_theme_graphite">Графит</string>
     <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
+    <string name="settings_poster_card_size_compact">Компактный</string>
+    <string name="settings_poster_card_size_compact_hint">Больше карточек в строке</string>
+    <string name="settings_poster_card_size_standard">Стандартный</string>
+    <string name="settings_poster_card_size_standard_hint">Текущий размер по умолчанию</string>
+    <string name="settings_poster_card_size_large">Крупный</string>
+    <string name="settings_poster_card_size_large_hint">Крупнее карточки постеров</string>
     <string name="settings_poster_quality_low">Низкое</string>
     <string name="settings_poster_quality_low_hint">~15 КБ · WebP</string>
     <string name="settings_poster_quality_standard">Стандартное</string>

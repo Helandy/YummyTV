@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
@@ -127,6 +128,7 @@ private fun CollectionGrid(
     val gridHasFocus = remember { mutableStateOf(false) }
     val isRestoringFocus = remember { mutableStateOf(false) }
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val cardWidth = currentTvTitleCardDimensions().width
     // сбрасывается при смене коллекции — при первом входе фокус на заголовке
     var firstEntry by rememberSaveable(collection.id) { mutableStateOf(true) }
     var lastFocusedIndex by rememberSaveable(collection.id) {
@@ -161,11 +163,11 @@ private fun CollectionGrid(
         val horizontalSpacing = 16.dp
         val gridColumnCount =
             (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                    (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+                    (cardWidth.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
 
         LazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Adaptive(minSize = 172.dp),
+            columns = GridCells.Adaptive(minSize = cardWidth),
             modifier = Modifier
                 .fillMaxSize()
                 .onFocusChanged { state ->

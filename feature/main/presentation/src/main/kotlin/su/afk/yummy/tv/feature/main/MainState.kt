@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 
 object MainState {
@@ -12,6 +13,7 @@ object MainState {
     data class State(
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
+        val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val showScreenshotsOnFocus: Boolean = false,
         val yaniNickname: String = "",
         val yaniAvatarUrl: String = "",

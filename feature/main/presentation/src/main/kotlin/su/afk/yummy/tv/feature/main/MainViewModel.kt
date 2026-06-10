@@ -62,6 +62,9 @@ class MainViewModel @Inject constructor(
             settingsStore.posterQuality.collect { setState { copy(posterQuality = it) } }
         }
         viewModelScope.launch {
+            settingsStore.posterCardSize.collect { setState { copy(posterCardSize = it) } }
+        }
+        viewModelScope.launch {
             settingsStore.showScreenshotsOnFocus.collect { setState { copy(showScreenshotsOnFocus = it) } }
         }
         viewModelScope.launch {

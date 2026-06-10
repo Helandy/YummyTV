@@ -72,6 +72,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -143,6 +144,7 @@ internal fun SearchResultsPane(
     val filterButtonFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val cardWidth = currentTvTitleCardDimensions().width
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
     val focusedItemIndex = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } } ?: -1
     var lastFocusedIndex by rememberSaveable {
@@ -347,11 +349,11 @@ internal fun SearchResultsPane(
                         val horizontalSpacing = 16.dp
                         val gridColumnCount =
                             (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
-                                    (172.dp.value + horizontalSpacing.value)).toInt()
+                                    (cardWidth.value + horizontalSpacing.value)).toInt()
                                 .coerceAtLeast(1)
                         LazyVerticalGrid(
                             state = gridState,
-                            columns = GridCells.Adaptive(minSize = 172.dp),
+                            columns = GridCells.Adaptive(minSize = cardWidth),
                             contentPadding = PaddingValues(
                                 start = TvScreenPadding.Horizontal,
                                 end = TvScreenPadding.Horizontal,

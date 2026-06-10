@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
-import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -75,6 +75,7 @@ internal fun ContinueWatchingGrid(
     val focusStateKey = remember(entryIds) { entryIds.joinToString(separator = "|") }
     val focusRequesters = remember(entryIds) { List(entries.size) { FocusRequester() } }
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val cardWidth = currentTvTitleCardDimensions().width
     var lastFocusedIndex by rememberSaveable(focusStateKey) {
         mutableIntStateOf(focusedItemId?.let(entryIds::indexOf)?.takeIf { it >= 0 } ?: 0)
     }
@@ -175,11 +176,11 @@ internal fun ContinueWatchingGrid(
         val gridHorizontalPadding = TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
         val gridColumnCount =
             (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                    (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+                    (cardWidth.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
 
         LazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Adaptive(minSize = 172.dp),
+            columns = GridCells.Adaptive(minSize = cardWidth),
             modifier = Modifier
                 .fillMaxSize()
                 .focusRequester(gridFocusRequester)
@@ -249,7 +250,7 @@ internal fun ContinueWatchingGrid(
             }
             Column(
                 modifier = Modifier
-                    .width(TvPosterCardDefaults.Width)
+                    .width(cardWidth)
                     .focusRequester(focusRequesters[index])
                     .onPreviewKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
@@ -320,7 +321,7 @@ internal fun ContinueWatchingGrid(
                         onClick = stableOnDelete,
                         modifier = Modifier
                             .padding(top = 8.dp)
-                            .width(TvPosterCardDefaults.Width)
+                            .width(cardWidth)
                             .focusProperties {
                                 if (index !in leftEdgeIndexes) {
                                     focusRequesters.getOrNull(index - 1)?.let { left = it }

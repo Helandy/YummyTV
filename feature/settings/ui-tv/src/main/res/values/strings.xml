@@ -11,6 +11,7 @@
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">About</string>
     <string name="settings_poster_size_title">Poster size on screen</string>
+    <string name="settings_poster_quality_title">Poster image quality</string>
     <string name="settings_poster_cache_size_title">Poster cache size on device</string>
     <string name="settings_show_screenshots_label">Screens on focus</string>
     <string name="settings_show_screenshots_hint">Show title screenshots when a card is selected</string>
@@ -48,6 +49,12 @@
     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
     <string name="settings_theme_graphite">Graphite</string>
     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
+    <string name="settings_poster_card_size_compact">Compact</string>
+    <string name="settings_poster_card_size_compact_hint">Fits more cards in each row</string>
+    <string name="settings_poster_card_size_standard">Standard</string>
+    <string name="settings_poster_card_size_standard_hint">Current default size</string>
+    <string name="settings_poster_card_size_large">Large</string>
+    <string name="settings_poster_card_size_large_hint">Larger poster cards</string>
     <string name="settings_poster_quality_low">Low</string>
     <string name="settings_poster_quality_low_hint">~15 KB · WebP</string>
     <string name="settings_poster_quality_standard">Standard</string>

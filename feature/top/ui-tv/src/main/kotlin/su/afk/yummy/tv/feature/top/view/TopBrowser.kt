@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -77,6 +78,7 @@ internal fun TopBrowser(
     val gridFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val cardWidth = currentTvTitleCardDimensions().width
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
     var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
@@ -259,10 +261,11 @@ internal fun TopBrowser(
                         TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
                     val gridColumnCount =
                         (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                                (172.dp.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
+                                (cardWidth.value + horizontalSpacing.value)).toInt()
+                            .coerceAtLeast(1)
 
                     LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 172.dp),
+                        columns = GridCells.Adaptive(minSize = cardWidth),
                         state = gridState,
                         modifier = Modifier
                             .fillMaxSize()

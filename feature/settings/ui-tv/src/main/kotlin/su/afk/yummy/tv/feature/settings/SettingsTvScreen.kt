@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -43,6 +41,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
@@ -64,8 +63,9 @@ fun SettingsTvScreen(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     var selectedTab by remember { mutableStateOf(SettingsTab.THEME) }
-    var contentAnchorTab by remember { mutableStateOf(SettingsTab.THEME) }
-    val contentFocusRequester = remember { FocusRequester() }
+    val contentFocusRequesters = remember {
+        SettingsTab.entries.associateWith { FocusRequester() }
+    }
     val tabFocusRequesters = remember {
         SettingsTab.entries.associateWith { FocusRequester() }
     }
@@ -93,23 +93,22 @@ fun SettingsTvScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SettingsTab.entries.forEachIndexed { index, tab ->
+                val tabContentFocusRequester = contentFocusRequesters.getValue(tab)
                 SettingsTabItem(
                     label = stringResource(tab.labelRes),
                     selected = tab == selectedTab,
                     modifier = Modifier.focusRequester(tabFocusRequesters.getValue(tab)),
-                    contentFocusRequester = contentFocusRequester,
+                    contentFocusRequester = tabContentFocusRequester,
                     leftFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index - 1)]
                         ?: mainMenuFocusRequester.takeIf { index == 0 },
                     rightFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index + 1)]
-                        ?: contentFocusRequester,
+                        ?: tabContentFocusRequester,
                     onSelected = {
                         selectedTab = tab
-                        contentAnchorTab = tab
                     },
                     onActivated = {
                         selectedTab = tab
-                        contentAnchorTab = tab
-                        runCatching { contentFocusRequester.requestFocus() }
+                        runCatching { tabContentFocusRequester.requestFocus() }
                     },
                 )
             }
@@ -121,11 +120,6 @@ fun SettingsTvScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .focusRequester(contentFocusRequester)
-                .focusable()
-                .focusProperties {
-                    up = tabFocusRequesters.getValue(contentAnchorTab)
-                }
                 .focusGroup(),
             contentAlignment = Alignment.TopCenter,
         ) {
@@ -136,6 +130,7 @@ fun SettingsTvScreen(
                 modifier = Modifier.widthIn(max = 720.dp),
             ) { tab ->
                 val tabFocusRequester = tabFocusRequesters.getValue(tab)
+                val tabContentFocusRequester = contentFocusRequesters.getValue(tab)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -150,7 +145,15 @@ fun SettingsTvScreen(
                                 hint = theme.hint(),
                                 selected = theme == state.appTheme,
                                 onClick = { onEvent(SettingsState.Event.AppThemeSelected(theme)) },
-                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                modifier = Modifier
+                                    .then(
+                                        if (index == 0) {
+                                            Modifier.focusRequester(tabContentFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
                             if (index < AppTheme.entries.lastIndex) {
                                 HorizontalDivider(
@@ -168,13 +171,46 @@ fun SettingsTvScreen(
                                 color = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                             )
+                            PosterCardSize.entries.forEachIndexed { index, size ->
+                                QualityRow(
+                                    label = size.label(),
+                                    hint = size.hint(),
+                                    selected = size == state.posterCardSize,
+                                    onClick = {
+                                        onEvent(
+                                            SettingsState.Event.PosterCardSizeSelected(
+                                                size
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .then(
+                                            if (index == 0) {
+                                                Modifier.focusRequester(tabContentFocusRequester)
+                                            } else {
+                                                Modifier
+                                            },
+                                        )
+                                        .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                )
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.settings_poster_quality_title),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                            )
                             PosterQuality.entries.forEachIndexed { index, quality ->
                                 QualityRow(
                                     label = quality.label(),
                                     hint = quality.hint(),
                                     selected = quality == state.posterQuality,
                                     onClick = { onEvent(SettingsState.Event.PosterQualitySelected(quality)) },
-                                    modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
                                 )
                                 if (index < PosterQuality.entries.lastIndex) {
                                     HorizontalDivider(
@@ -198,6 +234,7 @@ fun SettingsTvScreen(
                         SettingsTab.DETAILS -> DetailsButtonOrderPanel(
                             order = state.detailsButtonOrder,
                             upFocusRequester = tabFocusRequester,
+                            contentFocusRequester = tabContentFocusRequester,
                             onMoveUp = {
                                 onEvent(
                                     SettingsState.Event.DetailsButtonMoved(
@@ -227,7 +264,9 @@ fun SettingsTvScreen(
                                 },
                                 enabled = state.autoSkipOpeningsEndings,
                                 onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
-                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
+                                modifier = Modifier
+                                    .focusRequester(tabContentFocusRequester)
+                                    .restoreTabFocusOnUp(tabFocusRequester),
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -263,7 +302,15 @@ fun SettingsTvScreen(
                                     hint = size.hint(),
                                     selected = size == state.previewCacheSize,
                                     onClick = { onEvent(SettingsState.Event.PreviewCacheSizeSelected(size)) },
-                                    modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    modifier = Modifier
+                                        .then(
+                                            if (index == 0) {
+                                                Modifier.focusRequester(tabContentFocusRequester)
+                                            } else {
+                                                Modifier
+                                            },
+                                        )
+                                        .restoreTabFocusOnUp(tabFocusRequester, index == 0),
                                 )
                                 if (index < PreviewCacheSize.entries.lastIndex) {
                                     HorizontalDivider(
@@ -277,6 +324,7 @@ fun SettingsTvScreen(
                         SettingsTab.API -> ApiSettingsPanel(
                             token = state.yaniApplicationToken,
                             upFocusRequester = tabFocusRequester,
+                            contentFocusRequester = tabContentFocusRequester,
                             onTokenChanged = { onEvent(SettingsState.Event.YaniApplicationTokenChanged(it)) },
                         )
 
@@ -292,7 +340,9 @@ fun SettingsTvScreen(
                                 onClick = {
                                     if (!state.isPreviewChannelBrowsable) onEvent(SettingsState.Event.RequestPreviewChannelBrowsable)
                                 },
-                                modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
+                                modifier = Modifier
+                                    .focusRequester(tabContentFocusRequester)
+                                    .restoreTabFocusOnUp(tabFocusRequester),
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 8.dp),
@@ -326,6 +376,9 @@ fun SettingsTvScreen(
                             AboutRow(
                                 label = stringResource(R.string.settings_feedback_label),
                                 hint = repositoryUrl,
+                                modifier = Modifier
+                                    .focusRequester(tabContentFocusRequester)
+                                    .restoreTabFocusOnUp(tabFocusRequester),
                                 onClick = { uriHandler.openUri(repositoryUrl) },
                             )
                         }

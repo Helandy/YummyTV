@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
@@ -65,6 +66,7 @@ class TvMainGraph @Inject constructor(
             YummyTvTheme(appTheme = state.appTheme) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
+                    LocalPosterCardSize provides state.posterCardSize,
                     LocalShowScreenshotsOnFocus provides state.showScreenshotsOnFocus,
                 ) {
                     TvMainScaffold(

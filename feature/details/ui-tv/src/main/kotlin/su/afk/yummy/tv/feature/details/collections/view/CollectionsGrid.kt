@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.feature.details.R
@@ -25,8 +26,9 @@ internal fun CollectionsGrid(
     onCollectionSelected: (Int) -> Unit,
 ) {
     val posterQuality = LocalPosterQuality.current
+    val cardWidth = currentTvTitleCardDimensions().width
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 172.dp),
+        columns = GridCells.Adaptive(minSize = cardWidth),
         contentPadding = PaddingValues(
             start = TvScreenPadding.Horizontal,
             end = TvScreenPadding.Horizontal,

@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
@@ -66,6 +67,12 @@ fun SettingsMobileScreen(
                         value = state.appTheme.label(),
                         hint = state.appTheme.hint(),
                         onClick = { activePicker = SettingsMobilePicker.THEME },
+                    )
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_mobile_poster_size),
+                        value = state.posterCardSize.label(),
+                        hint = state.posterCardSize.hint(),
+                        onClick = { activePicker = SettingsMobilePicker.POSTER_SIZE },
                     )
                     SettingsMobileOptionRow(
                         label = stringResource(R.string.settings_mobile_poster_quality),
@@ -186,6 +193,23 @@ fun SettingsMobileScreen(
             onDismiss = { activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.PosterQualitySelected(it))
+                activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.POSTER_SIZE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_mobile_poster_size),
+            selectedValue = state.posterCardSize,
+            options = PosterCardSize.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    it.hint()
+                )
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.PosterCardSizeSelected(it))
                 activePicker = null
             },
         )

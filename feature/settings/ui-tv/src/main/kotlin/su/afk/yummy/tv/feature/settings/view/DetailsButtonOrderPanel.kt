@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
 internal fun DetailsButtonOrderPanel(
     order: List<DetailsButtonAction>,
     upFocusRequester: FocusRequester,
+    contentFocusRequester: FocusRequester,
     onMoveUp: (DetailsButtonAction) -> Unit,
     onMoveDown: (DetailsButtonAction) -> Unit,
     onReset: () -> Unit,
@@ -26,7 +28,9 @@ internal fun DetailsButtonOrderPanel(
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         DetailsButtonOrderResetRow(
             onReset = onReset,
-            modifier = Modifier.restoreTabFocusOnUp(upFocusRequester),
+            modifier = Modifier
+                .focusRequester(contentFocusRequester)
+                .restoreTabFocusOnUp(upFocusRequester),
         )
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 8.dp),

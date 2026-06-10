@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
-import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvPosterCardDefaults
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 
@@ -49,6 +49,7 @@ fun TvTitleCard(
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
+    val cardDimensions = currentTvTitleCardDimensions()
     val showScreenshots = LocalShowScreenshotsOnFocus.current
     var isFocused by remember { mutableStateOf(false) }
     var slideIndex by remember { mutableIntStateOf(0) }
@@ -68,7 +69,7 @@ fun TvTitleCard(
 
     Card(
         modifier = modifier
-            .width(TvPosterCardDefaults.Width)
+            .width(cardDimensions.width)
             .onFocusChanged { focusState ->
                 val focused = focusState.isFocused || focusState.hasFocus
                 if (focused && !isFocused && showScreenshots) onFocused()
@@ -84,7 +85,7 @@ fun TvTitleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(TvPosterCardDefaults.PosterHeight)
+                    .height(cardDimensions.posterHeight)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

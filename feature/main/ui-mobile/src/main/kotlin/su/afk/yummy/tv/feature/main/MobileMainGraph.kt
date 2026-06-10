@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
@@ -97,6 +98,7 @@ class MobileMainGraph @Inject constructor(
             YummyTvTheme(appTheme = state.appTheme) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
+                    LocalPosterCardSize provides state.posterCardSize,
                     LocalShowScreenshotsOnFocus provides false,
                     LocalMobileMainActions provides MobileMainActions(
                         unreadNotificationsCount = state.unreadNotificationsCount,

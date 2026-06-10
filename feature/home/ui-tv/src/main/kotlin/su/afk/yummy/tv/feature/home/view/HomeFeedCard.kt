@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
-import su.afk.yummy.tv.core.designsystem.presenter.dimensions.HomeFeedCardDefaults
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -69,6 +69,7 @@ internal fun HomeFeedCard(
     val interactionSource = remember { MutableInteractionSource() }
     val active = isFocused || forceFocused
     val showScreenshots = LocalShowScreenshotsOnFocus.current
+    val cardDimensions = currentTvHomeFeedCardDimensions()
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
 
@@ -90,7 +91,7 @@ internal fun HomeFeedCard(
 
     Card(
         modifier = modifier
-            .width(HomeFeedCardDefaults.Width)
+            .width(cardDimensions.width)
             .onFocusChanged { focusState ->
                 val focused = focusState.isFocused || focusState.hasFocus
                 if (focused && !isFocused) onFocused(item.id, animeId)
@@ -122,7 +123,7 @@ internal fun HomeFeedCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(HomeFeedCardDefaults.PosterHeight)
+                    .height(cardDimensions.posterHeight)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

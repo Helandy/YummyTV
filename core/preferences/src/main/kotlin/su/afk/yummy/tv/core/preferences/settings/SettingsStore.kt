@@ -23,6 +23,7 @@ class SettingsStore(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val posterQualityKey = stringPreferencesKey("poster_quality")
+    private val posterCardSizeKey = stringPreferencesKey("poster_card_size")
     private val showScreenshotsOnFocusKey = booleanPreferencesKey("show_screenshots_on_focus")
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
@@ -48,6 +49,12 @@ class SettingsStore(private val context: Context) {
         prefs[posterQualityKey]?.let { name ->
             runCatching { PosterQuality.valueOf(name) }.getOrNull()
         } ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD
+    }
+
+    val posterCardSize: Flow<PosterCardSize> = context.dataStore.data.map { prefs ->
+        prefs[posterCardSizeKey]?.let { name ->
+            runCatching { PosterCardSize.valueOf(name) }.getOrNull()
+        } ?: PosterCardSize.STANDARD
     }
 
     val showScreenshotsOnFocus: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -117,6 +124,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPosterQuality(quality: PosterQuality) {
         context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
+    }
+
+    suspend fun setPosterCardSize(size: PosterCardSize) {
+        context.dataStore.edit { prefs -> prefs[posterCardSizeKey] = size.name }
     }
 
     suspend fun setShowScreenshotsOnFocus(enabled: Boolean) {
