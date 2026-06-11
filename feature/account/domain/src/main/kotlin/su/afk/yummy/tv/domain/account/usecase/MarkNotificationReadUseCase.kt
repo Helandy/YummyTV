@@ -1,7 +1,15 @@
 package su.afk.yummy.tv.domain.account.usecase
 
+import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
+import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 
-class MarkNotificationReadUseCase(private val repository: ProfileNotificationsRepository) {
-    suspend operator fun invoke(id: Int) = repository.markNotificationRead(id)
+class MarkNotificationReadUseCase(
+    private val repository: ProfileNotificationsRepository,
+    private val mutationErrorNotifier: AccountMutationErrorNotifier,
+) {
+    suspend operator fun invoke(id: Int) =
+        notifyMutationFailure(mutationErrorNotifier, AccountMutationAction.MARK_NOTIFICATION_READ) {
+            repository.markNotificationRead(id)
+        }
 }

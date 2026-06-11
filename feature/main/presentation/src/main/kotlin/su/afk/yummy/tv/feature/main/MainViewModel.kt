@@ -4,16 +4,21 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
+import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
+import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
+import su.afk.yummy.tv.feature.main.presentation.R
 import su.afk.yummy.tv.feature.main.utils.NOTIFICATION_REFRESH_INTERVAL_MS
 import su.afk.yummy.tv.feature.main.utils.firstOrEmpty
 import su.afk.yummy.tv.feature.main.utils.firstOrZero
@@ -32,6 +37,8 @@ class MainViewModel @Inject constructor(
     private val updateChecker: GitHubUpdateChecker,
     private val refreshAccount: RefreshAccountUseCase,
     private val getNotificationCounts: GetNotificationCountsUseCase,
+    private val accountMutationErrorNotifier: AccountMutationErrorNotifier,
+    private val stringProvider: StringProvider,
     @param:Named("appVersionName") private val versionName: String,
 ) : BaseViewModelNew<MainState.State, MainState.Event, MainState.Effect>(savedStateHandle) {
 
@@ -50,8 +57,21 @@ class MainViewModel @Inject constructor(
 
     init {
         observeSettings()
+        observeAccountMutationErrors()
         refreshAccountIfNeeded()
         checkForUpdates()
+    }
+
+    private fun observeAccountMutationErrors() {
+        accountMutationErrorNotifier.events
+            .onEach {
+                setEffect(
+                    MainState.Effect.ShowToast(
+                        stringProvider.get(R.string.main_mutation_error_toast)
+                    )
+                )
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun observeSettings() {

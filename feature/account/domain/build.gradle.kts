@@ -11,3 +11,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+dependencies {
+    api(libs.kotlinx.coroutines.android)
+}

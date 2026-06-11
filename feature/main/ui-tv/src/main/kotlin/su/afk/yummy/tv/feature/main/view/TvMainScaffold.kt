@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import su.afk.yummy.tv.core.designsystem.presenter.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
@@ -23,6 +24,7 @@ fun TvMainScaffold(
     state: MainState.State,
     showMainMenu: Boolean = true,
     onEvent: (MainState.Event) -> Unit = {},
+    toastMessage: String? = null,
     content: @Composable () -> Unit,
 ) {
     val focusController = rememberTvMainFocusController(showMainMenu)
@@ -73,6 +75,8 @@ fun TvMainScaffold(
             ) {
                 content()
             }
+
+            GlobalToastOverlay(text = toastMessage)
 
             if (showMainMenu) {
                 TvSideMenu(

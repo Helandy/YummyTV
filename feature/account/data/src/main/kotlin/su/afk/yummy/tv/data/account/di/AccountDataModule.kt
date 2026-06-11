@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.repository.DefaultAccountMutationErrorNotifier
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
 import su.afk.yummy.tv.data.account.repository.YaniProfileNotificationsRepository
@@ -17,6 +18,7 @@ import su.afk.yummy.tv.data.account.repository.YaniUserListsRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserStatsRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoSubscriptionRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoWatchesRepository
+import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
@@ -61,6 +63,11 @@ object AccountDataModule {
     @Provides
     @Singleton
     fun provideYaniAccountApi(client: HttpClient): YaniAccountApi = YaniAccountApi(client)
+
+    @Provides
+    @Singleton
+    fun provideAccountMutationErrorNotifier(): AccountMutationErrorNotifier =
+        DefaultAccountMutationErrorNotifier()
 
     @Provides
     @Singleton
@@ -171,13 +178,22 @@ object AccountDataModule {
     fun provideGetAnimeListStateUseCase(repository: UserListsRepository) = GetAnimeListStateUseCase(repository)
 
     @Provides
-    fun provideSetAnimeListUseCase(repository: UserListsRepository) = SetAnimeListUseCase(repository)
+    fun provideSetAnimeListUseCase(
+        repository: UserListsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = SetAnimeListUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideRemoveAnimeListUseCase(repository: UserListsRepository) = RemoveAnimeListUseCase(repository)
+    fun provideRemoveAnimeListUseCase(
+        repository: UserListsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = RemoveAnimeListUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideSetAnimeFavoriteUseCase(repository: UserListsRepository) = SetAnimeFavoriteUseCase(repository)
+    fun provideSetAnimeFavoriteUseCase(
+        repository: UserListsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = SetAnimeFavoriteUseCase(repository, mutationErrorNotifier)
 
     @Provides
     fun provideGetAnimeRatingSummaryUseCase(repository: AnimeExtrasRepository) = GetAnimeRatingSummaryUseCase(repository)
@@ -186,10 +202,16 @@ object AccountDataModule {
     fun provideGetAnimeUserRatingUseCase(repository: AnimeExtrasRepository) = GetAnimeUserRatingUseCase(repository)
 
     @Provides
-    fun provideSetAnimeRatingUseCase(repository: AnimeExtrasRepository) = SetAnimeRatingUseCase(repository)
+    fun provideSetAnimeRatingUseCase(
+        repository: AnimeExtrasRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = SetAnimeRatingUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideDeleteAnimeRatingUseCase(repository: AnimeExtrasRepository) = DeleteAnimeRatingUseCase(repository)
+    fun provideDeleteAnimeRatingUseCase(
+        repository: AnimeExtrasRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = DeleteAnimeRatingUseCase(repository, mutationErrorNotifier)
 
     @Provides
     fun provideGetAnimeListStatsUseCase(repository: AnimeExtrasRepository) = GetAnimeListStatsUseCase(repository)
@@ -201,17 +223,28 @@ object AccountDataModule {
     fun provideGetCollectionsUseCase(repository: AnimeExtrasRepository) = GetCollectionsUseCase(repository)
 
     @Provides
-    fun provideMarkVideoWatchedUseCase(repository: VideoWatchesRepository) = MarkVideoWatchedUseCase(repository)
+    fun provideMarkVideoWatchedUseCase(
+        repository: VideoWatchesRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = MarkVideoWatchedUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideRemoveWatchedVideoUseCase(repository: VideoWatchesRepository) = RemoveWatchedVideoUseCase(repository)
+    fun provideRemoveWatchedVideoUseCase(
+        repository: VideoWatchesRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = RemoveWatchedVideoUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideSyncWatchedVideosUseCase(repository: VideoWatchesRepository) = SyncWatchedVideosUseCase(repository)
+    fun provideSyncWatchedVideosUseCase(
+        repository: VideoWatchesRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = SyncWatchedVideosUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideSetVideoSubscriptionUseCase(repository: VideoSubscriptionRepository) =
-        SetVideoSubscriptionUseCase(repository)
+    fun provideSetVideoSubscriptionUseCase(
+        repository: VideoSubscriptionRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = SetVideoSubscriptionUseCase(repository, mutationErrorNotifier)
 
     @Provides
     fun provideGetVideoSubscriptionsUseCase(repository: VideoSubscriptionRepository) =
@@ -233,14 +266,20 @@ object AccountDataModule {
         ResolveNotificationAnimeIdUseCase(repository)
 
     @Provides
-    fun provideMarkNotificationReadUseCase(repository: ProfileNotificationsRepository) =
-        MarkNotificationReadUseCase(repository)
+    fun provideMarkNotificationReadUseCase(
+        repository: ProfileNotificationsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = MarkNotificationReadUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideMarkAllNotificationsReadUseCase(repository: ProfileNotificationsRepository) =
-        MarkAllNotificationsReadUseCase(repository)
+    fun provideMarkAllNotificationsReadUseCase(
+        repository: ProfileNotificationsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = MarkAllNotificationsReadUseCase(repository, mutationErrorNotifier)
 
     @Provides
-    fun provideDeleteNotificationUseCase(repository: ProfileNotificationsRepository) =
-        DeleteNotificationUseCase(repository)
+    fun provideDeleteNotificationUseCase(
+        repository: ProfileNotificationsRepository,
+        mutationErrorNotifier: AccountMutationErrorNotifier,
+    ) = DeleteNotificationUseCase(repository, mutationErrorNotifier)
 }

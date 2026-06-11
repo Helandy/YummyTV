@@ -18,12 +18,22 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.presenter.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
@@ -85,12 +95,30 @@ class MobileMainGraph @Inject constructor(
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
 
         ScreenNavigator(viewModel) { state, effect, _ ->
+            var toastMessage by remember { mutableStateOf<String?>(null) }
+            var toastJob by remember { mutableStateOf<Job?>(null) }
+            val coroutineScope = rememberCoroutineScope()
+
+            DisposableEffect(Unit) {
+                onDispose { toastJob?.cancel() }
+            }
+
             LaunchedEffect(Unit) {
                 effect.collect { eff ->
                     when (eff) {
                         is MainState.Effect.NavigateToUpdate -> navManager.navigate(
                             UpdateDestination(eff.version, eff.apkUrl, eff.changelog)
                         )
+                        is MainState.Effect.ShowToast -> {
+                            toastMessage = eff.message
+                            toastJob?.cancel()
+                            toastJob = coroutineScope.launch {
+                                delay(GLOBAL_TOAST_DURATION_MS)
+                                if (toastMessage == eff.message) {
+                                    toastMessage = null
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -112,6 +140,7 @@ class MobileMainGraph @Inject constructor(
                         menuItems = items,
                         showBars = atTabRoot,
                         onDestinationSelected = { navManager.switchRoot(it) },
+                        toastMessage = toastMessage,
                     ) {
                         AppNavHost(
                             navManager = navManager,
@@ -131,6 +160,7 @@ private fun <T> MobileMainScaffold(
     menuItems: List<MobileMenuItem<T>>,
     showBars: Boolean,
     onDestinationSelected: (T) -> Unit,
+    toastMessage: String?,
     content: @Composable () -> Unit,
 ) {
     Scaffold(
@@ -151,9 +181,12 @@ private fun <T> MobileMainScaffold(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()
+            GlobalToastOverlay(text = toastMessage)
         }
     }
 }
+
+private const val GLOBAL_TOAST_DURATION_MS = 3_000L
 
 @Composable
 private fun <T> RowScope.MobileNavigationItem(

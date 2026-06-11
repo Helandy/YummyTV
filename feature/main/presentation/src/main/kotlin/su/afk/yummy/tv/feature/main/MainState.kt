@@ -31,5 +31,7 @@ object MainState {
             val apkUrl: String,
             val changelog: String,
         ) : Effect()
+
+        data class ShowToast(val message: String) : Effect()
     }
 }

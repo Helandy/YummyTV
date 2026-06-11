@@ -182,12 +182,20 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private suspend fun toggleLibrary() {
-        currentState.details ?: return
+        val details = currentState.details ?: return
         if (currentState.isInLibrary) {
+            val previousList = currentState.libraryList
+            val wasInLibrary = currentState.isInLibrary
             libraryMutationVersion++
             libraryStore.remove(animeId)
             setState { copy(isInLibrary = false, libraryList = null) }
-            runCatching { removeAnimeList(animeId) }
+            if (!currentState.isSignedIn || previousList == null) return
+
+            val result = runCatching { removeAnimeList(animeId) }
+            if (result.isFailure) {
+                libraryStore.add(details.toLibraryEntry(previousList, currentState.isFavorite))
+                setState { copy(isInLibrary = wasInLibrary, libraryList = previousList) }
+            }
         } else {
             setState { copy(showLibraryListPicker = true) }
         }
@@ -195,22 +203,22 @@ class DetailsViewModel @AssistedInject constructor(
 
     private suspend fun addToLibrary(list: UserAnimeList) {
         val details = currentState.details ?: return
+        val wasInLibrary = currentState.isInLibrary
+        val previousList = currentState.libraryList
         libraryMutationVersion++
         setState { copy(showLibraryListPicker = false, isInLibrary = true, libraryList = list) }
-        libraryStore.add(
-            LibraryEntry(
-                animeId = details.id,
-                title = details.title,
-                posterSmallUrl = details.poster?.small,
-                posterMediumUrl = details.poster?.medium,
-                posterBigUrl = details.poster?.big,
-                posterFullsizeUrl = details.poster?.fullsize,
-                posterMegaUrl = details.poster?.mega,
-                listId = list.id,
-                isFavorite = currentState.isFavorite,
-            )
-        )
-        runCatching { setAnimeList(animeId, list) }
+        libraryStore.add(details.toLibraryEntry(list, currentState.isFavorite))
+        if (!currentState.isSignedIn) return
+
+        val result = runCatching { setAnimeList(animeId, list) }
+        if (result.isFailure) {
+            if (wasInLibrary && previousList != null) {
+                libraryStore.add(details.toLibraryEntry(previousList, currentState.isFavorite))
+            } else {
+                libraryStore.remove(animeId)
+            }
+            setState { copy(isInLibrary = wasInLibrary, libraryList = previousList) }
+        }
     }
 
     private suspend fun toggleFavorite() {
@@ -499,4 +507,19 @@ private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSou
     iframeUrl = iframeUrl,
     views = views,
     skips = skips.toPlayerSkips(),
+)
+
+private fun su.afk.yummy.tv.domain.anime.model.AnimeDetails.toLibraryEntry(
+    list: UserAnimeList,
+    isFavorite: Boolean,
+) = LibraryEntry(
+    animeId = id,
+    title = title,
+    posterSmallUrl = poster?.small,
+    posterMediumUrl = poster?.medium,
+    posterBigUrl = poster?.big,
+    posterFullsizeUrl = poster?.fullsize,
+    posterMegaUrl = poster?.mega,
+    listId = list.id,
+    isFavorite = isFavorite,
 )
