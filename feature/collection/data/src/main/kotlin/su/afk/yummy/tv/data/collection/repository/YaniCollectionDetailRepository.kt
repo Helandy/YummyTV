@@ -10,7 +10,7 @@ import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 
-private const val COLLECTION_TTL_MS = 30 * 60 * 1000L
+private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
 
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,

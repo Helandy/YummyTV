@@ -12,10 +12,14 @@ class YaniVideoWatchesRepository(
 ) : VideoWatchesRepository {
 
     override suspend fun markWatched(videoId: Int, timeSeconds: Int, durationSeconds: Int): Boolean =
-        withContext(Dispatchers.IO) { api.markWatched(videoId, timeSeconds, durationSeconds) }
+        withContext(Dispatchers.IO) {
+            api.markWatched(videoId, timeSeconds, durationSeconds)
+        }
 
     override suspend fun removeWatched(videoId: Int): Boolean =
-        withContext(Dispatchers.IO) { api.removeWatched(videoId) }
+        withContext(Dispatchers.IO) {
+            api.removeWatched(videoId)
+        }
 
     override suspend fun syncWatched(states: List<RemoteWatchState>): Boolean =
         withContext(Dispatchers.IO) {

@@ -5,8 +5,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
+import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
@@ -66,33 +68,89 @@ object AccountDataModule {
         api: YaniAccountApi,
         settingsStore: SettingsStore,
         yaniAuthPreferences: YaniAuthPreferences,
-    ): AccountRepository = YaniAccountRepository(api, settingsStore, yaniAuthPreferences)
+        cache: CacheStore,
+        json: Json,
+    ): AccountRepository = YaniAccountRepository(
+        api,
+        settingsStore,
+        yaniAuthPreferences,
+        cache,
+        json,
+    )
 
     @Provides
     @Singleton
-    fun provideUserListsRepository(api: YaniAccountApi): UserListsRepository = YaniUserListsRepository(api)
+    fun provideUserListsRepository(
+        api: YaniAccountApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): UserListsRepository = YaniUserListsRepository(
+        api,
+        cache,
+        json,
+        settingsStore,
+    )
 
     @Provides
     @Singleton
-    fun provideVideoWatchesRepository(api: YaniAccountApi): VideoWatchesRepository = YaniVideoWatchesRepository(api)
+    fun provideVideoWatchesRepository(
+        api: YaniAccountApi,
+    ): VideoWatchesRepository = YaniVideoWatchesRepository(
+        api,
+    )
 
     @Provides
     @Singleton
-    fun provideAnimeExtrasRepository(api: YaniAccountApi): AnimeExtrasRepository = YaniAnimeExtrasRepository(api)
+    fun provideAnimeExtrasRepository(
+        api: YaniAccountApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): AnimeExtrasRepository = YaniAnimeExtrasRepository(
+        api,
+        cache,
+        json,
+        settingsStore,
+    )
 
     @Provides
     @Singleton
-    fun provideVideoSubscriptionRepository(api: YaniAccountApi): VideoSubscriptionRepository =
-        YaniVideoSubscriptionRepository(api)
+    fun provideVideoSubscriptionRepository(
+        api: YaniAccountApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): VideoSubscriptionRepository =
+        YaniVideoSubscriptionRepository(
+            api,
+            cache,
+            json,
+            settingsStore,
+        )
 
     @Provides
     @Singleton
-    fun provideUserStatsRepository(api: YaniAccountApi): UserStatsRepository = YaniUserStatsRepository(api)
+    fun provideUserStatsRepository(
+        api: YaniAccountApi,
+        cache: CacheStore,
+        json: Json,
+    ): UserStatsRepository = YaniUserStatsRepository(api, cache, json)
 
     @Provides
     @Singleton
-    fun provideProfileNotificationsRepository(api: YaniAccountApi): ProfileNotificationsRepository =
-        YaniProfileNotificationsRepository(api)
+    fun provideProfileNotificationsRepository(
+        api: YaniAccountApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): ProfileNotificationsRepository =
+        YaniProfileNotificationsRepository(
+            api,
+            cache,
+            json,
+            settingsStore,
+        )
 
     @Provides
     fun provideLoginUseCase(repository: AccountRepository) = LoginUseCase(repository)

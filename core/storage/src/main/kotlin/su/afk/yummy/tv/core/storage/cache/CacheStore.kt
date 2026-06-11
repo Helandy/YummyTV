@@ -18,35 +18,68 @@ class CacheStore(private val dao: CacheDao) {
         forceRefresh: Boolean = false,
     ): T {
         if (!forceRefresh) {
-            readValidCached(key, ttlMs, deserialize, isValid)?.let { return it }
+            val cached = readCached(key, deserialize, isValid)
+            if (cached?.isFresh(ttlMs) == true) return cached.value
         }
 
         val lock = locks.getOrPut(key) { Mutex() }
         return lock.withLock {
+            val cached = readCached(key, deserialize, isValid)
             if (!forceRefresh) {
-                readValidCached(key, ttlMs, deserialize, isValid)?.let { return@withLock it }
+                if (cached?.isFresh(ttlMs) == true) return@withLock cached.value
             }
 
-            val fresh = fetch()
-            if (isValid(fresh)) {
-                dao.put(CacheEntry(key = key, json = serialize(fresh), cachedAt = System.currentTimeMillis()))
-            }
-            fresh
+            runCatching { fetch() }.fold(
+                onSuccess = { fresh ->
+                    if (isValid(fresh)) {
+                        put(key, serialize, fresh)
+                    }
+                    fresh
+                },
+                onFailure = { error ->
+                    cached?.let { return@withLock it.value }
+                    throw error
+                },
+            )
         }
     }
 
-    private suspend fun <T> readValidCached(
+    suspend fun <T> put(
         key: String,
-        ttlMs: Long,
+        serialize: (T) -> String,
+        value: T,
+    ) {
+        dao.put(
+            CacheEntry(
+                key = key,
+                json = serialize(value),
+                cachedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun invalidate(key: String) {
+        dao.delete(key)
+    }
+
+    suspend fun invalidatePrefix(prefix: String) {
+        dao.deleteByPrefix(prefix)
+    }
+
+    private data class CachedValue<T>(
+        val value: T,
+        val cachedAt: Long,
+    ) {
+        fun isFresh(ttlMs: Long): Boolean =
+            System.currentTimeMillis() - cachedAt < ttlMs
+    }
+
+    private suspend fun <T> readCached(
+        key: String,
         deserialize: (String) -> T,
         isValid: (T) -> Boolean,
-    ): T? {
+    ): CachedValue<T>? {
         val entry = dao.get(key) ?: return null
-        if (System.currentTimeMillis() - entry.cachedAt >= ttlMs) {
-            dao.delete(key)
-            return null
-        }
-
         val cached = runCatching { deserialize(entry.json) }.getOrElse {
             dao.delete(key)
             return null
@@ -55,7 +88,7 @@ class CacheStore(private val dao: CacheDao) {
             dao.delete(key)
             return null
         }
-        return cached
+        return CachedValue(value = cached, cachedAt = entry.cachedAt)
     }
 
     suspend fun pruneOlderThan(cutoffMs: Long) {
