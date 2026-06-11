@@ -492,7 +492,16 @@ internal fun MobileNativePlayer(
                 onDubbingSelected = { onEvent(PlayerState.Event.DubbingSelected(it, exoPlayer.currentPosition)) },
                 balancerNames = ui.balancerNames,
                 selectedBalancerIndex = ui.currentBalancerIndex,
-                onBalancerSelected = { onEvent(PlayerState.Event.BalancerSelected(it, exoPlayer.currentPosition)) },
+                onBalancerSelected = { index ->
+                    val balancerIndex =
+                        ui.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                    onEvent(
+                        PlayerState.Event.BalancerSelected(
+                            balancerIndex,
+                            exoPlayer.currentPosition
+                        )
+                    )
+                },
                 onDismiss = { settingsMode = null },
             )
         }

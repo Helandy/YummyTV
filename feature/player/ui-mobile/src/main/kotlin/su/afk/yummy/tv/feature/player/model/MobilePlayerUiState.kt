@@ -16,6 +16,7 @@ internal data class MobilePlayerUiState(
     val dubbingNames: List<String>,
     val currentDubbingIndex: Int,
     val balancerNames: List<String>,
+    val availableBalancerIndices: List<Int>,
     val currentBalancerIndex: Int,
 ) {
     companion object {
@@ -49,11 +50,22 @@ internal data class MobilePlayerUiState(
             val activeNumbers = allEpisodeNumbers.getOrElse(state.dubbingIndex) { state.episodeNumbers }
             val activeVideoIds = allEpisodeVideoIds.getOrElse(state.dubbingIndex) { state.episodeVideoIds }
             val activeSkips = allEpisodeSkips.getOrElse(state.dubbingIndex) { state.episodeSkips }
+            val activeDubbing = allDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing }
+            val availableBalancerIndices = if (state.allBalancerDubbingNames.isEmpty()) {
+                state.allBalancerNames.indices.toList()
+            } else {
+                state.allBalancerDubbingNames.mapIndexedNotNull { index, dubbingNames ->
+                    index.takeIf { activeDubbing in dubbingNames }
+                }
+            }
+            val balancerNames = availableBalancerIndices.map { index ->
+                state.allBalancerNames.getOrElse(index) { state.playerName }
+            }
             return MobilePlayerUiState(
                 activeIframeUrl = activeUrls.getOrElse(state.episodeIndex) { state.iframeUrl },
                 activeEpisode = activeNumbers.getOrElse(state.episodeIndex) { state.episode },
                 activeVideoId = activeVideoIds.getOrElse(state.episodeIndex) { 0 },
-                activeDubbing = allDubbingNames.getOrElse(state.dubbingIndex) { state.dubbing },
+                activeDubbing = activeDubbing,
                 activeBalancerName = state.allBalancerNames.getOrElse(state.balancerIndex) { state.playerName },
                 activeScreenshotUrl = state.screenshotUrls.getOrElse(state.episodeIndex) { "" },
                 activeSkips = activeSkips.getOrElse(state.episodeIndex) { PlayerSkips.Empty },
@@ -72,8 +84,10 @@ internal data class MobilePlayerUiState(
                 } else {
                     state.dubbingIndex
                 },
-                balancerNames = state.allBalancerNames,
-                currentBalancerIndex = state.balancerIndex,
+                balancerNames = balancerNames,
+                availableBalancerIndices = availableBalancerIndices,
+                currentBalancerIndex = availableBalancerIndices.indexOf(state.balancerIndex)
+                    .takeIf { it >= 0 } ?: 0,
             )
         }
     }

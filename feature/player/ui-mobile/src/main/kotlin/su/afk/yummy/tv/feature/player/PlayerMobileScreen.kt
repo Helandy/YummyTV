@@ -10,6 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -18,9 +23,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.MobileNativePlayer
+import su.afk.yummy.tv.feature.player.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.view.PlayerMessage
 
 @OptIn(UnstableApi::class)
@@ -31,49 +38,98 @@ fun PlayerMobileScreen(
     onEvent: (PlayerState.Event) -> Unit,
 
 ) {
-    BackHandler { onEvent(PlayerState.Event.Back) }
+    var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler {
+        if (showErrorBalancerSheet) {
+            showErrorBalancerSheet = false
+        } else {
+            onEvent(PlayerState.Event.Back)
+        }
+    }
 
     val videoTransform = MobileVideoTransform(
         scale = state.mobileVideoScale,
         offset = Offset(state.mobileVideoOffsetX, state.mobileVideoOffsetY),
     )
+    val uiState = remember(state) { MobilePlayerUiState.from(state) }
+    val canChangePlayer = uiState.balancerNames.size > 1
+    val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
+        ?: state.resumeFromMs.takeIf { it > 0L }
+        ?: 0L
     val streamUrl = state.streamUrl
-    when {
-        streamUrl != null -> MobileNativePlayer(
-            state = state,
-            streamUrl = streamUrl,
-            videoTransform = videoTransform,
-            onVideoTransformChanged = { transform ->
-                onEvent(
-                    PlayerState.Event.MobileVideoTransformChanged(
-                        scale = transform.scale,
-                        offsetX = transform.offset.x,
-                        offsetY = transform.offset.y,
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            streamUrl != null -> MobileNativePlayer(
+                state = state,
+                streamUrl = streamUrl,
+                videoTransform = videoTransform,
+                onVideoTransformChanged = { transform ->
+                    onEvent(
+                        PlayerState.Event.MobileVideoTransformChanged(
+                            scale = transform.scale,
+                            offsetX = transform.offset.x,
+                            offsetY = transform.offset.y,
+                        )
                     )
-                )
-            },
-            onEvent = onEvent,
-        )
-        state.kodikBlockedError != null -> PlayerMessage(
-            title = state.kodikBlockedError,
-            onBack = { onEvent(PlayerState.Event.Back) },
-        )
-        state.playerError != null -> PlayerMessage(
-            title = state.playerError,
-            actionLabel = stringResource(R.string.player_retry),
-            onAction = { onEvent(PlayerState.Event.RetryStream) },
-            onBack = { onEvent(PlayerState.Event.Back) },
-        )
-        else -> Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-            contentAlignment = Alignment.Center,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                Text(stringResource(R.string.player_loading_stream), color = Color.White)
+                },
+                onEvent = onEvent,
+            )
+
+            state.kodikBlockedError != null -> PlayerMessage(
+                title = state.kodikBlockedError,
+                onBack = { onEvent(PlayerState.Event.Back) },
+            )
+
+            state.playerError != null -> PlayerMessage(
+                title = state.playerError,
+                actionLabel = stringResource(R.string.player_retry),
+                onAction = { onEvent(PlayerState.Event.RetryStream) },
+                secondaryActionLabel = if (canChangePlayer) {
+                    stringResource(R.string.player_change_player)
+                } else {
+                    null
+                },
+                onSecondaryAction = if (canChangePlayer) {
+                    { showErrorBalancerSheet = true }
+                } else {
+                    null
+                },
+                onBack = { onEvent(PlayerState.Event.Back) },
+            )
+
+            else -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                    Text(stringResource(R.string.player_loading_stream), color = Color.White)
+                }
             }
+        }
+        if (showErrorBalancerSheet && state.playerError != null && canChangePlayer) {
+            MobilePlayerBalancerSheet(
+                balancerNames = uiState.balancerNames,
+                selectedIndex = uiState.currentBalancerIndex,
+                onBalancerSelected = { index ->
+                    val balancerIndex =
+                        uiState.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                    showErrorBalancerSheet = false
+                    onEvent(
+                        PlayerState.Event.BalancerSelected(
+                            balancerIndex,
+                            errorResumePositionMs
+                        )
+                    )
+                },
+                onDismiss = { showErrorBalancerSheet = false },
+            )
         }
     }
 }

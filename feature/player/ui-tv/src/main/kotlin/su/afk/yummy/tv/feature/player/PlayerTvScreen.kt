@@ -9,14 +9,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,7 @@ import su.afk.yummy.tv.feature.player.view.StreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.ExoPlayerView
 import su.afk.yummy.tv.feature.player.view.player.PLAYER_INLINE_TOAST_DURATION_MS
 import su.afk.yummy.tv.feature.player.view.player.PlayerInlineToast
+import su.afk.yummy.tv.feature.player.view.player.PlayerSelectionPanel
 
 @Composable
 fun PlayerTvScreen(
@@ -51,6 +55,9 @@ fun PlayerTvScreen(
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
     var pendingControlFocusTarget by rememberSaveable { mutableStateOf<PlayerControlFocusTarget?>(null) }
+    var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
+    val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
+    val canChangePlayer = uiState.availableBalancerNames.size > 1
 
     DisposableEffect(Unit) {
         onDispose {
@@ -58,8 +65,17 @@ fun PlayerTvScreen(
         }
     }
 
+    LaunchedEffect(showErrorBalancerPanel, canChangePlayer) {
+        if (showErrorBalancerPanel && canChangePlayer) {
+            withFrameNanos { }
+            runCatching { selectedErrorBalancerFocusRequester.requestFocus() }
+        }
+    }
+
     BackHandler {
-        if (backPressedOnce) {
+        if (showErrorBalancerPanel) {
+            showErrorBalancerPanel = false
+        } else if (backPressedOnce) {
             onEvent(PlayerState.Event.Back)
         } else {
             backPressedOnce = true
@@ -79,6 +95,9 @@ fun PlayerTvScreen(
     val streamUrl = state.streamUrl
     val kodikBlockedError = state.kodikBlockedError
     val playerError = state.playerError
+    val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
+        ?: state.resumeFromMs.takeIf { it > 0L }
+        ?: 0L
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
@@ -102,6 +121,35 @@ fun PlayerTvScreen(
                     message = playerError,
                     modifier = Modifier.align(Alignment.Center),
                     onRetry = { onEvent(PlayerState.Event.RetryStream) },
+                    onChangePlayer = if (canChangePlayer) {
+                        { showErrorBalancerPanel = true }
+                    } else {
+                        null
+                    },
+                )
+                PlayerSelectionPanel(
+                    visible = showErrorBalancerPanel && canChangePlayer,
+                    title = stringResource(R.string.player_balancer_title),
+                    items = uiState.availableBalancerNames.map { it.removePrefix(playerNamePrefix) },
+                    selectedIndex = uiState.currentBalancerIndex,
+                    selectedFocusRequester = selectedErrorBalancerFocusRequester,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 48.dp, bottom = 72.dp),
+                    itemMeta = { stringResource(R.string.player_balancer_meta) },
+                    onItemSelected = { index ->
+                        val balancerIndex =
+                            uiState.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                        showErrorBalancerPanel = false
+                        pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
+                        onEvent(
+                            PlayerState.Event.BalancerSelected(
+                                balancerIndex,
+                                errorResumePositionMs
+                            )
+                        )
+                    },
+                    onExitDown = { showErrorBalancerPanel = false },
                 )
             }
             streamUrl != null -> ExoPlayerView(

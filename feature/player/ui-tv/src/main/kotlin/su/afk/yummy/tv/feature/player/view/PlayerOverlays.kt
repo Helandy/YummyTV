@@ -83,6 +83,7 @@ internal fun KodikBlockedOverlay(
 internal fun StreamErrorOverlay(
     message: String,
     onRetry: (() -> Unit)?,
+    onChangePlayer: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -99,8 +100,19 @@ internal fun StreamErrorOverlay(
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White,
         )
-        if (onRetry != null) {
-            OverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
+        if (onRetry != null || onChangePlayer != null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (onRetry != null) {
+                    OverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
+                }
+                if (onChangePlayer != null) {
+                    OverlayButton(
+                        text = stringResource(R.string.player_change_player),
+                        onClick = onChangePlayer,
+                        primary = false,
+                    )
+                }
+            }
         }
     }
 }

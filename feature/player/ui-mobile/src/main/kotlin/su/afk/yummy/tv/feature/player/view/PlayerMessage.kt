@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,17 +27,23 @@ internal fun PlayerMessage(
     onBack: () -> Unit,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    secondaryActionLabel: String? = null,
+    onSecondaryAction: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black),
     ) {
-        IconButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
+        IconButton(onClick = onBack, modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(8.dp)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
         }
         Column(
-            modifier = Modifier.align(Alignment.Center).padding(24.dp),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -47,6 +54,10 @@ internal fun PlayerMessage(
             if (actionLabel != null && onAction != null) {
                 Spacer(Modifier.height(16.dp))
                 Button(onClick = onAction) { Text(actionLabel) }
+            }
+            if (secondaryActionLabel != null && onSecondaryAction != null) {
+                Spacer(Modifier.height(10.dp))
+                OutlinedButton(onClick = onSecondaryAction) { Text(secondaryActionLabel) }
             }
         }
     }

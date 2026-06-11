@@ -11,6 +11,7 @@
     <string name="player_kodik_error_title">Kodik returned an error</string>
     <string name="player_quoted_message">"%1$s"</string>
     <string name="player_retry">Retry</string>
+    <string name="player_change_player">Change player</string>
     <string name="player_stream_error">Could not load stream</string>
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>

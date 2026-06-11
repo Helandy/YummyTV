@@ -22,7 +22,7 @@ androidx-tv-tvprovider = "1.1.0"
 androidx-tv-material = "1.1.0"
 
 composeMultiplatform = "1.11.1"
-coil = "3.4.0"
+coil = "3.5.0"
 junit = "4.13.2"
 ktor = "3.5.0"
 kotlinx-serialization-json = "1.11.0"
