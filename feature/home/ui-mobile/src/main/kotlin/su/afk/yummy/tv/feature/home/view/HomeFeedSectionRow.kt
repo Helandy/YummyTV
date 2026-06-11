@@ -24,7 +24,6 @@ internal fun HomeFeedSectionRow(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(
             title = section.title,
-            trailing = section.items.size.toString(),
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         LazyRow(

@@ -31,7 +31,6 @@ internal fun ContinueWatchingSection(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(
             title = stringResource(R.string.home_mobile_continue_watching),
-            trailing = entries.size.toString(),
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         LazyRow(
