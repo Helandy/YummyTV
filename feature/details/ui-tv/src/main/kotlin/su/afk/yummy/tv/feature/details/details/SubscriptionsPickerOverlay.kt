@@ -111,6 +111,7 @@ internal fun SubscriptionsPickerOverlay(
                                 onDismiss()
                                 true
                             }
+
                             Key.DirectionUp -> focusedOptionIndex == 0
                             Key.DirectionDown -> focusedOptionIndex == subscriptions.lastIndex
                             else -> false
@@ -173,8 +174,13 @@ private fun SubscriptionOptionItem(
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
+    val targetBgColor = when {
+        focused -> Color.White
+        option.isSubscribed -> MaterialTheme.colorScheme.primary.copy(alpha = 0.34f)
+        else -> Color.White.copy(alpha = 0.10f)
+    }
     val bgColor by animateColorAsState(
-        targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
+        targetValue = targetBgColor,
         animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
         label = "subscription_bg",
     )
