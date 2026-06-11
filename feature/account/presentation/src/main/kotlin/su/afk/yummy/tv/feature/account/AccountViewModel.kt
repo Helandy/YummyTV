@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -47,31 +48,41 @@ class AccountViewModel @Inject constructor(
 ) : BaseViewModelNew<AccountState.State, AccountState.Event, AccountState.Effect>(savedStateHandle) {
 
     private var loadedUserId: Int = 0
+    private var hasRefreshToken = false
+    private var missingProfileRefreshAttempted = false
+    private var isMissingProfileRefreshRunning = false
 
     override fun createInitialState() = AccountState.State()
 
     init {
-        yaniAuthPreferences.refreshToken
-            .onEach { token ->
+        combine(
+            yaniAuthPreferences.refreshToken,
+            settingsStore.yaniUserId,
+        ) { token, userId -> token to userId }
+            .onEach { (token, userId) ->
+                hasRefreshToken = token.isNotBlank()
                 setState {
-                    if (token.isBlank()) {
+                    if (!hasRefreshToken) {
                         copy(
                             isSignedIn = false,
+                            userId = 0,
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
                             hubError = null,
                         )
                     } else {
-                        copy(isSignedIn = true)
+                        copy(
+                            isSignedIn = userId > 0,
+                            userId = userId,
+                        )
                     }
                 }
-                maybeLoadHub()
-            }
-            .launchIn(viewModelScope)
-        settingsStore.yaniUserId
-            .onEach {
-                setState { copy(userId = it) }
+                if (!hasRefreshToken) {
+                    missingProfileRefreshAttempted = false
+                    isMissingProfileRefreshRunning = false
+                }
+                recoverMissingProfileIfNeeded()
                 maybeLoadHub()
             }
             .launchIn(viewModelScope)
@@ -136,6 +147,9 @@ class AccountViewModel @Inject constructor(
                 runCatching { logout() }.fold(
                     onSuccess = {
                         loadedUserId = 0
+                        hasRefreshToken = false
+                        missingProfileRefreshAttempted = false
+                        isMissingProfileRefreshRunning = false
                         setState {
                             copy(
                                 isLoading = false,
@@ -236,9 +250,12 @@ class AccountViewModel @Inject constructor(
             runCatching { login(loginValue, passwordValue, captchaResponse) }.fold(
                 onSuccess = { account ->
                     loadedUserId = 0
+                    missingProfileRefreshAttempted = false
+                    isMissingProfileRefreshRunning = false
                     setState {
                         copy(
                             isLoading = false,
+                            isSignedIn = account.id > 0,
                             password = "",
                             isCaptchaRequired = false,
                             captchaChallengeId = captchaChallengeId + 1,
@@ -268,6 +285,42 @@ class AccountViewModel @Inject constructor(
                         return@fold
                     }
                     setState { copy(isLoading = false, error = error.message ?: "Could not sign in") }
+                },
+            )
+        }
+    }
+
+    private fun recoverMissingProfileIfNeeded() {
+        if (!hasRefreshToken) return
+        if (currentState.userId > 0) return
+        if (missingProfileRefreshAttempted || isMissingProfileRefreshRunning) return
+
+        missingProfileRefreshAttempted = true
+        isMissingProfileRefreshRunning = true
+        viewModelScope.launch {
+            setState { copy(isLoading = true, error = null) }
+            runCatching { refreshAccount() }.fold(
+                onSuccess = { account ->
+                    isMissingProfileRefreshRunning = false
+                    if (account == null) {
+                        setState { copy(isLoading = false, isSignedIn = false) }
+                    } else {
+                        loadedUserId = 0
+                        setState {
+                            copy(
+                                isLoading = false,
+                                isSignedIn = account.id > 0,
+                                userId = account.id,
+                                nickname = account.nickname,
+                                avatarUrl = account.avatarUrl.orEmpty(),
+                            )
+                        }
+                        maybeLoadHub(force = true)
+                    }
+                },
+                onFailure = { error ->
+                    isMissingProfileRefreshRunning = false
+                    setState { copy(isLoading = false, isSignedIn = false, error = error.message) }
                 },
             )
         }

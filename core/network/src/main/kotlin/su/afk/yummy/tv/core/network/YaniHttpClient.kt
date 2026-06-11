@@ -57,7 +57,7 @@ fun buildYaniHttpClient(
                         request.headers.remove(YANI_APPLICATION_HEADER)
                         request.headers.append(YANI_APPLICATION_HEADER, token)
                     }
-                    if (refreshToken.isNotBlank()) {
+                    if (refreshToken.isNotBlank() && request.headers[HttpHeaders.Authorization].isNullOrBlank()) {
                         request.headers.remove(HttpHeaders.Authorization)
                         request.headers.append(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + refreshToken)
                     }

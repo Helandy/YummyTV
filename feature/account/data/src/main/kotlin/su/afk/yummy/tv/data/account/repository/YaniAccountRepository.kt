@@ -28,24 +28,28 @@ class YaniAccountRepository(
             throw AccountCaptchaRequiredException()
         }
         if (token.isBlank()) error("Empty access token")
-        yaniAuthPreferences.setRefreshToken(token)
-        settingsStore.setYaniAccount(userId = 0, nickname = "", avatarUrl = null)
-        val profile = getProfile()
+        val profile = getProfile(token)
         settingsStore.setYaniAccount(profile.id, profile.nickname, profile.avatarUrl)
+        yaniAuthPreferences.setRefreshToken(token)
         profile
     }
 
     override suspend fun refreshToken(): YaniAccount? = withContext(Dispatchers.IO) {
         val token = runCatching { api.refreshToken() }.getOrNull().orEmpty()
         if (token.isBlank()) return@withContext null
-        yaniAuthPreferences.setRefreshToken(token)
-        val profile = runCatching { getProfile() }.getOrNull()
-        settingsStore.setYaniAccount(profile?.id ?: 0, profile?.nickname.orEmpty(), profile?.avatarUrl)
+        val profile = runCatching { getProfile(token) }.getOrNull()
+        if (profile != null) {
+            settingsStore.setYaniAccount(profile.id, profile.nickname, profile.avatarUrl)
+            yaniAuthPreferences.setRefreshToken(token)
+        }
         profile
     }
 
     override suspend fun getProfile(): YaniAccount =
         withContext(Dispatchers.IO) { api.getProfile().toAccount() }
+
+    private suspend fun getProfile(token: String): YaniAccount =
+        withContext(Dispatchers.IO) { api.getProfile(token).toAccount() }
 
     override suspend fun logout() = withContext(Dispatchers.IO) {
         runCatching { api.logout() }

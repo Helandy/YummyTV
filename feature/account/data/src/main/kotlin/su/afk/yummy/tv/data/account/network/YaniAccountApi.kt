@@ -6,6 +6,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -13,6 +14,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -97,8 +99,12 @@ class YaniAccountApi(
     suspend fun refreshToken(): String =
         client.get("$YANI_BASE_URL/profile/token").body<YaniTokenResponseDto>().response.token
 
-    suspend fun getProfile(): YaniProfileDto =
-        client.get("$YANI_BASE_URL/profile").body<YaniProfileResponseDto>().response
+    suspend fun getProfile(token: String? = null): YaniProfileDto =
+        client.get("$YANI_BASE_URL/profile") {
+            if (!token.isNullOrBlank()) {
+                header(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + token.trim())
+            }
+        }.body<YaniProfileResponseDto>().response
 
     suspend fun logout() {
         client.post("$YANI_BASE_URL/profile/logout")
@@ -265,6 +271,7 @@ class YaniAccountApi(
     private companion object {
         const val TAG = "YaniAccountApi"
         const val CAPTCHA_ERROR_CODE = 420
+        const val YANI_AUTHORIZATION_PREFIX = "Bearer "
         val ERROR_JSON = Json { ignoreUnknownKeys = true }
     }
 }
