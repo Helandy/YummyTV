@@ -96,10 +96,19 @@ internal fun MobileNativePlayer(
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
+    val playerViewHolder = remember { arrayOfNulls<PlayerView>(1) }
+    var liveVideoTransform by remember { mutableStateOf(videoTransform) }
+    var transformGestureActive by remember { mutableStateOf(false) }
+    val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
+        "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
+    }
 
     DisposableEffect(Unit) {
         MobilePlayerPipController.setPlayerActive(true)
-        onDispose { MobilePlayerPipController.setPlayerActive(false) }
+        onDispose {
+            MobilePlayerPipController.setPlayerActive(false)
+            playerViewHolder[0] = null
+        }
     }
 
     fun scheduleOverlayHide() {
@@ -128,13 +137,15 @@ internal fun MobileNativePlayer(
 
     fun applyVideoTransform(centroid: Offset, pan: Offset, zoomChange: Float) {
         val transform = calculateMobileVideoTransform(
-            currentScale = videoTransform.scale,
-            currentOffset = videoTransform.offset,
+            currentScale = liveVideoTransform.scale,
+            currentOffset = liveVideoTransform.offset,
             playerSize = playerSize,
             centroid = centroid,
             pan = pan,
             zoomChange = zoomChange,
         )
+        liveVideoTransform = transform
+        playerViewHolder[0]?.applyMobileVideoTransform(transform.scale, transform.offset)
         onVideoTransformChanged(transform)
     }
 
@@ -285,10 +296,22 @@ internal fun MobileNativePlayer(
     LaunchedEffect(isInPictureInPictureMode) {
         if (isInPictureInPictureMode) {
             overlayVisible = false
+            transformGestureActive = false
             settingsMode = null
             stepSeekToastText = null
             hideJob?.cancel()
             stepSeekToastJob?.cancel()
+        }
+    }
+
+    LaunchedEffect(transformScopeKey) {
+        transformGestureActive = false
+        liveVideoTransform = videoTransform
+    }
+
+    LaunchedEffect(videoTransform) {
+        if (!transformGestureActive) {
+            liveVideoTransform = videoTransform
         }
     }
 
@@ -347,6 +370,7 @@ internal fun MobileNativePlayer(
             modifier = Modifier.fillMaxSize(),
             factory = { viewContext ->
                 PlayerView(viewContext).apply {
+                    playerViewHolder[0] = this
                     player = exoPlayer
                     useController = false
                     keepScreenOn = true
@@ -355,12 +379,13 @@ internal fun MobileNativePlayer(
                     setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                     setShowNextButton(false)
                     setShowPreviousButton(false)
-                    applyMobileVideoTransform(videoTransform.scale, videoTransform.offset)
+                    applyMobileVideoTransform(liveVideoTransform.scale, liveVideoTransform.offset)
                 }
             },
             update = {
+                playerViewHolder[0] = it
                 it.player = exoPlayer
-                it.applyMobileVideoTransform(videoTransform.scale, videoTransform.offset)
+                it.applyMobileVideoTransform(liveVideoTransform.scale, liveVideoTransform.offset)
             },
         )
 
@@ -368,7 +393,14 @@ internal fun MobileNativePlayer(
             enabled = !isInPictureInPictureMode,
             onTap = { toggleOverlay() },
             onDoubleTap = ::stepSeek,
+            onTransformStart = {
+                transformGestureActive = true
+                hideJob?.cancel()
+            },
             onTransform = ::applyVideoTransform,
+            onTransformEnd = {
+                transformGestureActive = false
+            },
         )
 
         MobilePlayerTopBar(
@@ -431,6 +463,14 @@ internal fun MobileNativePlayer(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = if (overlayVisible && !isInPictureInPictureMode) 128.dp else 36.dp),
+        )
+
+        MobilePlayerZoomIndicator(
+            visible = transformGestureActive && !isInPictureInPictureMode,
+            scale = liveVideoTransform.scale,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 28.dp),
         )
 
         val activeSettingsMode = settingsMode

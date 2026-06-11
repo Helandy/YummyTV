@@ -5,8 +5,11 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
 import kotlin.math.sqrt
@@ -16,36 +19,43 @@ internal fun MobilePlayerGestureLayer(
     enabled: Boolean,
     onTap: () -> Unit,
     onDoubleTap: (MobileSeekDirection) -> Unit,
+    onTransformStart: () -> Unit,
     onTransform: (centroid: Offset, pan: Offset, zoomChange: Float) -> Unit,
+    onTransformEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val currentOnTap by rememberUpdatedState(onTap)
+    val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
+    val currentOnTransformStart by rememberUpdatedState(onTransformStart)
+    val currentOnTransform by rememberUpdatedState(onTransform)
+    val currentOnTransformEnd by rememberUpdatedState(onTransformEnd)
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .pointerInput(enabled, onTap, onDoubleTap) {
-                if (!enabled) return@pointerInput
-
-                detectTapGestures(
-                    onTap = { onTap() },
-                    onDoubleTap = { offset ->
-                        val direction = if (offset.x < size.width / 2f) {
-                            MobileSeekDirection.Backward
-                        } else {
-                            MobileSeekDirection.Forward
-                        }
-                        onDoubleTap(direction)
-                    },
-                )
-            }
-            .pointerInput(enabled, onTransform) {
+            .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
 
                 awaitEachGesture {
+                    var transforming = false
                     while (true) {
-                        val event = awaitPointerEvent()
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
                         val pressedChanges = event.changes.filter { it.pressed }
-                        if (pressedChanges.isEmpty()) break
-                        if (pressedChanges.size < 2) continue
+                        if (pressedChanges.isEmpty()) {
+                            if (transforming) currentOnTransformEnd()
+                            break
+                        }
+                        if (pressedChanges.size < 2) {
+                            if (transforming) {
+                                transforming = false
+                                currentOnTransformEnd()
+                            }
+                            continue
+                        }
+                        if (!transforming) {
+                            transforming = true
+                            currentOnTransformStart()
+                        }
 
                         val first = pressedChanges[0]
                         val second = pressedChanges[1]
@@ -60,10 +70,25 @@ internal fun MobilePlayerGestureLayer(
                         val pan = centroid - previousCentroid
                         if (zoomChange == 1f && pan == Offset.Zero) continue
 
-                        onTransform(centroid, pan, zoomChange)
+                        currentOnTransform(centroid, pan, zoomChange)
                         event.changes.forEach { it.consume() }
                     }
                 }
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+
+                detectTapGestures(
+                    onTap = { currentOnTap() },
+                    onDoubleTap = { offset ->
+                        val direction = if (offset.x < size.width / 2f) {
+                            MobileSeekDirection.Backward
+                        } else {
+                            MobileSeekDirection.Forward
+                        }
+                        currentOnDoubleTap(direction)
+                    },
+                )
             },
     )
 }

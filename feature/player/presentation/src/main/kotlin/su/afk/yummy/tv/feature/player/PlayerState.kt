@@ -62,6 +62,9 @@ class PlayerState {
         val playbackPositionMs: Long = 0L,
         val playbackDurationMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
+        val mobileVideoScale: Float = 1f,
+        val mobileVideoOffsetX: Float = 0f,
+        val mobileVideoOffsetY: Float = 0f,
     ) : UiState
 
     sealed interface Event : UiEvent {
@@ -74,6 +77,11 @@ class PlayerState {
         data class SpeedSelected(val speed: Float) : Event
         data class ResizeModeSelected(val mode: PlayerResizeMode) : Event
         data class ZoomLevelSelected(val level: PlayerZoomLevel) : Event
+        data class MobileVideoTransformChanged(
+            val scale: Float,
+            val offsetX: Float,
+            val offsetY: Float,
+        ) : Event
         data class PlaybackPositionChanged(val positionMs: Long, val durationMs: Long) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
         data class PlaybackError(val message: String) : Event

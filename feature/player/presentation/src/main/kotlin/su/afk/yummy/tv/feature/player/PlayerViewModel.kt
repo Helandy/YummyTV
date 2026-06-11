@@ -8,6 +8,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -15,6 +16,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
@@ -90,6 +92,7 @@ class PlayerViewModel @AssistedInject constructor(
             )
         }
         observeActivePlayerResizeSettings(force = true)
+        observeActivePlayerMobileVideoTransformSettings(force = true)
         loadStream()
     }
 
@@ -127,6 +130,9 @@ class PlayerViewModel @AssistedInject constructor(
     private var extractionJob: Job? = null
     private var playerResizeSettingsJob: Job? = null
     private var activePlayerResizeSettingsScope: PlayerResizeSettingsScope? = null
+    private var playerMobileVideoTransformSettingsJob: Job? = null
+    private var playerMobileVideoTransformSaveJob: Job? = null
+    private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
     private val markedWatchedVideoIds = mutableSetOf<Int>()
     private val markingWatchedVideoIds = mutableSetOf<Int>()
 
@@ -135,6 +141,7 @@ class PlayerViewModel @AssistedInject constructor(
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
         observeActivePlayerResizeSettings()
+        observeActivePlayerMobileVideoTransformSettings()
         loadStream()
     }
 
@@ -201,6 +208,7 @@ class PlayerViewModel @AssistedInject constructor(
                     )
                 }
                 observeActivePlayerResizeSettings()
+                observeActivePlayerMobileVideoTransformSettings()
                 loadStream()
             }
             is PlayerState.Event.BalancerSelected -> {
@@ -222,6 +230,7 @@ class PlayerViewModel @AssistedInject constructor(
                     )
                 }
                 observeActivePlayerResizeSettings()
+                observeActivePlayerMobileVideoTransformSettings()
                 loadStream()
             }
             is PlayerState.Event.QualitySelected -> {
@@ -255,6 +264,22 @@ class PlayerViewModel @AssistedInject constructor(
                 )
                 setState { copy(resizeMode = settings.resizeMode, zoomLevel = settings.zoomLevel) }
                 savePlayerResizeSettings(settings)
+            }
+
+            is PlayerState.Event.MobileVideoTransformChanged -> {
+                val settings = PlayerMobileVideoTransformSettings(
+                    scale = event.scale,
+                    offsetX = event.offsetX,
+                    offsetY = event.offsetY,
+                )
+                setState {
+                    copy(
+                        mobileVideoScale = settings.scale,
+                        mobileVideoOffsetX = settings.offsetX,
+                        mobileVideoOffsetY = settings.offsetY,
+                    )
+                }
+                savePlayerMobileVideoTransformSettings(settings)
             }
 
             is PlayerState.Event.PlaybackPositionChanged -> {
@@ -349,6 +374,53 @@ class PlayerViewModel @AssistedInject constructor(
         val scope = currentPlayerResizeSettingsScope()
         viewModelScope.launch {
             settingsStore.setPlayerResizeSettings(
+                animeId = scope.animeId,
+                animeTitle = scope.animeTitle,
+                playerName = scope.playerName,
+                settings = settings,
+            )
+        }
+    }
+
+    private fun observeActivePlayerMobileVideoTransformSettings(force: Boolean = false) {
+        val scope = currentPlayerResizeSettingsScope()
+        if (!force && scope == activePlayerMobileVideoTransformSettingsScope) return
+        activePlayerMobileVideoTransformSettingsScope = scope
+        playerMobileVideoTransformSettingsJob?.cancel()
+        playerMobileVideoTransformSaveJob?.cancel()
+        setState {
+            copy(
+                mobileVideoScale = 1f,
+                mobileVideoOffsetX = 0f,
+                mobileVideoOffsetY = 0f,
+            )
+        }
+        playerMobileVideoTransformSettingsJob = settingsStore
+            .playerMobileVideoTransformSettings(
+                animeId = scope.animeId,
+                animeTitle = scope.animeTitle,
+                playerName = scope.playerName,
+            )
+            .onEach { settings ->
+                if (scope == activePlayerMobileVideoTransformSettingsScope) {
+                    setState {
+                        copy(
+                            mobileVideoScale = settings.scale,
+                            mobileVideoOffsetX = settings.offsetX,
+                            mobileVideoOffsetY = settings.offsetY,
+                        )
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun savePlayerMobileVideoTransformSettings(settings: PlayerMobileVideoTransformSettings) {
+        val scope = currentPlayerResizeSettingsScope()
+        playerMobileVideoTransformSaveJob?.cancel()
+        playerMobileVideoTransformSaveJob = viewModelScope.launch {
+            delay(MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS)
+            settingsStore.setPlayerMobileVideoTransformSettings(
                 animeId = scope.animeId,
                 animeTitle = scope.animeTitle,
                 playerName = scope.playerName,
@@ -616,4 +688,8 @@ class PlayerViewModel @AssistedInject constructor(
         val animeTitle: String,
         val playerName: String,
     )
+
+    private companion object {
+        const val MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS = 250L
+    }
 }

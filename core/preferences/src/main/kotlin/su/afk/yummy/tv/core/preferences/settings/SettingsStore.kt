@@ -105,6 +105,18 @@ class SettingsStore(private val context: Context) {
         }
     }
 
+    fun playerMobileVideoTransformSettings(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+    ): Flow<PlayerMobileVideoTransformSettings> {
+        val key = playerScopedMobileVideoTransformSettingsKey(animeId, animeTitle, playerName)
+        return context.dataStore.data.map { prefs ->
+            prefs[key]?.toPlayerMobileVideoTransformSettings()
+                ?: PlayerMobileVideoTransformSettings()
+        }
+    }
+
     val appTheme: Flow<AppTheme> = context.dataStore.data.map { prefs ->
         prefs[appThemeKey]?.let { name ->
             runCatching { AppTheme.valueOf(name) }.getOrNull()
@@ -191,6 +203,18 @@ class SettingsStore(private val context: Context) {
         settings: PlayerResizeSettings,
     ) {
         val key = playerScopedResizeSettingsKey(animeId, animeTitle, playerName)
+        context.dataStore.edit { prefs ->
+            prefs[key] = settings.toPreferenceValue()
+        }
+    }
+
+    suspend fun setPlayerMobileVideoTransformSettings(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+        settings: PlayerMobileVideoTransformSettings,
+    ) {
+        val key = playerScopedMobileVideoTransformSettingsKey(animeId, animeTitle, playerName)
         context.dataStore.edit { prefs ->
             prefs[key] = settings.toPreferenceValue()
         }
@@ -305,6 +329,20 @@ class SettingsStore(private val context: Context) {
         return stringPreferencesKey("player_resize_settings|$titleKey|player:$playerKey")
     }
 
+    private fun playerScopedMobileVideoTransformSettingsKey(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+    ): Preferences.Key<String> {
+        val titleKey = if (animeId > 0) {
+            "anime_id:$animeId"
+        } else {
+            "title:${animeTitle.normalizedPlayerResizeKeyPart()}"
+        }
+        val playerKey = playerName.normalizedPlayerResizeKeyPart()
+        return stringPreferencesKey("player_mobile_video_transform|$titleKey|player:$playerKey")
+    }
+
     private fun String.normalizedPlayerResizeKeyPart(): String =
         trim()
             .lowercase()
@@ -325,6 +363,21 @@ class SettingsStore(private val context: Context) {
         return PlayerResizeSettings(
             resizeMode = mode,
             zoomLevel = level,
+        )
+    }
+
+    private fun PlayerMobileVideoTransformSettings.toPreferenceValue(): String =
+        "$scale|$offsetX|$offsetY"
+
+    private fun String.toPlayerMobileVideoTransformSettings(): PlayerMobileVideoTransformSettings? {
+        val parts = split('|')
+        val scale = parts.getOrNull(0)?.toFloatOrNull() ?: return null
+        val offsetX = parts.getOrNull(1)?.toFloatOrNull() ?: 0f
+        val offsetY = parts.getOrNull(2)?.toFloatOrNull() ?: 0f
+        return PlayerMobileVideoTransformSettings(
+            scale = scale,
+            offsetX = offsetX,
+            offsetY = offsetY,
         )
     }
 
