@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.navigation.bottomOverlay
 import su.afk.yummy.tv.feature.details.collections.CollectionsMobileScreen
 import su.afk.yummy.tv.feature.details.collections.CollectionsViewModel
 import su.afk.yummy.tv.feature.details.details.DetailsMobileScreen
@@ -68,7 +69,9 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                     EpisodesMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
-            entry<DetailsEpisodeDubbingsDestination> { dest ->
+            entry<DetailsEpisodeDubbingsDestination>(
+                metadata = bottomOverlay(),
+            ) { dest ->
                 val viewModel =
                     hiltViewModel<EpisodeDubbingsViewModel, EpisodeDubbingsViewModel.Factory>(
                         key = "mobile-episode-dubbings-${dest.animeId}-${dest.episode}",

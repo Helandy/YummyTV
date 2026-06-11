@@ -89,6 +89,7 @@ fun AppNavHost(
 
     NavDisplay(
         entries = entriesToShow,
+        sceneStrategies = listOf(BottomOverlaySceneStrategy()),
         onBack = { navManager.back() },
         modifier = modifier,
     )
