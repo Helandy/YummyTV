@@ -25,7 +25,7 @@ internal fun AccountMobileStatsTab(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         when {
-            isLoading && stats == null -> AccountMobileEmptyText(stringResource(R.string.account_loading))
+            isLoading && stats == null -> AccountMobileLoadingIndicator()
             stats == null || stats.isEmpty() -> AccountMobileEmptyText(stringResource(R.string.account_stats_empty))
             else -> AccountMobileStatsContent(stats)
         }
@@ -91,8 +91,11 @@ private fun AccountMobileStatsContent(stats: UserStats) {
 }
 
 @Composable
-internal fun AccountMobileEmptyText(text: String) {
-    AccountMobileSurfacePanel {
+internal fun AccountMobileEmptyText(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    AccountMobileSurfacePanel(modifier = modifier) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,

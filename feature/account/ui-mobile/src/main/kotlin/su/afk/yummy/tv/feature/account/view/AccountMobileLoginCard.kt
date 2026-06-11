@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -80,13 +81,14 @@ internal fun AccountMobileLoginCard(
                 enabled = !state.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(
-                    if (state.isLoading) {
-                        stringResource(R.string.account_loading)
-                    } else {
-                        stringResource(R.string.account_login)
-                    },
-                )
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text(stringResource(R.string.account_login))
+                }
             }
             if (state.isCaptchaRequired) {
                 key(state.captchaChallengeId) {

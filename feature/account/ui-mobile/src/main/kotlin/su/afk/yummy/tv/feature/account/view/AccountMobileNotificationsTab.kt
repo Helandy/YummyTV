@@ -27,7 +27,7 @@ internal fun AccountMobileNotificationsTab(
         }
         when {
             state.isNotificationsLoading && state.notifications.isEmpty() -> {
-                AccountMobileEmptyText(stringResource(R.string.account_loading))
+                AccountMobileLoadingIndicator()
             }
 
             state.notifications.isEmpty() -> {

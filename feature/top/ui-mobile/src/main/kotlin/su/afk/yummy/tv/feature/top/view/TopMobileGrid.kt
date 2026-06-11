@@ -1,14 +1,17 @@
 package su.afk.yummy.tv.feature.top.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,15 +39,21 @@ internal fun TopMobileGrid(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (isLoading && items.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     MobilePosterGrid(
         contentPadding = PaddingValues(),
         modifier = modifier.fillMaxSize(),
     ) {
         when {
-            isLoading && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(stringResource(R.string.top_mobile_loading))
-            }
-
             error != null && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
                 MobileMessage(
                     title = error,
@@ -86,15 +95,17 @@ internal fun TopMobileGrid(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(
                     onClick = onLoadMore,
+                    enabled = !isLoadingMore,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(
-                        if (isLoadingMore) {
-                            stringResource(R.string.top_mobile_loading)
-                        } else {
-                            stringResource(R.string.top_mobile_load_more)
-                        },
-                    )
+                    if (isLoadingMore) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(stringResource(R.string.top_mobile_load_more))
+                    }
                 }
             }
         }
