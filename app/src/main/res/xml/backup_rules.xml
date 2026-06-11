@@ -3,4 +3,16 @@
     <exclude
         domain="sharedpref"
         path="yani_auth_secure_preferences.xml" />
+    <exclude
+        domain="database"
+        path="yummy_cache.db" />
+    <exclude
+        domain="database"
+        path="yummy_cache.db-wal" />
+    <exclude
+        domain="database"
+        path="yummy_cache.db-shm" />
+    <exclude
+        domain="database"
+        path="yummy_cache.db-journal" />
 </full-backup-content>
