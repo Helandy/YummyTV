@@ -9,7 +9,7 @@
     <string name="library_mobile_tab_postponed">Отложено</string>
     <string name="library_mobile_tab_dropped">Брошено</string>
     <string name="library_mobile_episode">Эпизод %1$s</string>
-    <string name="library_mobile_retry_error">Повторить: %1$s</string>
+    <string name="library_mobile_retry">Retry</string>
     <string name="library_mobile_remove_title">Удалить тайтл?</string>
     <string name="library_mobile_remove_message">“%1$s” будет удалён из раздела “%2$s”.</string>
     <string name="library_mobile_remove_confirm">Удалить</string>

@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.library.utils.toLibraryEntry
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
+import su.afk.yummy.tv.feature.library.view.LibraryRemoteErrorBanner
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
 
 @Composable
@@ -160,6 +161,14 @@ fun LibraryTvScreen(
             tabFocusRequesters = tabFocusRequesters,
             mainMenuFocusRequester = mainMenuFocusRequester,
         )
+
+        state.remoteError?.let { error ->
+            LibraryRemoteErrorBanner(
+                message = error,
+                isLoading = state.isRemoteLoading,
+                onRetry = { onEvent(LibraryState.Event.RetrySelected) },
+            )
+        }
 
         Box(
             modifier = Modifier

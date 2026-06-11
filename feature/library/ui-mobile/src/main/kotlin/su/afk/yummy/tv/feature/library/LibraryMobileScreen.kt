@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +26,8 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.utils.mobileTitle
 import su.afk.yummy.tv.feature.library.view.LibraryMobileDeleteButton
+import su.afk.yummy.tv.feature.library.view.LibraryMobileLoadingIndicator
+import su.afk.yummy.tv.feature.library.view.LibraryMobileRemoteError
 import su.afk.yummy.tv.feature.library.view.LibraryMobileRemoveConfirmDialog
 import su.afk.yummy.tv.feature.library.view.LibraryMobileTabs
 
@@ -44,6 +45,7 @@ fun LibraryMobileScreen(
     val continueWatchingTitle = LibraryTab.CONTINUE_WATCHING.mobileTitle()
     val favoritesTitle = LibraryTab.FAVORITES.mobileTitle()
     val selectedTabTitle = state.selectedTab.mobileTitle()
+    val showRemoteLoader = state.shouldShowRemoteLoader()
     var pendingRemoval by remember { mutableStateOf<PendingLibraryMobileRemoval?>(null) }
 
     LaunchedEffect(effect, context, itemRemovedText) {
@@ -81,6 +83,11 @@ fun LibraryMobileScreen(
                     .fillMaxWidth(),
             )
         }
+            if (showRemoteLoader) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    LibraryMobileLoadingIndicator()
+                }
+            }
         when (state.selectedTab) {
             LibraryTab.CONTINUE_WATCHING -> {
                 items(state.continueWatching, key = { "${it.animeId}-${it.episode}" }) { entry ->
@@ -172,9 +179,11 @@ fun LibraryMobileScreen(
         }
         if (state.remoteError != null) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Button(onClick = { onEvent(LibraryState.Event.ScreenResumed) }) {
-                    Text(stringResource(R.string.library_mobile_retry_error, state.remoteError.orEmpty()))
-                }
+                LibraryMobileRemoteError(
+                    message = state.remoteError.orEmpty(),
+                    isLoading = state.isRemoteLoading,
+                    onRetry = { onEvent(LibraryState.Event.RetrySelected) },
+                )
             }
         }
         }
@@ -236,4 +245,17 @@ private fun LibraryTab.userAnimeList(): UserAnimeList? = when (this) {
     LibraryTab.DROPPED -> UserAnimeList.DROPPED
     LibraryTab.CONTINUE_WATCHING,
     LibraryTab.FAVORITES -> null
+}
+
+private fun LibraryState.State.shouldShowRemoteLoader(): Boolean {
+    if (!isSignedIn || !isRemoteLoading || remoteError != null) return false
+    return when (selectedTab) {
+        LibraryTab.CONTINUE_WATCHING -> false
+        LibraryTab.FAVORITES -> items.none { it.isFavorite }
+        LibraryTab.WATCHING,
+        LibraryTab.PLANNED,
+        LibraryTab.COMPLETED,
+        LibraryTab.POSTPONED,
+        LibraryTab.DROPPED -> remoteItems[selectedTab].orEmpty().isEmpty()
+    }
 }

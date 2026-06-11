@@ -6,6 +6,7 @@
     <string name="library_episode_number">Серия %1$s</string>
     <string name="library_delete">Удалить</string>
     <string name="library_remove_success">Удалено</string>
+    <string name="library_retry">Повторить</string>
     <string name="library_tab_continue_watching">Продолжить</string>
     <string name="library_tab_continue_watching_short">Пр</string>
     <string name="library_tab_favorites">Любимые</string>

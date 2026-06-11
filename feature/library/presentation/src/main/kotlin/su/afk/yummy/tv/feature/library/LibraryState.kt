@@ -25,6 +25,7 @@ class LibraryState {
         val continueWatching: List<WatchProgressEntry> = emptyList(),
         val remoteItems: Map<LibraryTab, List<UserAnimeListItem>> = emptyMap(),
         val isSignedIn: Boolean = false,
+        val isRemoteLoading: Boolean = false,
         val remoteError: String? = null,
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
         val focusedItemId: Int? = null,
@@ -40,6 +41,7 @@ class LibraryState {
         data class TabSelected(val tab: LibraryTab) : Event
         data object FocusedItemRestoreHandled : Event
         data object ScreenResumed : Event
+        data object RetrySelected : Event
         data class RemoveLibraryEntry(val animeId: Int) : Event
         data class RemoveFavoriteEntry(val animeId: Int) : Event
         data class RemoveWatchProgress(val animeId: Int) : Event

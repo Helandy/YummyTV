@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.library
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -82,6 +83,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     private var previewJob: Job? = null
+    private var remoteListsJob: Job? = null
     private var signedInUserId: Int = 0
 
     init {
@@ -99,8 +101,20 @@ class LibraryViewModel @Inject constructor(
         settingsStore.yaniUserId
             .onEach { userId ->
                 signedInUserId = userId
-                setState { copy(isSignedIn = userId > 0) }
-                if (userId > 0) loadRemoteLists(userId)
+                if (userId > 0) {
+                    setState { copy(isSignedIn = true) }
+                    loadRemoteLists(userId)
+                } else {
+                    remoteListsJob?.cancel()
+                    setState {
+                        copy(
+                            isSignedIn = false,
+                            isRemoteLoading = false,
+                            remoteError = null,
+                            remoteItems = emptyMap(),
+                        )
+                    }
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -133,6 +147,7 @@ class LibraryViewModel @Inject constructor(
                 }
             }
             LibraryState.Event.ScreenResumed -> refreshRemoteLists()
+            LibraryState.Event.RetrySelected -> refreshRemoteLists()
             is LibraryState.Event.RemoveLibraryEntry ->
                 viewModelScope.launch {
                     libraryStore.remove(event.animeId)
@@ -172,15 +187,33 @@ class LibraryViewModel @Inject constructor(
     }
 
     private fun loadRemoteLists(userId: Int) {
-        viewModelScope.launch {
+        remoteListsJob?.cancel()
+        remoteListsJob = viewModelScope.launch {
+            setState { copy(isRemoteLoading = true, remoteError = null) }
             runCatching {
                 val remote = fetchRemoteLists(userId)
                 val syncResult = syncLocalMissingToRemote(remote)
                 val currentRemote = if (syncResult.syncedAny) fetchRemoteLists(userId) else remote
                 currentRemote to syncResult.error
             }.fold(
-                onSuccess = { (remote, syncError) -> setState { copy(remoteItems = remote, remoteError = syncError) } },
-                onFailure = { setState { copy(remoteError = it.message) } },
+                onSuccess = { (remote, syncError) ->
+                    setState {
+                        copy(
+                            remoteItems = remote,
+                            remoteError = syncError,
+                            isRemoteLoading = false,
+                        )
+                    }
+                },
+                onFailure = {
+                    if (it is CancellationException) throw it
+                    setState {
+                        copy(
+                            remoteError = it.message,
+                            isRemoteLoading = false,
+                        )
+                    }
+                },
             )
         }
     }
