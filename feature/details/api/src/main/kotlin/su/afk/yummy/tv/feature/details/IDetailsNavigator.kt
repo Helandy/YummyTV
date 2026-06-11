@@ -7,6 +7,7 @@ interface IDetailsNavigator {
     fun getFullDetailsDest(animeId: Int): NavKey
     fun getEpisodesDest(animeId: Int): NavKey
     fun getEpisodeDubbingsDest(animeId: Int, episode: String): NavKey
+    fun getSubscriptionsDest(animeId: Int): NavKey
     fun getTrailersDest(animeId: Int): NavKey
     fun getSimilarDest(animeId: Int): NavKey
     fun getViewingOrderDest(animeId: Int): NavKey

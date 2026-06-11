@@ -170,6 +170,11 @@ class DetailsViewModel @AssistedInject constructor(
             DetailsState.Event.PosterClicked -> setState { copy(showPosterFullscreen = true) }
             DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
             is DetailsState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            DetailsState.Event.SubscriptionsRouteSelected -> nav.navigate(
+                detailsNavigator.getSubscriptionsDest(
+                    animeId
+                )
+            )
             DetailsState.Event.SubscriptionsSelected -> setState { copy(showSubscriptionsPicker = true) }
             DetailsState.Event.SubscriptionsDismissed -> setState { copy(showSubscriptionsPicker = false) }
             is DetailsState.Event.SubscriptionToggled -> toggleSubscription(event.key)

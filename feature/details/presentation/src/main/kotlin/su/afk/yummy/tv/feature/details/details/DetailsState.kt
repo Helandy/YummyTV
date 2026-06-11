@@ -68,6 +68,7 @@ class DetailsState {
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event
         data class CollectionSelected(val collectionId: Int) : Event
+        data object SubscriptionsRouteSelected : Event
         data object SubscriptionsSelected : Event
         data object SubscriptionsDismissed : Event
         data class SubscriptionToggled(val key: String) : Event

@@ -25,6 +25,7 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsFullDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSimilarDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsSubscriptionsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsTrailersDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsViewingOrderDestination
 import su.afk.yummy.tv.feature.details.rating.RatingMobileScreen
@@ -33,6 +34,8 @@ import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsMobileScreen
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsViewModel
 import su.afk.yummy.tv.feature.details.similar.SimilarMobileScreen
 import su.afk.yummy.tv.feature.details.similar.SimilarViewModel
+import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsMobileScreen
+import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsViewModel
 import su.afk.yummy.tv.feature.details.trailers.TrailersMobileScreen
 import su.afk.yummy.tv.feature.details.trailers.TrailersViewModel
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderMobileScreen
@@ -84,6 +87,18 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                     )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     EpisodeDubbingsMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<DetailsSubscriptionsDestination>(
+                metadata = bottomOverlay(),
+            ) { dest ->
+                val viewModel =
+                    hiltViewModel<SubscriptionsViewModel, SubscriptionsViewModel.Factory>(
+                        key = "mobile-subscriptions-${dest.animeId}",
+                        creationCallback = { factory -> factory.create(dest.animeId) },
+                    )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    SubscriptionsMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
             entry<DetailsTrailersDestination> { dest ->

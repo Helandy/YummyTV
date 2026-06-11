@@ -91,7 +91,7 @@ fun DetailsMobileScreen(
                         DetailsSecondaryActions(
                             state = state,
                             details = details,
-                            onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
+                            onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
                             onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
                             onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
                             onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
