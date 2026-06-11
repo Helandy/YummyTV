@@ -94,6 +94,17 @@ class SettingsStore(private val context: Context) {
         } ?: PlayerZoomLevel.PERCENT_10
     }
 
+    fun playerResizeSettings(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+    ): Flow<PlayerResizeSettings> {
+        val key = playerScopedResizeSettingsKey(animeId, animeTitle, playerName)
+        return context.dataStore.data.map { prefs ->
+            prefs[key]?.toPlayerResizeSettings() ?: PlayerResizeSettings()
+        }
+    }
+
     val appTheme: Flow<AppTheme> = context.dataStore.data.map { prefs ->
         prefs[appThemeKey]?.let { name ->
             runCatching { AppTheme.valueOf(name) }.getOrNull()
@@ -171,6 +182,18 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel) {
         context.dataStore.edit { prefs -> prefs[playerZoomLevelKey] = level.name }
+    }
+
+    suspend fun setPlayerResizeSettings(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+        settings: PlayerResizeSettings,
+    ) {
+        val key = playerScopedResizeSettingsKey(animeId, animeTitle, playerName)
+        context.dataStore.edit { prefs ->
+            prefs[key] = settings.toPreferenceValue()
+        }
     }
 
     suspend fun setAppTheme(theme: AppTheme) {
@@ -266,6 +289,43 @@ class SettingsStore(private val context: Context) {
         return withoutFavorite.toMutableList().apply {
             add(libraryIndex + 1, DetailsButtonAction.FAVORITE)
         }
+    }
+
+    private fun playerScopedResizeSettingsKey(
+        animeId: Int,
+        animeTitle: String,
+        playerName: String,
+    ): Preferences.Key<String> {
+        val titleKey = if (animeId > 0) {
+            "anime_id:$animeId"
+        } else {
+            "title:${animeTitle.normalizedPlayerResizeKeyPart()}"
+        }
+        val playerKey = playerName.normalizedPlayerResizeKeyPart()
+        return stringPreferencesKey("player_resize_settings|$titleKey|player:$playerKey")
+    }
+
+    private fun String.normalizedPlayerResizeKeyPart(): String =
+        trim()
+            .lowercase()
+            .replace(Regex("\\s+"), " ")
+            .ifBlank { "unknown" }
+
+    private fun PlayerResizeSettings.toPreferenceValue(): String =
+        "${resizeMode.name}|${zoomLevel.name}"
+
+    private fun String.toPlayerResizeSettings(): PlayerResizeSettings? {
+        val parts = split('|')
+        val mode = parts.getOrNull(0)?.let { name ->
+            runCatching { PlayerResizeMode.valueOf(name) }.getOrNull()
+        } ?: return null
+        val level = parts.getOrNull(1)?.let { name ->
+            runCatching { PlayerZoomLevel.valueOf(name) }.getOrNull()
+        } ?: PlayerZoomLevel.PERCENT_10
+        return PlayerResizeSettings(
+            resizeMode = mode,
+            zoomLevel = level,
+        )
     }
 
     companion object {

@@ -16,6 +16,8 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
+import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
@@ -84,11 +86,10 @@ class PlayerViewModel @AssistedInject constructor(
                 balancerIndex = newDest.currentBalancerIndex,
                 dubbingIndex = newDest.currentDubbingIndex,
                 episodeIndex = newDest.currentEpisodeIndex,
-                resizeMode = resizeMode,
-                zoomLevel = zoomLevel,
                 autoSkipOpeningsEndings = autoSkipOpeningsEndings,
             )
         }
+        observeActivePlayerResizeSettings(force = true)
         loadStream()
     }
 
@@ -124,6 +125,8 @@ class PlayerViewModel @AssistedInject constructor(
     )
 
     private var extractionJob: Job? = null
+    private var playerResizeSettingsJob: Job? = null
+    private var activePlayerResizeSettingsScope: PlayerResizeSettingsScope? = null
     private val markedWatchedVideoIds = mutableSetOf<Int>()
     private val markingWatchedVideoIds = mutableSetOf<Int>()
 
@@ -131,12 +134,7 @@ class PlayerViewModel @AssistedInject constructor(
         settingsStore.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
-        settingsStore.playerResizeMode
-            .onEach { mode -> setState { copy(resizeMode = mode) } }
-            .launchIn(viewModelScope)
-        settingsStore.playerZoomLevel
-            .onEach { level -> setState { copy(zoomLevel = level) } }
-            .launchIn(viewModelScope)
+        observeActivePlayerResizeSettings()
         loadStream()
     }
 
@@ -202,6 +200,7 @@ class PlayerViewModel @AssistedInject constructor(
                         episodeIndex = selection.episodeIndex,
                     )
                 }
+                observeActivePlayerResizeSettings()
                 loadStream()
             }
             is PlayerState.Event.BalancerSelected -> {
@@ -222,6 +221,7 @@ class PlayerViewModel @AssistedInject constructor(
                         episodeIndex = newEpisodeIdx,
                     )
                 }
+                observeActivePlayerResizeSettings()
                 loadStream()
             }
             is PlayerState.Event.QualitySelected -> {
@@ -240,18 +240,21 @@ class PlayerViewModel @AssistedInject constructor(
             }
 
             is PlayerState.Event.ResizeModeSelected -> {
-                setState { copy(resizeMode = event.mode) }
-                viewModelScope.launch {
-                    settingsStore.setPlayerResizeMode(event.mode)
-                }
+                val settings = PlayerResizeSettings(
+                    resizeMode = event.mode,
+                    zoomLevel = currentState.zoomLevel,
+                )
+                setState { copy(resizeMode = settings.resizeMode) }
+                savePlayerResizeSettings(settings)
             }
 
             is PlayerState.Event.ZoomLevelSelected -> {
-                setState { copy(resizeMode = PlayerResizeMode.ZOOM, zoomLevel = event.level) }
-                viewModelScope.launch {
-                    settingsStore.setPlayerResizeMode(PlayerResizeMode.ZOOM)
-                    settingsStore.setPlayerZoomLevel(event.level)
-                }
+                val settings = PlayerResizeSettings(
+                    resizeMode = PlayerResizeMode.ZOOM,
+                    zoomLevel = event.level,
+                )
+                setState { copy(resizeMode = settings.resizeMode, zoomLevel = settings.zoomLevel) }
+                savePlayerResizeSettings(settings)
             }
 
             is PlayerState.Event.PlaybackPositionChanged -> {
@@ -310,6 +313,57 @@ class PlayerViewModel @AssistedInject constructor(
     private suspend fun loadResumePosition(animeId: Int, episode: String): Long? {
         val entry = watchProgressStore.get(animeId, episode) ?: return null
         return entry.positionMs.takeIf { WatchProgressStore.isContinueWatchingEntry(entry) }
+    }
+
+    private fun observeActivePlayerResizeSettings(force: Boolean = false) {
+        val scope = currentPlayerResizeSettingsScope()
+        if (!force && scope == activePlayerResizeSettingsScope) return
+        activePlayerResizeSettingsScope = scope
+        playerResizeSettingsJob?.cancel()
+        setState {
+            copy(
+                resizeMode = PlayerResizeMode.FIT,
+                zoomLevel = PlayerZoomLevel.PERCENT_10,
+            )
+        }
+        playerResizeSettingsJob = settingsStore
+            .playerResizeSettings(
+                animeId = scope.animeId,
+                animeTitle = scope.animeTitle,
+                playerName = scope.playerName,
+            )
+            .onEach { settings ->
+                if (scope == activePlayerResizeSettingsScope) {
+                    setState {
+                        copy(
+                            resizeMode = settings.resizeMode,
+                            zoomLevel = settings.zoomLevel
+                        )
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun savePlayerResizeSettings(settings: PlayerResizeSettings) {
+        val scope = currentPlayerResizeSettingsScope()
+        viewModelScope.launch {
+            settingsStore.setPlayerResizeSettings(
+                animeId = scope.animeId,
+                animeTitle = scope.animeTitle,
+                playerName = scope.playerName,
+                settings = settings,
+            )
+        }
+    }
+
+    private fun currentPlayerResizeSettingsScope(): PlayerResizeSettingsScope {
+        val state = currentState
+        return PlayerResizeSettingsScope(
+            animeId = state.animeId,
+            animeTitle = state.animeTitle,
+            playerName = activeBalancerName(state),
+        )
     }
 
     private fun loadStream() {
@@ -555,5 +609,11 @@ class PlayerViewModel @AssistedInject constructor(
         val balancerIndex: Int,
         val dubbingIndex: Int,
         val episodeIndex: Int,
+    )
+
+    private data class PlayerResizeSettingsScope(
+        val animeId: Int,
+        val animeTitle: String,
+        val playerName: String,
     )
 }
