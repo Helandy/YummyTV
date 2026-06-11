@@ -11,6 +11,8 @@ import su.afk.yummy.tv.feature.home.mobile.R
 internal fun HomeFeedSection.isTitleOnlySection(): Boolean =
     title == "Новинки" ||
         title == "New releases" ||
+            title == "Рекомендации" ||
+            title == "Recommendations" ||
         title == "Коллекции" ||
         title == "Collections"
 
