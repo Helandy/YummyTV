@@ -22,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.mobile.R
 
 @Composable
 internal fun MobilePlayerTopBar(
@@ -62,7 +64,7 @@ internal fun MobilePlayerTopBar(
                 )
                 if (episode.isNotBlank()) {
                     Text(
-                        text = episode,
+                        text = stringResource(R.string.player_mobile_episode_number, episode),
                         color = Color.White.copy(alpha = 0.76f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

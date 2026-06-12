@@ -41,11 +41,11 @@
     <string name="details_mobile_aired">Вышло: %1$d из %2$s</string>
     <string name="details_mobile_unknown_count">?</string>
     <string name="details_mobile_views">%1$d просмотров</string>
-    <string name="details_mobile_episode">Эпизод %1$s</string>
+    <string name="details_mobile_episode">Серия %1$s</string>
     <string name="details_mobile_episode_dubbings_action">Информация о серии</string>
-    <string name="details_mobile_episode_dubbings_title">Эпизод %1$s</string>
+    <string name="details_mobile_episode_dubbings_title">Серия %1$s</string>
     <string name="details_mobile_episode_dubbings_empty">Озвучки не найдены</string>
-    <string name="details_mobile_episodes_count_short">%1$d эп.</string>
+    <string name="details_mobile_episodes_count_short">%1$d сер.</string>
     <string name="details_mobile_screenshot">Скриншот</string>
     <string name="details_mobile_trailer_number">Трейлер %1$d</string>
     <string name="details_mobile_other_titles">Другие названия</string>
