@@ -37,11 +37,11 @@
     <string name="search_mobile_filter_season_spring">Spring</string>
     <string name="search_mobile_filter_season_summer">Summer</string>
     <string name="search_mobile_filter_season_fall">Fall</string>
-    <string name="search_mobile_filter_age_pg">PG</string>
-    <string name="search_mobile_filter_age_pg13">PG-13</string>
-    <string name="search_mobile_filter_age_r17">R-17+</string>
-    <string name="search_mobile_filter_age_r">R+</string>
-    <string name="search_mobile_filter_age_rx">Rx</string>
+    <string name="search_mobile_filter_age_g">G (For everyone)</string>
+    <string name="search_mobile_filter_age_pg">PG (For children)</string>
+    <string name="search_mobile_filter_age_pg13">PG-13 (From 13)</string>
+    <string name="search_mobile_filter_age_r17">R-17+ (Violence or profanity)</string>
+    <string name="search_mobile_filter_age_r">R+ (Mild erotic scenes)</string>
     <string name="search_mobile_filter_sort_relevance">Relevance</string>
     <string name="search_mobile_filter_sort_title">Title</string>
     <string name="search_mobile_filter_sort_year">Year</string>

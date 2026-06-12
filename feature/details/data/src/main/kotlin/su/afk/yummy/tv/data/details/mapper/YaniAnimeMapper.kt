@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimePosterDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeRatingDto
@@ -42,7 +43,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         rating = source.rating.toAnimeRating(),
         genres = source.genres.mapNotNull { it.toGenre() },
         year = source.year?.takeIf { it > 0 },
-        ageRating = source.minAge?.titleLong.knownText() ?: source.minAge?.title.knownText(),
+        ageRating = source.minAge.toShortAgeRating(),
         views = source.views,
         status = source.animeStatus?.title.knownText(),
         type = source.type?.name.knownText() ?: source.type?.shortname.knownText(),
@@ -61,7 +62,7 @@ internal fun YaniAnimeResponseDto.toAnimePreview(): AnimePreview = AnimePreview(
     description = description,
     genres = genres.map { it.title }.filter { it.isNotBlank() },
     year = year?.takeIf { it > 0 },
-    ageRating = minAge?.titleLong ?: minAge?.title,
+    ageRating = minAge.toShortAgeRating(),
     type = type?.name,
     views = views,
     season = season?.takeIf { it > 0 },
@@ -85,6 +86,30 @@ private fun YaniAnimeRatingDto.toAnimeRating(): AnimeRating = AnimeRating(
     shikimori = shikimori?.takeIf { it > 0.0 },
     myAnimeList = myAnimeList?.takeIf { it > 0.0 },
 )
+
+private fun YaniAgeRatingDto?.toShortAgeRating(): String? {
+    this ?: return null
+    value.toShortAgeRatingLabel()?.let { return it }
+    return title.knownText()?.toShortAgeRatingTitle()
+        ?: titleLong.knownText()?.toShortAgeRatingTitle()
+}
+
+private fun Int?.toShortAgeRatingLabel(): String? = when (this) {
+    1 -> "G"
+    2 -> "PG"
+    3 -> "PG-13"
+    4 -> "R-17"
+    5 -> "R+"
+    else -> null
+}
+
+private fun String.toShortAgeRatingTitle(): String {
+    return when (val code = substringBefore("(").trim()) {
+        "G", "PG", "PG-13", "R+" -> code
+        "R-17", "R-17+" -> "R-17"
+        else -> this
+    }
+}
 
 private fun YaniNamedDto.toGenre(): AnimeGenre? =
     title.knownText()?.let { AnimeGenre(id = id, title = it) }

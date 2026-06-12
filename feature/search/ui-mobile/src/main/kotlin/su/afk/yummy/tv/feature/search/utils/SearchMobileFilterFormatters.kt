@@ -24,11 +24,11 @@ internal fun seasonOptions(): List<StringOption> = listOf(
 
 @Composable
 internal fun ageOptions(): List<IntOption> = listOf(
-    IntOption(1, stringResource(R.string.search_mobile_filter_age_pg)),
-    IntOption(2, stringResource(R.string.search_mobile_filter_age_pg13)),
-    IntOption(3, stringResource(R.string.search_mobile_filter_age_r17)),
-    IntOption(4, stringResource(R.string.search_mobile_filter_age_r)),
-    IntOption(5, stringResource(R.string.search_mobile_filter_age_rx)),
+    IntOption(1, stringResource(R.string.search_mobile_filter_age_g)),
+    IntOption(2, stringResource(R.string.search_mobile_filter_age_pg)),
+    IntOption(3, stringResource(R.string.search_mobile_filter_age_pg13)),
+    IntOption(4, stringResource(R.string.search_mobile_filter_age_r17)),
+    IntOption(5, stringResource(R.string.search_mobile_filter_age_r)),
 )
 
 @Composable

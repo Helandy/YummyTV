@@ -33,11 +33,11 @@
     <string name="search_filter_season_spring">Весна</string>
     <string name="search_filter_season_summer">Лето</string>
     <string name="search_filter_season_fall">Осень</string>
-    <string name="search_filter_age_pg">PG</string>
-    <string name="search_filter_age_pg13">PG-13</string>
-    <string name="search_filter_age_r17">R-17+</string>
-    <string name="search_filter_age_r">R+</string>
-    <string name="search_filter_age_rx">Rx</string>
+    <string name="search_filter_age_g">G (Для всех)</string>
+    <string name="search_filter_age_pg">PG (Для детей)</string>
+    <string name="search_filter_age_pg13">PG-13 (От 13)</string>
+    <string name="search_filter_age_r17">R-17+ (Насилие или нецензурная лексика)</string>
+    <string name="search_filter_age_r">R+ (Есть сцены легкой эротики)</string>
     <string name="search_filter_sort_relevance">Релевантность</string>
     <string name="search_filter_sort_title">Название</string>
     <string name="search_filter_sort_year">Год</string>
