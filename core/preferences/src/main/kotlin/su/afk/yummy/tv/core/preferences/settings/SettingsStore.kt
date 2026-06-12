@@ -41,6 +41,7 @@ class SettingsStore(private val context: Context) {
     private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
     private val yaniUnreadNotificationsCountKey = intPreferencesKey("yani_unread_notifications_count")
     private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
+    private val yaniContentLanguageKey = stringPreferencesKey("yani_content_language")
 
     @Volatile private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
 
@@ -149,6 +150,11 @@ class SettingsStore(private val context: Context) {
 
     val yaniUnreadNotificationsCount: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[yaniUnreadNotificationsCountKey] ?: 0
+    }
+
+    val yaniContentLanguage: Flow<YaniContentLanguage> = context.dataStore.data.map { prefs ->
+        YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
+            ?: YaniContentLanguage.fromSystemLocale(context)
     }
 
     init {
@@ -284,6 +290,18 @@ class SettingsStore(private val context: Context) {
     suspend fun setYaniUnreadNotificationsCount(count: Int) {
         context.dataStore.edit { prefs ->
             prefs[yaniUnreadNotificationsCountKey] = count.coerceAtLeast(0)
+        }
+    }
+
+    suspend fun setYaniContentLanguage(language: YaniContentLanguage) {
+        context.dataStore.edit { prefs -> prefs[yaniContentLanguageKey] = language.name }
+    }
+
+    suspend fun ensureYaniContentLanguageInitialized() {
+        context.dataStore.edit { prefs ->
+            if (YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey]) == null) {
+                prefs[yaniContentLanguageKey] = YaniContentLanguage.fromSystemLocale(context).name
+            }
         }
     }
 

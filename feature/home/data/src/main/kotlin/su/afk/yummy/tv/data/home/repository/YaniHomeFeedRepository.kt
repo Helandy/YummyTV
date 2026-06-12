@@ -1,9 +1,12 @@
 package su.afk.yummy.tv.data.home.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.mapper.toHomeFeed
@@ -18,6 +21,7 @@ class YaniHomeFeedRepository(
     private val cache: CacheStore,
     private val json: Json,
     private val stringProvider: StringProvider,
+    private val settingsStore: SettingsStore,
 ) : HomeFeedRepository {
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
@@ -25,8 +29,9 @@ class YaniHomeFeedRepository(
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         cache.getOrFetch(
-            key = "feed",
+            key = "feed".withYaniContentLanguage(language),
             ttlMs = FEED_TTL_MS,
             serialize = { dto: YaniFeedDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },

@@ -7,6 +7,7 @@
     <string name="settings_tab_account">Аккаунт</string>
     <string name="settings_account_sign_in_short">Войти</string>
     <string name="settings_tab_cache">Кэш</string>
+    <string name="settings_tab_language">Язык</string>
     <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">О приложении</string>
@@ -52,7 +53,7 @@
     <string name="settings_poster_card_size_compact">Компактный</string>
     <string name="settings_poster_card_size_compact_hint">Больше карточек в строке</string>
     <string name="settings_poster_card_size_standard">Стандартный</string>
-    <string name="settings_poster_card_size_standard_hint">Текущий размер по умолчанию</string>
+    <string name="settings_poster_card_size_standard_hint">Размер по умолчанию</string>
     <string name="settings_poster_card_size_large">Крупный</string>
     <string name="settings_poster_card_size_large_hint">Крупнее карточки постеров</string>
     <string name="settings_poster_quality_low">Низкое</string>
@@ -87,6 +88,10 @@
     <string name="settings_cache_size_200">200 МБ</string>
     <string name="settings_cache_size_max">Максимальный</string>
     <string name="settings_cache_size_300">300 МБ</string>
+    <string name="settings_content_language_title">Язык</string>
+    <string name="settings_content_language_russian">Русский</string>
+    <string name="settings_content_language_english">Английский</string>
+    <string name="settings_content_language_ukrainian">Украинский</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Токен приложения</string>
     <string name="settings_yani_application_token_hint">Создайте приложение и скопируйте его публичный токен: https://yummyani.me/dev/applications/\nОн нужен для авторизации приложения и отправляется в заголовке X-Application. Все запросы API используют JSON, включая тело запроса.</string>

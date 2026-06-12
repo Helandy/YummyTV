@@ -18,6 +18,7 @@ android {
 dependencies {
     implementation(project(":feature:schedule:domain"))
     implementation(project(":core:network"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)

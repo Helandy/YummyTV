@@ -7,6 +7,7 @@
     <string name="settings_tab_account">Account</string>
     <string name="settings_account_sign_in_short">Sign in</string>
     <string name="settings_tab_cache">Cache</string>
+    <string name="settings_tab_language">Language</string>
     <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">About</string>
@@ -87,6 +88,10 @@
     <string name="settings_cache_size_200">200 MB</string>
     <string name="settings_cache_size_max">Maximum</string>
     <string name="settings_cache_size_300">300 MB</string>
+    <string name="settings_content_language_title">Language</string>
+    <string name="settings_content_language_russian">Russian</string>
+    <string name="settings_content_language_english">English</string>
+    <string name="settings_content_language_ukrainian">Ukrainian</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Application token</string>
     <string name="settings_yani_application_token_hint">Create an application and copy its public token from https://yummyani.me/dev/applications/\nRequired for authorizing the app: the token is sent in the X-Application header. All API requests use JSON, including request bodies.</string>

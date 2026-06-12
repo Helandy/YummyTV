@@ -9,6 +9,7 @@ internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
     DETAILS(R.string.settings_tab_details),
     PLAYER(R.string.settings_tab_player),
     CACHE(R.string.settings_tab_cache),
+    LANGUAGE(R.string.settings_tab_language),
     API(R.string.settings_tab_api),
     TV_HOME(R.string.settings_tab_tv_home),
     ABOUT(R.string.settings_tab_about),

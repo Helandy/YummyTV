@@ -21,8 +21,9 @@ class YaniVideoSubscriptionRepository(
 
     override suspend fun getSubscriptions(userId: Int): List<VideoSubscription> =
         withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.subscriptions(userId),
+                key = YaniAccountCacheKeys.subscriptions(userId, language),
                 ttlMs = ACCOUNT_SHORT_TTL_MS,
                 serialize = { dto: YaniVideoSubscriptionsResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },
@@ -38,7 +39,7 @@ class YaniVideoSubscriptionRepository(
             } else {
                 api.removeSubscribed(videoId)
             }
-            if (userId > 0) cache.invalidate(YaniAccountCacheKeys.subscriptions(userId))
+            if (userId > 0) cache.invalidatePrefix(YaniAccountCacheKeys.subscriptions(userId))
             result
         }
 }

@@ -6,6 +6,7 @@
     <string name="settings_mobile_section_details">Details</string>
     <string name="settings_mobile_section_tv_home">TV Home</string>
     <string name="settings_mobile_section_cache">Cache</string>
+    <string name="settings_mobile_section_language">Language</string>
     <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">About</string>
     <string name="settings_mobile_theme">Theme</string>
@@ -83,6 +84,10 @@
     <string name="settings_cache_size_200">200 MB</string>
     <string name="settings_cache_size_max">Maximum</string>
     <string name="settings_cache_size_300">300 MB</string>
+    <string name="settings_content_language_title">Language</string>
+    <string name="settings_content_language_russian">Russian</string>
+    <string name="settings_content_language_english">English</string>
+    <string name="settings_content_language_ukrainian">Ukrainian</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Application token</string>
     <string name="settings_yani_application_token_hint">Create an application and copy its public token from https://yummyani.me/dev/applications/</string>

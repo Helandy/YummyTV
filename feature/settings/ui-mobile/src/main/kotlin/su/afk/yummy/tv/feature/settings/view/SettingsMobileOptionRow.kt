@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 internal fun SettingsMobileOptionRow(
     label: String,
     value: String,
-    hint: String,
+    hint: String = "",
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -43,13 +43,15 @@ internal fun SettingsMobileOptionRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (hint.isNotBlank()) {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         Text(
             text = value,

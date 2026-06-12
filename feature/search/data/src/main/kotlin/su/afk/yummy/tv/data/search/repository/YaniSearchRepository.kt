@@ -3,9 +3,13 @@ package su.afk.yummy.tv.data.search.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
@@ -33,6 +37,7 @@ class YaniSearchRepository(
     private val api: YaniSearchApi,
     private val cache: CacheStore,
     private val json: Json,
+    private val settingsStore: SettingsStore,
 ) : SearchRepository {
     override suspend fun search(
         query: String,
@@ -40,8 +45,9 @@ class YaniSearchRepository(
         limit: Int,
         offset: Int,
     ): SearchPage = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         val response = cache.getOrFetch(
-            key = searchCacheKey(query, filters, limit, offset),
+            key = searchCacheKey(query, filters, limit, offset, language),
             ttlMs = SEARCH_RESULTS_TTL_MS,
             serialize = { dto: YaniSearchResponseDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
@@ -55,8 +61,9 @@ class YaniSearchRepository(
     }
 
     override suspend fun getFilterOptions(): SearchFilterOptions = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         val response = cache.getOrFetch(
-            key = "search_filter_options_v1",
+            key = "search_filter_options_v1".withYaniContentLanguage(language),
             ttlMs = SEARCH_FILTER_OPTIONS_TTL_MS,
             serialize = { dto: YaniSearchFilterOptionsDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
@@ -85,6 +92,7 @@ class YaniSearchRepository(
         filters: SearchFilters,
         limit: Int,
         offset: Int,
+        language: YaniContentLanguage,
     ): String = buildString {
         append("search_results_v1")
         append("_q=").append(query.trim().lowercase())
@@ -100,5 +108,5 @@ class YaniSearchRepository(
         append("_forward=").append(filters.sortForward)
         append("_limit=").append(limit)
         append("_offset=").append(offset)
-    }
+    }.withYaniContentLanguage(language)
 }

@@ -18,6 +18,7 @@ android {
 dependencies {
     implementation(project(":feature:home:domain"))
     implementation(project(":core:network"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":core:error"))
     implementation(libs.kotlinx.serialization.json)

@@ -6,4 +6,5 @@ internal enum class SettingsMobilePicker {
     POSTER_QUALITY,
     PLAYER,
     CACHE,
+    CONTENT_LANGUAGE,
 }

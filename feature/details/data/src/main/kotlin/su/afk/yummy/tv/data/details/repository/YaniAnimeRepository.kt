@@ -1,8 +1,11 @@
 package su.afk.yummy.tv.data.details.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeVideosDto
@@ -27,11 +30,13 @@ class YaniAnimeRepository(
     private val api: YaniAnimeApi,
     private val cache: CacheStore,
     private val json: Json,
+    private val settingsStore: SettingsStore,
 ) : AnimeRepository {
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         cache.getOrFetch(
-            key = "anime_details_v2_$animeId",
+            key = "anime_details_v2_$animeId".withYaniContentLanguage(language),
             ttlMs = ANIME_DETAILS_TTL_MS,
             serialize = { dto: YaniAnimeDetailsDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
@@ -41,8 +46,9 @@ class YaniAnimeRepository(
     }
 
     override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         cache.getOrFetch(
-            key = "anime_videos_$animeId",
+            key = "anime_videos_$animeId".withYaniContentLanguage(language),
             ttlMs = ANIME_VIDEOS_TTL_MS,
             serialize = { dto: YaniAnimeVideosDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },
@@ -51,28 +57,36 @@ class YaniAnimeRepository(
         ).response.map { it.toAnimeVideo() }
     }
 
-	    override suspend fun getAnimeRecommendations(animeId: Int, fromAi: Boolean): List<AnimeRecommendation> =
-	        withContext(Dispatchers.IO) {
-	            runCatching {
-	                cache.getOrFetch(
-	                    key = "anime_recommendations_${fromAi}_$animeId",
-	                    ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
-	                    serialize = { dto: YaniRecommendationsDto -> json.encodeToString(dto) },
-	                    deserialize = { json.decodeFromString(it) },
-	                    fetch = { api.getAnimeRecommendations(animeId, fromAi) },
-	                ).response.mapNotNull { it.toAnimeRecommendation() }
-	            }.getOrElse { emptyList() }
-	        }
+    override suspend fun getAnimeRecommendations(
+        animeId: Int,
+        fromAi: Boolean
+    ): List<AnimeRecommendation> =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            runCatching {
+                cache.getOrFetch(
+                    key = "anime_recommendations_${fromAi}_$animeId".withYaniContentLanguage(
+                        language
+                    ),
+                    ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
+                    serialize = { dto: YaniRecommendationsDto -> json.encodeToString(dto) },
+                    deserialize = { json.decodeFromString(it) },
+                    fetch = { api.getAnimeRecommendations(animeId, fromAi) },
+                ).response.mapNotNull { it.toAnimeRecommendation() }
+            }.getOrElse { emptyList() }
+        }
 
-	    override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> = withContext(Dispatchers.IO) {
-	        runCatching {
-	            cache.getOrFetch(
-	                key = "anime_trailers_$animeId",
-	                ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
-	                serialize = { dto: YaniTrailersResponseDto -> json.encodeToString(dto) },
-	                deserialize = { json.decodeFromString(it) },
-	                fetch = { api.getAnimeTrailers(animeId) },
-	            ).response.map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
-	        }.getOrElse { emptyList() }
-	    }
+    override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            runCatching {
+                cache.getOrFetch(
+                    key = "anime_trailers_$animeId".withYaniContentLanguage(language),
+                    ttlMs = ANIME_PUBLIC_EXTRAS_TTL_MS,
+                    serialize = { dto: YaniTrailersResponseDto -> json.encodeToString(dto) },
+                    deserialize = { json.decodeFromString(it) },
+                    fetch = { api.getAnimeTrailers(animeId) },
+                ).response.map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
+            }.getOrElse { emptyList() }
+        }
 }

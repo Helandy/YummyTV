@@ -142,7 +142,8 @@ object AccountDataModule {
         api: YaniAccountApi,
         cache: CacheStore,
         json: Json,
-    ): UserStatsRepository = YaniUserStatsRepository(api, cache, json)
+        settingsStore: SettingsStore,
+    ): UserStatsRepository = YaniUserStatsRepository(api, cache, json, settingsStore)
 
     @Provides
     @Singleton

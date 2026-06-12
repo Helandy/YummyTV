@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimePreviewRepository
@@ -29,13 +30,23 @@ object DetailsDataModule {
 
     @Provides
     @Singleton
-    fun provideAnimeRepository(api: YaniAnimeApi, cache: CacheStore, json: Json): AnimeRepository =
-        YaniAnimeRepository(api, cache, json)
+    fun provideAnimeRepository(
+        api: YaniAnimeApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): AnimeRepository =
+        YaniAnimeRepository(api, cache, json, settingsStore)
 
     @Provides
     @Singleton
-    fun provideAnimePreviewRepository(api: YaniAnimeApi, cache: CacheStore, json: Json): AnimePreviewRepository =
-        YaniAnimePreviewRepository(api, cache, json)
+    fun provideAnimePreviewRepository(
+        api: YaniAnimeApi,
+        cache: CacheStore,
+        json: Json,
+        settingsStore: SettingsStore,
+    ): AnimePreviewRepository =
+        YaniAnimePreviewRepository(api, cache, json, settingsStore)
 
     @Provides
     fun provideGetAnimeDetailsUseCase(repo: AnimeRepository) = GetAnimeDetailsUseCase(repo)

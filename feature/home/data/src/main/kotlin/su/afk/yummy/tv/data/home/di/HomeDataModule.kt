@@ -7,6 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
@@ -30,8 +31,9 @@ object HomeDataModule {
         cache: CacheStore,
         json: Json,
         stringProvider: StringProvider,
+        settingsStore: SettingsStore,
     ): HomeFeedRepository =
-        YaniHomeFeedRepository(api, cache, json, stringProvider)
+        YaniHomeFeedRepository(api, cache, json, stringProvider, settingsStore)
 
     @Provides
     fun provideGetHomeFeedUseCase(repo: HomeFeedRepository) = GetHomeFeedUseCase(repo)

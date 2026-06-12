@@ -2,9 +2,11 @@ package su.afk.yummy.tv.data.account.repository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
@@ -22,10 +24,12 @@ class YaniUserStatsRepository(
     private val api: YaniAccountApi,
     private val cache: CacheStore,
     private val json: Json,
+    private val settingsStore: SettingsStore,
 ) : UserStatsRepository {
     override suspend fun getUserStats(userId: Int): UserStats = withContext(Dispatchers.IO) {
+        val language = settingsStore.yaniContentLanguage.first()
         val response = cache.getOrFetch(
-            key = YaniAccountCacheKeys.userStats(userId),
+            key = YaniAccountCacheKeys.userStats(userId, language),
             ttlMs = ACCOUNT_MEDIUM_TTL_MS,
             serialize = { dto: YaniUserStatsCacheDto -> json.encodeToString(dto) },
             deserialize = { json.decodeFromString(it) },

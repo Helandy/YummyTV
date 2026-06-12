@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 const val YANI_BASE_URL = "https://api.yani.tv"
 private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"
+private const val YANI_LANGUAGE_HEADER = "Lang"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 
 fun buildYaniHttpClient(
@@ -52,14 +53,24 @@ fun buildYaniHttpClient(
         install(createClientPlugin("YaniApplicationHeader") {
             onRequest { request, _ ->
                 if (request.url.host == YANI_API_HOST) {
-                    val (token, refreshToken) = headerCache.current()
-                    if (token.isNotBlank()) {
+                    val headers = headerCache.current()
+                    if (headers.applicationToken.isNotBlank()) {
                         request.headers.remove(YANI_APPLICATION_HEADER)
-                        request.headers.append(YANI_APPLICATION_HEADER, token)
+                        request.headers.append(YANI_APPLICATION_HEADER, headers.applicationToken)
                     }
-                    if (refreshToken.isNotBlank() && request.headers[HttpHeaders.Authorization].isNullOrBlank()) {
+                    if (headers.contentLanguageCode.isNotBlank()) {
+                        request.headers.remove(YANI_LANGUAGE_HEADER)
+                        request.headers.append(YANI_LANGUAGE_HEADER, headers.contentLanguageCode)
+                    }
+                    if (
+                        headers.refreshToken.isNotBlank() &&
+                        request.headers[HttpHeaders.Authorization].isNullOrBlank()
+                    ) {
                         request.headers.remove(HttpHeaders.Authorization)
-                        request.headers.append(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + refreshToken)
+                        request.headers.append(
+                            HttpHeaders.Authorization,
+                            YANI_AUTHORIZATION_PREFIX + headers.refreshToken,
+                        )
                     }
                 }
             }
@@ -89,6 +100,8 @@ private class YaniRequestHeaderCache(
     @Volatile private var loaded = false
     @Volatile private var applicationToken = ""
     @Volatile private var refreshToken = ""
+    @Volatile
+    private var contentLanguageCode = ""
 
     init {
         scope.launch {
@@ -101,11 +114,20 @@ private class YaniRequestHeaderCache(
                 refreshToken = token
             }
         }
+        scope.launch {
+            settingsStore.yaniContentLanguage.collectLatest { language ->
+                contentLanguageCode = language.apiCode
+            }
+        }
     }
 
-    suspend fun current(): Pair<String, String> {
+    suspend fun current(): YaniRequestHeaders {
         if (!loaded) loadInitialValues()
-        return applicationToken to refreshToken
+        return YaniRequestHeaders(
+            applicationToken = applicationToken,
+            refreshToken = refreshToken,
+            contentLanguageCode = contentLanguageCode,
+        )
     }
 
     private suspend fun loadInitialValues() {
@@ -114,10 +136,18 @@ private class YaniRequestHeaderCache(
             coroutineScope {
                 val applicationTokenDeferred = async { settingsStore.yaniApplicationToken.first() }
                 val refreshTokenDeferred = async { yaniAuthPreferences.refreshToken.first() }
+                val contentLanguageDeferred = async { settingsStore.yaniContentLanguage.first() }
                 applicationToken = applicationTokenDeferred.await()
                 refreshToken = refreshTokenDeferred.await()
+                contentLanguageCode = contentLanguageDeferred.await().apiCode
             }
             loaded = true
         }
     }
 }
+
+private data class YaniRequestHeaders(
+    val applicationToken: String,
+    val refreshToken: String,
+    val contentLanguageCode: String,
+)

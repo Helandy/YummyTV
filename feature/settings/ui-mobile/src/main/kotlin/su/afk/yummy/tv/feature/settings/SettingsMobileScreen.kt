@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.settings.mobile.BuildConfig
 import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
@@ -121,6 +122,16 @@ fun SettingsMobileScreen(
                         value = state.previewCacheSize.label(),
                         hint = state.previewCacheSize.hint(),
                         onClick = { activePicker = SettingsMobilePicker.CACHE },
+                    )
+                }
+            }
+
+            item {
+                SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_language)) {
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_content_language_title),
+                        value = state.contentLanguage.label(),
+                        onClick = { activePicker = SettingsMobilePicker.CONTENT_LANGUAGE },
                     )
                 }
             }
@@ -238,6 +249,22 @@ fun SettingsMobileScreen(
             onDismiss = { activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.PreviewCacheSizeSelected(it))
+                activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.CONTENT_LANGUAGE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_content_language_title),
+            selectedValue = state.contentLanguage,
+            options = YaniContentLanguage.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                )
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.ContentLanguageSelected(it))
                 activePicker = null
             },
         )

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.DetailsButtonOrderItem
 
@@ -159,5 +160,14 @@ internal fun PreviewCacheSize.hint(): String = stringResource(
         PreviewCacheSize.MB_100 -> R.string.settings_cache_size_100
         PreviewCacheSize.MB_200 -> R.string.settings_cache_size_200
         PreviewCacheSize.MB_300 -> R.string.settings_cache_size_300
+    },
+)
+
+@Composable
+internal fun YaniContentLanguage.label(): String = stringResource(
+    when (this) {
+        YaniContentLanguage.RUSSIAN -> R.string.settings_content_language_russian
+        YaniContentLanguage.ENGLISH -> R.string.settings_content_language_english
+        YaniContentLanguage.UKRAINIAN -> R.string.settings_content_language_ukrainian
     },
 )

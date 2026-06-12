@@ -86,8 +86,9 @@ class YaniAnimeExtrasRepository(
 
     override suspend fun getCollections(animeId: Int, limit: Int, offset: Int): List<AnimeCollectionSummary> =
         withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.animeCollections(animeId, limit, offset),
+                key = YaniAccountCacheKeys.animeCollections(animeId, limit, offset, language),
                 ttlMs = ACCOUNT_MEDIUM_TTL_MS,
                 serialize = { dto: YaniCollectionsResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },
@@ -105,8 +106,9 @@ class YaniAnimeExtrasRepository(
 
     override suspend fun getCollections(limit: Int, offset: Int): List<AnimeCollectionSummary> =
         withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.collections(limit, offset),
+                key = YaniAccountCacheKeys.collections(limit, offset, language),
                 ttlMs = ACCOUNT_MEDIUM_TTL_MS,
                 serialize = { dto: YaniCollectionsResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },

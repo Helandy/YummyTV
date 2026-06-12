@@ -18,6 +18,7 @@ android {
 dependencies {
     implementation(project(":feature:search:domain"))
     implementation(project(":core:network"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.kotlin.test)

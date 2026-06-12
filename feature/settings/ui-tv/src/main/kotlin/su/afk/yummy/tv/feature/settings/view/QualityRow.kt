@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun QualityRow(
     label: String,
-    hint: String,
+    hint: String = "",
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -68,11 +68,13 @@ internal fun QualityRow(
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                 color = labelColor,
             )
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (hint.isNotBlank()) {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

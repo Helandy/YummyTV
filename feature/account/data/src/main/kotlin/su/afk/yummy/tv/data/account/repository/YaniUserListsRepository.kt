@@ -25,8 +25,9 @@ class YaniUserListsRepository(
 
     override suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
         withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.userList(userId, list.id),
+                key = YaniAccountCacheKeys.userList(userId, list.id, language),
                 ttlMs = ACCOUNT_SHORT_TTL_MS,
                 serialize = { dto: YaniUserListResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },
@@ -36,8 +37,9 @@ class YaniUserListsRepository(
 
     override suspend fun getUserFavorites(userId: Int): List<UserAnimeListItem> =
         withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.userList(userId, FAVORITES_LIST_ID),
+                key = YaniAccountCacheKeys.userList(userId, FAVORITES_LIST_ID, language),
                 ttlMs = ACCOUNT_SHORT_TTL_MS,
                 serialize = { dto: YaniUserListResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },

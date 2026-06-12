@@ -41,6 +41,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
         setupCoilImageLoader()
         homeFeedRefreshScheduler.schedule()
         applicationScope.launch {
+            settingsStore.ensureYaniContentLanguageInitialized()
             if (settingsStore.markStartedVersion(BuildConfig.VERSION_CODE)) {
                 deleteDownloadedUpdateApk()
             }

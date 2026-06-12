@@ -26,8 +26,9 @@ class YaniProfileNotificationsRepository(
     override suspend fun getNotifications(limit: Int, offset: Int): List<ProfileNotification> =
         withContext(Dispatchers.IO) {
             val userId = currentUserId()
+            val language = settingsStore.yaniContentLanguage.first()
             cache.getOrFetch(
-                key = YaniAccountCacheKeys.notifications(userId, limit, offset),
+                key = YaniAccountCacheKeys.notifications(userId, limit, offset, language),
                 ttlMs = ACCOUNT_SHORT_TTL_MS,
                 serialize = { dto: YaniNotificationsResponseDto -> json.encodeToString(dto) },
                 deserialize = { json.decodeFromString(it) },

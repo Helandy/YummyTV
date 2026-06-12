@@ -24,7 +24,8 @@ import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
 internal fun ApiSettingsPanel(
     token: String,
     upFocusRequester: FocusRequester,
-    contentFocusRequester: FocusRequester,
+    contentFocusRequester: FocusRequester? = null,
+    restoreUpToTab: Boolean = true,
     onTokenChanged: (String) -> Unit,
 ) {
     Column(
@@ -48,8 +49,20 @@ internal fun ApiSettingsPanel(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(contentFocusRequester)
-                .restoreTabFocusOnUp(upFocusRequester),
+                .then(
+                    if (contentFocusRequester != null) {
+                        Modifier.focusRequester(contentFocusRequester)
+                    } else {
+                        Modifier
+                    },
+                )
+                .then(
+                    if (restoreUpToTab) {
+                        Modifier.restoreTabFocusOnUp(upFocusRequester)
+                    } else {
+                        Modifier
+                    },
+                ),
         )
         Text(
             text = stringResource(R.string.settings_yani_application_token_hint),

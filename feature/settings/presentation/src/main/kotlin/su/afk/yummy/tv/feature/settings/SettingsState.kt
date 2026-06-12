@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 
 enum class DetailsButtonMoveDirection {
     UP,
@@ -28,6 +29,7 @@ class SettingsState {
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
         val yaniApplicationToken: String = "",
+        val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     ) : UiState
 
@@ -42,6 +44,7 @@ class SettingsState {
         data class PreviewCacheSizeSelected(val size: PreviewCacheSize) : Event
         data object AutoSkipOpeningsEndingsToggled : Event
         data class YaniApplicationTokenChanged(val token: String) : Event
+        data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
         data class DetailsButtonMoved(
             val action: DetailsButtonAction,
             val direction: DetailsButtonMoveDirection,

@@ -45,6 +45,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.label
@@ -321,12 +322,45 @@ fun SettingsTvScreen(
                             }
                         }
 
-                        SettingsTab.API -> ApiSettingsPanel(
-                            token = state.yaniApplicationToken,
-                            upFocusRequester = tabFocusRequester,
-                            contentFocusRequester = tabContentFocusRequester,
-                            onTokenChanged = { onEvent(SettingsState.Event.YaniApplicationTokenChanged(it)) },
-                        )
+                        SettingsTab.LANGUAGE -> {
+                            YaniContentLanguage.entries.forEachIndexed { index, language ->
+                                QualityRow(
+                                    label = language.label(),
+                                    selected = language == state.contentLanguage,
+                                    onClick = {
+                                        onEvent(SettingsState.Event.ContentLanguageSelected(language))
+                                    },
+                                    modifier = Modifier
+                                        .then(
+                                            if (index == 0) {
+                                                Modifier.focusRequester(tabContentFocusRequester)
+                                            } else {
+                                                Modifier
+                                            },
+                                        )
+                                        .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                )
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                )
+                            }
+                        }
+
+                        SettingsTab.API -> {
+                            ApiSettingsPanel(
+                                token = state.yaniApplicationToken,
+                                upFocusRequester = tabFocusRequester,
+                                contentFocusRequester = tabContentFocusRequester,
+                                onTokenChanged = {
+                                    onEvent(
+                                        SettingsState.Event.YaniApplicationTokenChanged(
+                                            it
+                                        )
+                                    )
+                                },
+                            )
+                        }
 
                         SettingsTab.TV_HOME -> {
                             ToggleRow(

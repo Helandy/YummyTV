@@ -55,6 +55,9 @@ class SettingsViewModel @Inject constructor(
         settingsStore.yaniApplicationToken
             .onEach { setState { copy(yaniApplicationToken = it) } }
             .launchIn(viewModelScope)
+        settingsStore.yaniContentLanguage
+            .onEach { setState { copy(contentLanguage = it) } }
+            .launchIn(viewModelScope)
         settingsStore.detailsButtonOrder
             .onEach { setState { copy(detailsButtonOrder = it) } }
             .launchIn(viewModelScope)
@@ -94,6 +97,9 @@ class SettingsViewModel @Inject constructor(
                 viewModelScope.launch {
                     settingsStore.setYaniApplicationToken(event.token)
                 }
+            }
+            is SettingsState.Event.ContentLanguageSelected -> viewModelScope.launch {
+                settingsStore.setYaniContentLanguage(event.language)
             }
             is SettingsState.Event.DetailsButtonMoved -> viewModelScope.launch {
                 settingsStore.setDetailsButtonOrder(

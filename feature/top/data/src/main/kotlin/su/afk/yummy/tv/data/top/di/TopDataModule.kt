@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.top.network.YaniAnimeTopApi
 import su.afk.yummy.tv.data.top.repository.YaniAnimeTopRepository
@@ -26,9 +27,10 @@ object TopDataModule {
     fun provideAnimeTopRepository(
         api: YaniAnimeTopApi,
         cache: CacheStore,
-        json: Json
+        json: Json,
+        settingsStore: SettingsStore,
     ): AnimeTopRepository =
-        YaniAnimeTopRepository(api, cache, json)
+        YaniAnimeTopRepository(api, cache, json, settingsStore)
 
     @Provides
     fun provideGetAnimeTopUseCase(repo: AnimeTopRepository) = GetAnimeTopUseCase(repo)
