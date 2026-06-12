@@ -25,11 +25,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -69,10 +73,21 @@ internal fun PlayerResizeSettingsPanel(
         exit = fadeOut(),
     ) {
         val maxPanelHeight = (LocalConfiguration.current.screenHeightDp * 0.7f).dp
+        val zoomFocusRequesters = remember(zoomLevels) { zoomLevels.map { FocusRequester() } }
+        var pendingZoomFocusIndex by remember { mutableStateOf<Int?>(null) }
 
-        LaunchedEffect(visible, selectedResizeMode) {
+        LaunchedEffect(visible) {
             if (visible) {
                 runCatching { selectedResizeFocusRequester.requestFocus() }
+            }
+        }
+
+        LaunchedEffect(visible, selectedResizeMode, selectedZoomLevel, pendingZoomFocusIndex) {
+            val index = pendingZoomFocusIndex ?: return@LaunchedEffect
+            if (visible && selectedResizeMode == PlayerResizeMode.ZOOM) {
+                withFrameNanos { }
+                runCatching { zoomFocusRequesters[index].requestFocus() }
+                pendingZoomFocusIndex = null
             }
         }
 
@@ -117,13 +132,24 @@ internal fun PlayerResizeSettingsPanel(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                zoomLevels.forEach { level ->
+                zoomLevels.forEachIndexed { index, level ->
+                    val previousZoomFocusRequester = zoomFocusRequesters.getOrNull(index - 1)
+                    val nextZoomFocusRequester = zoomFocusRequesters.getOrNull(index + 1)
                     PlayerZoomLevelItem(
                         label = level.tvZoomLevelLabel(),
                         selected = selectedResizeMode == PlayerResizeMode.ZOOM && level == selectedZoomLevel,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(zoomFocusRequesters[index])
+                            .focusProperties {
+                                left = previousZoomFocusRequester ?: FocusRequester.Cancel
+                                right = nextZoomFocusRequester ?: FocusRequester.Cancel
+                            },
                         onExitDown = onExitDown,
-                        onClick = { onZoomLevelSelected(level) },
+                        onClick = {
+                            pendingZoomFocusIndex = index
+                            onZoomLevelSelected(level)
+                        },
                     )
                 }
             }
@@ -239,11 +265,15 @@ private fun PlayerZoomLevelItem(
     Box(
         modifier = modifier
             .onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
-                    onExitDown()
-                    true
-                } else {
-                    false
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                when (event.key) {
+                    Key.DirectionDown -> {
+                        onExitDown()
+                        true
+                    }
+
+                    else -> false
                 }
             }
             .clip(shape)

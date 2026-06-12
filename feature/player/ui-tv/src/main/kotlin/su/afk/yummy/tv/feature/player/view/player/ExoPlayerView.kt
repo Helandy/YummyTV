@@ -294,8 +294,9 @@ internal fun ExoPlayerView(
 
     fun requestPanelReturnFocus(): Boolean {
         val target = pendingPanelReturnFocusTarget ?: return false
-        pendingPanelReturnFocusTarget = null
-        return requestControlFocus(target.toPlayerControlFocusTarget())
+        val restored = requestControlFocus(target.toPlayerControlFocusTarget())
+        if (restored) pendingPanelReturnFocusTarget = null
+        return restored
     }
 
     fun playNextEpisode() {
@@ -426,6 +427,7 @@ internal fun ExoPlayerView(
             withFrameNanos { }
             try { rateTitleFocusRequester.requestFocus() } catch (_: Exception) {}
         } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel) {
+            withFrameNanos { }
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
                 requestControlFocus(target).also { restored ->
                     if (restored) onControlFocusRestored()
