@@ -101,14 +101,18 @@ internal fun DetailsButtonBar(
     modifier: Modifier = Modifier,
     height: Dp = 150.dp,
 ) {
-    val resumeEntry = watchProgress.values
-        .filter { it.animeId == details.id && it.positionMs > 0 }
-        .maxByOrNull { it.updatedAt }
+    val continueTarget = (videosState as? VideosUiState.Content)?.let { content ->
+        resolveDetailsContinueTarget(
+            animeId = details.id,
+            videos = content.videos,
+            watchProgress = watchProgress,
+        )
+    }
     val watchLabel = when {
         isWatchLoading -> stringResource(R.string.details_loading_episodes)
         videosState is VideosUiState.Empty -> stringResource(R.string.details_watch_not_found)
-        resumeEntry != null && resumeEntry.episode.isNotBlank() ->
-            stringResource(R.string.details_continue_episode, resumeEntry.episode)
+        continueTarget != null && continueTarget.video.episode.isNotBlank() ->
+            stringResource(R.string.details_continue_episode, continueTarget.video.episode)
         else -> stringResource(R.string.details_watch)
     }
 

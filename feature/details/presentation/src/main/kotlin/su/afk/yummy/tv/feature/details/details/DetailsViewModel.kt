@@ -25,7 +25,6 @@ import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
@@ -57,7 +56,6 @@ import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.isVkPlayerUrl
-import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject constructor(
@@ -349,21 +347,14 @@ class DetailsViewModel @AssistedInject constructor(
     }
 
     private fun openInitialVideo(videos: List<AnimeVideo>) {
-        val resumeEntry = latestResumeEntry()
-        if (resumeEntry != null) {
-            val videoSources = videos.map { it.toPlayerVideoSource() }
-            val targetVideo = videoSources.selectContinueWatchingVideo(
-                videoId = resumeEntry.videoId,
-                episodeUrl = resumeEntry.episodeUrl,
-                episode = resumeEntry.episode,
-                playerName = resumeEntry.playerName,
-                dubbing = resumeEntry.dubbing,
-            ) ?: videoSources.firstOrNull()
-
+        val continueTarget = resolveDetailsContinueTarget(
+            animeId = animeId,
+            videos = videos,
+            watchProgress = currentState.watchProgress,
+        )
+        if (continueTarget != null) {
             setState { copy(isWatchLaunchPending = false) }
-            if (targetVideo != null) {
-                navigateToPlayer(targetVideo)
-            }
+            navigateToPlayer(continueTarget.video)
             return
         }
 
@@ -373,11 +364,6 @@ class DetailsViewModel @AssistedInject constructor(
             showBalancerPicker(video)
         }
     }
-
-    private fun latestResumeEntry(): WatchProgressEntry? =
-        currentState.watchProgress.values
-            .filter { it.animeId == animeId && it.positionMs > 0 }
-            .maxByOrNull { it.updatedAt }
 
     private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
         val kodikVideos =

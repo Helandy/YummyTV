@@ -313,7 +313,10 @@ class PlayerViewModel @AssistedInject constructor(
                     )
                     val videoId = snapshot.videoId
                     val watchedEnough = videoId > 0 &&
-                        snapshot.positionMs.toDouble() / snapshot.durationMs >= 0.9
+                            WatchProgressStore.isWatchedProgress(
+                                snapshot.positionMs,
+                                snapshot.durationMs
+                            )
                     if (watchedEnough) {
                         if (videoId in markedWatchedVideoIds || !markingWatchedVideoIds.add(videoId)) {
                             return@launch

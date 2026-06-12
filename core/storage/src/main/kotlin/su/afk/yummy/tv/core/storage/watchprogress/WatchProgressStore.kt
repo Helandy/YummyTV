@@ -6,12 +6,30 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
 
     companion object {
         const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
-        private const val MAX_CONTINUE_WATCHING_PROGRESS = 0.95f
+        const val WATCHED_PROGRESS = 0.90f
+
+        fun progress(positionMs: Long, durationMs: Long): Float =
+            if (durationMs > 0) {
+                (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+
+        fun isMeaningfulProgress(positionMs: Long, durationMs: Long): Boolean =
+            durationMs > 0 && positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS
+
+        fun isWatchedProgress(positionMs: Long, durationMs: Long): Boolean =
+            isMeaningfulProgress(positionMs, durationMs) &&
+                    progress(positionMs, durationMs) >= WATCHED_PROGRESS
+
+        fun isMeaningfulProgressEntry(entry: WatchProgressEntry): Boolean =
+            isMeaningfulProgress(entry.positionMs, entry.durationMs)
+
+        fun isWatchedProgressEntry(entry: WatchProgressEntry): Boolean =
+            isWatchedProgress(entry.positionMs, entry.durationMs)
 
         fun isContinueWatchingEntry(entry: WatchProgressEntry): Boolean =
-            entry.durationMs > 0 &&
-                entry.positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS &&
-                entry.positionMs.toFloat() / entry.durationMs < MAX_CONTINUE_WATCHING_PROGRESS
+            isMeaningfulProgressEntry(entry) && !isWatchedProgressEntry(entry)
 
         fun latestByAnime(entries: List<WatchProgressEntry>): List<WatchProgressEntry> =
             entries
@@ -30,7 +48,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     fun observeContinueWatching(): Flow<List<WatchProgressEntry>> =
         dao.observeContinueWatching(
             minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
-            maxProgress = MAX_CONTINUE_WATCHING_PROGRESS,
+            maxProgress = WATCHED_PROGRESS,
         )
 
     suspend fun save(
