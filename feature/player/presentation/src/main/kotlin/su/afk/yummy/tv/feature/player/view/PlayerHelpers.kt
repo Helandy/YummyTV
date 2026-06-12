@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.feature.player.view
 
 internal const val TAG = "YummyPlayer"
-internal const val CHROME_UA =
-    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
 
 private val ALL_QUALITY_LEVELS = listOf(360, 480, 720, 1080, 1440, 2160)
 

@@ -4,7 +4,8 @@ import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import su.afk.yummy.tv.feature.player.view.CHROME_UA
+import su.afk.yummy.tv.feature.player.utils.BROWSER_STREAM_HEADERS
+import su.afk.yummy.tv.feature.player.utils.CHROME_UA
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -13,6 +14,7 @@ internal sealed interface KodikResult {
     data class Stream(
         val url: String,
         val qualities: LinkedHashMap<String, String>? = null,
+        val headers: Map<String, String> = BROWSER_STREAM_HEADERS,
     ) : KodikResult
     data class Blocked(val message: String) : KodikResult
     data object Failed : KodikResult

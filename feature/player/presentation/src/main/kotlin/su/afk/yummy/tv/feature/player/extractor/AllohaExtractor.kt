@@ -14,7 +14,8 @@ import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.feature.player.view.CHROME_UA
+import su.afk.yummy.tv.feature.player.utils.CHROME_UA
+import su.afk.yummy.tv.feature.player.utils.withBrowserUserAgent
 import kotlin.coroutines.resume
 
 /**
@@ -108,7 +109,7 @@ internal object AllohaExtractor {
             }
 
             fun captureStream(url: String, headers: Map<String, String>) {
-                val stream = CapturedStream(url = url, headers = headers)
+                val stream = CapturedStream(url = url, headers = headers.withBrowserUserAgent())
                 fallbackStream = stream
 
                 val label = qualityLabelFromUrl(url)

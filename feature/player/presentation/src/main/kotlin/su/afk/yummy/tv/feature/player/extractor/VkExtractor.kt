@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.player.extractor
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.feature.player.view.CHROME_UA
+import su.afk.yummy.tv.feature.player.utils.CHROME_UA
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLDecoder

@@ -33,6 +33,7 @@ import su.afk.yummy.tv.feature.player.extractor.RutubeExtractor
 import su.afk.yummy.tv.feature.player.extractor.VkExtractor
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.BROWSER_STREAM_HEADERS
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject constructor(
@@ -487,6 +488,7 @@ class PlayerViewModel @AssistedInject constructor(
                         val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
                         setState {
                             copy(
+                                streamHeaders = result.headers,
                                 streamQualityMap = result.qualities,
                                 streamUrl = result.url,
                                 resumeFromMs = resume,
@@ -521,7 +523,14 @@ class PlayerViewModel @AssistedInject constructor(
                 val qualities = CvhExtractor.extract(url, context.getString(R.string.player_quality_auto))
                 if (qualities != null) {
                     val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState { copy(streamQualityMap = qualities, streamUrl = qualities.values.last(), resumeFromMs = resume) }
+                    setState {
+                        copy(
+                            streamHeaders = BROWSER_STREAM_HEADERS,
+                            streamQualityMap = qualities,
+                            streamUrl = qualities.values.last(),
+                            resumeFromMs = resume,
+                        )
+                    }
                 } else {
                     setState { copy(playerError = context.getString(R.string.player_stream_error)) }
                 }
