@@ -20,7 +20,7 @@
     <string name="account_stats_genres">Любимые жанры</string>
     <string name="account_stats_ratings">Оценки</string>
     <string name="account_stats_types">Типы аниме</string>
-    <string name="account_mark_read">Прочитано</string>
+    <string name="account_mark_read">Прочитать</string>
     <string name="account_mark_all_read">Прочитать все</string>
     <string name="account_delete">Удалить</string>
     <string name="account_logout_confirm_title">Выйти из аккаунта?</string>

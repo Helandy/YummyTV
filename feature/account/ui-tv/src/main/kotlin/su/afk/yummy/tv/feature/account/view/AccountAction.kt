@@ -20,6 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +40,8 @@ internal fun AccountAction(
     hint: String? = null,
     selected: Boolean = false,
     enabled: Boolean = true,
+    onDirectionLeft: (() -> Boolean)? = null,
+    onDirectionRight: (() -> Boolean)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
@@ -71,6 +80,10 @@ internal fun AccountAction(
                 it
             }
         }
+        .accountActionKeyEvents(
+            onDirectionLeft = onDirectionLeft,
+            onDirectionRight = onDirectionRight,
+        )
         .border(
             width = if (focused && enabled) 3.dp else 2.dp,
             color = if (focused && enabled) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
@@ -101,5 +114,38 @@ internal fun AccountAction(
                 )
             }
         }
+    }
+}
+
+private fun Modifier.accountActionKeyEvents(
+    onDirectionLeft: (() -> Boolean)?,
+    onDirectionRight: (() -> Boolean)?,
+): Modifier {
+    if (onDirectionLeft == null && onDirectionRight == null) return this
+    return onPreviewKeyEvent { event ->
+        handleAccountActionKeyEvent(
+            event = event,
+            onDirectionLeft = onDirectionLeft,
+            onDirectionRight = onDirectionRight,
+        )
+    }.onKeyEvent { event ->
+        handleAccountActionKeyEvent(
+            event = event,
+            onDirectionLeft = onDirectionLeft,
+            onDirectionRight = onDirectionRight,
+        )
+    }
+}
+
+private fun handleAccountActionKeyEvent(
+    event: KeyEvent,
+    onDirectionLeft: (() -> Boolean)?,
+    onDirectionRight: (() -> Boolean)?,
+): Boolean {
+    if (event.type != KeyEventType.KeyDown) return false
+    return when (event.key) {
+        Key.DirectionLeft -> onDirectionLeft?.invoke() ?: false
+        Key.DirectionRight -> onDirectionRight?.invoke() ?: false
+        else -> false
     }
 }

@@ -39,6 +39,8 @@ internal fun NotificationRow(
     modifier: Modifier = Modifier,
     readModifier: Modifier = Modifier,
     deleteModifier: Modifier = Modifier,
+    onReadDirectionRight: (() -> Boolean)? = null,
+    onDeleteDirectionLeft: (() -> Boolean)? = null,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val interactionSource = remember { MutableInteractionSource() }
@@ -90,12 +92,14 @@ internal fun NotificationRow(
                     label = stringResource(R.string.account_mark_read),
                     onClick = onRead,
                     modifier = readModifier.width(170.dp),
+                    onDirectionRight = onReadDirectionRight,
                 )
             }
             AccountAction(
                 label = stringResource(R.string.account_delete),
                 onClick = onDelete,
                 modifier = deleteModifier.width(140.dp),
+                onDirectionLeft = onDeleteDirectionLeft,
             )
         }
     }

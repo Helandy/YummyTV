@@ -54,6 +54,8 @@ internal fun NotificationsTab(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val notificationIds = remember(state.notifications) { state.notifications.map { it.id } }
+    val notificationReadStates =
+        remember(state.notifications) { state.notifications.map { it.viewed } }
     val rowFocusRequesters = remember(notificationIds) {
         List(notificationIds.size) { FocusRequester() }
     }
@@ -81,6 +83,11 @@ internal fun NotificationsTab(
     val currentFocusedNotificationIndex by rememberUpdatedState(focusedNotificationIndex)
     val currentFocusedNotificationRestoreToken by rememberUpdatedState(state.focusedNotificationRestoreToken)
     var handledRestoreToken by rememberSaveable { mutableIntStateOf(0) }
+    var pendingReadFocusId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingReadSawLoading by rememberSaveable { mutableStateOf(false) }
+    var pendingDeletedNotificationId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingFocusAfterDeleteIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingDeleteSawLoading by rememberSaveable { mutableStateOf(false) }
 
     fun notificationRowFocusRequester(index: Int): FocusRequester =
         if (index == 0 && contentFocusRequester != null) {
@@ -89,20 +96,55 @@ internal fun NotificationsTab(
             rowFocusRequesters[index]
         }
 
-    fun requestNotificationFocus(index: Int) {
+    fun notifyNotificationFocused(index: Int) {
+        if (index !in state.notifications.indices) return
+        lastFocusedIndex = index
+        onEvent(AccountState.Event.NotificationFocused(state.notifications[index].id))
+    }
+
+    suspend fun requestFocusAfterScroll(index: Int, focusRequester: FocusRequester) {
+        if (index !in state.notifications.indices) return
+        lastFocusedIndex = index
+        listState.scrollToItem(index)
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo.any { it.index == index }
+        }.first { it }
+        repeat(6) {
+            runCatching { focusRequester.requestFocus() }
+            withFrameNanos { }
+        }
+    }
+
+    fun requestFocusAtIndex(index: Int, focusRequester: FocusRequester) {
         if (index !in state.notifications.indices) return
         focusMoveJob?.cancel()
         lastFocusedIndex = index
-        val rowFocusRequester = notificationRowFocusRequester(index)
         if (listState.layoutInfo.visibleItemsInfo.any { it.index == index }) {
-            runCatching { rowFocusRequester.requestFocus() }
+            runCatching { focusRequester.requestFocus() }
         } else {
             focusMoveJob = scope.launch {
-                listState.scrollToItem(index)
-                withFrameNanos { }
-                runCatching { rowFocusRequester.requestFocus() }
+                requestFocusAfterScroll(index, focusRequester)
             }
         }
+    }
+
+    fun requestNotificationFocus(index: Int) {
+        if (index !in state.notifications.indices) return
+        notifyNotificationFocused(index)
+        requestFocusAtIndex(index, notificationRowFocusRequester(index))
+    }
+
+    fun requestDeleteFocus(index: Int) {
+        val deleteFocusRequester = deleteFocusRequesters.getOrNull(index) ?: return
+        if (index !in state.notifications.indices) return
+        notifyNotificationFocused(index)
+        requestFocusAtIndex(index, deleteFocusRequester)
+    }
+
+    fun requestEmptyOrTopFocus() {
+        val requester = upFocusRequester ?: emptyContentFocusRequester
+        focusMoveJob?.cancel()
+        runCatching { requester.requestFocus() }
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -149,6 +191,85 @@ internal fun NotificationsTab(
         onEvent(AccountState.Event.NotificationFocusRestoreHandled)
     }
 
+    LaunchedEffect(state.isNotificationsLoading, pendingReadFocusId, pendingDeletedNotificationId) {
+        if (state.isNotificationsLoading) {
+            if (pendingReadFocusId != null) pendingReadSawLoading = true
+            if (pendingDeletedNotificationId != null) pendingDeleteSawLoading = true
+        }
+    }
+
+    LaunchedEffect(
+        notificationIds,
+        notificationReadStates,
+        pendingReadFocusId,
+        pendingReadSawLoading,
+        state.isNotificationsLoading,
+    ) {
+        val pendingId = pendingReadFocusId ?: return@LaunchedEffect
+        val targetIndex = state.notifications.indexOfFirst { it.id == pendingId }
+        val notification = state.notifications.getOrNull(targetIndex)
+        when {
+            notification == null -> {
+                if (pendingReadSawLoading && !state.isNotificationsLoading) {
+                    pendingReadFocusId = null
+                    pendingReadSawLoading = false
+                }
+            }
+
+            notification.viewed -> {
+                val deleteFocusRequester = deleteFocusRequesters.getOrNull(targetIndex)
+                    ?: return@LaunchedEffect
+                notifyNotificationFocused(targetIndex)
+                requestFocusAfterScroll(targetIndex, deleteFocusRequester)
+                pendingReadFocusId = null
+                pendingReadSawLoading = false
+            }
+
+            pendingReadSawLoading && !state.isNotificationsLoading -> {
+                pendingReadFocusId = null
+                pendingReadSawLoading = false
+            }
+        }
+    }
+
+    LaunchedEffect(
+        notificationIds,
+        pendingDeletedNotificationId,
+        pendingFocusAfterDeleteIndex,
+        pendingDeleteSawLoading,
+        state.isNotificationsLoading,
+    ) {
+        val deletedId = pendingDeletedNotificationId ?: return@LaunchedEffect
+        val targetIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
+        if (state.notifications.any { it.id == deletedId }) {
+            if (pendingDeleteSawLoading && !state.isNotificationsLoading) {
+                pendingDeletedNotificationId = null
+                pendingFocusAfterDeleteIndex = null
+                pendingDeleteSawLoading = false
+            }
+            return@LaunchedEffect
+        }
+
+        if (state.notifications.isEmpty()) {
+            focusMoveJob?.cancel()
+            val focusRequester = upFocusRequester ?: emptyContentFocusRequester
+            repeat(6) {
+                runCatching { focusRequester.requestFocus() }
+                withFrameNanos { }
+            }
+        } else {
+            val restoredIndex = targetIndex.coerceIn(0, state.notifications.lastIndex)
+            notifyNotificationFocused(restoredIndex)
+            requestFocusAfterScroll(
+                index = restoredIndex,
+                focusRequester = notificationRowFocusRequester(restoredIndex),
+            )
+        }
+        pendingDeletedNotificationId = null
+        pendingFocusAfterDeleteIndex = null
+        pendingDeleteSawLoading = false
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -193,14 +314,43 @@ internal fun NotificationsTab(
                     val deleteFocusRequester = deleteFocusRequesters[index]
                     val firstActionFocusRequester =
                         readFocusRequester.takeIf { !notification.viewed } ?: deleteFocusRequester
+                    var rowIsFocused by remember(notification.id) { mutableStateOf(false) }
                     NotificationRow(
                         notification = notification,
                         onClick = {
-                            lastFocusedIndex = index
+                            notifyNotificationFocused(index)
                             onEvent(AccountState.Event.NotificationSelected(notification.id))
                         },
-                        onRead = { onEvent(AccountState.Event.NotificationReadSelected(notification.id)) },
-                        onDelete = { onEvent(AccountState.Event.NotificationDeleteSelected(notification.id)) },
+                        onRead = {
+                            pendingReadFocusId = notification.id
+                            pendingReadSawLoading = false
+                            requestDeleteFocus(index)
+                            onEvent(AccountState.Event.NotificationReadSelected(notification.id))
+                        },
+                        onDelete = {
+                            pendingDeletedNotificationId = notification.id
+                            pendingFocusAfterDeleteIndex = index
+                            pendingDeleteSawLoading = false
+                            val immediateTarget =
+                                if (index < state.notifications.lastIndex) index + 1 else index - 1
+                            if (immediateTarget >= 0) {
+                                requestNotificationFocus(immediateTarget)
+                            } else {
+                                requestEmptyOrTopFocus()
+                            }
+                            onEvent(AccountState.Event.NotificationDeleteSelected(notification.id))
+                        },
+                        onReadDirectionRight = {
+                            requestDeleteFocus(index)
+                            true
+                        },
+                        onDeleteDirectionLeft = {
+                            val target = readFocusRequester.takeIf { !notification.viewed }
+                                ?: rowFocusRequester
+                            notifyNotificationFocused(index)
+                            runCatching { target.requestFocus() }
+                            true
+                        },
                         modifier = Modifier
                             .focusRequester(rowFocusRequester)
                             .focusProperties {
@@ -211,7 +361,12 @@ internal fun NotificationsTab(
                                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                                 when (event.key) {
                                     Key.DirectionRight -> {
-                                        runCatching { firstActionFocusRequester.requestFocus() }
+                                        if (!rowIsFocused) return@onPreviewKeyEvent false
+                                        if (notification.viewed) {
+                                            requestDeleteFocus(index)
+                                        } else {
+                                            runCatching { firstActionFocusRequester.requestFocus() }
+                                        }
                                         true
                                     }
 
@@ -233,8 +388,9 @@ internal fun NotificationsTab(
                                 }
                             }
                             .onFocusChanged {
+                                rowIsFocused = it.isFocused
                                 if (it.isFocused) {
-                                    lastFocusedIndex = index
+                                    notifyNotificationFocused(index)
                                 }
                             },
                         readModifier = Modifier
@@ -252,11 +408,16 @@ internal fun NotificationsTab(
                                     }
 
                                     Key.DirectionRight -> {
-                                        runCatching { deleteFocusRequester.requestFocus() }
+                                        requestDeleteFocus(index)
                                         true
                                     }
 
                                     else -> false
+                                }
+                            }
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    notifyNotificationFocused(index)
                                 }
                             },
                         deleteModifier = Modifier
@@ -273,6 +434,11 @@ internal fun NotificationsTab(
                                     ?: rowFocusRequester
                                 runCatching { target.requestFocus() }
                                 true
+                            }
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    notifyNotificationFocused(index)
+                                }
                             },
                     )
                 }
