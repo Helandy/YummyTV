@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_mobile_title">Library</string>
-    <string name="library_mobile_tab_continue_watching">Продолжить</string>
-    <string name="library_mobile_tab_favorites">Избранное</string>
-    <string name="library_mobile_tab_watching">Смотрю</string>
-    <string name="library_mobile_tab_planned">В планах</string>
-    <string name="library_mobile_tab_completed">Просмотрено</string>
-    <string name="library_mobile_tab_postponed">Отложено</string>
-    <string name="library_mobile_tab_dropped">Брошено</string>
+    <string name="library_mobile_tab_continue_watching">Continue</string>
+    <string name="library_mobile_tab_favorites">Favorites</string>
+    <string name="library_mobile_tab_watching">Watching</string>
+    <string name="library_mobile_tab_planned">Planned</string>
+    <string name="library_mobile_tab_completed">Completed</string>
+    <string name="library_mobile_tab_postponed">Postponed</string>
+    <string name="library_mobile_tab_dropped">Dropped</string>
     <string name="library_mobile_episode">Episode %1$s</string>
     <string name="library_mobile_retry">Retry</string>
-    <string name="library_mobile_remove_title">Удалить тайтл?</string>
-    <string name="library_mobile_remove_message">“%1$s” будет удалён из раздела “%2$s”.</string>
-    <string name="library_mobile_remove_confirm">Удалить</string>
-    <string name="library_mobile_remove_cancel">Отмена</string>
-    <string name="library_mobile_remove_success">Удалено</string>
-    <string name="library_mobile_remove_content_description">Удалить</string>
+    <string name="library_mobile_remove_title">Remove title?</string>
+    <string name="library_mobile_remove_message">“%1$s” will be removed from “%2$s”.</string>
+    <string name="library_mobile_remove_confirm">Remove</string>
+    <string name="library_mobile_remove_cancel">Cancel</string>
+    <string name="library_mobile_remove_success">Removed</string>
+    <string name="library_mobile_remove_content_description">Remove</string>
 </resources>

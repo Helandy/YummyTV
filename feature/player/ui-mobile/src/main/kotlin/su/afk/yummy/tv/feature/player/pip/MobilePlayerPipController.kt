@@ -14,6 +14,7 @@ import android.util.Rational
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import su.afk.yummy.tv.feature.player.mobile.R
 
 object MobilePlayerPipController {
     const val ACTION_PLAY_PAUSE = "su.afk.yummy.tv.feature.player.pip.PLAY_PAUSE"
@@ -121,7 +122,9 @@ object MobilePlayerPipController {
             .setAction(ACTION_PLAY_PAUSE)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         val pendingIntent = PendingIntent.getBroadcast(activity, 0, intent, flags)
-        val label = if (playing) "Пауза" else "Играть"
+        val label = activity.getString(
+            if (playing) R.string.player_mobile_pip_pause else R.string.player_mobile_pip_play,
+        )
         val iconRes =
             if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
         return RemoteAction(

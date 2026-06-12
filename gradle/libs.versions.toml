@@ -4,7 +4,7 @@ android-minSdk = "24"
 
 # --- App versioning
 appVersionName = "1.10.5"
-appVersionCode = "17"
+appVersionCode = "18"
 
 agp = "9.2.1"
 kotlin = "2.3.21"

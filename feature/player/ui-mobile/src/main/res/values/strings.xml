@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="player_mobile_settings_title">Настройки плеера</string>
-    <string name="player_mobile_track_settings_title">Озвучка и плеер</string>
-    <string name="player_mobile_playback_settings_title">Качество и скорость</string>
-    <string name="player_mobile_quality">Качество</string>
-    <string name="player_mobile_speed">Скорость</string>
-    <string name="player_mobile_dubbing">Озвучка</string>
-    <string name="player_mobile_player">Плеер</string>
-    <string name="player_mobile_done">Готово</string>
+    <string name="player_mobile_settings_title">Player settings</string>
+    <string name="player_mobile_track_settings_title">Dubbing and player</string>
+    <string name="player_mobile_playback_settings_title">Quality and speed</string>
+    <string name="player_mobile_quality">Quality</string>
+    <string name="player_mobile_speed">Speed</string>
+    <string name="player_mobile_dubbing">Dubbing</string>
+    <string name="player_mobile_player">Player</string>
+    <string name="player_mobile_done">Done</string>
     <string name="player_mobile_episode_number">Episode %1$s</string>
-    <string name="player_mobile_previous_episode">Предыдущая</string>
-    <string name="player_mobile_next_episode">Следующая</string>
-    <string name="player_mobile_back">Назад</string>
-    <string name="player_mobile_forward">Дальше</string>
+    <string name="player_mobile_previous_episode">Previous</string>
+    <string name="player_mobile_next_episode">Next</string>
+    <string name="player_mobile_back">Back</string>
+    <string name="player_mobile_forward">Forward</string>
+    <string name="player_mobile_pip_pause">Pause</string>
+    <string name="player_mobile_pip_play">Play</string>
 </resources>

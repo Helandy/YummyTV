@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_mobile_tab_search">Поиск</string>
-    <string name="main_mobile_tab_home">Главная</string>
-    <string name="main_mobile_tab_schedule">Расписание</string>
-    <string name="main_mobile_tab_top">Топ</string>
-    <string name="main_mobile_tab_library">Библиотека</string>
+    <string name="main_mobile_tab_search">Search</string>
+    <string name="main_mobile_tab_home">Home</string>
+    <string name="main_mobile_tab_schedule">Schedule</string>
+    <string name="main_mobile_tab_top">Top</string>
+    <string name="main_mobile_tab_library">Library</string>
 </resources>

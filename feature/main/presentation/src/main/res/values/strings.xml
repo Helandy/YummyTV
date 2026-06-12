@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_mutation_error_toast">Не удалось сохранить изменения. Проверьте подключение и попробуйте снова.</string>
+    <string name="main_mutation_error_toast">Could not save changes. Check your connection and try again.</string>
 </resources>
