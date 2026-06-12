@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+private val CompactTopBarHeight = 52.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StandardTopBar(
@@ -26,6 +28,7 @@ fun StandardTopBar(
     TopAppBar(
         windowInsets = topBarWindowInsets,
         scrollBehavior = scrollBehavior,
+        expandedHeight = CompactTopBarHeight,
         title = {
             Column(
                 Modifier

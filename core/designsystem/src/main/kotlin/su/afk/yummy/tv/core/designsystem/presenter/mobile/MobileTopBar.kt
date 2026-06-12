@@ -12,6 +12,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+
+private val CompactMobileTopBarHeight = 52.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,6 +26,7 @@ fun MobileTopBar(
 ) {
     TopAppBar(
         modifier = modifier,
+        expandedHeight = CompactMobileTopBarHeight,
         title = {
             Text(
                 text = title,
