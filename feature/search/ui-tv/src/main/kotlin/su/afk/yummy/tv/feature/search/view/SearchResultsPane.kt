@@ -167,13 +167,13 @@ internal fun SearchResultsPane(
         }
     }
 
-    val preferredContentFocusRequester = if (
-        restoreFocusedItemOnEnter &&
-        focusedItemIndex in items.indices
-    ) {
-        focusRequesters.getOrNull(focusedItemIndex)
-    } else {
-        searchFieldFocusRequester
+    val preferredContentFocusRequester = when {
+        isFilterPanelOpen -> filterPanelInitialFocusRequester
+        restoreFilterButtonFocusToken > 0 -> filterButtonFocusRequester
+        restoreFocusedItemOnEnter && focusedItemIndex in items.indices ->
+            focusRequesters.getOrNull(focusedItemIndex)
+
+        else -> searchFieldFocusRequester
     }
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
@@ -218,9 +218,14 @@ internal fun SearchResultsPane(
 
     LaunchedEffect(restoreFilterButtonFocusToken, isFilterPanelOpen) {
         if (restoreFilterButtonFocusToken <= 0 || isFilterPanelOpen) return@LaunchedEffect
-        repeat(6) {
-            runCatching { filterButtonFocusRequester.requestFocus() }
+        var focused = false
+        repeat(18) {
             withFrameNanos { }
+            focused = runCatching { filterButtonFocusRequester.requestFocus() }
+                .getOrDefault(false) || focused
+        }
+        if (focused) {
+            restoreFilterButtonFocusToken = 0
         }
     }
 
@@ -314,10 +319,12 @@ internal fun SearchResultsPane(
                     isLoadingFilterOptions = isLoadingFilterOptions,
                     initialFocusRequester = filterPanelInitialFocusRequester,
                     onClose = {
+                        runCatching { filterButtonFocusRequester.requestFocus() }
                         restoreFilterButtonFocusToken += 1
                         onCloseFilters()
                     },
                     onApply = {
+                        runCatching { filterButtonFocusRequester.requestFocus() }
                         restoreFilterButtonFocusToken += 1
                         onApplyFilters()
                     },
@@ -514,6 +521,21 @@ private fun FilterPanel(
     val includeGenresFocusRequester = remember { FocusRequester() }
     val excludeGenresFocusRequester = remember { FocusRequester() }
     val genreBackFocusRequester = remember { FocusRequester() }
+    val resetFocusRequester = remember { FocusRequester() }
+    val closeFocusRequester = remember { FocusRequester() }
+    val firstSortFocusRequester = remember { FocusRequester() }
+    val sortDirectionFocusRequester = remember { FocusRequester() }
+    val fromYearFocusRequester = remember { FocusRequester() }
+    val toYearFocusRequester = remember { FocusRequester() }
+    val firstTypeFocusRequester = remember { FocusRequester() }
+    val firstStatusFocusRequester = remember { FocusRequester() }
+    val firstSeasonFocusRequester = remember { FocusRequester() }
+    val firstAgeFocusRequester = remember { FocusRequester() }
+    val yearDownFocusRequester = if (filterOptions.types.isNotEmpty()) {
+        firstTypeFocusRequester
+    } else {
+        firstStatusFocusRequester
+    }
 
     LaunchedEffect(Unit) {
         repeat(6) {
@@ -609,17 +631,40 @@ private fun FilterPanel(
                     label = stringResource(R.string.search_filters_apply),
                     selected = true,
                     onClick = onApply,
-                    modifier = Modifier.focusRequester(initialFocusRequester),
+                    modifier = Modifier
+                        .focusRequester(initialFocusRequester)
+                        .focusProperties {
+                            up = FocusRequester.Cancel
+                            left = FocusRequester.Cancel
+                            right = resetFocusRequester
+                            down = firstSortFocusRequester
+                        },
                 )
                 SelectableRow(
                     label = stringResource(R.string.search_filters_reset),
                     selected = false,
                     onClick = onReset,
+                    modifier = Modifier
+                        .focusRequester(resetFocusRequester)
+                        .focusProperties {
+                            up = FocusRequester.Cancel
+                            left = initialFocusRequester
+                            right = closeFocusRequester
+                            down = firstSortFocusRequester
+                        },
                 )
                 SelectableRow(
                     label = stringResource(R.string.search_filters_close),
                     selected = false,
                     onClick = onClose,
+                    modifier = Modifier
+                        .focusRequester(closeFocusRequester)
+                        .focusProperties {
+                            up = FocusRequester.Cancel
+                            left = resetFocusRequester
+                            right = FocusRequester.Cancel
+                            down = firstSortFocusRequester
+                        },
                 )
             }
         }
@@ -634,11 +679,23 @@ private fun FilterPanel(
 
         FilterSection(title = stringResource(R.string.search_filter_sort)) {
             ChipFlow {
-                SearchSort.entries.forEach { sort ->
+                SearchSort.entries.forEachIndexed { index, sort ->
                     SelectableRow(
                         label = sort.label(),
                         selected = draftFilters.sort == sort,
                         onClick = { onSortSelected(sort) },
+                        modifier = Modifier
+                            .then(
+                                if (index == 0) {
+                                    Modifier.focusRequester(firstSortFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .focusProperties {
+                                up = initialFocusRequester
+                                down = sortDirectionFocusRequester
+                            },
                     )
                 }
                 SelectableRow(
@@ -649,6 +706,12 @@ private fun FilterPanel(
                     },
                     selected = !draftFilters.sortForward,
                     onClick = onSortDirectionToggled,
+                    modifier = Modifier
+                        .focusRequester(sortDirectionFocusRequester)
+                        .focusProperties {
+                            up = firstSortFocusRequester
+                            down = fromYearFocusRequester
+                        },
                 )
             }
         }
@@ -659,12 +722,20 @@ private fun FilterPanel(
                     label = stringResource(R.string.search_filter_year_from),
                     value = draftFilters.fromYear,
                     onValueChanged = onFromYearChanged,
+                    focusRequester = fromYearFocusRequester,
+                    upFocusRequester = sortDirectionFocusRequester,
+                    downFocusRequester = yearDownFocusRequester,
+                    rightFocusRequester = toYearFocusRequester,
                     modifier = Modifier.weight(1f),
                 )
                 YearField(
                     label = stringResource(R.string.search_filter_year_to),
                     value = draftFilters.toYear,
                     onValueChanged = onToYearChanged,
+                    focusRequester = toYearFocusRequester,
+                    upFocusRequester = sortDirectionFocusRequester,
+                    downFocusRequester = yearDownFocusRequester,
+                    leftFocusRequester = fromYearFocusRequester,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -672,11 +743,23 @@ private fun FilterPanel(
 
         FilterSection(title = stringResource(R.string.search_filter_type)) {
             ChipFlow {
-                filterOptions.types.forEach { type ->
+                filterOptions.types.forEachIndexed { index, type ->
                     SelectableRow(
                         label = type.title,
                         selected = type.id in draftFilters.types,
                         onClick = { onTypeToggled(type.id) },
+                        modifier = Modifier
+                            .then(
+                                if (index == 0) {
+                                    Modifier.focusRequester(firstTypeFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .focusProperties {
+                                up = fromYearFocusRequester
+                                down = firstStatusFocusRequester
+                            },
                     )
                 }
             }
@@ -684,11 +767,23 @@ private fun FilterPanel(
 
         FilterSection(title = stringResource(R.string.search_filter_status)) {
             ChipFlow {
-                statusOptions().forEach { option ->
+                statusOptions().forEachIndexed { index, option ->
                     SelectableRow(
                         label = option.label,
                         selected = option.value in draftFilters.statuses,
                         onClick = { onStatusToggled(option.value) },
+                        modifier = Modifier
+                            .then(
+                                if (index == 0) {
+                                    Modifier.focusRequester(firstStatusFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .focusProperties {
+                                up = yearDownFocusRequester
+                                down = firstSeasonFocusRequester
+                            },
                     )
                 }
             }
@@ -696,11 +791,23 @@ private fun FilterPanel(
 
         FilterSection(title = stringResource(R.string.search_filter_season)) {
             ChipFlow {
-                seasonOptions().forEach { option ->
+                seasonOptions().forEachIndexed { index, option ->
                     SelectableRow(
                         label = option.label,
                         selected = option.value in draftFilters.seasons,
                         onClick = { onSeasonToggled(option.value) },
+                        modifier = Modifier
+                            .then(
+                                if (index == 0) {
+                                    Modifier.focusRequester(firstSeasonFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .focusProperties {
+                                up = firstStatusFocusRequester
+                                down = firstAgeFocusRequester
+                            },
                     )
                 }
             }
@@ -708,11 +815,23 @@ private fun FilterPanel(
 
         FilterSection(title = stringResource(R.string.search_filter_age)) {
             ChipFlow {
-                ageOptions().forEach { option ->
+                ageOptions().forEachIndexed { index, option ->
                     SelectableRow(
                         label = option.label,
                         selected = option.value in draftFilters.ageRatings,
                         onClick = { onAgeRatingToggled(option.value) },
+                        modifier = Modifier
+                            .then(
+                                if (index == 0) {
+                                    Modifier.focusRequester(firstAgeFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .focusProperties {
+                                up = firstSeasonFocusRequester
+                                down = includeGenresFocusRequester
+                            },
                     )
                 }
             }
@@ -724,13 +843,23 @@ private fun FilterPanel(
                     label = stringResource(R.string.search_filter_open_genres, draftFilters.genres.size),
                     selected = draftFilters.genres.isNotEmpty(),
                     onClick = { genrePickerMode = GenrePickerMode.INCLUDE },
-                    modifier = Modifier.focusRequester(includeGenresFocusRequester),
+                    modifier = Modifier
+                        .focusRequester(includeGenresFocusRequester)
+                        .focusProperties {
+                            up = firstAgeFocusRequester
+                            right = excludeGenresFocusRequester
+                        },
                 )
                 SelectableRow(
                     label = stringResource(R.string.search_filter_open_exclude_genres, draftFilters.excludedGenres.size),
                     selected = draftFilters.excludedGenres.isNotEmpty(),
                     onClick = { genrePickerMode = GenrePickerMode.EXCLUDE },
-                    modifier = Modifier.focusRequester(excludeGenresFocusRequester),
+                    modifier = Modifier
+                        .focusRequester(excludeGenresFocusRequester)
+                        .focusProperties {
+                            up = firstAgeFocusRequester
+                            left = includeGenresFocusRequester
+                        },
                 )
             }
         }
@@ -870,6 +999,11 @@ private fun YearField(
     label: String,
     value: Int?,
     onValueChanged: (Int?) -> Unit,
+    focusRequester: FocusRequester? = null,
+    upFocusRequester: FocusRequester? = null,
+    downFocusRequester: FocusRequester? = null,
+    leftFocusRequester: FocusRequester? = null,
+    rightFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -886,10 +1020,49 @@ private fun YearField(
         shape = RoundedCornerShape(10.dp),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         modifier = modifier
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .focusProperties {
+                upFocusRequester?.let { up = it }
+                downFocusRequester?.let { down = it }
+                leftFocusRequester?.let { left = it }
+                rightFocusRequester?.let { right = it }
+            }
             .onFocusChanged { if (!it.isFocused) editing = false }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
+                    Key.DirectionUp -> {
+                        if (editing) {
+                            false
+                        } else {
+                            upFocusRequester.requestFocusOrFalse()
+                        }
+                    }
+
+                    Key.DirectionDown -> {
+                        if (editing) {
+                            false
+                        } else {
+                            downFocusRequester.requestFocusOrFalse()
+                        }
+                    }
+
+                    Key.DirectionLeft -> {
+                        if (editing) {
+                            false
+                        } else {
+                            leftFocusRequester.requestFocusOrFalse()
+                        }
+                    }
+
+                    Key.DirectionRight -> {
+                        if (editing) {
+                            false
+                        } else {
+                            rightFocusRequester.requestFocusOrFalse()
+                        }
+                    }
+
                     Key.DirectionCenter,
                     Key.Enter,
                     Key.NumPadEnter,
@@ -918,6 +1091,9 @@ private fun YearField(
             },
     )
 }
+
+private fun FocusRequester?.requestFocusOrFalse(): Boolean =
+    this != null && runCatching { requestFocus() }.getOrDefault(false)
 
 @Composable
 private fun SelectableRow(
