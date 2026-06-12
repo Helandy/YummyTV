@@ -36,23 +36,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.view.common.isAlloha
-
-internal sealed interface EpisodeWatchStatus {
-    data object None : EpisodeWatchStatus
-    data class InProgress(val progress: Float) : EpisodeWatchStatus
-    data object Watched : EpisodeWatchStatus
-}
-
-private fun bestWatchStatus(groupVideos: List<AnimeVideo>, watchProgress: Map<String, WatchProgressEntry>): EpisodeWatchStatus {
-    val best = groupVideos.mapNotNull { watchProgress[it.iframeUrl] }
-        .maxByOrNull { it.positionMs } ?: return EpisodeWatchStatus.None
-    if (best.durationMs <= 0 || best.positionMs < 30_000) return EpisodeWatchStatus.None
-    val progress = best.positionMs.toFloat() / best.durationMs
-    return if (progress > 0.90f) EpisodeWatchStatus.Watched
-    else EpisodeWatchStatus.InProgress(progress)
-}
 
 @Composable
 internal fun EpisodesGrid(
@@ -145,7 +131,7 @@ internal fun EpisodesGrid(
                 ?: groupVideos.first()
             EpisodeCard(
                 video = representative,
-                watchStatus = bestWatchStatus(groupVideos, watchProgress),
+                watchStatus = groupVideos.watchStatus(watchProgress),
                 kodikIframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing),
                 onClick = {
                     val kodikOpts = groupVideos.filter {

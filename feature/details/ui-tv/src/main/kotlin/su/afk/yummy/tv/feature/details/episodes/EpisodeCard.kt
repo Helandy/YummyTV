@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +38,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.timingLabel
 import su.afk.yummy.tv.feature.details.view.common.formatDuration
 
 private val InProgressColor = Color(0xFF4CAF50)
@@ -57,6 +60,7 @@ internal fun EpisodeCard(
             value = KodikThumbnailExtractor.extract(kodikIframeUrl)
         }
     }
+    val timingLabel = watchStatus.timingLabel()
     val shape = RoundedCornerShape(8.dp)
     Card(
         modifier = modifier
@@ -95,7 +99,7 @@ internal fun EpisodeCard(
 
                 // Watch status indicator (top-right)
                 when (watchStatus) {
-                    EpisodeWatchStatus.Watched -> Box(
+                    is EpisodeWatchStatus.Watched -> Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(6.dp)
@@ -140,33 +144,48 @@ internal fun EpisodeCard(
             }
 
             // Info row
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 58.dp)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.details_episode_number, video.episode),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        video.durationSeconds?.let {
+                            Text(
+                                text = it.formatDuration(),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f),
+                            )
+                        }
+                    }
+                }
+                if (!timingLabel.isNullOrBlank()) {
                     Text(
-                        text = stringResource(R.string.details_episode_number, video.episode),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = timingLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = InProgressColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.align(Alignment.BottomEnd),
                     )
-                    video.durationSeconds?.let {
-                        Text(
-                            text = it.formatDuration(),
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f),
-                        )
-                    }
                 }
             }
         }

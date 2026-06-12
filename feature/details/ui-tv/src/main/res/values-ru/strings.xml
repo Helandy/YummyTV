@@ -26,6 +26,7 @@
     <string name="details_trailers">Трейлеры</string>
     <string name="details_trailer_number">Трейлер %1$d</string>
     <string name="details_episode_number">Серия %1$s</string>
+    <string name="details_episode_watch_timing">%1$s / %2$s</string>
     <string name="details_aired">Вышло: %1$s</string>
     <string name="details_aired_progress">%1$d из %2$s</string>
     <string name="details_unknown_count">?</string>

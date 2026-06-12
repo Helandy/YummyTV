@@ -26,6 +26,7 @@
     <string name="details_trailers">Trailers</string>
     <string name="details_trailer_number">Trailer %1$d</string>
     <string name="details_episode_number">Episode %1$s</string>
+    <string name="details_episode_watch_timing">%1$s / %2$s</string>
     <string name="details_aired">Aired: %1$s</string>
     <string name="details_aired_progress">%1$d of %2$s</string>
     <string name="details_unknown_count">?</string>
