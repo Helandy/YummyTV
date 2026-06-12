@@ -485,7 +485,13 @@ class PlayerViewModel @AssistedInject constructor(
                 )) {
                     is KodikResult.Stream -> {
                         val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                        setState { copy(streamUrl = result.url, resumeFromMs = resume) }
+                        setState {
+                            copy(
+                                streamQualityMap = result.qualities,
+                                streamUrl = result.url,
+                                resumeFromMs = resume,
+                            )
+                        }
                     }
                     is KodikResult.Blocked -> setState { copy(kodikBlockedError = result.message) }
                     KodikResult.Failed -> setState { copy(playerError = context.getString(R.string.player_stream_error)) }

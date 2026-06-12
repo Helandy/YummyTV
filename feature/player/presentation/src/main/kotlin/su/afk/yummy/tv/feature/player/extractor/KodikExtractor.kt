@@ -10,12 +10,19 @@ import java.net.URL
 import java.net.URLEncoder
 
 internal sealed interface KodikResult {
-    data class Stream(val url: String) : KodikResult
+    data class Stream(
+        val url: String,
+        val qualities: LinkedHashMap<String, String>? = null,
+    ) : KodikResult
     data class Blocked(val message: String) : KodikResult
     data object Failed : KodikResult
 }
 
 internal object KodikExtractor {
+
+    private val QUALITY_ORDER = listOf(240, 360, 480, 720, 1080)
+    private val HLS_QUALITY_MANIFEST_PATTERN =
+        Regex("""/(\d+)\.mp4:hls:manifest\.m3u8(?=$|[?#])""")
 
     suspend fun extract(
         iframeUrl: String,
@@ -108,9 +115,13 @@ internal object KodikExtractor {
 
             val responseText = postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
 
-            val streamUrl = parseStreamUrl(responseText)
+            val qualities = parseQualityMap(responseText)
+            val streamUrl = qualities?.values?.lastOrNull()
             if (streamUrl != null) {
-                KodikResult.Stream(streamUrl)
+                KodikResult.Stream(
+                    url = streamUrl,
+                    qualities = qualities,
+                )
             } else {
                 logExtractorFailure("Kodik", endpointUrl, "stream URL was not found in endpoint response")
                 KodikResult.Failed
@@ -123,21 +134,71 @@ internal object KodikExtractor {
         }
     }
 
-    private fun parseStreamUrl(response: String): String? {
+    private fun parseQualityMap(response: String): LinkedHashMap<String, String>? {
         return try {
             val json = JSONObject(response)
             val links = json.optJSONObject("links") ?: return null
-            for (quality in listOf("1080", "720", "480", "360")) {
-                val src = links.optJSONArray(quality)
+            val qualities = LinkedHashMap<String, String>()
+            QUALITY_ORDER.forEach { quality ->
+                val src = links.optJSONArray(quality.toString())
                     ?.optJSONObject(0)?.optString("src")
-                    ?.takeIf { it.isNotEmpty() } ?: continue
+                    ?.takeIf { it.isNotEmpty() } ?: return@forEach
                 // src without "//" is ROT18+base64 encoded
-                val decoded = if (src.contains("//")) src else decodeKodikSrc(src) ?: continue
-                return fixProtocol(decoded)
+                val decoded = if (src.contains("//")) src else decodeKodikSrc(src) ?: return@forEach
+                val streamUrl = fixProtocol(decoded)
+                val resolved = resolveQualityStreamUrl(streamUrl, quality)
+                qualities.putIfAbsent(resolved.label, resolved.url)
             }
-            null
+            qualities.takeIf { it.isNotEmpty() }
         } catch (_: Exception) {
             null
+        }
+    }
+
+    private data class QualityStream(
+        val label: String,
+        val url: String,
+    )
+
+    private fun resolveQualityStreamUrl(url: String, expectedQuality: Int): QualityStream {
+        val actualQuality =
+            hlsManifestQuality(url) ?: return QualityStream("${expectedQuality}p", url)
+        if (actualQuality == expectedQuality) return QualityStream("${expectedQuality}p", url)
+
+        if (expectedQuality > actualQuality) {
+            val repairedUrl = replaceHlsManifestQuality(url, expectedQuality)
+            if (repairedUrl != url && isUrlAvailable(repairedUrl)) {
+                return QualityStream("${expectedQuality}p", repairedUrl)
+            }
+        }
+
+        return QualityStream("${actualQuality}p", url)
+    }
+
+    private fun hlsManifestQuality(url: String): Int? =
+        HLS_QUALITY_MANIFEST_PATTERN.find(url)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.toIntOrNull()
+
+    private fun replaceHlsManifestQuality(url: String, quality: Int): String {
+        val match = HLS_QUALITY_MANIFEST_PATTERN.find(url) ?: return url
+        return url.replaceRange(match.range, "/$quality.mp4:hls:manifest.m3u8")
+    }
+
+    private fun isUrlAvailable(url: String): Boolean {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        return try {
+            conn.requestMethod = "HEAD"
+            conn.connectTimeout = 4_000
+            conn.readTimeout = 4_000
+            conn.instanceFollowRedirects = true
+            conn.setRequestProperty("User-Agent", CHROME_UA)
+            conn.responseCode in 200..299
+        } catch (_: Exception) {
+            false
+        } finally {
+            conn.disconnect()
         }
     }
 
