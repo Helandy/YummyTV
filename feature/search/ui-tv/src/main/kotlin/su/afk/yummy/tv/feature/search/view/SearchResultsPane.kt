@@ -62,12 +62,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
@@ -439,19 +439,11 @@ internal fun SearchResultsPane(
                                         },
                                     posterOverlay = item.rating?.let { rating ->
                                         {
-                                            Text(
-                                                text = "%.1f".format(rating),
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.Black,
+                                            RatingBadge(
+                                                rating = rating,
                                                 modifier = Modifier
                                                     .align(Alignment.TopEnd)
-                                                    .padding(4.dp)
-                                                    .background(
-                                                        MaterialTheme.colorScheme.primary,
-                                                        RoundedCornerShape(4.dp)
-                                                    )
-                                                    .padding(horizontal = 5.dp, vertical = 2.dp),
+                                                    .padding(4.dp),
                                             )
                                         }
                                     },
