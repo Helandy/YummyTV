@@ -26,8 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.rating.utils.formatRating
+import su.afk.yummy.tv.feature.details.rating.utils.weightedAverage
 import java.text.NumberFormat
-import java.util.Locale
 
 @Composable
 internal fun MobileRatingOverview(
@@ -116,12 +117,3 @@ internal fun MobileRatingOverview(
         }
     }
 }
-
-internal fun AnimeRatingSummary.weightedAverage(): Double? {
-    val total = distribution.sumOf { it.count }
-    if (total <= 0) return null
-    val weighted = distribution.sumOf { it.rating.toDouble() * it.count.toDouble() }
-    return weighted / total.toDouble()
-}
-
-internal fun Double.formatRating(): String = String.format(Locale.US, "%.1f", this)

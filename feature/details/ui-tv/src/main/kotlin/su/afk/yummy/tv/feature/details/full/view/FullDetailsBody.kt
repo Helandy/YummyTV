@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.full.utils.formatEpochSeconds
-import su.afk.yummy.tv.feature.details.view.common.formatAiredProgress
+import su.afk.yummy.tv.feature.details.utils.formatAiredProgress
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

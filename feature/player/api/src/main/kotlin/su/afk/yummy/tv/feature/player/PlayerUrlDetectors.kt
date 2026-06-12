@@ -1,30 +1,30 @@
 package su.afk.yummy.tv.feature.player
 
+import su.afk.yummy.tv.domain.player.isAksorPlayerUrl as domainIsAksorPlayerUrl
+import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl as domainIsAllohaPlayerUrl
+import su.afk.yummy.tv.domain.player.isCvhPlayerUrl as domainIsCvhPlayerUrl
+import su.afk.yummy.tv.domain.player.isKodikPlayerUrl as domainIsKodikPlayerUrl
+import su.afk.yummy.tv.domain.player.isRutubePlayerUrl as domainIsRutubePlayerUrl
+import su.afk.yummy.tv.domain.player.isSupportedPlayerUrl as domainIsSupportedPlayerUrl
+import su.afk.yummy.tv.domain.player.isVkPlayerUrl as domainIsVkPlayerUrl
+
 fun String.isKodikPlayerUrl(): Boolean =
-    contains("kodik", ignoreCase = true)
+    domainIsKodikPlayerUrl()
 
 fun String.isAksorPlayerUrl(): Boolean =
-    contains("aksor.tv", ignoreCase = true)
+    domainIsAksorPlayerUrl()
 
 fun String.isCvhPlayerUrl(): Boolean =
-    contains("iframecvh", ignoreCase = true)
+    domainIsCvhPlayerUrl()
 
 fun String.isAllohaPlayerUrl(): Boolean =
-    contains("alloha", ignoreCase = true)
+    domainIsAllohaPlayerUrl()
 
 fun String.isVkPlayerUrl(): Boolean =
-    contains("vk.com", ignoreCase = true) ||
-            contains("vkvideo", ignoreCase = true) ||
-            contains("video_ext.php", ignoreCase = true) ||
-            contains("iframevk", ignoreCase = true)
+    domainIsVkPlayerUrl()
 
 fun String.isRutubePlayerUrl(): Boolean =
-    contains("rutube.ru", ignoreCase = true)
+    domainIsRutubePlayerUrl()
 
 fun String.isSupportedPlayerUrl(): Boolean =
-    isKodikPlayerUrl() ||
-            isAksorPlayerUrl() ||
-            isCvhPlayerUrl() ||
-            isAllohaPlayerUrl() ||
-            isVkPlayerUrl() ||
-            isRutubePlayerUrl()
+    domainIsSupportedPlayerUrl()

@@ -59,13 +59,27 @@ internal fun DetailsRatingRow(
         details.rating.shikimori?.let {
             add(
                 RatingLabel(
-                    "Shikimori ${it.formatRating()}",
+                    stringResource(
+                        R.string.details_mobile_shikimori_rating,
+                        it.formatRating(),
+                    ),
                     false,
-                    it
-                )
+                    it,
+                ),
             )
         }
-        details.rating.myAnimeList?.let { add(RatingLabel("MAL ${it.formatRating()}", false, it)) }
+        details.rating.myAnimeList?.let {
+            add(
+                RatingLabel(
+                    stringResource(
+                        R.string.details_mobile_mal_rating,
+                        it.formatRating(),
+                    ),
+                    false,
+                    it,
+                ),
+            )
+        }
     }
     if (average == null && externalLabels.isEmpty()) return
 

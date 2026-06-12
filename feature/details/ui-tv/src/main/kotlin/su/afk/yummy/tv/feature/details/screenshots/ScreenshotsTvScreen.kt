@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
 
 @Composable

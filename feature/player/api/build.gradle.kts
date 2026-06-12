@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:player:domain"))
     api(libs.jetbrains.navigation3.ui)
     api(libs.kotlinx.serialization.json)
 }

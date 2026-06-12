@@ -10,17 +10,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
-import su.afk.yummy.tv.feature.details.view.common.formatRating
-import su.afk.yummy.tv.feature.details.view.common.formatViews
+import su.afk.yummy.tv.feature.details.utils.formatRating
+import su.afk.yummy.tv.feature.details.utils.formatViews
 
 @Composable
 internal fun FullRatingRow(details: AnimeDetails) {
     val ratings = buildList {
         details.views?.let { add(stringResource(R.string.details_full_views, it.formatViews())) }
         details.rating.counters?.let { add(stringResource(R.string.details_full_rating_votes, it)) }
-        details.rating.myAnimeList?.let { add("MAL ${it.formatRating()}") }
+        details.rating.myAnimeList?.let {
+            add(
+                stringResource(
+                    R.string.details_mal_rating,
+                    it.formatRating()
+                )
+            )
+        }
         details.rating.kinopoisk?.let { add(stringResource(R.string.details_kinopoisk_rating, it.formatRating())) }
-        details.rating.shikimori?.let { add("Shikimori ${it.formatRating()}") }
+        details.rating.shikimori?.let {
+            add(
+                stringResource(
+                    R.string.details_shikimori_rating,
+                    it.formatRating()
+                )
+            )
+        }
     }
     if (details.rating.average == null && ratings.isEmpty()) return
 

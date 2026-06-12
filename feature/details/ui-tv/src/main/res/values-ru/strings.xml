@@ -33,6 +33,8 @@
     <string name="details_total">Всего: %1$d</string>
     <string name="details_director_prefix">Реж.: %1$s</string>
     <string name="details_kinopoisk_rating">КП %1$s</string>
+    <string name="details_shikimori_rating">Shikimori %1$s</string>
+    <string name="details_mal_rating">MAL %1$s</string>
     <string name="details_episodes_count_short">%1$d сер.</string>
     <string name="details_continue_episode">Продолжить · Серия %1$s</string>
     <string name="details_watch">Смотреть</string>

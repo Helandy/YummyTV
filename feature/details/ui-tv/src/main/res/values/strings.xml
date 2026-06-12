@@ -33,6 +33,8 @@
     <string name="details_total">Total: %1$d</string>
     <string name="details_director_prefix">Dir.: %1$s</string>
     <string name="details_kinopoisk_rating">KP %1$s</string>
+    <string name="details_shikimori_rating">Shikimori %1$s</string>
+    <string name="details_mal_rating">MAL %1$s</string>
     <string name="details_episodes_count_short">%1$d ep.</string>
     <string name="details_continue_episode">Continue · Episode %1$s</string>
     <string name="details_watch">Watch</string>

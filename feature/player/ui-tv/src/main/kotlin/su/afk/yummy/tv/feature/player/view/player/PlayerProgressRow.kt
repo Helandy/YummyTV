@@ -29,6 +29,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.utils.formatTime
 
 @Composable
 internal fun PlayerProgressRow(
@@ -93,8 +94,14 @@ internal fun PlayerProgressRow(
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
-                        Key.DirectionUp -> { focusManager.moveFocus(FocusDirection.Up); true }
-                        Key.DirectionDown -> { focusManager.moveFocus(FocusDirection.Down); true }
+                        Key.DirectionUp -> {
+                            focusManager.moveFocus(FocusDirection.Up); true
+                        }
+
+                        Key.DirectionDown -> {
+                            focusManager.moveFocus(FocusDirection.Down); true
+                        }
+
                         else -> false
                     }
                 },

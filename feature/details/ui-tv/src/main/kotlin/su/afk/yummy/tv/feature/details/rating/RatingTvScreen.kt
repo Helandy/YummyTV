@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.feature.details.rating.view.RatingBody
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 
 @Composable
@@ -25,7 +26,7 @@ fun RatingTvScreen(
                 message = error,
                 onRetry = { onEvent(RatingState.Event.RetrySelected) },
             )
-            else -> DetailsRatingScreen(
+            else -> RatingBody(
                 ratingSummary = state.ratingSummary,
                 listStats = state.listStats,
                 selectedUserRating = state.selectedUserRating,

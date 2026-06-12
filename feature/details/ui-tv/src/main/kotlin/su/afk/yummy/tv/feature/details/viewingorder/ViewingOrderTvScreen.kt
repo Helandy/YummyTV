@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.viewingorder.view.ViewingOrderRow
 
 @Composable
 fun ViewingOrderTvScreen(

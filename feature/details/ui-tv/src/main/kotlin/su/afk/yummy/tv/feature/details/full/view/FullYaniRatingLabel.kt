@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
-import su.afk.yummy.tv.feature.details.view.common.formatRating
+import su.afk.yummy.tv.feature.details.utils.formatRating
 
 @Composable
 internal fun FullYaniRatingLabel(rating: Double) {

@@ -81,6 +81,7 @@ dependencies {
     implementation(project(":feature:account:api"))
     implementation(project(":feature:schedule:data"))
     implementation(project(":feature:schedule:api"))
+    implementation(project(":feature:player:data"))
     implementation(project(":feature:library:api"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:settings:api"))

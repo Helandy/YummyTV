@@ -36,9 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
-import java.util.Locale
+import su.afk.yummy.tv.feature.player.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
-import su.afk.yummy.tv.feature.player.presentation.R as PlayerR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -259,25 +258,3 @@ private fun MobilePlayerDubbingMeta(
         )
     }
 }
-
-@Composable
-private fun Int.formatCompactCount(): String = when {
-    this >= 1_000_000 -> stringResource(
-        PlayerR.string.player_count_millions,
-        (this / 1_000_000f).formatCompactDecimal(),
-    )
-
-    this >= 1_000 -> stringResource(
-        PlayerR.string.player_count_thousands,
-        (this / 1_000f).formatCompactDecimal(),
-    )
-
-    else -> toString()
-}
-
-private fun Float.formatCompactDecimal(): String =
-    if (this % 1f == 0f) {
-        toInt().toString()
-    } else {
-        String.format(Locale.US, "%.1f", this)
-    }

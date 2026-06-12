@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.feature.details.similar.view.SimilarTab
 
 @Composable
 fun SimilarTvScreen(

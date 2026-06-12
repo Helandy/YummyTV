@@ -23,17 +23,12 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.player.extractor.AksorExtractor
-import su.afk.yummy.tv.feature.player.extractor.AllohaExtractor
-import su.afk.yummy.tv.feature.player.extractor.CvhExtractor
-import su.afk.yummy.tv.feature.player.extractor.KodikExtractor
-import su.afk.yummy.tv.feature.player.extractor.KodikResult
-import su.afk.yummy.tv.feature.player.extractor.RutubeExtractor
-import su.afk.yummy.tv.feature.player.extractor.VkExtractor
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.BROWSER_STREAM_HEADERS
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject constructor(
@@ -46,6 +41,7 @@ class PlayerViewModel @AssistedInject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val markVideoWatched: MarkVideoWatchedUseCase,
+    private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
@@ -459,133 +455,48 @@ class PlayerViewModel @AssistedInject constructor(
             }
             val s = currentState
             val url = activeIframeUrl(s)
-
-            if (url.isAllohaPlayerUrl()) {
-                val result = AllohaExtractor.extract(url, context)
-                if (result != null) {
-                    val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState {
-                        copy(
-                            streamHeaders = result.headers,
-                            streamQualityMap = result.qualities,
-                            streamUrl = result.url,
-                            resumeFromMs = resume,
-                        )
-                    }
-                } else {
-                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
-                }
-                return@launch
-            }
-
-            if (url.isKodikPlayerUrl()) {
-                when (val result = KodikExtractor.extract(
-                    iframeUrl = url,
-                    blockedFallback = context.getString(R.string.player_kodik_blocked),
-                    serverErrorMessage = { code -> context.getString(R.string.player_server_error, code) },
-                )) {
-                    is KodikResult.Stream -> {
-                        val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                        setState {
-                            copy(
-                                streamHeaders = result.headers,
-                                streamQualityMap = result.qualities,
-                                streamUrl = result.url,
-                                resumeFromMs = resume,
-                            )
-                        }
-                    }
-                    is KodikResult.Blocked -> setState { copy(kodikBlockedError = result.message) }
-                    KodikResult.Failed -> setState { copy(playerError = context.getString(R.string.player_stream_error)) }
-                }
-                return@launch
-            }
-
-            if (url.isAksorPlayerUrl()) {
-                val result = AksorExtractor.extract(url)
-                if (result != null) {
-                    val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState {
-                        copy(
-                            streamHeaders = result.headers,
-                            streamQualityMap = result.qualities,
-                            streamUrl = result.url,
-                            resumeFromMs = resume,
-                        )
-                    }
-                } else {
-                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
-                }
-                return@launch
-            }
-
-            if (url.isCvhPlayerUrl()) {
-                val qualities = CvhExtractor.extract(url, context.getString(R.string.player_quality_auto))
-                if (qualities != null) {
-                    val resume = consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s)) ?: 0L
-                    setState {
-                        copy(
-                            streamHeaders = BROWSER_STREAM_HEADERS,
-                            streamQualityMap = qualities,
-                            streamUrl = qualities.values.last(),
-                            resumeFromMs = resume,
-                        )
-                    }
-                } else {
-                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
-                }
-                return@launch
-            }
-
-            if (url.isVkPlayerUrl()) {
-                val result = VkExtractor.extract(
+            when (val result = resolvePlayerStream(
+                PlayerStreamRequest(
                     iframeUrl = url,
                     autoQualityLabel = context.getString(R.string.player_quality_auto),
                 )
-                if (result != null) {
-                    val resume =
-                        consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s))
-                        ?: 0L
-                    setState {
-                        copy(
-                            streamHeaders = result.headers,
-                            streamQualityMap = result.qualities,
-                            streamUrl = result.url,
-                            resumeFromMs = resume,
-                        )
-                    }
-                } else {
-                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
+            )) {
+                is PlayerStreamResolveResult.Stream -> setResolvedStream(s, result)
+                is PlayerStreamResolveResult.KodikBlocked -> setState {
+                    copy(kodikBlockedError = result.toMessage())
                 }
-                return@launch
-            }
 
-            if (url.isRutubePlayerUrl()) {
-                val result = RutubeExtractor.extract(
-                    iframeUrl = url,
-                    autoQualityLabel = context.getString(R.string.player_quality_auto),
-                )
-                if (result != null) {
-                    val resume =
-                        consumeDubbingResume() ?: loadResumePosition(s.animeId, activeEpisode(s))
-                        ?: 0L
-                    setState {
-                        copy(
-                            streamHeaders = result.headers,
-                            streamQualityMap = result.qualities,
-                            streamUrl = result.url,
-                            resumeFromMs = resume,
-                        )
-                    }
-                } else {
-                    setState { copy(playerError = context.getString(R.string.player_stream_error)) }
+                PlayerStreamResolveResult.Failed -> setState {
+                    copy(playerError = context.getString(R.string.player_stream_error))
                 }
-                return@launch
-            }
 
-            setState { copy(playerError = context.getString(R.string.player_unsupported)) }
+                PlayerStreamResolveResult.Unsupported -> setState {
+                    copy(playerError = context.getString(R.string.player_unsupported))
+                }
+            }
         }
     }
+
+    private suspend fun setResolvedStream(
+        state: PlayerState.State,
+        stream: PlayerStreamResolveResult.Stream,
+    ) {
+        val resume =
+            consumeDubbingResume() ?: loadResumePosition(state.animeId, activeEpisode(state)) ?: 0L
+        setState {
+            copy(
+                streamHeaders = stream.headers,
+                streamQualityMap = stream.qualities,
+                streamUrl = stream.url,
+                resumeFromMs = resume,
+            )
+        }
+    }
+
+    private fun PlayerStreamResolveResult.KodikBlocked.toMessage(): String =
+        message
+            ?: statusCode?.let { context.getString(R.string.player_server_error, it) }
+            ?: context.getString(R.string.player_kodik_blocked)
 
     private fun consumeDubbingResume(): Long? {
         val pending = currentState.dubbingResumeMs
