@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
@@ -46,10 +47,12 @@ fun TvTitleCard(
     screenshotUrls: List<String> = emptyList(),
     onFocused: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
+    width: Dp? = null,
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
     val cardDimensions = currentTvTitleCardDimensions()
+    val cardWidth = width ?: cardDimensions.width
     val showScreenshots = LocalShowScreenshotsOnFocus.current
     var isFocused by remember { mutableStateOf(false) }
     var slideIndex by remember { mutableIntStateOf(0) }
@@ -69,7 +72,7 @@ fun TvTitleCard(
 
     Card(
         modifier = modifier
-            .width(cardDimensions.width)
+            .width(cardWidth)
             .onFocusChanged { focusState ->
                 val focused = focusState.isFocused || focusState.hasFocus
                 if (focused && !isFocused && showScreenshots) onFocused()

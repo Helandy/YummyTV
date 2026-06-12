@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.library.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -18,18 +17,18 @@ import su.afk.yummy.tv.feature.library.R
 
 @Composable
 internal fun LibraryDeleteButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(6.dp)
+    val shape = RoundedCornerShape(4.dp)
+    val containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.92f)
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.error, shape)
-            .tvFocusableClick(onClick = onClick, shape = shape)
-            .padding(vertical = 8.dp),
+            .background(containerColor, shape)
+            .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = 1f)
+            .padding(vertical = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = stringResource(R.string.library_delete),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onError,
             fontWeight = FontWeight.Medium,
         )
