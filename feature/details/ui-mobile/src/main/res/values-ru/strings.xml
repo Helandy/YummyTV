@@ -22,7 +22,6 @@
     <string name="details_mobile_rating">Рейтинг</string>
     <string name="details_mobile_collections">Коллекции</string>
     <string name="details_mobile_screenshots">Скриншоты</string>
-    <string name="details_mobile_yani_rating">Yani %1$s</string>
     <string name="details_mobile_kinopoisk_rating">КП %1$s</string>
     <string name="details_mobile_library_picker_title">Добавить в список</string>
     <string name="details_mobile_library_watching">Смотрю</string>

@@ -14,12 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.details.full.utils.toYaniRatingColor
+import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
 import su.afk.yummy.tv.feature.details.view.common.formatRating
 
 @Composable
 internal fun FullYaniRatingLabel(rating: Double) {
-    val color = rating.toYaniRatingColor()
+    val color = rating.toRatingColor()
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Filled.Star,

@@ -22,7 +22,6 @@
     <string name="details_mobile_rating">Rating</string>
     <string name="details_mobile_collections">Collections</string>
     <string name="details_mobile_screenshots">Screenshots</string>
-    <string name="details_mobile_yani_rating">Yani %1$s</string>
     <string name="details_mobile_kinopoisk_rating">KP %1$s</string>
     <string name="details_mobile_library_picker_title">Add to list</string>
     <string name="details_mobile_library_watching">Watching</string>

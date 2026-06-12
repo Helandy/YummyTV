@@ -75,6 +75,12 @@ internal fun DetailsMobileHero(
                 .height(heroHeight * 0.45f)
                 .clickable(onClick = onPosterClick),
         )
+        DetailsRatingRow(
+            details = details,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+        )
 
         Column(
             modifier = Modifier
@@ -83,7 +89,6 @@ internal fun DetailsMobileHero(
                 .padding(horizontal = 16.dp, vertical = 22.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            DetailsRatingRow(details)
             Text(
                 text = details.title,
                 modifier = Modifier.clickable(onClick = onTitleClick),

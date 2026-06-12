@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.model.RatingLabel
 import su.afk.yummy.tv.feature.details.details.utils.formatRating
@@ -27,10 +28,13 @@ import su.afk.yummy.tv.feature.details.mobile.R
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun DetailsRatingRow(details: AnimeDetails) {
+internal fun DetailsRatingRow(
+    details: AnimeDetails,
+    modifier: Modifier = Modifier,
+) {
     val labels = buildList {
         details.rating.average?.let {
-            add(RatingLabel(stringResource(R.string.details_mobile_yani_rating, it.formatRating()), true))
+            add(RatingLabel(it.formatRating(), true, it))
         }
         details.rating.kinopoisk?.let {
             add(RatingLabel(stringResource(R.string.details_mobile_kinopoisk_rating, it.formatRating()), false))
@@ -41,14 +45,18 @@ internal fun DetailsRatingRow(details: AnimeDetails) {
     if (labels.isEmpty()) return
 
     FlowRow(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         labels.forEach { item ->
+            val primaryColor = item.rating?.toRatingColor()
             Row(
                 modifier = Modifier
                     .background(
-                        color = if (item.isPrimary) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.46f),
+                        color = if (item.isPrimary) Color.Black.copy(alpha = 0.62f) else Color.Black.copy(
+                            alpha = 0.46f
+                        ),
                         shape = RoundedCornerShape(6.dp),
                     )
                     .padding(horizontal = 8.dp, vertical = 5.dp),
@@ -58,14 +66,14 @@ internal fun DetailsRatingRow(details: AnimeDetails) {
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
-                    tint = if (item.isPrimary) MaterialTheme.colorScheme.onPrimary else Color(0xFFFFC857),
+                    tint = primaryColor ?: Color(0xFFFFC857),
                     modifier = Modifier.size(14.dp),
                 )
                 Text(
                     text = item.label,
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (item.isPrimary) MaterialTheme.colorScheme.onPrimary else Color.White,
+                    fontWeight = if (item.isPrimary) FontWeight.ExtraBold else FontWeight.Bold,
+                    color = primaryColor ?: Color.White,
                     maxLines = 1,
                 )
             }

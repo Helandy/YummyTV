@@ -35,7 +35,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
+import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
@@ -240,7 +240,7 @@ private fun RatingLabel(label: String) {
 
 @Composable
 private fun YaniRatingLabel(rating: Double) {
-    val color = rating.toYaniRatingColor()
+    val color = rating.toRatingColor()
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Filled.Star,
@@ -286,7 +286,7 @@ private fun HeroMetaRow(details: AnimeDetails) {
         }
         viewsLabel?.let { views ->
             Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .background(chipColor.copy(alpha = 0.12f), RoundedCornerShape(3.dp))
                     .padding(horizontal = 5.dp, vertical = 2.dp),
@@ -295,7 +295,9 @@ private fun HeroMetaRow(details: AnimeDetails) {
                     imageVector = Icons.Filled.Visibility,
                     contentDescription = null,
                     tint = chipColor.copy(alpha = 0.85f),
-                    modifier = Modifier.height(10.dp).width(10.dp),
+                    modifier = Modifier
+                        .height(10.dp)
+                        .width(10.dp),
                 )
                 Spacer(modifier = Modifier.width(3.dp))
                 Text(
@@ -332,10 +334,4 @@ private fun HeroEpisodesRow(details: AnimeDetails) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.82f),
     )
-}
-
-private fun Double.toYaniRatingColor(): Color = when {
-    this < 7.0 -> Color(0xFFE53935)
-    this <= 9.0 -> Color(0xFFFFC857)
-    else -> Color(0xFF69F0AE)
 }

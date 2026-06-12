@@ -33,7 +33,7 @@ internal fun CollectionAnimeCard(
         posterOverlay = {
             item.rating?.let { rating ->
                 Text(
-                    text = "%.2f".format(rating),
+                    text = "%.1f".format(rating),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,

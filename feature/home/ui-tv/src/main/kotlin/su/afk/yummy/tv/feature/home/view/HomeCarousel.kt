@@ -57,6 +57,7 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
@@ -492,14 +493,9 @@ private fun HeroBannerPage(
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
             item.rating?.let { rating ->
-                Text(
-                    text = stringResource(R.string.home_rating, "%.1f".format(rating)),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                RatingBadge(
+                    rating = rating,
+                    decimals = 1,
                 )
             }
             Text(

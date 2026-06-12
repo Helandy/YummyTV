@@ -3,7 +3,6 @@
     <string name="home_error_title">Home did not load</string>
     <string name="retry">Retry</string>
     <string name="continue_watching">Continue watching</string>
-    <string name="home_rating">★ %1$s</string>
     <string name="home_season">Season %1$s</string>
     <string name="home_episode">Episode</string>
     <string name="home_episode_number">Episode %1$s</string>
