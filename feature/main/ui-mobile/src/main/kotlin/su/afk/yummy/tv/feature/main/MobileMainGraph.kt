@@ -1,21 +1,12 @@
 package su.afk.yummy.tv.feature.main
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -27,13 +18,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
-import su.afk.yummy.tv.core.designsystem.presenter.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
@@ -50,6 +39,7 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.IMainGraph
 import su.afk.yummy.tv.feature.main.mobile.R
 import su.afk.yummy.tv.feature.main.model.MobileMenuItem
+import su.afk.yummy.tv.feature.main.view.MobileMainScaffold
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -154,49 +144,4 @@ class MobileMainGraph @Inject constructor(
     }
 }
 
-@Composable
-private fun <T> MobileMainScaffold(
-    selectedDestination: T,
-    menuItems: List<MobileMenuItem<T>>,
-    showBars: Boolean,
-    onDestinationSelected: (T) -> Unit,
-    toastMessage: String?,
-    content: @Composable () -> Unit,
-) {
-    Scaffold(
-        contentWindowInsets = WindowInsets(0.dp),
-        bottomBar = {
-            if (showBars) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    menuItems.forEach { item ->
-                        MobileNavigationItem(
-                            item = item,
-                            selected = item.destination == selectedDestination,
-                            onSelected = { onDestinationSelected(item.destination) },
-                        )
-                    }
-                }
-            }
-        },
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            content()
-            GlobalToastOverlay(text = toastMessage)
-        }
-    }
-}
-
 private const val GLOBAL_TOAST_DURATION_MS = 3_000L
-
-@Composable
-private fun <T> RowScope.MobileNavigationItem(
-    item: MobileMenuItem<T>,
-    selected: Boolean,
-    onSelected: () -> Unit,
-) {
-    NavigationBarItem(
-        selected = selected,
-        onClick = onSelected,
-        icon = { Icon(item.icon, contentDescription = item.label) },
-    )
-}

@@ -67,5 +67,6 @@
     <string name="details_mobile_rating_distribution">Distribution</string>
     <string name="details_mobile_rating_percent">%1$s%%</string>
     <string name="details_mobile_list_stats">In lists</string>
+    <string name="details_mobile_list_stat_item">%1$s %2$s</string>
     <string name="details_mobile_title_universe">Title universe</string>
 </resources>

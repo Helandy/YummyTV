@@ -44,7 +44,15 @@ internal fun MobileListStats(
             items.forEach { (labelRes, count) ->
                 AssistChip(
                     onClick = {},
-                    label = { Text("${stringResource(labelRes)} ${integerFormat.format(count)}") },
+                    label = {
+                        Text(
+                            stringResource(
+                                R.string.details_mobile_list_stat_item,
+                                stringResource(labelRes),
+                                integerFormat.format(count),
+                            )
+                        )
+                    },
                 )
             }
         }
