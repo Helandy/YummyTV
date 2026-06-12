@@ -14,11 +14,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+
+private const val HERO_AUTO_SCROLL_INTERVAL_MS = 5_000L
 
 @Composable
 internal fun HomeHeroCarousel(
@@ -28,12 +37,39 @@ internal fun HomeHeroCarousel(
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState { items.size }
+    var isUserTouchingCarousel by remember { mutableStateOf(false) }
 
     LaunchedEffect(pagerState.currentPage, items) {
         items.getOrNull(pagerState.currentPage)?.let { onItemVisible(it.id) }
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    LaunchedEffect(items.size, isUserTouchingCarousel) {
+        if (items.size <= 1 || isUserTouchingCarousel) return@LaunchedEffect
+        while (true) {
+            delay(HERO_AUTO_SCROLL_INTERVAL_MS)
+            if (!isUserTouchingCarousel && !pagerState.isScrollInProgress) {
+                val nextPage = (pagerState.currentPage + 1) % items.size
+                pagerState.animateScrollToPage(nextPage)
+            }
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                try {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            isUserTouchingCarousel = event.changes.any { it.pressed }
+                        }
+                    }
+                } finally {
+                    isUserTouchingCarousel = false
+                }
+            },
+    ) {
         HorizontalPager(
             state = pagerState,
             key = { page -> items[page].id },
