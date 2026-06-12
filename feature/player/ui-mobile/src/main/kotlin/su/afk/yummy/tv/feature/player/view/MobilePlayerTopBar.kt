@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -44,8 +46,8 @@ internal fun MobilePlayerTopBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.50f))
-            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .background(Color.Black.copy(alpha = 0.28f))
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
             .padding(horizontal = 8.dp, vertical = 8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -69,6 +71,20 @@ internal fun MobilePlayerTopBar(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                if (dubbing.isNotBlank()) {
+                    Text(
+                        text = dubbing,
+                        color = Color.White.copy(alpha = 0.86f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.White.copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                 }
             }
@@ -107,20 +123,6 @@ internal fun MobilePlayerTopBar(
                     }
                 }
             }
-        }
-        if (dubbing.isNotBlank()) {
-            Text(
-                text = dubbing,
-                color = Color.White.copy(alpha = 0.86f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(start = 56.dp, top = 2.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White.copy(alpha = 0.12f))
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
-            )
         }
     }
 }

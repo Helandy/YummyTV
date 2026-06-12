@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,12 +20,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
+import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.MobileNativePlayer
 import su.afk.yummy.tv.feature.player.view.MobilePlayerBalancerSheet
@@ -39,6 +46,8 @@ fun PlayerMobileScreen(
 
 ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
+
+    HideMobilePlayerStatusBar()
 
     BackHandler {
         if (showErrorBalancerSheet) {
@@ -137,6 +146,29 @@ fun PlayerMobileScreen(
                 },
                 onDismiss = { showErrorBalancerSheet = false },
             )
+        }
+    }
+}
+
+@Composable
+private fun HideMobilePlayerStatusBar() {
+    val context = LocalContext.current
+    val view = LocalView.current
+    val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
+
+    DisposableEffect(activity, view) {
+        val window = activity?.window
+            ?: return@DisposableEffect onDispose {}
+        val controller = WindowCompat.getInsetsController(window, view)
+        val previousBehavior = controller.systemBarsBehavior
+
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.statusBars())
+
+        onDispose {
+            controller.show(WindowInsetsCompat.Type.statusBars())
+            controller.systemBarsBehavior = previousBehavior
         }
     }
 }
