@@ -41,11 +41,15 @@ fun DetailsMobileScreen(
     val coroutineScope = rememberCoroutineScope()
     BaseScreen(
         isScroll = false,
-        customTopBar = {
-            MobileTopBar(
-                title = details?.title ?: stringResource(R.string.details_mobile_title),
-                onBack = { onEvent(DetailsState.Event.BackSelected) },
-            )
+        customTopBar = if (details == null) {
+            {
+                MobileTopBar(
+                    title = stringResource(R.string.details_mobile_title),
+                    onBack = { onEvent(DetailsState.Event.BackSelected) },
+                )
+            }
+        } else {
+            null
         },
         isLoading = state.isLoading && details == null,
         error = error?.let { ErrorItem(title = it, message = it) },
@@ -76,6 +80,7 @@ fun DetailsMobileScreen(
                         DetailsMobileHero(
                             state = state,
                             details = details,
+                            onBack = { onEvent(DetailsState.Event.BackSelected) },
                             onPosterClick = { onEvent(DetailsState.Event.PosterClicked) },
                             onTitleClick = {
                                 coroutineScope.launch {
