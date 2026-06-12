@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -100,22 +101,26 @@ private fun DetailsAverageRating(
     expandable: Boolean,
     onClick: () -> Unit,
 ) {
+    val color = rating?.toRatingColor()
     Row(
-        modifier = Modifier.clickable(enabled = expandable, onClick = onClick),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = expandable, onClick = onClick),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = Icons.Filled.Star,
             contentDescription = null,
-            tint = Color(0xFFFF8A00),
+            tint = color ?: Color(0xFFFF8A00),
             modifier = Modifier.size(28.dp),
         )
         Text(
             text = rating?.formatRating() ?: stringResource(R.string.details_mobile_rating),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = color ?: MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
         )
     }
