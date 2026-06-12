@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -47,6 +48,7 @@ import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
+import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_RESET_MS
 import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
@@ -69,7 +71,13 @@ internal fun MobileNativePlayer(
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
-    val ui = remember(state) { MobilePlayerUiState.from(state) }
+    val playerNamePrefix = stringResource(R.string.player_name_prefix)
+    val ui = remember(state, playerNamePrefix) {
+        MobilePlayerUiState.from(
+            state = state,
+            playerNamePrefix = playerNamePrefix,
+        )
+    }
     val qualities = remember(streamUrl, state.streamQualityMap) {
         state.streamQualityMap?.takeIf { it.isNotEmpty() } ?: deriveQualityUrls(streamUrl)
     }
@@ -488,6 +496,9 @@ internal fun MobileNativePlayer(
                 selectedSpeed = selectedSpeed,
                 onSpeedSelected = { onEvent(PlayerState.Event.SpeedSelected(it)) },
                 dubbingNames = ui.dubbingNames,
+                dubbingEpisodeCounts = ui.dubbingEpisodeCounts,
+                dubbingViews = ui.dubbingViews,
+                dubbingSourceNames = ui.dubbingSourceNames,
                 selectedDubbingIndex = ui.currentDubbingIndex,
                 onDubbingSelected = { onEvent(PlayerState.Event.DubbingSelected(it, exoPlayer.currentPosition)) },
                 balancerNames = ui.balancerNames,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,6 +38,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerBalancerSheet(
     balancerNames: List<String>,
     selectedIndex: Int,
+    metaLabel: String? = null,
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -61,6 +63,7 @@ internal fun MobilePlayerBalancerSheet(
             itemsIndexed(balancerNames, key = { index, name -> "$index-$name" }) { index, name ->
                 MobilePlayerBalancerRow(
                     label = name.removePrefix(playerNamePrefix),
+                    metaLabel = metaLabel,
                     selected = index == selectedIndex,
                     onClick = { onBalancerSelected(index) },
                 )
@@ -72,6 +75,7 @@ internal fun MobilePlayerBalancerSheet(
 @Composable
 private fun MobilePlayerBalancerRow(
     label: String,
+    metaLabel: String?,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -101,15 +105,28 @@ private fun MobilePlayerBalancerRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = textColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        Column(
             modifier = Modifier.weight(1f),
-        )
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = textColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (!metaLabel.isNullOrBlank()) {
+                Text(
+                    text = metaLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor.copy(alpha = 0.68f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)
         }

@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,12 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
+import java.util.Locale
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
+import su.afk.yummy.tv.feature.player.presentation.R as PlayerR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +51,9 @@ internal fun MobilePlayerSettingsSheet(
     selectedSpeed: Float,
     onSpeedSelected: (Float) -> Unit,
     dubbingNames: List<String>,
+    dubbingEpisodeCounts: List<Int>,
+    dubbingViews: List<Int>,
+    dubbingSourceNames: List<String>,
     selectedDubbingIndex: Int,
     onDubbingSelected: (Int) -> Unit,
     balancerNames: List<String>,
@@ -103,6 +112,14 @@ internal fun MobilePlayerSettingsSheet(
                             MobilePlayerSelectionRow(
                                 label = name,
                                 selected = index == selectedDubbingIndex,
+                                metaContent = { contentColor ->
+                                    MobilePlayerDubbingMeta(
+                                        views = dubbingViews.getOrElse(index) { 0 },
+                                        episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
+                                        sourceNames = dubbingSourceNames.getOrElse(index) { "" },
+                                        contentColor = contentColor,
+                                    )
+                                },
                                 onClick = { onDubbingSelected(index) },
                             )
                         }
@@ -144,6 +161,7 @@ private fun MobilePlayerSettingsSection(
 private fun MobilePlayerSelectionRow(
     label: String,
     selected: Boolean,
+    metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(10.dp)
@@ -172,17 +190,94 @@ private fun MobilePlayerSelectionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = textColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        Column(
             modifier = Modifier.weight(1f),
-        )
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = textColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            metaContent(textColor)
+        }
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)
         }
     }
 }
+
+@Composable
+private fun MobilePlayerDubbingMeta(
+    views: Int,
+    episodeCount: Int,
+    sourceNames: String,
+    contentColor: Color,
+) {
+    val metaColor = contentColor.copy(alpha = 0.68f)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Visibility,
+            contentDescription = null,
+            tint = metaColor,
+            modifier = Modifier.size(13.dp),
+        )
+        Text(
+            text = views.formatCompactCount(),
+            style = MaterialTheme.typography.labelSmall,
+            color = metaColor,
+            maxLines = 1,
+        )
+        Icon(
+            imageVector = Icons.Filled.VideoLibrary,
+            contentDescription = null,
+            tint = metaColor,
+            modifier = Modifier
+                .padding(start = 7.dp)
+                .size(13.dp),
+        )
+        Text(
+            text = episodeCount.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = metaColor,
+            maxLines = 1,
+        )
+    }
+    if (sourceNames.isNotBlank()) {
+        Text(
+            text = sourceNames,
+            style = MaterialTheme.typography.labelSmall,
+            color = metaColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun Int.formatCompactCount(): String = when {
+    this >= 1_000_000 -> stringResource(
+        PlayerR.string.player_count_millions,
+        (this / 1_000_000f).formatCompactDecimal(),
+    )
+
+    this >= 1_000 -> stringResource(
+        PlayerR.string.player_count_thousands,
+        (this / 1_000f).formatCompactDecimal(),
+    )
+
+    else -> toString()
+}
+
+private fun Float.formatCompactDecimal(): String =
+    if (this % 1f == 0f) {
+        toInt().toString()
+    } else {
+        String.format(Locale.US, "%.1f", this)
+    }

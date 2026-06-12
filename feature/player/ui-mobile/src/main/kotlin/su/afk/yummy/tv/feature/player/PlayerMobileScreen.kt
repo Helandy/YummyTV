@@ -52,7 +52,13 @@ fun PlayerMobileScreen(
         scale = state.mobileVideoScale,
         offset = Offset(state.mobileVideoOffsetX, state.mobileVideoOffsetY),
     )
-    val uiState = remember(state) { MobilePlayerUiState.from(state) }
+    val playerNamePrefix = stringResource(R.string.player_name_prefix)
+    val uiState = remember(state, playerNamePrefix) {
+        MobilePlayerUiState.from(
+            state = state,
+            playerNamePrefix = playerNamePrefix,
+        )
+    }
     val canChangePlayer = uiState.balancerNames.size > 1
     val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
         ?: state.resumeFromMs.takeIf { it > 0L }
@@ -117,6 +123,7 @@ fun PlayerMobileScreen(
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
                 selectedIndex = uiState.currentBalancerIndex,
+                metaLabel = stringResource(R.string.player_balancer_meta),
                 onBalancerSelected = { index ->
                     val balancerIndex =
                         uiState.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
