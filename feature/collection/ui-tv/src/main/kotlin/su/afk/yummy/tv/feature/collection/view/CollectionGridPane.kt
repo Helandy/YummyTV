@@ -156,7 +156,7 @@ private fun CollectionGrid(
     // row below stays composed and DPAD-down preserves the column.
     LaunchedEffect(lastFocusedIndex, gridHasFocus.value) {
         if (gridHasFocus.value && !isRestoringFocus.value && !firstEntry && animes.isNotEmpty()) {
-            gridState.animateScrollToItem(lastFocusedIndex.coerceIn(0, animes.lastIndex) + 1)
+            gridState.scrollToItem(lastFocusedIndex.coerceIn(0, animes.lastIndex) + 1)
         }
     }
 

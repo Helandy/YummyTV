@@ -1,8 +1,5 @@
 package su.afk.yummy.tv.feature.details.details.view
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,16 +32,8 @@ internal fun BalancerOptionItem(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
     if (isSupported) {
-        val bgColor by animateColorAsState(
-            targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.12f),
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-            label = "balancer_bg",
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (focused) Color.Black else Color.White,
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-            label = "balancer_text",
-        )
+        val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.12f)
+        val textColor = if (focused) Color.Black else Color.White
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,

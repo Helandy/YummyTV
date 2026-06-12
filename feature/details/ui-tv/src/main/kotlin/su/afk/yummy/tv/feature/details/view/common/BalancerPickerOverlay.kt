@@ -1,8 +1,5 @@
 package su.afk.yummy.tv.feature.details.view.common
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -106,6 +103,7 @@ internal fun BalancerPickerOverlay(
                                 onDismiss()
                                 true
                             }
+
                             Key.DirectionUp -> focusedOptionIndex == firstSupportedIdx
                             Key.DirectionDown -> focusedOptionIndex == lastSupportedIdx
                             else -> false
@@ -146,16 +144,8 @@ private fun BalancerOptionItem(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
     if (isSupported) {
-        val bgColor by animateColorAsState(
-            targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-            label = "balancer_bg",
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (focused) Color.Black else Color.White,
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-            label = "balancer_text",
-        )
+        val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.10f)
+        val textColor = if (focused) Color.Black else Color.White
         Row(
             modifier = Modifier
                 .fillMaxWidth()

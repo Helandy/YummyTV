@@ -1,8 +1,5 @@
 package su.afk.yummy.tv.feature.settings.view
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,29 +38,15 @@ internal fun QualityRow(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
 
-    val bgColor by animateColorAsState(
-        targetValue = when {
-            selected && focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-            focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-            selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-            else -> Color.Transparent
-        },
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "row_bg",
-    )
-    val borderColor by animateColorAsState(
-        targetValue = when {
-            focused -> MaterialTheme.colorScheme.primary
-            else -> Color.Transparent
-        },
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "row_border",
-    )
-    val labelColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "row_label",
-    )
+    val bgColor = when {
+        selected && focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+        focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+        else -> Color.Transparent
+    }
+    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
+    val labelColor =
+        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
 
     Row(
         modifier = modifier

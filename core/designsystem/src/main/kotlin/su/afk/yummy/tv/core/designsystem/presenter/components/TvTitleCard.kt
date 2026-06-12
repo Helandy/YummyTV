@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.core.designsystem.presenter.components
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -97,18 +95,12 @@ fun TvTitleCard(
                     else -> posterUrl
                 }
 
-                Crossfade(
-                    targetState = imageUrl,
-                    animationSpec = tween(150),
-                    label = "card_image",
-                ) { url ->
-                    AsyncImage(
-                        model = url,
-                        contentDescription = title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
 
                 if (imageUrl == null) {
                     Text(

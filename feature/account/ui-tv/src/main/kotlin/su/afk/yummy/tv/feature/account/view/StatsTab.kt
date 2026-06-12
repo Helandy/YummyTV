@@ -55,14 +55,14 @@ internal fun StatsTab(
                         val last = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                         if (listState.firstVisibleItemIndex >= last) return@onPreviewKeyEvent false
                         val next = (listState.firstVisibleItemIndex + 1).coerceAtMost(last)
-                        scope.launch { listState.animateScrollToItem(next) }
+                        scope.launch { listState.scrollToItem(next) }
                         true
                     }
 
                     Key.DirectionUp -> {
                         if (listState.firstVisibleItemIndex == 0) return@onPreviewKeyEvent false
                         val previous = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
-                        scope.launch { listState.animateScrollToItem(previous) }
+                        scope.launch { listState.scrollToItem(previous) }
                         true
                     }
 

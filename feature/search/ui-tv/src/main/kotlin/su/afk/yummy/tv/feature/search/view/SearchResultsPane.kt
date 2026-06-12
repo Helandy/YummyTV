@@ -229,7 +229,7 @@ internal fun SearchResultsPane(
     // DPAD-down preserves the column.
     LaunchedEffect(lastFocusedIndex, gridHasFocus) {
         if (gridHasFocus && !isRestoringFocus && items.isNotEmpty()) {
-            gridState.animateScrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
+            gridState.scrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
         }
     }
 

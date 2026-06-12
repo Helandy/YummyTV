@@ -1,9 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -138,20 +135,12 @@ private fun PlayerSelectionItem(
     val shape = RoundedCornerShape(8.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val background by animateColorAsState(
-        targetValue = when {
-            focused -> Color.White
-            selected -> Color.White.copy(alpha = 0.86f)
-            else -> Color.White.copy(alpha = 0.10f)
-        },
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "selection_item_bg",
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "selection_item_border",
-    )
+    val background = when {
+        focused -> Color.White
+        selected -> Color.White.copy(alpha = 0.86f)
+        else -> Color.White.copy(alpha = 0.10f)
+    }
+    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
     val contentColor = if (focused || selected) Color.Black else Color.White
     Box(
         modifier = Modifier

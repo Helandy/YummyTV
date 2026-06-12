@@ -1,11 +1,5 @@
 package su.afk.yummy.tv.core.designsystem.presenter.focus
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -40,26 +34,10 @@ fun Modifier.tvFocusableClick(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onLongClick: (() -> Unit)? = null,
     focusedScale: Float = 1.04f,
-    focusedBorderDurationMillis: Int = 150,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
-
-    val scale by animateFloatAsState(
-        targetValue = if (focused) focusedScale else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium,
-        ),
-        label = "card_scale",
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(
-            durationMillis = focusedBorderDurationMillis,
-            easing = FastOutSlowInEasing
-        ),
-        label = "card_border",
-    )
+    val scale = if (focused) focusedScale else 1f
+    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
 
     return this
         .graphicsLayer {

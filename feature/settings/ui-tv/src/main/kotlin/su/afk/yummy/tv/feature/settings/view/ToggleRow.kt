@@ -1,8 +1,5 @@
 package su.afk.yummy.tv.feature.settings.view
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,16 +38,9 @@ internal fun ToggleRow(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
 
-    val bgColor by animateColorAsState(
-        targetValue = if (focused) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f) else Color.Transparent,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "toggle_bg",
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
-        label = "toggle_border",
-    )
+    val bgColor =
+        if (focused) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f) else Color.Transparent
+    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
 
     Row(
         modifier = modifier

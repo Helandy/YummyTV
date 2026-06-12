@@ -40,7 +40,7 @@ internal fun FocusableDetailsItem(
                 isFocused = focusState.isFocused
                 if (focusState.isFocused) {
                     scope.launch {
-                        listState.animateScrollToItem(index)
+                        listState.scrollToItem(index)
                     }
                 }
             }

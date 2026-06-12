@@ -307,7 +307,13 @@ internal fun DetailsButtonBar(
                                 focusRequester = focusRequesters[row.index],
                                 onFocused = {
                                     focusedIndex = row.index
-                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                    scope.launch {
+                                        listState.scrollToItem(
+                                            (rowIndex - 1).coerceAtLeast(
+                                                0
+                                            )
+                                        )
+                                    }
                                 },
                             )
                         }
@@ -328,7 +334,13 @@ internal fun DetailsButtonBar(
                                 focusRequester = focusRequesters[row.libraryIndex],
                                 onFocused = {
                                     focusedIndex = row.libraryIndex
-                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                    scope.launch {
+                                        listState.scrollToItem(
+                                            (rowIndex - 1).coerceAtLeast(
+                                                0
+                                            )
+                                        )
+                                    }
                                 },
                                 modifier = Modifier.weight(1f),
                             )
@@ -339,7 +351,13 @@ internal fun DetailsButtonBar(
                                 focusRequester = focusRequesters[row.favoriteIndex],
                                 onFocused = {
                                     focusedIndex = row.favoriteIndex
-                                    scope.launch { listState.animateScrollToItem((rowIndex - 1).coerceAtLeast(0)) }
+                                    scope.launch {
+                                        listState.scrollToItem(
+                                            (rowIndex - 1).coerceAtLeast(
+                                                0
+                                            )
+                                        )
+                                    }
                                 },
                                 showLabel = false,
                                 iconSize = 24.dp,

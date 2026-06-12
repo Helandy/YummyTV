@@ -197,7 +197,7 @@ internal fun TopBrowser(
     // doesn't jump unpredictably during row changes.
     LaunchedEffect(lastFocusedIndex, gridHasFocus) {
         if (gridHasFocus && !isRestoringFocus && items.isNotEmpty()) {
-            gridState.animateScrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
+            gridState.scrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
         }
     }
 
@@ -339,7 +339,7 @@ internal fun TopBrowser(
                                                 if (index !in leftEdgeIndexes) {
                                                     val target = index - 1
                                                     scope.launch {
-                                                        gridState.animateScrollToItem(target)
+                                                        gridState.scrollToItem(target)
                                                         snapshotFlow {
                                                             gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
                                                         }.first { it }
@@ -361,7 +361,7 @@ internal fun TopBrowser(
                                                 when {
                                                     target in items.indices -> {
                                                         scope.launch {
-                                                            gridState.animateScrollToItem(target)
+                                                            gridState.scrollToItem(target)
                                                             snapshotFlow {
                                                                 gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
                                                             }.first { it }

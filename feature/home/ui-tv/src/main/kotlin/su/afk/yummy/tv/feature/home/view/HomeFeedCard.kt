@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.feature.home.view
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -127,18 +125,12 @@ internal fun HomeFeedCard(
                     else -> item.posterUrl(LocalPosterQuality.current)
                 }
 
-                Crossfade(
-                    targetState = imageUrl,
-                    animationSpec = tween(150),
-                    label = "card_image",
-                ) { url ->
-                    AsyncImage(
-                        model = url,
-                        contentDescription = item.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = item.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
 
                 if (imageUrl == null) {
                     Text(

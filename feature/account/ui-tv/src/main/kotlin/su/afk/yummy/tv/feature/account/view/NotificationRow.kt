@@ -50,7 +50,6 @@ internal fun NotificationRow(
             interactionSource = interactionSource,
             shape = shape,
             focusedScale = 1.01f,
-            focusedBorderDurationMillis = 0,
         )
 
     SurfacePanel(modifier = rowModifier) {

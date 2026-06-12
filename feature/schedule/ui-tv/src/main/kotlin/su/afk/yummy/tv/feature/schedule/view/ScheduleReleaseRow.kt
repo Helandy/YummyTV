@@ -1,8 +1,5 @@
 package su.afk.yummy.tv.feature.schedule.view
 
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -76,14 +73,7 @@ internal fun ScheduleReleaseRow(
     val focused by interactionSource.collectIsFocusedAsState()
     val active = focused || selected
     val shape = RoundedCornerShape(8.dp)
-    val rowScale by animateFloatAsState(
-        targetValue = if (focused) 1.025f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium,
-        ),
-        label = "schedule_row_scale",
-    )
+    val rowScale = if (focused) 1.025f else 1f
     val rowBackground = when {
         focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
         selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.09f)
