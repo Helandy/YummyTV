@@ -12,14 +12,13 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.HiltAndroidApp
-import io.appmetrica.analytics.AppMetrica
-import io.appmetrica.analytics.AppMetricaConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
+import su.afk.yummy.tv.core.analytics.AnalyticsInitializer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import java.io.File
 import javax.inject.Inject
@@ -30,6 +29,8 @@ class YummyTvApplication : Application(), Configuration.Provider {
     @Inject lateinit var settingsStore: SettingsStore
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var homeFeedRefreshScheduler: HomeFeedRefreshScheduler
+    @Inject
+    lateinit var analyticsInitializer: AnalyticsInitializer
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -40,7 +41,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        setupAppMetrica()
+        setupAnalytics()
         setupCoilImageLoader()
         homeFeedRefreshScheduler.schedule()
         applicationScope.launch {
@@ -55,9 +56,8 @@ class YummyTvApplication : Application(), Configuration.Provider {
         File(cacheDir, UPDATE_APK_FILE_NAME).delete()
     }
 
-    private fun setupAppMetrica() {
-        val config = AppMetricaConfig.newConfigBuilder(BuildConfig.APPMETRICA_API_KEY).build()
-        AppMetrica.activate(this, config)
+    private fun setupAnalytics() {
+        analyticsInitializer.initialize(this, BuildConfig.APPMETRICA_API_KEY)
     }
 
     @OptIn(ExperimentalCoilApi::class)

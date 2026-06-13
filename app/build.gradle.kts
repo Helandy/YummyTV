@@ -70,6 +70,7 @@ androidComponents {
 }
 
 dependencies {
+    implementation(project(":core:analytics"))
     implementation(project(":core:deeplink"))
     implementation(project(":core:navigation"))
     implementation(project(":core:network"))
@@ -129,7 +130,6 @@ dependencies {
     implementation(libs.hilt.work)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.appmetrica.analytics)
     implementation(libs.compose.runtime)
     implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
