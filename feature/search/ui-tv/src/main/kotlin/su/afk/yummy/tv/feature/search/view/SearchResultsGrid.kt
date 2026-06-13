@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -27,8 +25,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
@@ -44,22 +40,18 @@ internal fun SearchResultsGrid(
     isLoading: Boolean,
     focusedItemId: Int?,
     focusedPreview: AnimePreview?,
-    restoreFocusedItemOnEnter: Boolean,
     gridState: LazyGridState,
     focusRequesters: List<FocusRequester>,
     mainMenuFocusRequester: FocusRequester?,
-    lastFocusedIndex: Int,
     onLastFocusedIndexChanged: (Int) -> Unit,
     gridHasFocus: Boolean,
     onGridHasFocusChanged: (Boolean) -> Unit,
     isRestoringFocus: Boolean,
-    onRestoringFocusChanged: (Boolean) -> Unit,
+    onRestoreGridFocus: () -> Unit,
     onItemSelected: (SearchItem) -> Unit,
     onItemFocused: (Int) -> Unit,
-    onFocusedItemRestoreHandled: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scope = rememberCoroutineScope()
     val cardWidth = currentTvTitleCardDimensions().width
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -84,27 +76,8 @@ internal fun SearchResultsGrid(
                 .onFocusChanged { state ->
                     val hadFocus = gridHasFocus
                     onGridHasFocusChanged(state.hasFocus)
-                    if (!state.hasFocus) {
-                        onRestoringFocusChanged(false)
-                    }
                     if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
-                        onRestoringFocusChanged(true)
-                        scope.launch {
-                            val focusedIndex = focusedItemId?.let { id ->
-                                items.indexOfFirst { it.id == id }
-                            }?.takeIf { it >= 0 }
-                            val target =
-                                focusedIndex ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
-                            gridState.scrollToItem(target)
-                            snapshotFlow {
-                                gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                            }.first { it }
-                            runCatching { focusRequesters[target].requestFocus() }
-                            onRestoringFocusChanged(false)
-                            if (restoreFocusedItemOnEnter) {
-                                onFocusedItemRestoreHandled()
-                            }
-                        }
+                        onRestoreGridFocus()
                     }
                 }
                 .focusGroup(),
@@ -141,9 +114,6 @@ internal fun SearchResultsGrid(
                             if (state.hasFocus) {
                                 if (!isRestoringFocus) {
                                     onLastFocusedIndexChanged(index)
-                                }
-                                if (restoreFocusedItemOnEnter && item.id == focusedItemId) {
-                                    onFocusedItemRestoreHandled()
                                 }
                             }
                         },

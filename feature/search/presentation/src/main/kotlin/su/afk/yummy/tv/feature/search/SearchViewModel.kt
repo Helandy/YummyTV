@@ -141,8 +141,20 @@ class SearchViewModel @Inject internal constructor(
     }
 
     private fun onQueryChanged(query: String) {
-        setState { copy(query = query, items = emptyList(), offset = 0, error = null, canLoadMore = false) }
         searchPagingHandler.cancel()
+        animePreviewFocusHandler.cancelFocus()
+        setState {
+            copy(
+                query = query,
+                items = emptyList(),
+                offset = 0,
+                error = null,
+                canLoadMore = false,
+                focusedItemId = null,
+                focusedPreview = null,
+                restoreFocusedItemOnEnter = false,
+            )
+        }
         if (query.isBlank() && currentState.filters.isEmpty) {
             setState { copy(isLoading = false) }
             return
@@ -179,10 +191,12 @@ class SearchViewModel @Inject internal constructor(
                 offset = 0,
                 focusedItemId = null,
                 focusedPreview = null,
+                restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }
         searchPagingHandler.cancel()
+        animePreviewFocusHandler.cancelFocus()
         if (query.isBlank() && filters.isEmpty) {
             setState { copy(isLoading = false) }
             return
@@ -200,10 +214,12 @@ class SearchViewModel @Inject internal constructor(
                 offset = 0,
                 focusedItemId = null,
                 focusedPreview = null,
+                restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }
         searchPagingHandler.cancel()
+        animePreviewFocusHandler.cancelFocus()
         if (query.isBlank()) {
             setState { copy(isLoading = false) }
             return

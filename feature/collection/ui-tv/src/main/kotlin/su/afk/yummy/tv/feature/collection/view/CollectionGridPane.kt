@@ -20,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,12 +43,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
@@ -123,25 +124,99 @@ private fun CollectionGrid(
     )
     val scope = rememberCoroutineScope()
     val animes = collection.animes
+    val animeIds = remember(animes) { animes.map { it.id } }
 
     val headerFocusRequester = remember { FocusRequester() }
-    val focusRequesters = remember(animes.size) { List(animes.size) { FocusRequester() } }
-    val gridHasFocus = remember { mutableStateOf(false) }
-    val isRestoringFocus = remember { mutableStateOf(false) }
+    val focusRequesters = remember(animeIds) { List(animes.size) { FocusRequester() } }
+    val gridItemFocusRequesters = remember(headerFocusRequester, focusRequesters) {
+        listOf(headerFocusRequester) + focusRequesters
+    }
+    var gridHasFocus by remember { mutableStateOf(false) }
+    var isRestoringFocus by remember { mutableStateOf(false) }
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val cardWidth = currentTvTitleCardDimensions().width
     // сбрасывается при смене коллекции — при первом входе фокус на заголовке
     var firstEntry by rememberSaveable(collection.id) { mutableStateOf(true) }
     var lastFocusedIndex by rememberSaveable(collection.id) {
-        val idx = focusedItemId?.let { id -> animes.indexOfFirst { it.id == id } }
+        val idx = focusedItemId?.let(animeIds::indexOf)
             ?.coerceAtLeast(0) ?: 0
         mutableIntStateOf(idx)
     }
+    var lastFocusedItemId by rememberSaveable(collection.id) {
+        mutableStateOf(focusedItemId?.takeIf { it in animeIds })
+    }
+    var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
+
+    fun currentIndexFor(itemId: Int?): Int? =
+        itemId?.let(animeIds::indexOf)?.takeIf { it >= 0 }
+
+    fun rememberFocusedAnime(index: Int) {
+        firstEntry = false
+        lastFocusedIndex = index
+        lastFocusedItemId = animeIds.getOrNull(index)
+    }
+
+    fun restoreTargetIndex(): Int {
+        if (animes.isEmpty()) return 0
+        return (
+                currentIndexFor(focusedItemId)
+                    ?: currentIndexFor(lastFocusedItemId)
+                    ?: lastFocusedIndex
+                ).coerceIn(0, animes.lastIndex)
+    }
+
+    fun requestGridItemFocus(
+        lazyGridIndex: Int,
+        fallbackFocusRequester: FocusRequester,
+        onRestoreFinished: () -> Unit = {},
+    ) {
+        isRestoringFocus = true
+        restoreFocusJob = launchTvLazyGridItemFocusRestore(
+            previousJob = restoreFocusJob,
+            scope = scope,
+            itemIndex = lazyGridIndex,
+            gridState = gridState,
+            itemFocusRequesters = gridItemFocusRequesters,
+            fallbackFocusRequester = fallbackFocusRequester,
+            onRestoreFinished = {
+                isRestoringFocus = false
+                onRestoreFinished()
+            },
+        )
+    }
+
+    fun requestHeaderFocus() {
+        requestGridItemFocus(
+            lazyGridIndex = 0,
+            fallbackFocusRequester = headerFocusRequester,
+        )
+    }
+
+    fun requestAnimeFocus(
+        index: Int,
+        clearPendingRestore: Boolean = false,
+    ) {
+        if (animes.isEmpty()) return
+        val target = index.coerceIn(0, animes.lastIndex)
+        rememberFocusedAnime(target)
+        requestGridItemFocus(
+            lazyGridIndex = target + 1,
+            fallbackFocusRequester = headerFocusRequester,
+            onRestoreFinished = {
+                if (clearPendingRestore) {
+                    onFocusedItemRestoreHandled()
+                }
+            },
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { restoreFocusJob?.cancel() }
+    }
 
     LaunchedEffect(focusedItemId, animes) {
-        val focusedIndex = focusedItemId?.let { id -> animes.indexOfFirst { it.id == id } }
-        if (focusedIndex != null && focusedIndex >= 0) {
-            lastFocusedIndex = focusedIndex
+        currentIndexFor(focusedItemId)?.let { focusedIndex ->
+            rememberFocusedAnime(focusedIndex)
         }
     }
 
@@ -154,8 +229,8 @@ private fun CollectionGrid(
     // Lift the focused card's row to the top once focus settles (+1 accounts for
     // the header item). A cancellable effect keeps the focused row pinned so the
     // row below stays composed and DPAD-down preserves the column.
-    LaunchedEffect(lastFocusedIndex, gridHasFocus.value) {
-        if (gridHasFocus.value && !isRestoringFocus.value && !firstEntry && animes.isNotEmpty()) {
+    LaunchedEffect(lastFocusedIndex, gridHasFocus) {
+        if (gridHasFocus && !isRestoringFocus && !firstEntry && animes.isNotEmpty()) {
             gridState.scrollToItem(lastFocusedIndex.coerceIn(0, animes.lastIndex) + 1)
         }
     }
@@ -172,36 +247,19 @@ private fun CollectionGrid(
             modifier = Modifier
                 .fillMaxSize()
                 .onFocusChanged { state ->
-                    val hadFocus = gridHasFocus.value
-                    gridHasFocus.value = state.hasFocus
+                    val hadFocus = gridHasFocus
+                    gridHasFocus = state.hasFocus
                     if (!state.hasFocus) {
-                        isRestoringFocus.value = false
+                        isRestoringFocus = false
                     }
-                    if (state.hasFocus && !hadFocus && animes.isNotEmpty()) {
-                        isRestoringFocus.value = true
-                        scope.launch {
-                            if (firstEntry && !restoreFocusedItemOnEnter) {
-                                gridState.scrollToItem(0)
-                                snapshotFlow {
-                                    gridState.layoutInfo.visibleItemsInfo.any { it.index == 0 }
-                                }.first { it }
-                                runCatching { headerFocusRequester.requestFocus() }
-                            } else {
-                                val restoredIndex = focusedItemId?.let { id ->
-                                    animes.indexOfFirst { it.id == id }
-                                }?.takeIf { it >= 0 }
-                                val target =
-                                    restoredIndex ?: lastFocusedIndex.coerceIn(0, animes.lastIndex)
-                                gridState.scrollToItem(target + 1)
-                                snapshotFlow {
-                                    gridState.layoutInfo.visibleItemsInfo.any { it.index == target + 1 }
-                                }.first { it }
-                                runCatching { focusRequesters[target].requestFocus() }
-                            }
-                            isRestoringFocus.value = false
-                            if (restoreFocusedItemOnEnter) {
-                                onFocusedItemRestoreHandled()
-                            }
+                    if (state.hasFocus && !hadFocus) {
+                        if (firstEntry && !restoreFocusedItemOnEnter) {
+                            requestHeaderFocus()
+                        } else if (animes.isNotEmpty()) {
+                            requestAnimeFocus(
+                                index = restoreTargetIndex(),
+                                clearPendingRestore = restoreFocusedItemOnEnter,
+                            )
                         }
                     }
                 }
@@ -240,9 +298,8 @@ private fun CollectionGrid(
                             mainMenuFocusRequester != null
                         }
                         .onFocusChanged { state ->
-                            if (state.hasFocus && !isRestoringFocus.value) {
-                                firstEntry = false
-                                lastFocusedIndex = index
+                            if (state.hasFocus && !isRestoringFocus) {
+                                rememberFocusedAnime(index)
                             }
                         },
                     item = anime,

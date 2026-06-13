@@ -14,10 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -74,6 +75,7 @@ internal fun SearchResultsPane(
     modifier: Modifier = Modifier,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -86,36 +88,83 @@ internal fun SearchResultsPane(
         if (shouldLoadMore) onLoadMore()
     }
 
-    val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
+    val itemIds = remember(items) { items.map { it.id } }
+    val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
     val searchFieldFocusRequester = remember { FocusRequester() }
     val filterButtonFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
     val focusedItemIndex = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } } ?: -1
-    var lastFocusedIndex by rememberSaveable {
+    val focusStateKey = remember(query, filters) { "${query.trim()}|${filters.focusStateKey()}" }
+    var lastFocusedIndex by rememberSaveable(focusStateKey) {
         val idx = focusedItemIndex.coerceAtLeast(0)
         mutableIntStateOf(idx)
+    }
+    var lastFocusedItemId by rememberSaveable(focusStateKey) {
+        mutableStateOf(focusedItemId?.takeIf { it in itemIds })
     }
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var restoreFilterButtonFocusToken by rememberSaveable { mutableIntStateOf(0) }
     var restoreFocusedItemToken by rememberSaveable { mutableIntStateOf(0) }
+    var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
     val currentRestoreFocusedItemOnEnter by rememberUpdatedState(restoreFocusedItemOnEnter)
-    val currentFocusedItemIndex by rememberUpdatedState(focusedItemIndex)
+    val currentHasResults by rememberUpdatedState(items.isNotEmpty())
+
+    fun currentIndexFor(itemId: Int?): Int? =
+        itemId?.let(itemIds::indexOf)?.takeIf { it >= 0 }
+
+    fun rememberFocusedItem(index: Int) {
+        lastFocusedIndex = index
+        lastFocusedItemId = itemIds.getOrNull(index)
+    }
+
+    fun restoreTargetIndex(): Int {
+        if (items.isEmpty()) return 0
+        return (
+                currentIndexFor(focusedItemId)
+                    ?: currentIndexFor(lastFocusedItemId)
+                    ?: lastFocusedIndex
+                ).coerceIn(0, items.lastIndex)
+    }
+
+    fun requestResultFocus(
+        index: Int,
+        fallbackFocusRequester: FocusRequester = searchFieldFocusRequester,
+        clearPendingRestore: Boolean = false,
+    ) {
+        if (items.isEmpty()) return
+        val target = index.coerceIn(0, items.lastIndex)
+        rememberFocusedItem(target)
+        isRestoringFocus = true
+        restoreFocusJob = launchTvLazyGridItemFocusRestore(
+            previousJob = restoreFocusJob,
+            scope = scope,
+            itemIndex = target,
+            gridState = gridState,
+            itemFocusRequesters = focusRequesters,
+            fallbackFocusRequester = fallbackFocusRequester,
+            onRestoreFinished = {
+                isRestoringFocus = false
+                if (clearPendingRestore) {
+                    onFocusedItemRestoreHandled()
+                }
+            },
+        )
+    }
 
     LaunchedEffect(focusedItemId, items) {
-        val focusedIndex = focusedItemId?.let { id -> items.indexOfFirst { it.id == id } }
-        if (focusedIndex != null && focusedIndex >= 0) {
-            lastFocusedIndex = focusedIndex
+        currentIndexFor(focusedItemId)?.let { focusedIndex ->
+            rememberFocusedItem(focusedIndex)
         }
     }
 
     val preferredContentFocusRequester = when {
         isFilterPanelOpen -> filterPanelInitialFocusRequester
         restoreFilterButtonFocusToken > 0 -> filterButtonFocusRequester
-        restoreFocusedItemOnEnter && focusedItemIndex in items.indices ->
-            focusRequesters.getOrNull(focusedItemIndex)
+        restoreFocusedItemOnEnter && items.isNotEmpty() ->
+            focusRequesters.getOrNull(restoreTargetIndex())
 
         else -> searchFieldFocusRequester
     }
@@ -125,12 +174,16 @@ internal fun SearchResultsPane(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
+    DisposableEffect(Unit) {
+        onDispose { restoreFocusJob?.cancel() }
+    }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (
                 event == Lifecycle.Event.ON_RESUME &&
                 currentRestoreFocusedItemOnEnter &&
-                currentFocusedItemIndex >= 0
+                currentHasResults
             ) {
                 restoreFocusedItemToken += 1
             }
@@ -143,21 +196,15 @@ internal fun SearchResultsPane(
         if (
             restoreFocusedItemToken <= 0 ||
             !restoreFocusedItemOnEnter ||
-            focusedItemIndex !in items.indices
+            items.isEmpty()
         ) {
             return@LaunchedEffect
         }
-        isRestoringFocus = true
-        gridState.scrollToItem(focusedItemIndex)
-        snapshotFlow {
-            gridState.layoutInfo.visibleItemsInfo.any { it.index == focusedItemIndex }
-        }.first { it }
-        repeat(6) {
-            runCatching { focusRequesters[focusedItemIndex].requestFocus() }
-            withFrameNanos { }
-        }
-        isRestoringFocus = false
-        onFocusedItemRestoreHandled()
+        requestResultFocus(
+            index = restoreTargetIndex(),
+            fallbackFocusRequester = searchFieldFocusRequester,
+            clearPendingRestore = true,
+        )
     }
 
     LaunchedEffect(restoreFilterButtonFocusToken, isFilterPanelOpen) {
@@ -239,22 +286,48 @@ internal fun SearchResultsPane(
                         isLoading = isLoading,
                         focusedItemId = focusedItemId,
                         focusedPreview = focusedPreview,
-                        restoreFocusedItemOnEnter = restoreFocusedItemOnEnter,
                         gridState = gridState,
                         focusRequesters = focusRequesters,
                         mainMenuFocusRequester = mainMenuFocusRequester,
-                        lastFocusedIndex = lastFocusedIndex,
-                        onLastFocusedIndexChanged = { lastFocusedIndex = it },
+                        onLastFocusedIndexChanged = ::rememberFocusedItem,
                         gridHasFocus = gridHasFocus,
                         onGridHasFocusChanged = { gridHasFocus = it },
                         isRestoringFocus = isRestoringFocus,
-                        onRestoringFocusChanged = { isRestoringFocus = it },
+                        onRestoreGridFocus = {
+                            requestResultFocus(
+                                index = restoreTargetIndex(),
+                                fallbackFocusRequester = searchFieldFocusRequester,
+                                clearPendingRestore = restoreFocusedItemOnEnter,
+                            )
+                        },
                         onItemSelected = onItemSelected,
                         onItemFocused = onItemFocused,
-                        onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
                     )
                 }
             }
         }
     }
+}
+
+private fun SearchFilters.focusStateKey(): String = buildString {
+    append("genres=")
+    append(genres.sorted().joinToString(","))
+    append("|excluded=")
+    append(excludedGenres.sorted().joinToString(","))
+    append("|types=")
+    append(types.sorted().joinToString(","))
+    append("|statuses=")
+    append(statuses.sorted().joinToString(","))
+    append("|from=")
+    append(fromYear)
+    append("|to=")
+    append(toYear)
+    append("|seasons=")
+    append(seasons.sorted().joinToString(","))
+    append("|ages=")
+    append(ageRatings.sorted().joinToString(","))
+    append("|sort=")
+    append(sort.name)
+    append("|forward=")
+    append(sortForward)
 }
