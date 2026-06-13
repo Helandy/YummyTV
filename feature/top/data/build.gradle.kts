@@ -1,18 +1,11 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("yummytv.android.library")
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.data.top"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -22,9 +15,6 @@ dependencies {
     implementation(project(":feature:top:domain"))
 
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.hilt.android)
-
-    ksp(libs.hilt.compiler)
 
     testImplementation(libs.kotlin.test)
 }

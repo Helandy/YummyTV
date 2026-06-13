@@ -1,9 +1,7 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.application")
     alias(libs.plugins.kotlinSerialization)
+    id("yummytv.android.hilt")
 }
 
 fun String.toBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
@@ -15,12 +13,9 @@ val appmetricaApiKey = providers.gradleProperty("yummytv.appmetricaApiKey").get(
 
 android {
     namespace = "su.afk.yummy.tv"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = baseApplicationId
-
-        minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
 
         versionName = appVersionName
@@ -48,10 +43,6 @@ android {
 
             isDebuggable = false
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         buildConfig = true
@@ -126,7 +117,6 @@ dependencies {
     implementation(libs.bundles.coil.full)
 
     implementation(libs.androidx.tvprovider)
-    implementation(libs.hilt.android)
     implementation(libs.hilt.work)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
@@ -134,7 +124,5 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-
-    ksp(libs.hilt.compiler)
-    ksp(libs.hilt.work.compiler)
+    add("ksp", libs.hilt.work.compiler)
 }

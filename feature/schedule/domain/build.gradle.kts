@@ -1,15 +1,9 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("yummytv.android.library")
 }
 
 android {
     namespace = "su.afk.yummy.tv.domain.schedule"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {

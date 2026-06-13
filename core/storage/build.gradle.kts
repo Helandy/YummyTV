@@ -1,24 +1,14 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library")
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.core.storage"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
     implementation(libs.bundles.room)
 
-    implementation(libs.hilt.android)
-
-    ksp(libs.room.compiler)
-    ksp(libs.hilt.compiler)
+    add("ksp", libs.room.compiler)
 }

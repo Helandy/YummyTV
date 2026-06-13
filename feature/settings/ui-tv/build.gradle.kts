@@ -1,23 +1,15 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library.compose")
     alias(libs.plugins.kotlinSerialization)
+    id("yummytv.android.hilt")
 }
 
 val appVersionName = providers.gradleProperty("yummytv.versionName").get()
 
 android {
     namespace = "su.afk.yummy.tv.feature.settings"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
         buildConfigField("String", "VERSION_NAME", "\"$appVersionName\"")
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         buildConfig = true
@@ -39,7 +31,4 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.hilt.android)
-
-    ksp(libs.hilt.compiler)
 }

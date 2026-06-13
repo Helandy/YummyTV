@@ -1,21 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
+    id("yummytv.android.library.compose")
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.core.error"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -23,15 +12,11 @@ dependencies {
 
     implementation(project(":core:navigation"))
     implementation(project(":feature:commonScreen:api"))
-
-    implementation(libs.hilt.android)
     implementation(libs.ktor.client.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
-
-    ksp(libs.hilt.compiler)
 
     debugImplementation(libs.compose.uiTooling)
 }

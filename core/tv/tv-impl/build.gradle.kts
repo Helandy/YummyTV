@@ -1,17 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library")
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.core.tv"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -20,10 +13,6 @@ dependencies {
     implementation(project(":core:tv:tv-api"))
     implementation(project(":core:utils"))
     implementation(project(":feature:home:domain"))
-
-    implementation(libs.hilt.android)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.tvprovider)
-
-    ksp(libs.hilt.compiler)
 }

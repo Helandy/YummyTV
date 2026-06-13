@@ -1,18 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library.compose")
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.feature.main.mobile"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -31,13 +23,9 @@ dependencies {
     implementation(project(":feature:top:ui-mobile"))
 
     implementation(libs.bundles.compose.core)
-
-    implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.jetbrains.navigation3.ui)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
-
-    ksp(libs.hilt.compiler)
 }

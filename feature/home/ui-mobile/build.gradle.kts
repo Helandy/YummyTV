@@ -1,19 +1,11 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library.compose")
     alias(libs.plugins.kotlinSerialization)
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.feature.home.mobile"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -34,7 +26,4 @@ dependencies {
 
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
-    implementation(libs.hilt.android)
-
-    ksp(libs.hilt.compiler)
 }

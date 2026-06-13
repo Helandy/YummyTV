@@ -1,17 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    id("yummytv.android.library")
+    id("yummytv.android.hilt")
 }
 
 android {
     namespace = "su.afk.yummy.tv.feature.player.presentation"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
 }
 
 dependencies {
@@ -27,8 +20,5 @@ dependencies {
     implementation(project(":feature:player:domain"))
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.hilt.android)
     implementation(libs.kotlinx.coroutines.android)
-
-    ksp(libs.hilt.compiler)
 }
