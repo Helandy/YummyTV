@@ -5,6 +5,9 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.core.analytics"
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
