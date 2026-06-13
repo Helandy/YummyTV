@@ -192,6 +192,12 @@ fun PlayerTvScreen(
                 },
                 restoreControlFocusTarget = pendingControlFocusTarget,
                 onControlFocusRestored = { pendingControlFocusTarget = null },
+                selectedQuality = state.selectedQuality,
+                onQualitySelected = { quality, currentPosMs ->
+                    onEvent(PlayerState.Event.QualitySelected(quality, currentPosMs))
+                },
+                selectedSpeed = state.selectedSpeed,
+                onSpeedSelected = { speed -> onEvent(PlayerState.Event.SpeedSelected(speed)) },
                 resizeMode = state.resizeMode,
                 onResizeModeSelected = { mode -> onEvent(PlayerState.Event.ResizeModeSelected(mode)) },
                 zoomLevel = state.zoomLevel,

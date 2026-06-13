@@ -10,7 +10,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +32,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -42,20 +40,21 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
+import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
+import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
+import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS
-import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_RESET_MS
 import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
-import su.afk.yummy.tv.feature.player.utils.formatSignedSeconds
-import su.afk.yummy.tv.feature.player.utils.mediaItemFor
 import su.afk.yummy.tv.feature.player.utils.segments
+import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
 
 @OptIn(UnstableApi::class)
@@ -93,13 +92,10 @@ internal fun MobileNativePlayer(
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
-    var lastStepSeekTime by remember(streamUrl) { mutableLongStateOf(0L) }
-    var stepSeekCount by remember(streamUrl) { mutableStateOf(0) }
-    var stepSeekTotalOffset by remember(streamUrl) { mutableLongStateOf(0L) }
-    var lastStepSeekDirection by remember(streamUrl) { mutableStateOf<MobileSeekDirection?>(null) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
     var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
+    val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
     val currentUrl = qualities[selectedQuality] ?: streamUrl
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
@@ -161,18 +157,14 @@ internal fun MobileNativePlayer(
         val trackSelector = DefaultTrackSelector(context).apply {
             setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
         }
-        val dataSourceFactory = DefaultHttpDataSource.Factory().apply {
-            state.streamHeaders["User-Agent"]?.takeIf { it.isNotBlank() }?.let(::setUserAgent)
-            val requestHeaders = state.streamHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) }
-            if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
-        }
+        val dataSourceFactory = PlayerDataSourceFactory.create(state.streamHeaders)
         ExoPlayer.Builder(context)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
-                setMediaItem(mediaItemFor(currentUrl))
+                setMediaItem(PlayerMediaItemFactory.mediaItemFor(currentUrl))
                 seekTo(state.resumeFromMs)
                 playWhenReady = wantsPlay
                 prepare()
@@ -211,22 +203,9 @@ internal fun MobileNativePlayer(
 
     fun stepSeek(direction: MobileSeekDirection) {
         val now = System.currentTimeMillis()
-        if (
-            now - lastStepSeekTime > MOBILE_PLAYER_STEP_SEEK_RESET_MS ||
-            lastStepSeekDirection != direction
-        ) {
-            stepSeekCount = 0
-            stepSeekTotalOffset = 0L
-        }
-
-        stepSeekCount = (stepSeekCount + 1).coerceAtMost(MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS.size)
-        lastStepSeekTime = now
-        lastStepSeekDirection = direction
-
-        val offset = MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS[stepSeekCount - 1] * direction.sign
-        stepSeekTotalOffset += offset
+        val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
         seekToPosition(exoPlayer.currentPosition + offset)
-        stepSeekToastText = stepSeekTotalOffset.formatSignedSeconds()
+        stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
         stepSeekToastJob = coroutineScope.launch {

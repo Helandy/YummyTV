@@ -44,7 +44,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -56,21 +55,22 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
+import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
+import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
+import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.SeekDirection
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.STEP_SEEK_OFFSETS_MS
-import su.afk.yummy.tv.feature.player.utils.STEP_SEEK_RESET_MS
 import su.afk.yummy.tv.feature.player.utils.applyTvResizeMode
 import su.afk.yummy.tv.feature.player.utils.buildTvProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.currentSkip
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
-import su.afk.yummy.tv.feature.player.utils.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.utils.formatTime
-import su.afk.yummy.tv.feature.player.utils.mediaItemFor
 import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 
@@ -107,6 +107,10 @@ internal fun ExoPlayerView(
     onControlFocusRestored: () -> Unit = {},
     streamHeaders: Map<String, String> = emptyMap(),
     qualityOverrides: LinkedHashMap<String, String>? = null,
+    selectedQuality: String? = null,
+    onQualitySelected: (quality: String, currentPositionMs: Long) -> Unit = { _, _ -> },
+    selectedSpeed: Float = 1f,
+    onSpeedSelected: (Float) -> Unit = {},
     resizeMode: PlayerResizeMode = PlayerResizeMode.FIT,
     onResizeModeSelected: (PlayerResizeMode) -> Unit = {},
     zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
@@ -115,10 +119,12 @@ internal fun ExoPlayerView(
     autoSkipOpeningsEndings: Boolean = false,
 ) {
     val context = LocalContext.current
-    val qualities = remember(streamUrl, qualityOverrides) { qualityOverrides ?: deriveQualityUrls(streamUrl) }
+    val qualities = remember(streamUrl, qualityOverrides) {
+        qualityOverrides?.takeIf { it.isNotEmpty() } ?: deriveQualityUrls(streamUrl)
+    }
     val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
-    var selectedQuality by remember(streamUrl, qualityOverrides) { mutableStateOf(qualities.keys.last()) }
-    var selectedSpeed by remember { mutableFloatStateOf(1f) }
+    val activeQuality = selectedQuality?.takeIf { it in qualities } ?: qualities.keys.last()
+    val activeSpeed = selectedSpeed.coerceAtLeast(0.1f)
     var seekOnSwitch by remember(streamUrl) { mutableLongStateOf(resumeFromMs) }
     var lastSaveTime by remember { mutableLongStateOf(0L) }
     var wantsPlay by remember { mutableStateOf(true) }
@@ -127,10 +133,6 @@ internal fun ExoPlayerView(
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
-    var lastStepSeekTime by remember { mutableLongStateOf(0L) }
-    var stepSeekCount by remember { mutableStateOf(0) }
-    var stepSeekTotalOffset by remember { mutableLongStateOf(0L) }
-    var lastStepSeekDirection by remember { mutableStateOf<SeekDirection?>(null) }
     var controllerVisible by remember { mutableStateOf(true) }
     var showQualityPanel by remember { mutableStateOf(false) }
     var showDubbingPanel by remember { mutableStateOf(false) }
@@ -142,6 +144,7 @@ internal fun ExoPlayerView(
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
     var skipSnackbarText by remember(streamUrl) { mutableStateOf<String?>(null) }
     val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
+    val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
 
     val playFocusRequester = remember { FocusRequester() }
     val qualityButtonFocusRequester = remember { FocusRequester() }
@@ -185,24 +188,21 @@ internal fun ExoPlayerView(
         }
     }
 
-    val currentUrl = remember(streamUrl, selectedQuality) { qualities[selectedQuality] ?: streamUrl }
+    val currentUrl =
+        remember(streamUrl, activeQuality, qualities) { qualities[activeQuality] ?: streamUrl }
 
     val exoPlayer = remember(currentUrl, streamHeaders) {
         val trackSelector = DefaultTrackSelector(context).apply {
             setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
         }
-        val dataSourceFactory = DefaultHttpDataSource.Factory().apply {
-            streamHeaders["User-Agent"]?.takeIf { it.isNotBlank() }?.let(::setUserAgent)
-            val requestHeaders = streamHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) }
-            if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
-        }
+        val dataSourceFactory = PlayerDataSourceFactory.create(streamHeaders)
         ExoPlayer.Builder(context)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
-                setMediaItem(mediaItemFor(currentUrl))
+                setMediaItem(PlayerMediaItemFactory.mediaItemFor(currentUrl))
                 seekTo(seekOnSwitch)
                 prepare()
             }
@@ -224,7 +224,8 @@ internal fun ExoPlayerView(
     }
 
     fun seekTo(positionMs: Long) {
-        val clamped = if (duration > 0) positionMs.coerceIn(0L, duration) else positionMs.coerceAtLeast(0)
+        val clamped =
+            if (duration > 0) positionMs.coerceIn(0L, duration) else positionMs.coerceAtLeast(0)
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
@@ -233,18 +234,9 @@ internal fun ExoPlayerView(
 
     fun stepSeek(direction: SeekDirection) {
         val now = System.currentTimeMillis()
-        if (now - lastStepSeekTime > STEP_SEEK_RESET_MS || lastStepSeekDirection != direction) {
-            stepSeekCount = 0
-            stepSeekTotalOffset = 0L
-        }
-        stepSeekCount = (stepSeekCount + 1).coerceAtMost(STEP_SEEK_OFFSETS_MS.size)
-        lastStepSeekTime = now
-        lastStepSeekDirection = direction
-
-        val offset = STEP_SEEK_OFFSETS_MS[stepSeekCount - 1] * direction.sign
-        stepSeekTotalOffset += offset
+        val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
         seekTo(exoPlayer.currentPosition + offset)
-        stepSeekToastText = stepSeekTotalOffset.formatSignedSeconds()
+        stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
         stepSeekToastJob = coroutineScope.launch {
@@ -360,7 +352,8 @@ internal fun ExoPlayerView(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                onPlaybackError(error.errorCodeName.takeIf { it.isNotBlank() } ?: error.message.orEmpty())
+                onPlaybackError(error.errorCodeName.takeIf { it.isNotBlank() }
+                    ?: error.message.orEmpty())
             }
         }
         exoPlayer.addListener(listener)
@@ -375,8 +368,8 @@ internal fun ExoPlayerView(
         }
     }
 
-    LaunchedEffect(exoPlayer, selectedSpeed) {
-        exoPlayer.setPlaybackSpeed(selectedSpeed)
+    LaunchedEffect(exoPlayer, activeSpeed) {
+        exoPlayer.setPlaybackSpeed(activeSpeed)
     }
 
     LaunchedEffect(exoPlayer) {
@@ -408,10 +401,16 @@ internal fun ExoPlayerView(
     ) {
         if (showNextEpisodePrompt) {
             withFrameNanos { }
-            try { nextEpisodeFocusRequester.requestFocus() } catch (_: Exception) {}
+            try {
+                nextEpisodeFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
         } else if (showRateTitlePrompt) {
             withFrameNanos { }
-            try { rateTitleFocusRequester.requestFocus() } catch (_: Exception) {}
+            try {
+                rateTitleFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
         } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel) {
             withFrameNanos { }
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
@@ -420,10 +419,16 @@ internal fun ExoPlayerView(
                 }
             } ?: false
             if (!restoredExternalTarget && !requestPanelReturnFocus()) {
-                try { playFocusRequester.requestFocus() } catch (_: Exception) {}
+                try {
+                    playFocusRequester.requestFocus()
+                } catch (_: Exception) {
+                }
             }
         } else if (!controllerVisible) {
-            try { overlayFocusRequester.requestFocus() } catch (_: Exception) {}
+            try {
+                overlayFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -481,7 +486,10 @@ internal fun ExoPlayerView(
             controllerVisible = true
             hideJob?.cancel()
             withFrameNanos { }
-            try { skipFocusRequester.requestFocus() } catch (_: Exception) {}
+            try {
+                skipFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
             delay(10_000)
             if (highlightedSkipKey == skip.key) highlightedSkipKey = null
         }
@@ -491,12 +499,12 @@ internal fun ExoPlayerView(
 
     BackHandler(
         enabled = showQualityPanel ||
-            showDubbingPanel ||
-            showBalancerPanel ||
-            showSpeedPanel ||
+                showDubbingPanel ||
+                showBalancerPanel ||
+                showSpeedPanel ||
                 showResizePanel ||
-            showNextEpisodePrompt ||
-            showRateTitlePrompt,
+                showNextEpisodePrompt ||
+                showRateTitlePrompt,
     ) {
         showNextEpisodePrompt = false
         showRateTitlePrompt = false
@@ -611,7 +619,9 @@ internal fun ExoPlayerView(
                         onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
-                            if (isSeeking) { seekTo((seekProgress * duration).toLong()); isSeeking = false }
+                            if (isSeeking) {
+                                seekTo((seekProgress * duration).toLong()); isSeeking = false
+                            }
                         },
                         onInteraction = ::onInteraction,
                     )
@@ -626,7 +636,7 @@ internal fun ExoPlayerView(
                         currentBalancerIndex = currentBalancerIndex,
                         playerName = playerName,
                         dubbing = dubbing,
-                        currentQualityLabel = selectedQuality,
+                        currentQualityLabel = activeQuality,
                         qualityFocusRequester = qualityButtonFocusRequester,
                         dubbingFocusRequester = dubbingButtonFocusRequester,
                         balancerFocusRequester = balancerButtonFocusRequester,
@@ -641,7 +651,8 @@ internal fun ExoPlayerView(
                             showBalancerPanel = false
                             showSpeedPanel = false
                             showResizePanel = false
-                            if (!showQualityPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Quality
+                            if (!showQualityPanel) pendingPanelReturnFocusTarget =
+                                PanelReturnFocusTarget.Quality
                             if (showQualityPanel) hideJob?.cancel() else onInteraction()
                         },
                         onToggleDubbing = {
@@ -650,7 +661,8 @@ internal fun ExoPlayerView(
                             showBalancerPanel = false
                             showSpeedPanel = false
                             showResizePanel = false
-                            if (!showDubbingPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Dubbing
+                            if (!showDubbingPanel) pendingPanelReturnFocusTarget =
+                                PanelReturnFocusTarget.Dubbing
                             if (showDubbingPanel) hideJob?.cancel() else onInteraction()
                         },
                         onToggleBalancer = {
@@ -659,7 +671,8 @@ internal fun ExoPlayerView(
                             showQualityPanel = false
                             showSpeedPanel = false
                             showResizePanel = false
-                            if (!showBalancerPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Balancer
+                            if (!showBalancerPanel) pendingPanelReturnFocusTarget =
+                                PanelReturnFocusTarget.Balancer
                             if (showBalancerPanel) hideJob?.cancel() else onInteraction()
                         },
                         resizeFocusRequester = resizeButtonFocusRequester,
@@ -673,14 +686,15 @@ internal fun ExoPlayerView(
                                 PanelReturnFocusTarget.Resize
                             if (showResizePanel) hideJob?.cancel() else onInteraction()
                         },
-                        currentSpeedLabel = selectedSpeed.speedLabel(),
+                        currentSpeedLabel = activeSpeed.speedLabel(),
                         onToggleSpeed = {
                             showSpeedPanel = !showSpeedPanel
                             showBalancerPanel = false
                             showDubbingPanel = false
                             showQualityPanel = false
                             showResizePanel = false
-                            if (!showSpeedPanel) pendingPanelReturnFocusTarget = PanelReturnFocusTarget.Speed
+                            if (!showSpeedPanel) pendingPanelReturnFocusTarget =
+                                PanelReturnFocusTarget.Speed
                             if (showSpeedPanel) hideJob?.cancel() else onInteraction()
                         },
                     )
@@ -692,7 +706,7 @@ internal fun ExoPlayerView(
             visible = showQualityPanel,
             title = stringResource(R.string.player_quality_title),
             items = qualities.keys.toList(),
-            selectedIndex = qualities.keys.indexOf(selectedQuality),
+            selectedIndex = qualities.keys.indexOf(activeQuality),
             selectedFocusRequester = selectedQualityFocusRequester,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -700,9 +714,11 @@ internal fun ExoPlayerView(
             itemMeta = { stringResource(R.string.player_quality_meta) },
             onItemSelected = { idx ->
                 val quality = qualities.keys.toList()[idx]
-                if (quality != selectedQuality) {
-                    seekOnSwitch = exoPlayer.currentPosition
-                    selectedQuality = quality
+                if (quality != activeQuality) {
+                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                    seekOnSwitch = position
+                    saveProgressIfReady(position)
+                    onQualitySelected(quality, position)
                 }
                 closePanels(PanelReturnFocusTarget.Quality)
                 onInteraction()
@@ -741,14 +757,15 @@ internal fun ExoPlayerView(
             visible = showSpeedPanel,
             title = stringResource(R.string.player_speed_title),
             items = speeds.map { it.speedLabel() },
-            selectedIndex = speeds.indexOf(selectedSpeed).coerceAtLeast(0),
+            selectedIndex = speeds.indexOf(activeSpeed).coerceAtLeast(0),
             selectedFocusRequester = selectedSpeedFocusRequester,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),
             itemMeta = { stringResource(R.string.player_speed_meta) },
             onItemSelected = { idx ->
-                selectedSpeed = speeds[idx]
+                val speed = speeds[idx]
+                if (speed != activeSpeed) onSpeedSelected(speed)
                 closePanels(PanelReturnFocusTarget.Speed)
                 onInteraction()
             },

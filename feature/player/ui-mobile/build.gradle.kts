@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:player:presentation"))
+    implementation(project(":feature:player:ui-common"))
 
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)

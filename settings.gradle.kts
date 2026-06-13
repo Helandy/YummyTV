@@ -92,6 +92,7 @@ include(":feature:top:ui-mobile")
 include(":feature:player:domain")
 include(":feature:player:data")
 include(":feature:player:presentation")
+include(":feature:player:ui-common")
 include(":feature:player:ui-tv")
 include(":feature:player:ui-mobile")
 

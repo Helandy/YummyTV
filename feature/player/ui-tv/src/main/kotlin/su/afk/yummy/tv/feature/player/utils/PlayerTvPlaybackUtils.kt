@@ -6,9 +6,8 @@ import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MimeTypes
 import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.common.StepSeekDirection
 import su.afk.yummy.tv.feature.player.model.ActiveSkip
 import su.afk.yummy.tv.feature.player.model.ActiveSkipType
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
@@ -16,9 +15,6 @@ import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.SeekDirection
 import su.afk.yummy.tv.feature.player.presentation.R
 import java.util.Locale
-
-internal const val STEP_SEEK_RESET_MS = 1_500L
-internal val STEP_SEEK_OFFSETS_MS = longArrayOf(5_000L, 10_000L, 15_000L)
 
 internal fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlFocusTarget =
     when (this) {
@@ -35,24 +31,11 @@ internal val SeekDirection.toastIcon: ImageVector
         SeekDirection.Forward -> Icons.Filled.FastForward
     }
 
-internal fun Long.formatSignedSeconds(): String {
-    val seconds = this / 1_000L
-    val prefix = if (seconds > 0) "+" else ""
-    return "${prefix}${seconds}s"
-}
-
-internal fun mediaItemFor(url: String): MediaItem {
-    val cleanUrl = url.substringBefore('?').substringBefore('#')
-    val mimeType = when {
-        cleanUrl.endsWith(".mpd", ignoreCase = true) -> MimeTypes.APPLICATION_MPD
-        cleanUrl.endsWith(".m3u8", ignoreCase = true) -> MimeTypes.APPLICATION_M3U8
-        else -> null
+internal fun SeekDirection.toStepSeekDirection(): StepSeekDirection =
+    when (this) {
+        SeekDirection.Backward -> StepSeekDirection.Backward
+        SeekDirection.Forward -> StepSeekDirection.Forward
     }
-    return MediaItem.Builder()
-        .setUri(url)
-        .apply { if (mimeType != null) setMimeType(mimeType) }
-        .build()
-}
 
 @Composable
 internal fun Int.formatCompactCount(): String = when {
