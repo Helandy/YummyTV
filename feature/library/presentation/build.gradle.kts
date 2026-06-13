@@ -16,17 +16,20 @@ android {
 }
 
 dependencies {
+    api(project(":feature:details:domain"))
+
     implementation(project(":core:designsystem"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:preferences"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
-    implementation(project(":feature:details:api"))
-    api(project(":feature:details:domain"))
-    implementation(project(":feature:player:api"))
+    implementation(project(":core:preferences"))
+    implementation(project(":core:storage"))
     implementation(project(":feature:account:domain"))
-    implementation(libs.compose.runtime)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(project(":feature:details:api"))
+    implementation(project(":feature:player:api"))
+
+    implementation(libs.bundles.compose.presentation)
+
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

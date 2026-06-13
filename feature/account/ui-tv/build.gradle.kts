@@ -17,20 +17,19 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:account:api"))
-    implementation(project(":feature:account:presentation"))
-    implementation(project(":feature:account:domain"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
+    implementation(project(":feature:account:api"))
+    implementation(project(":feature:account:domain"))
+    implementation(project(":feature:account:presentation"))
+
+    implementation(libs.bundles.compose.core)
+    implementation(libs.bundles.navigation.serialization)
+
     implementation(libs.coil.compose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
+
     ksp(libs.hilt.compiler)
 }

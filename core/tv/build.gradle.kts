@@ -15,15 +15,15 @@ android {
 }
 
 dependencies {
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    implementation(project(":core:preferences"))
+    implementation(project(":core:storage"))
+    implementation(project(":core:tv-api"))
+    implementation(project(":core:utils"))
+    implementation(project(":feature:home:domain"))
 
+    implementation(libs.hilt.android)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.tvprovider)
 
-    implementation(project(":core:tv-api"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:preferences"))
-    implementation(project(":core:utils"))
-    implementation(project(":feature:home:domain"))
+    ksp(libs.hilt.compiler)
 }

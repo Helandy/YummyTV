@@ -15,10 +15,11 @@ android {
 }
 
 dependencies {
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    implementation(libs.jetbrains.navigation3.ui)
     implementation(project(":core:navigation"))
     implementation(project(":feature:details:api"))
+
+    implementation(libs.hilt.android)
+    implementation(libs.jetbrains.navigation3.ui)
+
+    ksp(libs.hilt.compiler)
 }

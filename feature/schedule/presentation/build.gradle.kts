@@ -17,12 +17,15 @@ android {
 
 dependencies {
     api(project(":feature:schedule:domain"))
-    implementation(project(":feature:details:api"))
+
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(project(":feature:details:api"))
+
+    implementation(libs.bundles.compose.presentation)
+
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

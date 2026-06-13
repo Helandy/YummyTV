@@ -14,6 +14,5 @@ android {
 }
 
 dependencies {
-    api(libs.jetbrains.navigation3.ui)
-    api(libs.kotlinx.serialization.json)
+    api(libs.bundles.navigation.serialization)
 }

@@ -28,15 +28,12 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:settings:presentation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
+
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.bundles.navigation.serialization)
+
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
-    implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
 }

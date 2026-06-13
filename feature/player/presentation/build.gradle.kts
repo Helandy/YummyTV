@@ -15,17 +15,20 @@ android {
 }
 
 dependencies {
+    api(project(":core:preferences"))
+
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
-    api(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:player:domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     implementation(libs.kotlinx.coroutines.android)
+
+    ksp(libs.hilt.compiler)
 }

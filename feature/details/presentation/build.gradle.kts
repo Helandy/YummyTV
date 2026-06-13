@@ -17,19 +17,22 @@ android {
 
 dependencies {
     api(project(":feature:details:domain"))
+
     implementation(project(":core:designsystem"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:preferences"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:preferences"))
+    implementation(project(":core:storage"))
+    implementation(project(":feature:account:domain"))
+    implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
-    implementation(project(":feature:collection:api"))
-    implementation(project(":feature:account:domain"))
-    implementation(libs.compose.runtime)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
+
+    implementation(libs.bundles.compose.presentation)
+
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlinx.coroutines.test)
+
+    testImplementation(libs.bundles.unit.test)
 }

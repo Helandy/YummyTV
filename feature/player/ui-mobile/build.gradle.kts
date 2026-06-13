@@ -21,22 +21,16 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:player:presentation"))
+
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.bundles.navigation.serialization)
+    implementation(libs.bundles.media3.player.dash)
+
     implementation(libs.androidx.core.ktx)
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.exoplayer.dash)
-    implementation(libs.media3.ui)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
 }

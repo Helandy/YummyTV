@@ -20,12 +20,13 @@ android {
 
 dependencies {
     implementation(project(":core:preferences"))
+
     api(libs.ktor.client.core)
-    implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.contentNegotiation)
-    implementation(libs.ktor.serialization.kotlinxJson)
+
+    implementation(libs.bundles.ktor.client.json)
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

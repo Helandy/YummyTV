@@ -15,6 +15,7 @@ android {
 }
 
 dependencies {
-    api(libs.jetbrains.navigation3.ui)
     implementation(project(":core:model"))
+
+    api(libs.jetbrains.navigation3.ui)
 }

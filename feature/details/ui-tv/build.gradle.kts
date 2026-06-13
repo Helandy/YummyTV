@@ -18,26 +18,22 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
-    implementation(project(":core:utils"))
-    implementation(project(":core:storage"))
+    implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
+    implementation(project(":core:storage"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
+    implementation(project(":feature:details:api"))
     implementation(project(":feature:details:presentation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.ktor3)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
-    implementation(libs.hilt.navigation.compose)
+    implementation(project(":feature:player:api"))
+
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.bundles.navigation.serialization)
+    implementation(libs.bundles.coil.full)
+
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    implementation(project(":core:navigation"))
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(project(":feature:details:api"))
-    implementation(project(":feature:player:api"))
 }

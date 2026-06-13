@@ -16,14 +16,15 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:details:domain"))
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:details:domain"))
+
     implementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
+
+    testImplementation(libs.bundles.unit.test.network)
 }

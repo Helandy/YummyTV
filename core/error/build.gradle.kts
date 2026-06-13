@@ -19,19 +19,19 @@ android {
 }
 
 dependencies {
-    ksp(libs.hilt.compiler)
-    implementation(libs.hilt.android)
+    api(project(":core:model"))
 
+    implementation(project(":core:navigation"))
+    implementation(project(":feature:commonScreen:api"))
+
+    implementation(libs.hilt.android)
     implementation(libs.ktor.client.core)
     implementation(libs.kotlinx.serialization.json)
-
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
 
-    debugImplementation(libs.compose.uiTooling)
+    ksp(libs.hilt.compiler)
 
-    implementation(project(":core:navigation"))
-    api(project(":core:model"))
-    implementation(project(":feature:commonScreen:api"))
+    debugImplementation(libs.compose.uiTooling)
 }

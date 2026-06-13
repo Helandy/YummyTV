@@ -18,5 +18,6 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

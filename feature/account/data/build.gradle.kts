@@ -16,12 +16,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:account:domain"))
-    implementation(project(":feature:details:domain"))
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:account:domain"))
+    implementation(project(":feature:details:domain"))
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

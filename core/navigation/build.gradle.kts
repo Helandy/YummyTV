@@ -20,12 +20,11 @@ android {
 }
 
 dependencies {
+    implementation(libs.bundles.compose.core)
+
     implementation(libs.jetbrains.navigation3.ui)
     implementation(libs.androidx.navigation3.viewmodel)
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.material3)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

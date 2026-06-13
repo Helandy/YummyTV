@@ -16,12 +16,15 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:search:domain"))
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:search:domain"))
+
     implementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.kotlin.test)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
+
+    testImplementation(libs.kotlin.test)
 }

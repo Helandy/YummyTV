@@ -16,8 +16,10 @@ android {
 
 dependencies {
     implementation(project(":feature:player:domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
 }

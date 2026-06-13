@@ -18,14 +18,17 @@ android {
 dependencies {
     api(project(":feature:collection:domain"))
     api(project(":feature:details:domain"))
+
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:details:api"))
-    implementation(libs.compose.runtime)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
+
+    implementation(libs.bundles.compose.presentation)
+
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlinx.coroutines.test)
+
+    testImplementation(libs.bundles.unit.test)
 }

@@ -94,6 +94,64 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 
+[bundles]
+compose-core = [
+    "compose-runtime",
+    "compose-foundation",
+    "compose-material3",
+    "compose-ui",
+]
+compose-screen = [
+    "compose-runtime",
+    "compose-foundation",
+    "compose-material3",
+    "compose-ui",
+    "androidx-lifecycle-viewmodelCompose",
+    "hilt-navigation-compose",
+]
+compose-presentation = [
+    "compose-runtime",
+    "androidx-lifecycle-viewmodelCompose",
+]
+navigation-serialization = [
+    "jetbrains-navigation3-ui",
+    "kotlinx-serialization-json",
+]
+coil-full = [
+    "coil-compose",
+    "coil-network-ktor3",
+]
+ktor-client-json = [
+    "ktor-client-android",
+    "ktor-client-logging",
+    "ktor-client-contentNegotiation",
+    "ktor-serialization-kotlinxJson",
+]
+media3-player = [
+    "media3-exoplayer",
+    "media3-exoplayer-hls",
+    "media3-ui",
+]
+media3-player-dash = [
+    "media3-exoplayer",
+    "media3-exoplayer-hls",
+    "media3-exoplayer-dash",
+    "media3-ui",
+]
+room = [
+    "room-runtime",
+    "room-ktx",
+]
+unit-test = [
+    "kotlin-test",
+    "kotlinx-coroutines-test",
+]
+unit-test-network = [
+    "kotlin-test",
+    "ktor-client-mock",
+    "kotlinx-coroutines-test",
+]
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

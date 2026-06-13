@@ -17,20 +17,19 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:schedule:api"))
-    implementation(project(":feature:schedule:presentation"))
-    implementation(project(":feature:schedule:domain"))
-    implementation(project(":feature:details:api"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
+    implementation(project(":feature:details:api"))
+    implementation(project(":feature:schedule:api"))
+    implementation(project(":feature:schedule:domain"))
+    implementation(project(":feature:schedule:presentation"))
+
+    implementation(libs.bundles.compose.core)
+    implementation(libs.bundles.navigation.serialization)
+
     implementation(libs.coil.compose)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
+
     ksp(libs.hilt.compiler)
 }

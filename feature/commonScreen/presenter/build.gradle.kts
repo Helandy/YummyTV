@@ -19,22 +19,20 @@ android {
 }
 
 dependencies {
-    ksp(libs.hilt.compiler)
-    implementation(libs.hilt.android)
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:error"))
+    implementation(project(":core:model"))
+    implementation(project(":core:navigation"))
+    implementation(project(":feature:commonScreen:api"))
 
+    implementation(libs.hilt.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
-
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
 
-    implementation(project(":core:navigation"))
-    implementation(project(":core:model"))
-    implementation(project(":core:error"))
-    implementation(project(":core:designsystem"))
-
-    implementation(project(":feature:commonScreen:api"))
+    ksp(libs.hilt.compiler)
 }

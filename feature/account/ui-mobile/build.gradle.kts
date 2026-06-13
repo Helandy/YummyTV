@@ -22,16 +22,13 @@ dependencies {
     implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:account:presentation"))
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
+
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.bundles.navigation.serialization)
+
     implementation(libs.coil.compose)
     implementation(libs.androidx.material.icons.core)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
-    implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)
+
     ksp(libs.hilt.compiler)
-    implementation(libs.jetbrains.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
 }
