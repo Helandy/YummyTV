@@ -10,8 +10,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.feature.details.details.DetailsSubscriptionHandler
-import su.afk.yummy.tv.feature.details.details.ScreenSubscriptionBaseResult
+import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
+import su.afk.yummy.tv.feature.details.details.handler.ScreenSubscriptionBaseResult
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
 
 @HiltViewModel(assistedFactory = SubscriptionsViewModel.Factory::class)

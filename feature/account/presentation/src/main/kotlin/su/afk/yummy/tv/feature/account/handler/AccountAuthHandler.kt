@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.account
+package su.afk.yummy.tv.feature.account.handler
 
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.YaniAccount

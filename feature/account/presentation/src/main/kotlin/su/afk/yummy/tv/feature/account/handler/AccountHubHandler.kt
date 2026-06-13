@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.account
+package su.afk.yummy.tv.feature.account.handler
 
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.NotificationCount

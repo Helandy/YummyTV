@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.search
+package su.afk.yummy.tv.feature.search.handler
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

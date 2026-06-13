@@ -21,6 +21,8 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.home.handler.AnimePreviewFocusHandler
+import su.afk.yummy.tv.feature.home.handler.ContinueWatchingLaunchHandler
 import su.afk.yummy.tv.feature.home.presentation.R
 import javax.inject.Inject
 

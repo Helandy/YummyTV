@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player
+package su.afk.yummy.tv.feature.player.handler
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

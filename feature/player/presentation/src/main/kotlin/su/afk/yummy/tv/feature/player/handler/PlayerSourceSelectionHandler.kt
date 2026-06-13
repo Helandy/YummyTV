@@ -1,5 +1,6 @@
-package su.afk.yummy.tv.feature.player
+package su.afk.yummy.tv.feature.player.handler
 
+import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
 import su.afk.yummy.tv.feature.player.utils.activeAllDubbingNames
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName

@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
+import su.afk.yummy.tv.feature.details.similar.handler.AnimePreviewFocusHandler
 
 @HiltViewModel(assistedFactory = SimilarViewModel.Factory::class)
 class SimilarViewModel @AssistedInject internal constructor(

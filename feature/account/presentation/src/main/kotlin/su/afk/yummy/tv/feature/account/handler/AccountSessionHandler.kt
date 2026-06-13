@@ -1,5 +1,6 @@
-package su.afk.yummy.tv.feature.account
+package su.afk.yummy.tv.feature.account.handler
 
+import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.utils.AccountLoginCredentials
 import javax.inject.Inject
 

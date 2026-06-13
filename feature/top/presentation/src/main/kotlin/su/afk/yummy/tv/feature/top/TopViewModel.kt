@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.usecase.GetAnimeTopUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.top.handler.AnimePreviewFocusHandler
 import su.afk.yummy.tv.feature.top.presentation.R
 import javax.inject.Inject
 

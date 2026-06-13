@@ -11,6 +11,7 @@
 - Do not create generic `XxxContent` as a duplicated screen layer. Use a `Content` suffix only for a real domain UI component, not as a default screen body.
 - Put child composable UI pieces in the feature UI module's `.view` package.
 - Prefer one significant composable component per file in `.view`; small local lambdas inside a component are fine.
+- Put Handler classes next to the ViewModel in the feature module's `.handler` package.
 - Put UI-only models in `.model`.
 - Put UI mappers, formatters, and extension helpers in `.utils`.
 - Keep user-facing strings in Android resources and read them with `stringResource`.

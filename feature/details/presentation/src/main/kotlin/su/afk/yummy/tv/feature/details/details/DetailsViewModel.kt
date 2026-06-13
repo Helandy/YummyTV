@@ -32,6 +32,10 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
+import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys

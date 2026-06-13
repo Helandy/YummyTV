@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.details.details
+package su.afk.yummy.tv.feature.details.details.handler
 
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList

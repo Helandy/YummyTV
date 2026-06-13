@@ -11,6 +11,10 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.search.handler.AnimePreviewFocusHandler
+import su.afk.yummy.tv.feature.search.handler.SearchPagingHandler
+import su.afk.yummy.tv.feature.search.handler.SearchPagingRequest
+import su.afk.yummy.tv.feature.search.handler.SearchPagingResult
 import su.afk.yummy.tv.feature.search.presentation.R
 import javax.inject.Inject
 

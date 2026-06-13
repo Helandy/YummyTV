@@ -25,9 +25,9 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.details.details.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.VideosUiState
+import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject internal constructor(

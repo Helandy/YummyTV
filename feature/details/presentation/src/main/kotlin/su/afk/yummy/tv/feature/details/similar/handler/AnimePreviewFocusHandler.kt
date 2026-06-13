@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.library
+package su.afk.yummy.tv.feature.details.similar.handler
 
 import kotlinx.coroutines.CoroutineScope
 import su.afk.yummy.tv.core.utils.DebouncedCachedLoader
@@ -36,10 +36,6 @@ internal class AnimePreviewFocusHandler @Inject constructor(
                 )
             },
         )
-    }
-
-    fun cancelFocus() {
-        loader.cancelFocus()
     }
 }
 

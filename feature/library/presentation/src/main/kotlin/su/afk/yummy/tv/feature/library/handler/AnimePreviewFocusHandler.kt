@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.top
+package su.afk.yummy.tv.feature.library.handler
 
 import kotlinx.coroutines.CoroutineScope
 import su.afk.yummy.tv.core.utils.DebouncedCachedLoader

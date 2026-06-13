@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.home
+package su.afk.yummy.tv.feature.collection.handler
 
 import kotlinx.coroutines.CoroutineScope
 import su.afk.yummy.tv.core.utils.DebouncedCachedLoader
@@ -16,7 +16,6 @@ internal class AnimePreviewFocusHandler @Inject constructor(
     fun focus(
         scope: CoroutineScope,
         animeId: Int,
-        debounceMs: Long,
         isCurrentFocus: () -> Boolean,
         onCachedPreview: (AnimePreview?, Map<Int, AnimePreview>) -> Unit,
         onLoadedPreview: (AnimePreviewFocusResult) -> Unit,
@@ -24,7 +23,6 @@ internal class AnimePreviewFocusHandler @Inject constructor(
         loader.focus(
             scope = scope,
             key = animeId,
-            debounceMs = debounceMs,
             isCurrentFocus = isCurrentFocus,
             onCachedValue = onCachedPreview,
             onLoadedValue = { result ->
@@ -42,14 +40,6 @@ internal class AnimePreviewFocusHandler @Inject constructor(
 
     fun cancelFocus() {
         loader.cancelFocus()
-    }
-
-    fun prefetch(
-        scope: CoroutineScope,
-        animeId: Int,
-        onCacheChanged: (Map<Int, AnimePreview>) -> Unit,
-    ) {
-        loader.prefetch(scope, animeId, onCacheChanged)
     }
 }
 

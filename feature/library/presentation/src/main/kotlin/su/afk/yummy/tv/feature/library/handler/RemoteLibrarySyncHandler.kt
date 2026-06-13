@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.library
+package su.afk.yummy.tv.feature.library.handler
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -11,6 +11,7 @@ import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
+import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import javax.inject.Inject

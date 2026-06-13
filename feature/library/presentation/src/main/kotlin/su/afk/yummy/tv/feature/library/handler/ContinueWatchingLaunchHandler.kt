@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.library
+package su.afk.yummy.tv.feature.library.handler
 
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry

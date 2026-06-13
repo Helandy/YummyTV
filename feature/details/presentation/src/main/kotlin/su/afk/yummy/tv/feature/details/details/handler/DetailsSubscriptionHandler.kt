@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.details.details
+package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -10,6 +10,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
 import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions

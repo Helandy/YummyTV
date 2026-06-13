@@ -18,6 +18,12 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.player.handler.PlayerProgressContext
+import su.afk.yummy.tv.feature.player.handler.PlayerProgressHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerSourceSelectionHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerStreamHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerStreamResult
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
 

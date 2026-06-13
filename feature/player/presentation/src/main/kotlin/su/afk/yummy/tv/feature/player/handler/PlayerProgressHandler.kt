@@ -1,7 +1,8 @@
-package su.afk.yummy.tv.feature.player
+package su.afk.yummy.tv.feature.player.handler
 
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
+import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import javax.inject.Inject
 
 /** Persists local watch progress and mirrors watched completion to the signed-in account. */
