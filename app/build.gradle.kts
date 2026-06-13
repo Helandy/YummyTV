@@ -6,7 +6,12 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-val baseApplicationId = "su.afk.yummy.tv"
+fun String.toBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
+
+val baseApplicationId = providers.gradleProperty("yummytv.applicationId").get()
+val appVersionName = providers.gradleProperty("yummytv.versionName").get()
+val appVersionCode = providers.gradleProperty("yummytv.versionCode").get().toInt()
+val appmetricaApiKey = providers.gradleProperty("yummytv.appmetricaApiKey").get()
 
 android {
     namespace = "su.afk.yummy.tv"
@@ -18,9 +23,10 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
 
-        versionName = libs.versions.appVersionName.get()
-        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = appVersionName
+        versionCode = appVersionCode
 
+        buildConfigField("String", "APPMETRICA_API_KEY", appmetricaApiKey.toBuildConfigString())
     }
 
     buildTypes {
@@ -123,6 +129,7 @@ dependencies {
     implementation(libs.hilt.work)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.appmetrica.analytics)
     implementation(libs.compose.runtime)
     implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)

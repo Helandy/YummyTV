@@ -12,6 +12,8 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.HiltAndroidApp
+import io.appmetrica.analytics.AppMetrica
+import io.appmetrica.analytics.AppMetricaConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +40,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        setupAppMetrica()
         setupCoilImageLoader()
         homeFeedRefreshScheduler.schedule()
         applicationScope.launch {
@@ -50,6 +53,11 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     private fun deleteDownloadedUpdateApk() {
         File(cacheDir, UPDATE_APK_FILE_NAME).delete()
+    }
+
+    private fun setupAppMetrica() {
+        val config = AppMetricaConfig.newConfigBuilder(BuildConfig.APPMETRICA_API_KEY).build()
+        AppMetrica.activate(this, config)
     }
 
     @OptIn(ExperimentalCoilApi::class)

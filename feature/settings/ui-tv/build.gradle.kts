@@ -6,12 +6,14 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val appVersionName = providers.gradleProperty("yummytv.versionName").get()
+
 android {
     namespace = "su.afk.yummy.tv.feature.settings"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
-        buildConfigField("String", "VERSION_NAME", "\"${libs.versions.appVersionName.get()}\"")
+        buildConfigField("String", "VERSION_NAME", "\"$appVersionName\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
