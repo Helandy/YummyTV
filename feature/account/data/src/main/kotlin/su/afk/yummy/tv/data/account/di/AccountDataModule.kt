@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.DefaultAccountMutationErrorNotifier
@@ -48,12 +49,14 @@ object AccountDataModule {
         settingsStore: SettingsStore,
         yaniAuthPreferences: YaniAuthPreferences,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
     ): AccountRepository = YaniAccountRepository(
         api,
         settingsStore,
         yaniAuthPreferences,
         cache,
+        accountStorage,
         json,
     )
 
@@ -62,11 +65,13 @@ object AccountDataModule {
     fun provideUserListsRepository(
         api: YaniAccountApi,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
         settingsStore: SettingsStore,
     ): UserListsRepository = YaniUserListsRepository(
         api,
         cache,
+        accountStorage,
         json,
         settingsStore,
     )
@@ -84,11 +89,13 @@ object AccountDataModule {
     fun provideAnimeExtrasRepository(
         api: YaniAccountApi,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
         settingsStore: SettingsStore,
     ): AnimeExtrasRepository = YaniAnimeExtrasRepository(
         api,
         cache,
+        accountStorage,
         json,
         settingsStore,
     )
@@ -98,12 +105,14 @@ object AccountDataModule {
     fun provideVideoSubscriptionRepository(
         api: YaniAccountApi,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
         settingsStore: SettingsStore,
     ): VideoSubscriptionRepository =
         YaniVideoSubscriptionRepository(
             api,
             cache,
+            accountStorage,
             json,
             settingsStore,
         )
@@ -113,21 +122,25 @@ object AccountDataModule {
     fun provideUserStatsRepository(
         api: YaniAccountApi,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
         settingsStore: SettingsStore,
-    ): UserStatsRepository = YaniUserStatsRepository(api, cache, json, settingsStore)
+    ): UserStatsRepository =
+        YaniUserStatsRepository(api, cache, accountStorage, json, settingsStore)
 
     @Provides
     @Singleton
     fun provideProfileNotificationsRepository(
         api: YaniAccountApi,
         cache: CacheStore,
+        accountStorage: AccountStorageStore,
         json: Json,
         settingsStore: SettingsStore,
     ): ProfileNotificationsRepository =
         YaniProfileNotificationsRepository(
             api,
             cache,
+            accountStorage,
             json,
             settingsStore,
         )

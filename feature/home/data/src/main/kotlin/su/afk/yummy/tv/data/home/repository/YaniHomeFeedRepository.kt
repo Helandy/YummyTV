@@ -1,15 +1,20 @@
 package su.afk.yummy.tv.data.home.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
+import su.afk.yummy.tv.core.storage.home.HomeFeedStore
+import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.mapper.toHomeFeed
+import su.afk.yummy.tv.data.home.mapper.toHomeFeedCache
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
@@ -19,6 +24,7 @@ private const val FEED_TTL_MS = 60 * 60 * 1000L
 class YaniHomeFeedRepository(
     private val api: YaniHomeApi,
     private val cache: CacheStore,
+    private val homeFeedStore: HomeFeedStore,
     private val json: Json,
     private val stringProvider: StringProvider,
     private val settingsStore: SettingsStore,
@@ -30,13 +36,54 @@ class YaniHomeFeedRepository(
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
-        cache.getOrFetch(
-            key = "feed".withYaniContentLanguage(language),
-            ttlMs = FEED_TTL_MS,
-            serialize = { dto: YaniFeedDto -> json.encodeToString(dto) },
-            deserialize = { json.decodeFromString(it) },
-            fetch = { api.getFeed() },
-            forceRefresh = forceRefresh,
-        ).toHomeFeed(stringProvider)
+        val languageCode = language.apiCode
+        val stored = homeFeedStore.getFeed(languageCode)
+        if (!forceRefresh && stored?.isFresh(FEED_TTL_MS) == true) {
+            return@withContext stored.toHomeFeed(stringProvider)
+        }
+
+        try {
+            fetchHomeFeed(languageCode)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            stored?.toHomeFeed(stringProvider)
+                ?: readLegacyHomeFeed(language, languageCode)
+                ?: throw error
+        }
     }
+
+    private suspend fun fetchHomeFeed(languageCode: String): HomeFeed {
+        val dto = api.getFeed()
+        val feed = dto.toHomeFeed(stringProvider)
+        homeFeedStore.saveFeed(
+            feed.toHomeFeedCache(
+                language = languageCode,
+                cachedAt = System.currentTimeMillis(),
+            )
+        )
+        return feed
+    }
+
+    private suspend fun readLegacyHomeFeed(
+        language: YaniContentLanguage,
+        languageCode: String,
+    ): HomeFeed? {
+        val cached = cache.getCached<YaniFeedDto>(
+            key = homeFeedCacheKey(language),
+            deserialize = { json.decodeFromString(it) },
+        ) ?: return null
+
+        val feed = cached.value.toHomeFeed(stringProvider)
+        homeFeedStore.saveFeed(
+            feed.toHomeFeedCache(
+                language = languageCode,
+                cachedAt = cached.cachedAt,
+            )
+        )
+        return feed
+    }
+
+    private fun homeFeedCacheKey(language: YaniContentLanguage): String =
+        "feed".withYaniContentLanguage(language)
 }

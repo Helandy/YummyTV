@@ -44,6 +44,13 @@ class CacheStore(private val dao: CacheDao) {
         }
     }
 
+    suspend fun <T> getCached(
+        key: String,
+        deserialize: (String) -> T,
+        isValid: (T) -> Boolean = { true },
+    ): CachedValue<T>? =
+        readCached(key, deserialize, isValid)
+
     suspend fun <T> put(
         key: String,
         serialize: (T) -> String,
@@ -66,7 +73,7 @@ class CacheStore(private val dao: CacheDao) {
         dao.deleteByPrefix(prefix)
     }
 
-    private data class CachedValue<T>(
+    data class CachedValue<T>(
         val value: T,
         val cachedAt: Long,
     ) {

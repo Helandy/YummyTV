@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.search.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -11,16 +12,23 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
+import su.afk.yummy.tv.core.storage.search.SearchStorageStore
+import su.afk.yummy.tv.core.storage.search.isFresh
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchResponseDto
 import su.afk.yummy.tv.data.search.mapper.toSearchAnimeType
+import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptions
+import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptionsCache
 import su.afk.yummy.tv.data.search.mapper.toSearchGenre
 import su.afk.yummy.tv.data.search.mapper.toSearchGenreGroup
 import su.afk.yummy.tv.data.search.mapper.toSearchItem
+import su.afk.yummy.tv.data.search.mapper.toSearchPage
+import su.afk.yummy.tv.data.search.mapper.toSearchPageCache
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchPage
 import su.afk.yummy.tv.domain.search.repository.SearchRepository
 
@@ -36,6 +44,7 @@ private data class YaniSearchFilterOptionsDto(
 class YaniSearchRepository(
     private val api: YaniSearchApi,
     private val cache: CacheStore,
+    private val searchStorage: SearchStorageStore,
     private val json: Json,
     private val settingsStore: SettingsStore,
 ) : SearchRepository {
@@ -46,46 +55,160 @@ class YaniSearchRepository(
         offset: Int,
     ): SearchPage = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
-        val response = cache.getOrFetch(
-            key = searchCacheKey(query, filters, limit, offset, language),
-            ttlMs = SEARCH_RESULTS_TTL_MS,
-            serialize = { dto: YaniSearchResponseDto -> json.encodeToString(dto) },
-            deserialize = { json.decodeFromString(it) },
-            fetch = { YaniSearchResponseDto(response = api.search(query, filters, limit, offset)) },
-        ).response
-        SearchPage(
-            items = response.mapNotNull { it.toSearchItem() },
-            nextOffset = offset + response.size,
-            canLoadMore = response.size >= limit,
-        )
+        val languageCode = language.apiCode
+        val pageKey = searchCacheKey(query, filters, limit, offset, language)
+        val stored = searchStorage.getPage(pageKey)
+        if (stored?.isFresh(SEARCH_RESULTS_TTL_MS) == true) {
+            return@withContext stored.toSearchPage()
+        }
+
+        try {
+            fetchSearchPage(
+                query = query,
+                filters = filters,
+                limit = limit,
+                offset = offset,
+                pageKey = pageKey,
+                language = languageCode,
+            )
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            stored?.toSearchPage()
+                ?: readLegacySearchPage(pageKey, languageCode, limit, offset)
+                ?: throw error
+        }
     }
 
     override suspend fun getFilterOptions(): SearchFilterOptions = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
-        val response = cache.getOrFetch(
-            key = "search_filter_options_v1".withYaniContentLanguage(language),
-            ttlMs = SEARCH_FILTER_OPTIONS_TTL_MS,
-            serialize = { dto: YaniSearchFilterOptionsDto -> json.encodeToString(dto) },
-            deserialize = { json.decodeFromString(it) },
-            fetch = {
-                coroutineScope {
-                    val genres = async { api.getGenres() }
-                    val catalog = async { api.getCatalog() }
-                    YaniSearchFilterOptionsDto(
-                        genres = genres.await(),
-                        catalog = catalog.await(),
-                    )
-                }
-            },
-        )
-        with(response) {
-            SearchFilterOptions(
-                genreGroups = genres.groups.mapNotNull { it.toSearchGenreGroup() },
-                genres = genres.genres.mapNotNull { it.toSearchGenre() },
-                types = catalog.types.mapNotNull { it.toSearchAnimeType() },
-            )
+        val languageCode = language.apiCode
+        val stored = searchStorage.getFilterOptions(languageCode)
+        if (stored?.isFresh(SEARCH_FILTER_OPTIONS_TTL_MS) == true) {
+            return@withContext stored.toSearchFilterOptions()
+        }
+
+        try {
+            fetchFilterOptions(languageCode)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            stored?.toSearchFilterOptions()
+                ?: readLegacyFilterOptions(language, languageCode)
+                ?: throw error
         }
     }
+
+    private suspend fun fetchSearchPage(
+        query: String,
+        filters: SearchFilters,
+        limit: Int,
+        offset: Int,
+        pageKey: String,
+        language: String,
+    ): SearchPage {
+        val response = api.search(query, filters, limit, offset)
+        val items = response.mapNotNull { it.toSearchItem() }
+        searchStorage.savePage(
+            items.toSearchPageCache(
+                pageKey = pageKey,
+                language = language,
+                limit = limit,
+                offset = offset,
+                responseSize = response.size,
+                cachedAt = System.currentTimeMillis(),
+            )
+        )
+        return items.toSearchPage(limit, offset, response.size)
+    }
+
+    private suspend fun readLegacySearchPage(
+        pageKey: String,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): SearchPage? {
+        val cached = cache.getCached<YaniSearchResponseDto>(
+            key = pageKey,
+            deserialize = { json.decodeFromString(it) },
+        ) ?: return null
+
+        val response = cached.value.response
+        val items = response.mapNotNull { it.toSearchItem() }
+        searchStorage.savePage(
+            items.toSearchPageCache(
+                pageKey = pageKey,
+                language = language,
+                limit = limit,
+                offset = offset,
+                responseSize = response.size,
+                cachedAt = cached.cachedAt,
+            )
+        )
+        return items.toSearchPage(limit, offset, response.size)
+    }
+
+    private suspend fun fetchFilterOptions(language: String): SearchFilterOptions {
+        val response = fetchFilterOptionsDto()
+        val options = response.toSearchFilterOptions()
+        searchStorage.saveFilterOptions(
+            options.toSearchFilterOptionsCache(
+                language = language,
+                cachedAt = System.currentTimeMillis(),
+            )
+        )
+        return options
+    }
+
+    private suspend fun readLegacyFilterOptions(
+        language: YaniContentLanguage,
+        languageCode: String,
+    ): SearchFilterOptions? {
+        val cached = cache.getCached<YaniSearchFilterOptionsDto>(
+            key = filterOptionsCacheKey(language),
+            deserialize = { json.decodeFromString(it) },
+        ) ?: return null
+
+        val options = cached.value.toSearchFilterOptions()
+        searchStorage.saveFilterOptions(
+            options.toSearchFilterOptionsCache(
+                language = languageCode,
+                cachedAt = cached.cachedAt,
+            )
+        )
+        return options
+    }
+
+    private suspend fun fetchFilterOptionsDto(): YaniSearchFilterOptionsDto =
+        coroutineScope {
+            val genres = async { api.getGenres() }
+            val catalog = async { api.getCatalog() }
+            YaniSearchFilterOptionsDto(
+                genres = genres.await(),
+                catalog = catalog.await(),
+            )
+        }
+
+    private fun YaniSearchFilterOptionsDto.toSearchFilterOptions(): SearchFilterOptions =
+        SearchFilterOptions(
+            genreGroups = genres.groups.mapNotNull { it.toSearchGenreGroup() },
+            genres = genres.genres.mapNotNull { it.toSearchGenre() },
+            types = catalog.types.mapNotNull { it.toSearchAnimeType() },
+        )
+
+    private fun List<SearchItem>.toSearchPage(
+        limit: Int,
+        offset: Int,
+        responseSize: Int,
+    ): SearchPage =
+        SearchPage(
+            items = this,
+            nextOffset = offset + responseSize,
+            canLoadMore = responseSize >= limit,
+        )
+
+    private fun filterOptionsCacheKey(language: YaniContentLanguage): String =
+        "search_filter_options_v1".withYaniContentLanguage(language)
 
     private fun searchCacheKey(
         query: String,

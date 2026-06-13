@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
+import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
 import su.afk.yummy.tv.data.schedule.repository.YaniScheduleRepository
 import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
@@ -25,8 +26,9 @@ object ScheduleDataModule {
     fun provideScheduleRepository(
         api: YaniScheduleApi,
         cache: CacheStore,
+        scheduleStore: AnimeScheduleStore,
         json: Json,
         settingsStore: SettingsStore,
     ): AnimeScheduleRepository =
-        YaniScheduleRepository(api, cache, json, settingsStore)
+        YaniScheduleRepository(api, cache, scheduleStore, json, settingsStore)
 }

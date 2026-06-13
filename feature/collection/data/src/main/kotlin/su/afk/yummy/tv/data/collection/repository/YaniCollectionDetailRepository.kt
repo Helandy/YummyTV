@@ -1,13 +1,19 @@
 package su.afk.yummy.tv.data.collection.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
 import su.afk.yummy.tv.core.storage.cache.CacheStore
+import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
+import su.afk.yummy.tv.core.storage.collection.isFresh
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailResponseDto
+import su.afk.yummy.tv.data.collection.mapper.toCollectionDetail
+import su.afk.yummy.tv.data.collection.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.data.collection.mapper.toDomain
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
@@ -18,6 +24,7 @@ private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,
     private val cache: CacheStore,
+    private val collectionStorage: CollectionStorageStore,
     private val json: Json,
     private val settingsStore: SettingsStore,
 ) : CollectionRepository {
@@ -25,12 +32,54 @@ class YaniCollectionDetailRepository(
     override suspend fun getCollection(id: Int): CollectionDetail =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()
-            cache.getOrFetch(
-                key = "collection_$id".withYaniContentLanguage(language),
-                ttlMs = COLLECTION_TTL_MS,
-                serialize = { dto: YaniCollectionDetailResponseDto -> json.encodeToString(dto) },
-                deserialize = { json.decodeFromString(it) },
-                fetch = { api.getCollection(id) },
-            ).response.toDomain()
+            val languageCode = language.apiCode
+            val stored = collectionStorage.getCollection(id, languageCode)
+            if (stored?.isFresh(COLLECTION_TTL_MS) == true) {
+                return@withContext stored.toCollectionDetail()
+            }
+
+            try {
+                fetchCollection(id, languageCode)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toCollectionDetail()
+                    ?: readLegacyCollection(id, language, languageCode)
+                    ?: throw error
+            }
         }
+
+    private suspend fun fetchCollection(id: Int, languageCode: String): CollectionDetail {
+        val collection = api.getCollection(id).response.toDomain()
+        collectionStorage.saveCollection(
+            collection.toCollectionDetailCache(
+                language = languageCode,
+                cachedAt = System.currentTimeMillis(),
+            )
+        )
+        return collection
+    }
+
+    private suspend fun readLegacyCollection(
+        id: Int,
+        language: YaniContentLanguage,
+        languageCode: String,
+    ): CollectionDetail? {
+        val cached = cache.getCached<YaniCollectionDetailResponseDto>(
+            key = collectionCacheKey(id, language),
+            deserialize = { json.decodeFromString(it) },
+        ) ?: return null
+
+        val collection = cached.value.response.toDomain()
+        collectionStorage.saveCollection(
+            collection.toCollectionDetailCache(
+                language = languageCode,
+                cachedAt = cached.cachedAt,
+            )
+        )
+        return collection
+    }
+
+    private fun collectionCacheKey(id: Int, language: YaniContentLanguage): String =
+        "collection_$id".withYaniContentLanguage(language)
 }
