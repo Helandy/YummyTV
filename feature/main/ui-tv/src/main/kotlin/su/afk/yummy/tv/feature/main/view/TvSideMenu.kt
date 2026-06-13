@@ -48,6 +48,8 @@ internal fun TvSideMenu(
     accountLabel: String?,
     accountAvatarUrl: String,
     unreadNotificationsCount: Int,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     onEvent: (MainState.Event) -> Unit,
     rootFocusRequesters: Map<RootTab, FocusRequester>,
     menuEnterFocusRequester: FocusRequester,
@@ -56,7 +58,6 @@ internal fun TvSideMenu(
     onMenuNavigationFocusLocked: (Boolean) -> Unit,
     onMoveToContent: (RootTab) -> Unit,
 ) {
-    var hasFocus by remember { mutableStateOf(false) }
     val rowFocusRequesters = listOf(rootFocusRequesters.getValue(RootTab.ACCOUNT)) +
             menuItems.map { rootFocusRequesters.getValue(it.destination) } +
             rootFocusRequesters.getValue(RootTab.SETTINGS)
@@ -95,8 +96,8 @@ internal fun TvSideMenu(
     }
 
     val menuWidth by animateDpAsState(
-        targetValue = if (hasFocus) TvSideMenuExpandedWidth else TvSideMenuCollapsedWidth,
-        animationSpec = tween(durationMillis = 180),
+        targetValue = if (expanded) TvSideMenuExpandedWidth else TvSideMenuCollapsedWidth,
+        animationSpec = tween(durationMillis = TvSideMenuAnimationDurationMillis),
         label = "TvSideMenuWidth",
     )
     val backgroundColor = MaterialTheme.colorScheme.background
@@ -105,7 +106,7 @@ internal fun TvSideMenu(
         val selectedIndex = focusedIndexFor(selectedRoot)
         focusedIndex = selectedIndex
         val shouldRestoreMenuFocus = menuFocusRestoreRoot == selectedRoot
-        if (shouldRestoreMenuFocus || hasFocus) {
+        if (shouldRestoreMenuFocus || expanded) {
             repeat(if (shouldRestoreMenuFocus) 24 else 1) {
                 withFrameNanos { }
                 if (shouldRestoreMenuFocus && menuFocusRestoreRoot != selectedRoot) {
@@ -123,8 +124,8 @@ internal fun TvSideMenu(
             .clipToBounds()
             .background(backgroundColor)
             .onFocusChanged {
-                val gainedFocus = it.hasFocus && !hasFocus
-                hasFocus = it.hasFocus
+                val gainedFocus = it.hasFocus && !expanded
+                onExpandedChange(it.hasFocus)
                 if (gainedFocus) {
                     val selectedIndex = focusedIndexFor(selectedRoot)
                     focusedIndex = selectedIndex
@@ -184,7 +185,7 @@ internal fun TvSideMenu(
             signedIn = !accountLabel.isNullOrBlank(),
             avatarUrl = accountAvatarUrl,
             unreadNotificationsCount = unreadNotificationsCount,
-            expanded = hasFocus,
+            expanded = expanded,
             selected = selectedRoot == RootTab.ACCOUNT,
             focusRequester = rootFocusRequesters.getValue(RootTab.ACCOUNT),
             downFocusRequester = rowFocusRequesters.getOrNull(1),
@@ -213,7 +214,7 @@ internal fun TvSideMenu(
                 label = stringResource(item.titleRes),
                 icon = item.icon,
                 selected = isSelected,
-                expanded = hasFocus,
+                expanded = expanded,
                 onActivated = {
                     enterRootContent(item.destination)
                 },
@@ -240,7 +241,7 @@ internal fun TvSideMenu(
             label = stringResource(R.string.main_settings_content_description),
             icon = Icons.Default.Settings,
             selected = selectedRoot == RootTab.SETTINGS,
-            expanded = hasFocus,
+            expanded = expanded,
             onActivated = {
                 enterRootContent(RootTab.SETTINGS)
             },

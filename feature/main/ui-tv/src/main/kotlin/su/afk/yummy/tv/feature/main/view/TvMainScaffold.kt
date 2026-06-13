@@ -1,12 +1,17 @@
 package su.afk.yummy.tv.feature.main.view
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import su.afk.yummy.tv.core.designsystem.presenter.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalContentFocusRequester
@@ -40,6 +45,20 @@ fun TvMainScaffold(
     }
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showMainMenu) {
+        if (!showMainMenu) {
+            menuExpanded = false
+        }
+    }
+
+    BackHandler(enabled = showMainMenu && !menuExpanded && focusController.menuCanFocus) {
+        val focused = runCatching { selectedRootFocusRequester.requestFocus() }.getOrDefault(false)
+        if (focused) {
+            menuExpanded = true
+        }
+    }
 
     TvMainFocusEffects(
         focusController = focusController,
@@ -62,6 +81,7 @@ fun TvMainScaffold(
         ) {
             TvMainContentPane(
                 showMainMenu = showMainMenu,
+                menuExpanded = menuExpanded,
                 contentFocusRequester = focusController.contentFocusRequester,
                 selectedRootFocusRequester = selectedRootFocusRequester,
                 currentPreferredContentFocusRequester = currentPreferredContentFocusRequester,
@@ -85,6 +105,8 @@ fun TvMainScaffold(
                     accountLabel = accountLabel,
                     accountAvatarUrl = accountAvatarUrl,
                     unreadNotificationsCount = state.unreadNotificationsCount,
+                    expanded = menuExpanded,
+                    onExpandedChange = { menuExpanded = it },
                     onEvent = onEvent,
                     rootFocusRequesters = focusController.rootFocusRequesters,
                     menuEnterFocusRequester = selectedRootFocusRequester,
