@@ -3,9 +3,10 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
+import javax.inject.Inject
 
 /** Toggles subscription state for updates on a video. */
-class SetVideoSubscriptionUseCase(
+class SetVideoSubscriptionUseCase @Inject constructor(
     private val repository: VideoSubscriptionRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {

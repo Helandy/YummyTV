@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
 import su.afk.yummy.tv.data.schedule.repository.YaniScheduleRepository
 import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
-import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import javax.inject.Singleton
 
 @Module
@@ -30,7 +29,4 @@ object ScheduleDataModule {
         settingsStore: SettingsStore,
     ): AnimeScheduleRepository =
         YaniScheduleRepository(api, cache, json, settingsStore)
-
-    @Provides
-    fun provideGetAnimeScheduleUseCase(repository: AnimeScheduleRepository) = GetAnimeScheduleUseCase(repository)
 }

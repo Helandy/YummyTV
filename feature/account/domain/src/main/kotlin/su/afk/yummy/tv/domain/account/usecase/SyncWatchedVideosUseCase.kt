@@ -4,9 +4,10 @@ import su.afk.yummy.tv.domain.account.model.RemoteWatchState
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
+import javax.inject.Inject
 
 /** Syncs a batch of remote watch states with the account API. */
-class SyncWatchedVideosUseCase(
+class SyncWatchedVideosUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {

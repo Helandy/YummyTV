@@ -103,6 +103,8 @@ include(":feature:library:presentation")
 include(":feature:library:ui-tv")
 include(":feature:library:ui-mobile")
 
+include(":feature:watching:presentation")
+
 include(":feature:account:domain")
 include(":feature:account:data")
 include(":feature:account:api")

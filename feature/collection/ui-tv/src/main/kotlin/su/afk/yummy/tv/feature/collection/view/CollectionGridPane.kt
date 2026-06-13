@@ -50,7 +50,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.feature.collection.R
 
@@ -61,7 +60,6 @@ internal fun CollectionGridPane(
     error: String?,
     restoreFocusedItemOnEnter: Boolean = false,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
     onAnimeSelected: (Int) -> Unit,
@@ -91,7 +89,6 @@ internal fun CollectionGridPane(
             collection != null -> CollectionGrid(
                 collection = collection,
                 focusedItemId = focusedItemId,
-                focusedPreview = focusedPreview,
                 firstVisibleItemIndex = firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
                 restoreFocusedItemOnEnter = restoreFocusedItemOnEnter,
@@ -108,7 +105,6 @@ internal fun CollectionGridPane(
 private fun CollectionGrid(
     collection: CollectionDetail,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
     restoreFocusedItemOnEnter: Boolean = false,
@@ -303,7 +299,6 @@ private fun CollectionGrid(
                             }
                         },
                     item = anime,
-                    screenshotUrls = if (anime.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
                     onClick = stableOnClick,
                     onFocused = stableOnFocused,
                 )

@@ -34,7 +34,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
@@ -43,12 +42,9 @@ internal fun HomeCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
-    onItemVisible: (displayId: Int) -> Unit,
     sectionKey: String,
     focusedSectionId: String?,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
-    animePreviews: Map<Int, AnimePreview>,
     modifier: Modifier = Modifier,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
@@ -64,9 +60,6 @@ internal fun HomeCarousel(
     if (items.size == 1) {
         val item = items[0]
         val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(item.id) {
-            onItemVisible(item.id)
-        }
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -99,11 +92,6 @@ internal fun HomeCarousel(
         ) {
             HeroBannerPage(
                 item = item,
-                preview = if (item.id == focusedItemId) {
-                    focusedPreview ?: item.animeId?.let(animePreviews::get)
-                } else {
-                    item.animeId?.let(animePreviews::get)
-                },
                 onClick = { onItemSelected(sectionKey, item) },
                 focusRequester = rowFocusRequester ?: focusRequester,
                 upFocusRequester = upFocusRequester,
@@ -202,12 +190,6 @@ internal fun HomeCarousel(
         }
     }
 
-    LaunchedEffect(pagerState.currentPage, items) {
-        items.getOrNull(pagerState.currentPage)?.let { item ->
-            onItemVisible(item.id)
-        }
-    }
-
     // After page settles and carousel still focused — move focus to the new page's content
     LaunchedEffect(pagerState.currentPage, isCarouselFocused, isRestoringFocus) {
         if (isCarouselFocused && !isRestoringFocus) {
@@ -301,18 +283,8 @@ internal fun HomeCarousel(
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
             val item = items[page]
-            val preview = when {
-                page == pagerState.currentPage &&
-                        focusedSectionId == sectionKey &&
-                        item.id == focusedItemId -> focusedPreview ?: item.animeId?.let(
-                    animePreviews::get
-                )
-                page in (pagerState.currentPage - 1)..(pagerState.currentPage + 1) -> item.animeId?.let(animePreviews::get)
-                else -> null
-            }
             HeroBannerPage(
                 item = item,
-                preview = preview,
                 onClick = { onItemSelected(sectionKey, item) },
                 focusRequester = pageRequesters[page],
                 upFocusRequester = upFocusRequester,

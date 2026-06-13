@@ -49,7 +49,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequ
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.R
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -57,7 +56,6 @@ import su.afk.yummy.tv.feature.library.R
 internal fun LibraryGrid(
     items: List<LibraryEntry>,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     restoreFocusedItemToken: Int,
@@ -265,7 +263,6 @@ internal fun LibraryGrid(
                     onFocused = stableOnFocused,
                     onDelete = stableOnDelete,
                     cardWidth = adaptiveCardWidth,
-                    screenshotUrls = if (item.animeId == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
                     modifier = Modifier
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {

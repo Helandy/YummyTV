@@ -3,7 +3,9 @@ package su.afk.yummy.tv.feature.player.navigator
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 
+@Suppress("DEPRECATION")
 class PlayerNavigator : IPlayerNavigator {
     override fun getPlayerDest(
         iframeUrl: String,
@@ -18,6 +20,7 @@ class PlayerNavigator : IPlayerNavigator {
         screenshotUrls: List<String>,
         animeId: Int,
         posterUrl: String,
+        sourceGraph: PlayerSourceGraph,
         allDubbingNames: List<String>,
         currentDubbingIndex: Int,
         allDubbingEpisodeUrls: List<List<String>>,
@@ -47,6 +50,7 @@ class PlayerNavigator : IPlayerNavigator {
         screenshotUrls = screenshotUrls,
         animeId = animeId,
         posterUrl = posterUrl,
+        sourceGraph = sourceGraph,
         allDubbingNames = allDubbingNames,
         currentDubbingIndex = currentDubbingIndex,
         allDubbingEpisodeUrls = allDubbingEpisodeUrls,

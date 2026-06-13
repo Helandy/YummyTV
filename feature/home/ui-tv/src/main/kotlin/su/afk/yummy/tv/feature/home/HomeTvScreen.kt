@@ -41,9 +41,6 @@ fun HomeTvScreen(
             onEvent(HomeState.Event.ItemFocused(sectionId, displayId, animeId))
         }
     }
-    val onHeroItemVisible: (Int) -> Unit = remember(onEvent) {
-        { displayId -> onEvent(HomeState.Event.HeroItemVisible(displayId)) }
-    }
     val onFocusedItemRestoreHandled: () -> Unit = remember(onEvent) {
         { onEvent(HomeState.Event.FocusedItemRestoreHandled) }
     }
@@ -66,11 +63,8 @@ fun HomeTvScreen(
             onItemSelected = onItemSelected,
             onItemFocused = onItemFocused,
             focusedSectionId = state.focusedSectionId,
-            onHeroItemVisible = onHeroItemVisible,
             restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
             focusedItemId = state.focusedItemId,
-            focusedPreview = state.focusedPreview,
-            animePreviews = state.animePreviews,
             continueWatchingRestoreToken = state.continueWatchingRestoreToken,
             onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
         )

@@ -9,7 +9,6 @@ import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimePosterDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeRatingDto
-import su.afk.yummy.tv.data.details.dto.YaniAnimeResponseDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeVideoDto
 import su.afk.yummy.tv.data.details.dto.YaniEpisodesDto
 import su.afk.yummy.tv.data.details.dto.YaniNamedDto
@@ -22,7 +21,6 @@ import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.model.AnimeGenre
 import su.afk.yummy.tv.domain.anime.model.AnimePerson
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.anime.model.AnimeRating
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
@@ -55,21 +53,6 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         screenshots = source.randomScreenshots.map { it.toAnimeScreenshot() },
     )
 }
-
-internal fun YaniAnimeResponseDto.toAnimePreview(): AnimePreview = AnimePreview(
-    trailerEmbedUrl = null,
-    trailerStreamUrl = null,
-    description = description,
-    genres = genres.map { it.title }.filter { it.isNotBlank() },
-    year = year?.takeIf { it > 0 },
-    ageRating = minAge.toShortAgeRating(),
-    type = type?.name,
-    views = views,
-    season = season?.takeIf { it > 0 },
-    screenshotUrls = randomScreenshots.mapNotNull {
-        it.sizes.full?.toHttpsUrl() ?: it.sizes.small?.toHttpsUrl()
-    },
-)
 
 private fun YaniAnimePosterDto.toAnimePoster(): AnimePoster = AnimePoster(
     small = small?.toHttpsUrl(),

@@ -135,7 +135,7 @@ fun PlayerMobileScreen(
                 metaLabel = stringResource(R.string.player_balancer_meta),
                 onBalancerSelected = { index ->
                     val balancerIndex =
-                        uiState.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                        uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
                     showErrorBalancerSheet = false
                     onEvent(
                         PlayerState.Event.BalancerSelected(

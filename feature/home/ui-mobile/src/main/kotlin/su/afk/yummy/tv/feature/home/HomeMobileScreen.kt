@@ -101,7 +101,6 @@ fun HomeMobileScreen(
                     HomeHeroCarousel(
                         items = feed.heroItems,
                         onItemSelected = onItemSelected,
-                        onItemVisible = { onEvent(HomeState.Event.HeroItemVisible(it)) },
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }

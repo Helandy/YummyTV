@@ -19,10 +19,9 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.library.handler.AnimePreviewFocusHandler
-import su.afk.yummy.tv.feature.library.handler.ContinueWatchingLaunchHandler
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
+import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,7 +36,6 @@ class LibraryViewModel @Inject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
-    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
@@ -111,10 +109,8 @@ class LibraryViewModel @Inject internal constructor(
                         copy(
                             selectedTab = event.tab,
                             focusedItemId = null,
-                            focusedPreview = null
                         )
                     }
-                    animePreviewFocusHandler.cancelFocus()
                 }
             }
 
@@ -152,7 +148,6 @@ class LibraryViewModel @Inject internal constructor(
         setState {
             copy(
                 focusedItemId = animeId,
-                focusedPreview = null,
                 restoreFocusedItemOnEnter = true
             )
         }
@@ -211,18 +206,7 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId, focusedPreview = null) }
-        animePreviewFocusHandler.focus(
-            scope = viewModelScope,
-            animeId = animeId,
-            isCurrentFocus = { currentState.focusedItemId == animeId },
-            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
-            onLoadedPreview = { result ->
-                if (result.isCurrentFocus) {
-                    setState { copy(focusedPreview = result.preview) }
-                }
-            }
-        )
+        setState { copy(focusedItemId = animeId) }
     }
 
     private fun launchContinueWatching(entry: WatchProgressEntry) {

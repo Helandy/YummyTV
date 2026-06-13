@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.top
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 
@@ -17,7 +16,6 @@ class TopState {
         val canLoadMore: Boolean = true,
         val offset: Int = 0,
         val focusedItemId: Int? = null,
-        val focusedPreview: AnimePreview? = null,
         val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 

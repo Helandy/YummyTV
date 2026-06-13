@@ -13,5 +13,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.javax.inject)
+
     testImplementation(libs.kotlin.test)
 }

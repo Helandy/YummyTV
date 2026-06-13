@@ -22,7 +22,6 @@ class SettingsState {
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
-        val showScreenshotsOnFocus: Boolean = false,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val isPreviewChannelBrowsable: Boolean = false,
         val watchNextEnabled: Boolean = true,
@@ -38,7 +37,6 @@ class SettingsState {
         data class AppThemeSelected(val theme: AppTheme) : Event
         data class PosterQualitySelected(val quality: PosterQuality) : Event
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
-        data object ShowScreenshotsOnFocusToggled : Event
         data class PreferredPlayerSelected(val player: PreferredPlayer) : Event
         data object RequestPreviewChannelBrowsable : Event
         data object WatchNextToggled : Event

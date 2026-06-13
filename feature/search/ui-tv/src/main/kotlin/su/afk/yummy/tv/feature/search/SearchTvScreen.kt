@@ -42,7 +42,6 @@ fun SearchTvScreen(
         isLoading = state.isLoading,
         canLoadMore = state.canLoadMore,
         focusedItemId = state.focusedItemId,
-        focusedPreview = state.focusedPreview,
         restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         filters = state.filters,
         draftFilters = state.draftFilters,

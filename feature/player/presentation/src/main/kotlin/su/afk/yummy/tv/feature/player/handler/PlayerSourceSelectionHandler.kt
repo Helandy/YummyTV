@@ -1,26 +1,32 @@
 package su.afk.yummy.tv.feature.player.handler
 
+import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
-import su.afk.yummy.tv.feature.player.utils.activeAllDubbingNames
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbing
-import su.afk.yummy.tv.feature.player.utils.activeDubbingUrls
-import su.afk.yummy.tv.feature.player.utils.activeEpisodeNumbers
+import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
+import su.afk.yummy.tv.feature.player.utils.activeDubbingName
+import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
+import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
 import javax.inject.Inject
 
 internal class PlayerSourceSelectionHandler @Inject constructor() {
-    fun previousEpisode(state: PlayerState.State): PlayerState.State? =
-        state.episodeIndex
+    fun previousEpisode(state: PlayerState.State): PlayerState.State? {
+        val selection = normalizedSourceSelection(state)
+        return selection.episodeIndex
             .takeIf { it > 0 }
-            ?.let { state.copy(episodeIndex = it - 1) }
+            ?.let {
+                state.copy(sourceSelection = selection.copy(episodeIndex = it - 1))
+            }
+    }
 
     fun nextEpisode(state: PlayerState.State): PlayerState.State? {
-        val urls = activeDubbingUrls(state)
-        return if (state.episodeIndex < urls.size - 1) {
-            state.copy(episodeIndex = state.episodeIndex + 1)
+        val selection = normalizedSourceSelection(state)
+        val episodes = activeDubbingEpisodes(state)
+        return if (selection.episodeIndex < episodes.size - 1) {
+            state.copy(sourceSelection = selection.copy(episodeIndex = selection.episodeIndex + 1))
         } else {
             null
         }
@@ -31,27 +37,24 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         index: Int,
         currentPosMs: Long,
     ): PlayerState.State? {
-        val currentNum = activeEpisodeNumbers(state).getOrElse(state.episodeIndex) { "" }
-        val selectedDubbing = globalDubbingNames(state).getOrElse(index) {
-            activeAllDubbingNames(state).getOrElse(index) { "" }
-        }
+        val currentSelection = normalizedSourceSelection(state)
+        val currentNum = activeEpisode(state)
+        val selectedDubbing = globalDubbingNames(state).getOrElse(index) { "" }
         if (selectedDubbing.isBlank()) return null
         val selection = resolveDubbingSource(
             state = state,
             dubbingName = selectedDubbing,
             episodeNumber = currentNum,
         ) ?: return null
-        if (
-            selection.balancerIndex == state.balancerIndex &&
-            selection.dubbingIndex == state.dubbingIndex &&
-            selection.episodeIndex == state.episodeIndex
-        ) return null
+        if (selection == currentSelection.toDubbingSource()) return null
 
         return state.copy(
             dubbingResumeMs = (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L),
-            balancerIndex = selection.balancerIndex,
-            dubbingIndex = selection.dubbingIndex,
-            episodeIndex = selection.episodeIndex,
+            sourceSelection = PlayerSourceSelection(
+                balancerIndex = selection.balancerIndex,
+                dubbingIndex = selection.dubbingIndex,
+                episodeIndex = selection.episodeIndex,
+            ),
         )
     }
 
@@ -60,21 +63,26 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         index: Int,
         currentPosMs: Long,
     ): PlayerState.State? {
-        if (index == state.balancerIndex) return null
-        val newDubbingNames = state.allBalancerDubbingNames.getOrElse(index) { emptyList() }
-        val currentDubbingName = activeDubbing(state)
+        val currentSelection = normalizedSourceSelection(state)
+        if (index == currentSelection.balancerIndex) return null
+        val balancer = state.sourceGraph.balancers.getOrNull(index) ?: return null
+        val newDubbingNames = balancer.dubbings.map { it.name }
+        val currentDubbingName = activeDubbingName(state)
         val newDubbingIdx = newDubbingNames.indexOf(currentDubbingName).takeIf { it >= 0 } ?: 0
-        val currentEpNum =
-            activeEpisodeNumbers(state).getOrElse(state.episodeIndex) { state.episode }
-        val newEpNums = state.allBalancerEpisodeNumbers.getOrElse(index) { emptyList() }
-            .getOrElse(newDubbingIdx) { emptyList() }
+        val currentEpNum = activeEpisode(state)
+        val newEpNums = balancer.dubbings.getOrNull(newDubbingIdx)
+            ?.episodes
+            ?.map { it.number }
+            .orEmpty()
         val newEpisodeIdx = newEpNums.indexOf(currentEpNum).takeIf { it >= 0 } ?: 0
 
         return state.copy(
             dubbingResumeMs = (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L),
-            balancerIndex = index,
-            dubbingIndex = newDubbingIdx,
-            episodeIndex = newEpisodeIdx,
+            sourceSelection = PlayerSourceSelection(
+                balancerIndex = index,
+                dubbingIndex = newDubbingIdx,
+                episodeIndex = newEpisodeIdx,
+            ),
         )
     }
 
@@ -89,3 +97,10 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         const val RESUME_BACKOFF_MS = 3_000L
     }
 }
+
+private fun PlayerSourceSelection.toDubbingSource() =
+    su.afk.yummy.tv.feature.player.utils.DubbingSource(
+        balancerIndex = balancerIndex,
+        dubbingIndex = dubbingIndex,
+        episodeIndex = episodeIndex,
+    )

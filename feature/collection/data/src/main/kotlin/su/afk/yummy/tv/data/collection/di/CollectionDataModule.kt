@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.data.collection.repository.YaniCollectionDetailRepository
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
-import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import javax.inject.Singleton
 
 @Module
@@ -31,7 +30,4 @@ object CollectionDataModule {
         settingsStore: SettingsStore,
     ): CollectionRepository =
         YaniCollectionDetailRepository(api, cache, json, settingsStore)
-
-    @Provides
-    fun provideGetCollectionUseCase(repo: CollectionRepository) = GetCollectionUseCase(repo)
 }

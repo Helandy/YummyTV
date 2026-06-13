@@ -9,15 +9,8 @@ import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
-import su.afk.yummy.tv.data.details.repository.YaniAnimePreviewRepository
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
-import su.afk.yummy.tv.domain.anime.repository.AnimePreviewRepository
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import javax.inject.Singleton
 
 @Module
@@ -37,29 +30,4 @@ object DetailsDataModule {
         settingsStore: SettingsStore,
     ): AnimeRepository =
         YaniAnimeRepository(api, cache, json, settingsStore)
-
-    @Provides
-    @Singleton
-    fun provideAnimePreviewRepository(
-        api: YaniAnimeApi,
-        cache: CacheStore,
-        json: Json,
-        settingsStore: SettingsStore,
-    ): AnimePreviewRepository =
-        YaniAnimePreviewRepository(api, cache, json, settingsStore)
-
-    @Provides
-    fun provideGetAnimeDetailsUseCase(repo: AnimeRepository) = GetAnimeDetailsUseCase(repo)
-
-    @Provides
-    fun provideGetAnimeVideosUseCase(repo: AnimeRepository) = GetAnimeVideosUseCase(repo)
-
-    @Provides
-    fun provideGetAnimeTrailersUseCase(repo: AnimeRepository) = GetAnimeTrailersUseCase(repo)
-
-    @Provides
-    fun provideGetAnimeRecommendationsUseCase(repo: AnimeRepository) = GetAnimeRecommendationsUseCase(repo)
-
-    @Provides
-    fun provideGetAnimePreviewUseCase(repo: AnimePreviewRepository) = GetAnimePreviewUseCase(repo)
 }

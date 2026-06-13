@@ -31,7 +31,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.search.model.SearchItem
 
 @Composable
@@ -39,7 +38,6 @@ internal fun SearchResultsGrid(
     items: List<SearchItem>,
     isLoading: Boolean,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     gridState: LazyGridState,
     focusRequesters: List<FocusRequester>,
     mainMenuFocusRequester: FocusRequester?,
@@ -95,11 +93,6 @@ internal fun SearchResultsGrid(
                     title = item.title,
                     posterUrl = item.posterUrl,
                     onClick = stableOnClick,
-                    screenshotUrls = if (item.id == focusedItemId) {
-                        focusedPreview?.screenshotUrls.orEmpty()
-                    } else {
-                        emptyList()
-                    },
                     onFocused = stableOnFocused,
                     modifier = Modifier
                         .focusRequester(focusRequesters[index])

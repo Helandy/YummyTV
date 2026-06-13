@@ -33,7 +33,6 @@ fun TopTvScreen(
         canLoadMore = state.canLoadMore,
         error = state.error,
         focusedItemId = state.focusedItemId,
-        focusedPreview = state.focusedPreview,
         restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         isActiveDestination = isActiveDestination,
         onItemSelected = onItemSelected,

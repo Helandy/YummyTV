@@ -14,8 +14,6 @@
     <string name="settings_poster_size_title">Poster size on screen</string>
     <string name="settings_poster_quality_title">Poster image quality</string>
     <string name="settings_poster_cache_size_title">Poster cache size on device</string>
-    <string name="settings_show_screenshots_label">Screens on focus</string>
-    <string name="settings_show_screenshots_hint">Show title screenshots when a card is selected</string>
     <string name="settings_details_buttons_reset">Reset button order</string>
     <string name="settings_details_buttons_reset_hint">Restore the default details screen layout</string>
     <string name="settings_details_button_position">Position %1$d</string>

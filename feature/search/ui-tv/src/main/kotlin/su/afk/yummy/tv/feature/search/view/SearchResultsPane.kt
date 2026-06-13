@@ -31,7 +31,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingSc
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
@@ -45,7 +44,6 @@ internal fun SearchResultsPane(
     isLoading: Boolean,
     canLoadMore: Boolean,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     filters: SearchFilters,
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
@@ -285,7 +283,6 @@ internal fun SearchResultsPane(
                         items = items,
                         isLoading = isLoading,
                         focusedItemId = focusedItemId,
-                        focusedPreview = focusedPreview,
                         gridState = gridState,
                         focusRequesters = focusRequesters,
                         mainMenuFocusRequester = mainMenuFocusRequester,

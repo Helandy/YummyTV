@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.library.handler
+package su.afk.yummy.tv.feature.watching.handler
 
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
@@ -16,7 +16,7 @@ import su.afk.yummy.tv.feature.player.isTrustedPlaceholderMigrationTarget
 import su.afk.yummy.tv.feature.player.resolveContinueWatchingTarget
 import javax.inject.Inject
 
-internal class ContinueWatchingLaunchHandler @Inject constructor(
+class ContinueWatchingLaunchHandler @Inject constructor(
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val watchProgressStore: WatchProgressStore,
     private val playerNavigator: IPlayerNavigator,

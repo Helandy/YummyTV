@@ -51,7 +51,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 
@@ -65,7 +64,6 @@ internal fun TopBrowser(
     canLoadMore: Boolean,
     error: String?,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     restoreFocusedItemOnEnter: Boolean,
     isActiveDestination: Boolean,
     onItemSelected: (AnimeTopItem) -> Unit,
@@ -320,7 +318,6 @@ internal fun TopBrowser(
                                 rank = index + 1,
                                 onClick = stableOnClick,
                                 onFocused = stableOnFocused,
-                                screenshotUrls = if (item.id == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
                                 modifier = Modifier
                                     .focusRequester(focusRequesters[index])
                                     .onPreviewKeyEvent { event ->

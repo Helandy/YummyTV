@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.search
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
@@ -19,7 +18,6 @@ class SearchState {
         val offset: Int = 0,
         val focusedItemId: Int? = null,
         val restoreFocusedItemOnEnter: Boolean = false,
-        val focusedPreview: AnimePreview? = null,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,
         val filterOptions: SearchFilterOptions = SearchFilterOptions(),

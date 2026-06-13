@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.top.network.YaniAnimeTopApi
 import su.afk.yummy.tv.data.top.repository.YaniAnimeTopRepository
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
-import su.afk.yummy.tv.domain.top.usecase.GetAnimeTopUseCase
 import javax.inject.Singleton
 
 @Module
@@ -31,7 +30,4 @@ object TopDataModule {
         settingsStore: SettingsStore,
     ): AnimeTopRepository =
         YaniAnimeTopRepository(api, cache, json, settingsStore)
-
-    @Provides
-    fun provideGetAnimeTopUseCase(repo: AnimeTopRepository) = GetAnimeTopUseCase(repo)
 }

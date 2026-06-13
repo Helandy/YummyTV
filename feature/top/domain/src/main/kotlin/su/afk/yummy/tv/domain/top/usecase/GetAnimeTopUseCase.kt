@@ -3,9 +3,10 @@ package su.afk.yummy.tv.domain.top.usecase
 import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
+import javax.inject.Inject
 
 /** Loads a paged top anime list for the selected ranking type. */
-class GetAnimeTopUseCase(
+class GetAnimeTopUseCase @Inject constructor(
     private val repository: AnimeTopRepository,
 ) {
     suspend operator fun invoke(type: AnimeTopType, limit: Int, offset: Int): AnimeTopPage =

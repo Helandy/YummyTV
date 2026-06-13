@@ -180,7 +180,6 @@ fun LibraryTvScreen(
                 LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
                     entries = state.continueWatching,
                     focusedItemId = state.focusedItemId,
-                    focusedPreview = state.focusedPreview,
                     gridFocusRequester = gridFocusRequester,
                     selectedTabFocusRequester = selectedTabFocusRequester,
                     restoreFirstItemToken = continueWatchingRestoreFirstToken,
@@ -203,7 +202,6 @@ fun LibraryTvScreen(
                         LibraryGrid(
                             items = favoriteItems,
                             focusedItemId = state.focusedItemId,
-                            focusedPreview = state.focusedPreview,
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
@@ -227,7 +225,6 @@ fun LibraryTvScreen(
                         LibraryGrid(
                             items = signedInFavoriteItems,
                             focusedItemId = state.focusedItemId,
-                            focusedPreview = state.focusedPreview,
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
@@ -268,7 +265,6 @@ fun LibraryTvScreen(
                         LibraryGrid(
                             items = localItems,
                             focusedItemId = state.focusedItemId,
-                            focusedPreview = state.focusedPreview,
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
@@ -293,7 +289,6 @@ fun LibraryTvScreen(
                         LibraryGrid(
                             items = remoteLibraryItems,
                             focusedItemId = state.focusedItemId,
-                            focusedPreview = state.focusedPreview,
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,

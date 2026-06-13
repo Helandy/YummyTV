@@ -7,7 +7,6 @@ import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 
 enum class LibraryTab {
     CONTINUE_WATCHING,
@@ -29,7 +28,6 @@ class LibraryState {
         val remoteError: String? = null,
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
         val focusedItemId: Int? = null,
-        val focusedPreview: AnimePreview? = null,
         val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 

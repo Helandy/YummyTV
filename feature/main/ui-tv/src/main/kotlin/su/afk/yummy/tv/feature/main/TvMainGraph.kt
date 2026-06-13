@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.AppNavHost
 import su.afk.yummy.tv.core.navigation.NavRegistrar
@@ -94,7 +93,6 @@ class TvMainGraph @Inject constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
-                    LocalShowScreenshotsOnFocus provides state.showScreenshotsOnFocus,
                 ) {
                     TvMainScaffold(
                         selectedRoot = navManager.currentRoot,

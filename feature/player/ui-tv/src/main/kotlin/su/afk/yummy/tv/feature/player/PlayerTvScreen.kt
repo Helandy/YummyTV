@@ -139,7 +139,7 @@ fun PlayerTvScreen(
                     itemMeta = { stringResource(R.string.player_balancer_meta) },
                     onItemSelected = { index ->
                         val balancerIndex =
-                            uiState.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                            uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
                         showErrorBalancerPanel = false
                         pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
                         onEvent(
@@ -184,7 +184,9 @@ fun PlayerTvScreen(
                 allBalancerNames = uiState.availableBalancerNames,
                 currentBalancerIndex = uiState.currentBalancerIndex,
                 onBalancerSelected = { newIdx, currentPosMs ->
-                    val balancerIndex = uiState.availableBalancerIndices.getOrElse(newIdx) { state.balancerIndex }
+                    val balancerIndex = uiState.availableBalancerIndices.getOrElse(newIdx) {
+                        state.sourceSelection.balancerIndex
+                    }
                     pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
                     onEvent(PlayerState.Event.BalancerSelected(balancerIndex, currentPosMs))
                 },

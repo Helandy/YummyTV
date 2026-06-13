@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
@@ -49,12 +48,9 @@ internal fun HomeDashboard(
     onContinueWatchingSelected: (WatchProgressEntry) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
-    onHeroItemVisible: (displayId: Int) -> Unit,
     restoreFocusedItemOnEnter: Boolean = false,
     focusedSectionId: String? = null,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
-    animePreviews: Map<Int, AnimePreview>,
     continueWatchingRestoreToken: Int,
     onFocusedItemRestoreHandled: () -> Unit,
 ) {
@@ -314,8 +310,8 @@ internal fun HomeDashboard(
                     }
                 }
 
-                // Re-scroll when CW section appears/disappears while hero is already focused
-                LaunchedEffect(heroLazyIdx, heroHasFocus, focusedItemId, focusedPreview, animePreviews.size) {
+                // Re-scroll when CW section appears/disappears while hero is already focused.
+                LaunchedEffect(heroLazyIdx, heroHasFocus, focusedItemId) {
                     pinHeroWhileFocused()
                 }
 
@@ -336,10 +332,7 @@ internal fun HomeDashboard(
                         onItemFocused = onItemFocused,
                         sectionKey = SECTION_HERO,
                         focusedSectionId = focusedSectionId,
-                        onItemVisible = onHeroItemVisible,
                         focusedItemId = focusedItemId,
-                        focusedPreview = focusedPreview,
-                        animePreviews = animePreviews,
                         rowFocusRequester = heroFocusRequester,
                         rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
                         restoreFocusedPageOnEnter = restoreFocusedItemOnEnter && focusedSectionId == SECTION_HERO,
@@ -383,7 +376,6 @@ internal fun HomeDashboard(
                     onItemFocused = onItemFocused,
                     focusedSectionId = focusedSectionId,
                     focusedItemId = focusedItemId,
-                    focusedPreview = focusedPreview,
                     rowFocusRequester = sectionFocusRequesters[index],
                     rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,
                     rowKey = sectionKey(index),

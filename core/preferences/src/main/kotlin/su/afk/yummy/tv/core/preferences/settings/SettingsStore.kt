@@ -18,13 +18,34 @@ import kotlinx.coroutines.launch
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
 
+data class SettingsSnapshot(
+    val appTheme: AppTheme,
+    val posterQuality: PosterQuality,
+    val posterCardSize: PosterCardSize,
+    val preferredPlayer: PreferredPlayer,
+    val watchNextEnabled: Boolean,
+    val previewCacheSize: PreviewCacheSize,
+    val autoSkipOpeningsEndings: Boolean,
+    val yaniApplicationToken: String,
+    val contentLanguage: YaniContentLanguage,
+    val detailsButtonOrder: List<DetailsButtonAction>,
+)
+
+data class MainSettingsSnapshot(
+    val appTheme: AppTheme,
+    val posterQuality: PosterQuality,
+    val posterCardSize: PosterCardSize,
+    val yaniNickname: String,
+    val yaniAvatarUrl: String,
+    val yaniUnreadNotificationsCount: Int,
+)
+
 class SettingsStore(private val context: Context) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val posterQualityKey = stringPreferencesKey("poster_quality")
     private val posterCardSizeKey = stringPreferencesKey("poster_card_size")
-    private val showScreenshotsOnFocusKey = booleanPreferencesKey("show_screenshots_on_focus")
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
@@ -58,10 +79,6 @@ class SettingsStore(private val context: Context) {
         prefs[posterCardSizeKey]?.let { name ->
             runCatching { PosterCardSize.valueOf(name) }.getOrNull()
         } ?: PosterCardSize.STANDARD
-    }
-
-    val showScreenshotsOnFocus: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[showScreenshotsOnFocusKey] ?: false
     }
 
     val preferredPlayer: Flow<PreferredPlayer> = context.dataStore.data.map { prefs ->
@@ -157,6 +174,53 @@ class SettingsStore(private val context: Context) {
             ?: YaniContentLanguage.fromSystemLocale(context)
     }
 
+    val settingsSnapshot: Flow<SettingsSnapshot> = context.dataStore.data.map { prefs ->
+        SettingsSnapshot(
+            appTheme = prefs[appThemeKey]?.let { name ->
+                runCatching { AppTheme.valueOf(name) }.getOrNull()
+            } ?: AppTheme.WARM_AMBER,
+            posterQuality = prefs[posterQualityKey]?.let { name ->
+                runCatching { PosterQuality.valueOf(name) }.getOrNull()
+            }
+                ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD,
+            posterCardSize = prefs[posterCardSizeKey]?.let { name ->
+                runCatching { PosterCardSize.valueOf(name) }.getOrNull()
+            } ?: PosterCardSize.STANDARD,
+            preferredPlayer = prefs[preferredPlayerKey]?.let { name ->
+                runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
+            } ?: PreferredPlayer.NONE,
+            watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
+            previewCacheSize = (prefs[previewCacheSizeKey]
+                ?: PreviewCacheSize.MB_100.megabytes).let { mb ->
+                PreviewCacheSize.entries.firstOrNull { it.megabytes == mb }
+                    ?: PreviewCacheSize.MB_100
+            },
+            autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
+            yaniApplicationToken = prefs[yaniApplicationTokenKey].orEmpty(),
+            contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
+                ?: YaniContentLanguage.fromSystemLocale(context),
+            detailsButtonOrder = prefs[detailsButtonOrderKey].toDetailsButtonOrder(),
+        )
+    }
+
+    val mainSettingsSnapshot: Flow<MainSettingsSnapshot> = context.dataStore.data.map { prefs ->
+        MainSettingsSnapshot(
+            appTheme = prefs[appThemeKey]?.let { name ->
+                runCatching { AppTheme.valueOf(name) }.getOrNull()
+            } ?: AppTheme.WARM_AMBER,
+            posterQuality = prefs[posterQualityKey]?.let { name ->
+                runCatching { PosterQuality.valueOf(name) }.getOrNull()
+            }
+                ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD,
+            posterCardSize = prefs[posterCardSizeKey]?.let { name ->
+                runCatching { PosterCardSize.valueOf(name) }.getOrNull()
+            } ?: PosterCardSize.STANDARD,
+            yaniNickname = prefs[yaniNicknameKey].orEmpty(),
+            yaniAvatarUrl = prefs[yaniAvatarUrlKey].orEmpty(),
+            yaniUnreadNotificationsCount = prefs[yaniUnreadNotificationsCountKey] ?: 0,
+        )
+    }
+
     init {
         scope.launch {
             previewCacheSize.collect { size ->
@@ -171,10 +235,6 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPosterCardSize(size: PosterCardSize) {
         context.dataStore.edit { prefs -> prefs[posterCardSizeKey] = size.name }
-    }
-
-    suspend fun setShowScreenshotsOnFocus(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[showScreenshotsOnFocusKey] = enabled }
     }
 
     suspend fun setPreferredPlayer(player: PreferredPlayer) {

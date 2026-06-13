@@ -23,7 +23,6 @@ fun CollectionTvScreen(
         isLoading = state.isLoading,
         error = state.error,
         focusedItemId = state.focusedItemId,
-        focusedPreview = state.focusedPreview,
         firstVisibleItemIndex = state.firstVisibleItemIndex,
         firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
         onAnimeSelected = onAnimeSelected,

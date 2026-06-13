@@ -75,29 +75,20 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeSettings() {
-        viewModelScope.launch {
-            settingsStore.appTheme.collect { setState { copy(appTheme = it) } }
-        }
-        viewModelScope.launch {
-            settingsStore.posterQuality.collect { setState { copy(posterQuality = it) } }
-        }
-        viewModelScope.launch {
-            settingsStore.posterCardSize.collect { setState { copy(posterCardSize = it) } }
-        }
-        viewModelScope.launch {
-            settingsStore.showScreenshotsOnFocus.collect { setState { copy(showScreenshotsOnFocus = it) } }
-        }
-        viewModelScope.launch {
-            settingsStore.yaniNickname.collect { nickname -> setState { copy(yaniNickname = nickname) } }
-        }
-        viewModelScope.launch {
-            settingsStore.yaniAvatarUrl.collect { avatarUrl -> setState { copy(yaniAvatarUrl = avatarUrl) } }
-        }
-        viewModelScope.launch {
-            settingsStore.yaniUnreadNotificationsCount.collect { count ->
-                setState { copy(unreadNotificationsCount = count) }
+        settingsStore.mainSettingsSnapshot
+            .onEach { snapshot ->
+                setState {
+                    copy(
+                        appTheme = snapshot.appTheme,
+                        posterQuality = snapshot.posterQuality,
+                        posterCardSize = snapshot.posterCardSize,
+                        yaniNickname = snapshot.yaniNickname,
+                        yaniAvatarUrl = snapshot.yaniAvatarUrl,
+                        unreadNotificationsCount = snapshot.yaniUnreadNotificationsCount,
+                    )
+                }
             }
-        }
+            .launchIn(viewModelScope)
         viewModelScope.launch {
             yaniAuthPreferences.refreshToken.collect { token ->
                 val signedIn = token.isNotBlank()

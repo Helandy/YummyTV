@@ -17,9 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,22 +32,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
 @Composable
 internal fun HomeFeedCard(
     item: HomeFeedItem,
-    preview: AnimePreview?,
     onClick: () -> Unit,
     onFocused: (displayId: Int, animeId: Int?) -> Unit,
     modifier: Modifier = Modifier,
@@ -61,24 +55,9 @@ internal fun HomeFeedCard(
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val active = isFocused || forceFocused
-    val showScreenshots = LocalShowScreenshotsOnFocus.current
     val cardDimensions = currentTvHomeFeedCardDimensions()
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
-
-    val screenshots = preview?.screenshotUrls.orEmpty()
-    var slideIndex by remember(item.id) { mutableIntStateOf(0) }
-
-    LaunchedEffect(active, showScreenshots, screenshots) {
-        if (active && showScreenshots && screenshots.size > 1) {
-            while (true) {
-                delay(2000)
-                slideIndex = (slideIndex + 1) % screenshots.size
-            }
-        } else {
-            slideIndex = 0
-        }
-    }
 
     val shape = RoundedCornerShape(8.dp)
 
@@ -120,10 +99,7 @@ internal fun HomeFeedCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                val imageUrl = when {
-                    active && showScreenshots && screenshots.isNotEmpty() -> screenshots[slideIndex]
-                    else -> item.posterUrl(LocalPosterQuality.current)
-                }
+                val imageUrl = item.posterUrl(LocalPosterQuality.current)
 
                 AsyncImage(
                     model = imageUrl,

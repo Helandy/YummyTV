@@ -50,7 +50,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.library.R
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -58,7 +57,6 @@ import su.afk.yummy.tv.feature.library.R
 internal fun ContinueWatchingGrid(
     entries: List<WatchProgressEntry>,
     focusedItemId: Int?,
-    focusedPreview: AnimePreview?,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     restoreFirstItemToken: Int,
@@ -274,7 +272,6 @@ internal fun ContinueWatchingGrid(
                     onFocused = stableOnFocused,
                     onDelete = stableOnDelete,
                     cardWidth = adaptiveCardWidth,
-                    screenshotUrls = if (entry.animeId == focusedItemId) focusedPreview?.screenshotUrls.orEmpty() else emptyList(),
                     modifier = Modifier
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {

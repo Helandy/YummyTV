@@ -18,7 +18,6 @@ import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 @Composable
 internal fun CollectionAnimeCard(
     item: CollectionAnimeItem,
-    screenshotUrls: List<String>,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -27,7 +26,6 @@ internal fun CollectionAnimeCard(
         title = item.title,
         posterUrl = item.posterUrl,
         onClick = onClick,
-        screenshotUrls = screenshotUrls,
         onFocused = onFocused,
         modifier = modifier,
         posterOverlay = {

@@ -11,8 +11,6 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.data.search.repository.YaniSearchRepository
 import su.afk.yummy.tv.domain.search.repository.SearchRepository
-import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
-import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import javax.inject.Singleton
 
 @Module
@@ -32,10 +30,4 @@ object SearchDataModule {
         settingsStore: SettingsStore,
     ): SearchRepository =
         YaniSearchRepository(api, cache, json, settingsStore)
-
-    @Provides
-    fun provideSearchUseCase(repo: SearchRepository) = SearchUseCase(repo)
-
-    @Provides
-    fun provideGetSearchFilterOptionsUseCase(repo: SearchRepository) = GetSearchFilterOptionsUseCase(repo)
 }

@@ -21,14 +21,12 @@ internal fun TopAnimeCard(
     rank: Int,
     onClick: () -> Unit,
     onFocused: () -> Unit,
-    screenshotUrls: List<String>,
     modifier: Modifier = Modifier,
 ) {
     TvTitleCard(
         title = item.title,
         posterUrl = item.posterUrl,
         onClick = onClick,
-        screenshotUrls = screenshotUrls,
         onFocused = onFocused,
         modifier = modifier,
         posterOverlay = {

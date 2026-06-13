@@ -13,7 +13,6 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
-import su.afk.yummy.tv.feature.details.similar.handler.AnimePreviewFocusHandler
 
 @HiltViewModel(assistedFactory = SimilarViewModel.Factory::class)
 class SimilarViewModel @AssistedInject internal constructor(
@@ -24,7 +23,6 @@ class SimilarViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeRecommendations: GetAnimeRecommendationsUseCase,
-    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
 ) : BaseViewModelNew<SimilarState.State, SimilarState.Event, SimilarState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -57,18 +55,7 @@ class SimilarViewModel @AssistedInject internal constructor(
 
     private fun onItemFocused(id: Int) {
         if (currentState.focusedItemId == id) return
-        setState { copy(focusedItemId = id, focusedPreview = null) }
-        animePreviewFocusHandler.focus(
-            scope = viewModelScope,
-            animeId = id,
-            isCurrentFocus = { currentState.focusedItemId == id },
-            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
-            onLoadedPreview = { result ->
-                if (result.isCurrentFocus) {
-                    setState { copy(focusedPreview = result.preview) }
-                }
-            }
-        )
+        setState { copy(focusedItemId = id) }
     }
 
     private suspend fun load(fromAi: Boolean = currentState.fromAi) {

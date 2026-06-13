@@ -22,6 +22,10 @@ fun IPlayerNavigator.getPlayerDest(
 ): NavKey {
     val playerName = video.player
     val selectedDubbing = video.dubbing
+    val sourceGraph = allVideos.toPlayerSourceGraph(
+        selectedVideo = video,
+        screenshotByEpisode = screenshotByEpisode,
+    )
 
     val dubbingGroups = allVideos
         .filter { it.player == playerName }
@@ -92,6 +96,7 @@ fun IPlayerNavigator.getPlayerDest(
         screenshotUrls = group.map { kodikIframeByEpisode[it.episode] ?: screenshotByEpisode[it.episode].orEmpty() },
         animeId = animeId,
         posterUrl = posterUrl,
+        sourceGraph = sourceGraph,
         allDubbingNames = dubbingNames,
         currentDubbingIndex = currentDubbingIndex,
         allDubbingEpisodeUrls = dubbingNames.map { name -> dubbingGroups[name].orEmpty().map { it.iframeUrl } },
@@ -108,6 +113,74 @@ fun IPlayerNavigator.getPlayerDest(
         episodeSkips = group.map { it.skips },
         allDubbingEpisodeSkips = dubbingNames.map { name -> dubbingGroups[name].orEmpty().map { it.skips } },
         allBalancerEpisodeSkips = allBalancerEpisodeSkips,
+    )
+}
+
+fun List<PlayerVideoSource>.toPlayerSourceGraph(
+    selectedVideo: PlayerVideoSource,
+    screenshotByEpisode: Map<String, String> = emptyMap(),
+): PlayerSourceGraph {
+    val videos = if (isEmpty()) listOf(selectedVideo) else this
+    val supportedBalancers = videos
+        .map { it.player }
+        .distinct()
+        .filter { player -> videos.firstOrNull { it.player == player }?.iframeUrl?.isSupportedPlayerUrl() == true }
+    val balancerNames = (listOf(selectedVideo.player) + supportedBalancers).distinct()
+    val kodikIframeByEpisode = videos
+        .filter { it.iframeUrl.isKodikPlayerUrl() }
+        .groupBy { it.episode }
+        .mapValues { (_, group) -> group.first().iframeUrl }
+    val balancers = balancerNames.map { balancerName ->
+        val balancerVideos = videos.filter { it.player == balancerName }
+        val dubbingNames = balancerVideos.map { it.dubbing }.distinct()
+        PlayerSourceBalancer(
+            name = balancerName,
+            dubbings = dubbingNames.map { dubbingName ->
+                val episodes = balancerVideos
+                    .filter { it.dubbing == dubbingName }
+                    .sortedByEpisode()
+                    .map { source ->
+                        PlayerSourceEpisode(
+                            id = source.id,
+                            number = source.episode,
+                            iframeUrl = source.iframeUrl,
+                            screenshotUrl = kodikIframeByEpisode[source.episode]
+                                ?: screenshotByEpisode[source.episode].orEmpty(),
+                            skips = source.skips,
+                        )
+                    }
+                PlayerSourceDubbing(
+                    name = dubbingName,
+                    episodes = episodes,
+                    views = balancerVideos.filter { it.dubbing == dubbingName }.sumViews(),
+                )
+            },
+        )
+    }
+    val balancerIndex = balancers.indexOfFirst { it.name == selectedVideo.player }.coerceAtLeast(0)
+    val selectedBalancer = balancers.getOrNull(balancerIndex)
+    val dubbingIndex = selectedBalancer
+        ?.dubbings
+        ?.indexOfFirst { it.name == selectedVideo.dubbing }
+        ?.coerceAtLeast(0)
+        ?: 0
+    val selectedDubbing = selectedBalancer?.dubbings?.getOrNull(dubbingIndex)
+    val episodeIndex = selectedDubbing
+        ?.episodes
+        ?.indexOfFirst { episode ->
+            episode.id == selectedVideo.id ||
+                    (episode.number == selectedVideo.episode && episode.iframeUrl == selectedVideo.iframeUrl)
+        }
+        ?.coerceAtLeast(0)
+        ?: 0
+
+    return PlayerSourceGraph(
+        balancers = balancers,
+        selection = PlayerSourceSelection(
+            balancerIndex = balancerIndex,
+            dubbingIndex = dubbingIndex,
+            episodeIndex = episodeIndex,
+        ),
     )
 }
 

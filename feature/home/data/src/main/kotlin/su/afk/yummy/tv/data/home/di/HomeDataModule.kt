@@ -12,8 +12,6 @@ import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
-import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
-import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import javax.inject.Singleton
 
 @Module
@@ -34,10 +32,4 @@ object HomeDataModule {
         settingsStore: SettingsStore,
     ): HomeFeedRepository =
         YaniHomeFeedRepository(api, cache, json, stringProvider, settingsStore)
-
-    @Provides
-    fun provideGetHomeFeedUseCase(repo: HomeFeedRepository) = GetHomeFeedUseCase(repo)
-
-    @Provides
-    fun provideRefreshHomeFeedUseCase(repo: HomeFeedRepository) = RefreshHomeFeedUseCase(repo)
 }

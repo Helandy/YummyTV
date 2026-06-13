@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
@@ -49,7 +48,6 @@ internal fun HomeSection(
     onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
     focusedItemId: Int?,
     focusedSectionId: String?,
-    focusedPreview: AnimePreview?,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
     rowKey: String = "",
@@ -214,7 +212,6 @@ internal fun HomeSection(
                 HomeFeedCard(
                     modifier = Modifier.focusRequester(focusRequesters[index]),
                     item = item,
-                    preview = if (focusedSectionId == rowKey && item.id == focusedItemId) focusedPreview else null,
                     onClick = stableClick,
                     onFocused = wrappedOnFocused,
                     upFocusRequester = upFocusRequester,

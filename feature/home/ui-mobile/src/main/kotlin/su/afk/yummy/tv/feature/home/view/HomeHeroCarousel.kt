@@ -33,15 +33,10 @@ private const val HERO_AUTO_SCROLL_INTERVAL_MS = 5_000L
 internal fun HomeHeroCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (HomeFeedItem) -> Unit,
-    onItemVisible: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState { items.size }
     var isUserTouchingCarousel by remember { mutableStateOf(false) }
-
-    LaunchedEffect(pagerState.currentPage, items) {
-        items.getOrNull(pagerState.currentPage)?.let { onItemVisible(it.id) }
-    }
 
     LaunchedEffect(items.size, isUserTouchingCarousel) {
         if (items.size <= 1 || isUserTouchingCarousel) return@LaunchedEffect

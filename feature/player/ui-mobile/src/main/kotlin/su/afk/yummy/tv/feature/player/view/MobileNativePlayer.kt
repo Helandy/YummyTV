@@ -499,7 +499,7 @@ internal fun MobileNativePlayer(
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
                     val balancerIndex =
-                        ui.availableBalancerIndices.getOrElse(index) { state.balancerIndex }
+                        ui.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
                     onEvent(
                         PlayerState.Event.BalancerSelected(
                             balancerIndex,

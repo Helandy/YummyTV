@@ -16,6 +16,7 @@ interface IPlayerNavigator {
         screenshotUrls: List<String> = emptyList(),
         animeId: Int = 0,
         posterUrl: String = "",
+        sourceGraph: PlayerSourceGraph = PlayerSourceGraph(),
         allDubbingNames: List<String> = emptyList(),
         currentDubbingIndex: Int = 0,
         allDubbingEpisodeUrls: List<List<String>> = emptyList(),

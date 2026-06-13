@@ -15,9 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,10 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 
 @Composable
 fun TvTitleCard(
@@ -42,7 +38,6 @@ fun TvTitleCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    screenshotUrls: List<String> = emptyList(),
     onFocused: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
     width: Dp? = null,
@@ -51,29 +46,14 @@ fun TvTitleCard(
     val shape = RoundedCornerShape(8.dp)
     val cardDimensions = currentTvTitleCardDimensions()
     val cardWidth = width ?: cardDimensions.width
-    val showScreenshots = LocalShowScreenshotsOnFocus.current
     var isFocused by remember { mutableStateOf(false) }
-    var slideIndex by remember { mutableIntStateOf(0) }
-
-    val activeScreenshots = if (showScreenshots) screenshotUrls else emptyList()
-
-    LaunchedEffect(isFocused, activeScreenshots) {
-        if (isFocused && activeScreenshots.size > 1) {
-            while (true) {
-                delay(2000)
-                slideIndex = (slideIndex + 1) % screenshotUrls.size
-            }
-        } else {
-            slideIndex = 0
-        }
-    }
 
     Card(
         modifier = modifier
             .width(cardWidth)
             .onFocusChanged { focusState ->
                 val focused = focusState.isFocused || focusState.hasFocus
-                if (focused && !isFocused && showScreenshots) onFocused()
+                if (focused && !isFocused) onFocused()
                 isFocused = focused
             }
             .tvFocusableClick(onClick = onClick, shape = shape, onLongClick = onLongClick),
@@ -90,10 +70,7 @@ fun TvTitleCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
-                val imageUrl = when {
-                    isFocused && activeScreenshots.isNotEmpty() -> activeScreenshots[slideIndex]
-                    else -> posterUrl
-                }
+                val imageUrl = posterUrl
 
                 AsyncImage(
                     model = imageUrl,

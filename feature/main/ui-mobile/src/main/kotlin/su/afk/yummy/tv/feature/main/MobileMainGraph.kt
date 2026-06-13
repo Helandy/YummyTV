@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalShowScreenshotsOnFocus
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummyTvTheme
@@ -117,7 +116,6 @@ class MobileMainGraph @Inject constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
-                    LocalShowScreenshotsOnFocus provides false,
                     LocalMobileMainActions provides MobileMainActions(
                         unreadNotificationsCount = state.unreadNotificationsCount,
                         avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",

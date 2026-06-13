@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.details.similar
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 
 class SimilarState {
@@ -11,7 +10,6 @@ class SimilarState {
         val similarState: SimilarUiState = SimilarUiState.Loading,
         val fromAi: Boolean = false,
         val focusedItemId: Int? = null,
-        val focusedPreview: AnimePreview? = null,
     ) : UiState
 
     sealed interface Event : UiEvent {

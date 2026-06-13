@@ -137,13 +137,6 @@ internal fun SettingsTvPanelHost(
                                 SettingsDivider()
                             }
                         }
-                        SettingsDivider()
-                        ToggleRow(
-                            label = stringResource(R.string.settings_show_screenshots_label),
-                            hint = stringResource(R.string.settings_show_screenshots_hint),
-                            enabled = state.showScreenshotsOnFocus,
-                            onClick = { onEvent(SettingsState.Event.ShowScreenshotsOnFocusToggled) },
-                        )
                     }
 
                     SettingsTab.DETAILS -> DetailsButtonOrderPanel(

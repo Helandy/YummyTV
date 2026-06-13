@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.search.handler.AnimePreviewFocusHandler
 import su.afk.yummy.tv.feature.search.handler.SearchPagingHandler
 import su.afk.yummy.tv.feature.search.handler.SearchPagingRequest
 import su.afk.yummy.tv.feature.search.handler.SearchPagingResult
@@ -27,7 +26,6 @@ class SearchViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getSearchFilterOptions: GetSearchFilterOptionsUseCase,
     private val stringProvider: StringProvider,
-    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
     private val searchPagingHandler: SearchPagingHandler,
 ) : BaseViewModelNew<SearchState.State, SearchState.Event, SearchState.Effect>(savedStateHandle) {
 
@@ -94,7 +92,6 @@ class SearchViewModel @Inject internal constructor(
     private fun onExternalSearchSubmitted(query: String) {
         val normalizedQuery = query.trim()
         searchPagingHandler.cancel()
-        animePreviewFocusHandler.cancelFocus()
         setState {
             copy(
                 query = normalizedQuery,
@@ -104,7 +101,6 @@ class SearchViewModel @Inject internal constructor(
                 draftFilters = SearchFilters.EMPTY,
                 isFilterPanelOpen = false,
                 focusedItemId = null,
-                focusedPreview = null,
                 restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
                 error = null,
@@ -126,23 +122,11 @@ class SearchViewModel @Inject internal constructor(
 
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId, focusedPreview = null) }
-        animePreviewFocusHandler.focus(
-            scope = viewModelScope,
-            animeId = animeId,
-            isCurrentFocus = { currentState.focusedItemId == animeId },
-            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
-            onLoadedPreview = { result ->
-                if (result.isCurrentFocus) {
-                    setState { copy(focusedPreview = result.preview) }
-                }
-            }
-        )
+        setState { copy(focusedItemId = animeId) }
     }
 
     private fun onQueryChanged(query: String) {
         searchPagingHandler.cancel()
-        animePreviewFocusHandler.cancelFocus()
         setState {
             copy(
                 query = query,
@@ -151,7 +135,6 @@ class SearchViewModel @Inject internal constructor(
                 error = null,
                 canLoadMore = false,
                 focusedItemId = null,
-                focusedPreview = null,
                 restoreFocusedItemOnEnter = false,
             )
         }
@@ -190,13 +173,11 @@ class SearchViewModel @Inject internal constructor(
                 items = emptyList(),
                 offset = 0,
                 focusedItemId = null,
-                focusedPreview = null,
                 restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }
         searchPagingHandler.cancel()
-        animePreviewFocusHandler.cancelFocus()
         if (query.isBlank() && filters.isEmpty) {
             setState { copy(isLoading = false) }
             return
@@ -213,13 +194,11 @@ class SearchViewModel @Inject internal constructor(
                 items = emptyList(),
                 offset = 0,
                 focusedItemId = null,
-                focusedPreview = null,
                 restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }
         searchPagingHandler.cancel()
-        animePreviewFocusHandler.cancelFocus()
         if (query.isBlank()) {
             setState { copy(isLoading = false) }
             return

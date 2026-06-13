@@ -28,41 +28,26 @@ class SettingsViewModel @Inject constructor(
     override fun createInitialState() = SettingsState.State()
 
     init {
-        settingsStore.appTheme
-            .onEach { setState { copy(appTheme = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.posterQuality
-            .onEach { setState { copy(posterQuality = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.posterCardSize
-            .onEach { setState { copy(posterCardSize = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.showScreenshotsOnFocus
-            .onEach { setState { copy(showScreenshotsOnFocus = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.preferredPlayer
-            .onEach { setState { copy(preferredPlayer = it) } }
+        settingsStore.settingsSnapshot
+            .onEach { snapshot ->
+                setState {
+                    copy(
+                        appTheme = snapshot.appTheme,
+                        posterQuality = snapshot.posterQuality,
+                        posterCardSize = snapshot.posterCardSize,
+                        preferredPlayer = snapshot.preferredPlayer,
+                        watchNextEnabled = snapshot.watchNextEnabled,
+                        previewCacheSize = snapshot.previewCacheSize,
+                        autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
+                        yaniApplicationToken = snapshot.yaniApplicationToken,
+                        contentLanguage = snapshot.contentLanguage,
+                        detailsButtonOrder = snapshot.detailsButtonOrder,
+                    )
+                }
+            }
             .launchIn(viewModelScope)
         tvIntegration.previewChannelBrowsable
             .onEach { setState { copy(isPreviewChannelBrowsable = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.watchNextEnabled
-            .onEach { setState { copy(watchNextEnabled = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.previewCacheSize
-            .onEach { setState { copy(previewCacheSize = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.autoSkipOpeningsEndings
-            .onEach { setState { copy(autoSkipOpeningsEndings = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.yaniApplicationToken
-            .onEach { setState { copy(yaniApplicationToken = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.yaniContentLanguage
-            .onEach { setState { copy(contentLanguage = it) } }
-            .launchIn(viewModelScope)
-        settingsStore.detailsButtonOrder
-            .onEach { setState { copy(detailsButtonOrder = it) } }
             .launchIn(viewModelScope)
     }
 
@@ -77,9 +62,6 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsState.Event.PosterCardSizeSelected -> viewModelScope.launch {
                 settingsStore.setPosterCardSize(event.size)
-            }
-            SettingsState.Event.ShowScreenshotsOnFocusToggled -> viewModelScope.launch {
-                settingsStore.setShowScreenshotsOnFocus(!currentState.showScreenshotsOnFocus)
             }
             is SettingsState.Event.PreferredPlayerSelected -> viewModelScope.launch {
                 settingsStore.setPreferredPlayer(event.player)

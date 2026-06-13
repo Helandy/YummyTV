@@ -3,9 +3,10 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
+import javax.inject.Inject
 
 /** Updates the favorite flag for an anime in the current user's list. */
-class SetAnimeFavoriteUseCase(
+class SetAnimeFavoriteUseCase @Inject constructor(
     private val repository: UserListsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {

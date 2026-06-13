@@ -12,7 +12,6 @@ import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.usecase.GetAnimeTopUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.top.handler.AnimePreviewFocusHandler
 import su.afk.yummy.tv.feature.top.presentation.R
 import javax.inject.Inject
 
@@ -25,7 +24,6 @@ class TopViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeTop: GetAnimeTopUseCase,
     private val stringProvider: StringProvider,
-    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
 ) : BaseViewModelNew<TopState.State, TopState.Event, TopState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = TopState.State()
@@ -49,7 +47,6 @@ class TopViewModel @Inject internal constructor(
                             offset = 0,
                             canLoadMore = true,
                             focusedItemId = null,
-                            focusedPreview = null,
                             restoreFocusedItemOnEnter = false,
                         )
                     }
@@ -86,18 +83,7 @@ class TopViewModel @Inject internal constructor(
 
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId, focusedPreview = null) }
-        animePreviewFocusHandler.focus(
-            scope = viewModelScope,
-            animeId = animeId,
-            isCurrentFocus = { currentState.focusedItemId == animeId },
-            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
-            onLoadedPreview = { result ->
-                if (result.isCurrentFocus) {
-                    setState { copy(focusedPreview = result.preview) }
-                }
-            }
-        )
+        setState { copy(focusedItemId = animeId) }
     }
 
     private fun load(type: AnimeTopType, offset: Int, replace: Boolean) {

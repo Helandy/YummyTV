@@ -23,7 +23,6 @@ internal fun LibraryAnimeCard(
     deleteModifier: Modifier = Modifier,
     cardWidth: Dp = currentTvTitleCardDimensions().width,
     subtitle: String? = null,
-    screenshotUrls: List<String> = emptyList(),
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     Column(
@@ -36,7 +35,6 @@ internal fun LibraryAnimeCard(
             subtitle = subtitle,
             onClick = onClick,
             onFocused = onFocused,
-            screenshotUrls = screenshotUrls,
             modifier = cardModifier,
             width = cardWidth,
             posterOverlay = posterOverlay,

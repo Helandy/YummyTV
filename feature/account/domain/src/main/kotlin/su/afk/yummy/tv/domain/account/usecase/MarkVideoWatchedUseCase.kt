@@ -3,9 +3,10 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
+import javax.inject.Inject
 
 /** Marks a video as watched with the latest playback timing. */
-class MarkVideoWatchedUseCase(
+class MarkVideoWatchedUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {

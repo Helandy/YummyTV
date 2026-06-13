@@ -14,7 +14,6 @@ object MainState {
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
-        val showScreenshotsOnFocus: Boolean = false,
         val yaniNickname: String = "",
         val yaniAvatarUrl: String = "",
         val isYaniSignedIn: Boolean = false,
