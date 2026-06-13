@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.details.utils
 
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 
 fun List<AnimeVideo>.bestKodikDubbing(): String {
     val kodikVideos = filter { it.isKodikSource() }
@@ -19,5 +20,4 @@ fun List<AnimeVideo>.kodikThumbnailIframeUrl(preferredDubbing: String = ""): Str
 }
 
 fun AnimeVideo.isKodikSource(): Boolean =
-    player.contains("kodik", ignoreCase = true) ||
-            iframeUrl.contains("kodik", ignoreCase = true)
+    player.isKodikPlayerUrl() || iframeUrl.isKodikPlayerUrl()

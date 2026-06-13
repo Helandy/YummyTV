@@ -39,6 +39,7 @@ import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.utils.isAlloha
 import su.afk.yummy.tv.feature.details.utils.kodikThumbnailIframeUrl
+import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 
 @Composable
 internal fun EpisodesGrid(
@@ -51,7 +52,7 @@ internal fun EpisodesGrid(
     // Best dubbing by total views among kodik sources
     val bestDubbing = remember(videos) {
         val source =
-            videos.filter { it.iframeUrl.contains("kodik", ignoreCase = true) }.ifEmpty { videos }
+            videos.filter { it.iframeUrl.isKodikPlayerUrl() }.ifEmpty { videos }
         source.groupBy { it.dubbing }
             .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
             ?.key ?: source.firstOrNull()?.dubbing ?: ""
@@ -137,7 +138,7 @@ internal fun EpisodesGrid(
                 kodikIframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing),
                 onClick = {
                     val kodikOpts = groupVideos.filter {
-                        it.iframeUrl.contains("kodik", ignoreCase = true) && !it.isAlloha()
+                        it.iframeUrl.isKodikPlayerUrl() && !it.isAlloha()
                     }
                     val pick = (kodikOpts.firstOrNull { it.dubbing == bestDubbing }
                         ?: kodikOpts.firstOrNull())

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.utils.loadFirstNonEmptyOffsetPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.usecase.GetAnimeTopUseCase
@@ -133,16 +134,12 @@ class TopViewModel @Inject internal constructor(
     private suspend fun loadVisiblePage(
         type: AnimeTopType,
         offset: Int,
-    ): AnimeTopPage {
-        var page = getAnimeTop(type, PAGE_SIZE, offset)
-        while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > offset) {
-            val nextPage = getAnimeTop(type, PAGE_SIZE, page.nextOffset)
-            page = page.copy(
-                items = nextPage.items,
-                nextOffset = nextPage.nextOffset,
-                canLoadMore = nextPage.canLoadMore,
-            )
-        }
-        return page
-    }
+    ): AnimeTopPage =
+        loadFirstNonEmptyOffsetPage(
+            initialOffset = offset,
+            loadPage = { nextOffset -> getAnimeTop(type, PAGE_SIZE, nextOffset) },
+            items = { it.items },
+            nextOffset = { it.nextOffset },
+            canLoadMore = { it.canLoadMore },
+        )
 }

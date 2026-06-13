@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.utils.loadFirstNonEmptyOffsetPage
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchPage
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
@@ -65,18 +66,14 @@ internal class SearchPagingHandler @Inject constructor(
         query: String,
         filters: SearchFilters,
         offset: Int,
-    ): SearchPage {
-        var page = search(query, filters, PAGE_SIZE, offset)
-        while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > offset) {
-            val nextPage = search(query, filters, PAGE_SIZE, page.nextOffset)
-            page = page.copy(
-                items = nextPage.items,
-                nextOffset = nextPage.nextOffset,
-                canLoadMore = nextPage.canLoadMore,
-            )
-        }
-        return page
-    }
+    ): SearchPage =
+        loadFirstNonEmptyOffsetPage(
+            initialOffset = offset,
+            loadPage = { nextOffset -> search(query, filters, PAGE_SIZE, nextOffset) },
+            items = { it.items },
+            nextOffset = { it.nextOffset },
+            canLoadMore = { it.canLoadMore },
+        )
 
     private companion object {
         const val PAGE_SIZE = 20

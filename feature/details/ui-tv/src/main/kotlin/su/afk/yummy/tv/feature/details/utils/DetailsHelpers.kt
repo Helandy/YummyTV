@@ -6,6 +6,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 
 internal fun Double.formatRating(): String {
     val rounded = (this * 10).toInt() / 10.0
@@ -44,5 +45,4 @@ internal val AnimePoster.bestUrl: String?
 
 
 internal fun AnimeVideo.isAlloha(): Boolean =
-    player.contains("alloha", ignoreCase = true) ||
-            iframeUrl.contains("alloha", ignoreCase = true)
+    player.isAllohaPlayerUrl() || iframeUrl.isAllohaPlayerUrl()
