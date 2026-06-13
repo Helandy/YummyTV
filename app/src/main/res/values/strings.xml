@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">YummyTV</string>
+    <string name="search_hint">Search anime</string>
+    <string name="search_settings_description">Search YummyTV catalog</string>
+    <string name="search_suggest_anime">Anime</string>
+    <string name="search_suggest_rating">Rating: %1$.1f</string>
 </resources>

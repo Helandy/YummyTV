@@ -56,6 +56,7 @@ class SearchViewModel @Inject constructor(
     override fun onEvent(event: SearchState.Event) {
         when (event) {
             is SearchState.Event.QueryChanged -> onQueryChanged(event.query)
+            is SearchState.Event.ExternalSearchSubmitted -> onExternalSearchSubmitted(event.query)
             is SearchState.Event.ItemSelected -> {
                 setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
@@ -92,6 +93,34 @@ class SearchViewModel @Inject constructor(
                     setState { copy(restoreFocusedItemOnEnter = false) }
                 }
             }
+        }
+    }
+
+    private fun onExternalSearchSubmitted(query: String) {
+        val normalizedQuery = query.trim()
+        searchJob?.cancel()
+        previewJob?.cancel()
+        setState {
+            copy(
+                query = normalizedQuery,
+                items = emptyList(),
+                offset = 0,
+                filters = SearchFilters.EMPTY,
+                draftFilters = SearchFilters.EMPTY,
+                isFilterPanelOpen = false,
+                focusedItemId = null,
+                focusedPreview = null,
+                restoreFocusedItemOnEnter = false,
+                canLoadMore = false,
+                error = null,
+            )
+        }
+        if (normalizedQuery.isBlank()) {
+            setState { copy(isLoading = false) }
+            return
+        }
+        searchJob = viewModelScope.launch {
+            load(normalizedQuery, SearchFilters.EMPTY, offset = 0, replace = true)
         }
     }
 

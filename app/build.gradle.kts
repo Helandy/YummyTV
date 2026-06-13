@@ -6,12 +6,14 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val baseApplicationId = "su.afk.yummy.tv"
+
 android {
     namespace = "su.afk.yummy.tv"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "su.afk.yummy.tv"
+        applicationId = baseApplicationId
 
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
@@ -24,11 +26,13 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            resValue("string", "search_suggest_authority", "$baseApplicationId.debug.search")
             isMinifyEnabled = false
             isShrinkResources = false
         }
 
         release {
+            resValue("string", "search_suggest_authority", "$baseApplicationId.search")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -45,6 +49,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
 
 }
@@ -99,6 +104,7 @@ dependencies {
     implementation(project(":feature:schedule:ui-tv"))
     implementation(project(":feature:schedule:data"))
     implementation(project(":feature:search:api"))
+    implementation(project(":feature:search:domain"))
     implementation(project(":feature:search:ui-mobile"))
     implementation(project(":feature:search:ui-tv"))
     implementation(project(":feature:search:data"))

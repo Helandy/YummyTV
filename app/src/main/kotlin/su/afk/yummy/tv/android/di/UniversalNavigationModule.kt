@@ -29,7 +29,7 @@ object UniversalNavigationModule {
     @Provides
     fun provideRootTabs(): @JvmSuppressWildcards Map<RootTab, NavKey> = mapOf(
         RootTab.ACCOUNT to su.afk.yummy.tv.feature.account.navigator.AccountDestination,
-        RootTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination,
+        RootTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination(),
         RootTab.HOME to su.afk.yummy.tv.feature.home.navigator.HomeDestination,
         RootTab.SCHEDULE to su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination,
         RootTab.TOP to su.afk.yummy.tv.feature.top.navigator.TopDestination,

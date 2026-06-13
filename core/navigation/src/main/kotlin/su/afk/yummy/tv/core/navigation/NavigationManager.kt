@@ -67,6 +67,15 @@ class NavigationManager(
         currentRoot = root
     }
 
+    fun replaceRoot(root: RootTab, dest: NavKey) {
+        appBackStack.clear()
+        stacks.getValue(root).apply {
+            clear()
+            add(dest)
+        }
+        currentRoot = root
+    }
+
     fun navigate(dest: NavKey) {
         if (backStack.lastOrNull() == dest) return
         backStack += dest

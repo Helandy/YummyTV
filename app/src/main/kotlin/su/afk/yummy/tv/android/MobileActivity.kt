@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
+import su.afk.yummy.tv.android.search.SystemSearchIntentHandler
 import su.afk.yummy.tv.core.deeplink.DeepLinkHandler
 import su.afk.yummy.tv.feature.main.MobileMainGraph
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
@@ -17,6 +18,8 @@ class MobileActivity : ComponentActivity() {
 
     @Inject lateinit var mainGraph: MobileMainGraph
     @Inject lateinit var deepLinkHandler: DeepLinkHandler
+    @Inject
+    lateinit var searchIntentHandler: SystemSearchIntentHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,13 +29,19 @@ class MobileActivity : ComponentActivity() {
             mainGraph.MainGraph()
         }
 
-        deepLinkHandler.handle(intent)
+        handleIncomingIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        deepLinkHandler.handle(intent)
+        handleIncomingIntent(intent)
+    }
+
+    private fun handleIncomingIntent(intent: Intent) {
+        if (!searchIntentHandler.handle(intent)) {
+            deepLinkHandler.handle(intent)
+        }
     }
 
     override fun onUserLeaveHint() {

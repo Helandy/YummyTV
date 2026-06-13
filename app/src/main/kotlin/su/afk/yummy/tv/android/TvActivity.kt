@@ -10,6 +10,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.android.search.SystemSearchIntentHandler
 import su.afk.yummy.tv.core.deeplink.DeepLinkHandler
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.main.TvMainGraph
@@ -20,6 +21,8 @@ class TvActivity : ComponentActivity() {
 
     @Inject lateinit var mainGraph: TvMainGraph
     @Inject lateinit var deepLinkHandler: DeepLinkHandler
+    @Inject
+    lateinit var searchIntentHandler: SystemSearchIntentHandler
     @Inject lateinit var tvIntegration: ITvIntegration
 
     private val requestChannelBrowsable = registerForActivityResult(
@@ -45,12 +48,18 @@ class TvActivity : ComponentActivity() {
                 }
             }
         }
-        deepLinkHandler.handle(intent)
+        handleIncomingIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        deepLinkHandler.handle(intent)
+        handleIncomingIntent(intent)
+    }
+
+    private fun handleIncomingIntent(intent: Intent) {
+        if (!searchIntentHandler.handle(intent)) {
+            deepLinkHandler.handle(intent)
+        }
     }
 }

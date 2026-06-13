@@ -29,6 +29,7 @@ class SearchState {
 
     sealed interface Event : UiEvent {
         data class QueryChanged(val query: String) : Event
+        data class ExternalSearchSubmitted(val query: String) : Event
         data class ItemSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
         data object SearchSubmitted : Event
