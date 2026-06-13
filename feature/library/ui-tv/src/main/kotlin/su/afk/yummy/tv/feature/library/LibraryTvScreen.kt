@@ -184,6 +184,9 @@ fun LibraryTvScreen(
                     gridFocusRequester = gridFocusRequester,
                     selectedTabFocusRequester = selectedTabFocusRequester,
                     restoreFirstItemToken = continueWatchingRestoreFirstToken,
+                    focusStateKey = LibraryTab.CONTINUE_WATCHING.focusStateKey(
+                        LibraryFocusSourceLocal
+                    ),
                     onEntrySelected = {
                         restoreGridFocusOnResume = true
                         restoreContinueWatchingFirstOnResume = true
@@ -204,6 +207,9 @@ fun LibraryTvScreen(
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
+                            focusStateKey = LibraryTab.FAVORITES.focusStateKey(
+                                LibraryFocusSourceLocal
+                            ),
                             onAnimeSelected = {
                                 restoreGridFocusOnResume = true
                                 onEvent(LibraryState.Event.AnimeSelected(it))
@@ -225,6 +231,9 @@ fun LibraryTvScreen(
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
+                            focusStateKey = LibraryTab.FAVORITES.focusStateKey(
+                                LibraryFocusSourceRemote
+                            ),
                             onAnimeSelected = {
                                 restoreGridFocusOnResume = true
                                 onEvent(LibraryState.Event.RemoteAnimeSelected(it))
@@ -263,6 +272,7 @@ fun LibraryTvScreen(
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
+                            focusStateKey = state.selectedTab.focusStateKey(LibraryFocusSourceLocal),
                             onAnimeSelected = {
                                 restoreGridFocusOnResume = true
                                 onEvent(LibraryState.Event.AnimeSelected(it))
@@ -287,6 +297,7 @@ fun LibraryTvScreen(
                             gridFocusRequester = gridFocusRequester,
                             selectedTabFocusRequester = selectedTabFocusRequester,
                             restoreFocusedItemToken = restoreFocusedItemToken,
+                            focusStateKey = state.selectedTab.focusStateKey(LibraryFocusSourceRemote),
                             onAnimeSelected = {
                                 restoreGridFocusOnResume = true
                                 onEvent(LibraryState.Event.RemoteAnimeSelected(it))
@@ -306,3 +317,8 @@ fun LibraryTvScreen(
         }
     }
 }
+
+private const val LibraryFocusSourceLocal = "local"
+private const val LibraryFocusSourceRemote = "remote"
+
+private fun LibraryTab.focusStateKey(source: String): String = "${name}_$source"

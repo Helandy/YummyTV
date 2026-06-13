@@ -47,7 +47,10 @@ class TopViewModel @Inject internal constructor(
                             selectedType = event.type,
                             items = emptyList(),
                             offset = 0,
-                            canLoadMore = true
+                            canLoadMore = true,
+                            focusedItemId = null,
+                            focusedPreview = null,
+                            restoreFocusedItemOnEnter = false,
                         )
                     }
                     load(event.type, offset = 0, replace = true)

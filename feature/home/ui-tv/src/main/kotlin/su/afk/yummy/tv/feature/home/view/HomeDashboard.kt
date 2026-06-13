@@ -69,11 +69,8 @@ internal fun HomeDashboard(
     val heroLazyIdx = if (hasContinueWatching) 1 else 0
     val sectionsBaseLazyIdx = heroLazyIdx + if (hasHero) 1 else 0
     val totalLazyItems = sectionsBaseLazyIdx + feed.sections.size
-    fun sectionKey(index: Int): String = if (index in feed.sections.indices) {
-        "${index}_${feed.sections[index].type.name}"
-    } else {
-        "section_$index"
-    }
+    fun sectionKey(index: Int): String =
+        feed.sections.getOrNull(index)?.let { "section_${it.type.name}" } ?: "section_$index"
 
     // When returning to Home (e.g. back from details/collection) or stepping back down from
     // the top bar, the column regains focus. Prefer the last focused row index because the

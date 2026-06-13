@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,11 +43,11 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
@@ -61,6 +62,7 @@ internal fun ContinueWatchingGrid(
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     restoreFirstItemToken: Int,
+    focusStateKey: String,
     onEntrySelected: (WatchProgressEntry) -> Unit,
     onItemFocused: (Int) -> Unit,
     onRemoveWatchProgress: (Int) -> Unit,
@@ -69,12 +71,14 @@ internal fun ContinueWatchingGrid(
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     val entryIds = remember(entries) { entries.map { it.animeId } }
-    val focusStateKey = remember(entryIds) { entryIds.joinToString(separator = "|") }
     val focusRequesters = remember(entryIds) { List(entries.size) { FocusRequester() } }
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val cardWidth = currentTvTitleCardDimensions().width
     var lastFocusedIndex by rememberSaveable(focusStateKey) {
         mutableIntStateOf(focusedItemId?.let(entryIds::indexOf)?.takeIf { it >= 0 } ?: 0)
+    }
+    var lastFocusedEntryId by rememberSaveable(focusStateKey) {
+        mutableStateOf(focusedItemId?.takeIf { it in entryIds })
     }
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoringFromMainMenu by remember { mutableStateOf(false) }
@@ -82,6 +86,53 @@ internal fun ContinueWatchingGrid(
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingDeletedEntryId by remember { mutableStateOf<Int?>(null) }
     var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
+    var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
+
+    fun currentIndexFor(entryId: Int?): Int? =
+        entryId?.let(entryIds::indexOf)?.takeIf { it >= 0 }
+
+    fun rememberFocusedEntry(index: Int) {
+        lastFocusedIndex = index
+        lastFocusedEntryId = entryIds.getOrNull(index)
+    }
+
+    fun restoreTargetIndex(): Int {
+        if (entries.isEmpty()) return 0
+        return (
+                currentIndexFor(focusedItemId)
+                    ?: currentIndexFor(lastFocusedEntryId)
+                    ?: lastFocusedIndex
+                ).coerceIn(0, entries.lastIndex)
+    }
+
+    fun requestEntryFocus(
+        index: Int,
+        fallbackFocusRequester: FocusRequester = gridFocusRequester,
+        clearMainMenuRestore: Boolean = true,
+    ) {
+        if (entries.isEmpty()) return
+        val target = index.coerceIn(0, entries.lastIndex)
+        rememberFocusedEntry(target)
+        isRestoringFocus = true
+        restoreFocusJob = launchTvLazyGridItemFocusRestore(
+            previousJob = restoreFocusJob,
+            scope = scope,
+            itemIndex = target,
+            gridState = gridState,
+            itemFocusRequesters = focusRequesters,
+            fallbackFocusRequester = fallbackFocusRequester,
+            onRestoreFinished = {
+                isRestoringFocus = false
+                if (clearMainMenuRestore) {
+                    restoringFromMainMenu = false
+                }
+            },
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { restoreFocusJob?.cancel() }
+    }
 
     LaunchedEffect(gridState, entries.size) {
         snapshotFlow {
@@ -96,65 +147,41 @@ internal fun ContinueWatchingGrid(
     }
 
     LaunchedEffect(focusedItemId, entries) {
-        val focusedIndex = entries.indexOfFirst { it.animeId == focusedItemId }
-        if (focusedIndex >= 0) {
-            lastFocusedIndex = focusedIndex
-        }
-    }
-
-    fun requestEntryFocus(index: Int) {
-        if (entries.isEmpty()) return
-        val target = index.coerceIn(0, entries.lastIndex)
-        lastFocusedIndex = target
-        scope.launch {
-            gridState.scrollToItem(target)
-            snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
-                .first { it }
-            runCatching { focusRequesters[target].requestFocus() }
-        }
-    }
-
-    suspend fun requestEntryFocusRepeated(index: Int) {
-        if (entries.isEmpty()) return
-        val target = index.coerceIn(0, entries.lastIndex)
-        lastFocusedIndex = target
-        gridState.scrollToItem(target)
-        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
-            .first { it }
-        repeat(6) {
-            runCatching { focusRequesters[target].requestFocus() }
-            withFrameNanos { }
+        currentIndexFor(focusedItemId)?.let { focusedIndex ->
+            rememberFocusedEntry(focusedIndex)
         }
     }
 
     LaunchedEffect(restoreFirstItemToken, entries) {
         if (restoreFirstItemToken <= 0 || entries.isEmpty()) return@LaunchedEffect
-        isRestoringFocus = true
-        lastFocusedIndex = 0
-        gridState.scrollToItem(0)
-        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == 0 } }
-            .first { it }
-        runCatching { focusRequesters.firstOrNull()?.requestFocus() }
-        isRestoringFocus = false
+        requestEntryFocus(
+            index = 0,
+            fallbackFocusRequester = selectedTabFocusRequester,
+            clearMainMenuRestore = false,
+        )
     }
 
     LaunchedEffect(entries, pendingFocusAfterDeleteIndex, pendingDeletedEntryId) {
         val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
         val deletedEntryId = pendingDeletedEntryId ?: return@LaunchedEffect
         if (entries.any { it.animeId == deletedEntryId }) return@LaunchedEffect
-        isRestoringFocus = true
         if (entries.isEmpty()) {
+            isRestoringFocus = true
+            lastFocusedEntryId = null
             repeat(6) {
                 runCatching { selectedTabFocusRequester.requestFocus() }
                 withFrameNanos { }
             }
+            isRestoringFocus = false
         } else {
             val target = pendingIndex.coerceIn(0, entries.lastIndex)
-            requestEntryFocusRepeated(target)
+            requestEntryFocus(
+                index = target,
+                fallbackFocusRequester = selectedTabFocusRequester,
+            )
         }
         pendingFocusAfterDeleteIndex = null
         pendingDeletedEntryId = null
-        isRestoringFocus = false
     }
 
     if (entries.isEmpty()) {
@@ -187,7 +214,7 @@ internal fun ContinueWatchingGrid(
                 .focusProperties {
                     onEnter = {
                         restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
-                        requestEntryFocus(if (restoringFromMainMenu) 0 else lastFocusedIndex)
+                        requestEntryFocus(if (restoringFromMainMenu) 0 else restoreTargetIndex())
                     }
                 }
                 .onFocusChanged { state ->
@@ -198,20 +225,8 @@ internal fun ContinueWatchingGrid(
                         restoringFromMainMenu = false
                     }
                     if (state.hasFocus && !hadFocus && entries.isNotEmpty()) {
-                        isRestoringFocus = true
-                        scope.launch {
-                            val target =
-                                if (restoringFromMainMenu) 0 else lastFocusedIndex.coerceIn(
-                                    0,
-                                    entries.lastIndex
-                                )
-                            gridState.scrollToItem(target)
-                            snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == target } }
-                                .first { it }
-                            runCatching { focusRequesters[target].requestFocus() }
-                            isRestoringFocus = false
-                            restoringFromMainMenu = false
-                        }
+                        val target = if (restoringFromMainMenu) 0 else restoreTargetIndex()
+                        requestEntryFocus(target)
                     }
                 }
                 .focusGroup()
@@ -242,8 +257,10 @@ internal fun ContinueWatchingGrid(
                         val immediateTarget =
                             if (index < entries.lastIndex) index + 1 else index - 1
                         if (immediateTarget >= 0) {
+                            rememberFocusedEntry(immediateTarget)
                             runCatching { focusRequesters[immediateTarget].requestFocus() }
                         } else {
+                            lastFocusedEntryId = null
                             runCatching { selectedTabFocusRequester.requestFocus() }
                         }
                         onRemoveWatchProgress(entry.animeId)
@@ -273,7 +290,7 @@ internal fun ContinueWatchingGrid(
                         }
                         .onFocusChanged { state ->
                             if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
-                                lastFocusedIndex = index
+                                rememberFocusedEntry(index)
                             }
                         }
                         .focusGroup(),

@@ -48,12 +48,12 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.anime.model.AnimePreview
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.utils.launchRestoreTopItemFocus
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -119,7 +119,7 @@ internal fun TopBrowser(
             val target = index.coerceIn(0, items.lastIndex)
             lastFocusedIndex = target
             isRestoringFocus = true
-            restoreFocusJob = launchRestoreTopItemFocus(
+            restoreFocusJob = launchTvLazyGridItemFocusRestore(
                 previousJob = restoreFocusJob,
                 scope = scope,
                 itemIndex = target,
