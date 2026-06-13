@@ -10,4 +10,13 @@
     <string name="update_error_title">Ошибка обновления</string>
     <string name="update_retry">Повторить</string>
     <string name="update_close">Закрыть</string>
+    <string name="update_install_unknown_sources_required">Разрешите установку приложений из этого источника и запустите обновление еще раз</string>
+    <string name="update_install_confirmation_error">Не удалось открыть подтверждение установки</string>
+    <string name="update_install_error_aborted">Установка отменена</string>
+    <string name="update_install_error_blocked">Установка заблокирована системой</string>
+    <string name="update_install_error_conflict">Конфликт с уже установленным пакетом</string>
+    <string name="update_install_error_incompatible">APK несовместим с устройством</string>
+    <string name="update_install_error_invalid">Некорректный APK-файл</string>
+    <string name="update_install_error_storage">Недостаточно места для установки</string>
+    <string name="update_install_error_unknown">Не удалось установить обновление</string>
 </resources>

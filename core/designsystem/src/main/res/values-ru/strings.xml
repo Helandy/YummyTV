@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="back">Назад</string>
+    <string name="retry">Повторить</string>
     <string name="empty_screen">Пока ничего нет</string>
 </resources>

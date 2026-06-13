@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import java.util.Locale
+import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.player.presentation.R as PlayerR
 
 internal fun formatMobilePlayerTime(ms: Long): String {
@@ -38,3 +39,14 @@ private fun Float.formatCompactDecimal(): String =
     } else {
         String.format(Locale.US, "%.1f", this)
     }
+
+internal fun Float.zoomIndicatorLabel(): String {
+    val tenths = (coerceAtLeast(1f) * 10f).roundToInt()
+    val whole = tenths / 10
+    val fraction = tenths % 10
+    return if (fraction == 0) {
+        "x$whole"
+    } else {
+        "x$whole.$fraction"
+    }
+}

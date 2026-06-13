@@ -23,12 +23,6 @@ class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
                         state = state,
                         effect = effect,
                         onEvent = onEvent,
-                        onBack = { nav.back() },
-                        onDetailsButtonOrderClick = {
-                            nav.navigate(
-                                SettingsDetailsButtonOrderDestination
-                            )
-                        },
                     )
                 }
             }
@@ -39,7 +33,6 @@ class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
                         state = state,
                         effect = effect,
                         onEvent = onEvent,
-                        onBack = { nav.back() },
                     )
                 }
             }

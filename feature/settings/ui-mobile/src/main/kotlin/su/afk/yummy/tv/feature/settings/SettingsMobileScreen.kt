@@ -45,8 +45,6 @@ fun SettingsMobileScreen(
     state: SettingsState.State,
     effect: Flow<SettingsState.Effect>,
     onEvent: (SettingsState.Event) -> Unit,
-    onBack: (() -> Unit)? = null,
-    onDetailsButtonOrderClick: () -> Unit = {},
 ) {
     var activePicker by remember { mutableStateOf<SettingsMobilePicker?>(null) }
     val title = stringResource(R.string.settings_mobile_title)
@@ -55,7 +53,12 @@ fun SettingsMobileScreen(
 
     BaseScreen(
         isScroll = false,
-        customTopBar = { MobileTopBar(title = title, onBack = onBack) },
+        customTopBar = {
+            MobileTopBar(
+                title = title,
+                onBack = { onEvent(SettingsState.Event.BackSelected) },
+            )
+        },
     ) {
         LazyColumn(
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -110,7 +113,7 @@ fun SettingsMobileScreen(
                     SettingsMobileNavigationRow(
                         label = stringResource(R.string.settings_details_buttons_order),
                         hint = stringResource(R.string.settings_details_buttons_order_hint),
-                        onClick = onDetailsButtonOrderClick,
+                        onClick = { onEvent(SettingsState.Event.DetailsButtonOrderSelected) },
                     )
                 }
             }

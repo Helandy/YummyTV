@@ -6,6 +6,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R
 
 @Composable
 fun MobileStateContent(
@@ -13,7 +15,7 @@ fun MobileStateContent(
     error: String?,
     onRetry: (() -> Unit)? = null,
     empty: Boolean = false,
-    emptyText: String = "Пока ничего нет",
+    emptyText: String = stringResource(R.string.empty_screen),
     content: @Composable () -> Unit,
 ) {
     when {
@@ -23,7 +25,7 @@ fun MobileStateContent(
 
         error != null -> MobileMessage(
             title = error,
-            actionLabel = if (onRetry != null) "Повторить" else null,
+            actionLabel = if (onRetry != null) stringResource(R.string.retry) else null,
             onAction = onRetry,
         )
 

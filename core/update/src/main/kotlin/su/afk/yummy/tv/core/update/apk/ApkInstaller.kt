@@ -12,6 +12,7 @@ import android.provider.Settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.update.R
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
@@ -27,7 +28,7 @@ class ApkInstaller(private val context: Context) {
                     Uri.parse("package:${context.packageName}"),
                 ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
-            error("Разрешите установку приложений из этого источника и запустите обновление еще раз")
+            error(context.getString(R.string.update_install_unknown_sources_required))
         }
 
         val packageInstaller = context.packageManager.packageInstaller
@@ -63,7 +64,11 @@ class ApkInstaller(private val context: Context) {
                             val confirmIntent = intent.confirmIntent()
                             if (confirmIntent == null) {
                                 unregisterReceiver(this)
-                                continuation.resumeWithException(IllegalStateException("Не удалось открыть подтверждение установки"))
+                                continuation.resumeWithException(
+                                    IllegalStateException(
+                                        context.getString(R.string.update_install_confirmation_error)
+                                    )
+                                )
                                 return
                             }
 
@@ -117,13 +122,13 @@ class ApkInstaller(private val context: Context) {
         if (!message.isNullOrBlank()) return message
 
         return when (status) {
-            PackageInstaller.STATUS_FAILURE_ABORTED -> "Установка отменена"
-            PackageInstaller.STATUS_FAILURE_BLOCKED -> "Установка заблокирована системой"
-            PackageInstaller.STATUS_FAILURE_CONFLICT -> "Конфликт с уже установленным пакетом"
-            PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> "APK несовместим с устройством"
-            PackageInstaller.STATUS_FAILURE_INVALID -> "Некорректный APK-файл"
-            PackageInstaller.STATUS_FAILURE_STORAGE -> "Недостаточно места для установки"
-            else -> "Не удалось установить обновление"
+            PackageInstaller.STATUS_FAILURE_ABORTED -> context.getString(R.string.update_install_error_aborted)
+            PackageInstaller.STATUS_FAILURE_BLOCKED -> context.getString(R.string.update_install_error_blocked)
+            PackageInstaller.STATUS_FAILURE_CONFLICT -> context.getString(R.string.update_install_error_conflict)
+            PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> context.getString(R.string.update_install_error_incompatible)
+            PackageInstaller.STATUS_FAILURE_INVALID -> context.getString(R.string.update_install_error_invalid)
+            PackageInstaller.STATUS_FAILURE_STORAGE -> context.getString(R.string.update_install_error_storage)
+            else -> context.getString(R.string.update_install_error_unknown)
         }
     }
 

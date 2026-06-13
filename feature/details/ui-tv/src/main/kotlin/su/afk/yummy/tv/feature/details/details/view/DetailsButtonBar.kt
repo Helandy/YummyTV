@@ -73,6 +73,7 @@ import su.afk.yummy.tv.feature.details.details.model.ButtonData
 import su.afk.yummy.tv.feature.details.details.model.ButtonRowData
 import su.afk.yummy.tv.feature.details.details.model.ButtonStyle
 import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
+import su.afk.yummy.tv.feature.details.details.utils.label
 
 @Composable
 internal fun DetailsButtonBar(
@@ -402,17 +403,6 @@ private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
 
 private fun List<ButtonRowData>.rowIndexForButton(buttonIndex: Int): Int =
     indexOfFirst { buttonIndex in it.buttonIndices }.coerceAtLeast(0)
-
-@Composable
-private fun UserAnimeList.label(): String = stringResource(
-    when (this) {
-        UserAnimeList.WATCHING -> R.string.details_library_list_watching
-        UserAnimeList.PLANNED -> R.string.details_library_list_planned
-        UserAnimeList.COMPLETED -> R.string.details_library_list_completed
-        UserAnimeList.POSTPONED -> R.string.details_library_list_postponed
-        UserAnimeList.DROPPED -> R.string.details_library_list_dropped
-    }
-)
 
 @Composable
 private fun DetailsActionButton(

@@ -11,18 +11,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.navigation.root.RootTab
+import su.afk.yummy.tv.feature.main.model.PendingContentFocusRequest
+import su.afk.yummy.tv.feature.main.model.RegisteredContentFocusRequester
 import su.afk.yummy.tv.feature.main.utils.isContentFocusKeyFor
 import su.afk.yummy.tv.feature.main.utils.requestFocusOnFrameBoundary
-
-internal data class PendingContentFocusRequest(
-    val root: RootTab,
-    val token: Int,
-)
-
-private data class RegisteredContentFocusRequester(
-    val key: Any?,
-    val requester: FocusRequester,
-)
 
 internal class TvMainFocusController(
     initialShowMainMenu: Boolean,

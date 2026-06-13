@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
+import su.afk.yummy.tv.feature.details.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.R
 
 @Composable

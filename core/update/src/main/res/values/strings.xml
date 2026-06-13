@@ -10,4 +10,13 @@
     <string name="update_error_title">Update error</string>
     <string name="update_retry">Retry</string>
     <string name="update_close">Close</string>
+    <string name="update_install_unknown_sources_required">Allow installing apps from this source, then run the update again</string>
+    <string name="update_install_confirmation_error">Could not open the install confirmation</string>
+    <string name="update_install_error_aborted">Installation canceled</string>
+    <string name="update_install_error_blocked">Installation blocked by the system</string>
+    <string name="update_install_error_conflict">Conflict with the installed package</string>
+    <string name="update_install_error_incompatible">APK is not compatible with this device</string>
+    <string name="update_install_error_invalid">Invalid APK file</string>
+    <string name="update_install_error_storage">Not enough storage to install</string>
+    <string name="update_install_error_unknown">Could not install the update</string>
 </resources>

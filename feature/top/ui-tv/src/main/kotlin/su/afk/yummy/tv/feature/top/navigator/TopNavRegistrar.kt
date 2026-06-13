@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.top.tv.navigator
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -9,6 +10,7 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.top.TopTvScreen
 import su.afk.yummy.tv.feature.top.TopViewModel
 import su.afk.yummy.tv.feature.top.navigator.TopDestination
+import su.afk.yummy.tv.feature.top.utils.LocalTopTvActiveDestination
 import javax.inject.Inject
 
 class TopNavRegistrar @Inject constructor() : NavRegistrar {
@@ -18,13 +20,11 @@ class TopNavRegistrar @Inject constructor() : NavRegistrar {
             entry<TopDestination> { _ ->
                 val viewModel = hiltViewModel<TopViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    TopTvScreen(
-                        state = state,
-                        effect = effect,
-                        isActiveDestination = nav.appBackStack.isEmpty() &&
-                                nav.backStack.lastOrNull() == TopDestination,
-                        onEvent = onEvent,
-                    )
+                    val isActiveDestination = nav.appBackStack.isEmpty() &&
+                            nav.backStack.lastOrNull() == TopDestination
+                    CompositionLocalProvider(LocalTopTvActiveDestination provides isActiveDestination) {
+                        TopTvScreen(state = state, effect = effect, onEvent = onEvent)
+                    }
                 }
             }
         }

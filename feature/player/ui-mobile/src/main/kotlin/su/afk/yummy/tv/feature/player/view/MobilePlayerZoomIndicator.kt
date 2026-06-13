@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
+import su.afk.yummy.tv.feature.player.utils.zoomIndicatorLabel
 
 @Composable
 internal fun MobilePlayerZoomIndicator(
@@ -42,16 +42,5 @@ internal fun MobilePlayerZoomIndicator(
                 fontWeight = FontWeight.Bold,
             )
         }
-    }
-}
-
-private fun Float.zoomIndicatorLabel(): String {
-    val tenths = (coerceAtLeast(1f) * 10f).roundToInt()
-    val whole = tenths / 10
-    val fraction = tenths % 10
-    return if (fraction == 0) {
-        "x$whole"
-    } else {
-        "x$whole.$fraction"
     }
 }

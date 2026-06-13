@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.schedule.utils
 
+import su.afk.yummy.tv.feature.schedule.model.ScheduleMobileRemainingLabels
 import java.time.Duration
 import java.time.ZonedDateTime
 
@@ -31,19 +32,6 @@ internal fun ZonedDateTime.remainingText(
         else -> labels.lessThanMinute
     }
 }
-
-internal data class ScheduleMobileRemainingLabels(
-    val dayOne: String,
-    val dayFew: String,
-    val dayMany: String,
-    val hourOne: String,
-    val hourFew: String,
-    val hourMany: String,
-    val minuteOne: String,
-    val minuteFew: String,
-    val minuteMany: String,
-    val lessThanMinute: String,
-)
 
 private fun Int.ruUnit(one: String, few: String, many: String): String {
     val mod100 = this % 100

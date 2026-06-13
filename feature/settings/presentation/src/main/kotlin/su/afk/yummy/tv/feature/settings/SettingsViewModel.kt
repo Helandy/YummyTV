@@ -8,9 +8,11 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
+import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
+import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +22,7 @@ class SettingsViewModel @Inject constructor(
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
     private val tvIntegration: ITvIntegration,
+    private val nav: NavigationManager,
 ) : BaseViewModelNew<SettingsState.State, SettingsState.Event, SettingsState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = SettingsState.State()
@@ -65,6 +68,7 @@ class SettingsViewModel @Inject constructor(
 
     override fun onEvent(event: SettingsState.Event) {
         when (event) {
+            SettingsState.Event.BackSelected -> nav.back()
             is SettingsState.Event.AppThemeSelected -> viewModelScope.launch {
                 settingsStore.setAppTheme(event.theme)
             }
@@ -105,6 +109,9 @@ class SettingsViewModel @Inject constructor(
                 settingsStore.setDetailsButtonOrder(
                     currentState.detailsButtonOrder.moved(event.action, event.direction),
                 )
+            }
+            SettingsState.Event.DetailsButtonOrderSelected -> {
+                nav.navigate(SettingsDetailsButtonOrderDestination)
             }
             SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {
                 settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)

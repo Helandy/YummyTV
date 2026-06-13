@@ -34,6 +34,7 @@ class SettingsState {
     ) : UiState
 
     sealed interface Event : UiEvent {
+        data object BackSelected : Event
         data class AppThemeSelected(val theme: AppTheme) : Event
         data class PosterQualitySelected(val quality: PosterQuality) : Event
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
@@ -49,6 +50,7 @@ class SettingsState {
             val action: DetailsButtonAction,
             val direction: DetailsButtonMoveDirection,
         ) : Event
+        data object DetailsButtonOrderSelected : Event
         data object DetailsButtonOrderReset : Event
     }
 

@@ -5,15 +5,16 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
+import su.afk.yummy.tv.feature.top.utils.LocalTopTvActiveDestination
 import su.afk.yummy.tv.feature.top.view.TopBrowser
 
 @Composable
 fun TopTvScreen(
     state: TopState.State,
     effect: Flow<TopState.Effect>,
-    isActiveDestination: Boolean = true,
     onEvent: (TopState.Event) -> Unit,
 ) {
+    val isActiveDestination = LocalTopTvActiveDestination.current
     val onItemSelected =
         remember(onEvent) { { item: AnimeTopItem -> onEvent(TopState.Event.AnimeSelected(item.id)) } }
     val onTypeSelected =
