@@ -23,6 +23,8 @@ import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkNotificationReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.ResolveNotificationAnimeIdUseCase
+import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
+import su.afk.yummy.tv.feature.account.utils.totalUnreadCount
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import javax.inject.Inject
 
@@ -232,9 +234,8 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun login(captchaResponse: String? = null) {
-        val loginValue = currentState.login.trim()
-        val passwordValue = currentState.password
-        if (loginValue.isBlank() || passwordValue.isBlank()) {
+        val credentials = currentState.loginCredentialsOrNull()
+        if (credentials == null) {
             setState {
                 copy(
                     error = "Login and password are required",
@@ -247,7 +248,7 @@ class AccountViewModel @Inject constructor(
         }
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null, captchaError = null) }
-            runCatching { login(loginValue, passwordValue, captchaResponse) }.fold(
+            runCatching { login(credentials.login, credentials.password, captchaResponse) }.fold(
                 onSuccess = { account ->
                     loadedUserId = 0
                     missingProfileRefreshAttempted = false
@@ -353,7 +354,7 @@ class AccountViewModel @Inject constructor(
             getNotifications(limit = 20) to getNotificationCounts()
         }.fold(
             onSuccess = { (notifications, counts) ->
-                settingsStore.setYaniUnreadNotificationsCount(counts.sumOf { it.count })
+                settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
                 setState {
                     copy(
                         notifications = notifications,

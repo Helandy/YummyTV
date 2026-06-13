@@ -23,7 +23,6 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -42,20 +41,17 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
 import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
+import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
+import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
+import su.afk.yummy.tv.feature.details.utils.toLibraryEntry
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
-import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
-import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
-import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.isVkPlayerUrl
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject constructor(
@@ -324,17 +320,6 @@ class DetailsViewModel @AssistedInject constructor(
     private fun isSupportedPlayer(iframeUrl: String): Boolean =
         iframeUrl.isSupportedPlayerUrl()
 
-    private fun matchesPreferredPlayer(iframeUrl: String, preferred: PreferredPlayer): Boolean =
-        when (preferred) {
-            PreferredPlayer.NONE -> false
-            PreferredPlayer.KODIK -> iframeUrl.isKodikPlayerUrl()
-            PreferredPlayer.AKSOR -> iframeUrl.isAksorPlayerUrl()
-            PreferredPlayer.ALLOHA -> iframeUrl.isAllohaPlayerUrl()
-            PreferredPlayer.CVH -> iframeUrl.isCvhPlayerUrl()
-            PreferredPlayer.VK -> iframeUrl.isVkPlayerUrl()
-            PreferredPlayer.RUTUBE -> iframeUrl.isRutubePlayerUrl()
-        }
-
     private fun onWatchSelected() {
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
@@ -358,23 +343,11 @@ class DetailsViewModel @AssistedInject constructor(
             return
         }
 
-        val video = selectInitialVideo(videos)
+        val video = videos.selectInitialDetailsVideo()
         setState { copy(isWatchLaunchPending = false) }
         if (video != null) {
             showBalancerPicker(video)
         }
-    }
-
-    private fun selectInitialVideo(videos: List<AnimeVideo>): AnimeVideo? {
-        val kodikVideos =
-            videos.filter { it.iframeUrl.isKodikPlayerUrl() || it.player.isKodikPlayerUrl() }
-        val supportedVideos = videos.filter { isSupportedPlayer(it.iframeUrl) }
-        val source = kodikVideos.ifEmpty { supportedVideos.ifEmpty { videos } }
-        return source.groupBy { it.dubbing }
-            .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
-            ?.value
-            ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
-            ?: source.firstOrNull()
     }
 
     private suspend fun loadSubscriptions(userId: Int) {
@@ -446,7 +419,9 @@ class DetailsViewModel @AssistedInject constructor(
 
         val preferredPlayer = preferredPlayerState.value
         if (preferredPlayer != PreferredPlayer.NONE) {
-            val preferred = supportedOptions.firstOrNull { matchesPreferredPlayer(it.video.iframeUrl, preferredPlayer) }
+            val preferred = supportedOptions.firstOrNull {
+                it.video.iframeUrl.matchesPreferredPlayer(preferredPlayer)
+            }
             if (preferred != null) {
                 navigateToPlayer(preferred.video)
                 return
@@ -484,28 +459,3 @@ class DetailsViewModel @AssistedInject constructor(
         }
     }
 }
-
-private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = id,
-    episode = episode,
-    dubbing = dubbing,
-    player = player,
-    iframeUrl = iframeUrl,
-    views = views,
-    skips = skips.toPlayerSkips(),
-)
-
-private fun su.afk.yummy.tv.domain.anime.model.AnimeDetails.toLibraryEntry(
-    list: UserAnimeList,
-    isFavorite: Boolean,
-) = LibraryEntry(
-    animeId = id,
-    title = title,
-    posterSmallUrl = poster?.small,
-    posterMediumUrl = poster?.medium,
-    posterBigUrl = poster?.big,
-    posterFullsizeUrl = poster?.fullsize,
-    posterMegaUrl = poster?.mega,
-    listId = list.id,
-    isFavorite = isFavorite,
-)

@@ -64,7 +64,7 @@ class YaniAccountApi(
 
     suspend fun login(login: String, password: String, captchaResponse: String? = null): String {
         val response = try {
-            Log.d(TAG, "POST /profile/login")
+            logDebug { "POST /profile/login" }
             client.post("$YANI_BASE_URL/profile/login") {
                 contentType(ContentType.Application.Json)
                 setBody(
@@ -76,11 +76,11 @@ class YaniAccountApi(
                 )
             }
         } catch (e: ClientRequestException) {
-            Log.d(TAG, "POST /profile/login failed status=${e.response.status.value}")
+            logDebug { "POST /profile/login failed status=${e.response.status.value}" }
             if (e.response.status.value == CAPTCHA_ERROR_CODE) throw YaniCaptchaRequiredException()
             throw e
         }
-        Log.d(TAG, "POST /profile/login status=${response.status.value}")
+        logDebug { "POST /profile/login status=${response.status.value}" }
 
         if (!response.status.isSuccess()) {
             val error = response.toYaniError()
@@ -267,6 +267,12 @@ class YaniAccountApi(
         }.getOrElse {
             YaniErrorResponseDto(error = status.description.ifBlank { "Could not sign in" })
         }
+
+    private fun logDebug(message: () -> String) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.println(Log.DEBUG, TAG, message())
+        }
+    }
 
     private companion object {
         const val TAG = "YaniAccountApi"

@@ -29,12 +29,11 @@ import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
-import su.afk.yummy.tv.feature.library.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.library.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
@@ -366,21 +365,3 @@ class LibraryViewModel @Inject constructor(
         watchProgressStore.delete(entry.animeId, entry.episode)
     }
 }
-
-private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = id,
-    episode = episode,
-    dubbing = dubbing,
-    player = player,
-    iframeUrl = iframeUrl,
-    views = views,
-    skips = skips.toPlayerSkips(),
-)
-
-private fun WatchProgressEntry.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = videoId,
-    episode = episode,
-    dubbing = dubbing,
-    player = playerName,
-    iframeUrl = episodeUrl,
-)

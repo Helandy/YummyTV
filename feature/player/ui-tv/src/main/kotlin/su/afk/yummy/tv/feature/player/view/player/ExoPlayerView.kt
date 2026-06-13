@@ -6,24 +6,15 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,14 +32,8 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -78,6 +63,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.STEP_SEEK_OFFSETS_MS
 import su.afk.yummy.tv.feature.player.utils.STEP_SEEK_RESET_MS
 import su.afk.yummy.tv.feature.player.utils.applyTvResizeMode
+import su.afk.yummy.tv.feature.player.utils.buildTvProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.currentSkip
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.utils.formatSignedSeconds
@@ -223,21 +209,18 @@ internal fun ExoPlayerView(
     }
 
     fun saveProgressIfReady(positionMs: Long = currentPosition) {
-        if (episodeKey.isNotBlank() && duration > 0) {
-            onSaveProgress(
-                PlayerProgressSnapshot(
-                    episode = episode,
-                    episodeUrl = episodeKey,
-                    videoId = videoId,
-                    playerName = playerName,
-                    dubbing = dubbing,
-                    screenshotUrl = screenshotUrl,
-                    positionMs = positionMs,
-                    durationMs = duration,
-                )
-            )
-            lastSaveTime = System.currentTimeMillis()
-        }
+        val snapshot = buildTvProgressSnapshot(
+            episodeKey = episodeKey,
+            episode = episode,
+            videoId = videoId,
+            playerName = playerName,
+            dubbing = dubbing,
+            screenshotUrl = screenshotUrl,
+            positionMs = positionMs,
+            durationMs = duration,
+        ) ?: return
+        onSaveProgress(snapshot)
+        lastSaveTime = System.currentTimeMillis()
     }
 
     fun seekTo(positionMs: Long) {
@@ -550,30 +533,11 @@ internal fun ExoPlayerView(
         )
 
         if (!controllerVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .focusRequester(overlayFocusRequester)
-                    .focusable()
-                    .onKeyEvent { event ->
-                        if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
-                        when (event.key) {
-                            Key.DirectionLeft -> {
-                                stepSeek(SeekDirection.Backward)
-                                true
-                            }
-
-                            Key.DirectionRight -> {
-                                stepSeek(SeekDirection.Forward)
-                                true
-                            }
-
-                            else -> {
-                                onInteraction()
-                                true
-                            }
-                        }
-                    },
+            PlayerHiddenKeyOverlay(
+                focusRequester = overlayFocusRequester,
+                onSeekBackward = { stepSeek(SeekDirection.Backward) },
+                onSeekForward = { stepSeek(SeekDirection.Forward) },
+                onInteraction = ::onInteraction,
             )
         }
 
@@ -832,97 +796,42 @@ internal fun ExoPlayerView(
             onExitDown = { exitPanelDown(PanelReturnFocusTarget.Balancer) },
         )
 
-        AnimatedVisibility(
-            visible = skipSnackbarText != null,
+        PlayerSkipSnackbar(
+            text = skipSnackbarText,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = if (controllerVisible) 136.dp else 36.dp),
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            Text(
-                text = skipSnackbarText.orEmpty(),
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.White,
-                modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.82f), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-            )
-        }
+        )
 
-        if (showNextEpisodePrompt && hasNextEpisode) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color.Black.copy(alpha = 0.78f))
-                    .padding(horizontal = 28.dp, vertical = 22.dp),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.player_next_episode_prompt),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        ControlButton(
-                            onClick = ::playNextEpisode,
-                            onFocused = ::onInteraction,
-                            focusRequester = nextEpisodeFocusRequester,
-                            primary = true,
-                        ) { color ->
-                            Text(stringResource(R.string.player_watch_next), style = MaterialTheme.typography.labelLarge, color = color)
-                        }
-                        ControlButton(
-                            onClick = {
-                                showNextEpisodePrompt = false
-                                onInteraction()
-                            },
-                            onFocused = ::onInteraction,
-                            modifier = Modifier.width(120.dp),
-                        ) { color ->
-                            Text(stringResource(R.string.player_stay), style = MaterialTheme.typography.labelLarge, color = color)
-                        }
-                    }
-                }
-            }
-        }
+        PlayerEndPrompt(
+            visible = showNextEpisodePrompt && hasNextEpisode,
+            title = stringResource(R.string.player_next_episode_prompt),
+            primaryLabel = stringResource(R.string.player_watch_next),
+            stayLabel = stringResource(R.string.player_stay),
+            primaryFocusRequester = nextEpisodeFocusRequester,
+            onPrimary = ::playNextEpisode,
+            onStay = {
+                showNextEpisodePrompt = false
+                onInteraction()
+            },
+            onInteraction = ::onInteraction,
+            modifier = Modifier.align(Alignment.Center),
+        )
 
-        if (showRateTitlePrompt) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color.Black.copy(alpha = 0.78f))
-                    .padding(horizontal = 28.dp, vertical = 22.dp),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.player_rate_title_prompt),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        ControlButton(
-                            onClick = ::rateTitle,
-                            onFocused = ::onInteraction,
-                            focusRequester = rateTitleFocusRequester,
-                            primary = true,
-                        ) { color ->
-                            Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
-                        }
-                        ControlButton(
-                            onClick = {
-                                showRateTitlePrompt = false
-                                onInteraction()
-                            },
-                            onFocused = ::onInteraction,
-                            modifier = Modifier.width(120.dp),
-                        ) { color ->
-                            Text(stringResource(R.string.player_stay), style = MaterialTheme.typography.labelLarge, color = color)
-                        }
-                    }
-                }
-            }
-        }
+        PlayerEndPrompt(
+            visible = showRateTitlePrompt,
+            title = stringResource(R.string.player_rate_title_prompt),
+            primaryLabel = stringResource(R.string.player_rate_title),
+            stayLabel = stringResource(R.string.player_stay),
+            primaryFocusRequester = rateTitleFocusRequester,
+            onPrimary = ::rateTitle,
+            onStay = {
+                showRateTitlePrompt = false
+                onInteraction()
+            },
+            onInteraction = ::onInteraction,
+            modifier = Modifier.align(Alignment.Center),
+        )
 
         PlayerInlineToast(
             text = stepSeekToastText,
@@ -931,58 +840,5 @@ internal fun ExoPlayerView(
                 .align(Alignment.BottomCenter)
                 .padding(bottom = if (controllerVisible) 136.dp else 36.dp),
         )
-    }
-}
-
-@Composable
-private fun DubbingMetaRow(
-    views: String,
-    episodeCount: Int,
-    sourceNames: String,
-    contentColor: Color,
-) {
-    val metaColor = contentColor.copy(alpha = 0.62f)
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Visibility,
-                contentDescription = null,
-                tint = metaColor,
-                modifier = Modifier.size(13.dp),
-            )
-            Text(
-                text = views,
-                style = MaterialTheme.typography.labelSmall,
-                color = metaColor,
-                maxLines = 1,
-                modifier = Modifier.width(42.dp),
-            )
-            Spacer(Modifier.width(6.dp))
-            Icon(
-                imageVector = Icons.Filled.VideoLibrary,
-                contentDescription = null,
-                tint = metaColor,
-                modifier = Modifier.size(13.dp),
-            )
-            Text(
-                text = episodeCount.toString(),
-                style = MaterialTheme.typography.labelSmall,
-                color = metaColor,
-                maxLines = 1,
-                modifier = Modifier.width(24.dp),
-            )
-        }
-        if (sourceNames.isNotBlank()) {
-            Text(
-                text = sourceNames,
-                style = MaterialTheme.typography.labelSmall,
-                color = metaColor,
-                maxLines = 1,
-                modifier = Modifier.widthIn(max = 260.dp),
-            )
-        }
     }
 }

@@ -41,7 +41,6 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
@@ -52,6 +51,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_OFFSETS_MS
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_STEP_SEEK_RESET_MS
 import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
+import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.utils.mediaItemFor
@@ -180,19 +180,13 @@ internal fun MobileNativePlayer(
     }
 
     fun saveProgress(positionMs: Long = currentPosition, durationMs: Long = duration) {
-        if (durationMs <= 0 || ui.activeIframeUrl.isBlank()) return
+        val snapshot = ui.buildProgressSnapshot(
+            positionMs = positionMs,
+            durationMs = durationMs,
+        ) ?: return
         onEvent(
             PlayerState.Event.SaveProgress(
-                PlayerProgressSnapshot(
-                    episode = ui.activeEpisode,
-                    episodeUrl = ui.activeIframeUrl,
-                    videoId = ui.activeVideoId,
-                    playerName = ui.activeBalancerName,
-                    dubbing = ui.activeDubbing,
-                    screenshotUrl = ui.activeScreenshotUrl,
-                    positionMs = positionMs,
-                    durationMs = durationMs,
-                )
+                snapshot
             )
         )
         lastSaveTime = System.currentTimeMillis()

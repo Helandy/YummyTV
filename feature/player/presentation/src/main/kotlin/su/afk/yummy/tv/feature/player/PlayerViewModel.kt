@@ -29,6 +29,16 @@ import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.utils.activeAllDubbingNames
+import su.afk.yummy.tv.feature.player.utils.activeBalancerName
+import su.afk.yummy.tv.feature.player.utils.activeDubbing
+import su.afk.yummy.tv.feature.player.utils.activeDubbingUrls
+import su.afk.yummy.tv.feature.player.utils.activeEpisode
+import su.afk.yummy.tv.feature.player.utils.activeEpisodeNumbers
+import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
+import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject constructor(
@@ -505,118 +515,6 @@ class PlayerViewModel @AssistedInject constructor(
             pending
         } else null
     }
-
-    // Derived helpers (mirror the composable's derivations)
-    private fun activeAllDubbingNames(s: PlayerState.State) =
-        if (s.allBalancerDubbingNames.isNotEmpty())
-            s.allBalancerDubbingNames.getOrElse(s.balancerIndex) { s.allDubbingNames }
-        else s.allDubbingNames
-
-    private fun activeAllEpisodeUrls(s: PlayerState.State) =
-        if (s.allBalancerEpisodeUrls.isNotEmpty())
-            s.allBalancerEpisodeUrls.getOrElse(s.balancerIndex) { s.allDubbingEpisodeUrls }
-        else s.allDubbingEpisodeUrls
-
-    private fun activeAllEpisodeNumbers(s: PlayerState.State) =
-        if (s.allBalancerEpisodeNumbers.isNotEmpty())
-            s.allBalancerEpisodeNumbers.getOrElse(s.balancerIndex) { s.allDubbingEpisodeNumbers }
-        else s.allDubbingEpisodeNumbers
-
-    private fun activeAllEpisodeVideoIds(s: PlayerState.State) =
-        if (s.allBalancerEpisodeVideoIds.isNotEmpty())
-            s.allBalancerEpisodeVideoIds.getOrElse(s.balancerIndex) { s.allDubbingEpisodeVideoIds }
-        else s.allDubbingEpisodeVideoIds
-
-    private fun activeAllEpisodeSkips(s: PlayerState.State) =
-        if (s.allBalancerEpisodeSkips.isNotEmpty())
-            s.allBalancerEpisodeSkips.getOrElse(s.balancerIndex) { s.allDubbingEpisodeSkips }
-        else s.allDubbingEpisodeSkips
-
-    private fun activeDubbingUrls(s: PlayerState.State) =
-        activeAllEpisodeUrls(s).getOrElse(s.dubbingIndex) { s.episodeUrls }
-
-    private fun activeEpisodeNumbers(s: PlayerState.State) =
-        activeAllEpisodeNumbers(s).getOrElse(s.dubbingIndex) { s.episodeNumbers }
-
-    private fun activeEpisodeSkipsList(s: PlayerState.State) =
-        activeAllEpisodeSkips(s).getOrElse(s.dubbingIndex) { s.episodeSkips }
-
-    private fun activeEpisodeVideoIds(s: PlayerState.State) =
-        activeAllEpisodeVideoIds(s).getOrElse(s.dubbingIndex) { s.episodeVideoIds }
-
-    private fun activeIframeUrl(s: PlayerState.State) =
-        activeDubbingUrls(s).getOrElse(s.episodeIndex) { s.iframeUrl }
-
-    private fun activeEpisode(s: PlayerState.State) =
-        activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { s.episode }
-
-    private fun activeVideoId(s: PlayerState.State) =
-        activeEpisodeVideoIds(s).getOrElse(s.episodeIndex) { 0 }
-
-    private fun activeDubbing(s: PlayerState.State) =
-        activeAllDubbingNames(s).getOrElse(s.dubbingIndex) { s.dubbing }
-
-    private fun activeBalancerName(s: PlayerState.State) =
-        if (s.allBalancerNames.isNotEmpty())
-            s.allBalancerNames.getOrElse(s.balancerIndex) { s.playerName }
-        else s.playerName
-
-    private fun activeScreenshotUrl(s: PlayerState.State) =
-        s.screenshotUrls.getOrElse(s.episodeIndex) { "" }
-
-    private fun globalDubbingNames(s: PlayerState.State): List<String> =
-        if (s.allBalancerDubbingNames.isNotEmpty()) {
-            s.allBalancerDubbingNames.flatten().distinct()
-        } else {
-            s.allDubbingNames
-        }
-
-    private fun resolveDubbingSource(
-        state: PlayerState.State,
-        dubbingName: String,
-        episodeNumber: String,
-    ): DubbingSource? {
-        if (state.allBalancerDubbingNames.isEmpty()) {
-            val dubbingIndex = state.allDubbingNames.indexOf(dubbingName).takeIf { it >= 0 } ?: return null
-            val episodeNumbers = state.allDubbingEpisodeNumbers.getOrElse(dubbingIndex) { emptyList() }
-            val episodeIndex = episodeNumbers.indexOf(episodeNumber).takeIf { it >= 0 } ?: 0
-            return DubbingSource(
-                balancerIndex = state.balancerIndex,
-                dubbingIndex = dubbingIndex,
-                episodeIndex = episodeIndex,
-            )
-        }
-
-        val candidates = state.allBalancerDubbingNames.flatMapIndexed { balancerIndex, dubbingNames ->
-            dubbingNames.mapIndexedNotNull { dubbingIndex, name ->
-                if (name != dubbingName) return@mapIndexedNotNull null
-                val episodeNumbers = state.allBalancerEpisodeNumbers
-                    .getOrElse(balancerIndex) { emptyList() }
-                    .getOrElse(dubbingIndex) { emptyList() }
-                val episodeIndex = episodeNumbers.indexOf(episodeNumber).takeIf { it >= 0 } ?: 0
-                DubbingSource(
-                    balancerIndex = balancerIndex,
-                    dubbingIndex = dubbingIndex,
-                    episodeIndex = episodeIndex,
-                )
-            }
-        }
-
-        return candidates.firstOrNull { it.balancerIndex == state.balancerIndex }
-            ?: candidates.firstOrNull()
-    }
-
-    private data class DubbingSource(
-        val balancerIndex: Int,
-        val dubbingIndex: Int,
-        val episodeIndex: Int,
-    )
-
-    private data class PlayerResizeSettingsScope(
-        val animeId: Int,
-        val animeTitle: String,
-        val playerName: String,
-    )
 
     private companion object {
         const val MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS = 250L
