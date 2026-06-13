@@ -4,13 +4,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionsResponseDto
 import su.afk.yummy.tv.data.account.mapper.toVideoSubscription
 import su.afk.yummy.tv.data.account.mapper.toVideoSubscriptions
 import su.afk.yummy.tv.data.account.mapper.toVideoSubscriptionsCache
@@ -20,9 +16,7 @@ import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
 
 class YaniVideoSubscriptionRepository(
     private val api: YaniAccountApi,
-    private val cache: CacheStore,
     private val accountStorage: AccountStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : VideoSubscriptionRepository {
 
@@ -41,7 +35,6 @@ class YaniVideoSubscriptionRepository(
                 throw error
             } catch (error: Throwable) {
                 stored?.toVideoSubscriptions()
-                    ?: readLegacySubscriptions(userId, language, languageCode)
                     ?: throw error
             }
         }
@@ -56,7 +49,6 @@ class YaniVideoSubscriptionRepository(
             }
             if (userId > 0) {
                 accountStorage.deleteVideoSubscriptions(userId)
-                cache.invalidatePrefix(YaniAccountCacheKeys.subscriptions(userId))
             }
             result
         }
@@ -71,27 +63,6 @@ class YaniVideoSubscriptionRepository(
                 userId = userId,
                 language = languageCode,
                 cachedAt = System.currentTimeMillis(),
-            )
-        )
-        return subscriptions
-    }
-
-    private suspend fun readLegacySubscriptions(
-        userId: Int,
-        language: YaniContentLanguage,
-        languageCode: String,
-    ): List<VideoSubscription>? {
-        val cached = cache.getCached<YaniVideoSubscriptionsResponseDto>(
-            key = YaniAccountCacheKeys.subscriptions(userId, language),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val subscriptions = cached.value.response.mapNotNull { it.toVideoSubscription() }
-        accountStorage.saveVideoSubscriptions(
-            subscriptions.toVideoSubscriptionsCache(
-                userId = userId,
-                language = languageCode,
-                cachedAt = cached.cachedAt,
             )
         )
         return subscriptions

@@ -4,16 +4,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.account.dto.YaniAnimeUserRatingResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniCollectionsResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniListStatsResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniRatingResponseDto
 import su.afk.yummy.tv.data.account.mapper.toAnimeListStats
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummaries
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
@@ -31,9 +25,7 @@ import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 
 class YaniAnimeExtrasRepository(
     private val api: YaniAccountApi,
-    private val cache: CacheStore,
     private val accountStorage: AccountStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : AnimeExtrasRepository {
 
@@ -50,7 +42,6 @@ class YaniAnimeExtrasRepository(
                 throw error
             } catch (error: Throwable) {
                 stored?.toRatingSummary()
-                    ?: readLegacyRatingSummary(animeId)
                     ?: throw error
             }
         }
@@ -71,7 +62,7 @@ class YaniAnimeExtrasRepository(
                 if (stored != null) {
                     stored.toUserRating()
                 } else {
-                    readLegacyUserRating(userId, animeId)?.toUserRating() ?: throw error
+                    throw error
                 }
             }
         }
@@ -81,8 +72,6 @@ class YaniAnimeExtrasRepository(
         api.setRating(animeId, rating)
         updateCachedUserRating(userId, animeId, rating)
         accountStorage.deleteRatingBuckets(animeId)
-        cache.invalidate(YaniAccountCacheKeys.ratingBuckets(animeId))
-        cache.invalidate(YaniAccountCacheKeys.userRating(userId, animeId))
     }
 
     override suspend fun deleteRating(animeId: Int) = withContext(Dispatchers.IO) {
@@ -90,8 +79,6 @@ class YaniAnimeExtrasRepository(
         api.deleteRating(animeId)
         updateCachedUserRating(userId, animeId, rating = null)
         accountStorage.deleteRatingBuckets(animeId)
-        cache.invalidate(YaniAccountCacheKeys.ratingBuckets(animeId))
-        cache.invalidate(YaniAccountCacheKeys.userRating(userId, animeId))
     }
 
     override suspend fun getListStats(animeId: Int): AnimeListStats =
@@ -107,7 +94,6 @@ class YaniAnimeExtrasRepository(
                 throw error
             } catch (error: Throwable) {
                 stored?.toAnimeListStats()
-                    ?: readLegacyListStats(animeId)
                     ?: throw error
             }
         }
@@ -124,14 +110,6 @@ class YaniAnimeExtrasRepository(
                     api.getAnimeCollections(animeId, limit, offset)
                         .mapNotNull { it.toCollectionSummary() }
                 },
-                legacyKey = {
-                    YaniAccountCacheKeys.animeCollections(
-                        animeId,
-                        limit,
-                        offset,
-                        language
-                    )
-                },
             )
         }
 
@@ -146,7 +124,6 @@ class YaniAnimeExtrasRepository(
                 fetch = {
                     api.getCollections(limit, offset).mapNotNull { it.toCollectionSummary() }
                 },
-                legacyKey = { YaniAccountCacheKeys.collections(limit, offset, language) },
             )
         }
 
@@ -159,22 +136,6 @@ class YaniAnimeExtrasRepository(
             buckets.toRatingBucketsCache(
                 animeId = animeId,
                 cachedAt = System.currentTimeMillis(),
-            )
-        )
-        return AnimeRatingSummary(distribution = buckets, userRating = null)
-    }
-
-    private suspend fun readLegacyRatingSummary(animeId: Int): AnimeRatingSummary? {
-        val cached = cache.getCached<YaniRatingResponseDto>(
-            key = YaniAccountCacheKeys.ratingBuckets(animeId),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val buckets = cached.value.response.map { AnimeRatingBucket(it.rating, it.count) }
-        accountStorage.saveRatingBuckets(
-            buckets.toRatingBucketsCache(
-                animeId = animeId,
-                cachedAt = cached.cachedAt,
             )
         )
         return AnimeRatingSummary(distribution = buckets, userRating = null)
@@ -197,37 +158,9 @@ class YaniAnimeExtrasRepository(
         return rating
     }
 
-    private suspend fun readLegacyUserRating(userId: Int, animeId: Int): AccountUserRatingEntry? {
-        val cached = cache.getCached<YaniAnimeUserRatingResponseDto>(
-            key = YaniAccountCacheKeys.userRating(userId, animeId),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val rating = cached.value.response.user?.rating?.toInt()?.takeIf { it in 1..10 }
-        return AccountUserRatingEntry(
-            userId = userId,
-            animeId = animeId,
-            rating = rating,
-            cachedAt = cached.cachedAt,
-        ).also {
-            accountStorage.saveUserRating(it)
-        }
-    }
-
     private suspend fun fetchListStats(animeId: Int): AnimeListStats {
         val stats = AnimeListStats(api.getListStats(animeId).associate { it.listId to it.count })
         accountStorage.saveListStats(stats.toListStatsCache(animeId, System.currentTimeMillis()))
-        return stats
-    }
-
-    private suspend fun readLegacyListStats(animeId: Int): AnimeListStats? {
-        val cached = cache.getCached<YaniListStatsResponseDto>(
-            key = YaniAccountCacheKeys.listStats(animeId),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val stats = AnimeListStats(cached.value.response.associate { it.listId to it.count })
-        accountStorage.saveListStats(stats.toListStatsCache(animeId, cached.cachedAt))
         return stats
     }
 
@@ -235,7 +168,6 @@ class YaniAnimeExtrasRepository(
         pageKey: String,
         languageCode: String,
         fetch: suspend () -> List<AnimeCollectionSummary>,
-        legacyKey: () -> String,
     ): List<AnimeCollectionSummary> {
         val stored = accountStorage.getCollections(pageKey)
         if (stored?.isFresh(ACCOUNT_MEDIUM_TTL_MS) == true) {
@@ -256,30 +188,8 @@ class YaniAnimeExtrasRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toCollectionSummaries()
-                ?: readLegacyCollections(pageKey, languageCode, legacyKey())
                 ?: throw error
         }
-    }
-
-    private suspend fun readLegacyCollections(
-        pageKey: String,
-        languageCode: String,
-        key: String,
-    ): List<AnimeCollectionSummary>? {
-        val cached = cache.getCached<YaniCollectionsResponseDto>(
-            key = key,
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val collections = cached.value.response.mapNotNull { it.toCollectionSummary() }
-        accountStorage.saveCollections(
-            collections.toCollectionsPageCache(
-                pageKey = pageKey,
-                language = languageCode,
-                cachedAt = cached.cachedAt,
-            )
-        )
-        return collections
     }
 
     private suspend fun updateCachedUserRating(userId: Int, animeId: Int, rating: Int?) {

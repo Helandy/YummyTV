@@ -4,14 +4,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
-import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
-import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailResponseDto
 import su.afk.yummy.tv.data.collection.mapper.toCollectionDetail
 import su.afk.yummy.tv.data.collection.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.data.collection.mapper.toDomain
@@ -23,9 +18,7 @@ private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
 
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,
-    private val cache: CacheStore,
     private val collectionStorage: CollectionStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : CollectionRepository {
 
@@ -44,7 +37,6 @@ class YaniCollectionDetailRepository(
                 throw error
             } catch (error: Throwable) {
                 stored?.toCollectionDetail()
-                    ?: readLegacyCollection(id, language, languageCode)
                     ?: throw error
             }
         }
@@ -59,27 +51,4 @@ class YaniCollectionDetailRepository(
         )
         return collection
     }
-
-    private suspend fun readLegacyCollection(
-        id: Int,
-        language: YaniContentLanguage,
-        languageCode: String,
-    ): CollectionDetail? {
-        val cached = cache.getCached<YaniCollectionDetailResponseDto>(
-            key = collectionCacheKey(id, language),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val collection = cached.value.response.toDomain()
-        collectionStorage.saveCollection(
-            collection.toCollectionDetailCache(
-                language = languageCode,
-                cachedAt = cached.cachedAt,
-            )
-        )
-        return collection
-    }
-
-    private fun collectionCacheKey(id: Int, language: YaniContentLanguage): String =
-        "collection_$id".withYaniContentLanguage(language)
 }

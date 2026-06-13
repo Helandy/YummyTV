@@ -38,8 +38,6 @@ import su.afk.yummy.tv.core.storage.anime.AnimeTrailerEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoCacheEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
-import su.afk.yummy.tv.core.storage.cache.CacheDao
-import su.afk.yummy.tv.core.storage.cache.CacheEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageDao
@@ -66,7 +64,6 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 
 @Database(
     entities = [
-        CacheEntry::class,
         LibraryEntry::class,
         WatchProgressEntry::class,
         AnimeDetailsEntry::class,
@@ -118,11 +115,10 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserListWatchStatEntry::class,
         AccountUserTypeStatEntry::class,
     ],
-    version = 16,
+    version = 17,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun cacheDao(): CacheDao
     abstract fun libraryDao(): LibraryDao
     abstract fun watchProgressDao(): WatchProgressDao
     abstract fun animeStorageDao(): AnimeStorageDao

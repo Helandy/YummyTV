@@ -4,15 +4,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_PROFILE_KEY_CURRENT
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.core.storage.cache.CacheStore
-import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.mapper.toProfileEntry
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
@@ -25,9 +22,7 @@ class YaniAccountRepository(
     private val api: YaniAccountApi,
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
-    private val cache: CacheStore,
     private val accountStorage: AccountStorageStore,
-    private val json: Json,
 ) : AccountRepository {
 
     override suspend fun login(
@@ -81,7 +76,6 @@ class YaniAccountRepository(
                 throw error
             } catch (error: Throwable) {
                 stored?.toAccount()
-                    ?: readLegacyProfile(userId)
                     ?: throw error
             }
         }
@@ -96,8 +90,6 @@ class YaniAccountRepository(
         }
         yaniAuthPreferences.clearRefreshToken()
         settingsStore.clearYaniAccount()
-        cache.invalidatePrefix(YaniAccountCacheKeys.PRIVATE_USER_PREFIX)
-        cache.invalidate(YaniAccountCacheKeys.profileCurrent())
     }
 
     private suspend fun saveProfile(
@@ -116,33 +108,12 @@ class YaniAccountRepository(
 
     private suspend fun getCachedProfileOrNull(): YaniAccount? {
         val userId = settingsStore.yaniUserId.first()
-        getStoredProfile(userId)?.toAccount()?.let { return it }
-        return readLegacyProfile(userId)
+        return getStoredProfile(userId)?.toAccount()
     }
 
     private suspend fun getStoredProfile(userId: Int) =
         accountStorage.getProfile(profileStorageKey(userId))
             ?: if (userId > 0) accountStorage.getProfile(ACCOUNT_PROFILE_KEY_CURRENT) else null
-
-    private suspend fun readLegacyProfile(userId: Int): YaniAccount? {
-        val keys = buildList {
-            if (userId > 0) add(YaniAccountCacheKeys.profileUser(userId))
-            add(YaniAccountCacheKeys.profileCurrent())
-        }.distinct()
-
-        for (key in keys) {
-            val cached = cache.getCached<YaniProfileDto>(
-                key = key,
-                deserialize = { json.decodeFromString(it) },
-                isValid = { it.id > 0 },
-            ) ?: continue
-
-            val profile = cached.value.toAccount()
-            saveProfile(profile, cached.cachedAt)
-            return profile
-        }
-        return null
-    }
 
     private fun profileStorageKey(userId: Int): String =
         if (userId > 0) accountProfileUserKey(userId) else ACCOUNT_PROFILE_KEY_CURRENT

@@ -4,16 +4,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
-import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniUserListResponseDto
 import su.afk.yummy.tv.data.account.mapper.toUserListCache
 import su.afk.yummy.tv.data.account.mapper.toUserListItem
 import su.afk.yummy.tv.data.account.mapper.toUserListItems
@@ -24,9 +19,7 @@ import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 
 class YaniUserListsRepository(
     private val api: YaniAccountApi,
-    private val cache: CacheStore,
     private val accountStorage: AccountStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : UserListsRepository {
 
@@ -53,7 +46,6 @@ class YaniUserListsRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toUserListItem()
-                ?: readLegacyAnimeListState(userId, animeId)?.toUserListItem()
                 ?: throw error
         }
     }
@@ -104,7 +96,6 @@ class YaniUserListsRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toUserListItems()
-                ?: readLegacyUserList(userId, listId, language, languageCode)
                 ?: throw error
         }
     }
@@ -137,45 +128,6 @@ class YaniUserListsRepository(
         return entry.toUserListItem()
     }
 
-    private suspend fun readLegacyUserList(
-        userId: Int,
-        listId: Int,
-        language: YaniContentLanguage,
-        languageCode: String,
-    ): List<UserAnimeListItem>? {
-        val cached = cache.getCached<YaniUserListResponseDto>(
-            key = YaniAccountCacheKeys.userList(userId, listId, language),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val items = cached.value.response.mapNotNull { it.toUserListItem() }
-        accountStorage.saveUserList(
-            items.toUserListCache(
-                userId = userId,
-                listId = listId,
-                language = languageCode,
-                cachedAt = cached.cachedAt,
-            )
-        )
-        return items
-    }
-
-    private suspend fun readLegacyAnimeListState(
-        userId: Int,
-        animeId: Int,
-    ): AccountAnimeListStateEntry? {
-        val cached = cache.getCached<YaniAnimeListStateResponseDto>(
-            key = YaniAccountCacheKeys.animeListState(userId, animeId),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        return cached.value.response.toEntry(
-            userId = userId,
-            animeId = animeId,
-            cachedAt = cached.cachedAt,
-        ).also { accountStorage.saveAnimeListState(it) }
-    }
-
     private suspend fun updateCachedListState(
         userId: Int,
         animeId: Int,
@@ -184,7 +136,6 @@ class YaniUserListsRepository(
         isFavorite: Boolean? = null,
     ) {
         val cached = accountStorage.getAnimeListState(userId, animeId)
-            ?: readLegacyAnimeListState(userId, animeId)
         accountStorage.saveAnimeListState(
             AccountAnimeListStateEntry(
                 userId = userId,
@@ -199,7 +150,6 @@ class YaniUserListsRepository(
     private suspend fun invalidateUserLists(userId: Int) {
         if (userId > 0) {
             accountStorage.deleteUserLists(userId)
-            cache.invalidatePrefix(YaniAccountCacheKeys.userPrefix(userId) + "list_")
         }
     }
 

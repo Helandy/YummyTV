@@ -6,17 +6,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.settings.withYaniContentLanguage
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.search.isFresh
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
-import su.afk.yummy.tv.data.search.dto.YaniSearchResponseDto
 import su.afk.yummy.tv.data.search.mapper.toSearchAnimeType
 import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptions
 import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptionsCache
@@ -35,7 +31,6 @@ import su.afk.yummy.tv.domain.search.repository.SearchRepository
 private const val SEARCH_FILTER_OPTIONS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val SEARCH_RESULTS_TTL_MS = 10 * 60 * 1000L
 
-@Serializable
 private data class YaniSearchFilterOptionsDto(
     val genres: YaniSearchGenresDto = YaniSearchGenresDto(),
     val catalog: YaniSearchCatalogDto = YaniSearchCatalogDto(),
@@ -43,9 +38,7 @@ private data class YaniSearchFilterOptionsDto(
 
 class YaniSearchRepository(
     private val api: YaniSearchApi,
-    private val cache: CacheStore,
     private val searchStorage: SearchStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : SearchRepository {
     override suspend fun search(
@@ -75,7 +68,6 @@ class YaniSearchRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toSearchPage()
-                ?: readLegacySearchPage(pageKey, languageCode, limit, offset)
                 ?: throw error
         }
     }
@@ -94,7 +86,6 @@ class YaniSearchRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toSearchFilterOptions()
-                ?: readLegacyFilterOptions(language, languageCode)
                 ?: throw error
         }
     }
@@ -122,32 +113,6 @@ class YaniSearchRepository(
         return items.toSearchPage(limit, offset, response.size)
     }
 
-    private suspend fun readLegacySearchPage(
-        pageKey: String,
-        language: String,
-        limit: Int,
-        offset: Int,
-    ): SearchPage? {
-        val cached = cache.getCached<YaniSearchResponseDto>(
-            key = pageKey,
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val response = cached.value.response
-        val items = response.mapNotNull { it.toSearchItem() }
-        searchStorage.savePage(
-            items.toSearchPageCache(
-                pageKey = pageKey,
-                language = language,
-                limit = limit,
-                offset = offset,
-                responseSize = response.size,
-                cachedAt = cached.cachedAt,
-            )
-        )
-        return items.toSearchPage(limit, offset, response.size)
-    }
-
     private suspend fun fetchFilterOptions(language: String): SearchFilterOptions {
         val response = fetchFilterOptionsDto()
         val options = response.toSearchFilterOptions()
@@ -155,25 +120,6 @@ class YaniSearchRepository(
             options.toSearchFilterOptionsCache(
                 language = language,
                 cachedAt = System.currentTimeMillis(),
-            )
-        )
-        return options
-    }
-
-    private suspend fun readLegacyFilterOptions(
-        language: YaniContentLanguage,
-        languageCode: String,
-    ): SearchFilterOptions? {
-        val cached = cache.getCached<YaniSearchFilterOptionsDto>(
-            key = filterOptionsCacheKey(language),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val options = cached.value.toSearchFilterOptions()
-        searchStorage.saveFilterOptions(
-            options.toSearchFilterOptionsCache(
-                language = languageCode,
-                cachedAt = cached.cachedAt,
             )
         )
         return options
@@ -206,9 +152,6 @@ class YaniSearchRepository(
             nextOffset = offset + responseSize,
             canLoadMore = responseSize >= limit,
         )
-
-    private fun filterOptionsCacheKey(language: YaniContentLanguage): String =
-        "search_filter_options_v1".withYaniContentLanguage(language)
 
     private fun searchCacheKey(
         query: String,

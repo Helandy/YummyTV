@@ -6,13 +6,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListWatchStatDto
@@ -29,9 +25,7 @@ import su.afk.yummy.tv.domain.account.repository.UserStatsRepository
 
 class YaniUserStatsRepository(
     private val api: YaniAccountApi,
-    private val cache: CacheStore,
     private val accountStorage: AccountStorageStore,
-    private val json: Json,
     private val settingsStore: SettingsStore,
 ) : UserStatsRepository {
     override suspend fun getUserStats(userId: Int): UserStats = withContext(Dispatchers.IO) {
@@ -48,7 +42,6 @@ class YaniUserStatsRepository(
             throw error
         } catch (error: Throwable) {
             stored?.toUserStats()
-                ?: readLegacyUserStats(userId, language, languageCode)
                 ?: throw error
         }
     }
@@ -73,30 +66,9 @@ class YaniUserStatsRepository(
                     language = languageCode,
                     cachedAt = System.currentTimeMillis(),
                 )
-        )
+            )
             stats
         }
-
-    private suspend fun readLegacyUserStats(
-        userId: Int,
-        language: YaniContentLanguage,
-        languageCode: String,
-    ): UserStats? {
-        val cached = cache.getCached<YaniUserStatsCacheDto>(
-            key = YaniAccountCacheKeys.userStats(userId, language),
-            deserialize = { json.decodeFromString(it) },
-        ) ?: return null
-
-        val stats = cached.value.toUserStats()
-        accountStorage.saveUserStats(
-            stats.toUserStatsCache(
-                userId = userId,
-                language = languageCode,
-                cachedAt = cached.cachedAt,
-            )
-        )
-        return stats
-    }
 }
 
 private fun YaniUserStatsCacheDto.toUserStats(): UserStats =
@@ -107,7 +79,6 @@ private fun YaniUserStatsCacheDto.toUserStats(): UserStats =
         types = types.mapNotNull { it.toAnimeTypeStat() },
     )
 
-@Serializable
 private data class YaniUserStatsCacheDto(
     val genres: List<YaniUserGenreStatDto> = emptyList(),
     val ratings: List<YaniUserRatingStatDto> = emptyList(),

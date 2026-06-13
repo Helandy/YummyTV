@@ -5,10 +5,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
-import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
@@ -27,11 +25,9 @@ object HomeDataModule {
     @Singleton
     fun provideHomeFeedRepository(
         api: YaniHomeApi,
-        cache: CacheStore,
         homeFeedStore: HomeFeedStore,
-        json: Json,
         stringProvider: StringProvider,
         settingsStore: SettingsStore,
     ): HomeFeedRepository =
-        YaniHomeFeedRepository(api, cache, homeFeedStore, json, stringProvider, settingsStore)
+        YaniHomeFeedRepository(api, homeFeedStore, stringProvider, settingsStore)
 }

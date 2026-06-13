@@ -11,7 +11,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
-import su.afk.yummy.tv.core.storage.cache.CacheStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.db.AppDatabase
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
@@ -1047,6 +1046,12 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_16_17 = object : Migration(16, 17) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS cache")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1061,13 +1066,10 @@ object StorageModule {
                 MIGRATION_13_14,
                 MIGRATION_14_15,
                 MIGRATION_15_16,
+                MIGRATION_16_17,
             )
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
-
-    @Provides
-    @Singleton
-    fun provideCacheStore(db: AppDatabase): CacheStore = CacheStore(db.cacheDao())
 
     @Provides
     @Singleton
