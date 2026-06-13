@@ -5,20 +5,17 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 
 @HiltViewModel(assistedFactory = SimilarViewModel.Factory::class)
-class SimilarViewModel @AssistedInject constructor(
+class SimilarViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
@@ -26,7 +23,7 @@ class SimilarViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeRecommendations: GetAnimeRecommendationsUseCase,
-    private val getAnimePreview: GetAnimePreviewUseCase,
+    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
 ) : BaseViewModelNew<SimilarState.State, SimilarState.Event, SimilarState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -35,8 +32,6 @@ class SimilarViewModel @AssistedInject constructor(
     }
 
     override fun createInitialState() = SimilarState.State()
-
-    private var previewJob: Job? = null
 
     init {
         viewModelScope.launch { load() }
@@ -61,14 +56,18 @@ class SimilarViewModel @AssistedInject constructor(
 
     private fun onItemFocused(id: Int) {
         if (currentState.focusedItemId == id) return
-        previewJob?.cancel()
         setState { copy(focusedItemId = id, focusedPreview = null) }
-        previewJob = viewModelScope.launch {
-            delay(600)
-            runCatching { getAnimePreview(id) }.onSuccess { preview ->
-                setState { copy(focusedPreview = preview) }
+        animePreviewFocusHandler.focus(
+            scope = viewModelScope,
+            animeId = id,
+            isCurrentFocus = { currentState.focusedItemId == id },
+            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
+            onLoadedPreview = { result ->
+                if (result.isCurrentFocus) {
+                    setState { copy(focusedPreview = result.preview) }
+                }
             }
-        }
+        )
     }
 
     private suspend fun load(fromAi: Boolean = currentState.fromAi) {

@@ -20,13 +20,6 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
-import su.afk.yummy.tv.feature.player.utils.activeAllDubbingNames
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbing
-import su.afk.yummy.tv.feature.player.utils.activeDubbingUrls
-import su.afk.yummy.tv.feature.player.utils.activeEpisodeNumbers
-import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
-import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -39,6 +32,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val streamHandler: PlayerStreamHandler,
     private val progressHandler: PlayerProgressHandler,
     private val settingsHandler: PlayerSettingsHandler,
+    private val destinationStateMapper: PlayerDestinationStateMapper,
+    private val sourceSelectionHandler: PlayerSourceSelectionHandler,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -52,36 +47,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (newDest == activeDest) return
         activeDest = newDest
         setState {
-            PlayerState.State(
-                iframeUrl = newDest.iframeUrl,
-                animeTitle = newDest.animeTitle,
-                episode = newDest.episode,
-                playerName = newDest.playerName,
-                dubbing = newDest.dubbing,
-                episodeUrls = newDest.episodeUrls,
-                episodeNumbers = newDest.episodeNumbers,
-                episodeVideoIds = newDest.episodeVideoIds,
-                screenshotUrls = newDest.screenshotUrls,
-                animeId = newDest.animeId,
-                posterUrl = newDest.posterUrl,
-                allDubbingNames = newDest.allDubbingNames,
-                allDubbingEpisodeUrls = newDest.allDubbingEpisodeUrls,
-                allDubbingEpisodeNumbers = newDest.allDubbingEpisodeNumbers,
-                allDubbingEpisodeVideoIds = newDest.allDubbingEpisodeVideoIds,
-                allDubbingViews = newDest.allDubbingViews,
-                allBalancerNames = newDest.allBalancerNames,
-                allBalancerDubbingNames = newDest.allBalancerDubbingNames,
-                allBalancerEpisodeUrls = newDest.allBalancerEpisodeUrls,
-                allBalancerEpisodeNumbers = newDest.allBalancerEpisodeNumbers,
-                allBalancerEpisodeVideoIds = newDest.allBalancerEpisodeVideoIds,
-                allBalancerDubbingViews = newDest.allBalancerDubbingViews,
-                episodeSkips = newDest.episodeSkips,
-                allDubbingEpisodeSkips = newDest.allDubbingEpisodeSkips,
-                allBalancerEpisodeSkips = newDest.allBalancerEpisodeSkips,
-                balancerIndex = newDest.currentBalancerIndex,
-                dubbingIndex = newDest.currentDubbingIndex,
-                episodeIndex = newDest.currentEpisodeIndex,
-                autoSkipOpeningsEndings = autoSkipOpeningsEndings,
+            destinationStateMapper.toState(
+                newDest,
+                autoSkipOpeningsEndings = autoSkipOpeningsEndings
             )
         }
         observeActivePlayerResizeSettings(force = true)
@@ -89,36 +57,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         loadStream()
     }
 
-    override fun createInitialState() = PlayerState.State(
-        iframeUrl = dest.iframeUrl,
-        animeTitle = dest.animeTitle,
-        episode = dest.episode,
-        playerName = dest.playerName,
-        dubbing = dest.dubbing,
-        episodeUrls = dest.episodeUrls,
-        episodeNumbers = dest.episodeNumbers,
-        episodeVideoIds = dest.episodeVideoIds,
-        screenshotUrls = dest.screenshotUrls,
-        animeId = dest.animeId,
-        posterUrl = dest.posterUrl,
-        allDubbingNames = dest.allDubbingNames,
-        allDubbingEpisodeUrls = dest.allDubbingEpisodeUrls,
-        allDubbingEpisodeNumbers = dest.allDubbingEpisodeNumbers,
-        allDubbingEpisodeVideoIds = dest.allDubbingEpisodeVideoIds,
-        allDubbingViews = dest.allDubbingViews,
-        allBalancerNames = dest.allBalancerNames,
-        allBalancerDubbingNames = dest.allBalancerDubbingNames,
-        allBalancerEpisodeUrls = dest.allBalancerEpisodeUrls,
-        allBalancerEpisodeNumbers = dest.allBalancerEpisodeNumbers,
-        allBalancerEpisodeVideoIds = dest.allBalancerEpisodeVideoIds,
-        allBalancerDubbingViews = dest.allBalancerDubbingViews,
-        episodeSkips = dest.episodeSkips,
-        allDubbingEpisodeSkips = dest.allDubbingEpisodeSkips,
-        allBalancerEpisodeSkips = dest.allBalancerEpisodeSkips,
-        balancerIndex = dest.currentBalancerIndex,
-        dubbingIndex = dest.currentDubbingIndex,
-        episodeIndex = dest.currentEpisodeIndex,
-    )
+    override fun createInitialState() = destinationStateMapper.toState(dest)
 
     private var extractionJob: Job? = null
     private var playerResizeSettingsJob: Job? = null
@@ -151,70 +90,30 @@ class PlayerViewModel @AssistedInject internal constructor(
                 setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
             }
             PlayerState.Event.PrevEpisode -> {
-                val idx = currentState.episodeIndex
-                if (idx > 0) {
-                    setState { copy(episodeIndex = idx - 1) }
-                    loadStream()
-                }
+                applySourceSelection(sourceSelectionHandler.previousEpisode(currentState))
             }
             PlayerState.Event.NextEpisode -> {
-                val s = currentState
-                val urls = activeDubbingUrls(s)
-                if (s.episodeIndex < urls.size - 1) {
-                    setState { copy(episodeIndex = s.episodeIndex + 1) }
-                    loadStream()
-                }
+                applySourceSelection(sourceSelectionHandler.nextEpisode(currentState))
             }
             is PlayerState.Event.DubbingSelected -> {
-                val s = currentState
-                val currentNum = activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { "" }
-                val selectedDubbing = globalDubbingNames(s).getOrElse(event.index) {
-                    activeAllDubbingNames(s).getOrElse(event.index) { "" }
-                }
-                if (selectedDubbing.isBlank()) return
-                val selection = resolveDubbingSource(
-                    state = s,
-                    dubbingName = selectedDubbing,
-                    episodeNumber = currentNum,
-                ) ?: return
-                if (
-                    selection.balancerIndex == s.balancerIndex &&
-                    selection.dubbingIndex == s.dubbingIndex &&
-                    selection.episodeIndex == s.episodeIndex
-                ) return
-                setState {
-                    copy(
-                        dubbingResumeMs = (event.currentPosMs - 3_000L).coerceAtLeast(0L),
-                        balancerIndex = selection.balancerIndex,
-                        dubbingIndex = selection.dubbingIndex,
-                        episodeIndex = selection.episodeIndex,
-                    )
-                }
-                observeActivePlayerResizeSettings()
-                observeActivePlayerMobileVideoTransformSettings()
-                loadStream()
+                applySourceSelection(
+                    sourceSelectionHandler.selectDubbing(
+                        state = currentState,
+                        index = event.index,
+                        currentPosMs = event.currentPosMs,
+                    ),
+                    sourceScopeChanged = true,
+                )
             }
             is PlayerState.Event.BalancerSelected -> {
-                val s = currentState
-                if (event.index == s.balancerIndex) return
-                val newDubbingNames = s.allBalancerDubbingNames.getOrElse(event.index) { emptyList() }
-                val currentDubbingName = activeDubbing(s)
-                val newDubbingIdx = newDubbingNames.indexOf(currentDubbingName).takeIf { it >= 0 } ?: 0
-                val currentEpNum = activeEpisodeNumbers(s).getOrElse(s.episodeIndex) { s.episode }
-                val newEpNums = s.allBalancerEpisodeNumbers.getOrElse(event.index) { emptyList() }
-                    .getOrElse(newDubbingIdx) { emptyList() }
-                val newEpisodeIdx = newEpNums.indexOf(currentEpNum).takeIf { it >= 0 } ?: 0
-                setState {
-                    copy(
-                        dubbingResumeMs = (event.currentPosMs - 3_000L).coerceAtLeast(0L),
-                        balancerIndex = event.index,
-                        dubbingIndex = newDubbingIdx,
-                        episodeIndex = newEpisodeIdx,
-                    )
-                }
-                observeActivePlayerResizeSettings()
-                observeActivePlayerMobileVideoTransformSettings()
-                loadStream()
+                applySourceSelection(
+                    sourceSelectionHandler.selectBalancer(
+                        state = currentState,
+                        index = event.index,
+                        currentPosMs = event.currentPosMs,
+                    ),
+                    sourceScopeChanged = true,
+                )
             }
             is PlayerState.Event.QualitySelected -> {
                 val position = event.currentPosMs.coerceAtLeast(0L)
@@ -293,6 +192,19 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    private fun applySourceSelection(
+        state: PlayerState.State?,
+        sourceScopeChanged: Boolean = false,
+    ) {
+        if (state == null) return
+        setState { state }
+        if (sourceScopeChanged) {
+            observeActivePlayerResizeSettings()
+            observeActivePlayerMobileVideoTransformSettings()
+        }
+        loadStream()
+    }
+
     private fun observeActivePlayerResizeSettings(force: Boolean = false) {
         val scope = currentPlayerResizeSettingsScope()
         if (!force && scope == activePlayerResizeSettingsScope) return
@@ -364,12 +276,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private fun currentPlayerResizeSettingsScope(): PlayerResizeSettingsScope {
-        val state = currentState
-        return PlayerResizeSettingsScope(
-            animeId = state.animeId,
-            animeTitle = state.animeTitle,
-            playerName = activeBalancerName(state),
-        )
+        return sourceSelectionHandler.resizeSettingsScope(currentState)
     }
 
     private fun loadStream() {

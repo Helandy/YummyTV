@@ -26,15 +26,11 @@ class AccountViewModel @Inject internal constructor(
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val detailsNavigator: IDetailsNavigator,
-    private val authHandler: AccountAuthHandler,
+    private val sessionHandler: AccountSessionHandler,
     private val hubHandler: AccountHubHandler,
     private val notificationHandler: AccountNotificationHandler,
+    private val notificationMutationHandler: AccountNotificationMutationHandler,
 ) : BaseViewModelNew<AccountState.State, AccountState.Event, AccountState.Effect>(savedStateHandle) {
-
-    private var loadedUserId: Int = 0
-    private var hasRefreshToken = false
-    private var missingProfileRefreshAttempted = false
-    private var isMissingProfileRefreshRunning = false
 
     override fun createInitialState() = AccountState.State()
 
@@ -44,7 +40,8 @@ class AccountViewModel @Inject internal constructor(
             settingsStore.yaniUserId,
         ) { token, userId -> token to userId }
             .onEach { (token, userId) ->
-                hasRefreshToken = token.isNotBlank()
+                sessionHandler.onAuthSnapshot(token)
+                val hasRefreshToken = sessionHandler.hasRefreshToken()
                 setState {
                     if (!hasRefreshToken) {
                         copy(
@@ -61,10 +58,6 @@ class AccountViewModel @Inject internal constructor(
                             userId = userId,
                         )
                     }
-                }
-                if (!hasRefreshToken) {
-                    missingProfileRefreshAttempted = false
-                    isMissingProfileRefreshRunning = false
                 }
                 recoverMissingProfileIfNeeded()
                 maybeLoadHub()
@@ -128,11 +121,7 @@ class AccountViewModel @Inject internal constructor(
             }
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
                 setState { copy(isLoading = true, error = null) }
-                if (authHandler.logout()) {
-                    loadedUserId = 0
-                    hasRefreshToken = false
-                    missingProfileRefreshAttempted = false
-                    isMissingProfileRefreshRunning = false
+                if (sessionHandler.logout()) {
                     setState {
                         copy(
                             isLoading = false,
@@ -159,10 +148,10 @@ class AccountViewModel @Inject internal constructor(
             }
             AccountState.Event.RefreshProfileSelected -> viewModelScope.launch {
                 setState { copy(isLoading = true, error = null) }
-                when (authHandler.refreshProfile()) {
+                when (sessionHandler.refreshProfile()) {
                     is AccountRefreshResult.Success -> {
                         setState { copy(isLoading = false) }
-                        loadedUserId = 0
+                        sessionHandler.markProfileChanged()
                         maybeLoadHub(force = true)
                     }
 
@@ -189,12 +178,16 @@ class AccountViewModel @Inject internal constructor(
                     setState { copy(restoreFocusedNotificationOnEnter = false) }
                 }
             }
-            is AccountState.Event.NotificationReadSelected -> updateNotification(event.id) {
-                notificationHandler.markNotificationRead(event.id)
+            is AccountState.Event.NotificationReadSelected -> updateNotification {
+                notificationMutationHandler.markNotificationRead(event.id)
             }
-            AccountState.Event.AllNotificationsReadSelected -> markAllNotificationsReadOptimistically()
-            is AccountState.Event.NotificationDeleteSelected -> updateNotification(event.id) {
-                notificationHandler.deleteNotification(event.id)
+
+            AccountState.Event.AllNotificationsReadSelected -> updateNotification {
+                notificationMutationHandler.markAllNotificationsRead()
+            }
+
+            is AccountState.Event.NotificationDeleteSelected -> updateNotification {
+                notificationMutationHandler.deleteNotification(event.id)
             }
         }
     }
@@ -239,11 +232,9 @@ class AccountViewModel @Inject internal constructor(
         }
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null, captchaError = null) }
-            when (val result = authHandler.login(credentials, captchaResponse)) {
+            when (val result = sessionHandler.login(credentials, captchaResponse)) {
                 is AccountLoginResult.Success -> {
-                    loadedUserId = 0
-                    missingProfileRefreshAttempted = false
-                    isMissingProfileRefreshRunning = false
+                    sessionHandler.markProfileChanged()
                     setState {
                         copy(
                             isLoading = false,
@@ -284,21 +275,16 @@ class AccountViewModel @Inject internal constructor(
     }
 
     private fun recoverMissingProfileIfNeeded() {
-        if (!hasRefreshToken) return
-        if (currentState.userId > 0) return
-        if (missingProfileRefreshAttempted || isMissingProfileRefreshRunning) return
-
-        missingProfileRefreshAttempted = true
-        isMissingProfileRefreshRunning = true
+        if (!sessionHandler.beginMissingProfileRecoveryIfNeeded(currentState)) return
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
-            when (val result = authHandler.refreshProfile()) {
+            when (val result = sessionHandler.refreshProfile()) {
                 is AccountRefreshResult.Success -> {
-                    isMissingProfileRefreshRunning = false
+                    sessionHandler.completeMissingProfileRecovery()
                     if (result.account == null) {
                         setState { copy(isLoading = false, isSignedIn = false) }
                     } else {
-                        loadedUserId = 0
+                        sessionHandler.markProfileChanged()
                         setState {
                             copy(
                                 isLoading = false,
@@ -313,7 +299,7 @@ class AccountViewModel @Inject internal constructor(
                 }
 
                 AccountRefreshResult.Failure -> {
-                    isMissingProfileRefreshRunning = false
+                    sessionHandler.completeMissingProfileRecovery()
                     setState {
                         copy(
                             isLoading = false,
@@ -328,9 +314,7 @@ class AccountViewModel @Inject internal constructor(
 
     private fun maybeLoadHub(force: Boolean = false) {
         val state = currentState
-        if (!state.isSignedIn || state.userId <= 0) return
-        if (!force && loadedUserId == state.userId) return
-        loadedUserId = state.userId
+        if (!sessionHandler.markHubLoadIfNeeded(state, force)) return
         viewModelScope.launch {
             setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null) }
             val result = hubHandler.loadHub(state.userId)
@@ -346,10 +330,6 @@ class AccountViewModel @Inject internal constructor(
             }
             applyNotificationsLoadResult(result.notifications)
         }
-    }
-
-    private suspend fun loadNotifications() {
-        applyNotificationsLoadResult(hubHandler.loadNotifications())
     }
 
     private fun applyNotificationsLoadResult(result: AccountNotificationsLoadResult) {
@@ -375,49 +355,27 @@ class AccountViewModel @Inject internal constructor(
         }
     }
 
-    private fun updateNotification(id: Int, action: suspend () -> Result<Boolean>) {
+    private fun updateNotification(action: suspend () -> AccountNotificationMutationResult) {
         viewModelScope.launch {
             setState { copy(isNotificationsLoading = true, hubError = null) }
-            action().fold(
-                onSuccess = {
-                    if (it) {
-                        loadNotifications()
-                    } else {
-                        setState { copy(isNotificationsLoading = false) }
-                    }
-                },
-                onFailure = {
-                    setState {
-                        copy(
-                            isNotificationsLoading = false,
-                            hubError = AccountUiError.UPDATE_NOTIFICATION_FAILED,
-                        )
-                    }
-                },
-            )
-        }
-    }
+            when (val result = action()) {
+                AccountNotificationMutationResult.Unchanged -> {
+                    setState { copy(isNotificationsLoading = false) }
+                }
 
-    private fun markAllNotificationsReadOptimistically() {
-        viewModelScope.launch {
-            setState { copy(isNotificationsLoading = true, hubError = null) }
-            notificationHandler.markAllNotificationsRead().fold(
-                onSuccess = { updated ->
-                    if (updated) {
-                        loadNotifications()
-                    } else {
-                        setState { copy(isNotificationsLoading = false) }
-                    }
-                },
-                onFailure = {
+                is AccountNotificationMutationResult.Reloaded -> {
+                    applyNotificationsLoadResult(result.notifications)
+                }
+
+                is AccountNotificationMutationResult.Failure -> {
                     setState {
                         copy(
                             isNotificationsLoading = false,
-                            hubError = AccountUiError.UPDATE_NOTIFICATIONS_FAILED,
+                            hubError = result.error,
                         )
                     }
-                },
-            )
+                }
+            }
         }
     }
 

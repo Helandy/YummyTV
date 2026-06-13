@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -19,15 +18,7 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.library.utils.toPlayerVideoSource
-import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerVideoSource
-import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isTrustedPlaceholderMigrationTarget
-import su.afk.yummy.tv.feature.player.resolveContinueWatchingTarget
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,10 +32,9 @@ class LibraryViewModel @Inject internal constructor(
     private val removeWatchedVideo: RemoveWatchedVideoUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val playerNavigator: IPlayerNavigator,
-    private val getAnimePreview: GetAnimePreviewUseCase,
-    private val getAnimeVideos: GetAnimeVideosUseCase,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
+    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
+    private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = LibraryState.State(
@@ -65,7 +55,6 @@ class LibraryViewModel @Inject internal constructor(
         const val KEY_FOCUSED_ITEM_ID = "focusedItemId"
     }
 
-    private var previewJob: Job? = null
     private var remoteListsJob: Job? = null
     private var signedInUserId: Int = 0
 
@@ -121,6 +110,7 @@ class LibraryViewModel @Inject internal constructor(
                             focusedPreview = null
                         )
                     }
+                    animePreviewFocusHandler.cancelFocus()
                 }
             }
 
@@ -217,59 +207,23 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
-        previewJob?.cancel()
         setState { copy(focusedItemId = animeId, focusedPreview = null) }
-        previewJob = viewModelScope.launch {
-            delay(600)
-            runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
-                setState { copy(focusedPreview = preview) }
+        animePreviewFocusHandler.focus(
+            scope = viewModelScope,
+            animeId = animeId,
+            isCurrentFocus = { currentState.focusedItemId == animeId },
+            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
+            onLoadedPreview = { result ->
+                if (result.isCurrentFocus) {
+                    setState { copy(focusedPreview = result.preview) }
+                }
             }
-        }
+        )
     }
 
     private fun launchContinueWatching(entry: WatchProgressEntry) {
         viewModelScope.launch {
-            val videos = if (entry.animeId != 0)
-                runCatching { getAnimeVideos(entry.animeId) }.getOrNull().orEmpty()
-            else emptyList()
-
-            val videoSources = videos.map { it.toPlayerVideoSource() }
-            val progressVideo = entry.toPlayerVideoSource()
-            val target = resolveContinueWatchingTarget(progressVideo, videoSources)
-
-            migratePlaceholderEpisode(entry, progressVideo, target.video)
-
-            nav.navigate(
-                playerNavigator.getPlayerDest(
-                    video = target.video,
-                    allVideos = target.allVideos,
-                    animeTitle = entry.animeTitle,
-                    animeId = entry.animeId,
-                    posterUrl = entry.posterUrl,
-                )
-            )
+            nav.navigate(continueWatchingLaunchHandler.getPlayerDestination(entry))
         }
-    }
-
-    private suspend fun migratePlaceholderEpisode(
-        entry: WatchProgressEntry,
-        progressVideo: PlayerVideoSource,
-        targetVideo: PlayerVideoSource,
-    ) {
-        if (!progressVideo.isTrustedPlaceholderMigrationTarget(targetVideo)) return
-        watchProgressStore.save(
-            animeId = entry.animeId,
-            episode = targetVideo.episode,
-            videoId = targetVideo.id,
-            episodeUrl = targetVideo.iframeUrl,
-            positionMs = entry.positionMs,
-            durationMs = entry.durationMs,
-            animeTitle = entry.animeTitle,
-            posterUrl = entry.posterUrl,
-            playerName = targetVideo.player,
-            dubbing = targetVideo.dubbing,
-            screenshotUrl = entry.screenshotUrl,
-        )
-        watchProgressStore.delete(entry.animeId, entry.episode)
     }
 }

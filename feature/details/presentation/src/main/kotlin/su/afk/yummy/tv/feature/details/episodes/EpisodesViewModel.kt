@@ -25,26 +25,23 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.details.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.VideosUiState
-import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
-import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
-import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.getPlayerDest
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
-class EpisodesViewModel @AssistedInject constructor(
+class EpisodesViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val playerNavigator: IPlayerNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
+    private val playerNavigationHandler: DetailsPlayerNavigationHandler,
 ) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -113,7 +110,7 @@ class EpisodesViewModel @AssistedInject constructor(
 
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        when (val selection = resolveDetailsPlayerSelection(
+        when (val selection = playerNavigationHandler.selectPlayer(
             video = video,
             allVideos = allVideos,
             preferredPlayer = preferredPlayerState.value,
@@ -131,9 +128,9 @@ class EpisodesViewModel @AssistedInject constructor(
         val poster = posterUrl
         val screenshots = screenshotsByEpisode
         viewModelScope.launch(Dispatchers.Default) {
-            val destination = playerNavigator.getPlayerDest(
-                video = video.toPlayerVideoSource(),
-                allVideos = allVideos.map { it.toPlayerVideoSource() },
+            val destination = playerNavigationHandler.getPlayerDestination(
+                video = video,
+                allVideos = allVideos,
                 animeTitle = title,
                 animeId = animeId,
                 posterUrl = poster,

@@ -36,11 +36,8 @@ import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
-import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
-import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
-import su.afk.yummy.tv.feature.player.getPlayerDest
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject internal constructor(
@@ -51,7 +48,6 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val collectionNavigator: ICollectionNavigator,
-    private val playerNavigator: IPlayerNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val libraryStore: LibraryStore,
@@ -63,6 +59,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val stringProvider: StringProvider,
     private val libraryHandler: DetailsLibraryHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
+    private val playerNavigationHandler: DetailsPlayerNavigationHandler,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -403,7 +400,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        when (val selection = resolveDetailsPlayerSelection(
+        when (val selection = playerNavigationHandler.selectPlayer(
             video = video,
             allVideos = allVideos,
             preferredPlayer = preferredPlayerState.value,
@@ -416,22 +413,34 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
-        navigateToPlayer(video.toPlayerVideoSource())
+        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        val details = currentState.details
+        viewModelScope.launch(Dispatchers.Default) {
+            val destination = playerNavigationHandler.getPlayerDestination(
+                video = video,
+                allVideos = allVideos,
+                animeTitle = details?.title ?: "",
+                animeId = animeId,
+                posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
+                screenshotByEpisode = details?.screenshots.orEmpty().mapNotNull { screenshot ->
+                    screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
+                }.toMap(),
+            )
+            withContext(Dispatchers.Main) { nav.navigate(destination) }
+        }
     }
 
     private fun navigateToPlayer(video: PlayerVideoSource) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val details = currentState.details
         viewModelScope.launch(Dispatchers.Default) {
-            val episodeScreenshots = details?.screenshots.orEmpty()
-
-            val destination = playerNavigator.getPlayerDest(
+            val destination = playerNavigationHandler.getPlayerDestination(
                 video = video,
-                allVideos = allVideos.map { it.toPlayerVideoSource() },
+                allVideos = allVideos,
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
                 posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
-                screenshotByEpisode = episodeScreenshots.mapNotNull { screenshot ->
+                screenshotByEpisode = details?.screenshots.orEmpty().mapNotNull { screenshot ->
                     screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
                 }.toMap(),
             )

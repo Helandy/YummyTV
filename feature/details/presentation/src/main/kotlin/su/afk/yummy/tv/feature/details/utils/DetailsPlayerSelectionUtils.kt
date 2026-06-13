@@ -5,7 +5,6 @@ import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
@@ -35,16 +34,6 @@ internal fun List<AnimeVideo>.selectInitialDetailsVideo(): AnimeVideo? {
         ?.minByOrNull { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
         ?: source.firstOrNull()
 }
-
-internal fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = id,
-    episode = episode,
-    dubbing = dubbing,
-    player = player,
-    iframeUrl = iframeUrl,
-    views = views,
-    skips = skips.toPlayerSkips(),
-)
 
 internal fun AnimeDetails.toLibraryEntry(
     list: UserAnimeList,

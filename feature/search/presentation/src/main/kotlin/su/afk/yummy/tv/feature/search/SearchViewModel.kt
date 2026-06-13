@@ -2,43 +2,34 @@ package su.afk.yummy.tv.feature.search
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.search.model.SearchFilters
-import su.afk.yummy.tv.domain.search.model.SearchPage
 import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
-import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.search.presentation.R
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchViewModel @Inject constructor(
+class SearchViewModel @Inject internal constructor(
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val search: SearchUseCase,
     private val getSearchFilterOptions: GetSearchFilterOptionsUseCase,
-    private val getAnimePreview: GetAnimePreviewUseCase,
     private val stringProvider: StringProvider,
+    private val animePreviewFocusHandler: AnimePreviewFocusHandler,
+    private val searchPagingHandler: SearchPagingHandler,
 ) : BaseViewModelNew<SearchState.State, SearchState.Event, SearchState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = SearchState.State()
 
-    private var searchJob: Job? = null
-    private var previewJob: Job? = null
-
     private companion object {
-        const val PAGE_SIZE = 20
         const val DEBOUNCE_MS = 3_000L
     }
 
@@ -98,8 +89,8 @@ class SearchViewModel @Inject constructor(
 
     private fun onExternalSearchSubmitted(query: String) {
         val normalizedQuery = query.trim()
-        searchJob?.cancel()
-        previewJob?.cancel()
+        searchPagingHandler.cancel()
+        animePreviewFocusHandler.cancelFocus()
         setState {
             copy(
                 query = normalizedQuery,
@@ -119,53 +110,62 @@ class SearchViewModel @Inject constructor(
             setState { copy(isLoading = false) }
             return
         }
-        searchJob = viewModelScope.launch {
-            load(normalizedQuery, SearchFilters.EMPTY, offset = 0, replace = true)
-        }
+        loadSearch(
+            SearchPagingRequest(
+                normalizedQuery,
+                SearchFilters.EMPTY,
+                offset = 0,
+                replace = true
+            )
+        )
     }
 
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
-        previewJob?.cancel()
         setState { copy(focusedItemId = animeId, focusedPreview = null) }
-        previewJob = viewModelScope.launch {
-            delay(600)
-            runCatching { getAnimePreview(animeId) }.onSuccess { preview ->
-                setState { copy(focusedPreview = preview) }
+        animePreviewFocusHandler.focus(
+            scope = viewModelScope,
+            animeId = animeId,
+            isCurrentFocus = { currentState.focusedItemId == animeId },
+            onCachedPreview = { preview, _ -> setState { copy(focusedPreview = preview) } },
+            onLoadedPreview = { result ->
+                if (result.isCurrentFocus) {
+                    setState { copy(focusedPreview = result.preview) }
+                }
             }
-        }
+        )
     }
 
     private fun onQueryChanged(query: String) {
         setState { copy(query = query, items = emptyList(), offset = 0, error = null, canLoadMore = false) }
-        searchJob?.cancel()
+        searchPagingHandler.cancel()
         if (query.isBlank() && currentState.filters.isEmpty) {
             setState { copy(isLoading = false) }
             return
         }
-        searchJob = viewModelScope.launch {
-            delay(DEBOUNCE_MS)
-            load(query, currentState.filters, offset = 0, replace = true)
-        }
+        loadSearch(
+            request = SearchPagingRequest(query, currentState.filters, offset = 0, replace = true),
+            debounceMs = DEBOUNCE_MS,
+        )
     }
 
     private fun onSearchSubmitted() {
         val query = currentState.query
         if (query.isBlank() && currentState.filters.isEmpty) return
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch { load(query, currentState.filters, offset = 0, replace = true) }
+        searchPagingHandler.cancel()
+        loadSearch(SearchPagingRequest(query, currentState.filters, offset = 0, replace = true))
     }
 
     private fun loadMore() {
         val s = currentState
-        if (!s.isLoading && s.canLoadMore && (s.query.isNotBlank() || !s.filters.isEmpty)) {
-            viewModelScope.launch { load(s.query, s.filters, offset = s.offset, replace = false) }
+        if (searchPagingHandler.canLoadMore(s.query, s.filters, s.isLoading, s.canLoadMore)) {
+            loadSearch(SearchPagingRequest(s.query, s.filters, offset = s.offset, replace = false))
         }
     }
 
     private fun applyFilters() {
         val query = currentState.query
-        val filters = currentState.draftFilters.normalizedYears()
+        val filters = searchPagingHandler.normalizedYears(currentState.draftFilters)
         setState {
             copy(
                 filters = filters,
@@ -178,12 +178,12 @@ class SearchViewModel @Inject constructor(
                 canLoadMore = false,
             )
         }
-        searchJob?.cancel()
+        searchPagingHandler.cancel()
         if (query.isBlank() && filters.isEmpty) {
             setState { copy(isLoading = false) }
             return
         }
-        searchJob = viewModelScope.launch { load(query, filters, offset = 0, replace = true) }
+        loadSearch(SearchPagingRequest(query, filters, offset = 0, replace = true))
     }
 
     private fun resetFilters() {
@@ -199,63 +199,60 @@ class SearchViewModel @Inject constructor(
                 canLoadMore = false,
             )
         }
-        searchJob?.cancel()
+        searchPagingHandler.cancel()
         if (query.isBlank()) {
             setState { copy(isLoading = false) }
             return
         }
-        searchJob = viewModelScope.launch { load(query, SearchFilters.EMPTY, offset = 0, replace = true) }
+        loadSearch(SearchPagingRequest(query, SearchFilters.EMPTY, offset = 0, replace = true))
     }
 
     private fun updateDraft(update: SearchFilters.() -> SearchFilters) {
         setState { copy(draftFilters = draftFilters.update()) }
     }
 
-    private suspend fun load(query: String, filters: SearchFilters, offset: Int, replace: Boolean) {
-        setState { if (replace) copy(isLoading = true, error = null) else copy(isLoading = true) }
-        runCatching { loadVisiblePage(query, filters, offset) }.fold(
-            onSuccess = { page ->
+    private fun loadSearch(
+        request: SearchPagingRequest,
+        debounceMs: Long = 0L,
+    ) {
+        searchPagingHandler.load(
+            scope = viewModelScope,
+            request = request,
+            debounceMs = debounceMs,
+            onLoading = { loadingRequest ->
                 setState {
-                    copy(
-                        isLoading = false,
-                        items = if (replace) page.items else items + page.items,
-                        offset = page.nextOffset,
-                        canLoadMore = page.canLoadMore,
+                    if (loadingRequest.replace) copy(isLoading = true, error = null) else copy(
+                        isLoading = true
                     )
                 }
             },
-            onFailure = { e ->
-                setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.search_error)) }
-            },
+            onResult = ::applySearchResult,
         )
     }
 
-    private suspend fun loadVisiblePage(
-        query: String,
-        filters: SearchFilters,
-        offset: Int,
-    ): SearchPage {
-        var page = search(query, filters, PAGE_SIZE, offset)
-        while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > offset) {
-            val nextPage = search(query, filters, PAGE_SIZE, page.nextOffset)
-            page = page.copy(
-                items = nextPage.items,
-                nextOffset = nextPage.nextOffset,
-                canLoadMore = nextPage.canLoadMore,
-            )
+    private fun applySearchResult(result: SearchPagingResult) {
+        when (result) {
+            is SearchPagingResult.Success -> {
+                setState {
+                    copy(
+                        isLoading = false,
+                        items = if (result.request.replace) result.page.items else items + result.page.items,
+                        offset = result.page.nextOffset,
+                        canLoadMore = result.page.canLoadMore,
+                    )
+                }
+            }
+
+            is SearchPagingResult.Failure -> {
+                setState {
+                    copy(
+                        isLoading = false,
+                        error = result.error.message ?: stringProvider.get(R.string.search_error),
+                    )
+                }
+            }
         }
-        return page
     }
 
     private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
-
-    private fun SearchFilters.normalizedYears(): SearchFilters {
-        val from = fromYear
-        val to = toYear
-        return if (from != null && to != null && from > to) {
-            copy(fromYear = to, toYear = from)
-        } else {
-            this
-        }
-    }
 }
