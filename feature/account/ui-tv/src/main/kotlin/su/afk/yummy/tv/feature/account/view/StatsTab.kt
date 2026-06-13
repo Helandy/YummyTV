@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.utils.isEmpty
 
 @Composable
@@ -82,7 +83,7 @@ internal fun StatsTab(
             )
         }
         item {
-            ErrorText(state.error ?: state.hubError)
+            ErrorText((state.error ?: state.hubError).accountErrorMessage())
         }
         if (state.isStatsLoading && stats == null) {
             item { EmptyText(stringResource(R.string.account_loading)) }

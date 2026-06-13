@@ -23,6 +23,7 @@ import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkNotificationReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.ResolveNotificationAnimeIdUseCase
+import su.afk.yummy.tv.feature.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.account.utils.totalUnreadCount
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -125,7 +126,7 @@ class AccountViewModel @Inject constructor(
             }
             is AccountState.Event.CaptchaSolved -> {
                 if (event.token.isBlank()) {
-                    setState { copy(captchaError = "Captcha response is empty") }
+                    setState { copy(captchaError = AccountUiError.CAPTCHA_RESPONSE_EMPTY) }
                 } else {
                     login(captchaResponse = event.token)
                 }
@@ -134,14 +135,14 @@ class AccountViewModel @Inject constructor(
                 copy(
                     isLoading = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
-                    captchaError = "Captcha expired. Try again.",
+                    captchaError = AccountUiError.CAPTCHA_EXPIRED,
                 )
             }
             is AccountState.Event.CaptchaFailed -> setState {
                 copy(
                     isLoading = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
-                    captchaError = event.message ?: "Could not load captcha. Try again.",
+                    captchaError = AccountUiError.CAPTCHA_LOAD_FAILED,
                 )
             }
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
@@ -168,7 +169,14 @@ class AccountViewModel @Inject constructor(
                         }
                         nav.back()
                     },
-                    onFailure = { setState { copy(isLoading = false, error = it.message) } },
+                    onFailure = {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = AccountUiError.LOGOUT_FAILED
+                            )
+                        }
+                    },
                 )
             }
             AccountState.Event.RefreshProfileSelected -> viewModelScope.launch {
@@ -179,7 +187,14 @@ class AccountViewModel @Inject constructor(
                         loadedUserId = 0
                         maybeLoadHub(force = true)
                     },
-                    onFailure = { setState { copy(isLoading = false, error = it.message) } },
+                    onFailure = {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = AccountUiError.REFRESH_FAILED
+                            )
+                        }
+                    },
                 )
             }
             AccountState.Event.RefreshHubSelected -> maybeLoadHub(force = true)
@@ -223,12 +238,10 @@ class AccountViewModel @Inject constructor(
                     if (animeId != null) {
                         nav.navigate(detailsNavigator.getDetailsDest(animeId))
                     } else {
-                        setState { copy(hubError = "Could not open notification") }
+                        setState { copy(hubError = AccountUiError.OPEN_NOTIFICATION_FAILED) }
                     }
                 },
-                onFailure = { error ->
-                    setState { copy(hubError = error.message ?: "Could not open notification") }
-                },
+                onFailure = { setState { copy(hubError = AccountUiError.OPEN_NOTIFICATION_FAILED) } },
             )
         }
     }
@@ -238,7 +251,7 @@ class AccountViewModel @Inject constructor(
         if (credentials == null) {
             setState {
                 copy(
-                    error = "Login and password are required",
+                    error = AccountUiError.CREDENTIALS_REQUIRED,
                     isCaptchaRequired = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
                     captchaError = null,
@@ -278,14 +291,14 @@ class AccountViewModel @Inject constructor(
                                 captchaError = if (captchaResponse == null) {
                                     null
                                 } else {
-                                    "Captcha was not accepted. Try again."
+                                    AccountUiError.CAPTCHA_REJECTED
                                 },
                                 error = null,
                             )
                         }
                         return@fold
                     }
-                    setState { copy(isLoading = false, error = error.message ?: "Could not sign in") }
+                    setState { copy(isLoading = false, error = AccountUiError.SIGN_IN_FAILED) }
                 },
             )
         }
@@ -319,9 +332,15 @@ class AccountViewModel @Inject constructor(
                         maybeLoadHub(force = true)
                     }
                 },
-                onFailure = { error ->
+                onFailure = {
                     isMissingProfileRefreshRunning = false
-                    setState { copy(isLoading = false, isSignedIn = false, error = error.message) }
+                    setState {
+                        copy(
+                            isLoading = false,
+                            isSignedIn = false,
+                            error = AccountUiError.REFRESH_FAILED
+                        )
+                    }
                 },
             )
         }
@@ -336,11 +355,11 @@ class AccountViewModel @Inject constructor(
             setState { copy(isStatsLoading = true, isNotificationsLoading = true, hubError = null) }
             runCatching { getUserStats(state.userId) }.fold(
                 onSuccess = { stats -> setState { copy(stats = stats, isStatsLoading = false) } },
-                onFailure = { error ->
+                onFailure = {
                     setState {
                         copy(
                             isStatsLoading = false,
-                            hubError = error.message ?: "Could not load profile statistics",
+                            hubError = AccountUiError.LOAD_PROFILE_STATISTICS_FAILED,
                         )
                     }
                 },
@@ -363,11 +382,11 @@ class AccountViewModel @Inject constructor(
                     )
                 }
             },
-            onFailure = { error ->
+            onFailure = {
                 setState {
                     copy(
                         isNotificationsLoading = false,
-                        hubError = error.message ?: "Could not load notifications",
+                        hubError = AccountUiError.LOAD_NOTIFICATIONS_FAILED,
                     )
                 }
             },
@@ -385,11 +404,11 @@ class AccountViewModel @Inject constructor(
                         setState { copy(isNotificationsLoading = false) }
                     }
                 },
-                onFailure = { error ->
+                onFailure = {
                     setState {
                         copy(
                             isNotificationsLoading = false,
-                            hubError = error.message ?: "Could not update notification",
+                            hubError = AccountUiError.UPDATE_NOTIFICATION_FAILED,
                         )
                     }
                 },
@@ -414,11 +433,11 @@ class AccountViewModel @Inject constructor(
                         setState { copy(isNotificationsLoading = false) }
                     }
                 },
-                onFailure = { error ->
+                onFailure = {
                     setState {
                         copy(
                             isNotificationsLoading = false,
-                            hubError = error.message ?: "Could not update notifications",
+                            hubError = AccountUiError.UPDATE_NOTIFICATIONS_FAILED,
                         )
                     }
                 },

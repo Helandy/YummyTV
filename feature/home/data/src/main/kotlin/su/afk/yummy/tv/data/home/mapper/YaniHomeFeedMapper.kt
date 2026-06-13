@@ -11,18 +11,28 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 
 internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
     val heroItems = response.topCarousel.items.mapNotNull { it.toSeriesItem() }
-    val newSection = response.newVideos.toNewVideosSection(stringProvider.get(R.string.home_section_new), stringProvider)
+    val newSection = response.newVideos.toNewVideosSection(
+        type = HomeFeedSectionType.NEW_RELEASES,
+        title = stringProvider.get(R.string.home_section_new),
+    )
     val recommendsSection = response.recommends
         .mapNotNull { it.toSeriesItem() }
-        .toItemSection(stringProvider.get(R.string.home_section_recommends))
+        .toItemSection(
+            type = HomeFeedSectionType.RECOMMENDATIONS,
+            title = stringProvider.get(R.string.home_section_recommends),
+        )
     val sections = listOfNotNull(
         newSection,
         recommendsSection,
-        response.collections.mapNotNull { it.toCollectionItem() }.toItemSection(stringProvider.get(R.string.home_section_collections)),
+        response.collections.mapNotNull { it.toCollectionItem() }.toItemSection(
+            type = HomeFeedSectionType.COLLECTIONS,
+            title = stringProvider.get(R.string.home_section_collections),
+        ),
     )
 
     return HomeFeed(
@@ -31,7 +41,10 @@ internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
     )
 }
 
-private fun List<YaniVideoDto>.toNewVideosSection(title: String, stringProvider: StringProvider): HomeFeedSection? {
+private fun List<YaniVideoDto>.toNewVideosSection(
+    type: HomeFeedSectionType,
+    title: String,
+): HomeFeedSection? {
     val items = groupBy { it.animeId }
         .mapNotNull { (animeId, videos) ->
             val id = animeId ?: return@mapNotNull null
@@ -46,11 +59,14 @@ private fun List<YaniVideoDto>.toNewVideosSection(title: String, stringProvider:
                 action = HomeFeedItemAction.OpenSeries(id),
             )
         }
-    return items.toItemSection(title)
+    return items.toItemSection(type = type, title = title)
 }
 
-private fun List<HomeFeedItem>.toItemSection(title: String): HomeFeedSection? =
-    takeIf { it.isNotEmpty() }?.let { HomeFeedSection(title = title, items = it) }
+private fun List<HomeFeedItem>.toItemSection(
+    type: HomeFeedSectionType,
+    title: String,
+): HomeFeedSection? =
+    takeIf { it.isNotEmpty() }?.let { HomeFeedSection(type = type, title = title, items = it) }
 
 private fun YaniAnimeDto.toSeriesItem(): HomeFeedItem? {
     val id = animeId ?: return null

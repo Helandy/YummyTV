@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.model.AccountUiError
 
 const val YANI_HCAPTCHA_SITE_KEY = "b1847961-208e-4a90-9671-1e6bba9e0b36"
 
@@ -30,9 +31,9 @@ class AccountState {
         val isCaptchaRequired: Boolean = false,
         val captchaSiteKey: String = YANI_HCAPTCHA_SITE_KEY,
         val captchaChallengeId: Int = 0,
-        val captchaError: String? = null,
-        val error: String? = null,
-        val hubError: String? = null,
+        val captchaError: AccountUiError? = null,
+        val error: AccountUiError? = null,
+        val hubError: AccountUiError? = null,
     ) : UiState
 
     enum class AccountTab {

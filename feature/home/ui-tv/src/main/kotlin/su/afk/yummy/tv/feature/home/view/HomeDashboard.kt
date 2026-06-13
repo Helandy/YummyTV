@@ -70,7 +70,7 @@ internal fun HomeDashboard(
     val sectionsBaseLazyIdx = heroLazyIdx + if (hasHero) 1 else 0
     val totalLazyItems = sectionsBaseLazyIdx + feed.sections.size
     fun sectionKey(index: Int): String = if (index in feed.sections.indices) {
-        "${index}_${feed.sections[index].title}"
+        "${index}_${feed.sections[index].type.name}"
     } else {
         "section_$index"
     }

@@ -33,4 +33,17 @@
     <string name="account_mark_read">Прочитать</string>
     <string name="account_mark_all_read">Прочитать все</string>
     <string name="account_delete">Удалить</string>
+    <string name="account_error_captcha_response_empty">Ответ капчи пустой</string>
+    <string name="account_error_captcha_expired">Срок действия капчи истек. Попробуйте еще раз.</string>
+    <string name="account_error_captcha_load_failed">Не удалось загрузить капчу. Попробуйте еще раз.</string>
+    <string name="account_error_captcha_rejected">Капча не принята. Попробуйте еще раз.</string>
+    <string name="account_error_credentials_required">Введите логин и пароль</string>
+    <string name="account_error_logout_failed">Не удалось выйти из аккаунта</string>
+    <string name="account_error_refresh_failed">Не удалось обновить профиль</string>
+    <string name="account_error_open_notification_failed">Не удалось открыть уведомление</string>
+    <string name="account_error_sign_in_failed">Не удалось войти</string>
+    <string name="account_error_load_profile_statistics_failed">Не удалось загрузить статистику профиля</string>
+    <string name="account_error_load_notifications_failed">Не удалось загрузить уведомления</string>
+    <string name="account_error_update_notification_failed">Не удалось обновить уведомление</string>
+    <string name="account_error_update_notifications_failed">Не удалось обновить уведомления</string>
 </resources>

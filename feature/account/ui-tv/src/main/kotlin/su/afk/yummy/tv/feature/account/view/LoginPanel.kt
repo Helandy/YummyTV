@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.AppBrandIcon
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable
 internal fun LoginPanel(
@@ -84,6 +85,6 @@ internal fun LoginPanel(
                 )
             }
         }
-        ErrorText(state.error)
+        ErrorText(state.error.accountErrorMessage())
     }
 }

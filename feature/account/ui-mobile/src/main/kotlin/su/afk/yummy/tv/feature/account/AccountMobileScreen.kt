@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
@@ -113,7 +114,7 @@ fun AccountMobileScreen(
                     },
                     modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp),
                 )
-                state.hubError?.let { error ->
+                state.hubError.accountErrorMessage()?.let { error ->
                     AccountMobileEmptyText(
                         text = error,
                         modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp),

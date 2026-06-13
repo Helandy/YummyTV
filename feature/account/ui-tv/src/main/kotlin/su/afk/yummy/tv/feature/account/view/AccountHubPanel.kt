@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.AccountState
+import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable
 internal fun AccountHubPanel(
@@ -52,7 +53,7 @@ internal fun AccountHubPanel(
                 },
                 markAllReadEnabled = !state.isNotificationsLoading,
             )
-            ErrorText(state.error ?: state.hubError)
+            ErrorText((state.error ?: state.hubError).accountErrorMessage())
             NotificationsTab(
                 state = state,
                 onEvent = onEvent,

@@ -4,17 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
-import su.afk.yummy.tv.domain.home.model.HomeFeedSection
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.mobile.R
 
-internal fun HomeFeedSection.isTitleOnlySection(): Boolean =
-    title == "Новинки" ||
-        title == "New releases" ||
-            title == "Рекомендации" ||
-            title == "Recommendations" ||
-        title == "Коллекции" ||
-        title == "Collections"
+internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this) {
+    HomeFeedSectionType.NEW_RELEASES,
+    HomeFeedSectionType.RECOMMENDATIONS,
+    HomeFeedSectionType.COLLECTIONS -> false
+}
 
 internal suspend fun WatchProgressEntry.resolveMobileContinueWatchingImage(): String? {
     val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }

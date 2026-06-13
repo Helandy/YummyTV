@@ -12,14 +12,14 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileSectionHeader
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
-import su.afk.yummy.tv.feature.home.utils.isTitleOnlySection
+import su.afk.yummy.tv.feature.home.utils.showMobileCardMetadata
 
 @Composable
 internal fun HomeFeedSectionRow(
     section: HomeFeedSection,
     onItemSelected: (HomeFeedItem) -> Unit,
 ) {
-    val showCardMetadata = !section.isTitleOnlySection()
+    val showCardMetadata = section.type.showMobileCardMetadata()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(

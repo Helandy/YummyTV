@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.AppBrandIcon
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.utils.accountErrorMessage
 
 @Composable
 internal fun AccountMobileLoginCard(
@@ -95,7 +96,7 @@ internal fun AccountMobileLoginCard(
                     AccountMobileInfoText(stringResource(R.string.account_captcha_hint))
                 }
             }
-            state.error?.let { AccountMobileInfoText(it, isError = true) }
+            state.error.accountErrorMessage()?.let { AccountMobileInfoText(it, isError = true) }
         }
     }
 }

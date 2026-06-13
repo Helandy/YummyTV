@@ -120,7 +120,7 @@ fun HomeMobileScreen(
                 .orEmpty()
                 .filter { it.items.isNotEmpty() }
                 .forEach { section ->
-                    item(key = "section_${section.title}") {
+                    item(key = "section_${section.type.name}") {
                         HomeFeedSectionRow(
                             section = section,
                             onItemSelected = onItemSelected,

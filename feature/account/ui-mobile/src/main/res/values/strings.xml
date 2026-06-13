@@ -27,4 +27,17 @@
     <string name="account_logout_confirm_message">Your local library and watch progress will stay on this device.</string>
     <string name="account_logout_confirm_action">Log out</string>
     <string name="account_logout_confirm_cancel">Cancel</string>
+    <string name="account_error_captcha_response_empty">Captcha response is empty</string>
+    <string name="account_error_captcha_expired">Captcha expired. Try again.</string>
+    <string name="account_error_captcha_load_failed">Could not load captcha. Try again.</string>
+    <string name="account_error_captcha_rejected">Captcha was not accepted. Try again.</string>
+    <string name="account_error_credentials_required">Login and password are required</string>
+    <string name="account_error_logout_failed">Could not log out</string>
+    <string name="account_error_refresh_failed">Could not refresh profile</string>
+    <string name="account_error_open_notification_failed">Could not open notification</string>
+    <string name="account_error_sign_in_failed">Could not sign in</string>
+    <string name="account_error_load_profile_statistics_failed">Could not load profile statistics</string>
+    <string name="account_error_load_notifications_failed">Could not load notifications</string>
+    <string name="account_error_update_notification_failed">Could not update notification</string>
+    <string name="account_error_update_notifications_failed">Could not update notifications</string>
 </resources>

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable
 internal fun CaptchaChallenge(
@@ -59,6 +60,6 @@ internal fun CaptchaChallenge(
                     shape = RoundedCornerShape(10.dp),
                 ),
         )
-        ErrorText(state.captchaError)
+        ErrorText(state.captchaError.accountErrorMessage())
     }
 }
