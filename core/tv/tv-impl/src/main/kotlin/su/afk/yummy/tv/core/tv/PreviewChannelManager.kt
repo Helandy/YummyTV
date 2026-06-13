@@ -72,7 +72,10 @@ internal class PreviewChannelManager @Inject constructor(
         val posterUrl = item.poster?.run { medium ?: big ?: fullsize ?: small }
         val values = ContentValues().apply {
             put(TvContractCompat.PreviewPrograms.COLUMN_CHANNEL_ID, channelId)
-            put(TvContractCompat.PreviewPrograms.COLUMN_TYPE, TvContractCompat.PreviewPrograms.TYPE_TV_SERIES)
+            put(
+                TvContractCompat.PreviewPrograms.COLUMN_TYPE,
+                TvContractCompat.PreviewPrograms.TYPE_TV_SERIES
+            )
             put(PROGRAM_COLUMN_TITLE, item.title)
             put(TvContractCompat.PreviewPrograms.COLUMN_INTERNAL_PROVIDER_ID, animeId.toString())
             if (!posterUrl.isNullOrBlank()) put(PROGRAM_COLUMN_POSTER_ART_URI, posterUrl)

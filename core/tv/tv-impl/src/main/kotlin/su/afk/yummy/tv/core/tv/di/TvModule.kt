@@ -12,6 +12,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 internal interface TvModule {
 
-    @Binds @Singleton
+    @Binds
+    @Singleton
     fun bindTvIntegration(impl: DeviceAwareTvIntegration): ITvIntegration
 }

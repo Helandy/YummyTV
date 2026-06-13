@@ -17,7 +17,7 @@ android {
 dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
-    implementation(project(":core:tv-api"))
+    implementation(project(":core:tv:tv-api"))
     implementation(project(":core:utils"))
     implementation(project(":feature:home:domain"))
 

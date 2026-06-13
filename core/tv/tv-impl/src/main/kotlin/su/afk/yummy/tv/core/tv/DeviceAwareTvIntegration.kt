@@ -22,7 +22,7 @@ internal class DeviceAwareTvIntegration @Inject constructor(
 
     private val isTelevision: Boolean
         get() = context.resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
+                Configuration.UI_MODE_TYPE_TELEVISION
 
     override val browsableChannelRequest: SharedFlow<Long>
         get() = if (isTelevision) real.browsableChannelRequest else emptyBrowsableRequests

@@ -69,7 +69,8 @@ internal class WatchNextManager @Inject constructor(
     private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
         val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
         return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
-            ?: entry.episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
+            ?: entry.episodeUrl.takeIf { it.isNotBlank() }
+                ?.let { KodikThumbnailExtractor.extract(it) }
     }
 }
 
