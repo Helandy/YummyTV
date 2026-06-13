@@ -1,0 +1,67 @@
+#!/bin/sh
+
+set -u
+
+commit_msg_file=${1:-}
+
+if [ -z "$commit_msg_file" ] || [ ! -f "$commit_msg_file" ]; then
+  echo "commit-msg hook: commit message file not found." >&2
+  exit 1
+fi
+
+title=$(
+  awk '
+    {
+      line = $0
+      sub(/\r$/, "", line)
+      if (line ~ /^[[:space:]]*$/) {
+        next
+      }
+      if (line ~ /^[[:space:]]*#/) {
+        next
+      }
+      print line
+      exit
+    }
+  ' "$commit_msg_file"
+)
+
+if [ -z "$title" ]; then
+  echo "Invalid commit title: commit message is empty." >&2
+  exit 1
+fi
+
+case "$title" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *|amend!\ *)
+    exit 0
+    ;;
+esac
+
+if printf '%s\n' "$title" | grep -Eq '^\[(BUGFIX|CORE|MOBILE|TV|DOCS|CI|RELEASE)\] .+'; then
+  exit 0
+fi
+
+cat >&2 <<'EOF'
+Invalid commit title.
+
+Expected format:
+  [TAG] description
+
+Allowed tags:
+  [BUGFIX] [CORE] [MOBILE] [TV] [DOCS] [CI] [RELEASE]
+
+Examples:
+  [CORE] refactor catalog loading
+  [TV] fix focus on details screen
+  [BUGFIX] handle empty schedule
+
+Service commits are allowed without tags:
+  Merge ...
+  Revert ...
+  fixup! ...
+  squash! ...
+  amend! ...
+EOF
+
+printf '\nActual title:\n  %s\n' "$title" >&2
+exit 1
