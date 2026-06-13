@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 
+/** Deletes a single profile notification. */
 class DeleteNotificationUseCase(
     private val repository: ProfileNotificationsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

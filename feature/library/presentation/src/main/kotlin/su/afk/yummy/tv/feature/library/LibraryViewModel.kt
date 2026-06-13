@@ -2,11 +2,8 @@ package su.afk.yummy.tv.feature.library
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -21,46 +18,33 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
-import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
-import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimePreviewUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
 import su.afk.yummy.tv.feature.library.utils.toPlayerVideoSource
-import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isPlaceholderEpisode
-import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
+import su.afk.yummy.tv.feature.player.isTrustedPlaceholderMigrationTarget
+import su.afk.yummy.tv.feature.player.resolveContinueWatchingTarget
 import javax.inject.Inject
 
 @HiltViewModel
-class LibraryViewModel @Inject constructor(
+class LibraryViewModel @Inject internal constructor(
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
-    private val getUserAnimeList: GetUserAnimeListUseCase,
-    private val getUserFavoriteAnimeList: GetUserFavoriteAnimeListUseCase,
-    private val setAnimeList: SetAnimeListUseCase,
-    private val removeAnimeList: RemoveAnimeListUseCase,
-    private val setAnimeFavorite: SetAnimeFavoriteUseCase,
     private val removeWatchedVideo: RemoveWatchedVideoUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val playerNavigator: IPlayerNavigator,
     private val getAnimePreview: GetAnimePreviewUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = LibraryState.State(
@@ -189,92 +173,27 @@ class LibraryViewModel @Inject constructor(
         remoteListsJob?.cancel()
         remoteListsJob = viewModelScope.launch {
             setState { copy(isRemoteLoading = true, remoteError = null) }
-            runCatching {
-                val remote = fetchRemoteLists(userId)
-                val syncResult = syncLocalMissingToRemote(remote)
-                val currentRemote = if (syncResult.syncedAny) fetchRemoteLists(userId) else remote
-                currentRemote to syncResult.error
-            }.fold(
-                onSuccess = { (remote, syncError) ->
+            when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId)) {
+                is RemoteLibraryLoadResult.Success -> {
                     setState {
                         copy(
-                            remoteItems = remote,
-                            remoteError = syncError,
+                            remoteItems = result.remoteItems,
+                            remoteError = result.syncError,
                             isRemoteLoading = false,
                         )
                     }
-                },
-                onFailure = {
-                    if (it is CancellationException) throw it
+                }
+
+                is RemoteLibraryLoadResult.Failure -> {
                     setState {
                         copy(
-                            remoteError = it.message,
+                            remoteError = result.message,
                             isRemoteLoading = false,
                         )
                     }
-                },
-            )
-        }
-    }
-
-    private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> = coroutineScope {
-        val watching = async { getUserAnimeList(userId, UserAnimeList.WATCHING) }
-        val favorites = async { getUserFavoriteAnimeList(userId) }
-        val planned = async { getUserAnimeList(userId, UserAnimeList.PLANNED) }
-        val completed = async { getUserAnimeList(userId, UserAnimeList.COMPLETED) }
-        val postponed = async { getUserAnimeList(userId, UserAnimeList.POSTPONED) }
-        val dropped = async { getUserAnimeList(userId, UserAnimeList.DROPPED) }
-
-        mapOf(
-            LibraryTab.WATCHING to watching.await(),
-            LibraryTab.FAVORITES to favorites.await(),
-            LibraryTab.PLANNED to planned.await(),
-            LibraryTab.COMPLETED to completed.await(),
-            LibraryTab.POSTPONED to postponed.await(),
-            LibraryTab.DROPPED to dropped.await(),
-        )
-    }
-
-    private suspend fun syncLocalMissingToRemote(
-        remote: Map<LibraryTab, List<UserAnimeListItem>>,
-    ): LocalLibrarySyncResult {
-        val remotePrimaryAnimeIds = remote
-            .filterKeys { it != LibraryTab.FAVORITES }
-            .values
-            .flatten()
-            .map { it.animeId }
-            .toSet()
-        val remoteFavoriteAnimeIds = remote[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
-        val localItems = libraryStore.getAll()
-        val localMissing = localItems
-            .filter { it.listId >= 0 }
-            .filterNot { it.animeId in remotePrimaryAnimeIds }
-        var syncedAny = false
-        var firstError: String? = null
-
-        localMissing.forEach { entry ->
-            val list = entry.userAnimeList() ?: return@forEach
-            runCatching {
-                setAnimeList(entry.animeId, list)
-            }.fold(
-                onSuccess = { syncedAny = true },
-                onFailure = { if (firstError == null) firstError = it.message },
-            )
-        }
-
-        localItems
-            .filter { it.isFavorite }
-            .filterNot { it.animeId in remoteFavoriteAnimeIds }
-            .forEach { entry ->
-                runCatching {
-                    setAnimeFavorite(entry.animeId, true)
-                }.fold(
-                    onSuccess = { syncedAny = true },
-                    onFailure = { if (firstError == null) firstError = it.message },
-                )
+                }
             }
-
-        return LocalLibrarySyncResult(syncedAny = syncedAny, error = firstError)
+        }
     }
 
     private fun removeRemoteEntry(event: LibraryState.Event.RemoveRemoteEntry) {
@@ -284,15 +203,10 @@ class LibraryViewModel @Inject constructor(
             copy(remoteItems = remoteItems + (tab to remoteItems[tab].orEmpty().filterNot { it.animeId == event.animeId }))
         }
         viewModelScope.launch {
-            val result = runCatching {
-                if (event.favorite) {
-                    setAnimeFavorite(event.animeId, false)
-                    libraryStore.setFavorite(event.animeId, title = "", poster = null, favorite = false)
-                } else {
-                    removeAnimeList(event.animeId)
-                    libraryStore.remove(event.animeId)
-                }
-            }
+            val result = remoteLibrarySyncHandler.removeRemoteEntry(
+                animeId = event.animeId,
+                favorite = event.favorite,
+            )
             if (result.isFailure) {
                 setState { copy(remoteItems = previous, remoteError = result.exceptionOrNull()?.message) }
             } else {
@@ -320,21 +234,15 @@ class LibraryViewModel @Inject constructor(
             else emptyList()
 
             val videoSources = videos.map { it.toPlayerVideoSource() }
-            val targetVideo = videoSources.selectContinueWatchingVideo(
-                videoId = entry.videoId,
-                episodeUrl = entry.episodeUrl,
-                episode = entry.episode,
-                playerName = entry.playerName,
-                dubbing = entry.dubbing,
-            ) ?: entry.toPlayerVideoSource()
-            val allVideos = videoSources.ifEmpty { listOf(targetVideo) }
+            val progressVideo = entry.toPlayerVideoSource()
+            val target = resolveContinueWatchingTarget(progressVideo, videoSources)
 
-            migratePlaceholderEpisode(entry, targetVideo)
+            migratePlaceholderEpisode(entry, progressVideo, target.video)
 
             nav.navigate(
                 playerNavigator.getPlayerDest(
-                    video = targetVideo,
-                    allVideos = allVideos,
+                    video = target.video,
+                    allVideos = target.allVideos,
                     animeTitle = entry.animeTitle,
                     animeId = entry.animeId,
                     posterUrl = entry.posterUrl,
@@ -343,12 +251,12 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    private suspend fun migratePlaceholderEpisode(entry: WatchProgressEntry, targetVideo: PlayerVideoSource) {
-        if (!entry.episode.isPlaceholderEpisode() || targetVideo.episode.isPlaceholderEpisode()) return
-        if (entry.episode == targetVideo.episode) return
-        val isTrustedMatch = (entry.videoId > 0 && targetVideo.id == entry.videoId) ||
-            (entry.episodeUrl.isNotBlank() && targetVideo.iframeUrl == entry.episodeUrl)
-        if (!isTrustedMatch) return
+    private suspend fun migratePlaceholderEpisode(
+        entry: WatchProgressEntry,
+        progressVideo: PlayerVideoSource,
+        targetVideo: PlayerVideoSource,
+    ) {
+        if (!progressVideo.isTrustedPlaceholderMigrationTarget(targetVideo)) return
         watchProgressStore.save(
             animeId = entry.animeId,
             episode = targetVideo.episode,

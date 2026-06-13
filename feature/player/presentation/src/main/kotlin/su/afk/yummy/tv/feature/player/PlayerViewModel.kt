@@ -1,14 +1,11 @@
 package su.afk.yummy.tv.feature.player
 
-import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -20,39 +17,28 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.usecase.MarkVideoWatchedUseCase
-import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
-import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
-import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
 import su.afk.yummy.tv.feature.player.utils.activeAllDubbingNames
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbing
 import su.afk.yummy.tv.feature.player.utils.activeDubbingUrls
-import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeEpisodeNumbers
-import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
-class PlayerViewModel @AssistedInject constructor(
+class PlayerViewModel @AssistedInject internal constructor(
     @Assisted private val dest: PlayerDestination,
-    @param:ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
-    private val watchProgressStore: WatchProgressStore,
-    private val settingsStore: SettingsStore,
-    private val markVideoWatched: MarkVideoWatchedUseCase,
-    private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val detailsNavigator: IDetailsNavigator,
+    private val streamHandler: PlayerStreamHandler,
+    private val progressHandler: PlayerProgressHandler,
+    private val settingsHandler: PlayerSettingsHandler,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -140,11 +126,9 @@ class PlayerViewModel @AssistedInject constructor(
     private var playerMobileVideoTransformSettingsJob: Job? = null
     private var playerMobileVideoTransformSaveJob: Job? = null
     private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
-    private val markedWatchedVideoIds = mutableSetOf<Int>()
-    private val markingWatchedVideoIds = mutableSetOf<Int>()
 
     init {
-        settingsStore.autoSkipOpeningsEndings
+        settingsHandler.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
         observeActivePlayerResizeSettings()
@@ -164,15 +148,7 @@ class PlayerViewModel @AssistedInject constructor(
                 if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
             is PlayerState.Event.PlaybackError -> {
-                val detail = event.message.trim().takeIf { it.isNotBlank() }
-                val message = buildString {
-                    append(context.getString(R.string.player_stream_error))
-                    if (detail != null) {
-                        append("\n")
-                        append(detail)
-                    }
-                }
-                setState { copy(playerError = message) }
+                setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
             }
             PlayerState.Event.PrevEpisode -> {
                 val idx = currentState.episodeIndex
@@ -303,51 +279,18 @@ class PlayerViewModel @AssistedInject constructor(
             is PlayerState.Event.SaveProgress -> {
                 val s = currentState
                 val snapshot = event.snapshot
-                if (s.animeId == 0 || snapshot.episode.isBlank() || snapshot.durationMs <= 0) return
                 viewModelScope.launch {
-                    watchProgressStore.save(
-                        animeId = s.animeId,
-                        episode = snapshot.episode,
-                        videoId = snapshot.videoId,
-                        episodeUrl = snapshot.episodeUrl,
-                        positionMs = snapshot.positionMs,
-                        durationMs = snapshot.durationMs,
-                        animeTitle = s.animeTitle,
-                        posterUrl = s.posterUrl,
-                        playerName = snapshot.playerName,
-                        dubbing = snapshot.dubbing,
-                        screenshotUrl = snapshot.screenshotUrl,
+                    progressHandler.saveProgress(
+                        context = PlayerProgressContext(
+                            animeId = s.animeId,
+                            animeTitle = s.animeTitle,
+                            posterUrl = s.posterUrl,
+                        ),
+                        snapshot = snapshot,
                     )
-                    val videoId = snapshot.videoId
-                    val watchedEnough = videoId > 0 &&
-                            WatchProgressStore.isWatchedProgress(
-                                snapshot.positionMs,
-                                snapshot.durationMs
-                            )
-                    if (watchedEnough) {
-                        if (videoId in markedWatchedVideoIds || !markingWatchedVideoIds.add(videoId)) {
-                            return@launch
-                        }
-                        runCatching {
-                            markVideoWatched(
-                                videoId = videoId,
-                                timeSeconds = (snapshot.positionMs / 1000L).toInt(),
-                                durationSeconds = (snapshot.durationMs / 1000L).toInt(),
-                            )
-                        }.onSuccess {
-                            markedWatchedVideoIds += videoId
-                        }.also {
-                            markingWatchedVideoIds -= videoId
-                        }
-                    }
                 }
             }
         }
-    }
-
-    private suspend fun loadResumePosition(animeId: Int, episode: String): Long? {
-        val entry = watchProgressStore.get(animeId, episode) ?: return null
-        return entry.positionMs.takeIf { WatchProgressStore.isContinueWatchingEntry(entry) }
     }
 
     private fun observeActivePlayerResizeSettings(force: Boolean = false) {
@@ -361,12 +304,8 @@ class PlayerViewModel @AssistedInject constructor(
                 zoomLevel = PlayerZoomLevel.PERCENT_10,
             )
         }
-        playerResizeSettingsJob = settingsStore
-            .playerResizeSettings(
-                animeId = scope.animeId,
-                animeTitle = scope.animeTitle,
-                playerName = scope.playerName,
-            )
+        playerResizeSettingsJob = settingsHandler
+            .observeResizeSettings(scope)
             .onEach { settings ->
                 if (scope == activePlayerResizeSettingsScope) {
                     setState {
@@ -383,12 +322,7 @@ class PlayerViewModel @AssistedInject constructor(
     private fun savePlayerResizeSettings(settings: PlayerResizeSettings) {
         val scope = currentPlayerResizeSettingsScope()
         viewModelScope.launch {
-            settingsStore.setPlayerResizeSettings(
-                animeId = scope.animeId,
-                animeTitle = scope.animeTitle,
-                playerName = scope.playerName,
-                settings = settings,
-            )
+            settingsHandler.saveResizeSettings(scope, settings)
         }
     }
 
@@ -405,12 +339,8 @@ class PlayerViewModel @AssistedInject constructor(
                 mobileVideoOffsetY = 0f,
             )
         }
-        playerMobileVideoTransformSettingsJob = settingsStore
-            .playerMobileVideoTransformSettings(
-                animeId = scope.animeId,
-                animeTitle = scope.animeTitle,
-                playerName = scope.playerName,
-            )
+        playerMobileVideoTransformSettingsJob = settingsHandler
+            .observeMobileVideoTransformSettings(scope)
             .onEach { settings ->
                 if (scope == activePlayerMobileVideoTransformSettingsScope) {
                     setState {
@@ -429,13 +359,7 @@ class PlayerViewModel @AssistedInject constructor(
         val scope = currentPlayerResizeSettingsScope()
         playerMobileVideoTransformSaveJob?.cancel()
         playerMobileVideoTransformSaveJob = viewModelScope.launch {
-            delay(MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS)
-            settingsStore.setPlayerMobileVideoTransformSettings(
-                animeId = scope.animeId,
-                animeTitle = scope.animeTitle,
-                playerName = scope.playerName,
-                settings = settings,
-            )
+            settingsHandler.saveMobileVideoTransformSettings(scope, settings)
         }
     }
 
@@ -464,59 +388,26 @@ class PlayerViewModel @AssistedInject constructor(
                 )
             }
             val s = currentState
-            val url = activeIframeUrl(s)
-            when (val result = resolvePlayerStream(
-                PlayerStreamRequest(
-                    iframeUrl = url,
-                    autoQualityLabel = context.getString(R.string.player_quality_auto),
-                )
-            )) {
-                is PlayerStreamResolveResult.Stream -> setResolvedStream(s, result)
-                is PlayerStreamResolveResult.KodikBlocked -> setState {
-                    copy(kodikBlockedError = result.toMessage())
+            val pendingResume = s.dubbingResumeMs.takeIf { it >= 0L }
+            when (val result = streamHandler.resolve(s, pendingResume)) {
+                is PlayerStreamResult.Stream -> setState {
+                    copy(
+                        streamHeaders = result.headers,
+                        streamQualityMap = result.qualities,
+                        streamUrl = result.url,
+                        resumeFromMs = result.resumeFromMs,
+                        dubbingResumeMs = if (result.consumedPendingResume) -1L else dubbingResumeMs,
+                    )
                 }
 
-                PlayerStreamResolveResult.Failed -> setState {
-                    copy(playerError = context.getString(R.string.player_stream_error))
+                is PlayerStreamResult.KodikBlocked -> setState {
+                    copy(kodikBlockedError = result.message)
                 }
 
-                PlayerStreamResolveResult.Unsupported -> setState {
-                    copy(playerError = context.getString(R.string.player_unsupported))
+                is PlayerStreamResult.PlayerError -> setState {
+                    copy(playerError = result.message)
                 }
             }
         }
-    }
-
-    private suspend fun setResolvedStream(
-        state: PlayerState.State,
-        stream: PlayerStreamResolveResult.Stream,
-    ) {
-        val resume =
-            consumeDubbingResume() ?: loadResumePosition(state.animeId, activeEpisode(state)) ?: 0L
-        setState {
-            copy(
-                streamHeaders = stream.headers,
-                streamQualityMap = stream.qualities,
-                streamUrl = stream.url,
-                resumeFromMs = resume,
-            )
-        }
-    }
-
-    private fun PlayerStreamResolveResult.KodikBlocked.toMessage(): String =
-        message
-            ?: statusCode?.let { context.getString(R.string.player_server_error, it) }
-            ?: context.getString(R.string.player_kodik_blocked)
-
-    private fun consumeDubbingResume(): Long? {
-        val pending = currentState.dubbingResumeMs
-        return if (pending >= 0L) {
-            setState { copy(dubbingResumeMs = -1L) }
-            pending
-        } else null
-    }
-
-    private companion object {
-        const val MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS = 250L
     }
 }

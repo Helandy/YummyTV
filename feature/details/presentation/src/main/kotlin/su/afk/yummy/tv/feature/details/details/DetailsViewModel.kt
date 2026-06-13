@@ -6,7 +6,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -28,33 +27,23 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
-import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
-import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
-import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
-import su.afk.yummy.tv.feature.details.utils.toLibraryEntry
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
 import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
-class DetailsViewModel @AssistedInject constructor(
+class DetailsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
@@ -71,12 +60,9 @@ class DetailsViewModel @AssistedInject constructor(
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val getAnimeCollections: GetAnimeCollectionsUseCase,
     private val getAnimeListState: GetAnimeListStateUseCase,
-    private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
-    private val setAnimeFavorite: SetAnimeFavoriteUseCase,
-    private val setAnimeList: SetAnimeListUseCase,
-    private val removeAnimeList: RemoveAnimeListUseCase,
-    private val setVideoSubscription: SetVideoSubscriptionUseCase,
     private val stringProvider: StringProvider,
+    private val libraryHandler: DetailsLibraryHandler,
+    private val subscriptionHandler: DetailsSubscriptionHandler,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -180,15 +166,23 @@ class DetailsViewModel @AssistedInject constructor(
         if (currentState.isInLibrary) {
             val previousList = currentState.libraryList
             val wasInLibrary = currentState.isInLibrary
+            val wasFavorite = currentState.isFavorite
+            val wasSignedIn = currentState.isSignedIn
             libraryMutationVersion++
-            libraryStore.remove(animeId)
             setState { copy(isInLibrary = false, libraryList = null) }
-            if (!currentState.isSignedIn || previousList == null) return
-
-            val result = runCatching { removeAnimeList(animeId) }
-            if (result.isFailure) {
-                libraryStore.add(details.toLibraryEntry(previousList, currentState.isFavorite))
-                setState { copy(isInLibrary = wasInLibrary, libraryList = previousList) }
+            when (val result = libraryHandler.removeFromLibrary(
+                animeId = animeId,
+                details = details,
+                previousList = previousList,
+                wasInLibrary = wasInLibrary,
+                isFavorite = wasFavorite,
+                isSignedIn = wasSignedIn,
+            )) {
+                DetailsLibraryMutationResult.Success -> Unit
+                is DetailsLibraryMutationResult.RollbackFavorite -> Unit
+                is DetailsLibraryMutationResult.RollbackLibrary -> setState {
+                    copy(isInLibrary = result.isInLibrary, libraryList = result.libraryList)
+                }
             }
         } else {
             setState { copy(showLibraryListPicker = true) }
@@ -199,19 +193,29 @@ class DetailsViewModel @AssistedInject constructor(
         val details = currentState.details ?: return
         val wasInLibrary = currentState.isInLibrary
         val previousList = currentState.libraryList
+        val wasFavorite = currentState.isFavorite
+        val wasSignedIn = currentState.isSignedIn
         libraryMutationVersion++
         setState { copy(showLibraryListPicker = false, isInLibrary = true, libraryList = list) }
-        libraryStore.add(details.toLibraryEntry(list, currentState.isFavorite))
-        if (!currentState.isSignedIn) return
-
-        val result = runCatching { setAnimeList(animeId, list) }
-        if (result.isFailure) {
-            if (wasInLibrary && previousList != null) {
-                libraryStore.add(details.toLibraryEntry(previousList, currentState.isFavorite))
-            } else {
-                libraryStore.remove(animeId)
+        when (val result = libraryHandler.addToLibrary(
+            animeId = animeId,
+            details = details,
+            list = list,
+            wasInLibrary = wasInLibrary,
+            previousList = previousList,
+            isFavorite = wasFavorite,
+            isSignedIn = wasSignedIn,
+        )) {
+            DetailsLibraryMutationResult.Success -> Unit
+            is DetailsLibraryMutationResult.RollbackFavorite -> Unit
+            is DetailsLibraryMutationResult.RollbackLibrary -> {
+                setState {
+                    copy(
+                        isInLibrary = result.isInLibrary,
+                        libraryList = result.libraryList
+                    )
+                }
             }
-            setState { copy(isInLibrary = wasInLibrary, libraryList = previousList) }
         }
     }
 
@@ -219,25 +223,21 @@ class DetailsViewModel @AssistedInject constructor(
         val details = currentState.details ?: return
         val wasFavorite = currentState.isFavorite
         val nextFavorite = !wasFavorite
+        val wasSignedIn = currentState.isSignedIn
         favoriteMutationVersion++
         setState { copy(isFavorite = nextFavorite) }
-        libraryStore.setFavorite(
-            animeId = details.id,
-            title = details.title,
-            poster = details.poster?.toLibraryPoster(),
+        when (val result = libraryHandler.setFavorite(
+            animeId = animeId,
+            details = details,
             favorite = nextFavorite,
-        )
-        if (!currentState.isSignedIn) return
-
-        val result = runCatching { setAnimeFavorite(animeId, nextFavorite) }
-        if (result.isFailure) {
-            setState { copy(isFavorite = wasFavorite) }
-            libraryStore.setFavorite(
-                animeId = details.id,
-                title = details.title,
-                poster = details.poster?.toLibraryPoster(),
-                favorite = wasFavorite,
-            )
+            previousFavorite = wasFavorite,
+            isSignedIn = wasSignedIn,
+        )) {
+            DetailsLibraryMutationResult.Success -> Unit
+            is DetailsLibraryMutationResult.RollbackLibrary -> Unit
+            is DetailsLibraryMutationResult.RollbackFavorite -> {
+                setState { copy(isFavorite = result.isFavorite) }
+            }
         }
     }
 
@@ -317,9 +317,6 @@ class DetailsViewModel @AssistedInject constructor(
         )
     }
 
-    private fun isSupportedPlayer(iframeUrl: String): Boolean =
-        iframeUrl.isSupportedPlayerUrl()
-
     private fun onWatchSelected() {
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
@@ -352,23 +349,23 @@ class DetailsViewModel @AssistedInject constructor(
 
     private suspend fun loadSubscriptions(userId: Int) {
         val videos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        if (!currentState.isSignedIn) {
+            setState { copy(isSubscriptionsLoading = false, subscriptions = emptyList()) }
+            return
+        }
         setState { copy(isSubscriptionsLoading = true) }
-        runCatching { getVideoSubscriptions(userId) }.fold(
+        subscriptionHandler.loadDetailsSubscriptions(
+            animeId = animeId,
+            details = currentState.details,
+            videos = videos,
+            userId = userId,
+            optimisticKeys = currentState.subscriptions.subscribedKeys(),
+        ).fold(
             onSuccess = { subscriptions ->
-                if (!currentState.isSignedIn) {
-                    setState { copy(isSubscriptionsLoading = false, subscriptions = emptyList()) }
-                    return@fold
-                }
-                val details = currentState.details
-                val animeSubscriptions = subscriptions
-                    .filter { it.matchesCurrentAnime(requestedAnimeId = animeId, details = details) }
                 setState {
                     copy(
                         isSubscriptionsLoading = false,
-                        subscriptions = videos.toSubscriptionOptions(
-                            remoteSubscriptions = animeSubscriptions,
-                            optimisticKeys = this.subscriptions.subscribedKeys(),
-                        ),
+                        subscriptions = subscriptions,
                     )
                 }
             },
@@ -382,11 +379,13 @@ class DetailsViewModel @AssistedInject constructor(
         val wasSubscribed = option.isSubscribed
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
-            val result = runCatching { setVideoSubscription(option.representativeVideoId, !wasSubscribed) }
-            if (result.isFailure) {
+            val changed = subscriptionHandler.commitSubscriptionChange(
+                videoId = option.representativeVideoId,
+                subscribed = !wasSubscribed,
+            )
+            if (!changed) {
                 setSubscriptionState(key, wasSubscribed)
             } else {
-                delay(SUBSCRIPTION_REFRESH_DELAY_MS)
                 refreshSubscriptions()
             }
         }
@@ -404,34 +403,15 @@ class DetailsViewModel @AssistedInject constructor(
 
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        val options = allVideos
-            .filter { it.episode == video.episode }
-            .groupBy { it.player }
-            .entries
-            .map { (playerName, playerVideos) ->
-                val supported = isSupportedPlayer(playerVideos.first().iframeUrl)
-                val rep = playerVideos.firstOrNull { it.dubbing == video.dubbing }
-                    ?: playerVideos.maxByOrNull { it.views ?: 0 }
-                    ?: playerVideos.first()
-                BalancerOption(playerName = playerName, video = rep, isSupported = supported)
+        when (val selection = resolveDetailsPlayerSelection(
+            video = video,
+            allVideos = allVideos,
+            preferredPlayer = preferredPlayerState.value,
+        )) {
+            is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
+            is DetailsPlayerSelection.ShowPicker -> setState {
+                copy(pendingBalancerSelection = selection.picker)
             }
-        val supportedOptions = options.filter { it.isSupported }
-
-        val preferredPlayer = preferredPlayerState.value
-        if (preferredPlayer != PreferredPlayer.NONE) {
-            val preferred = supportedOptions.firstOrNull {
-                it.video.iframeUrl.matchesPreferredPlayer(preferredPlayer)
-            }
-            if (preferred != null) {
-                navigateToPlayer(preferred.video)
-                return
-            }
-        }
-
-        when (supportedOptions.size) {
-            0 -> navigateToPlayer(video)
-            1 -> navigateToPlayer(supportedOptions.first().video)
-            else -> setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
         }
     }
 

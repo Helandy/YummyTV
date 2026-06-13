@@ -5,37 +5,23 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
-import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
-import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
-import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
+import su.afk.yummy.tv.feature.details.details.DetailsSubscriptionHandler
+import su.afk.yummy.tv.feature.details.details.ScreenSubscriptionBaseResult
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
-import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
 
 @HiltViewModel(assistedFactory = SubscriptionsViewModel.Factory::class)
-class SubscriptionsViewModel @AssistedInject constructor(
+class SubscriptionsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
-    private val yaniAuthPreferences: YaniAuthPreferences,
-    private val settingsStore: SettingsStore,
-    private val getAnimeDetails: GetAnimeDetailsUseCase,
-    private val getAnimeVideos: GetAnimeVideosUseCase,
-    private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
-    private val setVideoSubscription: SetVideoSubscriptionUseCase,
+    private val subscriptionHandler: DetailsSubscriptionHandler,
 ) : BaseViewModelNew<SubscriptionsState.State, SubscriptionsState.Event, SubscriptionsState.Effect>(
     savedStateHandle
 ) {
@@ -64,37 +50,30 @@ class SubscriptionsViewModel @AssistedInject constructor(
             setState { copy(isLoading = true, error = null) }
         }
 
-        val token = yaniAuthPreferences.refreshToken.first()
-        val userId = settingsStore.yaniUserId.first()
-        if (token.isBlank() || userId <= 0) {
-            setState { copy(isLoading = false, subscriptions = emptyList()) }
-            return
-        }
+        when (val result = subscriptionHandler.loadScreenSubscriptionBase(
+            animeId = animeId,
+            optimisticKeys = currentState.subscriptions.subscribedKeys(),
+        )) {
+            ScreenSubscriptionBaseResult.SignedOut -> {
+                setState { copy(isLoading = false, subscriptions = emptyList()) }
+            }
 
-        val details = runCatching { getAnimeDetails(animeId) }.getOrNull()
-        runCatching { getAnimeVideos(animeId) }.fold(
-            onSuccess = { videos ->
-                val optimisticKeys = currentState.subscriptions.subscribedKeys()
-                val baseOptions = videos.toSubscriptionOptions(optimisticKeys = optimisticKeys)
-                setState { copy(subscriptions = baseOptions) }
-
-                runCatching { getVideoSubscriptions(userId) }.fold(
-                    onSuccess = { remoteSubscriptions ->
-                        val animeSubscriptions = remoteSubscriptions
-                            .filter {
-                                it.matchesCurrentAnime(
-                                    requestedAnimeId = animeId,
-                                    details = details
-                                )
-                            }
+            is ScreenSubscriptionBaseResult.Content -> {
+                val base = result.base
+                setState { copy(subscriptions = base.subscriptions) }
+                subscriptionHandler.loadDetailsSubscriptions(
+                    animeId = animeId,
+                    details = base.details,
+                    videos = base.videos,
+                    userId = base.userId,
+                    optimisticKeys = currentState.subscriptions.subscribedKeys(),
+                ).fold(
+                    onSuccess = { subscriptions ->
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                subscriptions = videos.toSubscriptionOptions(
-                                    remoteSubscriptions = animeSubscriptions,
-                                    optimisticKeys = optimisticKeys,
-                                ),
+                                subscriptions = subscriptions,
                             )
                         }
                     },
@@ -103,22 +82,23 @@ class SubscriptionsViewModel @AssistedInject constructor(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                subscriptions = baseOptions
+                                subscriptions = base.subscriptions,
                             )
                         }
                     },
                 )
-            },
-            onFailure = { error ->
+            }
+
+            is ScreenSubscriptionBaseResult.Failure -> {
                 setState {
                     copy(
                         isLoading = false,
-                        error = error.message,
+                        error = result.message,
                         subscriptions = emptyList(),
                     )
                 }
-            },
-        )
+            }
+        }
     }
 
     private fun toggleSubscription(key: String) {
@@ -126,12 +106,13 @@ class SubscriptionsViewModel @AssistedInject constructor(
         val wasSubscribed = option.isSubscribed
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
-            val result =
-                runCatching { setVideoSubscription(option.representativeVideoId, !wasSubscribed) }
-            if (result.isFailure) {
+            val changed = subscriptionHandler.commitSubscriptionChange(
+                videoId = option.representativeVideoId,
+                subscribed = !wasSubscribed,
+            )
+            if (!changed) {
                 setSubscriptionState(key, wasSubscribed)
             } else {
-                delay(SUBSCRIPTION_REFRESH_DELAY_MS)
                 load(showLoading = false)
             }
         }

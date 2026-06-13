@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.details
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.isPlaceholderEpisode
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
@@ -91,13 +91,3 @@ private fun List<PlayerVideoSource>.sortedByEpisode(): List<PlayerVideoSource> =
     sortedWith(compareBy<PlayerVideoSource> {
         it.episode.toDoubleOrNull() ?: Double.MAX_VALUE
     }.thenBy { it.episode })
-
-private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = id,
-    episode = episode,
-    dubbing = dubbing,
-    player = player,
-    iframeUrl = iframeUrl,
-    views = views,
-    skips = skips.toPlayerSkips(),
-)

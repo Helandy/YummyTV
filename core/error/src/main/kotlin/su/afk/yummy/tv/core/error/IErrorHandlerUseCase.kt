@@ -2,18 +2,19 @@ package su.afk.yummy.tv.core.error
 
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.CancellationException
-import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorNavigator
 import su.afk.yummy.tv.core.model.ErrorItem
-import su.afk.yummy.tv.core.error.R
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorNavigator
 import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
+/** Converts thrown errors into user-facing error items and optionally opens the error screen. */
 interface IErrorHandlerUseCase {
     fun parse(t: Throwable, navigate: Boolean = false, retryKey: String? = null): ErrorItem
 }
 
+/** Default error mapper for network, HTTP, and generic application failures. */
 class ErrorHandlerUseCaseImpl @Inject constructor(
     private val strings: StringProvider,
     private val errorNavigator: IErrorNavigator,

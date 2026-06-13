@@ -34,8 +34,8 @@ import su.afk.yummy.tv.feature.home.utils.toPlayerSkips
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isPlaceholderEpisode
-import su.afk.yummy.tv.feature.player.selectContinueWatchingVideo
+import su.afk.yummy.tv.feature.player.isTrustedPlaceholderMigrationTarget
+import su.afk.yummy.tv.feature.player.resolveContinueWatchingTarget
 import javax.inject.Inject
 
 @HiltViewModel
@@ -200,20 +200,14 @@ class HomeViewModel @Inject constructor(
             else emptyList()
 
             val videoSources = videos.map { it.toPlayerVideoSource() }
-            val targetVideo = videoSources.selectContinueWatchingVideo(
-                videoId = entry.videoId,
-                episodeUrl = entry.episodeUrl,
-                episode = entry.episode,
-                playerName = entry.playerName,
-                dubbing = entry.dubbing,
-            ) ?: entry.toPlayerVideoSource()
-            val allVideos = videoSources.ifEmpty { listOf(targetVideo) }
+            val progressVideo = entry.toPlayerVideoSource()
+            val target = resolveContinueWatchingTarget(progressVideo, videoSources)
 
-            migratePlaceholderEpisode(entry, targetVideo)
+            migratePlaceholderEpisode(entry, progressVideo, target.video)
 
             nav.navigate(playerNavigator.getPlayerDest(
-                video = targetVideo,
-                allVideos = allVideos,
+                video = target.video,
+                allVideos = target.allVideos,
                 animeTitle = entry.animeTitle,
                 animeId = entry.animeId,
                 posterUrl = entry.posterUrl,
@@ -221,12 +215,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun migratePlaceholderEpisode(entry: WatchProgressEntry, targetVideo: PlayerVideoSource) {
-        if (!entry.episode.isPlaceholderEpisode() || targetVideo.episode.isPlaceholderEpisode()) return
-        if (entry.episode == targetVideo.episode) return
-        val isTrustedMatch = (entry.videoId > 0 && targetVideo.id == entry.videoId) ||
-            (entry.episodeUrl.isNotBlank() && targetVideo.iframeUrl == entry.episodeUrl)
-        if (!isTrustedMatch) return
+    private suspend fun migratePlaceholderEpisode(
+        entry: WatchProgressEntry,
+        progressVideo: PlayerVideoSource,
+        targetVideo: PlayerVideoSource,
+    ) {
+        if (!progressVideo.isTrustedPlaceholderMigrationTarget(targetVideo)) return
         watchProgressStore.save(
             animeId = entry.animeId,
             episode = targetVideo.episode,

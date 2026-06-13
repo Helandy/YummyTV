@@ -25,20 +25,12 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.details.details.BalancerOption
-import su.afk.yummy.tv.feature.details.details.BalancerPickerState
+import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.VideosUiState
-import su.afk.yummy.tv.feature.details.utils.toPlayerSkips
+import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
+import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.getPlayerDest
-import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
-import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
-import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.isVkPlayerUrl
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject constructor(
@@ -119,47 +111,17 @@ class EpisodesViewModel @AssistedInject constructor(
         )
     }
 
-    private fun isSupportedPlayer(iframeUrl: String): Boolean = iframeUrl.isSupportedPlayerUrl()
-
-    private fun matchesPreferredPlayer(iframeUrl: String, preferred: PreferredPlayer): Boolean =
-        when (preferred) {
-            PreferredPlayer.NONE -> false
-            PreferredPlayer.KODIK -> iframeUrl.isKodikPlayerUrl()
-            PreferredPlayer.AKSOR -> iframeUrl.isAksorPlayerUrl()
-            PreferredPlayer.ALLOHA -> iframeUrl.isAllohaPlayerUrl()
-            PreferredPlayer.CVH -> iframeUrl.isCvhPlayerUrl()
-            PreferredPlayer.VK -> iframeUrl.isVkPlayerUrl()
-            PreferredPlayer.RUTUBE -> iframeUrl.isRutubePlayerUrl()
-        }
-
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        val options = allVideos
-            .filter { it.episode == video.episode }
-            .groupBy { it.player }
-            .entries
-            .map { (playerName, playerVideos) ->
-                val supported = isSupportedPlayer(playerVideos.first().iframeUrl)
-                val rep = playerVideos.firstOrNull { it.dubbing == video.dubbing }
-                    ?: playerVideos.maxByOrNull { it.views ?: 0 }
-                    ?: playerVideos.first()
-                BalancerOption(playerName = playerName, video = rep, isSupported = supported)
+        when (val selection = resolveDetailsPlayerSelection(
+            video = video,
+            allVideos = allVideos,
+            preferredPlayer = preferredPlayerState.value,
+        )) {
+            is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
+            is DetailsPlayerSelection.ShowPicker -> setState {
+                copy(pendingBalancerSelection = selection.picker)
             }
-        val supportedOptions = options.filter { it.isSupported }
-
-        val preferredPlayer = preferredPlayerState.value
-        if (preferredPlayer != PreferredPlayer.NONE) {
-            val preferred = supportedOptions.firstOrNull { matchesPreferredPlayer(it.video.iframeUrl, preferredPlayer) }
-            if (preferred != null) {
-                navigateToPlayer(preferred.video)
-                return
-            }
-        }
-
-        when (supportedOptions.size) {
-            0 -> navigateToPlayer(video)
-            1 -> navigateToPlayer(supportedOptions.first().video)
-            else -> setState { copy(pendingBalancerSelection = BalancerPickerState(video.episode, options)) }
         }
     }
 
@@ -181,13 +143,3 @@ class EpisodesViewModel @AssistedInject constructor(
         }
     }
 }
-
-private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
-    id = id,
-    episode = episode,
-    dubbing = dubbing,
-    player = player,
-    iframeUrl = iframeUrl,
-    views = views,
-    skips = skips.toPlayerSkips(),
-)
