@@ -124,6 +124,7 @@ fun AccountMobileScreen(
                 HorizontalPager(
                     state = pagerState,
                     key = { page -> page.toAccountMobileTab() },
+                    userScrollEnabled = false,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize(),

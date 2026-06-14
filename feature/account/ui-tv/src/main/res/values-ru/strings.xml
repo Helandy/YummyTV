@@ -17,7 +17,6 @@
     <string name="account_captcha_title">Подтвердите, что вы не робот</string>
     <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход.</string>
     <string name="account_captcha_loading">Капча пройдена, выполняем вход...</string>
-    <string name="account_user_id">ID %1$d</string>
     <string name="account_tab_profile">Профиль</string>
     <string name="account_tab_stats">Статистика</string>
     <string name="account_tab_notifications">Уведомления</string>
@@ -29,7 +28,6 @@
     <string name="account_notifications_empty">Уведомлений пока нет</string>
     <string name="account_stats_genres">Любимые жанры</string>
     <string name="account_stats_ratings">Оценки</string>
-    <string name="account_stats_types">Типы аниме</string>
     <string name="account_profile_title">Профиль %1$s</string>
     <string name="account_profile_registered">Регистрация</string>
     <string name="account_profile_birth_date">Дата рождения</string>
@@ -39,6 +37,7 @@
     <string name="account_profile_unknown">Неизвестно</string>
     <string name="account_profile_meta_line">%1$s: %2$s</string>
     <string name="account_profile_watch_time_title">Время просмотра на сайте</string>
+    <string name="account_profile_watch_type_movies">Фильмы</string>
     <string name="account_profile_duration_hours">%1$d ч</string>
     <string name="account_profile_duration_less_hour">&lt;1 ч</string>
     <string name="account_profile_percent_full">100%</string>

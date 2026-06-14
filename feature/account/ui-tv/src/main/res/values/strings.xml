@@ -17,7 +17,6 @@
     <string name="account_captcha_title">Confirm you are not a robot</string>
     <string name="account_captcha_hint">Complete the captcha to continue signing in.</string>
     <string name="account_captcha_loading">Captcha solved, signing in...</string>
-    <string name="account_user_id">ID %1$d</string>
     <string name="account_tab_profile">Profile</string>
     <string name="account_tab_stats">Statistics</string>
     <string name="account_tab_notifications">Notifications</string>
@@ -29,7 +28,6 @@
     <string name="account_notifications_empty">No notifications yet</string>
     <string name="account_stats_genres">Favorite genres</string>
     <string name="account_stats_ratings">Ratings</string>
-    <string name="account_stats_types">Anime types</string>
     <string name="account_profile_title">Profile %1$s</string>
     <string name="account_profile_registered">Registered</string>
     <string name="account_profile_birth_date">Birth date</string>
@@ -39,6 +37,7 @@
     <string name="account_profile_unknown">Unknown</string>
     <string name="account_profile_meta_line">%1$s: %2$s</string>
     <string name="account_profile_watch_time_title">Watch time on site</string>
+    <string name="account_profile_watch_type_movies">Movies</string>
     <string name="account_profile_duration_hours">%1$d h</string>
     <string name="account_profile_duration_less_hour">&lt;1 h</string>
     <string name="account_profile_percent_full">100%</string>

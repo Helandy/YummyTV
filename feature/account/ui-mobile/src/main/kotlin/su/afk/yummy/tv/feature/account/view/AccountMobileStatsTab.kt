@@ -22,10 +22,6 @@ import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.utils.hasAny
 import su.afk.yummy.tv.feature.account.mobile.utils.isEmpty
-import su.afk.yummy.tv.feature.account.mobile.utils.toDurationLabel
-import su.afk.yummy.tv.feature.account.mobile.utils.toProfileHoursLabel
-import su.afk.yummy.tv.feature.account.mobile.utils.totalWatchSeconds
-import su.afk.yummy.tv.feature.account.mobile.utils.watchSlices
 
 @Composable
 internal fun AccountMobileStatsTab(
@@ -48,7 +44,7 @@ private fun AccountMobileStatsContent(
     stats: UserStats?,
 ) {
     if (profileSummary != null) {
-        AccountMobileProfileSummaryPanel(profileSummary)
+        AccountMobileProfileSummaryPanel(summary = profileSummary, stats = stats)
     } else if (stats != null && !stats.isEmpty()) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -62,7 +58,8 @@ private fun AccountMobileStatsContent(
             }
         }
     }
-    if (stats?.genres?.isNotEmpty() == true) {
+    val showSecondaryStats = profileSummary == null
+    if (showSecondaryStats && stats?.genres?.isNotEmpty() == true) {
         AccountMobileStatSection(title = stringResource(R.string.account_stats_genres)) {
             val topGenres = stats.genres.sortedByDescending { it.count }.take(8)
             val max = topGenres.maxOfOrNull { it.count }?.coerceAtLeast(1) ?: 1
@@ -75,7 +72,7 @@ private fun AccountMobileStatsContent(
             }
         }
     }
-    if (stats?.ratings?.isNotEmpty() == true) {
+    if (showSecondaryStats && stats?.ratings?.isNotEmpty() == true) {
         AccountMobileStatSection(title = stringResource(R.string.account_stats_ratings)) {
             val byRating = stats.ratings.associateBy { it.rating }
             val max = stats.ratings.maxOfOrNull { it.count }?.coerceAtLeast(1) ?: 1
@@ -89,52 +86,16 @@ private fun AccountMobileStatsContent(
             }
         }
     }
-    if (stats?.types?.isNotEmpty() == true) {
-        AccountMobileStatSection(title = stringResource(R.string.account_stats_types)) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                stats.types.sortedByDescending { it.count }.forEach { type ->
-                    AccountMobileStatPill(
-                        title = type.title.ifBlank { type.shortName },
-                        value = type.count.toLong().toDurationLabel(),
-                        modifier = Modifier.fillMaxWidth(0.48f),
-                    )
-                }
-            }
-        }
-    }
 }
 
 @Composable
-private fun AccountMobileProfileSummaryPanel(summary: UserProfileSummary) {
-    val slices = summary.watchSlices()
+private fun AccountMobileProfileSummaryPanel(
+    summary: UserProfileSummary,
+    stats: UserStats?,
+) {
     AccountMobileSurfacePanel {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(
-                text = stringResource(R.string.account_profile_watch_time_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            if (slices.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    AccountMobileProfileWatchPieChart(
-                        slices = slices,
-                        totalLabel = summary.totalWatchSeconds().toProfileHoursLabel(),
-                        percentLabel = stringResource(R.string.account_profile_percent_full),
-                    )
-                    AccountMobileProfileWatchLegend(
-                        slices = slices,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
+            AccountMobileProfileStatsPager(summary = summary, stats = stats)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.model.AccountMobileProfileStatSlice
 import su.afk.yummy.tv.feature.account.mobile.model.ProfileWatchSlice
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,18 +66,82 @@ internal fun UserProfileSex.label(): String =
 internal fun UserProfileSummary.totalWatchSeconds(): Long =
     watchTypes.sumOf { it.spentSeconds }.coerceAtLeast(0L)
 
-internal fun UserProfileSummary.watchSlices(): List<ProfileWatchSlice> =
-    watchTypes
+@Composable
+internal fun UserProfileSummary.watchSlices(): List<ProfileWatchSlice> {
+    val movieLabel = stringResource(R.string.account_profile_watch_type_movies)
+    return watchTypes
         .filter { it.spentSeconds > 0L }
         .sortedByDescending { it.spentSeconds }
         .mapIndexed { index, item ->
             ProfileWatchSlice(
                 title = item.title.ifBlank { item.shortName.ifBlank { item.alias } },
-                shortName = item.shortName.ifBlank { item.title.ifBlank { item.alias } },
+                shortName = item.profileShortName(movieLabel),
                 seconds = item.spentSeconds,
                 color = item.profileColor(index),
             )
         }
+}
+
+@Composable
+internal fun UserProfileSummary.watchStatSlices(): List<AccountMobileProfileStatSlice> =
+    watchSlices().map { slice ->
+        AccountMobileProfileStatSlice(
+            title = slice.shortName,
+            value = slice.seconds,
+            color = slice.color,
+        )
+    }
+
+internal fun UserStats.listDurationSlices(): List<AccountMobileProfileStatSlice> =
+    lists
+        .filter { it.seconds > 0L }
+        .sortedByDescending { it.seconds }
+        .mapIndexed { index, item ->
+            AccountMobileProfileStatSlice(
+                title = item.title,
+                value = item.seconds,
+                color = item.listProfileColor(index),
+            )
+        }
+
+internal fun UserStats.genreCountSlices(): List<AccountMobileProfileStatSlice> =
+    genres
+        .filter { it.count > 0 }
+        .sortedByDescending { it.count }
+        .take(MAX_PROFILE_GENRE_SLICES)
+        .mapIndexed { index, item ->
+            AccountMobileProfileStatSlice(
+                title = item.title,
+                value = item.count.toLong(),
+                color = fallbackProfileColors[index % fallbackProfileColors.size],
+            )
+        }
+
+internal fun UserStats.ratingCountSlices(): List<AccountMobileProfileStatSlice> {
+    val byRating = ratings.associateBy { it.rating }
+    return (10 downTo 1).map { rating ->
+        AccountMobileProfileStatSlice(
+            title = rating.toString(),
+            value = (byRating[rating]?.count ?: 0).toLong(),
+            color = rating.profileRatingColor(),
+        )
+    }
+}
+
+internal fun UserStats.averageRatingLabel(): String {
+    val totalCount = ratings.sumOf { it.count }
+    if (totalCount <= 0) return "0"
+    val weightedSum = ratings.sumOf { it.rating * it.count }
+    val average = weightedSum.toDouble() / totalCount.toDouble()
+    return if (average % 1.0 == 0.0) {
+        average.toInt().toString()
+    } else {
+        String.format(Locale.getDefault(), "%.1f", average)
+    }
+}
+
+internal fun List<AccountMobileProfileStatSlice>.positiveValueSum(): Long =
+    sumOf { it.value.coerceAtLeast(0L) }
 
 internal fun UserProfileCounts.hasAny(): Boolean =
     watching + planned + completed + dropped + postponed + favorite > 0
@@ -96,11 +161,44 @@ private fun UserWatchTypeStat.profileColor(index: Int): Color =
         else -> fallbackProfileColors[index % fallbackProfileColors.size]
     }
 
+private fun UserWatchTypeStat.profileShortName(movieLabel: String): String =
+    when (alias) {
+        "movie" -> movieLabel
+        else -> shortName.ifBlank { title.ifBlank { alias } }
+    }
+
+private fun su.afk.yummy.tv.domain.account.model.UserListWatchStat.listProfileColor(index: Int): Color =
+    when (id) {
+        0 -> Color(0xFFFF6B6B)
+        1 -> Color(0xFFA678E8)
+        2 -> Color(0xFF69D38B)
+        3 -> Color(0xFF9CA3AF)
+        4 -> Color(0xFFFFC857)
+        5 -> Color(0xFFD86BFF)
+        else -> fallbackProfileColors[index % fallbackProfileColors.size]
+    }
+
+private fun Int.profileRatingColor(): Color =
+    when (this) {
+        10, 9 -> Color(0xFF72C557)
+        8, 7 -> Color(0xFF8BC34A)
+        6, 5 -> Color(0xFFFFD234)
+        4 -> Color(0xFFFFB300)
+        3, 2 -> Color(0xFFFF7A5C)
+        1 -> Color(0xFFFF5C6C)
+        else -> Color(0xFF8F939A)
+    }
+
 private val fallbackProfileColors = listOf(
+    Color(0xFF45D487),
+    Color(0xFFA678E8),
+    Color(0xFFC84BD6),
+    Color(0xFFFFC107),
+    Color(0xFFFF6B6B),
+    Color(0xFF8F939A),
     Color(0xFF64B5F6),
-    Color(0xFFFFD166),
     Color(0xFF4DD0E1),
-    Color(0xFF81C784),
 )
 
+private const val MAX_PROFILE_GENRE_SLICES = 12
 private const val SECONDS_IN_HOUR = 3600L

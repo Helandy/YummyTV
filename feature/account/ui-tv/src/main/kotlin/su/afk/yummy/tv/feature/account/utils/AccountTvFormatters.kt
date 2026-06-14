@@ -65,18 +65,21 @@ internal fun UserProfileSex.label(): String =
 internal fun UserProfileSummary.totalWatchSeconds(): Long =
     watchTypes.sumOf { it.spentSeconds }.coerceAtLeast(0L)
 
-internal fun UserProfileSummary.watchSlices(): List<ProfileWatchSlice> =
-    watchTypes
+@Composable
+internal fun UserProfileSummary.watchSlices(): List<ProfileWatchSlice> {
+    val movieLabel = stringResource(R.string.account_profile_watch_type_movies)
+    return watchTypes
         .filter { it.spentSeconds > 0L }
         .sortedByDescending { it.spentSeconds }
         .mapIndexed { index, item ->
             ProfileWatchSlice(
                 title = item.title.ifBlank { item.shortName.ifBlank { item.alias } },
-                shortName = item.shortName.ifBlank { item.title.ifBlank { item.alias } },
+                shortName = item.profileShortName(movieLabel),
                 seconds = item.spentSeconds,
                 color = item.profileColor(index),
             )
         }
+}
 
 internal fun UserProfileCounts.totalLibraryCount(): Int =
     watching + planned + completed + dropped + postponed
@@ -94,6 +97,12 @@ private fun UserWatchTypeStat.profileColor(index: Int): Color =
         "short-tv" -> Color(0xFFFF4D4D)
         "short-movie" -> Color(0xFF63D2B6)
         else -> fallbackProfileColors[index % fallbackProfileColors.size]
+    }
+
+private fun UserWatchTypeStat.profileShortName(movieLabel: String): String =
+    when (alias) {
+        "movie" -> movieLabel
+        else -> shortName.ifBlank { title.ifBlank { alias } }
     }
 
 private val fallbackProfileColors = listOf(

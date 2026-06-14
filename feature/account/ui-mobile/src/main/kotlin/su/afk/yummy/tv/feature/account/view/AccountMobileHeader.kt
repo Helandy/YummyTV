@@ -53,13 +53,6 @@ internal fun AccountMobileHeader(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (state.userId > 0) {
-                        Text(
-                            text = stringResource(R.string.account_user_id, state.userId),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                     profileSummary?.let { summary ->
                         AccountMobileProfileMetaLine(
                             label = stringResource(R.string.account_profile_registered),

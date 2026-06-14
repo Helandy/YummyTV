@@ -117,6 +117,5 @@ internal fun StatsTab(
         }
         if (stats.genres.isNotEmpty()) item { GenreStats(stats.genres) }
         if (stats.ratings.isNotEmpty()) item { RatingStats(stats.ratings) }
-        if (stats.types.isNotEmpty()) item { TypeStats(stats.types) }
     }
 }
