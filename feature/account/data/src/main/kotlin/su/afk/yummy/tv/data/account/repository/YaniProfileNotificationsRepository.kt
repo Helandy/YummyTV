@@ -10,9 +10,6 @@ import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.data.account.mapper.toNotification
 import su.afk.yummy.tv.data.account.mapper.toNotificationAnimeEntry
-import su.afk.yummy.tv.data.account.mapper.toNotificationCount
-import su.afk.yummy.tv.data.account.mapper.toNotificationCounts
-import su.afk.yummy.tv.data.account.mapper.toNotificationCountsCache
 import su.afk.yummy.tv.data.account.mapper.toNotifications
 import su.afk.yummy.tv.data.account.mapper.toNotificationsPageCache
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
@@ -30,37 +27,15 @@ class YaniProfileNotificationsRepository(
             val userId = currentUserId()
             val language = settingsStore.yaniContentLanguage.first()
             val languageCode = language.apiCode
-            val stored = accountStorage.getNotifications(userId, languageCode, limit, offset)
-            if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
-                return@withContext stored.toNotifications()
-            }
-
-            try {
-                fetchNotifications(userId, languageCode, limit, offset)
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                stored?.toNotifications()
-                    ?: throw error
-            }
+            getNotificationsPage(userId, languageCode, limit, offset)
         }
 
     override suspend fun getNotificationCounts(): List<NotificationCount> =
         withContext(Dispatchers.IO) {
             val userId = currentUserId()
-            val stored = accountStorage.getNotificationCounts(userId)
-            if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
-                return@withContext stored.toNotificationCounts()
-            }
-
-            try {
-                fetchNotificationCounts(userId)
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                stored?.toNotificationCounts()
-                    ?: throw error
-            }
+            if (userId <= 0) return@withContext emptyList()
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            loadUnreadNotificationCounts(userId, languageCode)
         }
 
     override suspend fun resolveAnimeIdBySlug(slug: String): Int? =
@@ -110,6 +85,54 @@ class YaniProfileNotificationsRepository(
     private suspend fun currentUserId(): Int =
         settingsStore.yaniUserId.first()
 
+    private suspend fun getNotificationsPage(
+        userId: Int,
+        languageCode: String,
+        limit: Int,
+        offset: Int,
+    ): List<ProfileNotification> {
+        val stored = accountStorage.getNotifications(userId, languageCode, limit, offset)
+        if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
+            return stored.toNotifications()
+        }
+
+        return try {
+            fetchNotifications(userId, languageCode, limit, offset)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            stored?.toNotifications()
+                ?: throw error
+        }
+    }
+
+    private suspend fun loadUnreadNotificationCounts(
+        userId: Int,
+        languageCode: String,
+    ): List<NotificationCount> {
+        val counts = linkedMapOf<String, Int>()
+        var offset = 0
+        var scanned = 0
+
+        while (scanned < NOTIFICATION_UNREAD_SCAN_MAX) {
+            val limit = minOf(
+                NOTIFICATION_UNREAD_SCAN_PAGE_SIZE,
+                NOTIFICATION_UNREAD_SCAN_MAX - scanned,
+            )
+            val page = getNotificationsPage(userId, languageCode, limit, offset)
+            if (page.isEmpty()) break
+
+            page.filterNot(ProfileNotification::viewed).forEach { notification ->
+                counts[notification.type] = (counts[notification.type] ?: 0) + 1
+            }
+            scanned += page.size
+            if (page.size < limit) break
+            offset += page.size
+        }
+
+        return counts.map { (type, count) -> NotificationCount(type = type, count = count) }
+    }
+
     private suspend fun fetchNotifications(
         userId: Int,
         languageCode: String,
@@ -132,17 +155,6 @@ class YaniProfileNotificationsRepository(
         return notifications
     }
 
-    private suspend fun fetchNotificationCounts(userId: Int): List<NotificationCount> {
-        val counts = api.getNotificationCounts().map { it.toNotificationCount() }
-        accountStorage.saveNotificationCounts(
-            counts.toNotificationCountsCache(
-                userId = userId,
-                cachedAt = System.currentTimeMillis(),
-            )
-        )
-        return counts
-    }
-
     private suspend fun fetchNotificationAnime(slug: String): AccountNotificationAnimeEntry {
         val entry = api.getNotificationAnimeId(slug)
             .toNotificationAnimeEntry(
@@ -159,3 +171,6 @@ class YaniProfileNotificationsRepository(
         accountStorage.deleteNotificationCounts(userId)
     }
 }
+
+private const val NOTIFICATION_UNREAD_SCAN_PAGE_SIZE = 100
+private const val NOTIFICATION_UNREAD_SCAN_MAX = 1_000
