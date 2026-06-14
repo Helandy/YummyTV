@@ -19,9 +19,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsDestination
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -46,6 +51,7 @@ import javax.inject.Singleton
 @Singleton
 class MobileMainGraph @Inject constructor(
     private val navManager: NavigationManager,
+    private val analyticsTracker: AnalyticsTracker,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
@@ -119,21 +125,36 @@ class MobileMainGraph @Inject constructor(
                     LocalMobileMainActions provides MobileMainActions(
                         unreadNotificationsCount = state.unreadNotificationsCount,
                         avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
-                        onSettingsClick = { navManager.navigate(settingsNavigator.getSettingsDest()) },
-                        onAccountClick = { navManager.navigate(accountNavigator.getAccountDest()) },
+                        onSettingsClick = {
+                            analyticsTracker.trackMainAction("settings_selected")
+                            navManager.navigate(settingsNavigator.getSettingsDest())
+                        },
+                        onAccountClick = {
+                            analyticsTracker.trackMainAction("account_selected")
+                            navManager.navigate(accountNavigator.getAccountDest())
+                        },
                     ),
                 ) {
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
                         menuItems = items,
                         showBars = atTabRoot,
-                        onDestinationSelected = { navManager.switchRoot(it) },
+                        onDestinationSelected = {
+                            analyticsTracker.trackMainAction(
+                                action = "root_selected",
+                                params = analyticsParamsOf("root" to it.name.lowercase()),
+                            )
+                            navManager.switchRoot(it)
+                        },
                         toastMessage = toastMessage,
                     ) {
                         AppNavHost(
                             navManager = navManager,
                             registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
+                            onDestinationVisible = {
+                                analyticsTracker.trackScreenView(it, surface = "mobile")
+                            },
                         )
                     }
                 }
@@ -143,3 +164,26 @@ class MobileMainGraph @Inject constructor(
 }
 
 private const val GLOBAL_TOAST_DURATION_MS = 3_000L
+
+private fun AnalyticsTracker.trackScreenView(destination: NavKey, surface: String) {
+    val analyticsDestination = destination as? AnalyticsDestination ?: return
+    track(
+        AnalyticsEvents.screenView(
+            screenName = analyticsDestination.screenName,
+            params = analyticsDestination.screenParams + (AnalyticsEvents.PARAM_SURFACE to surface),
+        )
+    )
+}
+
+private fun AnalyticsTracker.trackMainAction(
+    action: String,
+    params: Map<String, String> = emptyMap(),
+) {
+    track(
+        AnalyticsEvents.uiAction(
+            screenName = "main",
+            action = action,
+            params = params + (AnalyticsEvents.PARAM_SURFACE to "mobile"),
+        )
+    )
+}

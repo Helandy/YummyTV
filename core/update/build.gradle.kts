@@ -10,6 +10,7 @@ android {
 }
 
 dependencies {
+    api(project(":core:analytics"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))

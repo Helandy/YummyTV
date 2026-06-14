@@ -3,6 +3,9 @@ package su.afk.yummy.tv.core.update
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -20,6 +23,7 @@ class UpdateViewModel @Inject constructor(
     private val apkDownloader: ApkDownloader,
     private val apkInstaller: ApkInstaller,
     private val stringProvider: StringProvider,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<UpdateState.State, UpdateState.Event, UpdateState.Effect>(savedStateHandle) {
 
     private var downloadedApk: File? = null
@@ -43,11 +47,20 @@ class UpdateViewModel @Inject constructor(
     override fun onEvent(event: UpdateState.Event) {
         when (event) {
             UpdateState.Event.Dismiss -> {
+                trackUpdateAction("dismiss")
                 setState { copy(status = UpdateState.State.Status.Idle) }
                 setEffect(UpdateState.Effect.NavigateBack)
             }
-            is UpdateState.Event.ConfirmUpdate -> downloadAndInstall(event.apkUrl)
-            is UpdateState.Event.RetryUpdate -> retryInstall(event.apkUrl)
+
+            is UpdateState.Event.ConfirmUpdate -> {
+                trackUpdateAction("confirm")
+                downloadAndInstall(event.apkUrl)
+            }
+
+            is UpdateState.Event.RetryUpdate -> {
+                trackUpdateAction("retry")
+                retryInstall(event.apkUrl)
+            }
         }
     }
 
@@ -96,5 +109,19 @@ class UpdateViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun trackUpdateAction(action: String) {
+        analyticsTracker.track(
+            AnalyticsEvents.updateAction(
+                action = action,
+                params = updateAnalyticsParams(),
+            )
+        )
+    }
+
+    private fun updateAnalyticsParams(): Map<String, String> {
+        val version = (currentState.status as? UpdateState.State.Status.Available)?.version
+        return analyticsParamsOf("version" to version)
     }
 }

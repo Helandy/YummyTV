@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -34,6 +37,7 @@ class HomeViewModel @Inject internal constructor(
     private val watchProgressStore: WatchProgressStore,
     private val stringProvider: StringProvider,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<HomeState.State, HomeState.Event, HomeState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = HomeState.State()
@@ -59,16 +63,41 @@ class HomeViewModel @Inject internal constructor(
     override fun onEvent(event: HomeState.Event) {
         when (event) {
             is HomeState.Event.AnimeSelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "anime_selected",
+                        params = analyticsParamsOf("anime_id" to event.seriesId),
+                    )
+                )
                 setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
             }
 
             is HomeState.Event.CollectionSelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "collection_selected",
+                        params = analyticsParamsOf("collection_id" to event.collectionId),
+                    )
+                )
                 setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
                 nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
             }
+
             is HomeState.Event.VideoSelected -> Unit
             is HomeState.Event.ContinueWatchingSelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "continue_watching_selected",
+                        params = analyticsParamsOf(
+                            "anime_id" to event.entry.animeId,
+                            "video_id" to event.entry.videoId,
+                        ),
+                    )
+                )
                 setState {
                     copy(
                         continueWatchingRestoreToken = continueWatchingRestoreToken + 1,
@@ -78,12 +107,18 @@ class HomeViewModel @Inject internal constructor(
                 }
                 launchContinueWatching(event.entry)
             }
-            HomeState.Event.RetrySelected -> load()
+
+            HomeState.Event.RetrySelected -> {
+                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "retry"))
+                load()
+            }
+
             is HomeState.Event.ItemFocused -> onItemFocused(
                 event.sectionId,
                 event.displayId,
                 event.animeId
             )
+
             HomeState.Event.FocusedItemRestoreHandled -> {
                 if (currentState.restoreFocusedItemOnEnter) {
                     setState { copy(restoreFocusedItemOnEnter = false) }
@@ -126,9 +161,16 @@ class HomeViewModel @Inject internal constructor(
                     setState { copy(isLoading = false, feed = feed) }
                 },
                 onFailure = { e ->
-                    setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.home_load_error)) }
+                    setState {
+                        copy(
+                            isLoading = false,
+                            error = e.message ?: stringProvider.get(R.string.home_load_error)
+                        )
+                    }
                 },
             )
         }
     }
 }
+
+private const val SCREEN_NAME = "home"

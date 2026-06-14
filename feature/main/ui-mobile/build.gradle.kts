@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))

@@ -6,6 +6,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -25,6 +28,7 @@ class CollectionViewModel @AssistedInject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getCollection: GetCollectionUseCase,
     private val stringProvider: StringProvider,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<CollectionState.State, CollectionState.Event, CollectionState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -41,8 +45,27 @@ class CollectionViewModel @AssistedInject internal constructor(
     override fun onEvent(event: CollectionState.Event) {
         when (event) {
             CollectionState.Event.BackSelected -> nav.back()
-            CollectionState.Event.RetrySelected -> load()
+            CollectionState.Event.RetrySelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "retry",
+                        params = analyticsParamsOf("collection_id" to collectionId),
+                    )
+                )
+                load()
+            }
             is CollectionState.Event.AnimeSelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "anime_selected",
+                        params = analyticsParamsOf(
+                            "collection_id" to collectionId,
+                            "anime_id" to event.animeId,
+                        ),
+                    )
+                )
                 setState {
                     copy(
                         focusedItemId = event.animeId,
@@ -80,3 +103,5 @@ class CollectionViewModel @AssistedInject internal constructor(
         }
     }
 }
+
+private const val SCREEN_NAME = "collection"

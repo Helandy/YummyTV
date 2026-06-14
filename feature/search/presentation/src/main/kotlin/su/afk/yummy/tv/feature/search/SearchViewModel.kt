@@ -3,6 +3,9 @@ package su.afk.yummy.tv.feature.search
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -27,6 +30,7 @@ class SearchViewModel @Inject internal constructor(
     private val getSearchFilterOptions: GetSearchFilterOptionsUseCase,
     private val stringProvider: StringProvider,
     private val searchPagingHandler: SearchPagingHandler,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<SearchState.State, SearchState.Event, SearchState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = SearchState.State()
@@ -51,14 +55,30 @@ class SearchViewModel @Inject internal constructor(
             is SearchState.Event.QueryChanged -> onQueryChanged(event.query)
             is SearchState.Event.ExternalSearchSubmitted -> onExternalSearchSubmitted(event.query)
             is SearchState.Event.ItemSelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "anime_selected",
+                        params = analyticsParamsOf("anime_id" to event.animeId),
+                    )
+                )
                 setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
+
             is SearchState.Event.ItemFocused -> onItemFocused(event.animeId)
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
             SearchState.Event.LoadMore -> loadMore()
-            SearchState.Event.OpenFilters -> setState { copy(isFilterPanelOpen = true, draftFilters = filters) }
-            SearchState.Event.CloseFilters -> setState { copy(isFilterPanelOpen = false, draftFilters = filters) }
+            SearchState.Event.OpenFilters -> {
+                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "filters_opened"))
+                setState { copy(isFilterPanelOpen = true, draftFilters = filters) }
+            }
+
+            SearchState.Event.CloseFilters -> {
+                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "filters_closed"))
+                setState { copy(isFilterPanelOpen = false, draftFilters = filters) }
+            }
+
             SearchState.Event.ApplyFilters -> applyFilters()
             SearchState.Event.ResetFilters -> resetFilters()
             is SearchState.Event.GenreToggled -> updateDraft {
@@ -67,16 +87,32 @@ class SearchViewModel @Inject internal constructor(
                     excludedGenres = excludedGenres - event.id,
                 )
             }
+
             is SearchState.Event.ExcludedGenreToggled -> updateDraft {
                 copy(
                     excludedGenres = excludedGenres.toggle(event.id),
                     genres = genres - event.id,
                 )
             }
+
             is SearchState.Event.TypeToggled -> updateDraft { copy(types = types.toggle(event.id)) }
-            is SearchState.Event.StatusToggled -> updateDraft { copy(statuses = statuses.toggle(event.id)) }
+            is SearchState.Event.StatusToggled -> updateDraft {
+                copy(
+                    statuses = statuses.toggle(
+                        event.id
+                    )
+                )
+            }
+
             is SearchState.Event.SeasonToggled -> updateDraft { copy(seasons = seasons.toggle(event.id)) }
-            is SearchState.Event.AgeRatingToggled -> updateDraft { copy(ageRatings = ageRatings.toggle(event.value)) }
+            is SearchState.Event.AgeRatingToggled -> updateDraft {
+                copy(
+                    ageRatings = ageRatings.toggle(
+                        event.value
+                    )
+                )
+            }
+
             is SearchState.Event.FromYearChanged -> updateDraft { copy(fromYear = event.year) }
             is SearchState.Event.ToYearChanged -> updateDraft { copy(toYear = event.year) }
             is SearchState.Event.SortSelected -> updateDraft { copy(sort = event.sort) }
@@ -110,6 +146,14 @@ class SearchViewModel @Inject internal constructor(
             setState { copy(isLoading = false) }
             return
         }
+        analyticsTracker.track(
+            AnalyticsEvents.searchSubmit(
+                screenName = SCREEN_NAME,
+                hasQuery = true,
+                filterCount = 0,
+                params = analyticsParamsOf("source" to "external"),
+            )
+        )
         loadSearch(
             SearchPagingRequest(
                 normalizedQuery,
@@ -151,6 +195,14 @@ class SearchViewModel @Inject internal constructor(
     private fun onSearchSubmitted() {
         val query = currentState.query
         if (query.isBlank() && currentState.filters.isEmpty) return
+        analyticsTracker.track(
+            AnalyticsEvents.searchSubmit(
+                screenName = SCREEN_NAME,
+                hasQuery = query.isNotBlank(),
+                filterCount = currentState.filters.activeCount,
+                params = analyticsParamsOf("source" to "manual"),
+            )
+        )
         searchPagingHandler.cancel()
         loadSearch(SearchPagingRequest(query, currentState.filters, offset = 0, replace = true))
     }
@@ -165,6 +217,14 @@ class SearchViewModel @Inject internal constructor(
     private fun applyFilters() {
         val query = currentState.query
         val filters = searchPagingHandler.normalizedYears(currentState.draftFilters)
+        analyticsTracker.track(
+            AnalyticsEvents.searchFiltersApply(
+                screenName = SCREEN_NAME,
+                action = "apply",
+                hasQuery = query.isNotBlank(),
+                filterCount = filters.activeCount,
+            )
+        )
         setState {
             copy(
                 filters = filters,
@@ -187,6 +247,14 @@ class SearchViewModel @Inject internal constructor(
 
     private fun resetFilters() {
         val query = currentState.query
+        analyticsTracker.track(
+            AnalyticsEvents.searchFiltersApply(
+                screenName = SCREEN_NAME,
+                action = "reset",
+                hasQuery = query.isNotBlank(),
+                filterCount = currentState.filters.activeCount,
+            )
+        )
         setState {
             copy(
                 filters = SearchFilters.EMPTY,
@@ -253,5 +321,8 @@ class SearchViewModel @Inject internal constructor(
         }
     }
 
-    private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
+    private fun <T> Set<T>.toggle(value: T): Set<T> =
+        if (value in this) this - value else this + value
 }
+
+private const val SCREEN_NAME = "search"

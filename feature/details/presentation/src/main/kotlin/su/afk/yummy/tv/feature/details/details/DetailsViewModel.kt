@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -64,6 +67,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val libraryHandler: DetailsLibraryHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -128,35 +132,127 @@ class DetailsViewModel @AssistedInject internal constructor(
     override fun onEvent(event: DetailsState.Event) {
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
-            DetailsState.Event.RetrySelected -> load()
-            DetailsState.Event.WatchSelected -> onWatchSelected()
-            is DetailsState.Event.AnimeSelected -> nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
+            DetailsState.Event.RetrySelected -> {
+                trackDetailsAction("retry")
+                load()
+            }
+
+            DetailsState.Event.WatchSelected -> {
+                trackDetailsAction("watch_selected")
+                onWatchSelected()
+            }
+
+            is DetailsState.Event.AnimeSelected -> {
+                trackDetailsAction(
+                    action = "anime_selected",
+                    params = analyticsParamsOf("target_anime_id" to event.seriesId),
+                )
+                nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
+            }
+
             is DetailsState.Event.BalancerConfirmed -> {
+                trackDetailsAction(
+                    action = "balancer_confirmed",
+                    params = analyticsParamsOf("video_id" to event.video.id),
+                )
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
             }
+
             DetailsState.Event.BalancerPickerDismissed -> setState { copy(pendingBalancerSelection = null) }
-            DetailsState.Event.FullDetailsSelected -> nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
-            DetailsState.Event.EpisodesSelected -> nav.navigate(detailsNavigator.getEpisodesDest(animeId))
-            DetailsState.Event.TrailersSelected -> nav.navigate(detailsNavigator.getTrailersDest(animeId))
-            DetailsState.Event.SimilarSelected -> nav.navigate(detailsNavigator.getSimilarDest(animeId))
-            DetailsState.Event.ViewingOrderSelected -> nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
-            DetailsState.Event.ScreenshotsSelected -> nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
-            DetailsState.Event.RatingScreenSelected -> nav.navigate(detailsNavigator.getRatingDest(animeId))
-            DetailsState.Event.CollectionsSelected -> nav.navigate(detailsNavigator.getCollectionsDest(animeId))
-            DetailsState.Event.LibraryToggled -> viewModelScope.launch { toggleLibrary() }
-            DetailsState.Event.FavoriteToggled -> viewModelScope.launch { toggleFavorite() }
-            DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
-            is DetailsState.Event.LibraryListSelected -> viewModelScope.launch { addToLibrary(event.list) }
-            DetailsState.Event.PosterClicked -> setState { copy(showPosterFullscreen = true) }
-            DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
-            is DetailsState.Event.CollectionSelected -> nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
-            DetailsState.Event.SubscriptionsRouteSelected -> nav.navigate(
-                detailsNavigator.getSubscriptionsDest(
-                    animeId
+            DetailsState.Event.FullDetailsSelected -> {
+                trackDetailsAction("full_details_selected")
+                nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
+            }
+
+            DetailsState.Event.EpisodesSelected -> {
+                trackDetailsAction("episodes_selected")
+                nav.navigate(detailsNavigator.getEpisodesDest(animeId))
+            }
+
+            DetailsState.Event.TrailersSelected -> {
+                trackDetailsAction("trailers_selected")
+                nav.navigate(detailsNavigator.getTrailersDest(animeId))
+            }
+
+            DetailsState.Event.SimilarSelected -> {
+                trackDetailsAction("similar_selected")
+                nav.navigate(detailsNavigator.getSimilarDest(animeId))
+            }
+
+            DetailsState.Event.ViewingOrderSelected -> {
+                trackDetailsAction("viewing_order_selected")
+                nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
+            }
+
+            DetailsState.Event.ScreenshotsSelected -> {
+                trackDetailsAction("screenshots_selected")
+                nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
+            }
+
+            DetailsState.Event.RatingScreenSelected -> {
+                trackDetailsAction("rating_screen_selected")
+                nav.navigate(detailsNavigator.getRatingDest(animeId))
+            }
+
+            DetailsState.Event.CollectionsSelected -> {
+                trackDetailsAction("collections_selected")
+                nav.navigate(detailsNavigator.getCollectionsDest(animeId))
+            }
+
+            DetailsState.Event.LibraryToggled -> {
+                trackDetailsAction(
+                    action = "library_toggled",
+                    params = analyticsParamsOf("target_state" to (!currentState.isInLibrary)),
                 )
-            )
-            DetailsState.Event.SubscriptionsSelected -> setState { copy(showSubscriptionsPicker = true) }
+                viewModelScope.launch { toggleLibrary() }
+            }
+
+            DetailsState.Event.FavoriteToggled -> {
+                trackDetailsAction(
+                    action = "favorite_toggled",
+                    params = analyticsParamsOf("target_state" to (!currentState.isFavorite)),
+                )
+                viewModelScope.launch { toggleFavorite() }
+            }
+
+            DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
+            is DetailsState.Event.LibraryListSelected -> {
+                trackDetailsAction(
+                    action = "library_list_selected",
+                    params = analyticsParamsOf("list" to event.list.name.lowercase()),
+                )
+                viewModelScope.launch { addToLibrary(event.list) }
+            }
+
+            DetailsState.Event.PosterClicked -> {
+                trackDetailsAction("poster_clicked")
+                setState { copy(showPosterFullscreen = true) }
+            }
+
+            DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
+            is DetailsState.Event.CollectionSelected -> {
+                trackDetailsAction(
+                    action = "collection_selected",
+                    params = analyticsParamsOf("collection_id" to event.collectionId),
+                )
+                nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
+            }
+
+            DetailsState.Event.SubscriptionsRouteSelected -> {
+                trackDetailsAction("subscriptions_route_selected")
+                nav.navigate(
+                    detailsNavigator.getSubscriptionsDest(
+                        animeId
+                    )
+                )
+            }
+
+            DetailsState.Event.SubscriptionsSelected -> {
+                trackDetailsAction("subscriptions_selected")
+                setState { copy(showSubscriptionsPicker = true) }
+            }
+
             DetailsState.Event.SubscriptionsDismissed -> setState { copy(showSubscriptionsPicker = false) }
             is DetailsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
         }
@@ -305,7 +401,9 @@ class DetailsViewModel @AssistedInject internal constructor(
             onSuccess = { videos ->
                 setState {
                     copy(
-                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos),
+                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
+                            videos
+                        ),
                         subscriptions = videos.toSubscriptionOptions(optimisticKeys = subscriptions.subscribedKeys()),
                     )
                 }
@@ -314,7 +412,14 @@ class DetailsViewModel @AssistedInject internal constructor(
                     openInitialVideo(videos)
                 }
             },
-            onFailure = { setState { copy(videosState = VideosUiState.Empty, isWatchLaunchPending = false) } },
+            onFailure = {
+                setState {
+                    copy(
+                        videosState = VideosUiState.Empty,
+                        isWatchLaunchPending = false
+                    )
+                }
+            },
         )
     }
 
@@ -325,6 +430,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
             }
+
             VideosUiState.Loading -> setState { copy(isWatchLaunchPending = true) }
         }
     }
@@ -378,6 +484,13 @@ class DetailsViewModel @AssistedInject internal constructor(
         if (!currentState.isSignedIn) return
         val option = currentState.subscriptions.firstOrNull { it.key == key } ?: return
         val wasSubscribed = option.isSubscribed
+        trackDetailsAction(
+            action = "subscription_toggled",
+            params = analyticsParamsOf(
+                "video_id" to option.representativeVideoId,
+                "target_state" to (!wasSubscribed),
+            ),
+        )
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
             val changed = subscriptionHandler.commitSubscriptionChange(
@@ -451,4 +564,19 @@ class DetailsViewModel @AssistedInject internal constructor(
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }
     }
+
+    private fun trackDetailsAction(
+        action: String,
+        params: Map<String, String> = emptyMap(),
+    ) {
+        analyticsTracker.track(
+            AnalyticsEvents.uiAction(
+                screenName = SCREEN_NAME,
+                action = action,
+                params = analyticsParamsOf("anime_id" to animeId) + params,
+            )
+        )
+    }
 }
+
+private const val SCREEN_NAME = "details"

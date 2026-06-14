@@ -6,6 +6,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -23,6 +26,7 @@ class SimilarViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeRecommendations: GetAnimeRecommendationsUseCase,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<SimilarState.State, SimilarState.Event, SimilarState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -39,8 +43,13 @@ class SimilarViewModel @AssistedInject internal constructor(
     override fun onEvent(event: SimilarState.Event) {
         when (event) {
             SimilarState.Event.BackSelected -> nav.back()
-            is SimilarState.Event.AnimeSelected ->
+            is SimilarState.Event.AnimeSelected -> {
+                trackSimilarAction(
+                    action = "anime_selected",
+                    params = analyticsParamsOf("target_anime_id" to event.animeId),
+                )
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+            }
             is SimilarState.Event.ItemFocused -> onItemFocused(event.animeId)
             is SimilarState.Event.SourceSelected -> selectSource(event.fromAi)
             SimilarState.Event.SourceToggled -> selectSource(!currentState.fromAi)
@@ -49,6 +58,10 @@ class SimilarViewModel @AssistedInject internal constructor(
 
     private fun selectSource(fromAi: Boolean) {
         if (currentState.fromAi == fromAi) return
+        trackSimilarAction(
+            action = "source_selected",
+            params = analyticsParamsOf("from_ai" to fromAi),
+        )
         setState { copy(fromAi = fromAi) }
         viewModelScope.launch { load(fromAi) }
     }
@@ -82,4 +95,19 @@ class SimilarViewModel @AssistedInject internal constructor(
             },
         )
     }
+
+    private fun trackSimilarAction(
+        action: String,
+        params: Map<String, String> = emptyMap(),
+    ) {
+        analyticsTracker.track(
+            AnalyticsEvents.uiAction(
+                screenName = SCREEN_NAME,
+                action = action,
+                params = analyticsParamsOf("anime_id" to animeId) + params,
+            )
+        )
+    }
 }
+
+private const val SCREEN_NAME = "details_similar"

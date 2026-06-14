@@ -11,6 +11,7 @@ dependencies {
     api(project(":feature:details:domain"))
     api(project(":feature:home:domain"))
 
+    implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))

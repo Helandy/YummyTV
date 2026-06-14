@@ -6,6 +6,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -23,6 +26,7 @@ class FullDetailsViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val stringProvider: StringProvider,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<FullDetailsState.State, FullDetailsState.Event, FullDetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -39,7 +43,16 @@ class FullDetailsViewModel @AssistedInject constructor(
     override fun onEvent(event: FullDetailsState.Event) {
         when (event) {
             FullDetailsState.Event.BackSelected -> nav.back()
-            FullDetailsState.Event.RetrySelected -> load()
+            FullDetailsState.Event.RetrySelected -> {
+                analyticsTracker.track(
+                    AnalyticsEvents.uiAction(
+                        screenName = SCREEN_NAME,
+                        action = "retry",
+                        params = analyticsParamsOf("anime_id" to animeId),
+                    )
+                )
+                load()
+            }
         }
     }
 
@@ -60,3 +73,5 @@ class FullDetailsViewModel @AssistedInject constructor(
         }
     }
 }
+
+private const val SCREEN_NAME = "details_full"

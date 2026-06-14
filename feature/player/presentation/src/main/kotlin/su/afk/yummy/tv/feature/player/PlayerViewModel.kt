@@ -9,6 +9,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -40,6 +43,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val settingsHandler: PlayerSettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -85,23 +89,32 @@ class PlayerViewModel @AssistedInject internal constructor(
         when (event) {
             PlayerState.Event.Back -> nav.back()
             PlayerState.Event.RetryStream -> {
+                trackPlayerAction("retry_stream")
                 setState { copy(retryKey = retryKey + 1) }
                 loadStream()
             }
             PlayerState.Event.RateTitle -> {
+                trackPlayerAction("rate_title")
                 val animeId = currentState.animeId
                 if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
             is PlayerState.Event.PlaybackError -> {
+                analyticsTracker.track(AnalyticsEvents.playerError(playerAnalyticsParams()))
                 setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
             }
             PlayerState.Event.PrevEpisode -> {
+                trackPlayerAction("prev_episode")
                 applySourceSelection(sourceSelectionHandler.previousEpisode(currentState))
             }
             PlayerState.Event.NextEpisode -> {
+                trackPlayerAction("next_episode")
                 applySourceSelection(sourceSelectionHandler.nextEpisode(currentState))
             }
             is PlayerState.Event.DubbingSelected -> {
+                trackPlayerAction(
+                    action = "dubbing_selected",
+                    params = analyticsParamsOf("index" to event.index),
+                )
                 applySourceSelection(
                     sourceSelectionHandler.selectDubbing(
                         state = currentState,
@@ -112,6 +125,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
             }
             is PlayerState.Event.BalancerSelected -> {
+                trackPlayerAction(
+                    action = "balancer_selected",
+                    params = analyticsParamsOf("index" to event.index),
+                )
                 applySourceSelection(
                     sourceSelectionHandler.selectBalancer(
                         state = currentState,
@@ -122,6 +139,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
             }
             is PlayerState.Event.QualitySelected -> {
+                trackPlayerAction(
+                    action = "quality_selected",
+                    params = analyticsParamsOf("quality" to event.quality),
+                )
                 val position = event.currentPosMs.coerceAtLeast(0L)
                 setState {
                     copy(
@@ -133,10 +154,18 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.SpeedSelected -> {
+                trackPlayerAction(
+                    action = "speed_selected",
+                    params = analyticsParamsOf("speed" to event.speed),
+                )
                 setState { copy(selectedSpeed = event.speed.coerceAtLeast(0.1f)) }
             }
 
             is PlayerState.Event.ResizeModeSelected -> {
+                trackPlayerAction(
+                    action = "resize_mode_selected",
+                    params = analyticsParamsOf("mode" to event.mode.name.lowercase()),
+                )
                 val settings = PlayerResizeSettings(
                     resizeMode = event.mode,
                     zoomLevel = currentState.zoomLevel,
@@ -146,6 +175,10 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.ZoomLevelSelected -> {
+                trackPlayerAction(
+                    action = "zoom_level_selected",
+                    params = analyticsParamsOf("level" to event.level.name.lowercase()),
+                )
                 val settings = PlayerResizeSettings(
                     resizeMode = PlayerResizeMode.ZOOM,
                     zoomLevel = event.level,
@@ -323,4 +356,19 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
         }
     }
+
+    private fun trackPlayerAction(
+        action: String,
+        params: Map<String, String> = emptyMap(),
+    ) {
+        analyticsTracker.track(
+            AnalyticsEvents.playerAction(
+                action = action,
+                params = playerAnalyticsParams() + params,
+            )
+        )
+    }
+
+    private fun playerAnalyticsParams(): Map<String, String> =
+        analyticsParamsOf("anime_id" to currentState.animeId.takeIf { it > 0 })
 }

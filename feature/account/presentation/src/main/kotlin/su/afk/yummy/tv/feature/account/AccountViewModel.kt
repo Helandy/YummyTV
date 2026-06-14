@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -39,6 +42,7 @@ class AccountViewModel @Inject internal constructor(
     private val hubHandler: AccountHubHandler,
     private val notificationHandler: AccountNotificationHandler,
     private val notificationMutationHandler: AccountNotificationMutationHandler,
+    private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModelNew<AccountState.State, AccountState.Event, AccountState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = AccountState.State()
@@ -85,7 +89,17 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.BackSelected -> {
                 nav.back()
             }
-            is AccountState.Event.TabSelected -> setState { copy(selectedTab = event.tab) }
+
+            is AccountState.Event.TabSelected -> {
+                if (event.tab != currentState.selectedTab) {
+                    trackAccountAction(
+                        action = "tab_selected",
+                        params = analyticsParamsOf("tab" to event.tab.name.lowercase()),
+                    )
+                }
+                setState { copy(selectedTab = event.tab) }
+            }
+
             is AccountState.Event.LoginChanged -> setState {
                 copy(
                     login = event.login,
@@ -95,6 +109,7 @@ class AccountViewModel @Inject internal constructor(
                     captchaError = null,
                 )
             }
+
             is AccountState.Event.PasswordChanged -> setState {
                 copy(
                     password = event.password,
@@ -104,9 +119,12 @@ class AccountViewModel @Inject internal constructor(
                     captchaError = null,
                 )
             }
+
             AccountState.Event.LoginSelected -> {
+                trackAccountAction("login_selected")
                 login()
             }
+
             is AccountState.Event.CaptchaSolved -> {
                 if (event.token.isBlank()) {
                     setState { copy(captchaError = AccountUiError.CAPTCHA_RESPONSE_EMPTY) }
@@ -114,6 +132,7 @@ class AccountViewModel @Inject internal constructor(
                     login(captchaResponse = event.token)
                 }
             }
+
             AccountState.Event.CaptchaExpired -> setState {
                 copy(
                     isLoading = false,
@@ -121,6 +140,7 @@ class AccountViewModel @Inject internal constructor(
                     captchaError = AccountUiError.CAPTCHA_EXPIRED,
                 )
             }
+
             is AccountState.Event.CaptchaFailed -> setState {
                 copy(
                     isLoading = false,
@@ -128,7 +148,9 @@ class AccountViewModel @Inject internal constructor(
                     captchaError = AccountUiError.CAPTCHA_LOAD_FAILED,
                 )
             }
+
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
+                trackAccountAction("logout_selected")
                 setState { copy(isLoading = true, error = null) }
                 if (sessionHandler.logout()) {
                     setState {
@@ -155,7 +177,9 @@ class AccountViewModel @Inject internal constructor(
                     }
                 }
             }
+
             AccountState.Event.RefreshProfileSelected -> viewModelScope.launch {
+                trackAccountAction("refresh_profile_selected")
                 setState { copy(isLoading = true, error = null) }
                 when (sessionHandler.refreshProfile()) {
                     is AccountRefreshResult.Success -> {
@@ -174,7 +198,12 @@ class AccountViewModel @Inject internal constructor(
                     }
                 }
             }
-            AccountState.Event.RefreshHubSelected -> maybeLoadHub(force = true)
+
+            AccountState.Event.RefreshHubSelected -> {
+                trackAccountAction("refresh_hub_selected")
+                maybeLoadHub(force = true)
+            }
+
             is AccountState.Event.NotificationSelected -> openNotification(event.id)
             is AccountState.Event.NotificationFocused -> {
                 if (currentState.focusedNotificationId != event.id) {
@@ -187,16 +216,32 @@ class AccountViewModel @Inject internal constructor(
                     setState { copy(restoreFocusedNotificationOnEnter = false) }
                 }
             }
-            is AccountState.Event.NotificationReadSelected -> updateNotification {
-                notificationMutationHandler.markNotificationRead(event.id)
+
+            is AccountState.Event.NotificationReadSelected -> {
+                trackAccountAction(
+                    action = "notification_read_selected",
+                    params = analyticsParamsOf("notification_id" to event.id),
+                )
+                updateNotification {
+                    notificationMutationHandler.markNotificationRead(event.id)
+                }
             }
 
-            AccountState.Event.AllNotificationsReadSelected -> updateNotification {
-                notificationMutationHandler.markAllNotificationsRead()
+            AccountState.Event.AllNotificationsReadSelected -> {
+                trackAccountAction("all_notifications_read_selected")
+                updateNotification {
+                    notificationMutationHandler.markAllNotificationsRead()
+                }
             }
 
-            is AccountState.Event.NotificationDeleteSelected -> updateNotification {
-                notificationMutationHandler.deleteNotification(event.id)
+            is AccountState.Event.NotificationDeleteSelected -> {
+                trackAccountAction(
+                    action = "notification_delete_selected",
+                    params = analyticsParamsOf("notification_id" to event.id),
+                )
+                updateNotification {
+                    notificationMutationHandler.deleteNotification(event.id)
+                }
             }
         }
     }
@@ -205,6 +250,10 @@ class AccountViewModel @Inject internal constructor(
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
         if (!notification.isNewEpisode) return
         val slug = notification.animeSlug ?: return
+        trackAccountAction(
+            action = "notification_selected",
+            params = analyticsParamsOf("notification_id" to id),
+        )
         viewModelScope.launch {
             setState {
                 copy(
@@ -388,4 +437,18 @@ class AccountViewModel @Inject internal constructor(
         }
     }
 
+    private fun trackAccountAction(
+        action: String,
+        params: Map<String, String> = emptyMap(),
+    ) {
+        analyticsTracker.track(
+            AnalyticsEvents.uiAction(
+                screenName = SCREEN_NAME,
+                action = action,
+                params = params,
+            )
+        )
+    }
 }
+
+private const val SCREEN_NAME = "account"

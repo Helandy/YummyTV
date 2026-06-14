@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.navigator
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import su.afk.yummy.tv.core.analytics.AnalyticsDestination
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 
@@ -61,4 +62,8 @@ data class PlayerDestination(
     val allDubbingEpisodeSkips: List<List<PlayerSkips>> = emptyList(),
     @Deprecated("Use sourceGraph instead.")
     val allBalancerEpisodeSkips: List<List<List<PlayerSkips>>> = emptyList(),
-) : NavKey
+) : NavKey, AnalyticsDestination {
+    override val screenName: String = "player"
+    override val screenParams: Map<String, String>
+        get() = if (animeId > 0) mapOf("anime_id" to animeId.toString()) else emptyMap()
+}

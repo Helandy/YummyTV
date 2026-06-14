@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents
+import su.afk.yummy.tv.core.analytics.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -42,7 +45,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
-) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(savedStateHandle) {
+    private val analyticsTracker: AnalyticsTracker,
+) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(
+    savedStateHandle
+) {
 
     @AssistedFactory
     interface Factory {
@@ -74,13 +80,28 @@ class EpisodesViewModel @AssistedInject internal constructor(
     override fun onEvent(event: EpisodesState.Event) {
         when (event) {
             EpisodesState.Event.BackSelected -> nav.back()
-            is EpisodesState.Event.EpisodeDubbingsSelected ->
+            is EpisodesState.Event.EpisodeDubbingsSelected -> {
+                trackEpisodesAction("episode_dubbings_selected")
                 nav.navigate(detailsNavigator.getEpisodeDubbingsDest(animeId, event.episode))
-            is EpisodesState.Event.VideoSelected -> showBalancerPicker(event.video)
+            }
+
+            is EpisodesState.Event.VideoSelected -> {
+                trackEpisodesAction(
+                    action = "video_selected",
+                    params = analyticsParamsOf("video_id" to event.video.id),
+                )
+                showBalancerPicker(event.video)
+            }
+
             is EpisodesState.Event.BalancerConfirmed -> {
+                trackEpisodesAction(
+                    action = "balancer_confirmed",
+                    params = analyticsParamsOf("video_id" to event.video.id),
+                )
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
             }
+
             EpisodesState.Event.BalancerPickerDismissed ->
                 setState { copy(pendingBalancerSelection = null) }
         }
@@ -101,7 +122,11 @@ class EpisodesViewModel @AssistedInject internal constructor(
         runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 setState {
-                    copy(videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(videos))
+                    copy(
+                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
+                            videos
+                        )
+                    )
                 }
             },
             onFailure = { setState { copy(videosState = VideosUiState.Empty) } },
@@ -139,4 +164,19 @@ class EpisodesViewModel @AssistedInject internal constructor(
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }
     }
+
+    private fun trackEpisodesAction(
+        action: String,
+        params: Map<String, String> = emptyMap(),
+    ) {
+        analyticsTracker.track(
+            AnalyticsEvents.uiAction(
+                screenName = SCREEN_NAME,
+                action = action,
+                params = analyticsParamsOf("anime_id" to animeId) + params,
+            )
+        )
+    }
 }
+
+private const val SCREEN_NAME = "details_episodes"
