@@ -36,14 +36,17 @@ internal fun StatsTab(
     val stats = state.stats
     val profileSummary = state.profileSummary
     val listState = rememberLazyListState()
-    val focusRequester = remember { FocusRequester() }
+    val listFocusRequester = remember { FocusRequester() }
+    val profileOverviewFocusRequester = remember { FocusRequester() }
+    val contentFocusRequester =
+        if (profileSummary != null) profileOverviewFocusRequester else listFocusRequester
     val scope = rememberCoroutineScope()
 
     LazyColumn(
         state = listState,
         verticalArrangement = Arrangement.spacedBy(14.dp),
         modifier = modifier
-            .focusRequester(focusRequester)
+            .focusRequester(listFocusRequester)
             .focusable()
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
@@ -80,7 +83,7 @@ internal fun StatsTab(
                 selected = state.selectedTab,
                 onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
                 selectedTabFocusRequester = selectedTabFocusRequester,
-                contentFocusRequester = focusRequester,
+                contentFocusRequester = contentFocusRequester,
             )
         }
         item {
@@ -98,8 +101,8 @@ internal fun StatsTab(
             item {
                 AccountProfileOverviewPanel(
                     summary = profileSummary,
-                    fallbackNickname = state.nickname,
-                    fallbackAvatarUrl = state.avatarUrl,
+                    stats = stats,
+                    statsGridFocusRequester = profileOverviewFocusRequester,
                 )
             }
         } else if (stats != null && !stats.isEmpty()) {
@@ -115,7 +118,7 @@ internal fun StatsTab(
         if (stats == null || stats.isEmpty()) {
             return@LazyColumn
         }
-        if (stats.genres.isNotEmpty()) item { GenreStats(stats.genres) }
-        if (stats.ratings.isNotEmpty()) item { RatingStats(stats.ratings) }
+        if (profileSummary == null && stats.genres.isNotEmpty()) item { GenreStats(stats.genres) }
+        if (profileSummary == null && stats.ratings.isNotEmpty()) item { RatingStats(stats.ratings) }
     }
 }

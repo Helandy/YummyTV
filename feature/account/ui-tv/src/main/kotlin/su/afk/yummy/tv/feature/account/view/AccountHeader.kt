@@ -16,8 +16,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.utils.formatProfileDate
+import su.afk.yummy.tv.feature.account.utils.label
 
 @Composable
 internal fun AccountHeader(
@@ -39,6 +42,9 @@ internal fun AccountHeader(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            state.profileSummary?.let { summary ->
+                AccountHeaderProfileMeta(summary = summary)
+            }
             val unreadCount = state.notificationCounts.sumOf { it.count }
             if (unreadCount > 0) {
                 Text(
@@ -57,4 +63,33 @@ internal fun AccountHeader(
             )
         }
     }
+}
+
+@Composable
+private fun AccountHeaderProfileMeta(summary: UserProfileSummary) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        AccountHeaderMetaLine(
+            label = stringResource(R.string.account_profile_registered),
+            value = summary.registerDateSeconds.formatProfileDate(),
+        )
+        AccountHeaderMetaLine(
+            label = stringResource(R.string.account_profile_sex),
+            value = summary.sex.label(),
+        )
+    }
+}
+
+@Composable
+private fun AccountHeaderMetaLine(label: String, value: String) {
+    if (value.isBlank()) return
+    Text(
+        text = stringResource(R.string.account_profile_meta_line, label, value),
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
 }

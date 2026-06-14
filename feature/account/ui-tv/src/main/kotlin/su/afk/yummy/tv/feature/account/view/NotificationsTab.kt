@@ -115,11 +115,15 @@ internal fun NotificationsTab(
         }
     }
 
-    fun requestFocusAtIndex(index: Int, focusRequester: FocusRequester) {
+    fun requestFocusAtIndex(
+        index: Int,
+        focusRequester: FocusRequester,
+        alignScroll: Boolean = false,
+    ) {
         if (index !in state.notifications.indices) return
         focusMoveJob?.cancel()
         lastFocusedIndex = index
-        if (listState.layoutInfo.visibleItemsInfo.any { it.index == index }) {
+        if (!alignScroll && listState.layoutInfo.visibleItemsInfo.any { it.index == index }) {
             runCatching { focusRequester.requestFocus() }
         } else {
             focusMoveJob = scope.launch {
@@ -128,10 +132,15 @@ internal fun NotificationsTab(
         }
     }
 
-    fun requestNotificationFocus(index: Int) {
-        if (index !in state.notifications.indices) return
+    fun requestNotificationFocus(index: Int): Boolean {
+        if (index !in state.notifications.indices) return false
         notifyNotificationFocused(index)
-        requestFocusAtIndex(index, notificationRowFocusRequester(index))
+        requestFocusAtIndex(
+            index = index,
+            focusRequester = notificationRowFocusRequester(index),
+            alignScroll = true,
+        )
+        return true
     }
 
     fun requestDeleteFocus(index: Int) {
@@ -372,16 +381,10 @@ internal fun NotificationsTab(
 
                                     Key.DirectionDown -> {
                                         requestNotificationFocus(index + 1)
-                                        index < state.notifications.lastIndex
                                     }
 
                                     Key.DirectionUp -> {
-                                        if (index == 0) {
-                                            false
-                                        } else {
-                                            requestNotificationFocus(index - 1)
-                                            true
-                                        }
+                                        requestNotificationFocus(index - 1)
                                     }
 
                                     else -> false
@@ -412,6 +415,14 @@ internal fun NotificationsTab(
                                         true
                                     }
 
+                                    Key.DirectionDown -> {
+                                        requestNotificationFocus(index + 1)
+                                    }
+
+                                    Key.DirectionUp -> {
+                                        requestNotificationFocus(index - 1)
+                                    }
+
                                     else -> false
                                 }
                             }
@@ -427,13 +438,28 @@ internal fun NotificationsTab(
                                     ?: rowFocusRequester
                             }
                             .onPreviewKeyEvent { event ->
-                                if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
+                                if (event.type != KeyEventType.KeyDown) {
                                     return@onPreviewKeyEvent false
                                 }
-                                val target = readFocusRequester.takeIf { !notification.viewed }
-                                    ?: rowFocusRequester
-                                runCatching { target.requestFocus() }
-                                true
+                                when (event.key) {
+                                    Key.DirectionLeft -> {
+                                        val target =
+                                            readFocusRequester.takeIf { !notification.viewed }
+                                                ?: rowFocusRequester
+                                        runCatching { target.requestFocus() }
+                                        true
+                                    }
+
+                                    Key.DirectionDown -> {
+                                        requestNotificationFocus(index + 1)
+                                    }
+
+                                    Key.DirectionUp -> {
+                                        requestNotificationFocus(index - 1)
+                                    }
+
+                                    else -> false
+                                }
                             }
                             .onFocusChanged {
                                 if (it.isFocused) {

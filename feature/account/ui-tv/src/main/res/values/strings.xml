@@ -38,6 +38,10 @@
     <string name="account_profile_meta_line">%1$s: %2$s</string>
     <string name="account_profile_watch_time_title">Watch time on site</string>
     <string name="account_profile_watch_type_movies">Movies</string>
+    <string name="account_profile_list_duration_title">Duration by lists</string>
+    <string name="account_profile_genres_title">Genres</string>
+    <string name="account_profile_ratings_title">Rated titles (Average %1$s)</string>
+    <string name="account_profile_stats_empty">No data yet</string>
     <string name="account_profile_duration_hours">%1$d h</string>
     <string name="account_profile_duration_less_hour">&lt;1 h</string>
     <string name="account_profile_percent_full">100%</string>
