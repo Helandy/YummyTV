@@ -75,21 +75,33 @@ Android-устройств.
 
 ## Скриншоты
 
-|                              Home                               |                                Details                                |                              Top                              |
-|:---------------------------------------------------------------:|:---------------------------------------------------------------------:|:-------------------------------------------------------------:|
-| <img src="docs/screenshots/Home.webp" width="320" alt="Home" /> | <img src="docs/screenshots/Details.webp" width="320" alt="Details" /> | <img src="docs/screenshots/Top.webp" width="320" alt="Top" /> |
+### TV
 
-|                               Series                                |                                    Continue Watching                                     |                                Similar                                |
-|:-------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------:|
-| <img src="docs/screenshots/Series.webp" width="320" alt="Series" /> | <img src="docs/screenshots/ContinueWatching.webp" width="320" alt="Continue Watching" /> | <img src="docs/screenshots/Similar.webp" width="320" alt="Similar" /> |
+|                                      Главная                                       |                                   Тайтл                                    |                                 Топ                                  |
+|:----------------------------------------------------------------------------------:|:--------------------------------------------------------------------------:|:--------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/home.webp" width="320" alt="TV: главная страница" /> | <img src="docs/screenshots/tv/details.webp" width="320" alt="TV: тайтл" /> | <img src="docs/screenshots/tv/top.webp" width="320" alt="TV: топ" /> |
 
-|                               Player                                |                                      Quality                                       |                                     Voice                                      |
-|:-------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/Player.webp" width="320" alt="Player" /> | <img src="docs/screenshots/PlayerQuality.webp" width="320" alt="Player Quality" /> | <img src="docs/screenshots/PlayerVoice.webp" width="320" alt="Player Voice" /> |
+|                                    Серии                                    |                                    Балансеры                                     |                                      Порядок просмотра                                       |
+|:---------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/episodes.webp" width="320" alt="TV: серии" /> | <img src="docs/screenshots/tv/balancers.webp" width="320" alt="TV: балансеры" /> | <img src="docs/screenshots/tv/viewing-order.webp" width="320" alt="TV: порядок просмотра" /> |
 
-|                                   Select Balancer                                    |                                   Player Balancer                                    |
-|:------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/SelectBalancer.webp" width="420" alt="Select Balancer" /> | <img src="docs/screenshots/PlayerBalancer.webp" width="420" alt="Player Balancer" /> |
+|                                   Плеер                                   |
+|:-------------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/player.webp" width="480" alt="TV: плеер" /> |
+
+### Mobile
+
+|                                          Главная                                           |                                       Тайтл                                        |                                     Топ                                      |
+|:------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile: главная страница" /> | <img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile: тайтл" /> | <img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile: топ" /> |
+
+|                                       Библиотека                                        |                                       Профиль                                        |                                          Порядок просмотра                                           |
+|:---------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile: библиотека" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile: профиль" /> | <img src="docs/screenshots/mobile/viewing-order.webp" width="210" alt="Mobile: порядок просмотра" /> |
+
+|                                        Балансеры                                         |                                       Плеер                                       |
+|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile: балансеры" /> | <img src="docs/screenshots/mobile/player.webp" width="320" alt="Mobile: плеер" /> |
 
 ## Загрузка
 

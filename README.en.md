@@ -73,21 +73,33 @@ The built-in player is based on Media3/ExoPlayer and supports:
 
 ## Screenshots
 
-|                              Home                               |                                Details                                |                              Top                              |
-|:---------------------------------------------------------------:|:---------------------------------------------------------------------:|:-------------------------------------------------------------:|
-| <img src="docs/screenshots/Home.webp" width="320" alt="Home" /> | <img src="docs/screenshots/Details.webp" width="320" alt="Details" /> | <img src="docs/screenshots/Top.webp" width="320" alt="Top" /> |
+### TV
 
-|                               Series                                |                                    Continue Watching                                     |                                Similar                                |
-|:-------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------:|
-| <img src="docs/screenshots/Series.webp" width="320" alt="Series" /> | <img src="docs/screenshots/ContinueWatching.webp" width="320" alt="Continue Watching" /> | <img src="docs/screenshots/Similar.webp" width="320" alt="Similar" /> |
+|                                 Home                                  |                                   Details                                   |                                 Top                                 |
+|:---------------------------------------------------------------------:|:---------------------------------------------------------------------------:|:-------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/home.webp" width="320" alt="TV home" /> | <img src="docs/screenshots/tv/details.webp" width="320" alt="TV details" /> | <img src="docs/screenshots/tv/top.webp" width="320" alt="TV top" /> |
 
-|                               Player                                |                                      Quality                                       |                                     Voice                                      |
-|:-------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|:------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/Player.webp" width="320" alt="Player" /> | <img src="docs/screenshots/PlayerQuality.webp" width="320" alt="Player Quality" /> | <img src="docs/screenshots/PlayerVoice.webp" width="320" alt="Player Voice" /> |
+|                                   Episodes                                    |                                    Balancers                                    |                                      Viewing Order                                      |
+|:-----------------------------------------------------------------------------:|:-------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/episodes.webp" width="320" alt="TV episodes" /> | <img src="docs/screenshots/tv/balancers.webp" width="320" alt="TV balancers" /> | <img src="docs/screenshots/tv/viewing-order.webp" width="320" alt="TV viewing order" /> |
 
-|                                   Select Balancer                                    |                                   Player Balancer                                    |
-|:------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/SelectBalancer.webp" width="420" alt="Select Balancer" /> | <img src="docs/screenshots/PlayerBalancer.webp" width="420" alt="Player Balancer" /> |
+|                                  Player                                   |
+|:-------------------------------------------------------------------------:|
+| <img src="docs/screenshots/tv/player.webp" width="480" alt="TV player" /> |
+
+### Mobile
+
+|                                     Home                                      |                                       Details                                       |                                     Top                                     |
+|:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home" /> | <img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details" /> | <img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top" /> |
+
+|                                       Library                                       |                                       Profile                                       |                                          Viewing Order                                          |
+|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile" /> | <img src="docs/screenshots/mobile/viewing-order.webp" width="210" alt="Mobile viewing order" /> |
+
+|                                        Balancers                                        |                                      Player                                       |
+|:---------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers" /> | <img src="docs/screenshots/mobile/player.webp" width="320" alt="Mobile player" /> |
 
 ## Download
 
