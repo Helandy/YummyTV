@@ -31,6 +31,7 @@ internal fun AccountTabs(
     onSelected: (AccountState.AccountTab) -> Unit,
     selectedTabFocusRequester: FocusRequester? = null,
     contentFocusRequester: FocusRequester? = null,
+    onContentRequested: (() -> Unit)? = null,
     onMarkAllRead: (() -> Unit)? = null,
     markAllReadEnabled: Boolean = true,
 ) {
@@ -84,7 +85,8 @@ internal fun AccountTabs(
                         onFocusSelected = { onSelected(AccountState.AccountTab.STATS) },
                         onActivated = {
                             onSelected(AccountState.AccountTab.STATS)
-                            contentFocusRequester?.let { runCatching { it.requestFocus() } }
+                            onContentRequested?.invoke()
+                                ?: contentFocusRequester?.let { runCatching { it.requestFocus() } }
                         },
                     )
                     .onFocusChanged { if (it.isFocused) onSelected(AccountState.AccountTab.STATS) },
@@ -102,7 +104,8 @@ internal fun AccountTabs(
                         onFocusSelected = { onSelected(AccountState.AccountTab.NOTIFICATIONS) },
                         onActivated = {
                             onSelected(AccountState.AccountTab.NOTIFICATIONS)
-                            contentFocusRequester?.let { runCatching { it.requestFocus() } }
+                            onContentRequested?.invoke()
+                                ?: contentFocusRequester?.let { runCatching { it.requestFocus() } }
                         },
                     )
                     .onFocusChanged { if (it.isFocused) onSelected(AccountState.AccountTab.NOTIFICATIONS) },

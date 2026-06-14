@@ -118,14 +118,16 @@ class YaniProfileNotificationsRepository(
     ): List<ProfileNotification> {
         val notifications =
             api.getNotifications(limit = limit, offset = offset).map { it.toNotification() }
+        val cachedAt = System.currentTimeMillis()
         accountStorage.saveNotifications(
             notifications.toNotificationsPageCache(
                 userId = userId,
                 language = languageCode,
                 limit = limit,
                 offset = offset,
-                cachedAt = System.currentTimeMillis(),
-            )
+                cachedAt = cachedAt,
+            ),
+            prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
         )
         return notifications
     }

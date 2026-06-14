@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
 
 private const val ANIME_TOP_TTL_MS = 6 * 60 * 60 * 1000L
+private const val ANIME_TOP_CACHE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000L
 
 class YaniAnimeTopRepository(
     private val api: YaniAnimeTopApi,
@@ -51,6 +52,7 @@ class YaniAnimeTopRepository(
     ): AnimeTopPage {
         val response = api.getTopAnime(type, limit, offset).response
         val items = response.mapNotNull { it.toAnimeTopItem() }
+        val cachedAt = System.currentTimeMillis()
         topStore.savePage(
             items.toAnimeTopPageCache(
                 type = type,
@@ -58,8 +60,9 @@ class YaniAnimeTopRepository(
                 limit = limit,
                 offset = offset,
                 responseSize = response.size,
-                cachedAt = System.currentTimeMillis(),
-            )
+                cachedAt = cachedAt,
+            ),
+            prunePagesCachedBefore = cachedAt - ANIME_TOP_CACHE_RETENTION_MS,
         )
         return items.toAnimeTopPage(limit, offset, response.size)
     }

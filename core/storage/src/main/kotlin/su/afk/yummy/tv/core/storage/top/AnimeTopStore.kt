@@ -10,7 +10,10 @@ class AnimeTopStore(private val dao: AnimeTopDao) {
     ): AnimeTopPageCache? =
         dao.getPage(type, language, limit, offset)
 
-    suspend fun savePage(cache: AnimeTopPageCache) {
-        dao.replacePage(cache)
+    suspend fun savePage(
+        cache: AnimeTopPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
+        dao.replacePage(cache, prunePagesCachedBefore)
     }
 }

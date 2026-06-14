@@ -56,6 +56,7 @@ internal fun ProfileStatsGrid(
     summary: UserProfileSummary,
     stats: UserStats?,
     focusRequester: FocusRequester? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val pages = buildList {
@@ -100,7 +101,11 @@ internal fun ProfileStatsGrid(
     val focusModifier = if (focusRequester != null) {
         Modifier
             .focusRequester(focusRequester)
-            .onFocusChanged { focused = it.isFocused || it.hasFocus }
+            .onFocusChanged {
+                val nextFocused = it.isFocused || it.hasFocus
+                focused = nextFocused
+                onFocusChanged(nextFocused)
+            }
             .focusable()
     } else {
         Modifier

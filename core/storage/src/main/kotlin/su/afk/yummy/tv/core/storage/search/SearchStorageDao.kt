@@ -51,6 +51,19 @@ abstract class SearchStorageDao {
     @Query("DELETE FROM search_items WHERE pageKey = :pageKey")
     abstract suspend fun deletePageItems(pageKey: String)
 
+    @Query(
+        """
+        DELETE FROM search_items
+        WHERE pageKey IN (
+            SELECT pageKey FROM search_pages WHERE cachedAt < :minCachedAt
+        )
+        """
+    )
+    abstract suspend fun deletePageItemsCachedBefore(minCachedAt: Long)
+
+    @Query("DELETE FROM search_pages WHERE cachedAt < :minCachedAt")
+    abstract suspend fun deletePagesCachedBefore(minCachedAt: Long)
+
     @Query("DELETE FROM search_filter_options WHERE language = :language")
     abstract suspend fun deleteFilterOptions(language: String)
 
@@ -84,13 +97,21 @@ abstract class SearchStorageDao {
     }
 
     @Transaction
-    open suspend fun replacePage(cache: SearchPageCache) {
+    open suspend fun replacePage(
+        cache: SearchPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
         val pageKey = cache.entry.pageKey
         deletePage(pageKey)
         deletePageItems(pageKey)
 
         insertPage(cache.entry)
         if (cache.items.isNotEmpty()) insertPageItems(cache.items)
+
+        prunePagesCachedBefore?.let {
+            deletePageItemsCachedBefore(it)
+            deletePagesCachedBefore(it)
+        }
     }
 
     @Transaction

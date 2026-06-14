@@ -69,6 +69,24 @@ abstract class AnimeTopDao {
         offset: Int,
     )
 
+    @Query(
+        """
+        DELETE FROM anime_top_items
+        WHERE EXISTS (
+            SELECT 1 FROM anime_top_pages AS page
+            WHERE page.type = anime_top_items.type
+                AND page.language = anime_top_items.language
+                AND page.`limit` = anime_top_items.`limit`
+                AND page.`offset` = anime_top_items.`offset`
+                AND page.cachedAt < :minCachedAt
+        )
+        """
+    )
+    abstract suspend fun deleteItemsCachedBefore(minCachedAt: Long)
+
+    @Query("DELETE FROM anime_top_pages WHERE cachedAt < :minCachedAt")
+    abstract suspend fun deletePagesCachedBefore(minCachedAt: Long)
+
     @Transaction
     open suspend fun getPage(
         type: String,
@@ -84,12 +102,20 @@ abstract class AnimeTopDao {
     }
 
     @Transaction
-    open suspend fun replacePage(cache: AnimeTopPageCache) {
+    open suspend fun replacePage(
+        cache: AnimeTopPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
         val entry = cache.entry
         deletePage(entry.type, entry.language, entry.limit, entry.offset)
         deleteItems(entry.type, entry.language, entry.limit, entry.offset)
 
         insertPage(entry)
         if (cache.items.isNotEmpty()) insertItems(cache.items)
+
+        prunePagesCachedBefore?.let {
+            deleteItemsCachedBefore(it)
+            deletePagesCachedBefore(it)
+        }
     }
 }

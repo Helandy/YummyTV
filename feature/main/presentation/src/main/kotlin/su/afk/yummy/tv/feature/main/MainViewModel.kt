@@ -95,6 +95,7 @@ class MainViewModel @Inject constructor(
                 setState {
                     copy(
                         isYaniSignedIn = signedIn,
+                        isYaniAuthResolved = true,
                         unreadNotificationsCount = if (signedIn) unreadNotificationsCount else 0,
                     )
                 }

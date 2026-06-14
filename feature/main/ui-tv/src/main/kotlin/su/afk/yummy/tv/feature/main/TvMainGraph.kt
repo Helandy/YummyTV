@@ -22,6 +22,7 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsContext
 import su.afk.yummy.tv.core.analytics.AnalyticsDestination
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
@@ -45,6 +46,7 @@ import javax.inject.Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: NavigationManager,
     private val analyticsTracker: AnalyticsTracker,
+    private val analyticsContext: AnalyticsContext,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:TvUi private val tvRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
@@ -72,6 +74,28 @@ class TvMainGraph @Inject constructor(
 
             DisposableEffect(Unit) {
                 onDispose { toastJob?.cancel() }
+            }
+
+            LaunchedEffect(Unit) {
+                analyticsContext.setParam(
+                    AnalyticsEvents.PARAM_SURFACE,
+                    AnalyticsEvents.SURFACE_TV,
+                )
+            }
+
+            LaunchedEffect(state.isYaniAuthResolved, state.isYaniSignedIn) {
+                if (state.isYaniAuthResolved) {
+                    analyticsContext.setParam(
+                        AnalyticsEvents.PARAM_AUTH_STATE,
+                        AnalyticsEvents.authState(state.isYaniSignedIn),
+                    )
+                    analyticsTracker.track(
+                        AnalyticsEvents.appSession(
+                            surface = AnalyticsEvents.SURFACE_TV,
+                            isAuthorized = state.isYaniSignedIn,
+                        )
+                    )
+                }
             }
 
             LaunchedEffect(Unit) {
@@ -113,7 +137,10 @@ class TvMainGraph @Inject constructor(
                             registrars = commonRegistrars + tvRegistrars,
                             modifier = Modifier.fillMaxSize(),
                             onDestinationVisible = {
-                                analyticsTracker.trackScreenView(it, surface = "tv")
+                                analyticsTracker.trackScreenView(
+                                    it,
+                                    surface = AnalyticsEvents.SURFACE_TV,
+                                )
                             },
                         )
                     }

@@ -6,8 +6,8 @@ import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 
-internal fun YaniCollectionDetailDto.toDomain(): CollectionDetail {
-    val resolvedId = id ?: 0
+internal fun YaniCollectionDetailDto.toDomain(fallbackId: Int): CollectionDetail {
+    val resolvedId = id ?: fallbackId
     return CollectionDetail(
         id = resolvedId,
         title = title,

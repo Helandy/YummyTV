@@ -4,6 +4,13 @@ object AnalyticsEvents {
     const val PARAM_ACTION = "action"
     const val PARAM_SCREEN = "screen"
     const val PARAM_SURFACE = "surface"
+    const val PARAM_AUTH_STATE = "auth_state"
+
+    const val SURFACE_MOBILE = "mobile"
+    const val SURFACE_TV = "tv"
+
+    const val AUTH_STATE_AUTHORIZED = "authorized"
+    const val AUTH_STATE_ANONYMOUS = "anonymous"
 
     fun screenView(
         screenName: String,
@@ -100,4 +107,18 @@ object AnalyticsEvents {
             PARAM_ACTION to action,
         ) + params,
     )
+
+    fun appSession(
+        surface: String,
+        isAuthorized: Boolean,
+    ): AnalyticsEvent = AnalyticsEvent(
+        name = "app_session",
+        params = mapOf(
+            PARAM_SURFACE to surface,
+            PARAM_AUTH_STATE to authState(isAuthorized),
+        ),
+    )
+
+    fun authState(isAuthorized: Boolean): String =
+        if (isAuthorized) AUTH_STATE_AUTHORIZED else AUTH_STATE_ANONYMOUS
 }

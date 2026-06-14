@@ -30,6 +30,7 @@ import su.afk.yummy.tv.domain.search.repository.SearchRepository
 
 private const val SEARCH_FILTER_OPTIONS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val SEARCH_RESULTS_TTL_MS = 10 * 60 * 1000L
+private const val SEARCH_RESULTS_CACHE_RETENTION_MS = 24 * 60 * 60 * 1000L
 
 private data class YaniSearchFilterOptionsDto(
     val genres: YaniSearchGenresDto = YaniSearchGenresDto(),
@@ -100,6 +101,7 @@ class YaniSearchRepository(
     ): SearchPage {
         val response = api.search(query, filters, limit, offset)
         val items = response.mapNotNull { it.toSearchItem() }
+        val cachedAt = System.currentTimeMillis()
         searchStorage.savePage(
             items.toSearchPageCache(
                 pageKey = pageKey,
@@ -107,8 +109,9 @@ class YaniSearchRepository(
                 limit = limit,
                 offset = offset,
                 responseSize = response.size,
-                cachedAt = System.currentTimeMillis(),
-            )
+                cachedAt = cachedAt,
+            ),
+            prunePagesCachedBefore = cachedAt - SEARCH_RESULTS_CACHE_RETENTION_MS,
         )
         return items.toSearchPage(limit, offset, response.size)
     }

@@ -23,6 +23,7 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.AnalyticsContext
 import su.afk.yummy.tv.core.analytics.AnalyticsDestination
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
@@ -52,6 +53,7 @@ import javax.inject.Singleton
 class MobileMainGraph @Inject constructor(
     private val navManager: NavigationManager,
     private val analyticsTracker: AnalyticsTracker,
+    private val analyticsContext: AnalyticsContext,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
@@ -96,6 +98,28 @@ class MobileMainGraph @Inject constructor(
 
             DisposableEffect(Unit) {
                 onDispose { toastJob?.cancel() }
+            }
+
+            LaunchedEffect(Unit) {
+                analyticsContext.setParam(
+                    AnalyticsEvents.PARAM_SURFACE,
+                    AnalyticsEvents.SURFACE_MOBILE,
+                )
+            }
+
+            LaunchedEffect(state.isYaniAuthResolved, state.isYaniSignedIn) {
+                if (state.isYaniAuthResolved) {
+                    analyticsContext.setParam(
+                        AnalyticsEvents.PARAM_AUTH_STATE,
+                        AnalyticsEvents.authState(state.isYaniSignedIn),
+                    )
+                    analyticsTracker.track(
+                        AnalyticsEvents.appSession(
+                            surface = AnalyticsEvents.SURFACE_MOBILE,
+                            isAuthorized = state.isYaniSignedIn,
+                        )
+                    )
+                }
             }
 
             LaunchedEffect(Unit) {
@@ -153,7 +177,10 @@ class MobileMainGraph @Inject constructor(
                             registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
                             onDestinationVisible = {
-                                analyticsTracker.trackScreenView(it, surface = "mobile")
+                                analyticsTracker.trackScreenView(
+                                    it,
+                                    surface = AnalyticsEvents.SURFACE_MOBILE,
+                                )
                             },
                         )
                     }
@@ -183,7 +210,7 @@ private fun AnalyticsTracker.trackMainAction(
         AnalyticsEvents.uiAction(
             screenName = "main",
             action = action,
-            params = params + (AnalyticsEvents.PARAM_SURFACE to "mobile"),
+            params = params + (AnalyticsEvents.PARAM_SURFACE to AnalyticsEvents.SURFACE_MOBILE),
         )
     )
 }

@@ -63,8 +63,11 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
     suspend fun getCollections(pageKey: String): AccountCollectionsPageCache? =
         dao.getCollections(pageKey)
 
-    suspend fun saveCollections(cache: AccountCollectionsPageCache) {
-        dao.replaceCollections(cache)
+    suspend fun saveCollections(
+        cache: AccountCollectionsPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
+        dao.replaceCollections(cache, prunePagesCachedBefore)
     }
 
     suspend fun getVideoSubscriptions(
@@ -89,8 +92,11 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
     ): AccountNotificationsPageCache? =
         dao.getNotifications(userId, language, limit, offset)
 
-    suspend fun saveNotifications(cache: AccountNotificationsPageCache) {
-        dao.replaceNotifications(cache)
+    suspend fun saveNotifications(
+        cache: AccountNotificationsPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
+        dao.replaceNotifications(cache, prunePagesCachedBefore)
     }
 
     suspend fun deleteNotifications(userId: Int) {

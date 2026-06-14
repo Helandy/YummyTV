@@ -1149,7 +1149,15 @@ object StorageModule {
                 MIGRATION_16_17,
                 MIGRATION_17_18,
             )
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .fallbackToDestructiveMigrationFrom(
+                dropAllTables = true,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+            )
             .build()
 
     @Provides

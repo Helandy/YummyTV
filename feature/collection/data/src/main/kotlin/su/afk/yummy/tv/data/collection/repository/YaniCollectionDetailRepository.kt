@@ -42,7 +42,7 @@ class YaniCollectionDetailRepository(
         }
 
     private suspend fun fetchCollection(id: Int, languageCode: String): CollectionDetail {
-        val collection = api.getCollection(id).response.toDomain()
+        val collection = api.getCollection(id).response.toDomain(fallbackId = id)
         collectionStorage.saveCollection(
             collection.toCollectionDetailCache(
                 language = languageCode,

@@ -8,8 +8,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -41,6 +45,17 @@ internal fun StatsTab(
     val contentFocusRequester =
         if (profileSummary != null) profileOverviewFocusRequester else listFocusRequester
     val scope = rememberCoroutineScope()
+    var isProfileOverviewFocused by remember { mutableStateOf(false) }
+
+    fun requestProfileOverviewFocus() {
+        scope.launch {
+            listState.scrollToItem(PROFILE_OVERVIEW_ITEM_INDEX)
+            repeat(6) {
+                runCatching { profileOverviewFocusRequester.requestFocus() }
+                withFrameNanos { }
+            }
+        }
+    }
 
     LazyColumn(
         state = listState,
@@ -57,6 +72,10 @@ internal fun StatsTab(
                     }
 
                     Key.DirectionDown -> {
+                        if (profileSummary != null && !isProfileOverviewFocused) {
+                            requestProfileOverviewFocus()
+                            return@onPreviewKeyEvent true
+                        }
                         val last = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
                         if (listState.firstVisibleItemIndex >= last) return@onPreviewKeyEvent false
                         val next = (listState.firstVisibleItemIndex + 1).coerceAtMost(last)
@@ -103,6 +122,7 @@ internal fun StatsTab(
                     summary = profileSummary,
                     stats = stats,
                     statsGridFocusRequester = profileOverviewFocusRequester,
+                    onStatsGridFocusChanged = { isProfileOverviewFocused = it },
                 )
             }
         } else if (stats != null && !stats.isEmpty()) {
@@ -122,3 +142,5 @@ internal fun StatsTab(
         if (profileSummary == null && stats.ratings.isNotEmpty()) item { RatingStats(stats.ratings) }
     }
 }
+
+private const val PROFILE_OVERVIEW_ITEM_INDEX = 3

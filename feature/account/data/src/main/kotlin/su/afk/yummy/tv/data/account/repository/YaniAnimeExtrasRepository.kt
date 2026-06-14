@@ -176,12 +176,14 @@ class YaniAnimeExtrasRepository(
 
         return try {
             fetch().also { collections ->
+                val cachedAt = System.currentTimeMillis()
                 accountStorage.saveCollections(
                     collections.toCollectionsPageCache(
                         pageKey = pageKey,
                         language = languageCode,
-                        cachedAt = System.currentTimeMillis(),
-                    )
+                        cachedAt = cachedAt,
+                    ),
+                    prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
                 )
             }
         } catch (error: CancellationException) {

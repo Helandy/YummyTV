@@ -32,6 +32,7 @@ internal fun AccountProfileOverviewPanel(
     summary: UserProfileSummary,
     stats: UserStats?,
     statsGridFocusRequester: FocusRequester? = null,
+    onStatsGridFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -44,6 +45,7 @@ internal fun AccountProfileOverviewPanel(
             summary = summary,
             stats = stats,
             focusRequester = statsGridFocusRequester,
+            onFocusChanged = onStatsGridFocusChanged,
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
         )
 

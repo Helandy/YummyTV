@@ -149,6 +149,19 @@ abstract class AccountStorageDao {
 
     @Query(
         """
+        DELETE FROM account_collection_items
+        WHERE pageKey IN (
+            SELECT pageKey FROM account_collection_pages WHERE cachedAt < :minCachedAt
+        )
+        """
+    )
+    abstract suspend fun deleteCollectionItemsCachedBefore(minCachedAt: Long)
+
+    @Query("DELETE FROM account_collection_pages WHERE cachedAt < :minCachedAt")
+    abstract suspend fun deleteCollectionPagesCachedBefore(minCachedAt: Long)
+
+    @Query(
+        """
         SELECT * FROM account_video_subscription_caches
         WHERE userId = :userId AND language = :language
         LIMIT 1
@@ -264,6 +277,24 @@ abstract class AccountStorageDao {
         limit: Int,
         offset: Int,
     )
+
+    @Query(
+        """
+        DELETE FROM account_notifications
+        WHERE EXISTS (
+            SELECT 1 FROM account_notification_pages AS page
+            WHERE page.userId = account_notifications.userId
+                AND page.language = account_notifications.language
+                AND page.`limit` = account_notifications.`limit`
+                AND page.`offset` = account_notifications.`offset`
+                AND page.cachedAt < :minCachedAt
+        )
+        """
+    )
+    abstract suspend fun deleteNotificationItemsCachedBefore(minCachedAt: Long)
+
+    @Query("DELETE FROM account_notification_pages WHERE cachedAt < :minCachedAt")
+    abstract suspend fun deleteNotificationPagesCachedBefore(minCachedAt: Long)
 
     @Query("SELECT * FROM account_notification_count_caches WHERE userId = :userId LIMIT 1")
     abstract suspend fun getNotificationCountCacheEntry(userId: Int): AccountNotificationCountCacheEntry?
@@ -527,12 +558,20 @@ abstract class AccountStorageDao {
     }
 
     @Transaction
-    open suspend fun replaceCollections(cache: AccountCollectionsPageCache) {
+    open suspend fun replaceCollections(
+        cache: AccountCollectionsPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
         val pageKey = cache.entry.pageKey
         deleteCollectionPage(pageKey)
         deleteCollectionItems(pageKey)
         insertCollectionPage(cache.entry)
         if (cache.items.isNotEmpty()) insertCollectionItems(cache.items)
+
+        prunePagesCachedBefore?.let {
+            deleteCollectionItemsCachedBefore(it)
+            deleteCollectionPagesCachedBefore(it)
+        }
     }
 
     @Transaction
@@ -574,12 +613,20 @@ abstract class AccountStorageDao {
     }
 
     @Transaction
-    open suspend fun replaceNotifications(cache: AccountNotificationsPageCache) {
+    open suspend fun replaceNotifications(
+        cache: AccountNotificationsPageCache,
+        prunePagesCachedBefore: Long? = null,
+    ) {
         val entry = cache.entry
         deleteNotificationPage(entry.userId, entry.language, entry.limit, entry.offset)
         deleteNotificationItems(entry.userId, entry.language, entry.limit, entry.offset)
         insertNotificationPage(entry)
         if (cache.items.isNotEmpty()) insertNotifications(cache.items)
+
+        prunePagesCachedBefore?.let {
+            deleteNotificationItemsCachedBefore(it)
+            deleteNotificationPagesCachedBefore(it)
+        }
     }
 
     @Transaction

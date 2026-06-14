@@ -17,6 +17,7 @@ object MainState {
         val yaniNickname: String = "",
         val yaniAvatarUrl: String = "",
         val isYaniSignedIn: Boolean = false,
+        val isYaniAuthResolved: Boolean = false,
         val unreadNotificationsCount: Int = 0,
     ) : UiState
 
