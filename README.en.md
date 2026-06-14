@@ -48,19 +48,6 @@ On phones, it provides a mobile UI with bottom navigation, player gestures, and 
 - ⭐ Favorites, user lists, and ratings.
 - 🖼️ Poster and screenshot viewer inside the app.
 
-## Account and Sync
-
-YummyTV can work with account:
-
-- sign in with email or nickname and password;
-- solve captcha inside the app when the service requests it;
-- profile, statistics, and notifications;
-- read and update user lists;
-- sync watched episodes, ratings, favorites, and subscriptions;
-- remove items from lists and watch progress.
-
-Local library data and watch progress remain on the device even after signing out.
-
 ## Player
 
 The built-in player is based on Media3/ExoPlayer and supports:

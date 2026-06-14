@@ -14,12 +14,13 @@ internal fun AccountHubPanel(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
     initialFocusRequester: FocusRequester? = null,
+    isActiveDestination: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val contentModifier = modifier
         .fillMaxHeight()
-        .fillMaxWidth(0.92f)
-        .widthIn(max = 1440.dp)
+        .fillMaxWidth(0.96f)
+        .widthIn(max = 1680.dp)
     val unreadCount = state.notificationCounts.sumOf { it.count }
 
     when (state.selectedTab) {
@@ -33,6 +34,7 @@ internal fun AccountHubPanel(
             state = state,
             onEvent = onEvent,
             selectedTabFocusRequester = initialFocusRequester,
+            isActiveDestination = isActiveDestination,
             onMarkAllRead = if (unreadCount > 0) {
                 { onEvent(AccountState.Event.AllNotificationsReadSelected) }
             } else {

@@ -34,6 +34,7 @@ internal fun AccountTabs(
     onContentRequested: (() -> Unit)? = null,
     onMarkAllRead: (() -> Unit)? = null,
     markAllReadEnabled: Boolean = true,
+    autoFocusSelected: Boolean = true,
 ) {
     val statsFocusRequester = remember { FocusRequester() }
     val notificationsFocusRequester = remember { FocusRequester() }
@@ -51,7 +52,8 @@ internal fun AccountTabs(
             notificationsFocusRequester
         }
 
-    LaunchedEffect(selected) {
+    LaunchedEffect(selected, autoFocusSelected) {
+        if (!autoFocusSelected) return@LaunchedEffect
         when (selected) {
             AccountState.AccountTab.STATS -> {
                 runCatching { statsRequester.requestFocus() }

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
 import su.afk.yummy.tv.feature.account.view.LoginPanel
 
@@ -31,6 +32,7 @@ fun AccountTvScreen(
     val horizontalPadding = if (state.isSignedIn) 32.dp else TvScreenPadding.Horizontal
     val preferredFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val isActiveDestination = LocalAccountTvActiveDestination.current
 
     DisposableEffect(preferredFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredFocusRequester)
@@ -55,6 +57,7 @@ fun AccountTvScreen(
                 state = state,
                 onEvent = onEvent,
                 initialFocusRequester = preferredFocusRequester,
+                isActiveDestination = isActiveDestination,
                 modifier = Modifier.align(Alignment.TopCenter),
             )
         }

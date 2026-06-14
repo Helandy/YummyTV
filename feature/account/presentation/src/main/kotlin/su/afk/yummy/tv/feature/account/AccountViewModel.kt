@@ -257,16 +257,16 @@ class AccountViewModel @Inject internal constructor(
             params = analyticsParamsOf("notification_id" to id),
         )
         viewModelScope.launch {
-            setState {
-                copy(
-                    focusedNotificationId = id,
-                    restoreFocusedNotificationOnEnter = true,
-                    focusedNotificationRestoreToken = focusedNotificationRestoreToken + 1,
-                    hubError = null,
-                )
-            }
+            setState { copy(hubError = null) }
             when (val result = notificationHandler.resolveAnimeId(slug)) {
                 is AccountOpenNotificationResult.Navigate -> {
+                    setState {
+                        copy(
+                            focusedNotificationId = id,
+                            restoreFocusedNotificationOnEnter = true,
+                            focusedNotificationRestoreToken = focusedNotificationRestoreToken + 1,
+                        )
+                    }
                     nav.navigate(detailsNavigator.getDetailsDest(result.animeId))
                 }
 

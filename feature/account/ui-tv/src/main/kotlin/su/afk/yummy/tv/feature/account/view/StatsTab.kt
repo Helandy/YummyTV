@@ -3,9 +3,12 @@
 package su.afk.yummy.tv.feature.account.view
 
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,8 +60,15 @@ internal fun StatsTab(
         }
     }
 
+    fun scrollByProfilePage(direction: Int) {
+        scope.launch {
+            listState.animateScrollBy(listState.profilePageScrollPx() * direction)
+        }
+    }
+
     LazyColumn(
         state = listState,
+        contentPadding = PaddingValues(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
         modifier = modifier
             .focusRequester(listFocusRequester)
@@ -76,17 +86,14 @@ internal fun StatsTab(
                             requestProfileOverviewFocus()
                             return@onPreviewKeyEvent true
                         }
-                        val last = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
-                        if (listState.firstVisibleItemIndex >= last) return@onPreviewKeyEvent false
-                        val next = (listState.firstVisibleItemIndex + 1).coerceAtMost(last)
-                        scope.launch { listState.scrollToItem(next) }
+                        if (!listState.canScrollForward) return@onPreviewKeyEvent false
+                        scrollByProfilePage(direction = 1)
                         true
                     }
 
                     Key.DirectionUp -> {
-                        if (listState.firstVisibleItemIndex == 0) return@onPreviewKeyEvent false
-                        val previous = (listState.firstVisibleItemIndex - 1).coerceAtLeast(0)
-                        scope.launch { listState.scrollToItem(previous) }
+                        if (!listState.canScrollBackward) return@onPreviewKeyEvent false
+                        scrollByProfilePage(direction = -1)
                         true
                     }
 
@@ -143,4 +150,10 @@ internal fun StatsTab(
     }
 }
 
+private fun LazyListState.profilePageScrollPx(): Float =
+    (layoutInfo.viewportSize.height * PROFILE_PAGE_SCROLL_FRACTION)
+        .coerceAtLeast(PROFILE_MIN_PAGE_SCROLL_PX)
+
 private const val PROFILE_OVERVIEW_ITEM_INDEX = 3
+private const val PROFILE_PAGE_SCROLL_FRACTION = 0.72f
+private const val PROFILE_MIN_PAGE_SCROLL_PX = 240f
