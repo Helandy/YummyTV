@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -22,6 +24,8 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
 
@@ -36,6 +40,8 @@ internal fun AccountTabs(
     markAllReadEnabled: Boolean = true,
     autoFocusSelected: Boolean = true,
 ) {
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val scope = rememberCoroutineScope()
     val statsFocusRequester = remember { FocusRequester() }
     val notificationsFocusRequester = remember { FocusRequester() }
     val markAllReadFocusRequester = remember { FocusRequester() }
@@ -65,6 +71,17 @@ internal fun AccountTabs(
         }
     }
 
+    fun requestMainMenuFocus(): Boolean {
+        val requester = mainMenuFocusRequester ?: return false
+        scope.launch {
+            repeat(6) {
+                runCatching { requester.requestFocus() }
+                withFrameNanos { }
+            }
+        }
+        return true
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -82,8 +99,9 @@ internal fun AccountTabs(
                     .focusRequester(statsRequester)
                     .accountTabFocus(
                         contentFocusRequester = contentFocusRequester,
-                        leftFocusRequester = null,
+                        leftFocusRequester = mainMenuFocusRequester,
                         rightFocusRequester = notificationsRequester,
+                        onDirectionLeft = ::requestMainMenuFocus,
                         onFocusSelected = { onSelected(AccountState.AccountTab.STATS) },
                         onActivated = {
                             onSelected(AccountState.AccountTab.STATS)
@@ -103,6 +121,7 @@ internal fun AccountTabs(
                         contentFocusRequester = contentFocusRequester,
                         leftFocusRequester = statsRequester,
                         rightFocusRequester = markAllReadFocusRequester.takeIf { onMarkAllRead != null },
+                        onDirectionLeft = null,
                         onFocusSelected = { onSelected(AccountState.AccountTab.NOTIFICATIONS) },
                         onActivated = {
                             onSelected(AccountState.AccountTab.NOTIFICATIONS)
@@ -131,6 +150,7 @@ private fun Modifier.accountTabFocus(
     contentFocusRequester: FocusRequester?,
     leftFocusRequester: FocusRequester?,
     rightFocusRequester: FocusRequester?,
+    onDirectionLeft: (() -> Boolean)?,
     onFocusSelected: () -> Unit,
     onActivated: () -> Unit,
 ): Modifier = this
@@ -143,7 +163,7 @@ private fun Modifier.accountTabFocus(
         if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
         when (event.key) {
             Key.DirectionLeft -> {
-                leftFocusRequester?.let {
+                onDirectionLeft?.invoke() ?: leftFocusRequester?.let {
                     runCatching { it.requestFocus() }
                     true
                 } ?: false

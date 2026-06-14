@@ -5,6 +5,7 @@ package su.afk.yummy.tv.feature.account.view
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,9 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,7 +64,11 @@ internal fun ProfileStatsGrid(
     summary: UserProfileSummary,
     stats: UserStats?,
     focusRequester: FocusRequester? = null,
+    bottomStartFocusRequester: FocusRequester? = null,
+    topExitFocusRequester: FocusRequester? = null,
     onFocusChanged: (Boolean) -> Unit = {},
+    onExitRight: () -> Boolean = { false },
+    onExitDown: () -> Boolean = { false },
     modifier: Modifier = Modifier,
 ) {
     val pages = buildList {
@@ -96,42 +108,62 @@ internal fun ProfileStatsGrid(
         }
     }
 
-    var focused by remember { mutableStateOf(false) }
-    val focusShape = RoundedCornerShape(16.dp)
-    val focusModifier = if (focusRequester != null) {
-        Modifier
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                val nextFocused = it.isFocused || it.hasFocus
-                focused = nextFocused
-                onFocusChanged(nextFocused)
-            }
-            .focusable()
-    } else {
-        Modifier
+    val internalFocusRequesters = remember(pages.size) {
+        List(pages.size) { FocusRequester() }
     }
+    val cardFocusRequesters = internalFocusRequesters.toMutableList().apply {
+        if (isNotEmpty() && focusRequester != null) {
+            this[0] = focusRequester
+        }
+        if (size > PROFILE_STATS_BOTTOM_START_INDEX && bottomStartFocusRequester != null) {
+            this[PROFILE_STATS_BOTTOM_START_INDEX] = bottomStartFocusRequester
+        }
+    }
+    var focusedCardIndex by remember(pages.size) { mutableStateOf<Int?>(null) }
+    var gridFocused by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .then(focusModifier)
-            .border(
-                width = 2.dp,
-                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = focusShape,
-            )
+            .onFocusChanged {
+                val nextFocused = it.isFocused || it.hasFocus
+                if (gridFocused != nextFocused) {
+                    gridFocused = nextFocused
+                    onFocusChanged(nextFocused)
+                }
+            }
+            .focusGroup()
             .padding(6.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        pages.chunked(PROFILE_STATS_COLUMNS).forEach { rowPages ->
+        pages.chunked(PROFILE_STATS_COLUMNS).forEachIndexed { rowIndex, rowPages ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                rowPages.forEach { page ->
+                rowPages.forEachIndexed { columnIndex, page ->
+                    val pageIndex = rowIndex * PROFILE_STATS_COLUMNS + columnIndex
                     ProfileStatsCard(
                         page = page,
-                        modifier = Modifier.weight(1f),
+                        focused = focusedCardIndex == pageIndex,
+                        modifier = Modifier
+                            .weight(1f)
+                            .profileStatsBlockFocus(
+                                pageIndex = pageIndex,
+                                focusRequester = cardFocusRequesters[pageIndex],
+                                focusRequesters = cardFocusRequesters,
+                                onFocused = {
+                                    focusedCardIndex = pageIndex
+                                },
+                                onUnfocused = {
+                                    if (focusedCardIndex == pageIndex) {
+                                        focusedCardIndex = null
+                                    }
+                                },
+                                topExitFocusRequester = topExitFocusRequester,
+                                onExitRight = onExitRight,
+                                onExitDown = onExitDown,
+                            ),
                     )
                 }
                 if (rowPages.size < PROFILE_STATS_COLUMNS) {
@@ -145,16 +177,33 @@ internal fun ProfileStatsGrid(
 @Composable
 private fun ProfileStatsCard(
     page: ProfileStatsPageModel,
+    focused: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val positiveSlices = page.slices.filter { it.value > 0L }
     val totalValue = positiveSlices.positiveValueSum()
+    val shape = RoundedCornerShape(12.dp)
+    val containerColor = if (focused) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.055f)
+    }
 
     Column(
         modifier = modifier
             .height(252.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.055f))
+            .graphicsLayer {
+                val scale = if (focused) 1.015f else 1f
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(shape)
+            .background(containerColor)
+            .border(
+                width = if (focused) 3.dp else 2.dp,
+                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            )
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -190,6 +239,94 @@ private fun ProfileStatsCard(
             }
         }
     }
+}
+
+private fun Modifier.profileStatsBlockFocus(
+    pageIndex: Int,
+    focusRequester: FocusRequester,
+    focusRequesters: List<FocusRequester>,
+    onFocused: () -> Unit,
+    onUnfocused: () -> Unit,
+    topExitFocusRequester: FocusRequester?,
+    onExitRight: () -> Boolean,
+    onExitDown: () -> Boolean,
+): Modifier {
+    fun requestFocusAt(index: Int): Boolean {
+        val requester = focusRequesters.getOrNull(index) ?: return false
+        return runCatching { requester.requestFocus() }.isSuccess
+    }
+
+    val leftIndex = pageIndex - 1
+    val rightIndex = pageIndex + 1
+    val upIndex = pageIndex - PROFILE_STATS_COLUMNS
+    val downIndex = pageIndex + PROFILE_STATS_COLUMNS
+
+    return this
+        .focusRequester(focusRequester)
+        .focusProperties {
+            if (leftIndex >= 0 && pageIndex % PROFILE_STATS_COLUMNS != 0) {
+                left = focusRequesters[leftIndex]
+            }
+            if (rightIndex < focusRequesters.size && rightIndex % PROFILE_STATS_COLUMNS != 0) {
+                right = focusRequesters[rightIndex]
+            }
+            if (upIndex >= 0) {
+                up = focusRequesters[upIndex]
+            } else {
+                topExitFocusRequester?.let { up = it }
+            }
+            if (downIndex < focusRequesters.size) {
+                down = focusRequesters[downIndex]
+            }
+        }
+        .onFocusChanged {
+            if (it.isFocused) {
+                onFocused()
+            } else if (!it.hasFocus) {
+                onUnfocused()
+            }
+        }
+        .onPreviewKeyEvent { event ->
+            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+            when (event.key) {
+                Key.DirectionLeft -> {
+                    if (leftIndex >= 0 && pageIndex % PROFILE_STATS_COLUMNS != 0) {
+                        requestFocusAt(leftIndex)
+                    } else {
+                        false
+                    }
+                }
+
+                Key.DirectionRight -> {
+                    if (rightIndex < focusRequesters.size && rightIndex % PROFILE_STATS_COLUMNS != 0) {
+                        requestFocusAt(rightIndex)
+                    } else {
+                        onExitRight()
+                    }
+                }
+
+                Key.DirectionUp -> {
+                    if (upIndex >= 0) {
+                        requestFocusAt(upIndex)
+                    } else {
+                        topExitFocusRequester?.let {
+                            runCatching { it.requestFocus() }.isSuccess
+                        } ?: false
+                    }
+                }
+
+                Key.DirectionDown -> {
+                    if (downIndex < focusRequesters.size) {
+                        requestFocusAt(downIndex)
+                    } else {
+                        onExitDown()
+                    }
+                }
+
+                else -> false
+            }
+        }
+        .focusable()
 }
 
 @Composable
@@ -340,3 +477,4 @@ private fun ProfileStatsValueType.valueLabel(value: Long): String =
     }
 
 private const val PROFILE_STATS_COLUMNS = 2
+private const val PROFILE_STATS_BOTTOM_START_INDEX = PROFILE_STATS_COLUMNS

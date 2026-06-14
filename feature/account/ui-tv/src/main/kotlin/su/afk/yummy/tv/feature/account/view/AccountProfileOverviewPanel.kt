@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.account.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +17,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,12 +43,28 @@ internal fun AccountProfileOverviewPanel(
     summary: UserProfileSummary,
     stats: UserStats?,
     statsGridFocusRequester: FocusRequester? = null,
-    onStatsGridFocusChanged: (Boolean) -> Unit = {},
+    statsGridBottomStartFocusRequester: FocusRequester? = null,
+    statsGridTopExitFocusRequester: FocusRequester? = null,
+    daysOnlineFocusRequester: FocusRequester? = null,
+    listCountersFocusRequester: FocusRequester? = null,
+    onContentFocusChanged: (Boolean) -> Unit = {},
+    onStatsGridExitRight: () -> Boolean = { false },
+    onStatsGridExitDown: () -> Boolean = { false },
     modifier: Modifier = Modifier,
 ) {
+    var focused by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .onFocusChanged {
+                val nextFocused = it.isFocused || it.hasFocus
+                if (focused != nextFocused) {
+                    focused = nextFocused
+                    onContentFocusChanged(nextFocused)
+                }
+            }
+            .focusGroup()
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.045f)),
     ) {
@@ -45,7 +72,10 @@ internal fun AccountProfileOverviewPanel(
             summary = summary,
             stats = stats,
             focusRequester = statsGridFocusRequester,
-            onFocusChanged = onStatsGridFocusChanged,
+            bottomStartFocusRequester = statsGridBottomStartFocusRequester,
+            topExitFocusRequester = statsGridTopExitFocusRequester,
+            onExitRight = onStatsGridExitRight,
+            onExitDown = onStatsGridExitDown,
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
         )
 
@@ -61,7 +91,12 @@ internal fun AccountProfileOverviewPanel(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            DaysOnlineTile(daysOnline = summary.daysOnline)
+            DaysOnlineTile(
+                daysOnline = summary.daysOnline,
+                focusRequester = daysOnlineFocusRequester,
+                upFocusRequester = statsGridBottomStartFocusRequester ?: statsGridFocusRequester,
+                downFocusRequester = listCountersFocusRequester,
+            )
             ProfileWatchHistoryHeatmap(
                 history = summary.watchHistory,
                 modifier = Modifier.weight(1f),
@@ -70,6 +105,8 @@ internal fun AccountProfileOverviewPanel(
 
         ProfileListCountersRow(
             counts = summary.counts,
+            firstFocusRequester = listCountersFocusRequester,
+            upFocusRequester = daysOnlineFocusRequester,
             modifier = Modifier.padding(horizontal = 18.dp),
         )
 
@@ -97,12 +134,43 @@ internal fun AccountProfileOverviewPanel(
 }
 
 @Composable
-private fun DaysOnlineTile(daysOnline: Int) {
+private fun DaysOnlineTile(
+    daysOnline: Int,
+    focusRequester: FocusRequester?,
+    upFocusRequester: FocusRequester?,
+    downFocusRequester: FocusRequester?,
+) {
+    var focused by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(12.dp)
+    val focusModifier = if (focusRequester != null) {
+        Modifier
+            .focusRequester(focusRequester)
+            .focusProperties {
+                upFocusRequester?.let { up = it }
+                downFocusRequester?.let { down = it }
+            }
+            .onFocusChanged { focused = it.isFocused }
+            .focusable()
+    } else {
+        Modifier
+    }
+    val containerColor = if (focused) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)
+    }
+
     Column(
         modifier = Modifier
             .width(150.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
+            .then(focusModifier)
+            .clip(shape)
+            .background(containerColor)
+            .border(
+                width = if (focused) 3.dp else 2.dp,
+                color = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = shape,
+            )
             .padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -123,4 +191,4 @@ private fun DaysOnlineTile(daysOnline: Int) {
     }
 }
 
-private val ColorRed = androidx.compose.ui.graphics.Color(0xFFFF6B6B)
+private val ColorRed = Color(0xFFFF6B6B)

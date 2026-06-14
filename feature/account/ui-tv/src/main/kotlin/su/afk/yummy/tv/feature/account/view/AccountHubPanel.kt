@@ -15,6 +15,7 @@ internal fun AccountHubPanel(
     onEvent: (AccountState.Event) -> Unit,
     initialFocusRequester: FocusRequester? = null,
     isActiveDestination: Boolean = true,
+    onStatsContentFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val contentModifier = modifier
@@ -28,6 +29,7 @@ internal fun AccountHubPanel(
             state = state,
             onEvent = onEvent,
             selectedTabFocusRequester = initialFocusRequester,
+            onStatsContentFocusChanged = onStatsContentFocusChanged,
             modifier = contentModifier,
         )
         AccountState.AccountTab.NOTIFICATIONS -> NotificationsTab(

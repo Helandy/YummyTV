@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
@@ -51,6 +52,7 @@ internal fun NotificationsTab(
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val contentFocusRequester = remember { FocusRequester() }
     val notificationIds = remember(state.notifications) { state.notifications.map { it.id } }
     val notificationReadStates =
@@ -106,6 +108,19 @@ internal fun NotificationsTab(
 
     fun requestFocusSafely(focusRequester: FocusRequester): Boolean =
         runCatching { focusRequester.requestFocus() }.getOrDefault(false)
+
+    fun requestMainMenuFocus(): Boolean {
+        val requester = mainMenuFocusRequester ?: return false
+        notificationContentHasFocus = false
+        focusMoveJob?.cancel()
+        focusMoveJob = scope.launch {
+            repeat(6) {
+                requestFocusSafely(requester)
+                withFrameNanos { }
+            }
+        }
+        return true
+    }
 
     fun notifyNotificationFocused(index: Int) {
         if (index !in state.notifications.indices) return
@@ -523,6 +538,7 @@ internal fun NotificationsTab(
                     modifier = Modifier
                         .focusRequester(rowFocusRequester)
                         .focusProperties {
+                            mainMenuFocusRequester?.let { left = it }
                             previousVerticalFocusRequester(index)?.let { up = it }
                             nextVerticalFocusRequester(index)?.let { down = it }
                             right = firstActionFocusRequester
@@ -530,6 +546,11 @@ internal fun NotificationsTab(
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                             when (event.key) {
+                                Key.DirectionLeft -> {
+                                    if (!rowIsFocused) return@onPreviewKeyEvent false
+                                    requestMainMenuFocus()
+                                }
+
                                 Key.DirectionRight -> {
                                     if (!rowIsFocused) return@onPreviewKeyEvent false
                                     if (notification.viewed) {

@@ -95,9 +95,11 @@ internal class TvMainFocusController(
         hasFocus: Boolean,
         currentPreferredContentFocusRequester: FocusRequester?,
     ) {
+        if (hasFocus) {
+            isContentFocusInitialized = true
+        }
         if (isFocused) {
             currentPreferredContentFocusRequester?.requestFocus()
-            isContentFocusInitialized = true
         }
         if (hasFocus && menuNavigationFocusLocked) {
             menuFocusRestoreAfterContentStealToken += 1

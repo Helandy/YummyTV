@@ -28,6 +28,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
@@ -38,13 +39,20 @@ internal fun StatsTab(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
     selectedTabFocusRequester: FocusRequester? = null,
+    onStatsContentFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val stats = state.stats
     val profileSummary = state.profileSummary
     val listState = rememberLazyListState()
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val listFocusRequester = remember { FocusRequester() }
+    val fallbackSelectedTabFocusRequester = remember { FocusRequester() }
+    val statsTabFocusRequester = selectedTabFocusRequester ?: fallbackSelectedTabFocusRequester
     val profileOverviewFocusRequester = remember { FocusRequester() }
+    val statsGridBottomStartFocusRequester = remember { FocusRequester() }
+    val daysOnlineFocusRequester = remember { FocusRequester() }
+    val listCountersFocusRequester = remember { FocusRequester() }
     val contentFocusRequester =
         if (profileSummary != null) profileOverviewFocusRequester else listFocusRequester
     val scope = rememberCoroutineScope()
@@ -60,10 +68,34 @@ internal fun StatsTab(
         }
     }
 
-    fun scrollByProfilePage(direction: Int) {
+    fun scrollByProfilePage(direction: Int): Boolean {
+        if (direction > 0 && !listState.canScrollForward) return false
+        if (direction < 0 && !listState.canScrollBackward) return false
         scope.launch {
             listState.animateScrollBy(listState.profilePageScrollPx() * direction)
         }
+        return true
+    }
+
+    fun requestDaysOnlineFocus(): Boolean {
+        scope.launch {
+            repeat(6) {
+                runCatching { daysOnlineFocusRequester.requestFocus() }
+                withFrameNanos { }
+            }
+        }
+        return true
+    }
+
+    fun requestMainMenuFocus(): Boolean {
+        val requester = mainMenuFocusRequester ?: return false
+        scope.launch {
+            repeat(6) {
+                runCatching { requester.requestFocus() }
+                withFrameNanos { }
+            }
+        }
+        return true
     }
 
     LazyColumn(
@@ -76,7 +108,13 @@ internal fun StatsTab(
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
+                    Key.DirectionLeft -> {
+                        if (isProfileOverviewFocused) return@onPreviewKeyEvent false
+                        requestMainMenuFocus()
+                    }
+
                     Key.DirectionRight -> {
+                        if (isProfileOverviewFocused) return@onPreviewKeyEvent false
                         onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.NOTIFICATIONS))
                         true
                     }
@@ -86,15 +124,13 @@ internal fun StatsTab(
                             requestProfileOverviewFocus()
                             return@onPreviewKeyEvent true
                         }
-                        if (!listState.canScrollForward) return@onPreviewKeyEvent false
+                        if (isProfileOverviewFocused) return@onPreviewKeyEvent false
                         scrollByProfilePage(direction = 1)
-                        true
                     }
 
                     Key.DirectionUp -> {
-                        if (!listState.canScrollBackward) return@onPreviewKeyEvent false
+                        if (isProfileOverviewFocused) return@onPreviewKeyEvent false
                         scrollByProfilePage(direction = -1)
-                        true
                     }
 
                     else -> false
@@ -108,8 +144,9 @@ internal fun StatsTab(
             AccountTabs(
                 selected = state.selectedTab,
                 onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
-                selectedTabFocusRequester = selectedTabFocusRequester,
+                selectedTabFocusRequester = statsTabFocusRequester,
                 contentFocusRequester = contentFocusRequester,
+                autoFocusSelected = !isProfileOverviewFocused,
             )
         }
         item {
@@ -129,7 +166,19 @@ internal fun StatsTab(
                     summary = profileSummary,
                     stats = stats,
                     statsGridFocusRequester = profileOverviewFocusRequester,
-                    onStatsGridFocusChanged = { isProfileOverviewFocused = it },
+                    statsGridBottomStartFocusRequester = statsGridBottomStartFocusRequester,
+                    statsGridTopExitFocusRequester = statsTabFocusRequester,
+                    daysOnlineFocusRequester = daysOnlineFocusRequester,
+                    listCountersFocusRequester = listCountersFocusRequester,
+                    onContentFocusChanged = {
+                        isProfileOverviewFocused = it
+                        onStatsContentFocusChanged(it)
+                    },
+                    onStatsGridExitRight = {
+                        onEvent(AccountState.Event.TabSelected(AccountState.AccountTab.NOTIFICATIONS))
+                        true
+                    },
+                    onStatsGridExitDown = ::requestDaysOnlineFocus,
                 )
             }
         } else if (stats != null && !stats.isEmpty()) {
