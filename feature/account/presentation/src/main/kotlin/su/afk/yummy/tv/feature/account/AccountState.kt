@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.model.AccountUiError
 
@@ -20,6 +21,7 @@ class AccountState {
         val password: String = "",
         val isLoading: Boolean = false,
         val selectedTab: AccountTab = AccountTab.STATS,
+        val profileSummary: UserProfileSummary? = null,
         val stats: UserStats? = null,
         val notifications: List<ProfileNotification> = emptyList(),
         val notificationCounts: List<NotificationCount> = emptyList(),

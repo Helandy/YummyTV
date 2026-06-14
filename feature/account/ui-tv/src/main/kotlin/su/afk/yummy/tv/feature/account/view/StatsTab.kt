@@ -34,6 +34,7 @@ internal fun StatsTab(
     modifier: Modifier = Modifier,
 ) {
     val stats = state.stats
+    val profileSummary = state.profileSummary
     val listState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
@@ -85,24 +86,37 @@ internal fun StatsTab(
         item {
             ErrorText((state.error ?: state.hubError).accountErrorMessage())
         }
-        if (state.isStatsLoading && stats == null) {
+        if (state.isStatsLoading && stats == null && profileSummary == null) {
             item { EmptyText(stringResource(R.string.account_loading)) }
             return@LazyColumn
         }
-        if (stats == null || stats.isEmpty()) {
+        if (stats == null && profileSummary == null) {
             item { EmptyText(stringResource(R.string.account_stats_empty)) }
             return@LazyColumn
         }
-        item {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                stats.lists.forEach { ListStatCard(it) }
+        if (profileSummary != null) {
+            item {
+                AccountProfileOverviewPanel(
+                    summary = profileSummary,
+                    fallbackNickname = state.nickname,
+                    fallbackAvatarUrl = state.avatarUrl,
+                )
+            }
+        } else if (stats != null && !stats.isEmpty()) {
+            item {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    stats.lists.forEach { ListStatCard(it) }
+                }
             }
         }
-        item { GenreStats(stats.genres) }
-        item { RatingStats(stats.ratings) }
-        item { TypeStats(stats.types) }
+        if (stats == null || stats.isEmpty()) {
+            return@LazyColumn
+        }
+        if (stats.genres.isNotEmpty()) item { GenreStats(stats.genres) }
+        if (stats.ratings.isNotEmpty()) item { RatingStats(stats.ratings) }
+        if (stats.types.isNotEmpty()) item { TypeStats(stats.types) }
     }
 }

@@ -23,6 +23,10 @@ import su.afk.yummy.tv.core.storage.account.AccountUserListCache
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListWatchStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCache
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCacheEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchHistoryEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchTypeEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
@@ -43,8 +47,14 @@ import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
+import su.afk.yummy.tv.domain.account.model.UserProfileCounts
+import su.afk.yummy.tv.domain.account.model.UserProfileSex
+import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
+import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
+import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 
@@ -363,6 +373,60 @@ internal fun UserStats.toUserStatsCache(
         },
     )
 
+internal fun UserProfileSummary.toUserProfileSummaryCache(
+    userId: Int,
+    language: String,
+    cachedAt: Long,
+): AccountUserProfileSummaryCache =
+    AccountUserProfileSummaryCache(
+        entry = AccountUserProfileSummaryCacheEntry(
+            userId = userId,
+            language = language,
+            cachedAt = cachedAt,
+            nickname = nickname,
+            avatarUrl = avatarUrl,
+            bannerUrl = bannerUrl,
+            registerDateSeconds = registerDateSeconds,
+            birthDateSeconds = birthDateSeconds,
+            sex = sex.toStorageValue(),
+            about = about,
+            daysOnline = daysOnline,
+            watchingCount = counts.watching,
+            plannedCount = counts.planned,
+            completedCount = counts.completed,
+            droppedCount = counts.dropped,
+            postponedCount = counts.postponed,
+            favoriteCount = counts.favorite,
+            friendsCount = socialCounts.friends,
+            reviewsCount = socialCounts.reviews,
+            commentsCount = socialCounts.comments,
+            postsCount = socialCounts.posts,
+            collectionsCount = socialCounts.collections,
+        ),
+        watchTypes = watchTypes.mapIndexed { index, item ->
+            AccountUserProfileWatchTypeEntry(
+                userId = userId,
+                language = language,
+                position = index,
+                typeId = item.id,
+                alias = item.alias,
+                title = item.title,
+                shortName = item.shortName,
+                spentSeconds = item.spentSeconds,
+            )
+        },
+        watchHistory = watchHistory.mapIndexed { index, item ->
+            AccountUserProfileWatchHistoryEntry(
+                userId = userId,
+                language = language,
+                position = index,
+                dateSeconds = item.dateSeconds,
+                durationSeconds = item.durationSeconds,
+                episodeCount = item.episodeCount,
+            )
+        },
+    )
+
 internal fun AccountUserStatsCache.toUserStats(): UserStats =
     UserStats(
         genres = genres.map { UserGenreStat(id = it.genreId, title = it.title, count = it.count) },
@@ -384,6 +448,64 @@ internal fun AccountUserStatsCache.toUserStats(): UserStats =
             )
         },
     )
+
+internal fun AccountUserProfileSummaryCache.toUserProfileSummary(): UserProfileSummary =
+    UserProfileSummary(
+        userId = entry.userId,
+        nickname = entry.nickname,
+        avatarUrl = entry.avatarUrl,
+        bannerUrl = entry.bannerUrl,
+        registerDateSeconds = entry.registerDateSeconds,
+        birthDateSeconds = entry.birthDateSeconds,
+        sex = entry.sex.toProfileSex(),
+        about = entry.about,
+        watchTypes = watchTypes.map {
+            UserWatchTypeStat(
+                id = it.typeId,
+                alias = it.alias,
+                title = it.title,
+                shortName = it.shortName,
+                spentSeconds = it.spentSeconds,
+            )
+        },
+        watchHistory = watchHistory.map {
+            UserWatchHistoryDay(
+                dateSeconds = it.dateSeconds,
+                durationSeconds = it.durationSeconds,
+                episodeCount = it.episodeCount,
+            )
+        },
+        daysOnline = entry.daysOnline,
+        counts = UserProfileCounts(
+            watching = entry.watchingCount,
+            planned = entry.plannedCount,
+            completed = entry.completedCount,
+            dropped = entry.droppedCount,
+            postponed = entry.postponedCount,
+            favorite = entry.favoriteCount,
+        ),
+        socialCounts = UserSocialCounts(
+            friends = entry.friendsCount,
+            reviews = entry.reviewsCount,
+            comments = entry.commentsCount,
+            posts = entry.postsCount,
+            collections = entry.collectionsCount,
+        ),
+    )
+
+private fun UserProfileSex.toStorageValue(): Int =
+    when (this) {
+        UserProfileSex.MALE -> 1
+        UserProfileSex.FEMALE -> 2
+        UserProfileSex.UNKNOWN -> 0
+    }
+
+private fun Int.toProfileSex(): UserProfileSex =
+    when (this) {
+        1 -> UserProfileSex.MALE
+        2 -> UserProfileSex.FEMALE
+        else -> UserProfileSex.UNKNOWN
+    }
 
 private fun AccountUserListItemEntry.toUserListItem(): UserAnimeListItem {
     val poster = userAnimePosterOrNull()

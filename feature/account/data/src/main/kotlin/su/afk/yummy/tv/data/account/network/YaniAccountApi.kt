@@ -49,6 +49,7 @@ import su.afk.yummy.tv.data.account.dto.YaniSetListBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniTokenResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserProfileResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsGenresResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsListsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsRatingsResponseDto
@@ -105,6 +106,11 @@ class YaniAccountApi(
                 header(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + token.trim())
             }
         }.body<YaniProfileResponseDto>().response
+
+    suspend fun getUserProfile(userId: Int): YaniUserProfileResponseDto =
+        client.get("$YANI_BASE_URL/users/id$userId") {
+            parameter("need_counts", true)
+        }.body()
 
     suspend fun logout() {
         client.post("$YANI_BASE_URL/profile/logout")

@@ -1052,6 +1052,86 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_17_18 = object : Migration(17, 18) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_profile_summary_caches (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    nickname TEXT NOT NULL,
+                    avatarUrl TEXT,
+                    bannerUrl TEXT,
+                    registerDateSeconds INTEGER NOT NULL,
+                    birthDateSeconds INTEGER NOT NULL,
+                    sex INTEGER NOT NULL,
+                    about TEXT NOT NULL,
+                    daysOnline INTEGER NOT NULL,
+                    watchingCount INTEGER NOT NULL,
+                    plannedCount INTEGER NOT NULL,
+                    completedCount INTEGER NOT NULL,
+                    droppedCount INTEGER NOT NULL,
+                    postponedCount INTEGER NOT NULL,
+                    favoriteCount INTEGER NOT NULL,
+                    friendsCount INTEGER NOT NULL,
+                    reviewsCount INTEGER NOT NULL,
+                    commentsCount INTEGER NOT NULL,
+                    postsCount INTEGER NOT NULL,
+                    collectionsCount INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_profile_summary_caches_cachedAt
+                ON account_user_profile_summary_caches(cachedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_profile_watch_types (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    position INTEGER NOT NULL,
+                    typeId INTEGER NOT NULL,
+                    alias TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    shortName TEXT NOT NULL,
+                    spentSeconds INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_profile_watch_types_userId_language
+                ON account_user_profile_watch_types(userId, language)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_profile_watch_history (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    position INTEGER NOT NULL,
+                    dateSeconds INTEGER NOT NULL,
+                    durationSeconds INTEGER NOT NULL,
+                    episodeCount INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_profile_watch_history_userId_language
+                ON account_user_profile_watch_history(userId, language)
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1067,6 +1147,7 @@ object StorageModule {
                 MIGRATION_14_15,
                 MIGRATION_15_16,
                 MIGRATION_16_17,
+                MIGRATION_17_18,
             )
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()

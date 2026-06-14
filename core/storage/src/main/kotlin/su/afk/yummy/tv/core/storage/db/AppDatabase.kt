@@ -20,6 +20,9 @@ import su.afk.yummy.tv.core.storage.account.AccountUserGenreStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListWatchStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCacheEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchHistoryEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchTypeEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCacheEntry
@@ -114,8 +117,11 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserRatingStatEntry::class,
         AccountUserListWatchStatEntry::class,
         AccountUserTypeStatEntry::class,
+        AccountUserProfileSummaryCacheEntry::class,
+        AccountUserProfileWatchTypeEntry::class,
+        AccountUserProfileWatchHistoryEntry::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

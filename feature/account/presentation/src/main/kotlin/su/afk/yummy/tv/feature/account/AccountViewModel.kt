@@ -60,6 +60,7 @@ class AccountViewModel @Inject internal constructor(
                         copy(
                             isSignedIn = false,
                             userId = 0,
+                            profileSummary = null,
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
@@ -158,6 +159,7 @@ class AccountViewModel @Inject internal constructor(
                             isLoading = false,
                             password = "",
                             selectedTab = AccountState.AccountTab.STATS,
+                            profileSummary = null,
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
@@ -378,11 +380,18 @@ class AccountViewModel @Inject internal constructor(
             val result = hubHandler.loadHub(state.userId)
             setState {
                 var next = copy(isStatsLoading = false)
+                if (result.profileSummary != null) {
+                    next = next.copy(profileSummary = result.profileSummary)
+                }
                 if (result.stats != null) {
                     next = next.copy(stats = result.stats)
                 }
-                if (result.statsError != null) {
-                    next = next.copy(hubError = result.statsError)
+                val hasAnyStatistics = next.profileSummary != null || next.stats != null
+                if (!hasAnyStatistics) {
+                    val error = result.profileSummaryError ?: result.statsError
+                    if (error != null) {
+                        next = next.copy(hubError = error)
+                    }
                 }
                 next
             }

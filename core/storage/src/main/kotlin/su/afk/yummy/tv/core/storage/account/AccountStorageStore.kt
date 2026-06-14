@@ -123,6 +123,16 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         dao.replaceUserStats(cache)
     }
 
+    suspend fun getUserProfileSummary(
+        userId: Int,
+        language: String,
+    ): AccountUserProfileSummaryCache? =
+        dao.getUserProfileSummary(userId, language)
+
+    suspend fun saveUserProfileSummary(cache: AccountUserProfileSummaryCache) {
+        dao.replaceUserProfileSummary(cache)
+    }
+
     suspend fun clearUserScoped(userId: Int) {
         dao.clearUserScoped(userId)
     }

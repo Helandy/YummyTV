@@ -386,3 +386,75 @@ data class AccountUserTypeStatEntry(
     val shortName: String,
     val count: Int,
 )
+
+@Entity(
+    tableName = "account_user_profile_summary_caches",
+    primaryKeys = ["userId", "language"],
+    indices = [
+        Index(value = ["cachedAt"], name = "index_account_user_profile_summary_caches_cachedAt"),
+    ],
+)
+data class AccountUserProfileSummaryCacheEntry(
+    val userId: Int,
+    val language: String,
+    val cachedAt: Long,
+    val nickname: String,
+    val avatarUrl: String? = null,
+    val bannerUrl: String? = null,
+    val registerDateSeconds: Long,
+    val birthDateSeconds: Long,
+    val sex: Int,
+    val about: String,
+    val daysOnline: Int,
+    val watchingCount: Int,
+    val plannedCount: Int,
+    val completedCount: Int,
+    val droppedCount: Int,
+    val postponedCount: Int,
+    val favoriteCount: Int,
+    val friendsCount: Int,
+    val reviewsCount: Int,
+    val commentsCount: Int,
+    val postsCount: Int,
+    val collectionsCount: Int,
+)
+
+@Entity(
+    tableName = "account_user_profile_watch_types",
+    primaryKeys = ["userId", "language", "position"],
+    indices = [
+        Index(
+            value = ["userId", "language"],
+            name = "index_account_user_profile_watch_types_userId_language",
+        ),
+    ],
+)
+data class AccountUserProfileWatchTypeEntry(
+    val userId: Int,
+    val language: String,
+    val position: Int,
+    val typeId: Int,
+    val alias: String,
+    val title: String,
+    val shortName: String,
+    val spentSeconds: Long,
+)
+
+@Entity(
+    tableName = "account_user_profile_watch_history",
+    primaryKeys = ["userId", "language", "position"],
+    indices = [
+        Index(
+            value = ["userId", "language"],
+            name = "index_account_user_profile_watch_history_userId_language",
+        ),
+    ],
+)
+data class AccountUserProfileWatchHistoryEntry(
+    val userId: Int,
+    val language: String,
+    val position: Int,
+    val dateSeconds: Long,
+    val durationSeconds: Long,
+    val episodeCount: Int,
+)

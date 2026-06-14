@@ -13,7 +13,10 @@ import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListWatchStatDto
+import su.afk.yummy.tv.data.account.dto.YaniUserProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniUserRatingStatDto
+import su.afk.yummy.tv.data.account.dto.YaniUserWatchHistoryDayDto
+import su.afk.yummy.tv.data.account.dto.YaniUserWatchTypeDto
 import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionDto
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
@@ -25,7 +28,13 @@ import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
+import su.afk.yummy.tv.domain.account.model.UserProfileCounts
+import su.afk.yummy.tv.domain.account.model.UserProfileSex
+import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
+import su.afk.yummy.tv.domain.account.model.UserSocialCounts
+import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
+import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 
@@ -33,7 +42,34 @@ internal fun YaniProfileDto.toAccount(): YaniAccount =
     YaniAccount(
         id = id,
         nickname = nickname,
-        avatarUrl = avatars?.full?.toHttpsUrl() ?: avatars?.big?.toHttpsUrl() ?: avatars?.small?.toHttpsUrl(),
+        avatarUrl = avatars?.full?.toHttpsUrl() ?: avatars?.big?.toHttpsUrl()
+        ?: avatars?.small?.toHttpsUrl(),
+    )
+
+internal fun YaniUserProfileDto.toProfileSummary(): UserProfileSummary =
+    UserProfileSummary(
+        userId = id,
+        nickname = nickname,
+        avatarUrl = avatars?.full?.toHttpsUrl() ?: avatars?.big?.toHttpsUrl()
+        ?: avatars?.small?.toHttpsUrl(),
+        bannerUrl = banner?.cropped?.toHttpsUrl() ?: banner?.full?.toHttpsUrl(),
+        registerDateSeconds = registerDate ?: 0L,
+        birthDateSeconds = birthDate ?: 0L,
+        sex = sex.toUserProfileSex(),
+        about = about.orEmpty().trim(),
+        watchTypes = watches?.sum.orEmpty()
+            .map { it.toWatchTypeStat() }
+            .filter { it.spentSeconds > 0L },
+        watchHistory = watches?.history.orEmpty().map { it.toWatchHistoryDay() },
+        daysOnline = daysOnline ?: 0,
+        counts = counts.orEmpty().toProfileCounts(),
+        socialCounts = UserSocialCounts(
+            friends = friends?.friends ?: 0,
+            reviews = reviewsCount?.takeIf { it > 0 } ?: reviewsCountObject?.approved ?: 0,
+            comments = commentsCount ?: 0,
+            posts = postsCount?.approved ?: 0,
+            collections = collectionsCount ?: 0,
+        ),
     )
 
 internal fun YaniUserAnimeDto.toUserListItem(): UserAnimeListItem? {
@@ -82,7 +118,8 @@ internal fun Int?.toUserAnimeList(): UserAnimeList? =
     UserAnimeList.entries.firstOrNull { it.id == this }
 
 internal fun YaniAccountPosterDto.bestUrl(): String? =
-    mega?.toHttpsUrl() ?: huge?.toHttpsUrl() ?: big?.toHttpsUrl() ?: medium?.toHttpsUrl() ?: fullsize?.toHttpsUrl() ?: small?.toHttpsUrl()
+    mega?.toHttpsUrl() ?: huge?.toHttpsUrl() ?: big?.toHttpsUrl() ?: medium?.toHttpsUrl()
+    ?: fullsize?.toHttpsUrl() ?: small?.toHttpsUrl()
 
 private fun YaniAccountPosterDto.toCollectionPoster(): AnimeCollectionPoster =
     AnimeCollectionPoster(
@@ -147,6 +184,41 @@ internal fun YaniUserAnimeTypeStatDto.toAnimeTypeStat(): UserAnimeTypeStat? {
     )
 }
 
+private fun YaniUserWatchTypeDto.toWatchTypeStat(): UserWatchTypeStat =
+    UserWatchTypeStat(
+        id = value,
+        alias = alias,
+        title = name,
+        shortName = shortname,
+        spentSeconds = spentTime.coerceAtLeast(0L),
+    )
+
+private fun YaniUserWatchHistoryDayDto.toWatchHistoryDay(): UserWatchHistoryDay =
+    UserWatchHistoryDay(
+        dateSeconds = dateSeconds,
+        durationSeconds = duration.coerceAtLeast(0L),
+        episodeCount = episodeCount.coerceAtLeast(0),
+    )
+
+private fun Map<String, Int>.toProfileCounts(): UserProfileCounts =
+    UserProfileCounts(
+        watching = this[LIST_WATCHING].orZero(),
+        planned = this[LIST_PLANNED].orZero(),
+        completed = this[LIST_COMPLETED].orZero(),
+        dropped = this[LIST_DROPPED].orZero(),
+        postponed = this[LIST_POSTPONED].orZero(),
+        favorite = this[LIST_FAVORITE].orZero(),
+    )
+
+private fun Int?.orZero(): Int = this ?: 0
+
+private fun Int?.toUserProfileSex(): UserProfileSex =
+    when (this) {
+        1 -> UserProfileSex.MALE
+        2 -> UserProfileSex.FEMALE
+        else -> UserProfileSex.UNKNOWN
+    }
+
 internal fun YaniNotificationDto.toNotification(): ProfileNotification =
     ProfileNotification(
         id = id,
@@ -187,3 +259,9 @@ private fun String.toCatalogItemSlug(): String? {
 private const val CATALOG_ITEM_PATH = "/catalog/item/"
 private const val NOTIFICATION_TYPE_ANIME_EPISODE = "anime_episode"
 private const val NOTIFICATION_SUB_TYPE_NEW_EPISODE = "new_episode"
+private const val LIST_WATCHING = "0"
+private const val LIST_PLANNED = "1"
+private const val LIST_COMPLETED = "2"
+private const val LIST_DROPPED = "3"
+private const val LIST_FAVORITE = "4"
+private const val LIST_POSTPONED = "5"

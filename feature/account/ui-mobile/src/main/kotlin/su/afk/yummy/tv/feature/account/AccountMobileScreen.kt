@@ -98,6 +98,7 @@ fun AccountMobileScreen(
             ) {
                 AccountMobileHeader(
                     state = state,
+                    profileSummary = state.profileSummary,
                     onLogoutClick = { showLogoutConfirm = true },
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
                 )
@@ -138,13 +139,14 @@ fun AccountMobileScreen(
                     ) {
                         when (page.toAccountMobileTab()) {
                             AccountState.AccountTab.STATS -> {
-                                if (state.isStatsLoading && state.stats == null) {
+                                if (state.isStatsLoading && state.stats == null && state.profileSummary == null) {
                                     item {
                                         AccountMobileLoadingIndicator(modifier = Modifier.fillParentMaxSize())
                                     }
                                 } else {
                                     item {
                                         AccountMobileStatsTab(
+                                            profileSummary = state.profileSummary,
                                             stats = state.stats,
                                             isLoading = state.isStatsLoading,
                                         )

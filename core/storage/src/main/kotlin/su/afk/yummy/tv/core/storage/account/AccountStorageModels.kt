@@ -63,6 +63,14 @@ data class AccountUserStatsCache(
     val cachedAt: Long get() = entry.cachedAt
 }
 
+data class AccountUserProfileSummaryCache(
+    val entry: AccountUserProfileSummaryCacheEntry,
+    val watchTypes: List<AccountUserProfileWatchTypeEntry>,
+    val watchHistory: List<AccountUserProfileWatchHistoryEntry>,
+) {
+    val cachedAt: Long get() = entry.cachedAt
+}
+
 fun AccountProfileEntry.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs
 
@@ -97,4 +105,7 @@ fun AccountNotificationAnimeEntry.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs
 
 fun AccountUserStatsCache.isFresh(ttlMs: Long): Boolean =
+    System.currentTimeMillis() - cachedAt < ttlMs
+
+fun AccountUserProfileSummaryCache.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs

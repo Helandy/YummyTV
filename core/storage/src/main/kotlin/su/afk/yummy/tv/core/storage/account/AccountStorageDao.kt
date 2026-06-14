@@ -346,6 +346,51 @@ abstract class AccountStorageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertUserTypeStats(entries: List<AccountUserTypeStatEntry>)
 
+    @Query(
+        """
+        SELECT * FROM account_user_profile_summary_caches
+        WHERE userId = :userId AND language = :language
+        LIMIT 1
+        """
+    )
+    abstract suspend fun getUserProfileSummaryCacheEntry(
+        userId: Int,
+        language: String,
+    ): AccountUserProfileSummaryCacheEntry?
+
+    @Query(
+        """
+        SELECT * FROM account_user_profile_watch_types
+        WHERE userId = :userId AND language = :language
+        ORDER BY position
+        """
+    )
+    abstract suspend fun getUserProfileWatchTypes(
+        userId: Int,
+        language: String,
+    ): List<AccountUserProfileWatchTypeEntry>
+
+    @Query(
+        """
+        SELECT * FROM account_user_profile_watch_history
+        WHERE userId = :userId AND language = :language
+        ORDER BY position
+        """
+    )
+    abstract suspend fun getUserProfileWatchHistory(
+        userId: Int,
+        language: String,
+    ): List<AccountUserProfileWatchHistoryEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserProfileSummaryCache(entry: AccountUserProfileSummaryCacheEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserProfileWatchTypes(entries: List<AccountUserProfileWatchTypeEntry>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserProfileWatchHistory(entries: List<AccountUserProfileWatchHistoryEntry>)
+
     @Query("DELETE FROM account_user_stats_caches WHERE userId = :userId")
     abstract suspend fun deleteUserStatsCaches(userId: Int)
 
@@ -360,6 +405,15 @@ abstract class AccountStorageDao {
 
     @Query("DELETE FROM account_user_type_stats WHERE userId = :userId")
     abstract suspend fun deleteUserTypeStats(userId: Int)
+
+    @Query("DELETE FROM account_user_profile_summary_caches WHERE userId = :userId")
+    abstract suspend fun deleteUserProfileSummaryCaches(userId: Int)
+
+    @Query("DELETE FROM account_user_profile_watch_types WHERE userId = :userId")
+    abstract suspend fun deleteUserProfileWatchTypes(userId: Int)
+
+    @Query("DELETE FROM account_user_profile_watch_history WHERE userId = :userId")
+    abstract suspend fun deleteUserProfileWatchHistory(userId: Int)
 
     @Query(
         """
@@ -380,6 +434,30 @@ abstract class AccountStorageDao {
 
     @Query("DELETE FROM account_user_type_stats WHERE userId = :userId AND language = :language")
     abstract suspend fun deleteUserTypeStats(userId: Int, language: String)
+
+    @Query(
+        """
+        DELETE FROM account_user_profile_summary_caches
+        WHERE userId = :userId AND language = :language
+        """
+    )
+    abstract suspend fun deleteUserProfileSummaryCache(userId: Int, language: String)
+
+    @Query(
+        """
+        DELETE FROM account_user_profile_watch_types
+        WHERE userId = :userId AND language = :language
+        """
+    )
+    abstract suspend fun deleteUserProfileWatchTypes(userId: Int, language: String)
+
+    @Query(
+        """
+        DELETE FROM account_user_profile_watch_history
+        WHERE userId = :userId AND language = :language
+        """
+    )
+    abstract suspend fun deleteUserProfileWatchHistory(userId: Int, language: String)
 
     @Transaction
     open suspend fun getUserList(
@@ -554,12 +632,40 @@ abstract class AccountStorageDao {
     }
 
     @Transaction
+    open suspend fun getUserProfileSummary(
+        userId: Int,
+        language: String,
+    ): AccountUserProfileSummaryCache? {
+        val entry = getUserProfileSummaryCacheEntry(userId, language) ?: return null
+        return AccountUserProfileSummaryCache(
+            entry = entry,
+            watchTypes = getUserProfileWatchTypes(userId, language),
+            watchHistory = getUserProfileWatchHistory(userId, language),
+        )
+    }
+
+    @Transaction
+    open suspend fun replaceUserProfileSummary(cache: AccountUserProfileSummaryCache) {
+        val userId = cache.entry.userId
+        val language = cache.entry.language
+        deleteUserProfileSummaryCache(userId, language)
+        deleteUserProfileWatchTypes(userId, language)
+        deleteUserProfileWatchHistory(userId, language)
+        insertUserProfileSummaryCache(cache.entry)
+        if (cache.watchTypes.isNotEmpty()) insertUserProfileWatchTypes(cache.watchTypes)
+        if (cache.watchHistory.isNotEmpty()) insertUserProfileWatchHistory(cache.watchHistory)
+    }
+
+    @Transaction
     open suspend fun deleteUserStatsForUser(userId: Int) {
         deleteUserStatsCaches(userId)
         deleteUserGenreStats(userId)
         deleteUserRatingStats(userId)
         deleteUserListWatchStats(userId)
         deleteUserTypeStats(userId)
+        deleteUserProfileSummaryCaches(userId)
+        deleteUserProfileWatchTypes(userId)
+        deleteUserProfileWatchHistory(userId)
     }
 
     @Transaction

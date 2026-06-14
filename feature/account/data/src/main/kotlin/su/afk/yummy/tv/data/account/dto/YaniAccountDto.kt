@@ -58,6 +58,74 @@ data class YaniProfileDto(
 )
 
 @Serializable
+data class YaniUserProfileResponseDto(
+    val response: YaniUserProfileDto = YaniUserProfileDto(),
+)
+
+@Serializable
+data class YaniUserProfileDto(
+    val id: Int = 0,
+    val nickname: String = "",
+    val avatars: YaniAvatarDto? = null,
+    val banner: YaniUserBannerDto? = null,
+    @SerialName("register_date") val registerDate: Long? = null,
+    @SerialName("bdate") val birthDate: Long? = null,
+    val sex: Int? = null,
+    val about: String? = null,
+    val watches: YaniUserProfileWatchesDto? = null,
+    @SerialName("days_online") val daysOnline: Int? = null,
+    val counts: Map<String, Int>? = emptyMap(),
+    val friends: YaniUserProfileFriendsDto? = null,
+    @SerialName("reviewsCount") val reviewsCount: Int? = null,
+    @SerialName("reviews_count") val reviewsCountObject: YaniApprovedCountDto? = null,
+    @SerialName("posts_count") val postsCount: YaniApprovedCountDto? = null,
+    @SerialName("comments_count") val commentsCount: Int? = null,
+    @SerialName("collections_count") val collectionsCount: Int? = null,
+)
+
+@Serializable
+data class YaniUserBannerDto(
+    val cropped: String? = null,
+    val full: String? = null,
+)
+
+@Serializable
+data class YaniUserProfileWatchesDto(
+    val sum: List<YaniUserWatchTypeDto> = emptyList(),
+    val history: List<YaniUserWatchHistoryDayDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserWatchTypeDto(
+    val value: Int = 0,
+    val alias: String = "",
+    val name: String = "",
+    val shortname: String = "",
+    @SerialName("spent_time") val spentTime: Long = 0L,
+)
+
+@Serializable
+data class YaniUserWatchHistoryDayDto(
+    @SerialName("when") val dateSeconds: Long = 0L,
+    val duration: Long = 0L,
+    @SerialName("ep_count") val episodeCount: Int = 0,
+)
+
+@Serializable
+data class YaniUserProfileFriendsDto(
+    val friends: Int = 0,
+    val requests: Int = 0,
+    val followers: Int = 0,
+    val following: Int = 0,
+    val sentRequests: Int = 0,
+)
+
+@Serializable
+data class YaniApprovedCountDto(
+    val approved: Int = 0,
+)
+
+@Serializable
 data class YaniAvatarDto(
     val small: String? = null,
     val big: String? = null,
