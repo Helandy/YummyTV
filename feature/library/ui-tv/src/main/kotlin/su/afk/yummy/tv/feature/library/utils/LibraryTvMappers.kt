@@ -38,6 +38,26 @@ internal fun UserAnimeListItem.toLibraryEntry(): LibraryEntry =
         isFavorite = isFavorite,
     )
 
+internal fun LibraryState.State.tvTabItemCount(tab: LibraryTab): Int = when (tab) {
+    LibraryTab.CONTINUE_WATCHING -> continueWatching.size
+    LibraryTab.FAVORITES -> if (isSignedIn) {
+        signedInFavoriteItems().size
+    } else {
+        items.count { it.isFavorite }
+    }
+
+    LibraryTab.WATCHING,
+    LibraryTab.PLANNED,
+    LibraryTab.COMPLETED,
+    LibraryTab.POSTPONED,
+    LibraryTab.DROPPED -> if (isSignedIn) {
+        remoteItems[tab].orEmpty().size
+    } else {
+        val localListId = tab.userAnimeListId()
+        items.count { it.listId == localListId }
+    }
+}
+
 internal fun LibraryTab.userAnimeListId(): Int? = when (this) {
     LibraryTab.CONTINUE_WATCHING -> null
     LibraryTab.FAVORITES -> null

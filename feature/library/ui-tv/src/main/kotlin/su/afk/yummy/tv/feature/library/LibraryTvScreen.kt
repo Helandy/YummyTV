@@ -33,6 +33,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentF
 import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.signedInFavoriteItems
 import su.afk.yummy.tv.feature.library.utils.toLibraryEntry
+import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
@@ -65,6 +66,14 @@ fun LibraryTvScreen(
     var restoreFocusedItemToken by rememberSaveable { mutableIntStateOf(0) }
     var continueWatchingRestoreFirstToken by rememberSaveable { mutableIntStateOf(0) }
     val signedInFavoriteItems = remember(state.remoteItems, state.items) { state.signedInFavoriteItems() }
+    val tabCounts = remember(
+        state.continueWatching,
+        state.items,
+        state.remoteItems,
+        state.isSignedIn,
+    ) {
+        libraryTabsDisplayOrder().associateWith { tab -> state.tvTabItemCount(tab) }
+    }
     val remoteFavoriteIds = remember(state.remoteItems) {
         state.remoteItems[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
     }
@@ -155,6 +164,7 @@ fun LibraryTvScreen(
     ) {
         LibraryTopTabs(
             selectedTab = state.selectedTab,
+            tabCounts = tabCounts,
             contentCanFocus = hasFocusableGridContent,
             onTabSelected = { onEvent(LibraryState.Event.TabSelected(it)) },
             contentFocusRequester = gridFocusRequester,

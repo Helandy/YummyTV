@@ -38,6 +38,21 @@ internal fun LibraryState.State.shouldShowRemoteLoader(tab: LibraryTab): Boolean
     }
 }
 
+internal fun LibraryState.State.mobileTabItemCount(tab: LibraryTab): Int = when (tab) {
+    LibraryTab.CONTINUE_WATCHING -> continueWatching.size
+    LibraryTab.FAVORITES -> items.count { it.isFavorite }
+    LibraryTab.WATCHING,
+    LibraryTab.PLANNED,
+    LibraryTab.COMPLETED,
+    LibraryTab.POSTPONED,
+    LibraryTab.DROPPED -> if (isSignedIn) {
+        remoteItems[tab].orEmpty().size
+    } else {
+        val localList = tab.userAnimeList()
+        items.count { it.listId == localList?.id }
+    }
+}
+
 internal fun LibraryEntry.posterUrl(): String? =
     posterMegaUrl ?: posterFullsizeUrl ?: posterBigUrl ?: posterMediumUrl ?: posterSmallUrl
 

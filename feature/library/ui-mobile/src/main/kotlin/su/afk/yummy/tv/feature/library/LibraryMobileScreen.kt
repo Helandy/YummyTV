@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.model.PendingLibraryMobileRemoval
 import su.afk.yummy.tv.feature.library.utils.libraryMobileTabs
+import su.afk.yummy.tv.feature.library.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.utils.toLibraryMobilePage
 import su.afk.yummy.tv.feature.library.utils.toLibraryMobileTab
 import su.afk.yummy.tv.feature.library.view.LibraryMobilePage
@@ -50,6 +51,14 @@ fun LibraryMobileScreen(
     )
     val coroutineScope = rememberCoroutineScope()
     var pendingRemoval by remember { mutableStateOf<PendingLibraryMobileRemoval?>(null) }
+    val tabCounts = remember(
+        state.continueWatching,
+        state.items,
+        state.remoteItems,
+        state.isSignedIn,
+    ) {
+        libraryMobileTabs.associateWith { tab -> state.mobileTabItemCount(tab) }
+    }
 
     LaunchedEffect(effect, context, itemRemovedText) {
         effect.collect { event ->
@@ -98,6 +107,7 @@ fun LibraryMobileScreen(
         ) {
             LibraryMobileTabs(
                 selectedTab = pagerState.currentPage.toLibraryMobileTab(),
+                tabCounts = tabCounts,
                 onSelected = { tab ->
                     val targetPage = tab.toLibraryMobilePage()
                     if (pagerState.currentPage != targetPage) {
