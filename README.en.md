@@ -93,13 +93,13 @@ The built-in player is based on Media3/ExoPlayer and supports:
 |:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------:|
 | <img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home" /> | <img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details" /> | <img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top" /> |
 
-|                                       Library                                       |                                       Profile                                       |
-|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile" /> |
+|                                       Library                                       |                                       Profile                                       |                                        Balancers                                        |
+|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile" /> | <img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers" /> |
 
-|                                        Balancers                                        |                                      Player                                       |
-|:---------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/mobile/balancers.webp" width="210" alt="Mobile balancers" /> | <img src="docs/screenshots/mobile/player.webp" width="320" alt="Mobile player" /> |
+|                                      Player                                       |
+|:---------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/player.webp" width="320" alt="Mobile player" /> |
 
 ## Download
 
