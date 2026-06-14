@@ -93,9 +93,9 @@ The built-in player is based on Media3/ExoPlayer and supports:
 |:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:---------------------------------------------------------------------------:|
 | <img src="docs/screenshots/mobile/home.webp" width="210" alt="Mobile home" /> | <img src="docs/screenshots/mobile/details.webp" width="210" alt="Mobile details" /> | <img src="docs/screenshots/mobile/top.webp" width="210" alt="Mobile top" /> |
 
-|                                       Library                                       |                                       Profile                                       |                                          Viewing Order                                          |
-|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile" /> | <img src="docs/screenshots/mobile/viewing-order.webp" width="210" alt="Mobile viewing order" /> |
+|                                       Library                                       |                                       Profile                                       |
+|:-----------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------:|
+| <img src="docs/screenshots/mobile/library.webp" width="210" alt="Mobile library" /> | <img src="docs/screenshots/mobile/profile.webp" width="210" alt="Mobile profile" /> |
 
 |                                        Balancers                                        |                                      Player                                       |
 |:---------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|
