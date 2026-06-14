@@ -4,20 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
+import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 
 @Composable
@@ -106,28 +101,12 @@ internal fun RelatedTitleCard(
                     )
                 }
                 rating?.let { value ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    RatingBadge(
+                        rating = value,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(10.dp)
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(5.dp))
-                            .padding(horizontal = 7.dp, vertical = 4.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(12.dp),
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            text = "%.1f".format(value),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black,
-                        )
-                    }
+                            .padding(10.dp),
+                    )
                 }
             }
 
