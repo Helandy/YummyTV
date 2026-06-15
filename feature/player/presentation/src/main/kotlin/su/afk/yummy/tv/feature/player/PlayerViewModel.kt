@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerProgressContext
 import su.afk.yummy.tv.feature.player.handler.PlayerProgressHandler
@@ -27,6 +28,8 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResult
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.toPresentationSourceGraph
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -41,6 +44,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val settingsHandler: PlayerSettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
+    private val getPlayerSourceGraph: GetPlayerSourceGraphUseCase,
     private val analytics: PlayerAnalytics,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
@@ -50,6 +54,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private var activeDest: PlayerDestination = dest
+    private var sourceGraphJob: Job? = null
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
@@ -62,6 +67,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
         observeActivePlayerResizeSettings(force = true)
         observeActivePlayerMobileVideoTransformSettings(force = true)
+        loadSourceGraph()
         loadStream()
     }
 
@@ -80,6 +86,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             .launchIn(viewModelScope)
         observeActivePlayerResizeSettings()
         observeActivePlayerMobileVideoTransformSettings()
+        loadSourceGraph()
         loadStream()
     }
 
@@ -249,6 +256,37 @@ class PlayerViewModel @AssistedInject internal constructor(
             observeActivePlayerMobileVideoTransformSettings()
         }
         loadStream()
+    }
+
+    private fun loadSourceGraph() {
+        val destination = activeDest
+        val request = destinationStateMapper.toSourceRequest(destination)
+        sourceGraphJob?.cancel()
+        if (request.animeId <= 0) return
+
+        sourceGraphJob = viewModelScope.launch {
+            val sourceGraph = try {
+                getPlayerSourceGraph(request).toPresentationSourceGraph()
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (_: Throwable) {
+                return@launch
+            }
+            if (destination != activeDest || sourceGraph.balancers.isEmpty()) return@launch
+
+            val previousIframeUrl = activeIframeUrl(currentState)
+            setState {
+                copy(
+                    sourceGraph = sourceGraph,
+                    sourceSelection = sourceGraph.selection,
+                )
+            }
+            observeActivePlayerResizeSettings()
+            observeActivePlayerMobileVideoTransformSettings()
+            if (activeIframeUrl(currentState) != previousIframeUrl) {
+                loadStream()
+            }
+        }
     }
 
     private fun observeActivePlayerResizeSettings(force: Boolean = false) {

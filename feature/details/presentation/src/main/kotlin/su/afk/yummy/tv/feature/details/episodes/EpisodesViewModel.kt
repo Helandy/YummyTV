@@ -140,14 +140,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
-        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val title = animeTitle
         val poster = posterUrl
         val screenshots = screenshotsByEpisode
         viewModelScope.launch(Dispatchers.Default) {
             val destination = playerNavigationHandler.getPlayerDestination(
                 video = video,
-                allVideos = allVideos,
                 animeTitle = title,
                 animeId = animeId,
                 posterUrl = poster,

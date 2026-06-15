@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:details:domain"))
     implementation(project(":feature:player:domain"))
 
     implementation(libs.androidx.core.ktx)

@@ -1,9 +1,8 @@
 package su.afk.yummy.tv.feature.player
 
-/** Player source selected for a continue-watching action and the source list to pass to player. */
+/** Player source selected for a continue-watching action. */
 data class ContinueWatchingTarget(
     val video: PlayerVideoSource,
-    val allVideos: List<PlayerVideoSource>,
 )
 
 /** Resolves the best player source to resume playback from a stored progress entry. */
@@ -18,8 +17,7 @@ fun resolveContinueWatchingTarget(
         playerName = progressVideo.player,
         dubbing = progressVideo.dubbing,
     ) ?: progressVideo
-    val allVideos = availableVideos.ifEmpty { listOf(targetVideo) }
-    return ContinueWatchingTarget(video = targetVideo, allVideos = allVideos)
+    return ContinueWatchingTarget(video = targetVideo)
 }
 
 /** Returns true when a placeholder progress episode can safely be migrated to the target episode. */

@@ -35,7 +35,6 @@ class ContinueWatchingLaunchHandler @Inject constructor(
 
         return playerNavigator.getPlayerDest(
             video = target.video,
-            allVideos = target.allVideos,
             animeTitle = entry.animeTitle,
             animeId = entry.animeId,
             posterUrl = entry.posterUrl,

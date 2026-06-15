@@ -508,12 +508,10 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {
-        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val details = currentState.details
         viewModelScope.launch(Dispatchers.Default) {
             val destination = playerNavigationHandler.getPlayerDestination(
                 video = video,
-                allVideos = allVideos,
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
                 posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
@@ -526,12 +524,10 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun navigateToPlayer(video: PlayerVideoSource) {
-        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
         val details = currentState.details
         viewModelScope.launch(Dispatchers.Default) {
             val destination = playerNavigationHandler.getPlayerDestination(
                 video = video,
-                allVideos = allVideos,
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
                 posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",

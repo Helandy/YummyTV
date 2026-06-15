@@ -27,7 +27,6 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
 
     fun getPlayerDestination(
         video: AnimeVideo,
-        allVideos: List<AnimeVideo>,
         animeTitle: String,
         animeId: Int,
         posterUrl: String,
@@ -35,7 +34,6 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
     ): NavKey =
         getPlayerDestination(
             video = video.toPlayerVideoSource(),
-            allVideos = allVideos,
             animeTitle = animeTitle,
             animeId = animeId,
             posterUrl = posterUrl,
@@ -44,7 +42,6 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
 
     fun getPlayerDestination(
         video: PlayerVideoSource,
-        allVideos: List<AnimeVideo>,
         animeTitle: String,
         animeId: Int,
         posterUrl: String,
@@ -52,7 +49,6 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
     ): NavKey =
         playerNavigator.getPlayerDest(
             video = video,
-            allVideos = allVideos.map { it.toPlayerVideoSource() },
             animeTitle = animeTitle,
             animeId = animeId,
             posterUrl = posterUrl,
