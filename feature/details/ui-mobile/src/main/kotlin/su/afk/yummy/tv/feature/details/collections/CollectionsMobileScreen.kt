@@ -46,7 +46,6 @@ fun CollectionsMobileScreen(
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.poster?.mega ?: item.poster?.fullsize ?: item.posterUrl,
-                        subtitle = item.views?.let { stringResource(R.string.details_mobile_views, it) },
                         onClick = { onEvent(CollectionsState.Event.CollectionSelected(item.id)) },
                     )
                 }
