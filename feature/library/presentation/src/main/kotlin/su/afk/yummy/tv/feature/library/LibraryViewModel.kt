@@ -9,9 +9,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -40,7 +37,7 @@ class LibraryViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: LibraryAnalytics,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = LibraryState.State(
@@ -100,26 +97,17 @@ class LibraryViewModel @Inject internal constructor(
     override fun onEvent(event: LibraryState.Event) {
         when (event) {
             is LibraryState.Event.AnimeSelected -> {
-                trackAnimeSelected(event.animeId, source = "local")
+                analytics.eventLocalAnimeSelected(event.animeId, currentState.selectedTab)
                 openDetails(event.animeId)
             }
 
             is LibraryState.Event.RemoteAnimeSelected -> {
-                trackAnimeSelected(event.animeId, source = "remote")
+                analytics.eventRemoteAnimeSelected(event.animeId, currentState.selectedTab)
                 openDetails(event.animeId)
             }
 
             is LibraryState.Event.ContinueWatchingSelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "continue_watching_selected",
-                        params = analyticsParamsOf(
-                            "anime_id" to event.entry.animeId,
-                            "video_id" to event.entry.videoId,
-                        ),
-                    )
-                )
+                analytics.eventContinueWatchingSelected(event.entry)
                 launchContinueWatching(event.entry)
             }
 
@@ -128,13 +116,7 @@ class LibraryViewModel @Inject internal constructor(
 
             is LibraryState.Event.TabSelected -> {
                 if (event.tab != currentState.selectedTab) {
-                    analyticsTracker.track(
-                        AnalyticsEvents.uiAction(
-                            screenName = SCREEN_NAME,
-                            action = "tab_selected",
-                            params = analyticsParamsOf("tab" to event.tab.name.lowercase()),
-                        )
-                    )
+                    analytics.eventTabSelected(event.tab)
                     setState {
                         copy(
                             selectedTab = event.tab,
@@ -152,32 +134,20 @@ class LibraryViewModel @Inject internal constructor(
 
             LibraryState.Event.ScreenResumed -> refreshRemoteLists()
             LibraryState.Event.RetrySelected -> {
-                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "retry"))
+                analytics.eventRetry()
                 refreshRemoteLists()
             }
 
             is LibraryState.Event.RemoveLibraryEntry ->
                 viewModelScope.launch {
-                    analyticsTracker.track(
-                        AnalyticsEvents.uiAction(
-                            screenName = SCREEN_NAME,
-                            action = "remove_library_entry",
-                            params = analyticsParamsOf("anime_id" to event.animeId),
-                        )
-                    )
+                    analytics.eventRemoveLibraryEntry(event.animeId)
                     libraryStore.remove(event.animeId)
                     setEffect(LibraryState.Effect.ItemRemoved)
                 }
 
             is LibraryState.Event.RemoveFavoriteEntry ->
                 viewModelScope.launch {
-                    analyticsTracker.track(
-                        AnalyticsEvents.uiAction(
-                            screenName = SCREEN_NAME,
-                            action = "remove_favorite_entry",
-                            params = analyticsParamsOf("anime_id" to event.animeId),
-                        )
-                    )
+                    analytics.eventRemoveFavoriteEntry(event.animeId)
                     libraryStore.setFavorite(
                         event.animeId,
                         title = "",
@@ -189,13 +159,7 @@ class LibraryViewModel @Inject internal constructor(
 
             is LibraryState.Event.RemoveWatchProgress ->
                 viewModelScope.launch {
-                    analyticsTracker.track(
-                        AnalyticsEvents.uiAction(
-                            screenName = SCREEN_NAME,
-                            action = "remove_watch_progress",
-                            params = analyticsParamsOf("anime_id" to event.animeId),
-                        )
-                    )
+                    analytics.eventRemoveWatchProgress(event.animeId)
                     val entries =
                         currentState.continueWatching.filter { it.animeId == event.animeId }
                     watchProgressStore.deleteByAnimeId(event.animeId)
@@ -252,17 +216,11 @@ class LibraryViewModel @Inject internal constructor(
     }
 
     private fun removeRemoteEntry(event: LibraryState.Event.RemoveRemoteEntry) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = "remove_remote_entry",
-                params = analyticsParamsOf(
-                    "anime_id" to event.animeId,
-                    "tab" to currentState.selectedTab.name.lowercase(),
-                    "favorite" to event.favorite,
-                    "list" to event.list?.name?.lowercase(),
-                ),
-            )
+        analytics.eventRemoveRemoteEntry(
+            animeId = event.animeId,
+            tab = currentState.selectedTab,
+            favorite = event.favorite,
+            list = event.list,
         )
         val previous = currentState.remoteItems
         val tab = currentState.selectedTab
@@ -301,19 +259,4 @@ class LibraryViewModel @Inject internal constructor(
         }
     }
 
-    private fun trackAnimeSelected(animeId: Int, source: String) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = "anime_selected",
-                params = analyticsParamsOf(
-                    "anime_id" to animeId,
-                    "source" to source,
-                    "tab" to currentState.selectedTab.name.lowercase(),
-                ),
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "library"

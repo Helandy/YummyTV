@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:analytics"))
     api(project(":core:model"))
 
     implementation(project(":core:navigation"))

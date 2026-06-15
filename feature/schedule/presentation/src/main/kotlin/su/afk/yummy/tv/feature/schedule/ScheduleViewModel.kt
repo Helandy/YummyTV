@@ -3,9 +3,6 @@ package su.afk.yummy.tv.feature.schedule
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -18,14 +15,14 @@ import su.afk.yummy.tv.feature.schedule.utils.withSelectedDay
 import javax.inject.Inject
 
 @HiltViewModel
-class ScheduleViewModel @Inject constructor(
+class ScheduleViewModel @Inject internal constructor(
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val getSchedule: GetAnimeScheduleUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: ScheduleAnalytics,
 ) : BaseViewModelNew<ScheduleState.State, ScheduleState.Event, ScheduleState.Effect>(
     savedStateHandle
 ) {
@@ -39,24 +36,12 @@ class ScheduleViewModel @Inject constructor(
     override fun onEvent(event: ScheduleState.Event) {
         when (event) {
             is ScheduleState.Event.AnimeSelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "anime_selected",
-                        params = analyticsParamsOf("anime_id" to event.animeId),
-                    )
-                )
+                analytics.eventAnimeSelected(event.animeId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
 
             is ScheduleState.Event.DateSelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "date_selected",
-                        params = analyticsParamsOf("epoch_day" to event.epochDay),
-                    )
-                )
+                analytics.eventDateSelected(event.epochDay)
                 setState {
                     copy(tvSchedule = tvSchedule.withSelectedDay(event.epochDay))
                 }
@@ -67,7 +52,7 @@ class ScheduleViewModel @Inject constructor(
             }
 
             ScheduleState.Event.RetrySelected -> {
-                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "retry"))
+                analytics.eventRetry()
                 load()
             }
         }
@@ -101,5 +86,3 @@ class ScheduleViewModel @Inject constructor(
         }
     }
 }
-
-private const val SCREEN_NAME = "schedule"

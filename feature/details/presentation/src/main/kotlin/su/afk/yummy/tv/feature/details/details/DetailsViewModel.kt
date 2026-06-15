@@ -14,9 +14,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -34,6 +31,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
@@ -67,7 +65,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val libraryHandler: DetailsLibraryHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<DetailsState.State, DetailsState.Event, DetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -133,114 +131,96 @@ class DetailsViewModel @AssistedInject internal constructor(
         when (event) {
             DetailsState.Event.BackSelected -> nav.back()
             DetailsState.Event.RetrySelected -> {
-                trackDetailsAction("retry")
+                analytics.eventDetailsRetry(animeId)
                 load()
             }
 
             DetailsState.Event.WatchSelected -> {
-                trackDetailsAction("watch_selected")
+                analytics.eventDetailsWatchSelected(animeId)
                 onWatchSelected()
             }
 
             is DetailsState.Event.AnimeSelected -> {
-                trackDetailsAction(
-                    action = "anime_selected",
-                    params = analyticsParamsOf("target_anime_id" to event.seriesId),
-                )
+                analytics.eventDetailsAnimeSelected(animeId, event.seriesId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
             }
 
             is DetailsState.Event.BalancerConfirmed -> {
-                trackDetailsAction(
-                    action = "balancer_confirmed",
-                    params = analyticsParamsOf("video_id" to event.video.id),
-                )
+                analytics.eventDetailsBalancerConfirmed(animeId, event.video.id)
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
             }
 
             DetailsState.Event.BalancerPickerDismissed -> setState { copy(pendingBalancerSelection = null) }
             DetailsState.Event.FullDetailsSelected -> {
-                trackDetailsAction("full_details_selected")
+                analytics.eventDetailsFullDetailsSelected(animeId)
                 nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
             }
 
             DetailsState.Event.EpisodesSelected -> {
-                trackDetailsAction("episodes_selected")
+                analytics.eventDetailsEpisodesSelected(animeId)
                 nav.navigate(detailsNavigator.getEpisodesDest(animeId))
             }
 
             DetailsState.Event.TrailersSelected -> {
-                trackDetailsAction("trailers_selected")
+                analytics.eventDetailsTrailersSelected(animeId)
                 nav.navigate(detailsNavigator.getTrailersDest(animeId))
             }
 
             DetailsState.Event.SimilarSelected -> {
-                trackDetailsAction("similar_selected")
+                analytics.eventDetailsSimilarSelected(animeId)
                 nav.navigate(detailsNavigator.getSimilarDest(animeId))
             }
 
             DetailsState.Event.ViewingOrderSelected -> {
-                trackDetailsAction("viewing_order_selected")
+                analytics.eventDetailsViewingOrderSelected(animeId)
                 nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
             }
 
             DetailsState.Event.ScreenshotsSelected -> {
-                trackDetailsAction("screenshots_selected")
+                analytics.eventDetailsScreenshotsSelected(animeId)
                 nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
             }
 
             DetailsState.Event.RatingScreenSelected -> {
-                trackDetailsAction("rating_screen_selected")
+                analytics.eventDetailsRatingScreenSelected(animeId)
                 nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
 
             DetailsState.Event.CollectionsSelected -> {
-                trackDetailsAction("collections_selected")
+                analytics.eventDetailsCollectionsSelected(animeId)
                 nav.navigate(detailsNavigator.getCollectionsDest(animeId))
             }
 
             DetailsState.Event.LibraryToggled -> {
-                trackDetailsAction(
-                    action = "library_toggled",
-                    params = analyticsParamsOf("target_state" to (!currentState.isInLibrary)),
-                )
+                analytics.eventDetailsLibraryToggled(animeId, !currentState.isInLibrary)
                 viewModelScope.launch { toggleLibrary() }
             }
 
             DetailsState.Event.FavoriteToggled -> {
-                trackDetailsAction(
-                    action = "favorite_toggled",
-                    params = analyticsParamsOf("target_state" to (!currentState.isFavorite)),
-                )
+                analytics.eventDetailsFavoriteToggled(animeId, !currentState.isFavorite)
                 viewModelScope.launch { toggleFavorite() }
             }
 
             DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
             is DetailsState.Event.LibraryListSelected -> {
-                trackDetailsAction(
-                    action = "library_list_selected",
-                    params = analyticsParamsOf("list" to event.list.name.lowercase()),
-                )
+                analytics.eventDetailsLibraryListSelected(animeId, event.list)
                 viewModelScope.launch { addToLibrary(event.list) }
             }
 
             DetailsState.Event.PosterClicked -> {
-                trackDetailsAction("poster_clicked")
+                analytics.eventDetailsPosterClicked(animeId)
                 setState { copy(showPosterFullscreen = true) }
             }
 
             DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
             is DetailsState.Event.CollectionSelected -> {
-                trackDetailsAction(
-                    action = "collection_selected",
-                    params = analyticsParamsOf("collection_id" to event.collectionId),
-                )
+                analytics.eventDetailsCollectionSelected(animeId, event.collectionId)
                 nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
             }
 
             DetailsState.Event.SubscriptionsRouteSelected -> {
-                trackDetailsAction("subscriptions_route_selected")
+                analytics.eventDetailsSubscriptionsRouteSelected(animeId)
                 nav.navigate(
                     detailsNavigator.getSubscriptionsDest(
                         animeId
@@ -249,7 +229,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             }
 
             DetailsState.Event.SubscriptionsSelected -> {
-                trackDetailsAction("subscriptions_selected")
+                analytics.eventDetailsSubscriptionsSelected(animeId)
                 setState { copy(showSubscriptionsPicker = true) }
             }
 
@@ -484,12 +464,10 @@ class DetailsViewModel @AssistedInject internal constructor(
         if (!currentState.isSignedIn) return
         val option = currentState.subscriptions.firstOrNull { it.key == key } ?: return
         val wasSubscribed = option.isSubscribed
-        trackDetailsAction(
-            action = "subscription_toggled",
-            params = analyticsParamsOf(
-                "video_id" to option.representativeVideoId,
-                "target_state" to (!wasSubscribed),
-            ),
+        analytics.eventDetailsSubscriptionToggled(
+            animeId = animeId,
+            videoId = option.representativeVideoId,
+            targetState = !wasSubscribed,
         )
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
@@ -565,18 +543,4 @@ class DetailsViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun trackDetailsAction(
-        action: String,
-        params: Map<String, String> = emptyMap(),
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = action,
-                params = analyticsParamsOf("anime_id" to animeId) + params,
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "details"

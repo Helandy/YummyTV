@@ -44,10 +44,16 @@ internal class PlayerStreamHandler @Inject constructor(
                 PlayerStreamResult.KodikBlocked(message = result.toMessage())
 
             PlayerStreamResolveResult.Failed ->
-                PlayerStreamResult.PlayerError(strings.get(R.string.player_stream_error))
+                PlayerStreamResult.PlayerError(
+                    message = strings.get(R.string.player_stream_error),
+                    reason = PlayerStreamResult.REASON_FAILED,
+                )
 
             PlayerStreamResolveResult.Unsupported ->
-                PlayerStreamResult.PlayerError(strings.get(R.string.player_unsupported))
+                PlayerStreamResult.PlayerError(
+                    message = strings.get(R.string.player_unsupported),
+                    reason = PlayerStreamResult.REASON_UNSUPPORTED,
+                )
         }
     }
 
@@ -84,5 +90,15 @@ internal sealed interface PlayerStreamResult {
     ) : PlayerStreamResult
 
     data class KodikBlocked(val message: String) : PlayerStreamResult
-    data class PlayerError(val message: String) : PlayerStreamResult
+    data class PlayerError(
+        val message: String,
+        val reason: String,
+    ) : PlayerStreamResult
+
+    companion object {
+        const val REASON_EXCEPTION = "exception"
+        const val REASON_FAILED = "failed"
+        const val REASON_KODIK_BLOCKED = "kodik_blocked"
+        const val REASON_UNSUPPORTED = "unsupported"
+    }
 }

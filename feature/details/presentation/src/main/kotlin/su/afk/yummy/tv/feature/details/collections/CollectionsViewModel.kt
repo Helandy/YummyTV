@@ -6,18 +6,16 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 
 @HiltViewModel(assistedFactory = CollectionsViewModel.Factory::class)
-class CollectionsViewModel @AssistedInject constructor(
+class CollectionsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
@@ -25,7 +23,7 @@ class CollectionsViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val collectionNavigator: ICollectionNavigator,
     private val getAnimeCollections: GetAnimeCollectionsUseCase,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<CollectionsState.State, CollectionsState.Event, CollectionsState.Effect>(
     savedStateHandle
 ) {
@@ -45,15 +43,12 @@ class CollectionsViewModel @AssistedInject constructor(
         when (event) {
             CollectionsState.Event.BackSelected -> nav.back()
             CollectionsState.Event.RetrySelected -> {
-                trackCollectionsAction("retry")
+                analytics.eventCollectionsRetry(animeId)
                 viewModelScope.launch { load() }
             }
 
             is CollectionsState.Event.CollectionSelected -> {
-                trackCollectionsAction(
-                    action = "collection_selected",
-                    params = analyticsParamsOf("collection_id" to event.collectionId),
-                )
+                analytics.eventCollectionsCollectionSelected(animeId, event.collectionId)
                 nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
             }
         }
@@ -71,18 +66,4 @@ class CollectionsViewModel @AssistedInject constructor(
         )
     }
 
-    private fun trackCollectionsAction(
-        action: String,
-        params: Map<String, String> = emptyMap(),
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = action,
-                params = analyticsParamsOf("anime_id" to animeId) + params,
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "details_collections"

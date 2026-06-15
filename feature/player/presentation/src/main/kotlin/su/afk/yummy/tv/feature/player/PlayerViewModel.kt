@@ -5,13 +5,11 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -43,7 +41,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val settingsHandler: PlayerSettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: PlayerAnalytics,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -89,31 +87,37 @@ class PlayerViewModel @AssistedInject internal constructor(
         when (event) {
             PlayerState.Event.Back -> nav.back()
             PlayerState.Event.RetryStream -> {
-                trackPlayerAction("retry_stream")
+                analytics.eventRetryStream(currentState.animeId)
                 setState { copy(retryKey = retryKey + 1) }
                 loadStream()
             }
+
             PlayerState.Event.RateTitle -> {
-                trackPlayerAction("rate_title")
+                analytics.eventRateTitle(currentState.animeId)
                 val animeId = currentState.animeId
                 if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
             }
+
             is PlayerState.Event.PlaybackError -> {
-                analyticsTracker.track(AnalyticsEvents.playerError(playerAnalyticsParams()))
+                analytics.eventPlaybackError(currentState.animeId)
                 setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
             }
+
             PlayerState.Event.PrevEpisode -> {
-                trackPlayerAction("prev_episode")
+                analytics.eventPrevEpisode(currentState.animeId)
                 applySourceSelection(sourceSelectionHandler.previousEpisode(currentState))
             }
+
             PlayerState.Event.NextEpisode -> {
-                trackPlayerAction("next_episode")
+                analytics.eventNextEpisode(currentState.animeId)
                 applySourceSelection(sourceSelectionHandler.nextEpisode(currentState))
             }
+
             is PlayerState.Event.DubbingSelected -> {
-                trackPlayerAction(
-                    action = "dubbing_selected",
-                    params = analyticsParamsOf("index" to event.index),
+                analytics.eventDubbingSelected(
+                    state = currentState,
+                    index = event.index,
+                    positionMs = event.currentPosMs,
                 )
                 applySourceSelection(
                     sourceSelectionHandler.selectDubbing(
@@ -124,10 +128,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                     sourceScopeChanged = true,
                 )
             }
+
             is PlayerState.Event.BalancerSelected -> {
-                trackPlayerAction(
-                    action = "balancer_selected",
-                    params = analyticsParamsOf("index" to event.index),
+                analytics.eventBalancerSelected(
+                    state = currentState,
+                    index = event.index,
+                    positionMs = event.currentPosMs,
                 )
                 applySourceSelection(
                     sourceSelectionHandler.selectBalancer(
@@ -138,11 +144,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                     sourceScopeChanged = true,
                 )
             }
+
             is PlayerState.Event.QualitySelected -> {
-                trackPlayerAction(
-                    action = "quality_selected",
-                    params = analyticsParamsOf("quality" to event.quality),
-                )
+                analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
                 setState {
                     copy(
@@ -154,18 +158,12 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.SpeedSelected -> {
-                trackPlayerAction(
-                    action = "speed_selected",
-                    params = analyticsParamsOf("speed" to event.speed),
-                )
+                analytics.eventSpeedSelected(currentState.animeId, event.speed)
                 setState { copy(selectedSpeed = event.speed.coerceAtLeast(0.1f)) }
             }
 
             is PlayerState.Event.ResizeModeSelected -> {
-                trackPlayerAction(
-                    action = "resize_mode_selected",
-                    params = analyticsParamsOf("mode" to event.mode.name.lowercase()),
-                )
+                analytics.eventResizeModeSelected(currentState.animeId, event.mode)
                 val settings = PlayerResizeSettings(
                     resizeMode = event.mode,
                     zoomLevel = currentState.zoomLevel,
@@ -175,10 +173,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.ZoomLevelSelected -> {
-                trackPlayerAction(
-                    action = "zoom_level_selected",
-                    params = analyticsParamsOf("level" to event.level.name.lowercase()),
-                )
+                analytics.eventZoomLevelSelected(currentState.animeId, event.level)
                 val settings = PlayerResizeSettings(
                     resizeMode = PlayerResizeMode.ZOOM,
                     zoomLevel = event.level,
@@ -214,6 +209,18 @@ class PlayerViewModel @AssistedInject internal constructor(
                     )
                 }
             }
+
+            is PlayerState.Event.SeekPerformed -> Unit
+
+            is PlayerState.Event.SkipSegmentSelected -> {
+                analytics.eventSkipSegmentSelected(
+                    state = currentState,
+                    type = event.type,
+                    fromMs = event.fromMs,
+                    toMs = event.toMs,
+                )
+            }
+
             is PlayerState.Event.SaveProgress -> {
                 val s = currentState
                 val snapshot = event.snapshot
@@ -335,40 +342,65 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
             val s = currentState
             val pendingResume = s.dubbingResumeMs.takeIf { it >= 0L }
-            when (val result = streamHandler.resolve(s, pendingResume)) {
-                is PlayerStreamResult.Stream -> setState {
+            val result = try {
+                streamHandler.resolve(s, pendingResume)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Throwable) {
+                analytics.eventStreamResolveFailed(
+                    state = s,
+                    reason = PlayerStreamResult.REASON_EXCEPTION,
+                    throwable = exception,
+                )
+                setState {
                     copy(
-                        streamHeaders = result.headers,
-                        streamQualityMap = result.qualities,
-                        streamUrl = result.url,
-                        resumeFromMs = result.resumeFromMs,
-                        dubbingResumeMs = if (result.consumedPendingResume) -1L else dubbingResumeMs,
+                        streamUrl = null,
+                        streamHeaders = emptyMap(),
+                        streamQualityMap = null,
+                        playerError = streamHandler.playbackErrorMessage(
+                            exception.localizedMessage ?: exception.message.orEmpty()
+                        ),
                     )
                 }
-
-                is PlayerStreamResult.KodikBlocked -> setState {
-                    copy(kodikBlockedError = result.message)
+                return@launch
+            }
+            when (result) {
+                is PlayerStreamResult.Stream -> {
+                    analytics.eventStreamStarted(s)
+                    setState {
+                        copy(
+                            streamHeaders = result.headers,
+                            streamQualityMap = result.qualities,
+                            streamUrl = result.url,
+                            resumeFromMs = result.resumeFromMs,
+                            dubbingResumeMs = if (result.consumedPendingResume) -1L else dubbingResumeMs,
+                        )
+                    }
                 }
 
-                is PlayerStreamResult.PlayerError -> setState {
-                    copy(playerError = result.message)
+                is PlayerStreamResult.KodikBlocked -> {
+                    analytics.eventStreamResolveFailed(
+                        state = s,
+                        reason = PlayerStreamResult.REASON_KODIK_BLOCKED,
+                        message = result.message,
+                    )
+                    setState {
+                        copy(kodikBlockedError = result.message)
+                    }
+                }
+
+                is PlayerStreamResult.PlayerError -> {
+                    analytics.eventStreamResolveFailed(
+                        state = s,
+                        reason = result.reason,
+                        message = result.message,
+                    )
+                    setState {
+                        copy(playerError = result.message)
+                    }
                 }
             }
         }
     }
 
-    private fun trackPlayerAction(
-        action: String,
-        params: Map<String, String> = emptyMap(),
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.playerAction(
-                action = action,
-                params = playerAnalyticsParams() + params,
-            )
-        )
-    }
-
-    private fun playerAnalyticsParams(): Map<String, String> =
-        analyticsParamsOf("anime_id" to currentState.animeId.takeIf { it > 0 })
 }

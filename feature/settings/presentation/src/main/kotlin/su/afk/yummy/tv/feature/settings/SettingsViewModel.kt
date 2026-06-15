@@ -5,8 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
@@ -18,14 +16,14 @@ import su.afk.yummy.tv.feature.settings.utils.moved
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
+class SettingsViewModel @Inject internal constructor(
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
     private val tvIntegration: ITvIntegration,
     private val nav: NavigationManager,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: SettingsAnalytics,
 ) : BaseViewModelNew<SettingsState.State, SettingsState.Event, SettingsState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = SettingsState.State()
@@ -58,42 +56,37 @@ class SettingsViewModel @Inject constructor(
         when (event) {
             SettingsState.Event.BackSelected -> nav.back()
             is SettingsState.Event.AppThemeSelected -> viewModelScope.launch {
-                trackSettingChange("app_theme", event.theme.name.lowercase())
+                analytics.eventAppThemeSelected(event.theme)
                 settingsStore.setAppTheme(event.theme)
             }
             is SettingsState.Event.PosterQualitySelected -> viewModelScope.launch {
-                trackSettingChange("poster_quality", event.quality.name.lowercase())
+                analytics.eventPosterQualitySelected(event.quality)
                 settingsStore.setPosterQuality(event.quality)
             }
             is SettingsState.Event.PosterCardSizeSelected -> viewModelScope.launch {
-                trackSettingChange("poster_card_size", event.size.name.lowercase())
+                analytics.eventPosterCardSizeSelected(event.size)
                 settingsStore.setPosterCardSize(event.size)
             }
             is SettingsState.Event.PreferredPlayerSelected -> viewModelScope.launch {
-                trackSettingChange("preferred_player", event.player.name.lowercase())
+                analytics.eventPreferredPlayerSelected(event.player)
                 settingsStore.setPreferredPlayer(event.player)
             }
             SettingsState.Event.RequestPreviewChannelBrowsable -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "request_preview_channel_browsable",
-                    )
-                )
+                analytics.eventRequestPreviewChannelBrowsable()
                 tvIntegration.requestPreviewChannelBrowsable()
             }
             SettingsState.Event.WatchNextToggled -> viewModelScope.launch {
                 val enabled = !currentState.watchNextEnabled
-                trackSettingChange("watch_next_enabled", enabled.toString())
+                analytics.eventWatchNextToggled(enabled)
                 settingsStore.setWatchNextEnabled(enabled)
             }
             is SettingsState.Event.PreviewCacheSizeSelected -> viewModelScope.launch {
-                trackSettingChange("preview_cache_size", event.size.name.lowercase())
+                analytics.eventPreviewCacheSizeSelected(event.size)
                 settingsStore.setPreviewCacheSize(event.size)
             }
             SettingsState.Event.AutoSkipOpeningsEndingsToggled -> viewModelScope.launch {
                 val enabled = !currentState.autoSkipOpeningsEndings
-                trackSettingChange("auto_skip_openings_endings", enabled.toString())
+                analytics.eventAutoSkipOpeningsEndingsToggled(enabled)
                 settingsStore.setAutoSkipOpeningsEndings(enabled)
             }
             is SettingsState.Event.YaniApplicationTokenChanged -> {
@@ -103,37 +96,23 @@ class SettingsViewModel @Inject constructor(
                 }
             }
             is SettingsState.Event.ContentLanguageSelected -> viewModelScope.launch {
-                trackSettingChange("content_language", event.language.name.lowercase())
+                analytics.eventContentLanguageSelected(event.language)
                 settingsStore.setYaniContentLanguage(event.language)
             }
             is SettingsState.Event.DetailsButtonMoved -> viewModelScope.launch {
-                trackSettingChange(
-                    setting = "details_button_order",
-                    value = "${event.action.name.lowercase()}_${event.direction.name.lowercase()}",
-                )
+                analytics.eventDetailsButtonMoved(event.action, event.direction)
                 settingsStore.setDetailsButtonOrder(
                     currentState.detailsButtonOrder.moved(event.action, event.direction),
                 )
             }
             SettingsState.Event.DetailsButtonOrderSelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "details_button_order_selected",
-                    )
-                )
+                analytics.eventDetailsButtonOrderSelected()
                 nav.navigate(SettingsDetailsButtonOrderDestination)
             }
             SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {
-                trackSettingChange("details_button_order", "reset")
+                analytics.eventDetailsButtonOrderReset()
                 settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)
             }
         }
     }
-
-    private fun trackSettingChange(setting: String, value: String) {
-        analyticsTracker.track(AnalyticsEvents.settingChange(setting, value))
-    }
 }
-
-private const val SCREEN_NAME = "settings"

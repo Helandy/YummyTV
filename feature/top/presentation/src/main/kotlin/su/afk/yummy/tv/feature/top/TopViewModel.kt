@@ -3,9 +3,6 @@ package su.afk.yummy.tv.feature.top
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -28,7 +25,7 @@ class TopViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeTop: GetAnimeTopUseCase,
     private val stringProvider: StringProvider,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: TopAnalytics,
 ) : BaseViewModelNew<TopState.State, TopState.Event, TopState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = TopState.State()
@@ -45,13 +42,7 @@ class TopViewModel @Inject internal constructor(
         when (event) {
             is TopState.Event.TypeSelected -> {
                 if (event.type != currentState.selectedType) {
-                    analyticsTracker.track(
-                        AnalyticsEvents.uiAction(
-                            screenName = SCREEN_NAME,
-                            action = "type_selected",
-                            params = analyticsParamsOf("type" to event.type.name.lowercase()),
-                        )
-                    )
+                    analytics.eventTypeSelected(event.type)
                     setState {
                         copy(
                             selectedType = event.type,
@@ -67,13 +58,7 @@ class TopViewModel @Inject internal constructor(
             }
 
             is TopState.Event.AnimeSelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "anime_selected",
-                        params = analyticsParamsOf("anime_id" to event.animeId),
-                    )
-                )
+                analytics.eventAnimeSelected(event.animeId)
                 setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
@@ -93,7 +78,7 @@ class TopViewModel @Inject internal constructor(
             }
 
             TopState.Event.RetrySelected -> {
-                analyticsTracker.track(AnalyticsEvents.uiAction(SCREEN_NAME, "retry"))
+                analytics.eventRetry()
                 load(
                     currentState.selectedType,
                     offset = 0,
@@ -164,5 +149,3 @@ class TopViewModel @Inject internal constructor(
             canLoadMore = { it.canLoadMore },
         )
 }
-
-private const val SCREEN_NAME = "top"

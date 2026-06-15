@@ -39,6 +39,7 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.feature.player.PlayerSeekSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
@@ -178,13 +179,14 @@ internal fun MobileNativePlayer(
         ) ?: return
         onEvent(
             PlayerState.Event.SaveProgress(
-                snapshot
+                snapshot = snapshot,
             )
         )
         lastSaveTime = System.currentTimeMillis()
     }
 
-    fun seekToPosition(positionMs: Long) {
+    fun seekToPosition(positionMs: Long, seekSource: PlayerSeekSource? = null) {
+        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
         val playerDuration = exoPlayer.duration.takeIf { it > 0 } ?: duration
         val clamped = if (playerDuration > 0) {
             positionMs.coerceIn(0L, playerDuration)
@@ -192,6 +194,16 @@ internal fun MobileNativePlayer(
             positionMs.coerceAtLeast(0L)
         }
         exoPlayer.seekTo(clamped)
+        if (seekSource != null && clamped != fromPosition) {
+            onEvent(
+                PlayerState.Event.SeekPerformed(
+                    fromMs = fromPosition,
+                    toMs = clamped,
+                    durationMs = playerDuration.coerceAtLeast(0L),
+                    source = seekSource,
+                )
+            )
+        }
         onEvent(
             PlayerState.Event.PlaybackPositionChanged(
                 clamped,
@@ -204,7 +216,7 @@ internal fun MobileNativePlayer(
     fun stepSeek(direction: MobileSeekDirection) {
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekToPosition(exoPlayer.currentPosition + offset)
+        seekToPosition(exoPlayer.currentPosition + offset, PlayerSeekSource.DoubleTap)
         stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
@@ -228,6 +240,18 @@ internal fun MobileNativePlayer(
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
                 MobilePlayerPipController.setAspectRatio(videoSize.width, videoSize.height)
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                    val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+                    onEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    saveProgress(
+                        positionMs = position,
+                        durationMs = dur,
+                    )
+                }
             }
         }
         exoPlayer.addListener(listener)
@@ -323,6 +347,7 @@ internal fun MobileNativePlayer(
                     ) {
                         skippedSegments += segmentKey
                         exoPlayer.seekTo(segment.endMs)
+                        onEvent(PlayerState.Event.PlaybackPositionChanged(segment.endMs, dur))
                     }
                 }
             }
@@ -417,9 +442,7 @@ internal fun MobileNativePlayer(
             onSeekFinished = {
                 if (duration > 0) {
                     val newPosition = (seekProgress * duration).toLong().coerceIn(0L, duration)
-                    exoPlayer.seekTo(newPosition)
-                    onEvent(PlayerState.Event.PlaybackPositionChanged(newPosition, duration))
-                    saveProgress(newPosition)
+                    seekToPosition(newPosition, PlayerSeekSource.Slider)
                 }
                 isSeeking = false
                 showOverlay()

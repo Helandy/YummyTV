@@ -17,6 +17,18 @@ data class PlayerProgressSnapshot(
     val durationMs: Long,
 )
 
+enum class PlayerSeekSource {
+    DoubleTap,
+    ProgressBar,
+    RemoteStep,
+    Slider,
+}
+
+enum class PlayerSkipType {
+    Opening,
+    Ending,
+}
+
 class PlayerState {
     data class State(
         val animeTitle: String = "",
@@ -59,8 +71,22 @@ class PlayerState {
             val offsetX: Float,
             val offsetY: Float,
         ) : Event
+
         data class PlaybackPositionChanged(val positionMs: Long, val durationMs: Long) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
+        data class SeekPerformed(
+            val fromMs: Long,
+            val toMs: Long,
+            val durationMs: Long,
+            val source: PlayerSeekSource,
+        ) : Event
+
+        data class SkipSegmentSelected(
+            val type: PlayerSkipType,
+            val fromMs: Long,
+            val toMs: Long,
+        ) : Event
+
         data class PlaybackError(val message: String) : Event
         data object RetryStream : Event
         data object RateTitle : Event

@@ -2,6 +2,7 @@ package su.afk.yummy.tv.core.error
 
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.analytics.ErrorAnalyticsReporter
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorNavigator
@@ -11,7 +12,12 @@ import javax.inject.Inject
 
 /** Converts thrown errors into user-facing error items and optionally opens the error screen. */
 interface IErrorHandlerUseCase {
-    fun parse(t: Throwable, navigate: Boolean = false, retryKey: String? = null): ErrorItem
+    fun parse(
+        t: Throwable,
+        navigate: Boolean = false,
+        retryKey: String? = null,
+        owner: String? = null,
+    ): ErrorItem
 }
 
 /** Default error mapper for network, HTTP, and generic application failures. */
@@ -19,10 +25,25 @@ class ErrorHandlerUseCaseImpl @Inject constructor(
     private val strings: StringProvider,
     private val errorNavigator: IErrorNavigator,
     private val navigationManager: NavigationManager,
+    private val errorAnalyticsReporter: ErrorAnalyticsReporter,
 ) : IErrorHandlerUseCase {
 
-    override fun parse(t: Throwable, navigate: Boolean, retryKey: String?): ErrorItem {
+    override fun parse(
+        t: Throwable,
+        navigate: Boolean,
+        retryKey: String?,
+        owner: String?,
+    ): ErrorItem {
         if (t is CancellationException) throw t
+
+        owner?.let {
+            runCatching {
+                errorAnalyticsReporter.reportCoroutineError(
+                    owner = it,
+                    throwable = t,
+                )
+            }
+        }
 
         val base = when (t) {
             is ResponseException -> parseKtorResponse(t)

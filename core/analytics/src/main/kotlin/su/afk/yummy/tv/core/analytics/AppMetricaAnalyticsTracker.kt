@@ -7,14 +7,14 @@ internal class AppMetricaAnalyticsTracker @Inject constructor(
     private val analyticsContext: AnalyticsContext,
 ) : AnalyticsTracker {
 
-    override fun track(event: AnalyticsEvent) {
-        val eventName = event.name.trim()
+    override fun track(eventName: String, params: Map<String, String>) {
+        val eventName = eventName.trim()
         if (eventName.isEmpty()) return
-        val params = analyticsContext.params + event.params
-        if (params.isEmpty()) {
+        val mergedParams = analyticsContext.params + params
+        if (mergedParams.isEmpty()) {
             AppMetrica.reportEvent(eventName)
         } else {
-            AppMetrica.reportEvent(eventName, params)
+            AppMetrica.reportEvent(eventName, mergedParams)
         }
     }
 }

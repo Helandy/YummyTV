@@ -6,9 +6,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -19,10 +16,11 @@ import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @HiltViewModel(assistedFactory = RatingViewModel.Factory::class)
-class RatingViewModel @AssistedInject constructor(
+class RatingViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
@@ -34,7 +32,7 @@ class RatingViewModel @AssistedInject constructor(
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
     private val stringProvider: StringProvider,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<RatingState.State, RatingState.Event, RatingState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -52,7 +50,7 @@ class RatingViewModel @AssistedInject constructor(
         when (event) {
             RatingState.Event.BackSelected -> nav.back()
             RatingState.Event.RetrySelected -> {
-                trackRatingAction("retry")
+                analytics.eventRatingRetry(animeId)
                 load()
             }
             is RatingState.Event.RatingSelected -> setRating(event.rating)
@@ -93,10 +91,7 @@ class RatingViewModel @AssistedInject constructor(
     }
 
     private fun setRating(rating: Int) {
-        trackRatingAction(
-            action = "rating_selected",
-            params = analyticsParamsOf("rating" to rating),
-        )
+        analytics.eventRatingSelected(animeId, rating)
         val previous = currentState.selectedUserRating
         setState { copy(selectedUserRating = rating) }
         viewModelScope.launch {
@@ -110,7 +105,7 @@ class RatingViewModel @AssistedInject constructor(
     }
 
     private fun deleteRating() {
-        trackRatingAction("rating_deleted")
+        analytics.eventRatingDeleted(animeId)
         val previous = currentState.selectedUserRating
         setState { copy(selectedUserRating = null) }
         viewModelScope.launch {
@@ -128,18 +123,4 @@ class RatingViewModel @AssistedInject constructor(
             .onSuccess { summary -> setState { copy(ratingSummary = summary) } }
     }
 
-    private fun trackRatingAction(
-        action: String,
-        params: Map<String, String> = emptyMap(),
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = action,
-                params = analyticsParamsOf("anime_id" to animeId) + params,
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "details_rating"

@@ -6,13 +6,11 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.ScreenSubscriptionBaseResult
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
@@ -25,7 +23,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val subscriptionHandler: DetailsSubscriptionHandler,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<SubscriptionsState.State, SubscriptionsState.Event, SubscriptionsState.Effect>(
     savedStateHandle
 ) {
@@ -45,7 +43,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
         when (event) {
             SubscriptionsState.Event.BackSelected -> nav.back()
             SubscriptionsState.Event.RetrySelected -> {
-                trackSubscriptionsAction("retry")
+                analytics.eventSubscriptionsRetry(animeId)
                 viewModelScope.launch { load() }
             }
             is SubscriptionsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
@@ -111,12 +109,10 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
     private fun toggleSubscription(key: String) {
         val option = currentState.subscriptions.firstOrNull { it.key == key } ?: return
         val wasSubscribed = option.isSubscribed
-        trackSubscriptionsAction(
-            action = "subscription_toggled",
-            params = analyticsParamsOf(
-                "video_id" to option.representativeVideoId,
-                "target_state" to (!wasSubscribed),
-            ),
+        analytics.eventSubscriptionsSubscriptionToggled(
+            animeId = animeId,
+            videoId = option.representativeVideoId,
+            targetState = !wasSubscribed,
         )
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
@@ -142,18 +138,4 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun trackSubscriptionsAction(
-        action: String,
-        params: Map<String, String> = emptyMap(),
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = action,
-                params = analyticsParamsOf("anime_id" to animeId) + params,
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "details_subscriptions"

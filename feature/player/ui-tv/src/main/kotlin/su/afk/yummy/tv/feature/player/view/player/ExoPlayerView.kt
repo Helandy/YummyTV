@@ -54,11 +54,15 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
+import su.afk.yummy.tv.feature.player.PlayerSeekSource
+import su.afk.yummy.tv.feature.player.PlayerSkipType
 import su.afk.yummy.tv.feature.player.PlayerSkips
+import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
+import su.afk.yummy.tv.feature.player.model.ActiveSkipType
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.SeekDirection
@@ -81,6 +85,7 @@ internal fun ExoPlayerView(
     episodeKey: String = "",
     resumeFromMs: Long = 0L,
     onSaveProgress: (PlayerProgressSnapshot) -> Unit = {},
+    onPlayerEvent: (PlayerState.Event) -> Unit = {},
     animeTitle: String = "",
     episode: String = "",
     videoId: Int = 0,
@@ -127,6 +132,7 @@ internal fun ExoPlayerView(
     val activeSpeed = selectedSpeed.coerceAtLeast(0.1f)
     var seekOnSwitch by remember(streamUrl) { mutableLongStateOf(resumeFromMs) }
     var lastSaveTime by remember { mutableLongStateOf(0L) }
+    var lastPositionNotifyTime by remember { mutableLongStateOf(0L) }
     var wantsPlay by remember { mutableStateOf(true) }
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
@@ -208,7 +214,7 @@ internal fun ExoPlayerView(
             }
     }
 
-    fun saveProgressIfReady(positionMs: Long = currentPosition) {
+    fun saveProgressIfReady(positionMs: Long = currentPosition, durationMs: Long = duration) {
         val snapshot = buildTvProgressSnapshot(
             episodeKey = episodeKey,
             episode = episode,
@@ -217,25 +223,42 @@ internal fun ExoPlayerView(
             dubbing = dubbing,
             screenshotUrl = screenshotUrl,
             positionMs = positionMs,
-            durationMs = duration,
+            durationMs = durationMs,
         ) ?: return
         onSaveProgress(snapshot)
         lastSaveTime = System.currentTimeMillis()
     }
 
-    fun seekTo(positionMs: Long) {
+    fun seekTo(positionMs: Long, seekSource: PlayerSeekSource? = null) {
+        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+        val playerDuration = duration.coerceAtLeast(0L)
         val clamped =
-            if (duration > 0) positionMs.coerceIn(0L, duration) else positionMs.coerceAtLeast(0)
+            if (playerDuration > 0) {
+                positionMs.coerceIn(0L, playerDuration)
+            } else {
+                positionMs.coerceAtLeast(0)
+            }
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
+        if (seekSource != null && clamped != fromPosition) {
+            onPlayerEvent(
+                PlayerState.Event.SeekPerformed(
+                    fromMs = fromPosition,
+                    toMs = clamped,
+                    durationMs = playerDuration,
+                    source = seekSource,
+                )
+            )
+        }
+        onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(clamped, playerDuration))
         saveProgressIfReady(clamped)
     }
 
     fun stepSeek(direction: SeekDirection) {
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekTo(exoPlayer.currentPosition + offset)
+        seekTo(exoPlayer.currentPosition + offset, PlayerSeekSource.RemoteStep)
         stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
@@ -294,7 +317,7 @@ internal fun ExoPlayerView(
     val activeSkip = currentSkip(skips, currentPosition, dismissedSkipKeys)
     val activeSkipKey = activeSkip?.key
 
-    fun skipActiveSegment() {
+    fun skipActiveSegment(reportSelection: Boolean = true) {
         val skip = activeSkip ?: return
         if (skip.key !in dismissedSkipKeys) dismissedSkipKeys += skip.key
         highlightedSkipKey = null
@@ -309,6 +332,16 @@ internal fun ExoPlayerView(
             delay(3_000)
             if (skipSnackbarText == message) skipSnackbarText = null
         }
+        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+        if (reportSelection) {
+            onPlayerEvent(
+                PlayerState.Event.SkipSegmentSelected(
+                    type = skip.type.toPlayerSkipType(),
+                    fromMs = fromPosition,
+                    toMs = skip.segment.endMs,
+                )
+            )
+        }
         seekTo(skip.segment.endMs)
         onInteraction()
     }
@@ -317,7 +350,16 @@ internal fun ExoPlayerView(
     DisposableEffect(lifecycleOwner, exoPlayer) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE -> exoPlayer.pause()
+                Lifecycle.Event.ON_PAUSE -> {
+                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                    val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+                    onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    saveProgressIfReady(
+                        positionMs = position,
+                        durationMs = dur,
+                    )
+                    exoPlayer.pause()
+                }
                 Lifecycle.Event.ON_RESUME -> if (wantsPlay) exoPlayer.play()
                 else -> Unit
             }
@@ -336,7 +378,13 @@ internal fun ExoPlayerView(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
-                    saveProgressIfReady()
+                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                    val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+                    onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    saveProgressIfReady(
+                        positionMs = position,
+                        durationMs = dur,
+                    )
                     if (hasNextEpisode) {
                         showNextEpisodePrompt = true
                         controllerVisible = true
@@ -363,7 +411,13 @@ internal fun ExoPlayerView(
             skipSnackbarJob?.cancel()
             stepSeekToastJob?.cancel()
             exoPlayer.removeListener(listener)
-            saveProgressIfReady()
+            val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+            val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+            onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+            saveProgressIfReady(
+                positionMs = position,
+                durationMs = dur,
+            )
             exoPlayer.release()
         }
     }
@@ -381,6 +435,10 @@ internal fun ExoPlayerView(
             val dur = exoPlayer.duration
             if (dur > 0) duration = dur
             val now = System.currentTimeMillis()
+            if (!isSeeking && duration > 0 && now - lastPositionNotifyTime >= 1_000L) {
+                onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(currentPosition, duration))
+                lastPositionNotifyTime = now
+            }
             if (episodeKey.isNotBlank() && duration > 0 && now - lastSaveTime > 10_000L) {
                 saveProgressIfReady()
             }
@@ -480,7 +538,7 @@ internal fun ExoPlayerView(
     LaunchedEffect(activeSkipKey, autoSkipOpeningsEndings) {
         val skip = activeSkip ?: return@LaunchedEffect
         if (autoSkipOpeningsEndings) {
-            skipActiveSegment()
+            skipActiveSegment(reportSelection = false)
         } else {
             highlightedSkipKey = skip.key
             controllerVisible = true
@@ -595,7 +653,7 @@ internal fun ExoPlayerView(
                             horizontalArrangement = Arrangement.End,
                         ) {
                             ControlButton(
-                                onClick = ::skipActiveSegment,
+                                onClick = { skipActiveSegment() },
                                 onFocused = ::onInteraction,
                                 focusRequester = skipFocusRequester,
                                 primary = highlightedSkipKey == activeSkip.key,
@@ -620,7 +678,11 @@ internal fun ExoPlayerView(
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
                             if (isSeeking) {
-                                seekTo((seekProgress * duration).toLong()); isSeeking = false
+                                seekTo(
+                                    (seekProgress * duration).toLong(),
+                                    PlayerSeekSource.ProgressBar,
+                                )
+                                isSeeking = false
                             }
                         },
                         onInteraction = ::onInteraction,
@@ -859,3 +921,9 @@ internal fun ExoPlayerView(
         )
     }
 }
+
+private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
+    when (this) {
+        ActiveSkipType.Opening -> PlayerSkipType.Opening
+        ActiveSkipType.Ending -> PlayerSkipType.Ending
+    }

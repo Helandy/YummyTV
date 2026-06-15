@@ -11,6 +11,8 @@ import su.afk.yummy.tv.core.analytics.AppMetricaAnalyticsInitializer
 import su.afk.yummy.tv.core.analytics.AppMetricaAnalyticsTracker
 import su.afk.yummy.tv.core.analytics.BuildConfig
 import su.afk.yummy.tv.core.analytics.DefaultAnalyticsContext
+import su.afk.yummy.tv.core.analytics.DefaultErrorAnalyticsReporter
+import su.afk.yummy.tv.core.analytics.ErrorAnalyticsReporter
 import su.afk.yummy.tv.core.analytics.LogcatAnalyticsTracker
 import su.afk.yummy.tv.core.analytics.NoOpAnalyticsInitializer
 import javax.inject.Singleton
@@ -38,4 +40,11 @@ internal object AnalyticsModule {
         noOpAnalyticsInitializer: NoOpAnalyticsInitializer,
     ): AnalyticsInitializer =
         if (BuildConfig.DEBUG) noOpAnalyticsInitializer else appMetricaAnalyticsInitializer
+
+    @Provides
+    @Singleton
+    fun provideErrorAnalyticsReporter(
+        defaultErrorAnalyticsReporter: DefaultErrorAnalyticsReporter,
+    ): ErrorAnalyticsReporter =
+        defaultErrorAnalyticsReporter
 }

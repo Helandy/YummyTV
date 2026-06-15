@@ -53,7 +53,12 @@ abstract class BaseViewModelNew<S : UiState, E : UiEvent, F : UiEffect>(
     override fun onError(exception: Throwable) {
         val retryKey = "${this::class.java.simpleName}:${System.nanoTime()}"
         retryStorage.put(retryKey) { onRetry() }
-        errorHandler.parse(exception, navigate = true, retryKey = retryKey)
+        errorHandler.parse(
+            t = exception,
+            navigate = true,
+            retryKey = retryKey,
+            owner = this::class.java.simpleName,
+        )
     }
 
     protected open fun onRetry() {}

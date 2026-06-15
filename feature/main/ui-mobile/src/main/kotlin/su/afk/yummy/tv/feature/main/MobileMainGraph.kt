@@ -26,8 +26,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.AnalyticsContext
 import su.afk.yummy.tv.core.analytics.AnalyticsDestination
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
+import su.afk.yummy.tv.core.analytics.StartupPerformanceTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -50,15 +49,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MobileMainGraph @Inject constructor(
+class MobileMainGraph @Inject internal constructor(
     private val navManager: NavigationManager,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: MobileMainAnalytics,
     private val analyticsContext: AnalyticsContext,
+    private val startupPerformanceTracker: StartupPerformanceTracker,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
+
+    init {
+        analyticsContext.setSurface(AnalyticsEvents.SURFACE_MOBILE)
+    }
+
     @Composable
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
@@ -101,28 +106,6 @@ class MobileMainGraph @Inject constructor(
             }
 
             LaunchedEffect(Unit) {
-                analyticsContext.setParam(
-                    AnalyticsEvents.PARAM_SURFACE,
-                    AnalyticsEvents.SURFACE_MOBILE,
-                )
-            }
-
-            LaunchedEffect(state.isYaniAuthResolved, state.isYaniSignedIn) {
-                if (state.isYaniAuthResolved) {
-                    analyticsContext.setParam(
-                        AnalyticsEvents.PARAM_AUTH_STATE,
-                        AnalyticsEvents.authState(state.isYaniSignedIn),
-                    )
-                    analyticsTracker.track(
-                        AnalyticsEvents.appSession(
-                            surface = AnalyticsEvents.SURFACE_MOBILE,
-                            isAuthorized = state.isYaniSignedIn,
-                        )
-                    )
-                }
-            }
-
-            LaunchedEffect(Unit) {
                 effect.collect { eff ->
                     when (eff) {
                         is MainState.Effect.NavigateToUpdate -> navManager.navigate(
@@ -150,11 +133,11 @@ class MobileMainGraph @Inject constructor(
                         unreadNotificationsCount = state.unreadNotificationsCount,
                         avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         onSettingsClick = {
-                            analyticsTracker.trackMainAction("settings_selected")
+                            analytics.eventSettingsSelected()
                             navManager.navigate(settingsNavigator.getSettingsDest())
                         },
                         onAccountClick = {
-                            analyticsTracker.trackMainAction("account_selected")
+                            analytics.eventAccountSelected()
                             navManager.navigate(accountNavigator.getAccountDest())
                         },
                     ),
@@ -164,10 +147,7 @@ class MobileMainGraph @Inject constructor(
                         menuItems = items,
                         showBars = atTabRoot,
                         onDestinationSelected = {
-                            analyticsTracker.trackMainAction(
-                                action = "root_selected",
-                                params = analyticsParamsOf("root" to it.name.lowercase()),
-                            )
+                            analytics.eventRootSelected(it)
                             navManager.switchRoot(it)
                         },
                         toastMessage = toastMessage,
@@ -177,10 +157,8 @@ class MobileMainGraph @Inject constructor(
                             registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
                             onDestinationVisible = {
-                                analyticsTracker.trackScreenView(
-                                    it,
-                                    surface = AnalyticsEvents.SURFACE_MOBILE,
-                                )
+                                startupPerformanceTracker.markFirstDestinationVisible(it)
+                                analytics.eventScreenView(it)
                             },
                         )
                     }
@@ -192,25 +170,7 @@ class MobileMainGraph @Inject constructor(
 
 private const val GLOBAL_TOAST_DURATION_MS = 3_000L
 
-private fun AnalyticsTracker.trackScreenView(destination: NavKey, surface: String) {
+private fun StartupPerformanceTracker.markFirstDestinationVisible(destination: NavKey) {
     val analyticsDestination = destination as? AnalyticsDestination ?: return
-    track(
-        AnalyticsEvents.screenView(
-            screenName = analyticsDestination.screenName,
-            params = analyticsDestination.screenParams + (AnalyticsEvents.PARAM_SURFACE to surface),
-        )
-    )
-}
-
-private fun AnalyticsTracker.trackMainAction(
-    action: String,
-    params: Map<String, String> = emptyMap(),
-) {
-    track(
-        AnalyticsEvents.uiAction(
-            screenName = "main",
-            action = action,
-            params = params + (AnalyticsEvents.PARAM_SURFACE to AnalyticsEvents.SURFACE_MOBILE),
-        )
-    )
+    markFirstDestinationVisible(analyticsDestination.screenName)
 }

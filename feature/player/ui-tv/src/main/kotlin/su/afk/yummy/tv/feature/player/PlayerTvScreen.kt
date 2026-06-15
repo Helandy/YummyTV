@@ -159,6 +159,7 @@ fun PlayerTvScreen(
                 episodeKey = uiState.activeIframeUrl,
                 resumeFromMs = state.resumeFromMs,
                 onSaveProgress = { snapshot -> onEvent(PlayerState.Event.SaveProgress(snapshot)) },
+                onPlayerEvent = onEvent,
                 animeTitle = state.animeTitle,
                 episode = uiState.activeEpisode,
                 videoId = uiState.activeVideoId,

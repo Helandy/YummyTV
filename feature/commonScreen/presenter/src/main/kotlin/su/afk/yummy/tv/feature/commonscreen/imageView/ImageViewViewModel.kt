@@ -4,13 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.feature.commonscreen.CommonScreenAnalytics
 import su.afk.yummy.tv.feature.commonscreen.navigator.CommonScreenDestination
 
 internal class ImageViewViewModel @AssistedInject constructor(
@@ -19,7 +17,7 @@ internal class ImageViewViewModel @AssistedInject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val navManager: NavigationManager,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: CommonScreenAnalytics,
 ) : BaseViewModelNew<ImageViewState.State, ImageViewState.Event, ImageViewState.Effect>(
     savedStateHandle
 ) {
@@ -41,22 +39,22 @@ internal class ImageViewViewModel @AssistedInject constructor(
         when (event) {
             ImageViewState.Event.Back -> navManager.back()
             ImageViewState.Event.Next -> {
-                trackImageAction("next")
+                analytics.eventImageNext(currentState.images.size, currentState.selectedIndex)
                 setState {
                     copy(selectedIndex = (selectedIndex + 1).coerceAtMost(images.lastIndex))
                 }
             }
 
             ImageViewState.Event.Previous -> {
-                trackImageAction("previous")
+                analytics.eventImagePrevious(currentState.images.size, currentState.selectedIndex)
                 setState {
                     copy(selectedIndex = (selectedIndex - 1).coerceAtLeast(0))
                 }
             }
 
             is ImageViewState.Event.SelectIndex -> {
-                trackImageAction(
-                    action = "select_index",
+                analytics.eventImageSelectIndex(
+                    imageCount = currentState.images.size,
                     selectedIndex = event.index.coerceIn(0, currentState.images.lastIndex),
                 )
                 setState {
@@ -65,22 +63,4 @@ internal class ImageViewViewModel @AssistedInject constructor(
             }
         }
     }
-
-    private fun trackImageAction(
-        action: String,
-        selectedIndex: Int = currentState.selectedIndex,
-    ) {
-        analyticsTracker.track(
-            AnalyticsEvents.uiAction(
-                screenName = SCREEN_NAME,
-                action = action,
-                params = analyticsParamsOf(
-                    "image_count" to currentState.images.size,
-                    "selected_index" to selectedIndex,
-                ),
-            )
-        )
-    }
 }
-
-private const val SCREEN_NAME = "image_view"

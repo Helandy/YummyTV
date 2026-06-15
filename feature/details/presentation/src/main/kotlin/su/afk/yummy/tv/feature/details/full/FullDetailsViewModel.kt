@@ -6,19 +6,17 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @HiltViewModel(assistedFactory = FullDetailsViewModel.Factory::class)
-class FullDetailsViewModel @AssistedInject constructor(
+class FullDetailsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
@@ -26,7 +24,7 @@ class FullDetailsViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val stringProvider: StringProvider,
-    private val analyticsTracker: AnalyticsTracker,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<FullDetailsState.State, FullDetailsState.Event, FullDetailsState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -44,13 +42,7 @@ class FullDetailsViewModel @AssistedInject constructor(
         when (event) {
             FullDetailsState.Event.BackSelected -> nav.back()
             FullDetailsState.Event.RetrySelected -> {
-                analyticsTracker.track(
-                    AnalyticsEvents.uiAction(
-                        screenName = SCREEN_NAME,
-                        action = "retry",
-                        params = analyticsParamsOf("anime_id" to animeId),
-                    )
-                )
+                analytics.eventFullRetry(animeId)
                 load()
             }
         }
@@ -73,5 +65,3 @@ class FullDetailsViewModel @AssistedInject constructor(
         }
     }
 }
-
-private const val SCREEN_NAME = "details_full"
