@@ -55,14 +55,14 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
 
             ScreenshotsState.Event.ScreenshotDismissed -> setState { copy(selectedIndex = null) }
             ScreenshotsState.Event.PreviousSelected -> {
-                analytics.eventScreenshotsPreviousSelected(animeId)
+                analytics.eventScreenshotsPreviousTvSelected(animeId)
                 setState {
                     copy(selectedIndex = selectedIndex?.let { (it - 1).coerceAtLeast(0) })
                 }
             }
 
             ScreenshotsState.Event.NextSelected -> {
-                analytics.eventScreenshotsNextSelected(animeId)
+                analytics.eventScreenshotsNextTvSelected(animeId)
                 setState {
                     copy(selectedIndex = selectedIndex?.let { (it + 1).coerceAtMost(screenshots.lastIndex) })
                 }

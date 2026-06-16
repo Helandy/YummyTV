@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import javax.inject.Inject
 
 internal class DetailsAnalytics @Inject constructor(
@@ -117,6 +118,17 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
+     * Ошибка загрузки экрана деталей.
+     */
+    fun eventDetailsLoadError(throwable: Throwable) {
+        tracker.reportError(
+            groupIdentifier = ERROR_DETAILS_LOAD,
+            message = "DetailsViewModel: ${throwable::class.java.name}",
+            throwable = throwable,
+        )
+    }
+
+    /**
      * Пользователь нажал основную кнопку просмотра на экране деталей.
      *
      * Параметры: anime_id.
@@ -141,111 +153,13 @@ internal class DetailsAnalytics @Inject constructor(
     /**
      * Пользователь подтвердил выбранный балансер на экране деталей.
      *
-     * Параметры: anime_id, video_id.
+     * Параметры: anime_id, video_id, player, player_id, dubbing, episode.
      */
-    fun eventDetailsBalancerConfirmed(animeId: Int, videoId: Int) {
+    fun eventDetailsBalancerConfirmed(animeId: Int, video: AnimeVideo) {
         eventWithAnime(
             eventName = EVENT_DETAILS_BALANCER_CONFIRMED,
             animeId = animeId,
-            params = analyticsParamsOf(PARAM_VIDEO_ID to videoId),
-        )
-    }
-
-    /**
-     * Пользователь открыл полный текст описания.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsFullDetailsSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_FULL_DETAILS_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл список эпизодов.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsEpisodesSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_EPISODES_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл трейлеры.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsTrailersSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_TRAILERS_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл похожие аниме.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsSimilarSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_SIMILAR_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл порядок просмотра.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsViewingOrderSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_VIEWING_ORDER_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл скриншоты.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsScreenshotsSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_SCREENSHOTS_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл экран оценки.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsRatingScreenSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_RATING_SCREEN_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь открыл коллекции с этим аниме.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventDetailsCollectionsSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_COLLECTIONS_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь включил или выключил нахождение аниме в библиотеке.
-     *
-     * Параметры: anime_id, target_state.
-     */
-    fun eventDetailsLibraryToggled(animeId: Int, targetState: Boolean) {
-        eventWithAnime(
-            eventName = EVENT_DETAILS_LIBRARY_TOGGLED,
-            animeId = animeId,
-            params = analyticsParamsOf(PARAM_TARGET_STATE to targetState),
-        )
-    }
-
-    /**
-     * Пользователь включил или выключил избранное.
-     *
-     * Параметры: anime_id, target_state.
-     */
-    fun eventDetailsFavoriteToggled(animeId: Int, targetState: Boolean) {
-        eventWithAnime(
-            eventName = EVENT_DETAILS_FAVORITE_TOGGLED,
-            animeId = animeId,
-            params = analyticsParamsOf(PARAM_TARGET_STATE to targetState),
+            params = videoParams(video),
         )
     }
 
@@ -390,13 +304,13 @@ internal class DetailsAnalytics @Inject constructor(
     /**
      * Пользователь подтвердил балансер на экране эпизодов.
      *
-     * Параметры: anime_id, video_id.
+     * Параметры: anime_id, video_id, player, player_id, dubbing, episode.
      */
-    fun eventEpisodesBalancerConfirmed(animeId: Int, videoId: Int) {
+    fun eventEpisodesBalancerConfirmed(animeId: Int, video: AnimeVideo) {
         eventWithAnime(
             eventName = EVENT_EPISODES_BALANCER_CONFIRMED,
             animeId = animeId,
-            params = analyticsParamsOf(PARAM_VIDEO_ID to videoId),
+            params = videoParams(video),
         )
     }
 
@@ -462,21 +376,21 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь перешел к предыдущему скриншоту.
+     * Пользователь перешел к предыдущему скриншоту на TV.
      *
      * Параметры: anime_id.
      */
-    fun eventScreenshotsPreviousSelected(animeId: Int) {
-        eventWithAnime(EVENT_SCREENSHOTS_PREVIOUS_SELECTED, animeId)
+    fun eventScreenshotsPreviousTvSelected(animeId: Int) {
+        eventWithAnime(EVENT_SCREENSHOTS_PREVIOUS_TV_SELECTED, animeId)
     }
 
     /**
-     * Пользователь перешел к следующему скриншоту.
+     * Пользователь перешел к следующему скриншоту на TV.
      *
      * Параметры: anime_id.
      */
-    fun eventScreenshotsNextSelected(animeId: Int) {
-        eventWithAnime(EVENT_SCREENSHOTS_NEXT_SELECTED, animeId)
+    fun eventScreenshotsNextTvSelected(animeId: Int) {
+        eventWithAnime(EVENT_SCREENSHOTS_NEXT_TV_SELECTED, animeId)
     }
 
     /**
@@ -521,11 +435,25 @@ internal class DetailsAnalytics @Inject constructor(
         )
     }
 
+    private fun videoParams(video: AnimeVideo): Map<String, String> = analyticsParamsOf(
+        PARAM_VIDEO_ID to video.id,
+        PARAM_PLAYER to video.player,
+        PARAM_PLAYER_ID to video.playerId,
+        PARAM_DUBBING to video.dubbing,
+        PARAM_EPISODE to video.episode,
+    )
+
     internal companion object {
+        private const val ERROR_DETAILS_LOAD = "details_load_error"
+
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_COLLECTION_ID = "collection_id"
+        private const val PARAM_DUBBING = "dubbing"
+        private const val PARAM_EPISODE = "episode"
         private const val PARAM_FROM_AI = "from_ai"
         private const val PARAM_LIST = "list"
+        private const val PARAM_PLAYER = "player"
+        private const val PARAM_PLAYER_ID = "player_id"
         private const val PARAM_RATING = "rating"
         private const val PARAM_SELECTED_INDEX = "selected_index"
         private const val PARAM_TARGET_ANIME_ID = "target_anime_id"
@@ -541,26 +469,6 @@ internal class DetailsAnalytics @Inject constructor(
         const val EVENT_DETAILS_ANIME_SELECTED = "details_anime_selected"
 
         const val EVENT_DETAILS_BALANCER_CONFIRMED = "details_balancer_confirmed"
-
-        const val EVENT_DETAILS_FULL_DETAILS_SELECTED = "details_full_details_selected"
-
-        const val EVENT_DETAILS_EPISODES_SELECTED = "details_episodes_selected"
-
-        const val EVENT_DETAILS_TRAILERS_SELECTED = "details_trailers_selected"
-
-        const val EVENT_DETAILS_SIMILAR_SELECTED = "details_similar_selected"
-
-        const val EVENT_DETAILS_VIEWING_ORDER_SELECTED = "details_viewing_order_selected"
-
-        const val EVENT_DETAILS_SCREENSHOTS_SELECTED = "details_screenshots_selected"
-
-        const val EVENT_DETAILS_RATING_SCREEN_SELECTED = "details_rating_screen_selected"
-
-        const val EVENT_DETAILS_COLLECTIONS_SELECTED = "details_collections_selected"
-
-        const val EVENT_DETAILS_LIBRARY_TOGGLED = "details_library_toggled"
-
-        const val EVENT_DETAILS_FAVORITE_TOGGLED = "details_favorite_toggled"
 
         const val EVENT_DETAILS_LIBRARY_LIST_SELECTED = "details_library_list_selected"
 
@@ -613,9 +521,10 @@ internal class DetailsAnalytics @Inject constructor(
 
         const val EVENT_SCREENSHOTS_SCREENSHOT_SELECTED = "details_screenshots_screenshot_selected"
 
-        const val EVENT_SCREENSHOTS_PREVIOUS_SELECTED = "details_screenshots_previous_selected"
+        const val EVENT_SCREENSHOTS_PREVIOUS_TV_SELECTED =
+            "details_screenshots_previous_tv_selected"
 
-        const val EVENT_SCREENSHOTS_NEXT_SELECTED = "details_screenshots_next_selected"
+        const val EVENT_SCREENSHOTS_NEXT_TV_SELECTED = "details_screenshots_next_tv_selected"
 
         const val EVENT_RATING_SCREEN_OPENED = "details_rating_screen"
 

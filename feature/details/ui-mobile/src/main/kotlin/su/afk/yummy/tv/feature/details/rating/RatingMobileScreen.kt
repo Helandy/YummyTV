@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.rating
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +10,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +32,17 @@ fun RatingMobileScreen(
     effect: Flow<RatingState.Effect>,
     onEvent: (RatingState.Event) -> Unit,
 ) {
+    val context = LocalContext.current
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is RatingState.Effect.ShowToast ->
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     BaseScreen(
         isScroll = false,
         customTopBar = {

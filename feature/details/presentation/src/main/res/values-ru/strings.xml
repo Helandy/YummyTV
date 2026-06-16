@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="details_load_error">Не удалось загрузить деталку</string>
+    <string name="details_rating_auth_required">Для оценки нужно авторизоваться</string>
 </resources>

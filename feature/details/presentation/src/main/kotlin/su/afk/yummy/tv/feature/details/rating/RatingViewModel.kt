@@ -5,12 +5,14 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
@@ -31,6 +33,7 @@ class RatingViewModel @AssistedInject internal constructor(
     private val getAnimeUserRating: GetAnimeUserRatingUseCase,
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
+    private val settingsStore: SettingsStore,
     private val stringProvider: StringProvider,
     private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<RatingState.State, RatingState.Event, RatingState.Effect>(savedStateHandle) {
@@ -92,10 +95,11 @@ class RatingViewModel @AssistedInject internal constructor(
     }
 
     private fun setRating(rating: Int) {
-        analytics.eventRatingSelected(animeId, rating)
-        val previous = currentState.selectedUserRating
-        setState { copy(selectedUserRating = rating) }
         viewModelScope.launch {
+            if (!canMutateRating()) return@launch
+            analytics.eventRatingSelected(animeId, rating)
+            val previous = currentState.selectedUserRating
+            setState { copy(selectedUserRating = rating) }
             val result = runCatching { setAnimeRating(animeId, rating) }
             if (result.isFailure) {
                 setState { copy(selectedUserRating = previous) }
@@ -106,10 +110,11 @@ class RatingViewModel @AssistedInject internal constructor(
     }
 
     private fun deleteRating() {
-        analytics.eventRatingDeleted(animeId)
-        val previous = currentState.selectedUserRating
-        setState { copy(selectedUserRating = null) }
         viewModelScope.launch {
+            if (!canMutateRating()) return@launch
+            analytics.eventRatingDeleted(animeId)
+            val previous = currentState.selectedUserRating
+            setState { copy(selectedUserRating = null) }
             val result = runCatching { deleteAnimeRating(animeId) }
             if (result.isFailure) {
                 setState { copy(selectedUserRating = previous) }
@@ -117,6 +122,16 @@ class RatingViewModel @AssistedInject internal constructor(
                 refreshRatingSummary()
             }
         }
+    }
+
+    private suspend fun canMutateRating(): Boolean {
+        if (settingsStore.yaniUserId.first() > 0) return true
+        setEffect(
+            RatingState.Effect.ShowToast(
+                stringProvider.get(R.string.details_rating_auth_required)
+            )
+        )
+        return false
     }
 
     private suspend fun refreshRatingSummary() {

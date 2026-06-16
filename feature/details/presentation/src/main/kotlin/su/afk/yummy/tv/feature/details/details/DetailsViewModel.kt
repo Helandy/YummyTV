@@ -147,61 +147,41 @@ class DetailsViewModel @AssistedInject internal constructor(
             }
 
             is DetailsState.Event.BalancerConfirmed -> {
-                analytics.eventDetailsBalancerConfirmed(animeId, event.video.id)
+                analytics.eventDetailsBalancerConfirmed(animeId, event.video)
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
             }
 
             DetailsState.Event.BalancerPickerDismissed -> setState { copy(pendingBalancerSelection = null) }
-            DetailsState.Event.FullDetailsSelected -> {
-                analytics.eventDetailsFullDetailsSelected(animeId)
+            DetailsState.Event.FullDetailsSelected ->
                 nav.navigate(detailsNavigator.getFullDetailsDest(animeId))
-            }
 
-            DetailsState.Event.EpisodesSelected -> {
-                analytics.eventDetailsEpisodesSelected(animeId)
+            DetailsState.Event.EpisodesSelected ->
                 nav.navigate(detailsNavigator.getEpisodesDest(animeId))
-            }
 
-            DetailsState.Event.TrailersSelected -> {
-                analytics.eventDetailsTrailersSelected(animeId)
+            DetailsState.Event.TrailersSelected ->
                 nav.navigate(detailsNavigator.getTrailersDest(animeId))
-            }
 
-            DetailsState.Event.SimilarSelected -> {
-                analytics.eventDetailsSimilarSelected(animeId)
+            DetailsState.Event.SimilarSelected ->
                 nav.navigate(detailsNavigator.getSimilarDest(animeId))
-            }
 
-            DetailsState.Event.ViewingOrderSelected -> {
-                analytics.eventDetailsViewingOrderSelected(animeId)
+            DetailsState.Event.ViewingOrderSelected ->
                 nav.navigate(detailsNavigator.getViewingOrderDest(animeId))
-            }
 
-            DetailsState.Event.ScreenshotsSelected -> {
-                analytics.eventDetailsScreenshotsSelected(animeId)
+            DetailsState.Event.ScreenshotsSelected ->
                 nav.navigate(detailsNavigator.getScreenshotsDest(animeId))
-            }
 
-            DetailsState.Event.RatingScreenSelected -> {
-                analytics.eventDetailsRatingScreenSelected(animeId)
+            DetailsState.Event.RatingScreenSelected ->
                 nav.navigate(detailsNavigator.getRatingDest(animeId))
-            }
 
-            DetailsState.Event.CollectionsSelected -> {
-                analytics.eventDetailsCollectionsSelected(animeId)
+            DetailsState.Event.CollectionsSelected ->
                 nav.navigate(detailsNavigator.getCollectionsDest(animeId))
-            }
 
-            DetailsState.Event.LibraryToggled -> {
-                analytics.eventDetailsLibraryToggled(animeId, !currentState.isInLibrary)
+            DetailsState.Event.LibraryToggled ->
                 viewModelScope.launch { toggleLibrary() }
-            }
 
-            DetailsState.Event.FavoriteToggled -> {
-                analytics.eventDetailsFavoriteToggled(animeId, !currentState.isFavorite)
+            DetailsState.Event.FavoriteToggled ->
                 viewModelScope.launch { toggleFavorite() }
-            }
 
             DetailsState.Event.LibraryListPickerDismissed -> setState { copy(showLibraryListPicker = false) }
             is DetailsState.Event.LibraryListSelected -> {
@@ -366,6 +346,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 loadVideos()
             },
             onFailure = { e ->
+                analytics.eventDetailsLoadError(e)
                 setState {
                     copy(
                         isLoading = false,

@@ -90,7 +90,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             }
 
             is EpisodesState.Event.BalancerConfirmed -> {
-                analytics.eventEpisodesBalancerConfirmed(animeId, event.video.id)
+                analytics.eventEpisodesBalancerConfirmed(animeId, event.video)
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
             }
