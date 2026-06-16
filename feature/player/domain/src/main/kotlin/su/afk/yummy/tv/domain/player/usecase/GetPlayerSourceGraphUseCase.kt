@@ -10,6 +10,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerSourceGraph
 import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.domain.player.model.PlayerSourceSelection
 import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
+import su.afk.yummy.tv.domain.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import javax.inject.Inject
 
@@ -76,7 +77,17 @@ class GetPlayerSourceGraphUseCase @Inject constructor(
             .filter { player ->
                 videos.firstOrNull { it.player == player }?.iframeUrl?.isSupportedPlayerUrl() == true
             }
-        val balancerNames = (listOf(selectedVideo.player) + supportedBalancers).distinct()
+        val balancerNames = (listOf(selectedVideo.player) + supportedBalancers)
+            .distinct()
+            .sortedBy { balancerName ->
+                minOf(
+                    balancerName.playerDisplayOrderPriority(),
+                    videos.firstOrNull { it.player == balancerName }
+                        ?.iframeUrl
+                        ?.playerDisplayOrderPriority()
+                        ?: OTHER_PLAYER_PRIORITY,
+                )
+            }
         val kodikIframeByEpisode = videos
             .filter { it.iframeUrl.isKodikPlayerUrl() }
             .groupBy { it.episode }
@@ -145,4 +156,8 @@ class GetPlayerSourceGraphUseCase @Inject constructor(
         sortedBy { it.episode.toIntOrNull() ?: Int.MAX_VALUE }
 
     private fun List<PlayerSourceVideo>.sumViews(): Int = sumOf { it.views ?: 0 }
+
+    private companion object {
+        const val OTHER_PLAYER_PRIORITY = 2
+    }
 }

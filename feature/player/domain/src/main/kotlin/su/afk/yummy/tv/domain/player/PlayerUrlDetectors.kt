@@ -7,7 +7,8 @@ fun String.isAksorPlayerUrl(): Boolean =
     contains("aksor.tv", ignoreCase = true)
 
 fun String.isCvhPlayerUrl(): Boolean =
-    contains("iframecvh", ignoreCase = true)
+    contains("iframecvh", ignoreCase = true) ||
+            equals("cvh", ignoreCase = true)
 
 fun String.isAllohaPlayerUrl(): Boolean =
     contains("alloha", ignoreCase = true)
@@ -28,3 +29,10 @@ fun String.isSupportedPlayerUrl(): Boolean =
             isAllohaPlayerUrl() ||
             isVkPlayerUrl() ||
             isRutubePlayerUrl()
+
+fun String.playerDisplayOrderPriority(): Int =
+    when {
+        isCvhPlayerUrl() -> 0
+        isKodikPlayerUrl() -> 1
+        else -> 2
+    }

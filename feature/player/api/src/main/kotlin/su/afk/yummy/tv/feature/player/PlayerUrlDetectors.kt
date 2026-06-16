@@ -7,6 +7,7 @@ import su.afk.yummy.tv.domain.player.isKodikPlayerUrl as domainIsKodikPlayerUrl
 import su.afk.yummy.tv.domain.player.isRutubePlayerUrl as domainIsRutubePlayerUrl
 import su.afk.yummy.tv.domain.player.isSupportedPlayerUrl as domainIsSupportedPlayerUrl
 import su.afk.yummy.tv.domain.player.isVkPlayerUrl as domainIsVkPlayerUrl
+import su.afk.yummy.tv.domain.player.playerDisplayOrderPriority as domainPlayerDisplayOrderPriority
 
 fun String.isKodikPlayerUrl(): Boolean =
     domainIsKodikPlayerUrl()
@@ -28,3 +29,6 @@ fun String.isRutubePlayerUrl(): Boolean =
 
 fun String.isSupportedPlayerUrl(): Boolean =
     domainIsSupportedPlayerUrl()
+
+fun String.playerDisplayOrderPriority(): Int =
+    domainPlayerDisplayOrderPriority()

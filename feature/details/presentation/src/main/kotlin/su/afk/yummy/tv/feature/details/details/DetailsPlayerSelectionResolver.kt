@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 
 /** Resolves whether the selected episode can open directly or needs a balancer picker. */
 internal fun resolveDetailsPlayerSelection(
@@ -24,6 +25,12 @@ internal fun resolveDetailsPlayerSelection(
                 playerName = playerName,
                 video = representative,
                 isSupported = supported,
+            )
+        }
+        .sortedBy { option ->
+            minOf(
+                option.playerName.playerDisplayOrderPriority(),
+                option.video.iframeUrl.playerDisplayOrderPriority(),
             )
         }
     val supportedOptions = options.filter { it.isSupported }
