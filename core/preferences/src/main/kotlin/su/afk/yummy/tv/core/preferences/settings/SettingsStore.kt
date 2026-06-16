@@ -149,6 +149,11 @@ class SettingsStore(private val context: Context) {
         prefs.yaniApplicationToken()
     }
 
+    val yaniApplicationTokenState: Flow<YaniApplicationTokenState> =
+        context.dataStore.data.map { prefs ->
+            prefs.yaniApplicationTokenState()
+        }
+
     val yaniUserId: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[yaniUserIdKey] ?: 0
     }
@@ -384,6 +389,15 @@ class SettingsStore(private val context: Context) {
 
     private fun Preferences.yaniApplicationToken(): String =
         this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
+
+    private fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState {
+        val token = this[yaniApplicationTokenKey]?.trim().orEmpty()
+        return if (token.isNotBlank() && token != DEFAULT_YANI_APPLICATION_TOKEN) {
+            YaniApplicationTokenState.CUSTOM
+        } else {
+            YaniApplicationTokenState.DEFAULT
+        }
+    }
 
     private fun List<DetailsButtonAction>.normalizedDetailsButtonOrder(): List<DetailsButtonAction> {
         val unique = distinct()

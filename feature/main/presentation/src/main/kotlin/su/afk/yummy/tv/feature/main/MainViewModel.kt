@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -16,6 +18,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniApplicationTokenState
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
@@ -79,6 +82,8 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeSettings() {
+        val yaniApplicationTokenState =
+            settingsStore.yaniApplicationTokenState.distinctUntilChanged()
         settingsStore.mainSettingsSnapshot
             .onEach { snapshot ->
                 setState {
@@ -94,9 +99,19 @@ class MainViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
         viewModelScope.launch {
-            yaniAuthPreferences.refreshToken.collect { token ->
+            combine(
+                yaniAuthPreferences.refreshToken.distinctUntilChanged(),
+                yaniApplicationTokenState,
+            ) { token, tokenState ->
+                token to tokenState
+            }.collect { (token, tokenState) ->
                 val signedIn = token.isNotBlank()
-                analyticsTracker.track(AnalyticsEvents.appSession(signedIn))
+                analyticsTracker.track(
+                    AnalyticsEvents.appSession(
+                        isAuthorized = signedIn,
+                        yaniApplicationTokenState = tokenState.analyticsValue(),
+                    )
+                )
                 setState {
                     copy(
                         isYaniSignedIn = signedIn,
@@ -152,5 +167,11 @@ class MainViewModel @Inject constructor(
         }
     }
 }
+
+private fun YaniApplicationTokenState.analyticsValue(): String =
+    when (this) {
+        YaniApplicationTokenState.DEFAULT -> AnalyticsEvents.YANI_APPLICATION_TOKEN_STATE_DEFAULT
+        YaniApplicationTokenState.CUSTOM -> AnalyticsEvents.YANI_APPLICATION_TOKEN_STATE_CUSTOM
+    }
 
 private const val EVENT_SCREEN_OPENED = "main_screen"

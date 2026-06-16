@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.analytics
 
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents.PARAM_AUTH_STATE
+import su.afk.yummy.tv.core.analytics.AnalyticsEvents.PARAM_YANI_APPLICATION_TOKEN_STATE
 
 
 /**
@@ -15,12 +16,19 @@ object AnalyticsEvents {
     const val PARAM_ACTION = "action"
     const val PARAM_SCREEN = "screen"
     const val PARAM_AUTH_STATE = "auth_state"
+    const val PARAM_YANI_APPLICATION_TOKEN_STATE = "yani_application_token_state"
 
     /**
      * Values for [PARAM_AUTH_STATE].
      */
     const val AUTH_STATE_AUTHORIZED = "authorized"
     const val AUTH_STATE_ANONYMOUS = "anonymous"
+
+    /**
+     * Values for [PARAM_YANI_APPLICATION_TOKEN_STATE].
+     */
+    const val YANI_APPLICATION_TOKEN_STATE_DEFAULT = "default"
+    const val YANI_APPLICATION_TOKEN_STATE_CUSTOM = "custom"
 
     /**
      * Reports applying or clearing search filters.
@@ -105,9 +113,15 @@ object AnalyticsEvents {
     /**
      * Reports an app session after auth state is resolved.
      */
-    fun appSession(isAuthorized: Boolean): AnalyticsEvent = AnalyticsEvent(
+    fun appSession(
+        isAuthorized: Boolean,
+        yaniApplicationTokenState: String,
+    ): AnalyticsEvent = AnalyticsEvent(
         name = "app_session",
-        params = analyticsParamsOf(PARAM_AUTH_STATE to authState(isAuthorized)),
+        params = analyticsParamsOf(
+            PARAM_AUTH_STATE to authState(isAuthorized),
+            PARAM_YANI_APPLICATION_TOKEN_STATE to yaniApplicationTokenState,
+        ),
     )
 
     /**
