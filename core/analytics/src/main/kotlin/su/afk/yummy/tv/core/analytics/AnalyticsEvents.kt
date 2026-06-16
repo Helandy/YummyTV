@@ -111,6 +111,16 @@ object AnalyticsEvents {
     )
 
     /**
+     * Reports an update flow error.
+     */
+    fun updateError(
+        params: Map<String, String> = emptyMap(),
+    ): AnalyticsEvent = AnalyticsEvent(
+        name = "update_error",
+        params = mapOf(PARAM_SCREEN to "update") + params,
+    )
+
+    /**
      * Reports an app session after auth state is resolved.
      */
     fun appSession(

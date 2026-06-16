@@ -21,7 +21,10 @@ import kotlin.coroutines.resumeWithException
 class ApkInstaller(private val context: Context) {
 
     suspend fun install(apkFile: File) = withContext(Dispatchers.IO) {
-        if (!context.packageManager.canRequestPackageInstalls()) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            !context.packageManager.canRequestPackageInstalls()
+        ) {
             context.startActivity(
                 Intent(
                     Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,

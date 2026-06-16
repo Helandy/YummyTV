@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.update.nav
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -83,12 +84,22 @@ private fun AvailableContent(
     status: UpdateState.State.Status.Available,
     onEvent: (UpdateState.Event) -> Unit,
 ) {
+    val autoUpdateSupported = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.O }
+    val closeFocus = remember { FocusRequester() }
     val updateFocus = remember { FocusRequester() }
     val changelogScrollState = rememberScrollState()
     val changelogFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     var changelogFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { runCatching { updateFocus.requestFocus() } }
+    LaunchedEffect(autoUpdateSupported) {
+        runCatching {
+            if (autoUpdateSupported) {
+                updateFocus.requestFocus()
+            } else {
+                closeFocus.requestFocus()
+            }
+        }
+    }
 
     Column {
         Text(
@@ -103,6 +114,11 @@ private fun AvailableContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
         )
+
+        if (!autoUpdateSupported) {
+            Spacer(Modifier.height(16.dp))
+            UnsupportedAutoUpdateBanner()
+        }
 
         if (status.changelog.isNotBlank()) {
             Spacer(Modifier.height(16.dp))
@@ -158,6 +174,7 @@ private fun AvailableContent(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(
                 modifier = Modifier
+                    .focusRequester(closeFocus)
                     .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
                     .padding(horizontal = 24.dp, vertical = 12.dp),
@@ -169,23 +186,44 @@ private fun AvailableContent(
                 )
             }
 
-            Spacer(Modifier.width(4.dp))
+            if (autoUpdateSupported) {
+                Spacer(Modifier.width(4.dp))
 
-            Box(
-                modifier = Modifier
-                    .focusRequester(updateFocus)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                    .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.update_install),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.labelLarge,
-                )
+                Box(
+                    modifier = Modifier
+                        .focusRequester(updateFocus)
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                        .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.update_install),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun UnsupportedAutoUpdateBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.errorContainer,
+                shape = RoundedCornerShape(8.dp),
+            )
+            .padding(12.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.update_auto_update_unsupported),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+        )
     }
 }
 
