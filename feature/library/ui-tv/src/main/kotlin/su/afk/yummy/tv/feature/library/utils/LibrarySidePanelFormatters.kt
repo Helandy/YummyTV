@@ -6,7 +6,7 @@ import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.R
 
 internal fun libraryTabsDisplayOrder(): List<LibraryTab> =
-    LibraryTab.entries.filterNot { it == LibraryTab.FAVORITES } + LibraryTab.FAVORITES
+    LibraryTab.entries
 
 @Composable
 internal fun LibraryTab.label(): String = stringResource(

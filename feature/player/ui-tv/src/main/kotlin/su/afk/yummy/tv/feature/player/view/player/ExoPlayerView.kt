@@ -496,6 +496,7 @@ internal fun ExoPlayerView(
                 }
             }
         } else if (!controllerVisible) {
+            withFrameNanos { }
             try {
                 overlayFocusRequester.requestFocus()
             } catch (_: Exception) {

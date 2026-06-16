@@ -10,7 +10,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 
 @Composable
@@ -25,16 +25,17 @@ internal fun PlayerHiddenKeyOverlay(
         modifier = modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
-            .focusable()
-            .onKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
-                    Key.DirectionLeft -> {
+                    Key.DirectionLeft,
+                    Key.DirectionDown -> {
                         onSeekBackward()
                         true
                     }
 
-                    Key.DirectionRight -> {
+                    Key.DirectionRight,
+                    Key.DirectionUp -> {
                         onSeekForward()
                         true
                     }
@@ -44,6 +45,7 @@ internal fun PlayerHiddenKeyOverlay(
                         true
                     }
                 }
-            },
+            }
+            .focusable(),
     )
 }

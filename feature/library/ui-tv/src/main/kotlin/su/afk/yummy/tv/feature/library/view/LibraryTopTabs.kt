@@ -2,10 +2,13 @@ package su.afk.yummy.tv.feature.library.view
 
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,29 +34,36 @@ internal fun LibraryTopTabs(
     val tabs = remember { libraryTabsDisplayOrder() }
     val selectedIndex = tabs.indexOf(selectedTab).coerceAtLeast(0)
     val effectiveFocusRequesters = tabs.map { tabFocusRequesters.getValue(it) }
+    val listState = rememberLazyListState()
 
-    Row(
+    LaunchedEffect(selectedIndex) {
+        listState.animateScrollToItem(selectedIndex)
+    }
+
+    LazyRow(
+        state = listState,
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                start = TvScreenPadding.Horizontal,
-                top = TvScreenPadding.Vertical,
-                end = TvScreenPadding.Horizontal,
-            )
             .focusProperties {
                 onEnter = {
                     effectiveFocusRequesters.getOrNull(selectedIndex)?.requestFocus()
                 }
             }
             .focusGroup(),
+        contentPadding = PaddingValues(
+            start = TvScreenPadding.Horizontal,
+            top = TvScreenPadding.Vertical,
+            end = TvScreenPadding.Horizontal,
+        ),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        tabs.forEachIndexed { index, tab ->
+        itemsIndexed(tabs, key = { _, tab -> tab.name }) { index, tab ->
+            val selected = selectedTab == tab
             LibraryTopTabItem(
                 label = tab.label(),
                 count = tabCounts[tab] ?: 0,
-                selected = selectedTab == tab,
+                selected = selected,
                 onActivated = {
                     onTabSelected(tab)
                     if (contentCanFocus) {

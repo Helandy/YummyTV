@@ -2,7 +2,7 @@
 <resources>
     <string name="library_mobile_title">Библиотека</string>
     <string name="library_mobile_tab_continue_watching">Продолжить</string>
-    <string name="library_mobile_tab_favorites">Избранное</string>
+    <string name="library_mobile_tab_favorites">Любимое</string>
     <string name="library_mobile_tab_watching">Смотрю</string>
     <string name="library_mobile_tab_planned">В планах</string>
     <string name="library_mobile_tab_completed">Просмотрено</string>
