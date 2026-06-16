@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_mobile_tab_search">Поиск</string>
+    <string name="main_mobile_tab_profile">Профиль</string>
     <string name="main_mobile_tab_home">Главная</string>
     <string name="main_mobile_tab_schedule">Расписание</string>
     <string name="main_mobile_tab_top">Топ</string>

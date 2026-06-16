@@ -6,18 +6,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.mobile.R
 import su.afk.yummy.tv.feature.top.view.TopMobileGrid
 import su.afk.yummy.tv.feature.top.view.TopMobileTypeTabs
 
@@ -53,7 +50,6 @@ fun TopMobileScreen(
 
     BaseScreen(
         isScroll = false,
-        topBar = { Text(stringResource(R.string.top_mobile_title)) },
     ) {
         Column(
             modifier = Modifier

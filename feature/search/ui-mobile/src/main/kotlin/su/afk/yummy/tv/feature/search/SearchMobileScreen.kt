@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.mobile.R
 import su.afk.yummy.tv.feature.search.view.SearchMobileFilterButton
@@ -66,7 +67,12 @@ fun SearchMobileScreen(
 
     BaseScreen(
         isScroll = false,
-        topBar = { Text(stringResource(R.string.search_mobile_title)) },
+        topBar = {
+            MobileTopBar(
+                title = stringResource(R.string.search_mobile_title),
+                onBack = { onEvent(SearchState.Event.BackSelected) },
+            )
+        },
         isLoading = state.isLoading && state.items.isEmpty(),
         error = initialError?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(SearchState.Event.RetrySelected) },
@@ -151,9 +157,8 @@ fun SearchMobileScreen(
             draftFilters = state.draftFilters,
             filterOptions = state.filterOptions,
             isLoadingFilterOptions = state.isLoadingFilterOptions,
-            onClose = { onEvent(SearchState.Event.CloseFilters) },
-            onApply = { onEvent(SearchState.Event.ApplyFilters) },
-            onReset = { onEvent(SearchState.Event.ResetFilters) },
+            onClose = { onEvent(SearchState.Event.ApplyFilters) },
+            onReset = { onEvent(SearchState.Event.ResetDraftFilters) },
             onGenreToggled = { onEvent(SearchState.Event.GenreToggled(it)) },
             onExcludedGenreToggled = { onEvent(SearchState.Event.ExcludedGenreToggled(it)) },
             onTypeToggled = { onEvent(SearchState.Event.TypeToggled(it)) },

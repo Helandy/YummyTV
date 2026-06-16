@@ -6,4 +6,5 @@ internal data class MobileMenuItem<T>(
     val label: String,
     val destination: T,
     val icon: ImageVector,
+    val badgeCount: Int = 0,
 )

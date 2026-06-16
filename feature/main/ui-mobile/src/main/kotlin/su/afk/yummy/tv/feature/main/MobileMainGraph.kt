@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.main
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -34,11 +34,11 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
-import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.main.api.IMainGraph
 import su.afk.yummy.tv.feature.main.mobile.R
 import su.afk.yummy.tv.feature.main.model.MobileMenuItem
 import su.afk.yummy.tv.feature.main.view.MobileMainScaffold
+import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,7 +47,7 @@ import javax.inject.Singleton
 class MobileMainGraph @Inject internal constructor(
     private val navManager: NavigationManager,
     private val settingsNavigator: ISettingsNavigator,
-    private val accountNavigator: IAccountNavigator,
+    private val searchNavigator: ISearchNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
@@ -55,33 +55,6 @@ class MobileMainGraph @Inject internal constructor(
     @Composable
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
-        val items = listOf(
-            MobileMenuItem(
-                stringResource(R.string.main_mobile_tab_search),
-                RootTab.SEARCH,
-                Icons.Default.Search
-            ),
-            MobileMenuItem(
-                stringResource(R.string.main_mobile_tab_home),
-                RootTab.HOME,
-                Icons.Default.Home
-            ),
-            MobileMenuItem(
-                stringResource(R.string.main_mobile_tab_schedule),
-                RootTab.SCHEDULE,
-                Icons.Default.DateRange
-            ),
-            MobileMenuItem(
-                stringResource(R.string.main_mobile_tab_top),
-                RootTab.TOP,
-                Icons.Default.Star
-            ),
-            MobileMenuItem(
-                stringResource(R.string.main_mobile_tab_library),
-                RootTab.LIBRARY,
-                Icons.AutoMirrored.Filled.List
-            ),
-        )
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
 
         ScreenNavigator(viewModel) { state, effect, _ ->
@@ -114,17 +87,44 @@ class MobileMainGraph @Inject internal constructor(
             }
 
             YummyTvTheme(appTheme = state.appTheme) {
+                val items = listOf(
+                    MobileMenuItem(
+                        stringResource(R.string.main_mobile_tab_schedule),
+                        RootTab.SCHEDULE,
+                        Icons.Default.DateRange
+                    ),
+                    MobileMenuItem(
+                        stringResource(R.string.main_mobile_tab_top),
+                        RootTab.TOP,
+                        Icons.Default.Star
+                    ),
+                    MobileMenuItem(
+                        stringResource(R.string.main_mobile_tab_home),
+                        RootTab.HOME,
+                        Icons.Default.Home
+                    ),
+                    MobileMenuItem(
+                        stringResource(R.string.main_mobile_tab_library),
+                        RootTab.LIBRARY,
+                        Icons.AutoMirrored.Filled.List
+                    ),
+                    MobileMenuItem(
+                        stringResource(R.string.main_mobile_tab_profile),
+                        RootTab.ACCOUNT,
+                        Icons.Default.AccountCircle,
+                        badgeCount = state.unreadNotificationsCount,
+                    ),
+                )
+
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalMobileMainActions provides MobileMainActions(
-                        unreadNotificationsCount = state.unreadNotificationsCount,
-                        avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         onSettingsClick = {
                             navManager.navigate(settingsNavigator.getSettingsDest())
                         },
-                        onAccountClick = {
-                            navManager.navigate(accountNavigator.getAccountDest())
+                        onSearchClick = {
+                            navManager.navigate(searchNavigator.getSearchDest())
                         },
                     ),
                 ) {

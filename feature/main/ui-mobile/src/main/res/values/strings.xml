@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_mobile_tab_search">Search</string>
+    <string name="main_mobile_tab_profile">Profile</string>
     <string name="main_mobile_tab_home">Home</string>
     <string name="main_mobile_tab_schedule">Schedule</string>
     <string name="main_mobile_tab_top">Top</string>

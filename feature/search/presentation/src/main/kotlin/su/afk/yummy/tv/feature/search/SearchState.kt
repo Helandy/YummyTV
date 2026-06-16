@@ -32,11 +32,13 @@ class SearchState {
         data class ItemFocused(val animeId: Int) : Event
         data object SearchSubmitted : Event
         data object RetrySelected : Event
+        data object BackSelected : Event
         data object LoadMore : Event
         data object OpenFilters : Event
         data object CloseFilters : Event
         data object ApplyFilters : Event
         data object ResetFilters : Event
+        data object ResetDraftFilters : Event
         data class GenreToggled(val id: String) : Event
         data class ExcludedGenreToggled(val id: String) : Event
         data class TypeToggled(val id: String) : Event

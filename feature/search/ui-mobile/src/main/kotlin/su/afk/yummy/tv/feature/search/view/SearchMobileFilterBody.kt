@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -28,7 +27,6 @@ internal fun SearchMobileFilterBody(
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
     isLoadingFilterOptions: Boolean,
-    onApply: () -> Unit,
     onReset: () -> Unit,
     onOpenGenres: () -> Unit,
     onOpenExcludedGenres: () -> Unit,
@@ -44,11 +42,8 @@ internal fun SearchMobileFilterBody(
     SheetHeader(title = stringResource(R.string.search_mobile_filters))
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+        OutlinedButton(onClick = onReset, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.search_mobile_filters_reset))
-        }
-        Button(onClick = onApply, modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.search_mobile_filters_apply))
         }
     }
 

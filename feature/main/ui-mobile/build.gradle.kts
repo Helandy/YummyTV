@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":feature:main:api"))
     implementation(project(":feature:main:presentation"))
     implementation(project(":feature:schedule:ui-mobile"))
+    implementation(project(":feature:search:api"))
     implementation(project(":feature:search:ui-mobile"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:top:ui-mobile"))

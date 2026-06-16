@@ -61,6 +61,7 @@ class SearchViewModel @Inject internal constructor(
             is SearchState.Event.ItemFocused -> onItemFocused(event.animeId)
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
             SearchState.Event.RetrySelected -> onRetrySelected()
+            SearchState.Event.BackSelected -> nav.back()
             SearchState.Event.LoadMore -> loadMore()
             SearchState.Event.OpenFilters -> {
                 analytics.eventFiltersOpened()
@@ -74,6 +75,7 @@ class SearchViewModel @Inject internal constructor(
 
             SearchState.Event.ApplyFilters -> applyFilters()
             SearchState.Event.ResetFilters -> resetFilters()
+            SearchState.Event.ResetDraftFilters -> resetDraftFilters()
             is SearchState.Event.GenreToggled -> updateDraft {
                 copy(
                     genres = genres.toggle(event.id),
@@ -207,6 +209,10 @@ class SearchViewModel @Inject internal constructor(
     private fun applyFilters() {
         val query = currentState.query
         val filters = searchPagingHandler.normalizedYears(currentState.draftFilters)
+        if (filters == currentState.filters) {
+            setState { copy(isFilterPanelOpen = false, draftFilters = filters) }
+            return
+        }
         analytics.eventFiltersApplied(
             hasQuery = query.isNotBlank(),
             filterCount = filters.activeCount,
@@ -254,6 +260,10 @@ class SearchViewModel @Inject internal constructor(
             return
         }
         loadSearch(SearchPagingRequest(query, SearchFilters.EMPTY, offset = 0, replace = true))
+    }
+
+    private fun resetDraftFilters() {
+        setState { copy(draftFilters = SearchFilters.EMPTY) }
     }
 
     private fun updateDraft(update: SearchFilters.() -> SearchFilters) {

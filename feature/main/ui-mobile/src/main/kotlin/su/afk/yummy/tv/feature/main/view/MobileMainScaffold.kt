@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -56,6 +59,16 @@ private fun <T> RowScope.MobileNavigationItem(
     NavigationBarItem(
         selected = selected,
         onClick = onSelected,
-        icon = { Icon(item.icon, contentDescription = item.label) },
+        icon = {
+            BadgedBox(
+                badge = {
+                    if (item.badgeCount > 0) {
+                        Badge { Text(item.badgeCount.toString()) }
+                    }
+                },
+            ) {
+                Icon(item.icon, contentDescription = item.label)
+            }
+        },
     )
 }
