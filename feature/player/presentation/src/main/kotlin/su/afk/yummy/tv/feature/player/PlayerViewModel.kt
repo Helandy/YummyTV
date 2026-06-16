@@ -93,6 +93,12 @@ class PlayerViewModel @AssistedInject internal constructor(
     override fun onEvent(event: PlayerState.Event) {
         when (event) {
             PlayerState.Event.Back -> nav.back()
+            PlayerState.Event.OpenDetails -> {
+                analytics.eventOpenDetails(currentState.animeId)
+                val animeId = currentState.animeId
+                if (animeId > 0) nav.navigate(detailsNavigator.getDetailsDest(animeId))
+            }
+
             PlayerState.Event.RetryStream -> {
                 analytics.eventRetryStream(currentState.animeId)
                 setState { copy(retryKey = retryKey + 1) }

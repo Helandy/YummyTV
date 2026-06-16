@@ -43,6 +43,15 @@ internal class PlayerAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь открыл тайтл из плеера.
+     *
+     * Параметры: screen, action, anime_id.
+     */
+    fun eventOpenDetails(animeId: Int) {
+        eventAction(ACTION_OPEN_DETAILS, playerParams(animeId))
+    }
+
+    /**
      * Пользователь перешел к предыдущему эпизоду в плеере.
      *
      * Параметры: screen, action, anime_id.
@@ -275,6 +284,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val ACTION_BALANCER_SELECTED = "balancer_selected"
         private const val ACTION_DUBBING_SELECTED = "dubbing_selected"
         private const val ACTION_NEXT_EPISODE = "next_episode"
+        private const val ACTION_OPEN_DETAILS = "open_details"
         private const val ACTION_PREV_EPISODE = "prev_episode"
         private const val ACTION_QUALITY_SELECTED = "quality_selected"
         private const val ACTION_RATE_TITLE = "rate_title"

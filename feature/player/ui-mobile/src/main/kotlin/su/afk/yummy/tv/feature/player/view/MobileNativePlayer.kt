@@ -448,7 +448,9 @@ internal fun MobileNativePlayer(
             dubbing = ui.activeDubbing,
             playerName = ui.activeBalancerName,
             onBack = { onEvent(PlayerState.Event.Back) },
+            onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(MobilePlayerPipController::enter) },
+            showDetails = state.animeId > 0,
             showPictureInPicture = supportsPictureInPicture && !isInPictureInPictureMode,
             visible = overlayVisible && !isInPictureInPictureMode,
         )

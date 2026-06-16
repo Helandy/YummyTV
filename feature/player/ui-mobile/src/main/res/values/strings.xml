@@ -12,6 +12,7 @@
     <string name="player_mobile_previous_episode">Previous</string>
     <string name="player_mobile_next_episode">Next</string>
     <string name="player_mobile_back">Back</string>
+    <string name="player_mobile_details">Details</string>
     <string name="player_mobile_forward">Forward</string>
     <string name="player_mobile_pip_pause">Pause</string>
     <string name="player_mobile_pip_play">Play</string>

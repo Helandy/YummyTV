@@ -58,6 +58,7 @@ class PlayerState {
 
     sealed interface Event : UiEvent {
         data object Back : Event
+        data object OpenDetails : Event
         data object PrevEpisode : Event
         data object NextEpisode : Event
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event

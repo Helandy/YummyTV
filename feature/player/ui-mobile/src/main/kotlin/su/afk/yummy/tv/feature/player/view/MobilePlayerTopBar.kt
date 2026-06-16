@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +38,9 @@ internal fun MobilePlayerTopBar(
     dubbing: String,
     playerName: String,
     onBack: () -> Unit,
+    onDetails: () -> Unit,
     onPictureInPicture: () -> Unit,
+    showDetails: Boolean,
     showPictureInPicture: Boolean,
     visible: Boolean,
     modifier: Modifier = Modifier,
@@ -52,7 +55,11 @@ internal fun MobilePlayerTopBar(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White
+                )
             }
             Column(
                 modifier = Modifier.weight(1f),
@@ -88,7 +95,7 @@ internal fun MobilePlayerTopBar(
                     )
                 }
             }
-            if (playerName.isNotBlank() || showPictureInPicture) {
+            if (playerName.isNotBlank() || showDetails || showPictureInPicture) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.padding(start = 8.dp),
@@ -107,18 +114,37 @@ internal fun MobilePlayerTopBar(
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                         )
                     }
-                    if (showPictureInPicture) {
-                        IconButton(
-                            onClick = onPictureInPicture,
-                            modifier = Modifier
-                                .padding(top = 2.dp)
-                                .size(32.dp),
+                    if (showDetails || showPictureInPicture) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 2.dp),
                         ) {
-                            Icon(
-                                Icons.Filled.PictureInPictureAlt,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
+                            if (showDetails) {
+                                IconButton(
+                                    onClick = onDetails,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .padding(end = 10.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Info,
+                                        contentDescription = stringResource(R.string.player_mobile_details),
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+                            if (showPictureInPicture) {
+                                IconButton(
+                                    onClick = onPictureInPicture,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Filled.PictureInPictureAlt,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
+                            }
                         }
                     }
                 }
