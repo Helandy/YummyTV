@@ -63,6 +63,9 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             limit = limit,
         )
 
+    suspend fun suppressedContinueWatchingAnimeIds(): Set<Int> =
+        dao.suppressedAnimeIds().toSet()
+
     suspend fun save(
         animeId: Int,
         episode: String,
@@ -80,6 +83,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             dao.delete(animeId, episode)
             return
         }
+        dao.deleteSuppression(animeId)
         dao.save(
             WatchProgressEntry(
                 animeId = animeId,
@@ -100,4 +104,9 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun delete(animeId: Int, episode: String) = dao.delete(animeId, episode)
 
     suspend fun deleteByAnimeId(animeId: Int) = dao.deleteByAnimeId(animeId)
+
+    suspend fun suppressContinueWatching(animeId: Int) {
+        dao.saveSuppression(ContinueWatchingSuppressionEntry(animeId = animeId))
+        dao.deleteByAnimeId(animeId)
+    }
 }

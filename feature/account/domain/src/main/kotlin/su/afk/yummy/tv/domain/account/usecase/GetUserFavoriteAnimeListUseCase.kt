@@ -6,6 +6,9 @@ import javax.inject.Inject
 
 /** Loads the current user's favorite anime list. */
 class GetUserFavoriteAnimeListUseCase @Inject constructor(private val repository: UserListsRepository) {
-    suspend operator fun invoke(userId: Int): List<UserAnimeListItem> =
-        repository.getUserFavorites(userId)
+    suspend operator fun invoke(
+        userId: Int,
+        forceRefresh: Boolean = false,
+    ): List<UserAnimeListItem> =
+        repository.getUserFavorites(userId, forceRefresh)
 }

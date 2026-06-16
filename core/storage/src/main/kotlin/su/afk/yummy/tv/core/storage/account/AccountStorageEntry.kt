@@ -60,6 +60,7 @@ data class AccountUserListItemEntry(
     val year: Int? = null,
     val userListId: Int? = null,
     val isFavorite: Boolean,
+    val updatedAtSeconds: Long? = null,
 )
 
 @Entity(

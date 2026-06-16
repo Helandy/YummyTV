@@ -27,6 +27,12 @@ interface LibraryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(entry: LibraryEntry)
 
+    @Query("SELECT EXISTS(SELECT 1 FROM library_sync_states WHERE userId = :userId)")
+    suspend fun hasSyncState(userId: Int): Boolean
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveSyncState(entry: LibrarySyncStateEntry)
+
     @Query("DELETE FROM library WHERE animeId = :animeId")
     suspend fun delete(animeId: Int)
 }

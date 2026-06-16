@@ -88,7 +88,7 @@ class LibraryViewModel @Inject internal constructor(
                 signedInUserId = userId
                 if (userId > 0) {
                     setState { copy(isSignedIn = true) }
-                    loadRemoteLists(userId)
+                    loadRemoteLists(userId, forceRefresh = true)
                 } else {
                     remoteListsJob?.cancel()
                     setState {
@@ -137,13 +137,13 @@ class LibraryViewModel @Inject internal constructor(
             }
 
             LibraryState.Event.ScreenResumed -> {
-                refreshRemoteLists()
+                refreshRemoteLists(forceRefresh = true)
                 loadCachedContinueWatching()
             }
 
             LibraryState.Event.RetrySelected -> {
                 analytics.eventRetry()
-                refreshRemoteLists()
+                refreshRemoteLists(forceRefresh = true)
             }
 
             is LibraryState.Event.RemoveEntry -> removeEntry(event)
@@ -158,7 +158,7 @@ class LibraryViewModel @Inject internal constructor(
                     } else {
                         emptyList()
                     }
-                    watchProgressStore.deleteByAnimeId(event.animeId)
+                    watchProgressStore.suppressContinueWatching(event.animeId)
                     removeCachedContinueWatching(event.animeId)
                     cachedFeedContinueWatching =
                         cachedFeedContinueWatching.filterNot { it.animeId == event.animeId }
@@ -246,15 +246,18 @@ class LibraryViewModel @Inject internal constructor(
         nav.navigate(detailsNavigator.getDetailsDest(animeId))
     }
 
-    private fun refreshRemoteLists() {
-        if (signedInUserId > 0) loadRemoteLists(signedInUserId)
+    private fun refreshRemoteLists(forceRefresh: Boolean = false) {
+        if (signedInUserId > 0) loadRemoteLists(signedInUserId, forceRefresh)
     }
 
-    private fun loadRemoteLists(userId: Int) {
+    private fun loadRemoteLists(
+        userId: Int,
+        forceRefresh: Boolean = false,
+    ) {
         remoteListsJob?.cancel()
         remoteListsJob = viewModelScope.launch {
             setState { copy(isRemoteLoading = true, remoteError = null) }
-            when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId)) {
+            when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId, forceRefresh)) {
                 is RemoteLibraryLoadResult.Success -> {
                     result.syncError?.let { analytics.eventLoadError(it) }
                     setState {

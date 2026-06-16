@@ -171,6 +171,7 @@ data class YaniUserAnimeDto(
     val rating: Double? = null,
     val year: Int? = null,
     val user: YaniAnimeUserDto? = null,
+    val date: Long? = null,
 )
 
 @Serializable

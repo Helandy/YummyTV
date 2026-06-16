@@ -7,6 +7,10 @@ import javax.inject.Inject
 
 /** Loads a user's anime list for the selected Yani list category. */
 class GetUserAnimeListUseCase @Inject constructor(private val repository: UserListsRepository) {
-    suspend operator fun invoke(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
-        repository.getUserList(userId, list)
+    suspend operator fun invoke(
+        userId: Int,
+        list: UserAnimeList,
+        forceRefresh: Boolean = false,
+    ): List<UserAnimeListItem> =
+        repository.getUserList(userId, list, forceRefresh)
 }

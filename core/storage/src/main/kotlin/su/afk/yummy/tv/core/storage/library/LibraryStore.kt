@@ -8,6 +8,9 @@ class LibraryStore(private val dao: LibraryDao) {
     fun observeIsInLibrary(animeId: Int): Flow<Boolean> = dao.observeIsInLibrary(animeId)
     fun observeIsFavorite(animeId: Int): Flow<Boolean> = dao.observeIsFavorite(animeId)
     suspend fun add(entry: LibraryEntry) = dao.add(entry)
+    suspend fun hasSyncState(userId: Int): Boolean = dao.hasSyncState(userId)
+    suspend fun markSynced(userId: Int) = dao.saveSyncState(LibrarySyncStateEntry(userId = userId))
+
     suspend fun refreshMetadata(
         animeId: Int,
         title: String,
@@ -29,11 +32,18 @@ class LibraryStore(private val dao: LibraryDao) {
     suspend fun remove(animeId: Int) {
         val entry = dao.getByAnimeId(animeId) ?: return
         if (entry.isFavorite) {
-            dao.add(entry.copy(listId = FAVORITE_ONLY_LIST_ID))
+            dao.add(
+                entry.copy(
+                    listId = FAVORITE_ONLY_LIST_ID,
+                    listUpdatedAt = System.currentTimeMillis(),
+                )
+            )
         } else {
             dao.delete(animeId)
         }
     }
+
+    suspend fun delete(animeId: Int) = dao.delete(animeId)
 
     suspend fun setFavorite(
         animeId: Int,
@@ -52,6 +62,7 @@ class LibraryStore(private val dao: LibraryDao) {
                     posterFullsizeUrl = poster?.fullsize ?: entry.posterFullsizeUrl,
                     posterMegaUrl = poster?.mega ?: entry.posterMegaUrl,
                     isFavorite = true,
+                    favoriteUpdatedAt = System.currentTimeMillis(),
                 ) ?: LibraryEntry(
                     animeId = animeId,
                     title = title,
@@ -69,7 +80,12 @@ class LibraryStore(private val dao: LibraryDao) {
 
         if (entry == null) return
         if (entry.listId >= 0) {
-            dao.add(entry.copy(isFavorite = false))
+            dao.add(
+                entry.copy(
+                    isFavorite = false,
+                    favoriteUpdatedAt = System.currentTimeMillis(),
+                )
+            )
         } else {
             dao.delete(animeId)
         }

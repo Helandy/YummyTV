@@ -83,6 +83,7 @@ internal fun YaniUserAnimeDto.toUserListItem(): UserAnimeListItem? {
         year = year?.takeIf { it > 0 },
         list = user?.list?.list?.id.toUserAnimeList(),
         isFavorite = user?.list?.isFav == true,
+        updatedAtSeconds = date?.takeIf { it > 0L },
     )
 }
 

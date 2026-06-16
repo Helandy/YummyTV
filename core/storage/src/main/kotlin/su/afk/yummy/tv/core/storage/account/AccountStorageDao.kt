@@ -47,6 +47,9 @@ abstract class AccountStorageDao {
         language: String,
     ): List<AccountUserListItemEntry>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM account_user_list_pages WHERE userId = :userId)")
+    abstract suspend fun hasUserListPages(userId: Int): Boolean
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertUserListPage(entry: AccountUserListPageEntry)
 

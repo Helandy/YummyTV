@@ -10,6 +10,7 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
@@ -24,16 +25,39 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     private val libraryStore: LibraryStore,
     private val getUserAnimeList: GetUserAnimeListUseCase,
     private val getUserFavoriteAnimeList: GetUserFavoriteAnimeListUseCase,
+    private val hasCachedUserLists: HasCachedUserListsUseCase,
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
 ) {
-    suspend fun loadRemoteLists(userId: Int): RemoteLibraryLoadResult {
+    suspend fun loadRemoteLists(
+        userId: Int,
+        forceRefresh: Boolean = false,
+    ): RemoteLibraryLoadResult {
         return try {
-            val remote = fetchRemoteLists(userId)
-            val syncResult = syncLocalMissingToRemote(remote)
-            val currentRemote = if (syncResult.syncedAny) fetchRemoteLists(userId) else remote
-            hydrateRemoteToLocal(currentRemote)
+            val hasKnownRemoteState =
+                libraryStore.hasSyncState(userId) || hasCachedUserLists(userId)
+            val allowLocalMissingUpload = !hasKnownRemoteState
+            val remoteFetchedAt = System.currentTimeMillis()
+            val remote = fetchRemoteLists(userId, forceRefresh)
+            val syncResult = syncLocalChangesToRemote(
+                remote = remote,
+                allowLocalMissingUpload = allowLocalMissingUpload,
+                remoteFetchedAt = remoteFetchedAt,
+            )
+            val currentRemote = if (syncResult.syncedAny) {
+                fetchRemoteLists(userId, forceRefresh = true)
+            } else {
+                remote
+            }
+            hydrateRemoteToLocal(
+                remote = currentRemote,
+                pruneMissingLocalEntries = forceRefresh && !allowLocalMissingUpload,
+                remoteFetchedAt = remoteFetchedAt,
+            )
+            if (syncResult.error == null) {
+                libraryStore.markSynced(userId)
+            }
             RemoteLibraryLoadResult.Success(
                 syncError = syncResult.error,
             )
@@ -57,14 +81,19 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             Result.failure(error)
         }
 
-    private suspend fun fetchRemoteLists(userId: Int): Map<LibraryTab, List<UserAnimeListItem>> =
+    private suspend fun fetchRemoteLists(
+        userId: Int,
+        forceRefresh: Boolean,
+    ): Map<LibraryTab, List<UserAnimeListItem>> =
         coroutineScope {
-            val watching = async { getUserAnimeList(userId, UserAnimeList.WATCHING) }
-            val favorites = async { getUserFavoriteAnimeList(userId) }
-            val planned = async { getUserAnimeList(userId, UserAnimeList.PLANNED) }
-            val completed = async { getUserAnimeList(userId, UserAnimeList.COMPLETED) }
-            val postponed = async { getUserAnimeList(userId, UserAnimeList.POSTPONED) }
-            val dropped = async { getUserAnimeList(userId, UserAnimeList.DROPPED) }
+            val watching = async { getUserAnimeList(userId, UserAnimeList.WATCHING, forceRefresh) }
+            val favorites = async { getUserFavoriteAnimeList(userId, forceRefresh) }
+            val planned = async { getUserAnimeList(userId, UserAnimeList.PLANNED, forceRefresh) }
+            val completed =
+                async { getUserAnimeList(userId, UserAnimeList.COMPLETED, forceRefresh) }
+            val postponed =
+                async { getUserAnimeList(userId, UserAnimeList.POSTPONED, forceRefresh) }
+            val dropped = async { getUserAnimeList(userId, UserAnimeList.DROPPED, forceRefresh) }
 
             mapOf(
                 LibraryTab.WATCHING to watching.await(),
@@ -76,64 +105,133 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             )
         }
 
-    private suspend fun syncLocalMissingToRemote(
+    private suspend fun syncLocalChangesToRemote(
         remote: Map<LibraryTab, List<UserAnimeListItem>>,
+        allowLocalMissingUpload: Boolean,
+        remoteFetchedAt: Long,
     ): LocalLibrarySyncResult {
-        val remotePrimaryAnimeIds = remote
+        val remotePrimary = remote
             .filterKeys { it != LibraryTab.FAVORITES }
-            .values
-            .flatten()
-            .map { it.animeId }
-            .toSet()
-        val remoteFavoriteAnimeIds =
-            remote[LibraryTab.FAVORITES].orEmpty().map { it.animeId }.toSet()
+            .flatMap { (tab, items) ->
+                val list = tab.userAnimeList() ?: return@flatMap emptyList()
+                items.map { item -> item.animeId to RemoteListItem(list, item) }
+            }
+            .toMap()
+        val remoteFavorites = remote[LibraryTab.FAVORITES].orEmpty()
+            .associateBy { it.animeId }
         val localItems = libraryStore.getAll()
-        val localMissing = localItems
-            .filter { it.listId >= 0 }
-            .filterNot { it.animeId in remotePrimaryAnimeIds }
         var syncedAny = false
         var firstError: Throwable? = null
 
-        localMissing.forEach { entry ->
-            val list = entry.userAnimeList() ?: return@forEach
-            runCatching {
-                setAnimeList(entry.animeId, list)
-            }.fold(
-                onSuccess = { syncedAny = true },
-                onFailure = { if (firstError == null) firstError = it },
-            )
-        }
-
-        localItems
-            .filter { it.isFavorite }
-            .filterNot { it.animeId in remoteFavoriteAnimeIds }
-            .forEach { entry ->
+        localItems.forEach { entry ->
+            val localList = entry.userAnimeList()
+            val remoteList = remotePrimary[entry.animeId]
+            if (localList != null && shouldPushList(
+                    entry = entry,
+                    localList = localList,
+                    remoteList = remoteList,
+                    allowLocalMissingUpload = allowLocalMissingUpload,
+                    remoteFetchedAt = remoteFetchedAt,
+                )
+            ) {
                 runCatching {
-                    setAnimeFavorite(entry.animeId, true)
+                    setAnimeList(entry.animeId, localList)
                 }.fold(
                     onSuccess = { syncedAny = true },
                     onFailure = { if (firstError == null) firstError = it },
                 )
             }
 
+            val remoteFavorite = remoteFavorites[entry.animeId]
+            if (shouldPushFavorite(
+                    entry = entry,
+                    remoteFavorite = remoteFavorite,
+                    allowLocalMissingUpload = allowLocalMissingUpload,
+                    remoteFetchedAt = remoteFetchedAt,
+                )
+            ) {
+                runCatching {
+                    setAnimeFavorite(entry.animeId, entry.isFavorite)
+                }.fold(
+                    onSuccess = { syncedAny = true },
+                    onFailure = { if (firstError == null) firstError = it },
+                )
+            }
+        }
+
         return LocalLibrarySyncResult(syncedAny = syncedAny, error = firstError)
     }
 
-    private suspend fun hydrateRemoteToLocal(remote: Map<LibraryTab, List<UserAnimeListItem>>) {
+    private fun shouldPushList(
+        entry: LibraryEntry,
+        localList: UserAnimeList,
+        remoteList: RemoteListItem?,
+        allowLocalMissingUpload: Boolean,
+        remoteFetchedAt: Long,
+    ): Boolean {
+        remoteList ?: return allowLocalMissingUpload
+        val remoteUpdatedAt = remoteList.item.updatedAtMillis(remoteFetchedAt)
+        return remoteList.list != localList && entry.listUpdatedAt > remoteUpdatedAt
+    }
+
+    private fun shouldPushFavorite(
+        entry: LibraryEntry,
+        remoteFavorite: UserAnimeListItem?,
+        allowLocalMissingUpload: Boolean,
+        remoteFetchedAt: Long,
+    ): Boolean {
+        if (entry.isFavorite && remoteFavorite == null) return allowLocalMissingUpload
+        if (remoteFavorite == null) return false
+
+        val remoteUpdatedAt = remoteFavorite.updatedAtMillis(remoteFetchedAt)
+        return !entry.isFavorite && entry.favoriteUpdatedAt > remoteUpdatedAt
+    }
+
+    private suspend fun hydrateRemoteToLocal(
+        remote: Map<LibraryTab, List<UserAnimeListItem>>,
+        pruneMissingLocalEntries: Boolean,
+        remoteFetchedAt: Long,
+    ) {
         val merged = libraryStore.getAll()
             .associateBy { it.animeId }
             .toMutableMap()
+        val remoteAnimeIds = mutableSetOf<Int>()
+        val remotePrimaryAnimeIds = remote
+            .filterKeys { it != LibraryTab.FAVORITES }
+            .values
+            .flatten()
+            .map { it.animeId }
+            .toSet()
+        val remoteFavoriteItems = remote[LibraryTab.FAVORITES].orEmpty()
+            .associateBy { it.animeId }
+        val remoteFavoriteAnimeIds = remote.values
+            .flatten()
+            .filter { it.isFavorite }
+            .map { it.animeId }
+            .toMutableSet()
+            .apply { addAll(remoteFavoriteItems.keys) }
 
         remote
             .filterKeys { it != LibraryTab.FAVORITES }
             .forEach { (tab, items) ->
                 val list = tab.userAnimeList() ?: return@forEach
                 items.forEach { item ->
+                    remoteAnimeIds += item.animeId
                     val current = merged[item.animeId]
                     val next = item.toLibraryEntry(
                         current = current,
                         listId = item.list?.id ?: list.id,
-                        isFavorite = current?.isFavorite == true || item.isFavorite,
+                        isFavorite = if (pruneMissingLocalEntries) {
+                            item.animeId in remoteFavoriteAnimeIds
+                        } else {
+                            current?.isFavorite == true || item.isFavorite
+                        },
+                        listUpdatedAt = item.updatedAtMillis(remoteFetchedAt),
+                        favoriteUpdatedAt = remoteFavoriteItems[item.animeId]
+                            ?.updatedAtMillis(remoteFetchedAt)
+                            ?: item.takeIf { it.isFavorite }?.updatedAtMillis(remoteFetchedAt)
+                            ?: current?.favoriteUpdatedAt
+                            ?: 0L,
                     )
                     merged[item.animeId] = next
                     libraryStore.add(next)
@@ -141,14 +239,27 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             }
 
         remote[LibraryTab.FAVORITES].orEmpty().forEach { item ->
+            remoteAnimeIds += item.animeId
             val current = merged[item.animeId]
             val next = item.toLibraryEntry(
                 current = current,
-                listId = current?.listId ?: FAVORITE_ONLY_LIST_ID,
+                listId = if (pruneMissingLocalEntries && item.animeId !in remotePrimaryAnimeIds) {
+                    FAVORITE_ONLY_LIST_ID
+                } else {
+                    current?.listId ?: FAVORITE_ONLY_LIST_ID
+                },
                 isFavorite = true,
+                listUpdatedAt = current?.listUpdatedAt ?: item.updatedAtMillis(remoteFetchedAt),
+                favoriteUpdatedAt = item.updatedAtMillis(remoteFetchedAt),
             )
             merged[item.animeId] = next
             libraryStore.add(next)
+        }
+
+        if (pruneMissingLocalEntries) {
+            merged.keys
+                .filterNot { it in remoteAnimeIds }
+                .forEach { animeId -> libraryStore.delete(animeId) }
         }
     }
 
@@ -156,6 +267,8 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
         current: LibraryEntry?,
         listId: Int,
         isFavorite: Boolean,
+        listUpdatedAt: Long,
+        favoriteUpdatedAt: Long,
     ): LibraryEntry =
         LibraryEntry(
             animeId = animeId,
@@ -168,7 +281,18 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             addedAt = current?.addedAt ?: System.currentTimeMillis(),
             listId = listId,
             isFavorite = isFavorite,
+            listUpdatedAt = listUpdatedAt,
+            favoriteUpdatedAt = if (isFavorite) favoriteUpdatedAt else current?.favoriteUpdatedAt
+                ?: 0L,
         )
+
+    private fun UserAnimeListItem.updatedAtMillis(fallback: Long): Long =
+        updatedAtSeconds?.takeIf { it > 0L }?.let { it * 1000L } ?: fallback
+
+    private data class RemoteListItem(
+        val list: UserAnimeList,
+        val item: UserAnimeListItem,
+    )
 }
 
 /** Result of loading remote library tabs and optional local-to-remote sync. */

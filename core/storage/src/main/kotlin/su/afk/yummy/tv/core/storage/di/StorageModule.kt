@@ -1252,6 +1252,40 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_20_21 = object : Migration(20, 21) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE library ADD COLUMN listUpdatedAt INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE library ADD COLUMN favoriteUpdatedAt INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("UPDATE library SET listUpdatedAt = addedAt WHERE listUpdatedAt = 0")
+            db.execSQL("UPDATE library SET favoriteUpdatedAt = addedAt WHERE isFavorite = 1 AND favoriteUpdatedAt = 0")
+            db.execSQL("ALTER TABLE account_user_list_items ADD COLUMN updatedAtSeconds INTEGER")
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS continue_watching_suppressions (
+                    animeId INTEGER NOT NULL,
+                    suppressedAt INTEGER NOT NULL,
+                    PRIMARY KEY(animeId)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_continue_watching_suppressions_suppressedAt
+                ON continue_watching_suppressions(suppressedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS library_sync_states (
+                    userId INTEGER NOT NULL,
+                    syncedAt INTEGER NOT NULL,
+                    PRIMARY KEY(userId)
+                )
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1270,6 +1304,7 @@ object StorageModule {
                 MIGRATION_17_18,
                 MIGRATION_18_19,
                 MIGRATION_19_20,
+                MIGRATION_20_21,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

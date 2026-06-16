@@ -25,6 +25,10 @@ interface WatchProgressDao {
             AND durationMs > 0
             AND positionMs >= :minPositionMs
             AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+            AND NOT EXISTS (
+                SELECT 1 FROM continue_watching_suppressions AS suppressed
+                WHERE suppressed.animeId = watch_progress.animeId
+            )
         ORDER BY updatedAt DESC
         """
     )
@@ -40,6 +44,10 @@ interface WatchProgressDao {
             AND durationMs > 0
             AND positionMs >= :minPositionMs
             AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+            AND NOT EXISTS (
+                SELECT 1 FROM continue_watching_suppressions AS suppressed
+                WHERE suppressed.animeId = watch_progress.animeId
+            )
         ORDER BY updatedAt DESC
         """
     )
@@ -54,6 +62,10 @@ interface WatchProgressDao {
         WHERE progress.videoId > 0
             AND progress.durationMs > 0
             AND progress.positionMs >= :minPositionMs
+            AND NOT EXISTS (
+                SELECT 1 FROM continue_watching_suppressions AS suppressed
+                WHERE suppressed.animeId = progress.animeId
+            )
             AND NOT EXISTS (
                 SELECT 1 FROM watch_progress AS other
                 WHERE other.videoId = progress.videoId
@@ -85,6 +97,15 @@ interface WatchProgressDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entry: WatchProgressEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveSuppression(entry: ContinueWatchingSuppressionEntry)
+
+    @Query("SELECT animeId FROM continue_watching_suppressions")
+    suspend fun suppressedAnimeIds(): List<Int>
+
+    @Query("DELETE FROM continue_watching_suppressions WHERE animeId = :animeId")
+    suspend fun deleteSuppression(animeId: Int)
 
     @Query("DELETE FROM watch_progress WHERE animeId = :animeId AND episode = :episode")
     suspend fun delete(animeId: Int, episode: String)

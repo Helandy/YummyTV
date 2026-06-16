@@ -9,16 +9,21 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
@@ -42,6 +47,8 @@ fun LibraryMobileScreen(
 
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnEvent by rememberUpdatedState(onEvent)
     val itemRemovedText = stringResource(R.string.library_mobile_remove_success)
     val pagerState = rememberPagerState(
         initialPage = state.selectedTab.toLibraryMobilePage(),
@@ -64,6 +71,16 @@ fun LibraryMobileScreen(
                 }
             }
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                currentOnEvent(LibraryState.Event.ScreenResumed)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     pendingRemoval?.let { removal ->

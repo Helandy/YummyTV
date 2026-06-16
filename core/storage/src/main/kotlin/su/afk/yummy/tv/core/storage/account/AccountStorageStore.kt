@@ -24,6 +24,9 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         dao.replaceUserList(cache)
     }
 
+    suspend fun hasUserListCache(userId: Int): Boolean =
+        dao.hasUserListPages(userId)
+
     suspend fun deleteUserLists(userId: Int) {
         dao.deleteUserLists(userId)
     }

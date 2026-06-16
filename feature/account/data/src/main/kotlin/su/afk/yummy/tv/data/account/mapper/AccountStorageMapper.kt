@@ -105,6 +105,7 @@ internal fun List<UserAnimeListItem>.toUserListCache(
                 year = item.year,
                 userListId = item.list?.id,
                 isFavorite = item.isFavorite,
+                updatedAtSeconds = item.updatedAtSeconds,
             )
         },
     )
@@ -122,6 +123,7 @@ internal fun AccountAnimeListStateEntry.toUserListItem(): UserAnimeListItem =
         year = null,
         list = listId.toUserAnimeList(),
         isFavorite = isFavorite,
+        updatedAtSeconds = cachedAt / 1000L,
     )
 
 internal fun List<AnimeRatingBucket>.toRatingBucketsCache(
@@ -518,6 +520,7 @@ private fun AccountUserListItemEntry.toUserListItem(): UserAnimeListItem {
         year = year,
         list = userListId.toUserAnimeList(),
         isFavorite = isFavorite,
+        updatedAtSeconds = updatedAtSeconds,
     )
 }
 

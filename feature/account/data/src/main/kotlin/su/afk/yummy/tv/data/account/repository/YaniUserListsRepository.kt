@@ -23,14 +23,26 @@ class YaniUserListsRepository(
     private val settingsStore: SettingsStore,
 ) : UserListsRepository {
 
-    override suspend fun getUserList(userId: Int, list: UserAnimeList): List<UserAnimeListItem> =
+    override suspend fun getUserList(
+        userId: Int,
+        list: UserAnimeList,
+        forceRefresh: Boolean,
+    ): List<UserAnimeListItem> =
         withContext(Dispatchers.IO) {
-            getUserList(userId, list.id)
+            getUserList(userId, list.id, forceRefresh)
         }
 
-    override suspend fun getUserFavorites(userId: Int): List<UserAnimeListItem> =
+    override suspend fun getUserFavorites(
+        userId: Int,
+        forceRefresh: Boolean,
+    ): List<UserAnimeListItem> =
         withContext(Dispatchers.IO) {
-            getUserList(userId, FAVORITES_LIST_ID)
+            getUserList(userId, FAVORITES_LIST_ID, forceRefresh)
+        }
+
+    override suspend fun hasCachedUserLists(userId: Int): Boolean =
+        withContext(Dispatchers.IO) {
+            accountStorage.hasUserListCache(userId)
         }
 
     override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem = withContext(Dispatchers.IO) {
@@ -82,11 +94,15 @@ class YaniUserListsRepository(
     private suspend fun currentUserId(): Int =
         settingsStore.yaniUserId.first()
 
-    private suspend fun getUserList(userId: Int, listId: Int): List<UserAnimeListItem> {
+    private suspend fun getUserList(
+        userId: Int,
+        listId: Int,
+        forceRefresh: Boolean,
+    ): List<UserAnimeListItem> {
         val language = settingsStore.yaniContentLanguage.first()
         val languageCode = language.apiCode
         val stored = accountStorage.getUserList(userId, listId, languageCode)
-        if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
+        if (!forceRefresh && stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
             return stored.toUserListItems()
         }
 

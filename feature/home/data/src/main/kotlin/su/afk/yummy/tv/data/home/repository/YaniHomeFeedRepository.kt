@@ -44,14 +44,18 @@ class YaniHomeFeedRepository(
             .map { it.toFeedWatchParam() }
             .joinToString("|")
         val displayWatchEntries = displayWatchEntries()
+        val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
         val stored = homeFeedStore.getFeed(languageCode, watchSignature)
-        stored?.toHomeFeed(stringProvider)?.withMergedContinueWatching(displayWatchEntries)
+        stored?.toHomeFeed(stringProvider)
+            ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
+            ?.withMergedContinueWatching(displayWatchEntries)
             ?: if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
                 null
             } else {
                 homeFeedStore
                     .getFeed(languageCode, HOME_FEED_GENERIC_WATCH_SIGNATURE)
                     ?.toHomeFeed(stringProvider)
+                    ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
                     ?.withMergedContinueWatching(displayWatchEntries)
             }
     }
@@ -69,12 +73,14 @@ class YaniHomeFeedRepository(
         val languageCode = language.apiCode
         val feedWatchEntries = feedWatchEntries()
         val displayWatchEntries = displayWatchEntries()
+        val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
         val watches = feedWatchEntries.map { it.toFeedWatchParam() }
         val watchSignature = watches.joinToString("|")
         val stored = homeFeedStore.getFeed(languageCode, watchSignature)
         if (!forceRefresh && stored?.isFresh(FEED_TTL_MS) == true) {
             return@withContext stored
                 .toHomeFeed(stringProvider)
+                .withoutSuppressedContinueWatching(suppressedAnimeIds)
                 .withMergedContinueWatching(displayWatchEntries)
         }
         val genericStored = if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
@@ -89,12 +95,16 @@ class YaniHomeFeedRepository(
                 watchSignature = watchSignature,
                 watches = watches,
                 displayWatchEntries = displayWatchEntries,
+                suppressedAnimeIds = suppressedAnimeIds,
             )
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toHomeFeed(stringProvider)?.withMergedContinueWatching(displayWatchEntries)
+            stored?.toHomeFeed(stringProvider)
+                ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
+                ?.withMergedContinueWatching(displayWatchEntries)
                 ?: genericStored?.toHomeFeed(stringProvider)
+                    ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
                     ?.withMergedContinueWatching(displayWatchEntries)
                 ?: throw error
         }
@@ -105,6 +115,7 @@ class YaniHomeFeedRepository(
         watchSignature: String,
         watches: List<String>,
         displayWatchEntries: List<WatchProgressEntry>,
+        suppressedAnimeIds: Set<Int>,
     ): HomeFeed {
         Log.i(
             TAG,
@@ -113,18 +124,21 @@ class YaniHomeFeedRepository(
         )
         val dto = api.getFeed(watches)
         Log.i(TAG, "Feed dto ${dto.summaryForLog()}")
-        val mappedFeed = dto.toHomeFeed(stringProvider, displayWatchEntries)
+        val mappedFeed = dto
+            .toHomeFeed(stringProvider, displayWatchEntries)
+            .withoutSuppressedContinueWatching(suppressedAnimeIds)
         val enrichedItems = continueWatchingEnricher.enrich(
             items = mappedFeed.continueWatchingItems,
             watchEntries = displayWatchEntries,
         )
         val enrichedFeed = mappedFeed.copy(continueWatchingItems = enrichedItems)
+            .withoutSuppressedContinueWatching(suppressedAnimeIds)
         val feed = enrichedFeed.copy(
             continueWatchingItems = mergeContinueWatchingItems(
-                feedItems = enrichedItems,
+                feedItems = enrichedFeed.continueWatchingItems,
                 localEntries = displayWatchEntries,
             )
-        )
+        ).withoutSuppressedContinueWatching(suppressedAnimeIds)
         Log.i(
             TAG,
             "Feed mapped ${feed.summaryForLog()} enriched=" +
@@ -159,6 +173,15 @@ class YaniHomeFeedRepository(
             localEntries = localEntries,
         )
     )
+
+    private fun HomeFeed.withoutSuppressedContinueWatching(
+        suppressedAnimeIds: Set<Int>,
+    ): HomeFeed =
+        if (suppressedAnimeIds.isEmpty()) {
+            this
+        } else {
+            copy(continueWatchingItems = continueWatchingItems.filterNot { it.animeId in suppressedAnimeIds })
+        }
 
     private fun mergeContinueWatchingItems(
         feedItems: List<HomeContinueWatchingItem>,

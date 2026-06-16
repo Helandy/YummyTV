@@ -49,6 +49,7 @@ import su.afk.yummy.tv.core.storage.home.HomeFeedDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.core.storage.library.LibraryDao
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
+import su.afk.yummy.tv.core.storage.library.LibrarySyncStateEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleDao
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleItemEntry
@@ -62,13 +63,16 @@ import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopDao
 import su.afk.yummy.tv.core.storage.top.AnimeTopItemEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopPageEntry
+import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingSuppressionEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressDao
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 
 @Database(
     entities = [
         LibraryEntry::class,
+        LibrarySyncStateEntry::class,
         WatchProgressEntry::class,
+        ContinueWatchingSuppressionEntry::class,
         AnimeDetailsEntry::class,
         AnimeDetailTitleEntry::class,
         AnimeDetailNamedEntry::class,
@@ -121,7 +125,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserProfileWatchTypeEntry::class,
         AccountUserProfileWatchHistoryEntry::class,
     ],
-    version = 20,
+    version = 21,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
