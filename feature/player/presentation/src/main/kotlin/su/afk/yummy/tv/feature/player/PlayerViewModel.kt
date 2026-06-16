@@ -54,11 +54,13 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private var activeDest: PlayerDestination = dest
+    private var pendingDestinationResumeMs: Long? = dest.resumeFromMs.takeIf { it > 0L }
     private var sourceGraphJob: Job? = null
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
         activeDest = newDest
+        pendingDestinationResumeMs = newDest.resumeFromMs.takeIf { it > 0L }
         setState {
             destinationStateMapper.toState(
                 newDest,
@@ -377,6 +379,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun loadStream() {
         extractionJob?.cancel()
         extractionJob = viewModelScope.launch {
+            val stateResumeMs = currentState.resumeFromMs.takeIf { it > 0L }
+            val destinationResumeMs = pendingDestinationResumeMs
             setState {
                 copy(
                     streamUrl = null,
@@ -391,6 +395,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
             val s = currentState
             val pendingResume = s.dubbingResumeMs.takeIf { it >= 0L }
+                ?: destinationResumeMs
+                ?: stateResumeMs
             val result = try {
                 streamHandler.resolve(s, pendingResume)
             } catch (exception: CancellationException) {
@@ -415,6 +421,9 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
             when (result) {
                 is PlayerStreamResult.Stream -> {
+                    if (destinationResumeMs != null && pendingResume == destinationResumeMs) {
+                        pendingDestinationResumeMs = null
+                    }
                     analytics.eventStreamStarted(s)
                     setState {
                         copy(

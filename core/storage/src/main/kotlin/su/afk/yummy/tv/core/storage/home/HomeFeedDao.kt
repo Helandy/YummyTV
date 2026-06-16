@@ -61,6 +61,17 @@ abstract class HomeFeedDao {
         watchSignature: String,
     )
 
+    @Query(
+        """
+        DELETE FROM home_feed_items
+        WHERE container = :container AND itemId = :itemId
+        """
+    )
+    abstract suspend fun deleteItemsByContainerAndItemId(
+        container: String,
+        itemId: Int,
+    )
+
     @Transaction
     open suspend fun getFeed(
         language: String,

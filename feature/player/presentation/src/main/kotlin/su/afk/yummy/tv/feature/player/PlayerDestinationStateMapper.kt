@@ -17,6 +17,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
             posterUrl = dest.posterUrl,
             sourceGraph = sourceGraph,
             sourceSelection = selection,
+            resumeFromMs = dest.resumeFromMs.coerceAtLeast(0L),
             autoSkipOpeningsEndings = autoSkipOpeningsEndings,
         )
     }

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_GENERIC_WATCH_SIGNATURE
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.home.isFresh
+import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
@@ -19,6 +20,7 @@ import su.afk.yummy.tv.data.home.mapper.toHomeFeedCache
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 
 private const val FEED_TTL_MS = 60 * 60 * 1000L
@@ -36,17 +38,44 @@ class YaniHomeFeedRepository(
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
+    override suspend fun getCachedHomeFeed(): HomeFeed? = withContext(Dispatchers.IO) {
+        val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+        val watchSignature = feedWatchEntries()
+            .map { it.toFeedWatchParam() }
+            .joinToString("|")
+        val displayWatchEntries = displayWatchEntries()
+        val stored = homeFeedStore.getFeed(languageCode, watchSignature)
+        stored?.toHomeFeed(stringProvider)?.withMergedContinueWatching(displayWatchEntries)
+            ?: if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
+                null
+            } else {
+                homeFeedStore
+                    .getFeed(languageCode, HOME_FEED_GENERIC_WATCH_SIGNATURE)
+                    ?.toHomeFeed(stringProvider)
+                    ?.withMergedContinueWatching(displayWatchEntries)
+            }
+    }
+
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
+
+    override suspend fun removeCachedContinueWatching(animeId: Int) {
+        withContext(Dispatchers.IO) {
+            homeFeedStore.deleteContinueWatchingByAnimeId(animeId)
+        }
+    }
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
         val languageCode = language.apiCode
-        val watchEntries = feedWatchEntries()
-        val watches = watchEntries.map { it.toFeedWatchParam() }
+        val feedWatchEntries = feedWatchEntries()
+        val displayWatchEntries = displayWatchEntries()
+        val watches = feedWatchEntries.map { it.toFeedWatchParam() }
         val watchSignature = watches.joinToString("|")
         val stored = homeFeedStore.getFeed(languageCode, watchSignature)
         if (!forceRefresh && stored?.isFresh(FEED_TTL_MS) == true) {
-            return@withContext stored.toHomeFeed(stringProvider)
+            return@withContext stored
+                .toHomeFeed(stringProvider)
+                .withMergedContinueWatching(displayWatchEntries)
         }
         val genericStored = if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
             stored
@@ -55,12 +84,18 @@ class YaniHomeFeedRepository(
         }
 
         try {
-            fetchHomeFeed(languageCode, watchSignature, watches, watchEntries)
+            fetchHomeFeed(
+                languageCode = languageCode,
+                watchSignature = watchSignature,
+                watches = watches,
+                displayWatchEntries = displayWatchEntries,
+            )
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toHomeFeed(stringProvider)
+            stored?.toHomeFeed(stringProvider)?.withMergedContinueWatching(displayWatchEntries)
                 ?: genericStored?.toHomeFeed(stringProvider)
+                    ?.withMergedContinueWatching(displayWatchEntries)
                 ?: throw error
         }
     }
@@ -69,7 +104,7 @@ class YaniHomeFeedRepository(
         languageCode: String,
         watchSignature: String,
         watches: List<String>,
-        watchEntries: List<WatchProgressEntry>,
+        displayWatchEntries: List<WatchProgressEntry>,
     ): HomeFeed {
         Log.i(
             TAG,
@@ -78,12 +113,18 @@ class YaniHomeFeedRepository(
         )
         val dto = api.getFeed(watches)
         Log.i(TAG, "Feed dto ${dto.summaryForLog()}")
-        val mappedFeed = dto.toHomeFeed(stringProvider, watchEntries)
+        val mappedFeed = dto.toHomeFeed(stringProvider, displayWatchEntries)
         val enrichedItems = continueWatchingEnricher.enrich(
             items = mappedFeed.continueWatchingItems,
-            watchEntries = watchEntries,
+            watchEntries = displayWatchEntries,
         )
-        val feed = mappedFeed.copy(continueWatchingItems = enrichedItems)
+        val enrichedFeed = mappedFeed.copy(continueWatchingItems = enrichedItems)
+        val feed = enrichedFeed.copy(
+            continueWatchingItems = mergeContinueWatchingItems(
+                feedItems = enrichedItems,
+                localEntries = displayWatchEntries,
+            )
+        )
         Log.i(
             TAG,
             "Feed mapped ${feed.summaryForLog()} enriched=" +
@@ -91,7 +132,7 @@ class YaniHomeFeedRepository(
                     "continueSamples=${enrichedItems.summaryForLog()}",
         )
         homeFeedStore.saveFeed(
-            feed.toHomeFeedCache(
+            enrichedFeed.toHomeFeedCache(
                 language = languageCode,
                 watchSignature = watchSignature,
                 cachedAt = System.currentTimeMillis(),
@@ -104,8 +145,102 @@ class YaniHomeFeedRepository(
         watchProgressStore
             .latestMeaningfulVideoProgress(FEED_WATCH_LIMIT)
 
+    private suspend fun displayWatchEntries(): List<WatchProgressEntry> =
+        watchProgressStore.continueWatching()
+
     private fun WatchProgressEntry.toFeedWatchParam(): String =
         "$videoId:${positionMs / 1000L}:${updatedAt / 1000L}"
+
+    private fun HomeFeed.withMergedContinueWatching(
+        localEntries: List<WatchProgressEntry>,
+    ): HomeFeed = copy(
+        continueWatchingItems = mergeContinueWatchingItems(
+            feedItems = continueWatchingItems,
+            localEntries = localEntries,
+        )
+    )
+
+    private fun mergeContinueWatchingItems(
+        feedItems: List<HomeContinueWatchingItem>,
+        localEntries: List<WatchProgressEntry>,
+    ): List<HomeContinueWatchingItem> {
+        val result = linkedMapOf<Int, HomeContinueWatchingItem>()
+        feedItems.forEach { item ->
+            if (item.animeId <= 0) return@forEach
+            val current = result[item.animeId]
+            if (current == null ||
+                ContinueWatchingMerge.isFurtherThan(
+                    entry = item.toWatchProgressEntry(),
+                    other = current.toWatchProgressEntry(),
+                )
+            ) {
+                result[item.animeId] = item
+            }
+        }
+
+        val localOnly = mutableListOf<HomeContinueWatchingItem>()
+        ContinueWatchingMerge.bestByAnime(localEntries).forEach { local ->
+            val current = result[local.animeId]
+            val localItem = local.toHomeContinueWatchingItem()
+            if (current == null) {
+                localOnly += localItem
+            } else if (
+                ContinueWatchingMerge.isFurtherThan(
+                    entry = local,
+                    other = current.toWatchProgressEntry(),
+                )
+            ) {
+                result[local.animeId] = localItem
+            }
+        }
+
+        return result.values.toList() + localOnly.sortedByDescending { it.updatedAt }
+    }
+
+    private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
+        WatchProgressEntry(
+            animeId = animeId,
+            episode = episode,
+            videoId = videoId,
+            episodeUrl = episodeUrl,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            updatedAt = updatedAt,
+            animeTitle = animeTitle,
+            posterUrl = poster?.bestUrl().orEmpty(),
+            playerName = playerName,
+            dubbing = dubbing,
+            screenshotUrl = screenshotUrl,
+        )
+
+    private fun WatchProgressEntry.toHomeContinueWatchingItem(): HomeContinueWatchingItem =
+        HomeContinueWatchingItem(
+            animeId = animeId,
+            animeTitle = animeTitle,
+            description = "",
+            poster = posterUrl.takeIf { it.isNotBlank() }?.let { it.toHomePoster() },
+            videoId = videoId,
+            episode = episode,
+            episodeUrl = episodeUrl,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            updatedAt = updatedAt,
+            playerName = playerName,
+            dubbing = dubbing,
+            screenshotUrl = screenshotUrl,
+        )
+
+    private fun HomePoster.bestUrl(): String? =
+        mega ?: fullsize ?: big ?: medium ?: small
+
+    private fun String.toHomePoster(): HomePoster =
+        HomePoster(
+            small = null,
+            medium = null,
+            big = null,
+            fullsize = null,
+            mega = this,
+        )
 
     private fun YaniFeedDto.summaryForLog(): String {
         val data = response

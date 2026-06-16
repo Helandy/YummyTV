@@ -11,4 +11,11 @@ class HomeFeedStore(private val dao: HomeFeedDao) {
     suspend fun saveFeed(cache: HomeFeedCache) {
         dao.replaceFeed(cache)
     }
+
+    suspend fun deleteContinueWatchingByAnimeId(animeId: Int) {
+        dao.deleteItemsByContainerAndItemId(
+            container = HOME_FEED_CONTAINER_CONTINUE_WATCHING,
+            itemId = animeId,
+        )
+    }
 }

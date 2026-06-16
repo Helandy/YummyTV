@@ -35,6 +35,21 @@ interface WatchProgressDao {
 
     @Query(
         """
+        SELECT * FROM watch_progress
+        WHERE animeId > 0
+            AND durationMs > 0
+            AND positionMs >= :minPositionMs
+            AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+        ORDER BY updatedAt DESC
+        """
+    )
+    suspend fun continueWatching(
+        minPositionMs: Long,
+        maxProgress: Float,
+    ): List<WatchProgressEntry>
+
+    @Query(
+        """
         SELECT progress.* FROM watch_progress AS progress
         WHERE progress.videoId > 0
             AND progress.durationMs > 0

@@ -16,6 +16,7 @@ data class PlayerDestination(
     val selectedVideoId: Int = 0,
     val selectedPlayerId: Int? = null,
     val selectedScreenshotUrl: String = "",
+    val resumeFromMs: Long = 0L,
 ) : NavKey, AnalyticsDestination {
     override val screenName: String = "player"
     override val screenParams: Map<String, String>

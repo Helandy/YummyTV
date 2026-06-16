@@ -51,6 +51,12 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             maxProgress = WATCHED_PROGRESS,
         )
 
+    suspend fun continueWatching(): List<WatchProgressEntry> =
+        dao.continueWatching(
+            minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
+            maxProgress = WATCHED_PROGRESS,
+        )
+
     suspend fun latestMeaningfulVideoProgress(limit: Int): List<WatchProgressEntry> =
         dao.latestMeaningfulVideoProgress(
             minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,

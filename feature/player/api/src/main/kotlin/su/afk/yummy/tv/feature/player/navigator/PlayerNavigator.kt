@@ -15,6 +15,7 @@ class PlayerNavigator : IPlayerNavigator {
         selectedScreenshotUrl: String,
         animeId: Int,
         posterUrl: String,
+        resumeFromMs: Long,
     ): NavKey = PlayerDestination(
         iframeUrl = iframeUrl,
         animeTitle = animeTitle,
@@ -26,5 +27,6 @@ class PlayerNavigator : IPlayerNavigator {
         selectedVideoId = selectedVideoId,
         selectedPlayerId = selectedPlayerId,
         selectedScreenshotUrl = selectedScreenshotUrl,
+        resumeFromMs = resumeFromMs,
     )
 }

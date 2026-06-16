@@ -98,7 +98,6 @@ class ContinueWatchingEnricher @Inject constructor(
                     it.episode.episodeKey() == episodeKey
         }
             ?: firstOrNull { item.videoId > 0 && it.videoId == item.videoId }
-            ?: firstOrNull { it.animeId == item.animeId }
     }
 
     private fun List<AnimeVideo>.selectVideo(

@@ -35,6 +35,7 @@ class HomeState {
         data class ItemFocused(val sectionId: String, val displayId: Int, val animeId: Int?) : Event
         data class ContinueWatchingSelected(val entry: WatchProgressEntry) : Event
         data object FocusedItemRestoreHandled : Event
+        data object ScreenResumed : Event
         data object RetrySelected : Event
     }
 

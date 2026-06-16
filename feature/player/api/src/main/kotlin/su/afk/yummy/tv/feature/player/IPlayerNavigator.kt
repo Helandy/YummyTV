@@ -14,5 +14,6 @@ interface IPlayerNavigator {
         selectedScreenshotUrl: String = "",
         animeId: Int = 0,
         posterUrl: String = "",
+        resumeFromMs: Long = 0L,
     ): NavKey
 }

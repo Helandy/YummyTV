@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -37,14 +37,23 @@ internal fun ContinueWatchingSection(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(entries, key = { "${it.animeId}-${it.episode}-${it.videoId}" }) { entry ->
+            itemsIndexed(
+                items = entries,
+                key = { index, entry ->
+                    "${entry.animeId}-${entry.episode}-${entry.videoId}-${entry.updatedAt}-$index"
+                },
+            ) { _, entry ->
                 val episodeTitle = stringResource(R.string.home_mobile_episode, entry.episode)
+                val imageIdentity =
+                    "${entry.animeId}-${entry.episode}-${entry.videoId}-${entry.updatedAt}"
                 val imageUrl by produceState<String?>(
                     null,
+                    imageIdentity,
                     entry.screenshotUrl,
                     entry.episodeUrl,
-                    entry.posterUrl
+                    entry.posterUrl,
                 ) {
+                    value = null
                     value = entry.resolveMobileContinueWatchingImage()
                 }
                 MobileProgressMediaCard(

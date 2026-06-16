@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.handler
 
+import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
@@ -10,6 +12,7 @@ private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 30_000L
 /** Persists local watch progress and silently mirrors remote playback progress. */
 internal class PlayerProgressHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
+    private val settingsStore: SettingsStore,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
 ) {
     private val completedRemoteVideoIds = mutableSetOf<Int>()
@@ -48,6 +51,7 @@ internal class PlayerProgressHandler @Inject constructor(
         if (!WatchProgressStore.isMeaningfulProgress(snapshot.positionMs, snapshot.durationMs)) {
             return
         }
+        if (settingsStore.yaniUserId.first() <= 0) return
 
         val watchedEnough = WatchProgressStore.isWatchedProgress(
             positionMs = snapshot.positionMs,

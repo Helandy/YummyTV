@@ -1,7 +1,12 @@
 package su.afk.yummy.tv.feature.home
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -15,6 +20,21 @@ fun HomeTvScreen(
     effect: Flow<HomeState.Effect>,
     onEvent: (HomeState.Event) -> Unit,
 ) {
+    LaunchedEffect(Unit) {
+        onEvent(HomeState.Event.ScreenResumed)
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, onEvent) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                onEvent(HomeState.Event.ScreenResumed)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val onItemSelected: (String, HomeFeedItem) -> Unit = remember(onEvent) {
         { sectionId, item ->
             when (val action = item.action) {

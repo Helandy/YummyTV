@@ -38,6 +38,7 @@ class ContinueWatchingLaunchHandler @Inject constructor(
             animeTitle = entry.animeTitle,
             animeId = entry.animeId,
             posterUrl = entry.posterUrl,
+            resumeFromMs = entry.positionMs,
         )
     }
 

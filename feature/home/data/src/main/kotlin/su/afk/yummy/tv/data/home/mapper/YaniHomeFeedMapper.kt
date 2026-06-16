@@ -58,11 +58,13 @@ private fun List<YaniLastWatchDto>.toContinueWatchingItems(
     return mapIndexedNotNull { index, item ->
         val matched = watchEntries.firstUnused(usedIndexes) {
             item.matchesAnimeAndEpisode(it)
-        } ?: watchEntries.firstUnused(usedIndexes) {
-            item.animeId != null && it.animeId == item.animeId
-        } ?: watchEntries.getOrNull(index)
-            ?.takeUnless { usedIndexes.getOrNull(index) == true }
-            ?.also { usedIndexes[index] = true }
+        } ?: if (item.animeId == null) {
+            watchEntries.getOrNull(index)
+                ?.takeUnless { usedIndexes.getOrNull(index) == true }
+                ?.also { usedIndexes[index] = true }
+        } else {
+            null
+        }
         item.toContinueWatchingItem(matched)
     }
 }

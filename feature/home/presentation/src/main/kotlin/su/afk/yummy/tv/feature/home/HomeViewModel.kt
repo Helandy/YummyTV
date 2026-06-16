@@ -10,7 +10,9 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomePoster
+import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -27,6 +29,7 @@ class HomeViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val collectionNavigator: ICollectionNavigator,
     private val getHomeFeed: GetHomeFeedUseCase,
+    private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val stringProvider: StringProvider,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
     private val analytics: HomeAnalytics,
@@ -69,6 +72,8 @@ class HomeViewModel @Inject internal constructor(
                 analytics.eventRetry()
                 load()
             }
+
+            HomeState.Event.ScreenResumed -> syncCachedContinueWatching()
 
             is HomeState.Event.ItemFocused -> onItemFocused(
                 event.sectionId,
@@ -114,18 +119,7 @@ class HomeViewModel @Inject internal constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             runCatching { getHomeFeed() }.fold(
-                onSuccess = { feed ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            feed = feed,
-                            continueWatching = feed.continueWatchingItems.map {
-                                it.toWatchProgressEntry()
-                            },
-                            isContinueWatchingLoaded = true,
-                        )
-                    }
-                },
+                onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
                     setState {
                         copy(
@@ -134,6 +128,32 @@ class HomeViewModel @Inject internal constructor(
                         )
                     }
                 },
+            )
+        }
+    }
+
+    private fun syncCachedContinueWatching() {
+        if (currentState.feed == null) return
+        viewModelScope.launch {
+            val cachedFeed = runCatching { getCachedHomeFeed() }.getOrNull() ?: return@launch
+            val currentFeed = currentState.feed
+            applyFeed(
+                feed = currentFeed?.copy(continueWatchingItems = cachedFeed.continueWatchingItems)
+                    ?: cachedFeed,
+                isLoading = false,
+            )
+        }
+    }
+
+    private fun applyFeed(feed: HomeFeed, isLoading: Boolean) {
+        setState {
+            copy(
+                isLoading = isLoading,
+                feed = feed,
+                continueWatching = feed.continueWatchingItems.map {
+                    it.toWatchProgressEntry()
+                },
+                isContinueWatchingLoaded = true,
             )
         }
     }
