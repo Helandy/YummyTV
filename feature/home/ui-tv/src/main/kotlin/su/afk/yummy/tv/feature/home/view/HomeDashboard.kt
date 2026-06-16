@@ -52,6 +52,7 @@ internal fun HomeDashboard(
     focusedSectionId: String? = null,
     focusedItemId: Int?,
     continueWatchingRestoreToken: Int,
+    continueWatchingRestoreKey: String?,
     onFocusedItemRestoreHandled: () -> Unit,
 ) {
     val lazyColumnState = rememberLazyListState()
@@ -282,6 +283,7 @@ internal fun HomeDashboard(
                         onItemSelected = onContinueWatchingSelected,
                         rowFocusRequester = continueWatchingFocusRequester,
                         restoreFirstItemToken = continueWatchingRestoreToken,
+                        restoreItemKey = continueWatchingRestoreKey,
                         downFocusRequester = nextRowFocusRequester(0),
                         onMoveDown = if (totalLazyItems > 1) {
                             { requestRowFocus(1) }

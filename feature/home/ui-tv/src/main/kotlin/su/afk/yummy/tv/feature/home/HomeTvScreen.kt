@@ -86,6 +86,7 @@ fun HomeTvScreen(
             restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
             focusedItemId = state.focusedItemId,
             continueWatchingRestoreToken = state.continueWatchingRestoreToken,
+            continueWatchingRestoreKey = state.continueWatchingRestoreKey,
             onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
         )
     }

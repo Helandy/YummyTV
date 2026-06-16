@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +45,7 @@ internal fun ContinueWatchingSection(
     onItemSelected: (WatchProgressEntry) -> Unit,
     rowFocusRequester: FocusRequester? = null,
     restoreFirstItemToken: Int = 0,
+    restoreItemKey: String? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onMoveUp: (() -> Unit)? = null,
@@ -98,8 +100,16 @@ internal fun ContinueWatchingSection(
 
     fun hasPendingFirstItemRestore(): Boolean = restoreFirstItemToken > handledRestoreFirstItemToken
 
+    fun pendingRestoreIndex(): Int? {
+        if (!hasPendingFirstItemRestore()) return null
+        val keyedIndex = restoreItemKey?.let { key ->
+            items.indexOfFirst { it.focusKey() == key }
+        } ?: -1
+        return keyedIndex.takeIf { it >= 0 } ?: 0
+    }
+
     fun restoreIndex(): Int {
-        if (hasPendingFirstItemRestore()) return 0
+        pendingRestoreIndex()?.let { return it }
         val keyedIndex = lastFocusedKey?.let { key ->
             items.indexOfFirst { it.focusKey() == key }
         } ?: -1
@@ -109,6 +119,30 @@ internal fun ContinueWatchingSection(
     fun rememberFocusedItem(index: Int, entry: WatchProgressEntry) {
         lastFocusedIndex = index
         lastFocusedKey = entry.focusKey()
+    }
+
+    suspend fun restorePendingItemFocus(): Boolean {
+        val target = pendingRestoreIndex() ?: return false
+        if (target == lastFocusedIndex) return false
+        handledRestoreFirstItemToken = restoreFirstItemToken
+        items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
+        requestItemFocus(target)
+        return true
+    }
+
+    LaunchedEffect(
+        rowHasFocus.value,
+        restoreFirstItemToken,
+        restoreItemKey,
+        items.map { it.focusKey() },
+    ) {
+        if (!rowHasFocus.value) return@LaunchedEffect
+        isRestoring.value = true
+        try {
+            restorePendingItemFocus()
+        } finally {
+            isRestoring.value = false
+        }
     }
 
     Column {
@@ -135,12 +169,11 @@ internal fun ContinueWatchingSection(
                         isRestoring.value = true
                         focusMoveJob?.cancel()
                         focusMoveJob = scope.launch {
-                            if (hasPendingFirstItemRestore()) {
-                                handledRestoreFirstItemToken = restoreFirstItemToken
-                                rememberFocusedItem(0, items.first())
+                            if (!restorePendingItemFocus()) {
+                                val target = restoreIndex().coerceIn(0, items.lastIndex)
+                                requestItemFocus(target)
+                                items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
                             }
-                            val target = restoreIndex().coerceIn(0, items.lastIndex)
-                            requestItemFocus(target)
                             isRestoring.value = false
                         }
                     }
@@ -193,7 +226,7 @@ internal fun ContinueWatchingSection(
                 }
                 .focusGroup(),
         ) {
-            itemsIndexed(items = items, key = { _, e -> e.episodeUrl }) { index, entry ->
+            itemsIndexed(items = items, key = { _, e -> e.focusKey() }) { index, entry ->
                 ContinueWatchingCard(
                     entry = entry,
                     onFocused = {

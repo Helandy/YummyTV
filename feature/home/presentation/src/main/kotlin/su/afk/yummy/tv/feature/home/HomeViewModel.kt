@@ -62,6 +62,7 @@ class HomeViewModel @Inject internal constructor(
                 setState {
                     copy(
                         continueWatchingRestoreToken = continueWatchingRestoreToken + 1,
+                        continueWatchingRestoreKey = event.entry.continueWatchingFocusKey(),
                         focusedItemId = null,
                         focusedSectionId = null,
                     )
@@ -178,4 +179,7 @@ class HomeViewModel @Inject internal constructor(
 
     private fun HomePoster.bestUrl(): String? =
         mega ?: fullsize ?: big ?: medium ?: small
+
+    private fun WatchProgressEntry.continueWatchingFocusKey(): String =
+        "$animeId:$episode"
 }

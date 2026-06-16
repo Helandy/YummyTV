@@ -17,6 +17,7 @@ class HomeState {
         val continueWatching: List<WatchProgressEntry> = emptyList(),
         val isContinueWatchingLoaded: Boolean = false,
         val continueWatchingRestoreToken: Int = 0,
+        val continueWatchingRestoreKey: String? = null,
     ) : UiState
 
     sealed interface Event : UiEvent {
