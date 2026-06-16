@@ -1,14 +1,12 @@
 package su.afk.yummy.tv.core.analytics
 
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents.PARAM_AUTH_STATE
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents.PARAM_SURFACE
 
 
 /**
  * Factory for stable analytics events and shared analytics parameter values.
  *
- * These factories should only include event-specific params. Global dimensions such as surface and
- * auth state are stored in [AnalyticsContext] and merged by [AnalyticsTracker].
+ * These factories should only include event-specific params.
  */
 object AnalyticsEvents {
     /**
@@ -16,48 +14,13 @@ object AnalyticsEvents {
      */
     const val PARAM_ACTION = "action"
     const val PARAM_SCREEN = "screen"
-    const val PARAM_SURFACE = "surface"
     const val PARAM_AUTH_STATE = "auth_state"
-
-    /**
-     * Values for [PARAM_SURFACE].
-     */
-    const val SURFACE_MOBILE = "mobile"
-    const val SURFACE_TV = "tv"
 
     /**
      * Values for [PARAM_AUTH_STATE].
      */
     const val AUTH_STATE_AUTHORIZED = "authorized"
     const val AUTH_STATE_ANONYMOUS = "anonymous"
-
-    /**
-     * Reports a destination becoming visible.
-     */
-    fun screenView(
-        screenName: String,
-        params: Map<String, String> = emptyMap(),
-    ): AnalyticsEvent = AnalyticsEvent(
-        name = "screen_view",
-        params = mapOf(PARAM_SCREEN to screenName) + params,
-    )
-
-    /**
-     * Reports an explicit search submission.
-     */
-    fun searchSubmit(
-        screenName: String,
-        hasQuery: Boolean,
-        filterCount: Int,
-        params: Map<String, String> = emptyMap(),
-    ): AnalyticsEvent = AnalyticsEvent(
-        name = "search_submit",
-        params = mapOf(
-            PARAM_SCREEN to screenName,
-            "has_query" to hasQuery.toString(),
-            "filter_count" to filterCount.toString(),
-        ) + params,
-    )
 
     /**
      * Reports applying or clearing search filters.
@@ -126,22 +89,6 @@ object AnalyticsEvents {
     )
 
     /**
-     * Reports an unhandled coroutine error from a ViewModel.
-     */
-    fun coroutineError(
-        viewModel: String,
-        throwable: Throwable,
-    ): AnalyticsEvent = AnalyticsEvent(
-        name = "coroutine_error",
-        params = analyticsParamsOf(
-            "view_model" to viewModel,
-            "exception_type" to throwable::class.java.name,
-            "exception_message" to throwable.message?.take(MAX_EXCEPTION_MESSAGE_LENGTH),
-            "cause_type" to throwable.cause?.let { it::class.java.name },
-        ),
-    )
-
-    /**
      * Reports an update flow action.
      */
     fun updateAction(
@@ -158,29 +105,9 @@ object AnalyticsEvents {
     /**
      * Reports an app session after auth state is resolved.
      */
-    fun appSession(): AnalyticsEvent = AnalyticsEvent(name = "app_session")
-
-    /**
-     * Reports a cold startup timing marker.
-     *
-     * [durationMs] is measured when the marker happens, even if the event is flushed later after
-     * analytics context is ready. [screenName] is only present for destination-based markers.
-     */
-    fun appStartupTime(
-        marker: String,
-        durationMs: Long,
-        activity: String,
-        screenName: String? = null,
-        processAgeAtActivityCreateMs: Long? = null,
-    ): AnalyticsEvent = AnalyticsEvent(
-        name = "app_startup_time",
-        params = analyticsParamsOf(
-            "marker" to marker,
-            "duration_ms" to durationMs,
-            "activity" to activity,
-            PARAM_SCREEN to screenName,
-            "process_age_at_activity_create_ms" to processAgeAtActivityCreateMs,
-        ),
+    fun appSession(isAuthorized: Boolean): AnalyticsEvent = AnalyticsEvent(
+        name = "app_session",
+        params = analyticsParamsOf(PARAM_AUTH_STATE to authState(isAuthorized)),
     )
 
     /**
@@ -188,6 +115,4 @@ object AnalyticsEvents {
      */
     fun authState(isAuthorized: Boolean): String =
         if (isAuthorized) AUTH_STATE_AUTHORIZED else AUTH_STATE_ANONYMOUS
-
-    private const val MAX_EXCEPTION_MESSAGE_LENGTH = 300
 }

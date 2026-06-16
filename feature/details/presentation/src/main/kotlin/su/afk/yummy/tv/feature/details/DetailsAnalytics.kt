@@ -9,6 +9,105 @@ internal class DetailsAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
     /**
+     * Пользователь открыл экран деталей.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventDetailsScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_DETAILS_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл полный текст описания как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventFullScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_FULL_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл список эпизодов как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventEpisodesScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_EPISODES_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл озвучки эпизода как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventEpisodeDubbingsScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_EPISODE_DUBBINGS_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл подписки как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventSubscriptionsScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_SUBSCRIPTIONS_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл трейлеры как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventTrailersScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_TRAILERS_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл похожие аниме как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventSimilarScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_SIMILAR_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл порядок просмотра как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventViewingOrderScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_VIEWING_ORDER_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл скриншоты как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventScreenshotsScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_SCREENSHOTS_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл оценку как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventRatingScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_RATING_SCREEN_OPENED, animeId)
+    }
+
+    /**
+     * Пользователь открыл коллекции с аниме как отдельный экран.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventCollectionsScreenOpened(animeId: Int) {
+        eventWithAnime(EVENT_COLLECTIONS_SCREEN_OPENED, animeId)
+    }
+
+    /**
      * Пользователь повторил загрузку экрана деталей.
      *
      * Параметры: anime_id.
@@ -433,6 +532,8 @@ internal class DetailsAnalytics @Inject constructor(
         private const val PARAM_TARGET_STATE = "target_state"
         private const val PARAM_VIDEO_ID = "video_id"
 
+        const val EVENT_DETAILS_SCREEN_OPENED = "details_screen"
+
         const val EVENT_DETAILS_RETRY = "details_retry"
 
         const val EVENT_DETAILS_WATCH_SELECTED = "details_watch_selected"
@@ -483,6 +584,10 @@ internal class DetailsAnalytics @Inject constructor(
         const val EVENT_SUBSCRIPTIONS_SUBSCRIPTION_TOGGLED =
             "details_subscriptions_subscription_toggled"
 
+        const val EVENT_EPISODES_SCREEN_OPENED = "details_episodes_screen"
+
+        const val EVENT_EPISODE_DUBBINGS_SCREEN_OPENED = "details_episode_dubbings_screen"
+
         const val EVENT_EPISODES_EPISODE_DUBBINGS_SELECTED =
             "details_episodes_episode_dubbings_selected"
 
@@ -490,13 +595,21 @@ internal class DetailsAnalytics @Inject constructor(
 
         const val EVENT_EPISODES_BALANCER_CONFIRMED = "details_episodes_balancer_confirmed"
 
+        const val EVENT_FULL_SCREEN_OPENED = "details_full_screen"
+
         const val EVENT_FULL_RETRY = "details_full_retry"
 
+        const val EVENT_VIEWING_ORDER_SCREEN_OPENED = "details_viewing_order_screen"
+
         const val EVENT_VIEWING_ORDER_ANIME_SELECTED = "details_viewing_order_anime_selected"
+
+        const val EVENT_SIMILAR_SCREEN_OPENED = "details_similar_screen"
 
         const val EVENT_SIMILAR_ANIME_SELECTED = "details_similar_anime_selected"
 
         const val EVENT_SIMILAR_SOURCE_SELECTED = "details_similar_source_selected"
+
+        const val EVENT_SCREENSHOTS_SCREEN_OPENED = "details_screenshots_screen"
 
         const val EVENT_SCREENSHOTS_SCREENSHOT_SELECTED = "details_screenshots_screenshot_selected"
 
@@ -504,10 +617,18 @@ internal class DetailsAnalytics @Inject constructor(
 
         const val EVENT_SCREENSHOTS_NEXT_SELECTED = "details_screenshots_next_selected"
 
+        const val EVENT_RATING_SCREEN_OPENED = "details_rating_screen"
+
         const val EVENT_RATING_RETRY = "details_rating_retry"
 
         const val EVENT_RATING_RATING_SELECTED = "details_rating_rating_selected"
 
         const val EVENT_RATING_RATING_DELETED = "details_rating_rating_deleted"
+
+        const val EVENT_SUBSCRIPTIONS_SCREEN_OPENED = "details_subscriptions_screen"
+
+        const val EVENT_TRAILERS_SCREEN_OPENED = "details_trailers_screen"
+
+        const val EVENT_COLLECTIONS_SCREEN_OPENED = "details_collections_screen"
     }
 }

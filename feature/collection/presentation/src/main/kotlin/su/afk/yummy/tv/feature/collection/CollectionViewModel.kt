@@ -36,6 +36,7 @@ class CollectionViewModel @AssistedInject internal constructor(
     override fun createInitialState() = CollectionState.State()
 
     init {
+        analytics.eventScreenOpened(collectionId)
         load()
     }
 

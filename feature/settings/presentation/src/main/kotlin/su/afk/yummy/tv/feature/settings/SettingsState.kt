@@ -48,6 +48,7 @@ class SettingsState {
             val action: DetailsButtonAction,
             val direction: DetailsButtonMoveDirection,
         ) : Event
+        data object DetailsButtonOrderScreenOpened : Event
         data object DetailsButtonOrderSelected : Event
         data object DetailsButtonOrderReset : Event
     }

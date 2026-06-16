@@ -31,6 +31,7 @@ class SearchState {
         data class ItemSelected(val animeId: Int) : Event
         data class ItemFocused(val animeId: Int) : Event
         data object SearchSubmitted : Event
+        data object RetrySelected : Event
         data object LoadMore : Event
         data object OpenFilters : Event
         data object CloseFilters : Event

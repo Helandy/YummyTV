@@ -8,6 +8,13 @@ internal class ScheduleAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
     /**
+     * Пользователь открыл экран расписания.
+     */
+    fun eventScreenOpened() {
+        tracker.track(EVENT_SCREEN_OPENED)
+    }
+
+    /**
      * Пользователь выбрал релиз из расписания и перешел к аниме.
      *
      * Параметры: anime_id.
@@ -36,6 +43,7 @@ internal class ScheduleAnalytics @Inject constructor(
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_EPOCH_DAY = "epoch_day"
 
+        const val EVENT_SCREEN_OPENED = "schedule_screen"
         const val EVENT_ANIME_SELECTED = "schedule_anime_selected"
         const val EVENT_DATE_SELECTED = "schedule_date_selected"
         const val EVENT_RETRY = "schedule_retry"

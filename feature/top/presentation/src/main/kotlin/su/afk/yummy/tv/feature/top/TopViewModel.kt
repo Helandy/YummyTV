@@ -35,6 +35,7 @@ class TopViewModel @Inject internal constructor(
     }
 
     init {
+        analytics.eventScreenOpened()
         load(AnimeTopType.TV, offset = 0, replace = true)
     }
 
@@ -117,6 +118,7 @@ class TopViewModel @Inject internal constructor(
                     }
                 },
                 onFailure = { e ->
+                    analytics.eventLoadError(type, e)
                     setState {
                         if (selectedType == type) {
                             copy(

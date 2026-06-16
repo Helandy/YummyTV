@@ -35,6 +35,7 @@ class FullDetailsViewModel @AssistedInject internal constructor(
     override fun createInitialState() = FullDetailsState.State()
 
     init {
+        analytics.eventFullScreenOpened(animeId)
         load()
     }
 

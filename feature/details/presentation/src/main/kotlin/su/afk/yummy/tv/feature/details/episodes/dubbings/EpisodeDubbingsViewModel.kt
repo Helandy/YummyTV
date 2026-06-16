@@ -11,9 +11,10 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 
 @HiltViewModel(assistedFactory = EpisodeDubbingsViewModel.Factory::class)
-class EpisodeDubbingsViewModel @AssistedInject constructor(
+class EpisodeDubbingsViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     @Assisted private val episode: String,
     savedStateHandle: SavedStateHandle,
@@ -21,6 +22,7 @@ class EpisodeDubbingsViewModel @AssistedInject constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<EpisodeDubbingsState.State, EpisodeDubbingsState.Event, EpisodeDubbingsState.Effect>(
     savedStateHandle
 ) {
@@ -33,6 +35,7 @@ class EpisodeDubbingsViewModel @AssistedInject constructor(
     override fun createInitialState() = EpisodeDubbingsState.State(episode = episode)
 
     init {
+        analytics.eventEpisodeDubbingsScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

@@ -6,10 +6,12 @@ import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
+import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import javax.inject.Inject
 
 private data class PlayerAnalyticsSource(
@@ -24,6 +26,15 @@ private data class PlayerAnalyticsSource(
 internal class PlayerAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
+    /**
+     * Пользователь открыл экран плеера.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventScreenOpened(animeId: Int) {
+        tracker.track(EVENT_SCREEN_OPENED, playerParams(animeId))
+    }
+
     /**
      * Пользователь повторил загрузку потока в плеере.
      *
@@ -63,10 +74,33 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Пользователь перешел к следующему эпизоду в плеере.
      *
-     * Параметры: screen, action, anime_id.
+     * Параметры: screen, action, anime_id, video_id, player_id, episode, player, balancer,
+     * dubbing, source.
      */
-    fun eventNextEpisode(animeId: Int) {
-        eventAction(ACTION_NEXT_EPISODE, playerParams(animeId))
+    fun eventNextEpisode(state: PlayerState.State, source: PlayerNextEpisodeSource) {
+        eventAction(
+            ACTION_NEXT_EPISODE,
+            sourceParams(state.analyticsSource()) + analyticsParamsOf(
+                PARAM_SOURCE to source.analyticsValue(),
+            ),
+        )
+    }
+
+    /**
+     * Пользователь досмотрел эпизод до конца.
+     *
+     * Параметры: anime_id, video_id, player_id, episode, player, balancer, dubbing, position_ms,
+     * duration_ms, has_next_episode.
+     */
+    fun eventEpisodeCompleted(state: PlayerState.State, positionMs: Long, durationMs: Long) {
+        tracker.track(
+            EVENT_EPISODE_COMPLETED,
+            sourceParams(state.analyticsSource()) + analyticsParamsOf(
+                PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
+                PARAM_DURATION_MS to durationMs.coerceAtLeast(0L),
+                PARAM_HAS_NEXT_EPISODE to state.hasNextEpisode(),
+            ),
+        )
     }
 
     /**
@@ -260,6 +294,11 @@ internal class PlayerAnalytics @Inject constructor(
             PARAM_DUBBING to source.dubbing,
         )
 
+    private fun PlayerState.State.hasNextEpisode(): Boolean {
+        val selection = normalizedSourceSelection(this)
+        return selection.episodeIndex < activeDubbingEpisodes(this).lastIndex
+    }
+
     private fun Throwable.analyticsType(): String =
         this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
 
@@ -280,6 +319,12 @@ internal class PlayerAnalytics @Inject constructor(
             PlayerSkipType.Ending -> "ending"
         }
 
+    private fun PlayerNextEpisodeSource.analyticsValue(): String =
+        when (this) {
+            PlayerNextEpisodeSource.Controls -> "controls"
+            PlayerNextEpisodeSource.EndPrompt -> "end_prompt"
+        }
+
     internal companion object {
         private const val ACTION_BALANCER_SELECTED = "balancer_selected"
         private const val ACTION_DUBBING_SELECTED = "dubbing_selected"
@@ -295,11 +340,13 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_BALANCER = "balancer"
         private const val PARAM_DUBBING = "dubbing"
+        private const val PARAM_DURATION_MS = "duration_ms"
         private const val PARAM_EPISODE = "episode"
         private const val PARAM_ERROR_CODE = "error_code"
         private const val PARAM_ERROR_MESSAGE = "error_message"
         private const val PARAM_ERROR_TYPE = "error_type"
         private const val PARAM_FROM_MS = "from_ms"
+        private const val PARAM_HAS_NEXT_EPISODE = "has_next_episode"
         private const val PARAM_INDEX = "index"
         private const val PARAM_LEVEL = "level"
         private const val PARAM_MODE = "mode"
@@ -309,12 +356,15 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_QUALITY = "quality"
         private const val PARAM_REASON = "reason"
         private const val PARAM_SKIP_TYPE = "skip_type"
+        private const val PARAM_SOURCE = "source"
         private const val PARAM_SPEED = "speed"
         private const val PARAM_TO_MS = "to_ms"
         private const val PARAM_VIDEO_ID = "video_id"
         private const val MAX_ERROR_MESSAGE_LENGTH = 180
         private const val SCREEN_PLAYER = "player"
 
+        const val EVENT_SCREEN_OPENED = "player_screen"
+        const val EVENT_EPISODE_COMPLETED = "player_episode_completed"
         const val EVENT_PLAYER_ACTION = "player_action"
         const val EVENT_PLAYER_ERROR = "player_error"
         const val EVENT_SKIP_SEGMENT_SELECTED = "player_skip_segment_selected"

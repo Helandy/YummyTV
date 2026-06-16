@@ -30,6 +30,7 @@ class ScheduleViewModel @Inject internal constructor(
     override fun createInitialState() = ScheduleState.State()
 
     init {
+        analytics.eventScreenOpened()
         load()
     }
 

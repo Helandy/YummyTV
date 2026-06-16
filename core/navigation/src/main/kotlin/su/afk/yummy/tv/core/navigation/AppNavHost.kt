@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -25,10 +24,8 @@ fun AppNavHost(
     navManager: NavigationManager,
     registrars: Set<@JvmSuppressWildcards NavRegistrar>,
     modifier: Modifier = Modifier,
-    onDestinationVisible: (NavKey) -> Unit = {},
 ) {
     var savedCurrentRoot by rememberSaveable { mutableStateOf(navManager.currentRoot) }
-    val currentOnDestinationVisible by rememberUpdatedState(onDestinationVisible)
 
     LaunchedEffect(Unit) {
         navManager.restoreRoot(savedCurrentRoot)
@@ -89,11 +86,6 @@ fun AppNavHost(
         } else {
             rootEntries.getValue(navManager.currentRoot)
         }
-    val visibleDestination = entriesToShow.lastOrNull()?.contentKey as? NavKey
-
-    LaunchedEffect(visibleDestination) {
-        visibleDestination?.let(currentOnDestinationVisible)
-    }
 
     NavDisplay(
         entries = entriesToShow,

@@ -34,6 +34,7 @@ class ViewingOrderViewModel @AssistedInject internal constructor(
     override fun createInitialState() = ViewingOrderState.State(currentAnimeId = animeId)
 
     init {
+        analytics.eventViewingOrderScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

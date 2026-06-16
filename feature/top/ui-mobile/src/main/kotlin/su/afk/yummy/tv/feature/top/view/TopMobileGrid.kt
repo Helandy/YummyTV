@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +44,26 @@ internal fun TopMobileGrid(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading, isLoadingMore) {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = gridState.layoutInfo.totalItemsCount
+            items.isNotEmpty() &&
+                    canLoadMore &&
+                    !isLoading &&
+                    !isLoadingMore &&
+                    total > 0 &&
+                    lastVisible >= total - LOAD_MORE_THRESHOLD
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            onLoadMore()
+        }
+    }
+
     if (isLoading && items.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -52,6 +77,7 @@ internal fun TopMobileGrid(
     MobilePosterGrid(
         contentPadding = PaddingValues(),
         modifier = modifier.fillMaxSize(),
+        state = gridState,
     ) {
         when {
             error != null && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
@@ -91,21 +117,16 @@ internal fun TopMobileGrid(
             )
         }
 
-        if (canLoadMore && items.isNotEmpty()) {
+        if (isLoadingMore && items.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Button(
-                    onClick = onLoadMore,
-                    enabled = !isLoadingMore,
+                Box(
                     modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    if (isLoadingMore) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Text(stringResource(R.string.top_mobile_load_more))
-                    }
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
                 }
             }
         }
@@ -127,3 +148,5 @@ private fun TopMobileRankBadge(
             .padding(horizontal = 5.dp, vertical = 2.dp),
     )
 }
+
+private const val LOAD_MORE_THRESHOLD = 6

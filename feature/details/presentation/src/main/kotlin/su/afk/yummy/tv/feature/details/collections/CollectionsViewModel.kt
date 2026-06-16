@@ -36,6 +36,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
     override fun createInitialState() = CollectionsState.State()
 
     init {
+        analytics.eventCollectionsScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

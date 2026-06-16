@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.top
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -58,8 +57,7 @@ fun TopMobileScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding(),
+                .fillMaxSize(),
         ) {
             TopMobileTypeTabs(
                 selectedType = pagerState.currentPage.toTopType(),

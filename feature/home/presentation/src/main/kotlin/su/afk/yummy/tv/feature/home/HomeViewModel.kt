@@ -38,6 +38,7 @@ class HomeViewModel @Inject internal constructor(
     override fun createInitialState() = HomeState.State()
 
     init {
+        analytics.eventScreenOpened()
         load()
     }
 
@@ -121,6 +122,7 @@ class HomeViewModel @Inject internal constructor(
             runCatching { getHomeFeed() }.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
+                    analytics.eventLoadError(e)
                     setState {
                         copy(
                             isLoading = false,

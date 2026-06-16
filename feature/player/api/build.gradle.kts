@@ -8,7 +8,6 @@ android {
 }
 
 dependencies {
-    api(project(":core:analytics"))
     implementation(project(":feature:player:domain"))
 
     api(libs.bundles.navigation.serialization)

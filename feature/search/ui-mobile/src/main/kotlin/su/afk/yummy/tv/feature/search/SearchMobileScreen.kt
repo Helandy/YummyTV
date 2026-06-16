@@ -1,15 +1,24 @@
 package su.afk.yummy.tv.feature.search
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,12 +40,36 @@ fun SearchMobileScreen(
     onEvent: (SearchState.Event) -> Unit,
 ) {
     val initialError = state.error?.takeIf { state.items.isEmpty() }
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore by remember(
+        gridState,
+        state.items.size,
+        state.canLoadMore,
+        state.isLoading
+    ) {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = gridState.layoutInfo.totalItemsCount
+            state.items.isNotEmpty() &&
+                    state.canLoadMore &&
+                    !state.isLoading &&
+                    total > 0 &&
+                    lastVisible >= total - LOAD_MORE_THRESHOLD
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            onEvent(SearchState.Event.LoadMore)
+        }
+    }
+
     BaseScreen(
         isScroll = false,
         topBar = { Text(stringResource(R.string.search_mobile_title)) },
         isLoading = state.isLoading && state.items.isEmpty(),
         error = initialError?.let { ErrorItem(title = it, message = it) },
-        onRetry = { onEvent(SearchState.Event.SearchSubmitted) },
+        onRetry = { onEvent(SearchState.Event.RetrySelected) },
         errorContent = initialError?.let { message ->
             { _, retry ->
                 MobileMessage(
@@ -47,7 +80,10 @@ fun SearchMobileScreen(
             }
         },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {
+        MobilePosterGrid(
+            contentPadding = PaddingValues(0.dp),
+            state = gridState,
+        ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 OutlinedTextField(
                     value = state.query,
@@ -94,18 +130,15 @@ fun SearchMobileScreen(
                     onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
                 )
             }
-            if (state.canLoadMore) {
+            if (state.isLoading && state.items.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Button(
-                        onClick = { onEvent(SearchState.Event.LoadMore) },
+                    Box(
                         modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            if (state.isLoading) {
-                                stringResource(R.string.search_mobile_loading)
-                            } else {
-                                stringResource(R.string.search_mobile_load_more)
-                            },
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
                         )
                     }
                 }
@@ -134,3 +167,5 @@ fun SearchMobileScreen(
         )
     }
 }
+
+private const val LOAD_MORE_THRESHOLD = 6

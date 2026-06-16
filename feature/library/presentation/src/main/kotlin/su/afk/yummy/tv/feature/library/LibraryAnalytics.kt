@@ -10,29 +10,22 @@ internal class LibraryAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
     /**
-     * Пользователь выбрал локальное аниме из библиотеки.
-     *
-     * Параметры: anime_id, source, tab.
+     * Пользователь открыл экран библиотеки.
      */
-    fun eventLocalAnimeSelected(animeId: Int, tab: LibraryTab) {
-        eventAnimeSelected(animeId, SOURCE_LOCAL, tab)
+    fun eventScreenOpened() {
+        tracker.track(EVENT_SCREEN_OPENED)
     }
 
     /**
-     * Пользователь выбрал удаленное аниме из библиотеки.
+     * Пользователь выбрал аниме из библиотеки.
      *
-     * Параметры: anime_id, source, tab.
+     * Параметры: anime_id, tab.
      */
-    fun eventRemoteAnimeSelected(animeId: Int, tab: LibraryTab) {
-        eventAnimeSelected(animeId, SOURCE_REMOTE, tab)
-    }
-
-    private fun eventAnimeSelected(animeId: Int, source: String, tab: LibraryTab) {
+    fun eventAnimeSelected(animeId: Int, tab: LibraryTab) {
         tracker.track(
             EVENT_ANIME_SELECTED,
             analyticsParamsOf(
                 PARAM_ANIME_ID to animeId,
-                PARAM_SOURCE to source,
                 PARAM_TAB to tab.analyticsValue(),
             ),
         )
@@ -70,24 +63,6 @@ internal class LibraryAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь удалил локальную запись из библиотеки.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventRemoveLibraryEntry(animeId: Int) {
-        tracker.track(EVENT_REMOVE_LIBRARY_ENTRY, analyticsParamsOf(PARAM_ANIME_ID to animeId))
-    }
-
-    /**
-     * Пользователь удалил аниме из избранного.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventRemoveFavoriteEntry(animeId: Int) {
-        tracker.track(EVENT_REMOVE_FAVORITE_ENTRY, analyticsParamsOf(PARAM_ANIME_ID to animeId))
-    }
-
-    /**
      * Пользователь удалил прогресс просмотра.
      *
      * Параметры: anime_id.
@@ -97,46 +72,77 @@ internal class LibraryAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь удалил запись из удаленного списка Yani.
+     * Пользователь удалил запись из библиотеки.
      *
-     * Параметры: anime_id, tab, favorite, list.
+     * Параметры: anime_id, tab, target, remote, list.
      */
-    fun eventRemoveRemoteEntry(
+    fun eventRemoveEntry(
         animeId: Int,
         tab: LibraryTab,
-        favorite: Boolean,
+        target: LibraryRemoveTarget,
+        remote: Boolean,
         list: UserAnimeList?,
     ) {
         tracker.track(
-            EVENT_REMOVE_REMOTE_ENTRY,
+            EVENT_REMOVE_ENTRY,
             analyticsParamsOf(
                 PARAM_ANIME_ID to animeId,
                 PARAM_TAB to tab.analyticsValue(),
-                PARAM_FAVORITE to favorite,
+                PARAM_TARGET to target.analyticsValue(),
+                PARAM_REMOTE to remote,
                 PARAM_LIST to list?.name?.lowercase(),
             ),
         )
     }
 
+    /**
+     * Удаленные списки библиотеки не загрузились.
+     */
+    fun eventLoadError(error: Throwable) {
+        tracker.reportError(
+            groupIdentifier = EVENT_LOAD_ERROR,
+            message = "$LOAD_ERROR_MESSAGE_PREFIX: ${error.analyticsType()}",
+            throwable = error,
+        )
+    }
+
+    /**
+     * Сетевое удаление записи из библиотеки не выполнилось.
+     */
+    fun eventRemoveError(target: LibraryRemoveTarget, error: Throwable) {
+        tracker.reportError(
+            groupIdentifier = EVENT_REMOVE_ERROR,
+            message = "$REMOVE_ERROR_MESSAGE_PREFIX " +
+                    "(target=${target.analyticsValue()}): ${error.analyticsType()}",
+            throwable = error,
+        )
+    }
+
     private fun LibraryTab.analyticsValue(): String = name.lowercase()
+
+    private fun LibraryRemoveTarget.analyticsValue(): String = name.lowercase()
+
+    private fun Throwable.analyticsType(): String =
+        this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
 
     internal companion object {
         private const val PARAM_ANIME_ID = "anime_id"
-        private const val PARAM_FAVORITE = "favorite"
         private const val PARAM_LIST = "list"
-        private const val PARAM_SOURCE = "source"
+        private const val PARAM_REMOTE = "remote"
         private const val PARAM_TAB = "tab"
+        private const val PARAM_TARGET = "target"
         private const val PARAM_VIDEO_ID = "video_id"
-        private const val SOURCE_LOCAL = "local"
-        private const val SOURCE_REMOTE = "remote"
+        private const val LOAD_ERROR_MESSAGE_PREFIX = "Library load failed"
+        private const val REMOVE_ERROR_MESSAGE_PREFIX = "Library remove failed"
 
+        const val EVENT_SCREEN_OPENED = "library_screen"
         const val EVENT_ANIME_SELECTED = "library_anime_selected"
         const val EVENT_CONTINUE_WATCHING_SELECTED = "library_continue_watching_selected"
         const val EVENT_TAB_SELECTED = "library_tab_selected"
         const val EVENT_RETRY = "library_retry"
-        const val EVENT_REMOVE_LIBRARY_ENTRY = "library_remove_library_entry"
-        const val EVENT_REMOVE_FAVORITE_ENTRY = "library_remove_favorite_entry"
+        const val EVENT_REMOVE_ENTRY = "library_remove_entry"
         const val EVENT_REMOVE_WATCH_PROGRESS = "library_remove_watch_progress"
-        const val EVENT_REMOVE_REMOTE_ENTRY = "library_remove_remote_entry"
+        const val EVENT_LOAD_ERROR = "library_load_error"
+        const val EVENT_REMOVE_ERROR = "library_remove_error"
     }
 }

@@ -34,6 +34,7 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
     override fun createInitialState() = ScreenshotsState.State()
 
     init {
+        analytics.eventScreenshotsScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

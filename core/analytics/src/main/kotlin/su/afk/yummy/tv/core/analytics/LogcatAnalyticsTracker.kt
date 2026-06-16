@@ -18,6 +18,20 @@ internal class LogcatAnalyticsTracker @Inject constructor(
         }
     }
 
+    override fun reportError(
+        message: String,
+        throwable: Throwable,
+        groupIdentifier: String?,
+    ) {
+        val message = message.trim()
+        if (message.isEmpty()) return
+        Log.d(
+            TAG,
+            "Would send analytics error: message=$message, group=$groupIdentifier",
+            throwable,
+        )
+    }
+
     private companion object {
         const val TAG = "Analytics"
     }

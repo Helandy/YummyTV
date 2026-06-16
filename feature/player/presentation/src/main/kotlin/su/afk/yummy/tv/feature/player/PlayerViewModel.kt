@@ -83,6 +83,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
 
     init {
+        analytics.eventScreenOpened(dest.animeId)
         settingsHandler.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
@@ -128,9 +129,17 @@ class PlayerViewModel @AssistedInject internal constructor(
                 applySourceSelection(sourceSelectionHandler.previousEpisode(currentState))
             }
 
-            PlayerState.Event.NextEpisode -> {
-                analytics.eventNextEpisode(currentState.animeId)
+            is PlayerState.Event.NextEpisode -> {
+                analytics.eventNextEpisode(currentState, event.source)
                 applySourceSelection(sourceSelectionHandler.nextEpisode(currentState))
+            }
+
+            is PlayerState.Event.EpisodeCompleted -> {
+                analytics.eventEpisodeCompleted(
+                    state = currentState,
+                    positionMs = event.positionMs,
+                    durationMs = event.durationMs,
+                )
             }
 
             is PlayerState.Event.DubbingSelected -> {

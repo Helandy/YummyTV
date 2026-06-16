@@ -37,6 +37,7 @@ class SearchViewModel @Inject internal constructor(
     }
 
     init {
+        analytics.eventScreenOpened()
         viewModelScope.launch {
             setState { copy(isLoadingFilterOptions = true) }
             runCatching { getSearchFilterOptions() }.onSuccess { options ->
@@ -59,6 +60,7 @@ class SearchViewModel @Inject internal constructor(
 
             is SearchState.Event.ItemFocused -> onItemFocused(event.animeId)
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
+            SearchState.Event.RetrySelected -> onRetrySelected()
             SearchState.Event.LoadMore -> loadMore()
             SearchState.Event.OpenFilters -> {
                 analytics.eventFiltersOpened()
@@ -187,6 +189,14 @@ class SearchViewModel @Inject internal constructor(
         loadSearch(SearchPagingRequest(query, currentState.filters, offset = 0, replace = true))
     }
 
+    private fun onRetrySelected() {
+        val query = currentState.query
+        val filters = currentState.filters
+        analytics.eventRetry()
+        searchPagingHandler.cancel()
+        loadSearch(SearchPagingRequest(query, filters, offset = 0, replace = true))
+    }
+
     private fun loadMore() {
         val s = currentState
         if (searchPagingHandler.canLoadMore(s.query, s.filters, s.isLoading, s.canLoadMore)) {
@@ -283,6 +293,7 @@ class SearchViewModel @Inject internal constructor(
             }
 
             is SearchPagingResult.Failure -> {
+                analytics.eventLoadError(result.request, result.error)
                 setState {
                     copy(
                         isLoading = false,

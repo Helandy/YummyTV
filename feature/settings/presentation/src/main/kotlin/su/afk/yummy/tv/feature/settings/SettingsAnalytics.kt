@@ -15,6 +15,20 @@ internal class SettingsAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
     /**
+     * Пользователь открыл экран настроек.
+     */
+    fun eventScreenOpened() {
+        tracker.track(EVENT_SCREEN_OPENED)
+    }
+
+    /**
+     * Пользователь открыл экран настройки порядка кнопок деталей.
+     */
+    fun eventDetailsButtonOrderScreenOpened() {
+        tracker.track(EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED)
+    }
+
+    /**
      * Пользователь изменил тему приложения.
      *
      * Параметры: setting, value.
@@ -148,6 +162,9 @@ internal class SettingsAnalytics @Inject constructor(
         private const val SETTING_WATCH_NEXT_ENABLED = "watch_next_enabled"
         private const val VALUE_RESET = "reset"
 
+        const val EVENT_SCREEN_OPENED = "settings_screen"
+        const val EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED =
+            "settings_details_button_order_screen"
         const val EVENT_SETTING_CHANGE = "setting_change"
         const val EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE =
             "settings_request_preview_channel_browsable"

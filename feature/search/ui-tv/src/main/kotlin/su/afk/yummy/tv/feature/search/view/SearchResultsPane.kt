@@ -75,11 +75,15 @@ internal fun SearchResultsPane(
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember {
+    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading) {
         derivedStateOf {
             val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             val total = gridState.layoutInfo.totalItemsCount
-            canLoadMore && total > 0 && lastVisible >= total - 6
+            items.isNotEmpty() &&
+                    canLoadMore &&
+                    !isLoading &&
+                    total > 0 &&
+                    lastVisible >= total - LOAD_MORE_THRESHOLD
         }
     }
     LaunchedEffect(shouldLoadMore) {
@@ -328,3 +332,5 @@ private fun SearchFilters.focusStateKey(): String = buildString {
     append("|forward=")
     append(sortForward)
 }
+
+private const val LOAD_MORE_THRESHOLD = 6

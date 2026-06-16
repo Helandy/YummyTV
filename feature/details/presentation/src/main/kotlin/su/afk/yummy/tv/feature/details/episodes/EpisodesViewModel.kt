@@ -66,6 +66,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var screenshotsByEpisode: Map<String, String> = emptyMap()
 
     init {
+        analytics.eventEpisodesScreenOpened(animeId)
         viewModelScope.launch { loadMeta() }
         viewModelScope.launch { loadVideos() }
         watchProgressStore.observeByAnimeId(animeId)

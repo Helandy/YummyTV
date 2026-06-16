@@ -62,7 +62,7 @@ internal fun LibraryGrid(
     focusStateKey: String,
     onAnimeSelected: (Int) -> Unit,
     onItemFocused: (Int) -> Unit,
-    onRemoveLibraryEntry: (Int) -> Unit,
+    onRemoveEntry: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -253,7 +253,7 @@ internal fun LibraryGrid(
                             lastFocusedItemId = null
                             runCatching { selectedTabFocusRequester.requestFocus() }
                         }
-                        onRemoveLibraryEntry(item.animeId)
+                        onRemoveEntry(item.animeId)
                     }
                 }
                 LibraryAnimeCard(

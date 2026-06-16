@@ -45,6 +45,7 @@ class AccountViewModel @Inject internal constructor(
     override fun createInitialState() = AccountState.State()
 
     init {
+        analytics.eventScreenOpened()
         combine(
             yaniAuthPreferences.refreshToken,
             settingsStore.yaniUserId,
@@ -279,6 +280,7 @@ class AccountViewModel @Inject internal constructor(
             setState { copy(isLoading = true, error = null, captchaError = null) }
             when (val result = sessionHandler.login(credentials, captchaResponse)) {
                 is AccountLoginResult.Success -> {
+                    analytics.eventLoginSuccess()
                     sessionHandler.markProfileChanged()
                     setState {
                         copy(
@@ -297,6 +299,7 @@ class AccountViewModel @Inject internal constructor(
                 }
 
                 is AccountLoginResult.CaptchaRequired -> {
+                    analytics.eventLoginCaptchaRequired(result.rejected)
                     setState {
                         copy(
                             isLoading = false,
@@ -313,6 +316,7 @@ class AccountViewModel @Inject internal constructor(
                 }
 
                 AccountLoginResult.Failure -> {
+                    analytics.eventLoginFailure()
                     setState { copy(isLoading = false, error = AccountUiError.SIGN_IN_FAILED) }
                 }
             }

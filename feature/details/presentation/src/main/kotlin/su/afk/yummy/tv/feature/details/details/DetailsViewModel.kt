@@ -89,6 +89,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private var favoriteMutationVersion = 0
 
     init {
+        analytics.eventDetailsScreenOpened(animeId)
         load()
         libraryStore.observeIsInLibrary(animeId)
             .onEach { inLibrary -> setState { copy(isInLibrary = inLibrary || (isSignedIn && libraryList != null)) } }

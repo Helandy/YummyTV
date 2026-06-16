@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,10 @@ fun SettingsDetailsButtonOrderMobileScreen(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     val title = stringResource(R.string.settings_details_buttons_order)
+
+    LaunchedEffect(Unit) {
+        onEvent(SettingsState.Event.DetailsButtonOrderScreenOpened)
+    }
 
     BaseScreen(
         isScroll = false,

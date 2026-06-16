@@ -31,7 +31,7 @@ internal class ErrorViewModel @AssistedInject constructor(
     }
 
     init {
-        analytics.eventErrorShown(dest.screenParams)
+        analytics.eventErrorShown(dest.analyticsParams)
         setState { copy(error = dest.error) }
     }
 

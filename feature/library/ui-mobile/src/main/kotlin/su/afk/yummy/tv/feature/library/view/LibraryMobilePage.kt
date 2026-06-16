@@ -74,7 +74,6 @@ internal fun LibraryMobilePage(
                                             animeId = item.animeId,
                                             title = item.title,
                                             listTitle = favoritesTitle,
-                                            isRemote = state.isSignedIn,
                                         ),
                                     )
                                 },
@@ -86,51 +85,27 @@ internal fun LibraryMobilePage(
             }
 
             else -> {
-                if (state.isSignedIn) {
-                    val remote = state.remoteItems[tab].orEmpty()
-                    items(remote, key = { it.animeId }) { item ->
-                        MobilePosterCard(
-                            title = item.title,
-                            posterUrl = item.posterUrl(),
-                            rating = item.rating,
-                            posterOverlay = {
-                                LibraryMobileDeleteButton(
-                                    onClick = {
-                                        onRemovalRequested(
-                                            PendingLibraryMobileRemoval.RemoteList(
-                                                item = item,
-                                                listTitle = selectedTabTitle,
-                                            ),
-                                        )
-                                    },
-                                )
-                            },
-                            onClick = { onEvent(LibraryState.Event.RemoteAnimeSelected(item.animeId)) },
-                        )
-                    }
-                } else {
-                    val localList = tab.userAnimeList()
-                    val localItems = state.items.filter { it.listId == localList?.id }
-                    items(localItems, key = { it.animeId }) { item ->
-                        MobilePosterCard(
-                            title = item.title,
-                            posterUrl = item.posterUrl(),
-                            posterOverlay = {
-                                LibraryMobileDeleteButton(
-                                    onClick = {
-                                        onRemovalRequested(
-                                            PendingLibraryMobileRemoval.LocalList(
-                                                animeId = item.animeId,
-                                                title = item.title,
-                                                listTitle = selectedTabTitle,
-                                            ),
-                                        )
-                                    },
-                                )
-                            },
-                            onClick = { onEvent(LibraryState.Event.AnimeSelected(item.animeId)) },
-                        )
-                    }
+                val localList = tab.userAnimeList()
+                val localItems = state.items.filter { it.listId == localList?.id }
+                items(localItems, key = { it.animeId }) { item ->
+                    MobilePosterCard(
+                        title = item.title,
+                        posterUrl = item.posterUrl(),
+                        posterOverlay = {
+                            LibraryMobileDeleteButton(
+                                onClick = {
+                                    onRemovalRequested(
+                                        PendingLibraryMobileRemoval.ListEntry(
+                                            animeId = item.animeId,
+                                            title = item.title,
+                                            listTitle = selectedTabTitle,
+                                        ),
+                                    )
+                                },
+                            )
+                        },
+                        onClick = { onEvent(LibraryState.Event.AnimeSelected(item.animeId)) },
+                    )
                 }
             }
         }

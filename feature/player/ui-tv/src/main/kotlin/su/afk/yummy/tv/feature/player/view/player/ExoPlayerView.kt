@@ -53,6 +53,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerSeekSource
 import su.afk.yummy.tv.feature.player.PlayerSkipType
@@ -96,7 +97,7 @@ internal fun ExoPlayerView(
     hasNextEpisode: Boolean = false,
     canRateTitleOnEnd: Boolean = false,
     onPrevEpisode: () -> Unit = {},
-    onNextEpisode: () -> Unit = {},
+    onNextEpisode: (PlayerNextEpisodeSource) -> Unit = {},
     onRateTitle: () -> Unit = {},
     onPlaybackError: (PlayerState.Event.PlaybackError) -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
@@ -147,6 +148,7 @@ internal fun ExoPlayerView(
     var showResizePanel by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
     var showRateTitlePrompt by remember { mutableStateOf(false) }
+    var completionReported by remember(episodeKey, streamUrl) { mutableStateOf(false) }
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
     var skipSnackbarText by remember(streamUrl) { mutableStateOf<String?>(null) }
     val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
@@ -305,7 +307,7 @@ internal fun ExoPlayerView(
         showNextEpisodePrompt = false
         showRateTitlePrompt = false
         closePanels()
-        onNextEpisode()
+        onNextEpisode(PlayerNextEpisodeSource.EndPrompt)
     }
 
     fun rateTitle() {
@@ -385,6 +387,10 @@ internal fun ExoPlayerView(
                         positionMs = position,
                         durationMs = dur,
                     )
+                    if (!completionReported) {
+                        completionReported = true
+                        onPlayerEvent(PlayerState.Event.EpisodeCompleted(position, dur))
+                    }
                     if (hasNextEpisode) {
                         showNextEpisodePrompt = true
                         controllerVisible = true
@@ -712,7 +718,7 @@ internal fun ExoPlayerView(
                         speedFocusRequester = speedButtonFocusRequester,
                         onInteraction = ::onInteraction,
                         onPrevEpisode = onPrevEpisode,
-                        onNextEpisode = onNextEpisode,
+                        onNextEpisode = { onNextEpisode(PlayerNextEpisodeSource.Controls) },
                         onRateTitle = ::rateTitle,
                         onToggleQuality = {
                             showQualityPanel = !showQualityPanel

@@ -29,6 +29,11 @@ enum class PlayerSkipType {
     Ending,
 }
 
+enum class PlayerNextEpisodeSource {
+    Controls,
+    EndPrompt,
+}
+
 class PlayerState {
     data class State(
         val animeTitle: String = "",
@@ -60,7 +65,11 @@ class PlayerState {
         data object Back : Event
         data object OpenDetails : Event
         data object PrevEpisode : Event
-        data object NextEpisode : Event
+        data class NextEpisode(
+            val source: PlayerNextEpisodeSource = PlayerNextEpisodeSource.Controls,
+        ) : Event
+
+        data class EpisodeCompleted(val positionMs: Long, val durationMs: Long) : Event
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class QualitySelected(val quality: String, val currentPosMs: Long) : Event

@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -141,6 +142,18 @@ internal fun TopBrowser(
     val requestLastFocusedCard = {
         requestCardFocus(lastFocusedIndex)
     }
+    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading, isLoadingMore) {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = gridState.layoutInfo.totalItemsCount
+            items.isNotEmpty() &&
+                    canLoadMore &&
+                    !isLoading &&
+                    !isLoadingMore &&
+                    total > 0 &&
+                    lastVisible >= total - LOAD_MORE_THRESHOLD
+        }
+    }
 
     LaunchedEffect(gridState, items.size) {
         snapshotFlow {
@@ -199,15 +212,10 @@ internal fun TopBrowser(
         }
     }
 
-    LaunchedEffect(gridState) {
-        snapshotFlow { gridState.layoutInfo }
-            .collect { layoutInfo ->
-                val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@collect
-                val total = layoutInfo.totalItemsCount
-                if (total > 0 && lastVisible >= total - 4 && canLoadMore && !isLoadingMore) {
-                    onLoadMore()
-                }
-            }
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            onLoadMore()
+        }
     }
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
@@ -395,3 +403,5 @@ internal fun TopBrowser(
         }
     }
 }
+
+private const val LOAD_MORE_THRESHOLD = 4

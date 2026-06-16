@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -54,8 +53,6 @@ fun LibraryMobileScreen(
     val tabCounts = remember(
         state.continueWatching,
         state.items,
-        state.remoteItems,
-        state.isSignedIn,
     ) {
         libraryMobileTabs.associateWith { tab -> state.mobileTabItemCount(tab) }
     }
@@ -102,8 +99,7 @@ fun LibraryMobileScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding(),
+                .fillMaxSize(),
         ) {
             LibraryMobileTabs(
                 selectedTab = pagerState.currentPage.toLibraryMobileTab(),

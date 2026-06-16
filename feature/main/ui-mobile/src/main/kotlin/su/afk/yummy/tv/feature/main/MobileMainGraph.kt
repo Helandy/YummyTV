@@ -19,14 +19,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsContext
-import su.afk.yummy.tv.core.analytics.AnalyticsDestination
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.StartupPerformanceTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -51,18 +46,11 @@ import javax.inject.Singleton
 @Singleton
 class MobileMainGraph @Inject internal constructor(
     private val navManager: NavigationManager,
-    private val analytics: MobileMainAnalytics,
-    private val analyticsContext: AnalyticsContext,
-    private val startupPerformanceTracker: StartupPerformanceTracker,
     private val settingsNavigator: ISettingsNavigator,
     private val accountNavigator: IAccountNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
-
-    init {
-        analyticsContext.setSurface(AnalyticsEvents.SURFACE_MOBILE)
-    }
 
     @Composable
     override fun MainGraph() {
@@ -133,11 +121,9 @@ class MobileMainGraph @Inject internal constructor(
                         unreadNotificationsCount = state.unreadNotificationsCount,
                         avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         onSettingsClick = {
-                            analytics.eventSettingsSelected()
                             navManager.navigate(settingsNavigator.getSettingsDest())
                         },
                         onAccountClick = {
-                            analytics.eventAccountSelected()
                             navManager.navigate(accountNavigator.getAccountDest())
                         },
                     ),
@@ -146,20 +132,13 @@ class MobileMainGraph @Inject internal constructor(
                         selectedDestination = navManager.currentRoot,
                         menuItems = items,
                         showBars = atTabRoot,
-                        onDestinationSelected = {
-                            analytics.eventRootSelected(it)
-                            navManager.switchRoot(it)
-                        },
+                        onDestinationSelected = navManager::switchRoot,
                         toastMessage = toastMessage,
                     ) {
                         AppNavHost(
                             navManager = navManager,
                             registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
-                            onDestinationVisible = {
-                                startupPerformanceTracker.markFirstDestinationVisible(it)
-                                analytics.eventScreenView(it)
-                            },
                         )
                     }
                 }
@@ -169,8 +148,3 @@ class MobileMainGraph @Inject internal constructor(
 }
 
 private const val GLOBAL_TOAST_DURATION_MS = 3_000L
-
-private fun StartupPerformanceTracker.markFirstDestinationVisible(destination: NavKey) {
-    val analyticsDestination = destination as? AnalyticsDestination ?: return
-    markFirstDestinationVisible(analyticsDestination.screenName)
-}

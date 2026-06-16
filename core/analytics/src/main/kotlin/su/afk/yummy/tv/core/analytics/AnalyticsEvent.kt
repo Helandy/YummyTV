@@ -3,8 +3,8 @@ package su.afk.yummy.tv.core.analytics
 /**
  * Immutable analytics event payload before global [AnalyticsContext] params are merged in.
  *
- * Keep [params] limited to event-specific values. Common dimensions such as surface and auth state
- * belong in [AnalyticsContext] so they are applied consistently by [AnalyticsTracker].
+ * Keep [params] limited to event-specific values. Use [AnalyticsContext] only for dimensions that
+ * truly need to be applied consistently by [AnalyticsTracker].
  */
 data class AnalyticsEvent(
     /**

@@ -8,6 +8,13 @@ internal class AccountAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
     /**
+     * Пользователь открыл экран аккаунта.
+     */
+    fun eventScreenOpened() {
+        tracker.track(EVENT_SCREEN_OPENED)
+    }
+
+    /**
      * Пользователь выбрал вкладку аккаунта.
      *
      * Параметры: tab.
@@ -21,6 +28,32 @@ internal class AccountAnalytics @Inject constructor(
      */
     fun eventLoginSelected() {
         tracker.track(EVENT_LOGIN_SELECTED)
+    }
+
+    /**
+     * Пользователь успешно авторизовался.
+     */
+    fun eventLoginSuccess() {
+        tracker.track(EVENT_LOGIN_SUCCESS)
+    }
+
+    /**
+     * Авторизация пользователя завершилась ошибкой.
+     */
+    fun eventLoginFailure() {
+        tracker.track(EVENT_LOGIN_FAILURE)
+    }
+
+    /**
+     * Для авторизации пользователя потребовалась капча.
+     *
+     * Параметры: rejected.
+     */
+    fun eventLoginCaptchaRequired(rejected: Boolean) {
+        tracker.track(
+            EVENT_LOGIN_CAPTCHA_REQUIRED,
+            analyticsParamsOf(PARAM_REJECTED to rejected)
+        )
     }
 
     /**
@@ -89,10 +122,15 @@ internal class AccountAnalytics @Inject constructor(
 
     internal companion object {
         private const val PARAM_NOTIFICATION_ID = "notification_id"
+        private const val PARAM_REJECTED = "rejected"
         private const val PARAM_TAB = "tab"
 
+        const val EVENT_SCREEN_OPENED = "account_screen"
         const val EVENT_TAB_SELECTED = "account_tab_selected"
         const val EVENT_LOGIN_SELECTED = "account_login_selected"
+        const val EVENT_LOGIN_SUCCESS = "account_login_success"
+        const val EVENT_LOGIN_FAILURE = "account_login_failure"
+        const val EVENT_LOGIN_CAPTCHA_REQUIRED = "account_login_captcha_required"
         const val EVENT_LOGOUT_SELECTED = "account_logout_selected"
         const val EVENT_REFRESH_PROFILE_SELECTED = "account_refresh_profile_selected"
         const val EVENT_REFRESH_HUB_SELECTED = "account_refresh_hub_selected"

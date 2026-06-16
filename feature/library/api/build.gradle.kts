@@ -8,9 +8,5 @@ android {
 }
 
 dependencies {
-    api(project(":core:analytics"))
-}
-
-dependencies {
     api(libs.bundles.navigation.serialization)
 }

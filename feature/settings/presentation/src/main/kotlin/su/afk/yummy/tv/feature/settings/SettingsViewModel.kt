@@ -29,6 +29,7 @@ class SettingsViewModel @Inject internal constructor(
     override fun createInitialState() = SettingsState.State()
 
     init {
+        analytics.eventScreenOpened()
         settingsStore.settingsSnapshot
             .onEach { snapshot ->
                 setState {
@@ -104,6 +105,9 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setDetailsButtonOrder(
                     currentState.detailsButtonOrder.moved(event.action, event.direction),
                 )
+            }
+            SettingsState.Event.DetailsButtonOrderScreenOpened -> {
+                analytics.eventDetailsButtonOrderScreenOpened()
             }
             SettingsState.Event.DetailsButtonOrderSelected -> {
                 analytics.eventDetailsButtonOrderSelected()

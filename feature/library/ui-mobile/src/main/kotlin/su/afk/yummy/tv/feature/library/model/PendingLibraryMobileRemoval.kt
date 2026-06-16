@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.library.model
 
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
+import su.afk.yummy.tv.feature.library.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.LibraryState
 
 internal sealed interface PendingLibraryMobileRemoval {
@@ -23,30 +23,17 @@ internal sealed interface PendingLibraryMobileRemoval {
         val animeId: Int,
         override val title: String,
         override val listTitle: String,
-        val isRemote: Boolean,
     ) : PendingLibraryMobileRemoval {
         override fun event(): LibraryState.Event =
-            if (isRemote) {
-                LibraryState.Event.RemoveRemoteEntry(animeId = animeId, favorite = true)
-            } else {
-                LibraryState.Event.RemoveFavoriteEntry(animeId)
-            }
+            LibraryState.Event.RemoveEntry(animeId, LibraryRemoveTarget.FAVORITE)
     }
 
-    data class RemoteList(
-        val item: UserAnimeListItem,
-        override val listTitle: String,
-    ) : PendingLibraryMobileRemoval {
-        override val title = item.title
-        override fun event(): LibraryState.Event =
-            LibraryState.Event.RemoveRemoteEntry(item.animeId)
-    }
-
-    data class LocalList(
+    data class ListEntry(
         val animeId: Int,
         override val title: String,
         override val listTitle: String,
     ) : PendingLibraryMobileRemoval {
-        override fun event(): LibraryState.Event = LibraryState.Event.RemoveLibraryEntry(animeId)
+        override fun event(): LibraryState.Event =
+            LibraryState.Event.RemoveEntry(animeId, LibraryRemoveTarget.LIST)
     }
 }

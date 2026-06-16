@@ -40,6 +40,7 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerSeekSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
@@ -93,6 +94,7 @@ internal fun MobileNativePlayer(
     var resumeAfterLifecyclePause by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
@@ -267,6 +269,10 @@ internal fun MobileNativePlayer(
                         positionMs = position,
                         durationMs = dur,
                     )
+                    if (!completionReported) {
+                        completionReported = true
+                        onEvent(PlayerState.Event.EpisodeCompleted(position, dur))
+                    }
                     if (ui.hasNextEpisode && !isInPictureInPictureMode) {
                         showNextEpisodePrompt = true
                         overlayVisible = false
@@ -485,7 +491,7 @@ internal fun MobileNativePlayer(
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = {
                 showNextEpisodePrompt = false
-                onEvent(PlayerState.Event.NextEpisode)
+                onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
             },
             onTrackSettings = {
                 showNextEpisodePrompt = false
@@ -524,7 +530,7 @@ internal fun MobileNativePlayer(
                 stayLabel = stringResource(R.string.player_stay),
                 onPrimary = {
                     showNextEpisodePrompt = false
-                    onEvent(PlayerState.Event.NextEpisode)
+                    onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
                 },
                 onStay = {
                     showNextEpisodePrompt = false

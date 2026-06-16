@@ -18,15 +18,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsContext
-import su.afk.yummy.tv.core.analytics.AnalyticsDestination
-import su.afk.yummy.tv.core.analytics.AnalyticsEvents
-import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.StartupPerformanceTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
@@ -46,16 +40,9 @@ import javax.inject.Singleton
 @Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: NavigationManager,
-    private val analyticsTracker: AnalyticsTracker,
-    private val analyticsContext: AnalyticsContext,
-    private val startupPerformanceTracker: StartupPerformanceTracker,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:TvUi private val tvRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
 ) : IMainGraph {
-
-    init {
-        analyticsContext.setSurface(AnalyticsEvents.SURFACE_TV)
-    }
 
     private val menuItems = listOf(
         TvMenuItem(R.string.main_tab_search, RootTab.SEARCH, Icons.Default.Search),
@@ -120,10 +107,6 @@ class TvMainGraph @Inject constructor(
                             navManager = navManager,
                             registrars = commonRegistrars + tvRegistrars,
                             modifier = Modifier.fillMaxSize(),
-                            onDestinationVisible = {
-                                startupPerformanceTracker.markFirstDestinationVisible(it)
-                                analyticsTracker.eventScreenView(it)
-                            },
                         )
                     }
                 }
@@ -133,18 +116,3 @@ class TvMainGraph @Inject constructor(
 }
 
 private const val GLOBAL_TOAST_DURATION_MS = 3_000L
-
-private fun StartupPerformanceTracker.markFirstDestinationVisible(destination: NavKey) {
-    val analyticsDestination = destination as? AnalyticsDestination ?: return
-    markFirstDestinationVisible(analyticsDestination.screenName)
-}
-
-private fun AnalyticsTracker.eventScreenView(destination: NavKey) {
-    val analyticsDestination = destination as? AnalyticsDestination ?: return
-    track(
-        AnalyticsEvents.screenView(
-            screenName = analyticsDestination.screenName,
-            params = analyticsDestination.screenParams,
-        )
-    )
-}

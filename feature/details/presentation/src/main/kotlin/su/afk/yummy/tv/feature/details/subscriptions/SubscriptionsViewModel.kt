@@ -36,6 +36,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
     override fun createInitialState() = SubscriptionsState.State()
 
     init {
+        analytics.eventSubscriptionsScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

@@ -43,6 +43,7 @@ class RatingViewModel @AssistedInject internal constructor(
     override fun createInitialState() = RatingState.State()
 
     init {
+        analytics.eventRatingScreenOpened(animeId)
         load()
     }
 

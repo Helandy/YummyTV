@@ -170,7 +170,7 @@ fun PlayerTvScreen(
                 hasNextEpisode = uiState.hasNextEpisode,
                 canRateTitleOnEnd = uiState.canRateTitleOnEnd,
                 onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
-                onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
+                onNextEpisode = { source -> onEvent(PlayerState.Event.NextEpisode(source)) },
                 onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
                 onPlaybackError = { error -> onEvent(error) },
                 allDubbingNames = uiState.dubbingOptions.names,

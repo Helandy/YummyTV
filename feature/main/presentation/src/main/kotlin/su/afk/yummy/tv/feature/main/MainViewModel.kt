@@ -7,10 +7,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.analytics.AnalyticsContext
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
-import su.afk.yummy.tv.core.analytics.StartupPerformanceTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
@@ -36,8 +34,6 @@ class MainViewModel @Inject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val analyticsTracker: AnalyticsTracker,
-    private val analyticsContext: AnalyticsContext,
-    private val startupPerformanceTracker: StartupPerformanceTracker,
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val nav: NavigationManager,
@@ -63,6 +59,7 @@ class MainViewModel @Inject constructor(
     private var notificationCountsJob: Job? = null
 
     init {
+        analyticsTracker.track(EVENT_SCREEN_OPENED)
         observeSettings()
         observeAccountMutationErrors()
         refreshAccountIfNeeded()
@@ -99,9 +96,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             yaniAuthPreferences.refreshToken.collect { token ->
                 val signedIn = token.isNotBlank()
-                analyticsContext.setAuthState(signedIn)
-                startupPerformanceTracker.flushPending()
-                analyticsTracker.track(AnalyticsEvents.appSession())
+                analyticsTracker.track(AnalyticsEvents.appSession(signedIn))
                 setState {
                     copy(
                         isYaniSignedIn = signedIn,
@@ -157,3 +152,5 @@ class MainViewModel @Inject constructor(
         }
     }
 }
+
+private const val EVENT_SCREEN_OPENED = "main_screen"

@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.player.navigator
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
-import su.afk.yummy.tv.core.analytics.AnalyticsDestination
 
 @Serializable
 data class PlayerDestination(
@@ -17,8 +16,4 @@ data class PlayerDestination(
     val selectedPlayerId: Int? = null,
     val selectedScreenshotUrl: String = "",
     val resumeFromMs: Long = 0L,
-) : NavKey, AnalyticsDestination {
-    override val screenName: String = "player"
-    override val screenParams: Map<String, String>
-        get() = if (animeId > 0) mapOf("anime_id" to animeId.toString()) else emptyMap()
-}
+) : NavKey

@@ -3,11 +3,19 @@ package su.afk.yummy.tv.feature.search
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
+import su.afk.yummy.tv.feature.search.handler.SearchPagingRequest
 import javax.inject.Inject
 
 internal class SearchAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
+    /**
+     * Пользователь открыл экран поиска.
+     */
+    fun eventScreenOpened() {
+        tracker.track(EVENT_SCREEN_OPENED)
+    }
+
     /**
      * Пользователь выбрал аниме из результатов поиска.
      *
@@ -32,9 +40,30 @@ internal class SearchAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь повторил загрузку поиска.
+     */
+    fun eventRetry() {
+        tracker.track(EVENT_RETRY)
+    }
+
+    /**
+     * Результаты поиска не загрузились.
+     */
+    fun eventLoadError(request: SearchPagingRequest, error: Throwable) {
+        tracker.reportError(
+            groupIdentifier = EVENT_LOAD_ERROR,
+            message = "$ERROR_MESSAGE_PREFIX " +
+                    "(has_query=${request.query.isNotBlank()}, " +
+                    "filters=${request.filters.activeCount}, " +
+                    "replace=${request.replace}): ${error.analyticsType()}",
+            throwable = error,
+        )
+    }
+
+    /**
      * Пользователь явно отправил поисковый запрос из внешнего ввода.
      *
-     * Параметры: screen, has_query, filter_count, source.
+     * Параметры: has_query, filter_count, source.
      */
     fun eventExternalSearchSubmitted() {
         eventSearchSubmitted(
@@ -47,7 +76,7 @@ internal class SearchAnalytics @Inject constructor(
     /**
      * Пользователь явно отправил поисковый запрос из экрана поиска.
      *
-     * Параметры: screen, has_query, filter_count, source.
+     * Параметры: has_query, filter_count, source.
      */
     fun eventManualSearchSubmitted(hasQuery: Boolean, filterCount: Int) {
         eventSearchSubmitted(
@@ -61,7 +90,6 @@ internal class SearchAnalytics @Inject constructor(
         tracker.track(
             EVENT_SEARCH_SUBMIT,
             analyticsParamsOf(
-                AnalyticsEvents.PARAM_SCREEN to SCREEN_SEARCH,
                 PARAM_HAS_QUERY to hasQuery,
                 PARAM_FILTER_COUNT to filterCount,
                 PARAM_SOURCE to source,
@@ -99,6 +127,9 @@ internal class SearchAnalytics @Inject constructor(
         )
     }
 
+    private fun Throwable.analyticsType(): String =
+        this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
     internal companion object {
         private const val ACTION_APPLY = "apply"
         private const val ACTION_RESET = "reset"
@@ -109,10 +140,14 @@ internal class SearchAnalytics @Inject constructor(
         private const val SCREEN_SEARCH = "search"
         private const val SOURCE_EXTERNAL = "external"
         private const val SOURCE_MANUAL = "manual"
+        private const val ERROR_MESSAGE_PREFIX = "Search load failed"
 
+        const val EVENT_SCREEN_OPENED = "search_screen"
         const val EVENT_ANIME_SELECTED = "search_anime_selected"
         const val EVENT_FILTERS_OPENED = "search_filters_opened"
         const val EVENT_FILTERS_CLOSED = "search_filters_closed"
+        const val EVENT_RETRY = "search_retry"
+        const val EVENT_LOAD_ERROR = "search_load_error"
         const val EVENT_SEARCH_SUBMIT = "search_submit"
         const val EVENT_SEARCH_FILTERS_APPLY = "search_filters_apply"
     }

@@ -23,6 +23,7 @@ import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
+import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import javax.inject.Inject
 
@@ -69,6 +70,7 @@ class LibraryViewModel @Inject internal constructor(
     private var localContinueWatchingEntries: List<WatchProgressEntry> = emptyList()
 
     init {
+        analytics.eventScreenOpened()
         libraryStore.observeAll()
             .onEach { entries -> setState { copy(items = entries) } }
             .launchIn(viewModelScope)
@@ -94,7 +96,6 @@ class LibraryViewModel @Inject internal constructor(
                             isSignedIn = false,
                             isRemoteLoading = false,
                             remoteError = null,
-                            remoteItems = emptyMap(),
                         )
                     }
                 }
@@ -105,12 +106,7 @@ class LibraryViewModel @Inject internal constructor(
     override fun onEvent(event: LibraryState.Event) {
         when (event) {
             is LibraryState.Event.AnimeSelected -> {
-                analytics.eventLocalAnimeSelected(event.animeId, currentState.selectedTab)
-                openDetails(event.animeId)
-            }
-
-            is LibraryState.Event.RemoteAnimeSelected -> {
-                analytics.eventRemoteAnimeSelected(event.animeId, currentState.selectedTab)
+                analytics.eventAnimeSelected(event.animeId, currentState.selectedTab)
                 openDetails(event.animeId)
             }
 
@@ -150,24 +146,7 @@ class LibraryViewModel @Inject internal constructor(
                 refreshRemoteLists()
             }
 
-            is LibraryState.Event.RemoveLibraryEntry ->
-                viewModelScope.launch {
-                    analytics.eventRemoveLibraryEntry(event.animeId)
-                    libraryStore.remove(event.animeId)
-                    setEffect(LibraryState.Effect.ItemRemoved)
-                }
-
-            is LibraryState.Event.RemoveFavoriteEntry ->
-                viewModelScope.launch {
-                    analytics.eventRemoveFavoriteEntry(event.animeId)
-                    libraryStore.setFavorite(
-                        event.animeId,
-                        title = "",
-                        poster = null,
-                        favorite = false
-                    )
-                    setEffect(LibraryState.Effect.ItemRemoved)
-                }
+            is LibraryState.Event.RemoveEntry -> removeEntry(event)
 
             is LibraryState.Event.RemoveWatchProgress ->
                 viewModelScope.launch {
@@ -194,7 +173,6 @@ class LibraryViewModel @Inject internal constructor(
                     setEffect(LibraryState.Effect.ItemRemoved)
                 }
 
-            is LibraryState.Event.RemoveRemoteEntry -> removeRemoteEntry(event)
         }
     }
 
@@ -278,19 +256,20 @@ class LibraryViewModel @Inject internal constructor(
             setState { copy(isRemoteLoading = true, remoteError = null) }
             when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId)) {
                 is RemoteLibraryLoadResult.Success -> {
+                    result.syncError?.let { analytics.eventLoadError(it) }
                     setState {
                         copy(
-                            remoteItems = result.remoteItems,
-                            remoteError = result.syncError,
+                            remoteError = result.syncError?.message,
                             isRemoteLoading = false,
                         )
                     }
                 }
 
                 is RemoteLibraryLoadResult.Failure -> {
+                    analytics.eventLoadError(result.error)
                     setState {
                         copy(
-                            remoteError = result.message,
+                            remoteError = result.error.message,
                             isRemoteLoading = false,
                         )
                     }
@@ -299,37 +278,45 @@ class LibraryViewModel @Inject internal constructor(
         }
     }
 
-    private fun removeRemoteEntry(event: LibraryState.Event.RemoveRemoteEntry) {
-        analytics.eventRemoveRemoteEntry(
+    private fun removeEntry(event: LibraryState.Event.RemoveEntry) {
+        val shouldRemoveRemote = signedInUserId > 0
+        val selectedTab = currentState.selectedTab
+        analytics.eventRemoveEntry(
             animeId = event.animeId,
-            tab = currentState.selectedTab,
-            favorite = event.favorite,
-            list = event.list,
-        )
-        val previous = currentState.remoteItems
-        val tab = currentState.selectedTab
-        setState {
-            copy(
-                remoteItems = remoteItems + (tab to remoteItems[tab].orEmpty()
-                    .filterNot { it.animeId == event.animeId })
-            )
-        }
-        viewModelScope.launch {
-            val result = remoteLibrarySyncHandler.removeRemoteEntry(
-                animeId = event.animeId,
-                favorite = event.favorite,
-            )
-            if (result.isFailure) {
-                setState {
-                    copy(
-                        remoteItems = previous,
-                        remoteError = result.exceptionOrNull()?.message
-                    )
-                }
+            tab = selectedTab,
+            target = event.target,
+            remote = shouldRemoveRemote,
+            list = if (shouldRemoveRemote && event.target == LibraryRemoveTarget.LIST) {
+                selectedTab.userAnimeList()
             } else {
-                setEffect(LibraryState.Effect.ItemRemoved)
+                null
+            },
+        )
+        viewModelScope.launch {
+            if (shouldRemoveRemote) {
+                remoteLibrarySyncHandler.removeRemoteEntry(event.animeId, event.target)
+                    .onSuccess { removeLocalEntry(event) }
+                    .onFailure { error ->
+                        analytics.eventRemoveError(event.target, error)
+                        setState { copy(remoteError = error.message) }
+                    }
+            } else {
+                removeLocalEntry(event)
             }
         }
+    }
+
+    private suspend fun removeLocalEntry(event: LibraryState.Event.RemoveEntry) {
+        when (event.target) {
+            LibraryRemoveTarget.LIST -> libraryStore.remove(event.animeId)
+            LibraryRemoveTarget.FAVORITE -> libraryStore.setFavorite(
+                event.animeId,
+                title = "",
+                poster = null,
+                favorite = false,
+            )
+        }
+        setEffect(LibraryState.Effect.ItemRemoved)
     }
 
     private fun onItemFocused(animeId: Int) {

@@ -11,15 +11,17 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
+import su.afk.yummy.tv.feature.details.DetailsAnalytics
 
 @HiltViewModel(assistedFactory = TrailersViewModel.Factory::class)
-class TrailersViewModel @AssistedInject constructor(
+class TrailersViewModel @AssistedInject internal constructor(
     @Assisted private val animeId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val getAnimeTrailers: GetAnimeTrailersUseCase,
+    private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<TrailersState.State, TrailersState.Event, TrailersState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -30,6 +32,7 @@ class TrailersViewModel @AssistedInject constructor(
     override fun createInitialState() = TrailersState.State()
 
     init {
+        analytics.eventTrailersScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

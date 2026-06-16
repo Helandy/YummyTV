@@ -35,6 +35,7 @@ class SimilarViewModel @AssistedInject internal constructor(
     override fun createInitialState() = SimilarState.State()
 
     init {
+        analytics.eventSimilarScreenOpened(animeId)
         viewModelScope.launch { load() }
     }
 

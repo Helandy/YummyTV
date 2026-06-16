@@ -3,8 +3,8 @@ package su.afk.yummy.tv.core.analytics
 /**
  * Mutable process-wide analytics dimensions.
  *
- * These params are appended to every event by [AnalyticsTracker] implementations. Use this for
- * dimensions that describe the current app context, not for event-specific payload.
+ * These params are appended to every event by [AnalyticsTracker] implementations. Prefer
+ * event-specific params unless a dimension truly needs to be present on every analytics event.
  */
 interface AnalyticsContext {
     /**
@@ -18,23 +18,6 @@ interface AnalyticsContext {
      * Passing null or a blank value removes the param. Blank keys are ignored.
      */
     fun setParam(key: String, value: String?)
-
-    /**
-     * Stores the current UI surface, for example mobile or TV.
-     */
-    fun setSurface(surface: String) {
-        setParam(AnalyticsEvents.PARAM_SURFACE, surface)
-    }
-
-    /**
-     * Stores the current Yani auth state.
-     */
-    fun setAuthState(isAuthorized: Boolean) {
-        setParam(
-            AnalyticsEvents.PARAM_AUTH_STATE,
-            AnalyticsEvents.authState(isAuthorized),
-        )
-    }
 }
 
 internal class DefaultAnalyticsContext : AnalyticsContext {

@@ -17,4 +17,20 @@ internal class AppMetricaAnalyticsTracker @Inject constructor(
             AppMetrica.reportEvent(eventName, mergedParams)
         }
     }
+
+    override fun reportError(
+        message: String,
+        throwable: Throwable,
+        groupIdentifier: String?,
+    ) {
+        val message = message.trim()
+        if (message.isEmpty()) return
+        val groupIdentifier = groupIdentifier?.trim().orEmpty()
+        if (groupIdentifier.isEmpty()) {
+            AppMetrica.reportError(message, throwable)
+        } else {
+            AppMetrica.reportError(groupIdentifier, message, throwable)
+        }
+        AppMetrica.sendEventsBuffer()
+    }
 }

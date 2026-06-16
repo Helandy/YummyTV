@@ -13,6 +13,15 @@ interface AnalyticsTracker {
     fun track(eventName: String, params: Map<String, String> = emptyMap())
 
     /**
+     * Reports a non-fatal error. Blank messages are ignored by concrete implementations.
+     */
+    fun reportError(
+        message: String,
+        throwable: Throwable,
+        groupIdentifier: String? = null,
+    )
+
+    /**
      * Reports [event].
      */
     fun track(event: AnalyticsEvent) {
