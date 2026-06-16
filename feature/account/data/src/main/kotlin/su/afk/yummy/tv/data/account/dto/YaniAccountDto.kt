@@ -242,19 +242,6 @@ data class YaniPutVideoBodyDto(
 )
 
 @Serializable
-data class YaniPostVideosBodyDto(
-    val videos: List<YaniPostVideoItemDto>,
-)
-
-@Serializable
-data class YaniPostVideoItemDto(
-    @SerialName("video_id") val videoId: Int,
-    val time: Int,
-    val date: Long = System.currentTimeMillis() / 1000L,
-    val times: List<Int> = emptyList(),
-)
-
-@Serializable
 data class YaniRatingResponseDto(
     val response: List<YaniRatingBucketDto> = emptyList(),
 )
@@ -268,17 +255,6 @@ data class YaniRatingBucketDto(
 @Serializable
 data class YaniRateBodyDto(
     val rate: Int,
-)
-
-@Serializable
-data class YaniListStatsResponseDto(
-    val response: List<YaniListStatDto> = emptyList(),
-)
-
-@Serializable
-data class YaniListStatDto(
-    @SerialName("list_id") val listId: Int = 0,
-    val count: Int = 0,
 )
 
 @Serializable

@@ -29,15 +29,11 @@ import su.afk.yummy.tv.data.account.dto.YaniBooleanResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniErrorResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniListStatDto
-import su.afk.yummy.tv.data.account.dto.YaniListStatsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationAnimeResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationCountsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
-import su.afk.yummy.tv.data.account.dto.YaniPostVideosBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniPutVideoBodyDto
@@ -157,12 +153,6 @@ class YaniAccountApi(
     suspend fun removeWatched(videoId: Int): Boolean =
         client.delete("$YANI_BASE_URL/video/$videoId").body<YaniBooleanResponseDto>().response
 
-    suspend fun syncWatched(videos: List<YaniPostVideoItemDto>): Boolean =
-        client.post("$YANI_BASE_URL/video") {
-            contentType(ContentType.Application.Json)
-            setBody(YaniPostVideosBodyDto(videos))
-        }.body<YaniBooleanResponseDto>().response
-
     suspend fun getRatingBuckets(animeId: Int): List<YaniRatingBucketDto> =
         client.get("$YANI_BASE_URL/anime/$animeId/rates")
             .body<YaniRatingResponseDto>()
@@ -184,19 +174,8 @@ class YaniAccountApi(
         client.delete("$YANI_BASE_URL/anime/$animeId/rate")
     }
 
-    suspend fun getListStats(animeId: Int): List<YaniListStatDto> =
-        client.get("$YANI_BASE_URL/anime/$animeId/lists")
-            .body<YaniListStatsResponseDto>()
-            .response
-
     suspend fun getAnimeCollections(animeId: Int, limit: Int, offset: Int): List<YaniCollectionSummaryDto> =
         client.get("$YANI_BASE_URL/anime/$animeId/collections") {
-            parameter("limit", limit)
-            parameter("offset", offset)
-        }.body<YaniCollectionsResponseDto>().response
-
-    suspend fun getCollections(limit: Int, offset: Int): List<YaniCollectionSummaryDto> =
-        client.get("$YANI_BASE_URL/collection") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniCollectionsResponseDto>().response

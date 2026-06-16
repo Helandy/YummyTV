@@ -12,7 +12,6 @@ import su.afk.yummy.tv.data.account.mapper.toAnimeListStats
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummaries
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
 import su.afk.yummy.tv.data.account.mapper.toCollectionsPageCache
-import su.afk.yummy.tv.data.account.mapper.toListStatsCache
 import su.afk.yummy.tv.data.account.mapper.toRatingBucketsCache
 import su.afk.yummy.tv.data.account.mapper.toRatingSummary
 import su.afk.yummy.tv.data.account.mapper.toUserRating
@@ -81,23 +80,6 @@ class YaniAnimeExtrasRepository(
         accountStorage.deleteRatingBuckets(animeId)
     }
 
-    override suspend fun getListStats(animeId: Int): AnimeListStats =
-        withContext(Dispatchers.IO) {
-            val stored = accountStorage.getListStats(animeId)
-            if (stored?.isFresh(ACCOUNT_MEDIUM_TTL_MS) == true) {
-                return@withContext stored.toAnimeListStats()
-            }
-
-            try {
-                fetchListStats(animeId)
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                stored?.toAnimeListStats()
-                    ?: throw error
-            }
-        }
-
     override suspend fun getCachedListStats(animeId: Int): AnimeListStats? =
         withContext(Dispatchers.IO) {
             accountStorage.getListStats(animeId)
@@ -116,20 +98,6 @@ class YaniAnimeExtrasRepository(
                 fetch = {
                     api.getAnimeCollections(animeId, limit, offset)
                         .mapNotNull { it.toCollectionSummary() }
-                },
-            )
-        }
-
-    override suspend fun getCollections(limit: Int, offset: Int): List<AnimeCollectionSummary> =
-        withContext(Dispatchers.IO) {
-            val language = settingsStore.yaniContentLanguage.first()
-            val languageCode = language.apiCode
-            val pageKey = collectionsPageKey(limit, offset, languageCode)
-            getCollectionsPage(
-                pageKey = pageKey,
-                languageCode = languageCode,
-                fetch = {
-                    api.getCollections(limit, offset).mapNotNull { it.toCollectionSummary() }
                 },
             )
         }
@@ -163,12 +131,6 @@ class YaniAnimeExtrasRepository(
             )
         )
         return rating
-    }
-
-    private suspend fun fetchListStats(animeId: Int): AnimeListStats {
-        val stats = AnimeListStats(api.getListStats(animeId).associate { it.listId to it.count })
-        accountStorage.saveListStats(stats.toListStatsCache(animeId, System.currentTimeMillis()))
-        return stats
     }
 
     private suspend fun getCollectionsPage(
@@ -219,7 +181,4 @@ class YaniAnimeExtrasRepository(
         language: String
     ): String =
         "anime:$animeId:$limit:$offset:$language"
-
-    private fun collectionsPageKey(limit: Int, offset: Int, language: String): String =
-        "all:$limit:$offset:$language"
 }
