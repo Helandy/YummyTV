@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
+import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import javax.inject.Singleton
 
@@ -1286,6 +1287,46 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_21_22 = object : Migration(21, 22) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS remote_continue_watching (
+                    accountKey TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    animeId INTEGER NOT NULL,
+                    targetKey TEXT NOT NULL,
+                    episode TEXT NOT NULL,
+                    videoId INTEGER NOT NULL,
+                    episodeUrl TEXT NOT NULL,
+                    positionMs INTEGER NOT NULL,
+                    durationMs INTEGER NOT NULL,
+                    updatedAt INTEGER NOT NULL,
+                    animeTitle TEXT NOT NULL,
+                    posterUrl TEXT NOT NULL,
+                    playerName TEXT NOT NULL,
+                    dubbing TEXT NOT NULL,
+                    screenshotUrl TEXT NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    PRIMARY KEY(accountKey, language, animeId, targetKey)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_remote_continue_watching_account_language_updatedAt
+                ON remote_continue_watching(accountKey, language, updatedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_remote_continue_watching_animeId
+                ON remote_continue_watching(animeId)
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1305,6 +1346,7 @@ object StorageModule {
                 MIGRATION_18_19,
                 MIGRATION_19_20,
                 MIGRATION_20_21,
+                MIGRATION_21_22,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,
@@ -1324,6 +1366,14 @@ object StorageModule {
     @Provides
     @Singleton
     fun provideWatchProgressStore(db: AppDatabase): WatchProgressStore = WatchProgressStore(db.watchProgressDao())
+
+    @Provides
+    @Singleton
+    fun provideRemoteContinueWatchingStore(db: AppDatabase): RemoteContinueWatchingStore =
+        RemoteContinueWatchingStore(
+            dao = db.remoteContinueWatchingDao(),
+            watchProgressDao = db.watchProgressDao(),
+        )
 
     @Provides
     @Singleton

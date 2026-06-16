@@ -34,6 +34,8 @@ import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationAnimeResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniPostVideoBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniPutVideoBodyDto
@@ -152,6 +154,12 @@ class YaniAccountApi(
         client.put("$YANI_BASE_URL/video/$videoId") {
             contentType(ContentType.Application.Json)
             setBody(YaniPutVideoBodyDto(time = timeSeconds, duration = durationSeconds))
+        }.body<YaniBooleanResponseDto>().response
+
+    suspend fun syncWatched(videos: List<YaniPostVideoItemDto>): Boolean =
+        client.post("$YANI_BASE_URL/video") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniPostVideoBodyDto(videos))
         }.body<YaniBooleanResponseDto>().response
 
     suspend fun removeWatched(videoIds: List<Int>): Boolean =

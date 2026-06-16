@@ -64,10 +64,10 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.model.ButtonData
 import su.afk.yummy.tv.feature.details.details.model.ButtonRowData
@@ -83,7 +83,7 @@ internal fun DetailsButtonBar(
     libraryList: UserAnimeList?,
     videosState: VideosUiState,
     isWatchLoading: Boolean,
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
     canSubscribe: Boolean,
     buttonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     restoreFocusRequest: Int,

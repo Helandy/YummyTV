@@ -142,6 +142,8 @@ internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
     iframeUrl = iframeUrl.toHttpsUrl(),
     durationSeconds = duration,
     views = views,
+    watchedEndTimeSeconds = watched?.endTime,
+    watchedDateSeconds = watched?.date,
     skips = skips.toAnimeVideoSkips(),
 )
 

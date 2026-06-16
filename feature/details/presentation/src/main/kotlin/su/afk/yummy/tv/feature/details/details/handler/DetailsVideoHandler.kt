@@ -1,9 +1,10 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
@@ -16,6 +17,7 @@ import javax.inject.Inject
 internal class DetailsVideoHandler @Inject constructor(
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
+    private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
 ) {
     suspend fun loadCached(
         animeId: Int,
@@ -31,10 +33,16 @@ internal class DetailsVideoHandler @Inject constructor(
     ): Result<DetailsVideosResult> =
         runCatching { getAnimeVideos(animeId).toResult(optimisticSubscriptionKeys) }
 
+    suspend fun refresh(
+        animeId: Int,
+        optimisticSubscriptionKeys: Set<String>,
+    ): Result<DetailsVideosResult> =
+        runCatching { refreshAnimeVideos(animeId).toResult(optimisticSubscriptionKeys) }
+
     fun resolveWatchTarget(
         animeId: Int,
         videos: List<AnimeVideo>,
-        watchProgress: Map<String, WatchProgressEntry>,
+        watchProgress: DetailsWatchProgressIndex,
     ): DetailsWatchTarget? {
         val continueTarget = resolveDetailsContinueTarget(
             animeId = animeId,

@@ -5,7 +5,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
@@ -33,7 +32,7 @@ class DetailsState {
         val isFavorite: Boolean = false,
         val libraryList: UserAnimeList? = null,
         val showPosterFullscreen: Boolean = false,
-        val watchProgress: Map<String, WatchProgressEntry> = emptyMap(),
+        val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,
         val showLibraryListPicker: Boolean = false,
         val isWatchLaunchPending: Boolean = false,

@@ -2,17 +2,16 @@ package su.afk.yummy.tv.feature.details.episodes.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 
 internal fun List<AnimeVideo>.watchStatus(
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
 ): EpisodeWatchStatus {
-    val best = mapNotNull { watchProgress[it.iframeUrl] }
-        .maxByOrNull { it.positionMs }
+    val best = watchProgress.bestFor(this)
         ?: return EpisodeWatchStatus.None
 
     if (!WatchProgressStore.isMeaningfulProgressEntry(best)) {

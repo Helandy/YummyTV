@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -18,15 +17,19 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 
@@ -40,8 +43,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
     private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(
@@ -64,15 +69,30 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var animeTitle = ""
     private var posterUrl = ""
     private var screenshotsByEpisode: Map<String, String> = emptyMap()
+    private var localWatchProgress: List<WatchProgressEntry> = emptyList()
+    private var isSignedIn = false
 
     init {
         analytics.eventEpisodesScreenOpened(animeId)
         viewModelScope.launch { loadMeta() }
         viewModelScope.launch { loadVideos() }
         watchProgressStore.observeByAnimeId(animeId)
-            .map { entries -> entries.associateBy { it.episodeUrl } }
             .flowOn(Dispatchers.Default)
-            .onEach { progress -> setState { copy(watchProgress = progress) } }
+            .onEach { progress ->
+                localWatchProgress = progress
+                updateMergedWatchProgress()
+            }
+            .launchIn(viewModelScope)
+        yaniAuthPreferences.refreshToken
+            .onEach { token ->
+                val wasSignedIn = isSignedIn
+                isSignedIn = token.isNotBlank()
+                if (isSignedIn && !wasSignedIn) {
+                    viewModelScope.launch { refreshVideosFromNetwork() }
+                } else if (!isSignedIn) {
+                    updateMergedWatchProgress(serverVideos = emptyList())
+                }
+            }
             .launchIn(viewModelScope)
     }
 
@@ -114,17 +134,50 @@ class EpisodesViewModel @AssistedInject internal constructor(
         setState { copy(videosState = VideosUiState.Loading) }
         runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
+                setVideos(videos)
+                if (isSignedIn) {
+                    refreshVideosFromNetwork()
+                }
+            },
+            onFailure = {
                 setState {
                     copy(
-                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
-                            videos
-                        )
+                        videosState = VideosUiState.Empty,
+                        watchProgress = DetailsWatchProgressIndex.Empty
                     )
                 }
             },
-            onFailure = { setState { copy(videosState = VideosUiState.Empty) } },
         )
     }
+
+    private suspend fun refreshVideosFromNetwork() {
+        runCatching { refreshAnimeVideos(animeId) }
+            .onSuccess { videos -> setVideos(videos) }
+    }
+
+    private fun setVideos(videos: List<AnimeVideo>) {
+        setState {
+            copy(
+                videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
+                    videos
+                ),
+                watchProgress = videos.toWatchProgressIndex(),
+            )
+        }
+    }
+
+    private fun updateMergedWatchProgress(
+        serverVideos: List<AnimeVideo> = (currentState.videosState as? VideosUiState.Content)?.videos.orEmpty(),
+    ) {
+        setState { copy(watchProgress = serverVideos.toWatchProgressIndex()) }
+    }
+
+    private fun List<AnimeVideo>.toWatchProgressIndex(): DetailsWatchProgressIndex =
+        DetailsWatchProgressIndex.merge(
+            animeId = animeId,
+            localEntries = localWatchProgress,
+            videos = this,
+        )
 
     private fun showBalancerPicker(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
@@ -151,6 +204,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 animeId = animeId,
                 posterUrl = poster,
                 screenshotByEpisode = screenshots,
+                resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
             )
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }

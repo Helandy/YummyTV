@@ -3,5 +3,6 @@
     <string name="home_mobile_search_hint">Search anime</string>
     <string name="home_mobile_retry">Retry</string>
     <string name="home_mobile_continue_watching">Continue watching</string>
+    <string name="home_mobile_episode_unknown">Episode</string>
     <string name="home_mobile_episode">Episode %1$s</string>
 </resources>

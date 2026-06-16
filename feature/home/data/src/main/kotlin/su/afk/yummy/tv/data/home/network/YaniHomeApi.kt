@@ -3,7 +3,6 @@ package su.afk.yummy.tv.data.home.network
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -15,20 +14,16 @@ import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 class YaniHomeApi(
     private val client: HttpClient,
 ) {
-    suspend fun getFeed(watches: List<String>): YaniFeedDto {
-        val body = client.get("$YANI_BASE_URL/feed") {
-            watches.forEach { watch ->
-                parameter("watches", watch)
-            }
-        }.bodyAsText()
-        logFeedResponse(watches = watches, body = body)
+    suspend fun getFeed(): YaniFeedDto {
+        val body = client.get("$YANI_BASE_URL/feed").bodyAsText()
+        logFeedResponse(body = body)
         return FEED_JSON.decodeFromString(body)
     }
 
-    private fun logFeedResponse(watches: List<String>, body: String) {
+    private fun logFeedResponse(body: String) {
         Log.i(
             TAG,
-            "Feed response watches=${watches.joinToString()} chars=${body.length} " +
+            "Feed response chars=${body.length} " +
                     body.feedKeysForLog(),
         )
     }

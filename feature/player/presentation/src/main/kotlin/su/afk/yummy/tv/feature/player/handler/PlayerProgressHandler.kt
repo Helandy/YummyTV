@@ -7,7 +7,7 @@ import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import javax.inject.Inject
 
-private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 30_000L
+private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 10_000L
 
 /** Persists local watch progress and silently mirrors remote playback progress. */
 internal class PlayerProgressHandler @Inject constructor(
@@ -23,29 +23,51 @@ internal class PlayerProgressHandler @Inject constructor(
     suspend fun saveProgress(
         context: PlayerProgressContext,
         snapshot: PlayerProgressSnapshot,
+        forceRemoteSync: Boolean = false,
     ) {
         if (snapshot.durationMs <= 0) return
+        val savedSnapshot = snapshot.withFullTimingIfWatched()
 
-        if (context.animeId > 0 && snapshot.episode.isNotBlank()) {
+        if (context.animeId > 0 && savedSnapshot.episode.isNotBlank()) {
             watchProgressStore.save(
                 animeId = context.animeId,
-                episode = snapshot.episode,
-                videoId = snapshot.videoId,
-                episodeUrl = snapshot.episodeUrl,
-                positionMs = snapshot.positionMs,
-                durationMs = snapshot.durationMs,
+                episode = savedSnapshot.episode,
+                videoId = savedSnapshot.videoId,
+                episodeUrl = savedSnapshot.episodeUrl,
+                positionMs = savedSnapshot.positionMs,
+                durationMs = savedSnapshot.durationMs,
                 animeTitle = context.animeTitle,
                 posterUrl = context.posterUrl,
-                playerName = snapshot.playerName,
-                dubbing = snapshot.dubbing,
-                screenshotUrl = snapshot.screenshotUrl,
+                playerName = savedSnapshot.playerName,
+                dubbing = savedSnapshot.dubbing,
+                screenshotUrl = savedSnapshot.screenshotUrl,
             )
         }
 
-        syncRemoteProgress(snapshot)
+        syncRemoteProgress(savedSnapshot, force = forceRemoteSync)
     }
 
-    private suspend fun syncRemoteProgress(snapshot: PlayerProgressSnapshot) {
+    suspend fun saveContinueTarget(
+        context: PlayerProgressContext,
+        snapshot: PlayerProgressSnapshot,
+    ) {
+        watchProgressStore.saveContinueTarget(
+            animeId = context.animeId,
+            episode = snapshot.episode,
+            videoId = snapshot.videoId,
+            episodeUrl = snapshot.episodeUrl,
+            animeTitle = context.animeTitle,
+            posterUrl = context.posterUrl,
+            playerName = snapshot.playerName,
+            dubbing = snapshot.dubbing,
+            screenshotUrl = snapshot.screenshotUrl,
+        )
+    }
+
+    private suspend fun syncRemoteProgress(
+        snapshot: PlayerProgressSnapshot,
+        force: Boolean,
+    ) {
         val videoId = snapshot.videoId
         if (videoId <= 0) return
         if (!WatchProgressStore.isMeaningfulProgress(snapshot.positionMs, snapshot.durationMs)) {
@@ -63,7 +85,7 @@ internal class PlayerProgressHandler @Inject constructor(
         val now = System.currentTimeMillis()
         val shouldForceCompletionSync =
             watchedEnough && videoId !in completionAttemptedVideoIds
-        if (!shouldForceCompletionSync && !isRemoteSyncDue(videoId, now)) return
+        if (!force && !shouldForceCompletionSync && !isRemoteSyncDue(videoId, now)) return
 
         syncingRemoteVideoIds += videoId
         lastRemoteSyncAttemptAt[videoId] = now
@@ -85,6 +107,13 @@ internal class PlayerProgressHandler @Inject constructor(
         val lastAttempt = lastRemoteSyncAttemptAt[videoId] ?: return true
         return now - lastAttempt >= REMOTE_PROGRESS_SYNC_INTERVAL_MS
     }
+
+    private fun PlayerProgressSnapshot.withFullTimingIfWatched(): PlayerProgressSnapshot =
+        if (WatchProgressStore.isWatchedProgress(positionMs, durationMs)) {
+            copy(positionMs = durationMs)
+        } else {
+            this
+        }
 }
 
 /** Screen-level metadata needed to store a progress entry. */

@@ -5,8 +5,9 @@ import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 
 internal suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
     val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
+    val episodeSource = entry.episodeUrl.takeIf { it.isKodikSourceUrl() }
     return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
-        ?: entry.episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
+        ?: episodeSource?.let { KodikThumbnailExtractor.extract(it) }
 }
 
 internal fun String.isLikelyImageUrl(): Boolean =

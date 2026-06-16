@@ -45,10 +45,10 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.utils.bestUrl
 import su.afk.yummy.tv.feature.details.utils.formatAiredProgress
@@ -64,7 +64,7 @@ internal fun DetailsHero(
     libraryList: UserAnimeList?,
     videosState: VideosUiState,
     isWatchLoading: Boolean,
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
     canSubscribe: Boolean,
     detailsButtonOrder: List<DetailsButtonAction>,
     restoreButtonFocusRequest: Int,

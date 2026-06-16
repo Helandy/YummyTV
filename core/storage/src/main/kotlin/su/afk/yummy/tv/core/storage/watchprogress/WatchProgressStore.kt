@@ -18,6 +18,12 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         fun isMeaningfulProgress(positionMs: Long, durationMs: Long): Boolean =
             durationMs > 0 && positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS
 
+        fun isContinueTarget(positionMs: Long, durationMs: Long): Boolean =
+            positionMs == 0L && durationMs == 0L
+
+        fun isUnresolvedProgress(positionMs: Long, durationMs: Long): Boolean =
+            durationMs == 0L && positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS
+
         fun isWatchedProgress(positionMs: Long, durationMs: Long): Boolean =
             isMeaningfulProgress(positionMs, durationMs) &&
                     progress(positionMs, durationMs) >= WATCHED_PROGRESS
@@ -25,11 +31,27 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         fun isMeaningfulProgressEntry(entry: WatchProgressEntry): Boolean =
             isMeaningfulProgress(entry.positionMs, entry.durationMs)
 
+        fun isContinueTargetEntry(entry: WatchProgressEntry): Boolean =
+            isContinueTarget(entry.positionMs, entry.durationMs) &&
+                    entry.episode.isNotBlank() &&
+                    entry.episodeUrl.isNotBlank()
+
+        fun hasPlayableTargetEntry(entry: WatchProgressEntry): Boolean =
+            entry.videoId > 0 ||
+                    entry.episode.isNotBlank() ||
+                    entry.episodeUrl.isNotBlank()
+
+        fun isUnresolvedProgressEntry(entry: WatchProgressEntry): Boolean =
+            isUnresolvedProgress(entry.positionMs, entry.durationMs) &&
+                    hasPlayableTargetEntry(entry)
+
         fun isWatchedProgressEntry(entry: WatchProgressEntry): Boolean =
             isWatchedProgress(entry.positionMs, entry.durationMs)
 
         fun isContinueWatchingEntry(entry: WatchProgressEntry): Boolean =
-            isMeaningfulProgressEntry(entry) && !isWatchedProgressEntry(entry)
+            isContinueTargetEntry(entry) ||
+                    isUnresolvedProgressEntry(entry) ||
+                    (isMeaningfulProgressEntry(entry) && !isWatchedProgressEntry(entry))
 
         fun latestByAnime(entries: List<WatchProgressEntry>): List<WatchProgressEntry> =
             entries
@@ -63,6 +85,11 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             limit = limit,
         )
 
+    suspend fun allMeaningfulVideoProgress(): List<WatchProgressEntry> =
+        dao.allMeaningfulVideoProgress(
+            minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
+        )
+
     suspend fun suppressedContinueWatchingAnimeIds(): Set<Int> =
         dao.suppressedAnimeIds().toSet()
 
@@ -80,6 +107,23 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         screenshotUrl: String = "",
     ) {
         if (positionMs < MIN_CONTINUE_WATCHING_POSITION_MS) {
+            val existing = dao.get(animeId, episode)
+            if (existing != null && isContinueTargetEntry(existing)) {
+                dao.deleteSuppression(animeId)
+                dao.save(
+                    existing.copy(
+                        videoId = videoId.takeIf { it > 0 } ?: existing.videoId,
+                        episodeUrl = episodeUrl.ifBlank { existing.episodeUrl },
+                        animeTitle = animeTitle.ifBlank { existing.animeTitle },
+                        posterUrl = posterUrl.ifBlank { existing.posterUrl },
+                        playerName = playerName.ifBlank { existing.playerName },
+                        dubbing = dubbing.ifBlank { existing.dubbing },
+                        screenshotUrl = screenshotUrl.ifBlank { existing.screenshotUrl },
+                        updatedAt = System.currentTimeMillis(),
+                    )
+                )
+                return
+            }
             dao.delete(animeId, episode)
             return
         }
@@ -92,6 +136,36 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                 episodeUrl = episodeUrl,
                 positionMs = positionMs,
                 durationMs = durationMs,
+                animeTitle = animeTitle,
+                posterUrl = posterUrl,
+                playerName = playerName,
+                dubbing = dubbing,
+                screenshotUrl = screenshotUrl,
+            )
+        )
+    }
+
+    suspend fun saveContinueTarget(
+        animeId: Int,
+        episode: String,
+        videoId: Int = 0,
+        episodeUrl: String,
+        animeTitle: String = "",
+        posterUrl: String = "",
+        playerName: String = "",
+        dubbing: String = "",
+        screenshotUrl: String = "",
+    ) {
+        if (animeId <= 0 || episode.isBlank() || episodeUrl.isBlank()) return
+        dao.deleteSuppression(animeId)
+        dao.save(
+            WatchProgressEntry(
+                animeId = animeId,
+                episode = episode,
+                videoId = videoId,
+                episodeUrl = episodeUrl,
+                positionMs = 0L,
+                durationMs = 0L,
                 animeTitle = animeTitle,
                 posterUrl = posterUrl,
                 playerName = playerName,

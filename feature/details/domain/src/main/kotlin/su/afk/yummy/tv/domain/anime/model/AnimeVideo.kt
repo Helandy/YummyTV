@@ -9,6 +9,8 @@ data class AnimeVideo(
     val iframeUrl: String,
     val durationSeconds: Int?,
     val views: Int? = null,
+    val watchedEndTimeSeconds: Int? = null,
+    val watchedDateSeconds: Long? = null,
     val skips: AnimeVideoSkips = AnimeVideoSkips(),
 )
 

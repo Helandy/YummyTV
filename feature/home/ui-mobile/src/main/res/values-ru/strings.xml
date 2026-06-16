@@ -3,5 +3,6 @@
     <string name="home_mobile_search_hint">Найти аниме</string>
     <string name="home_mobile_retry">Повторить</string>
     <string name="home_mobile_continue_watching">Продолжить просмотр</string>
+    <string name="home_mobile_episode_unknown">Серия</string>
     <string name="home_mobile_episode">Серия %1$s</string>
 </resources>

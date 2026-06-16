@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:home:domain"))
 
     implementation(libs.androidx.lifecycle.viewmodelCompose)
 }

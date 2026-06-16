@@ -14,15 +14,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 
 @Composable
 internal fun EpisodesSection(
     state: VideosUiState,
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
     restoreFocusRequest: Int,
     onVideoSelected: (AnimeVideo) -> Unit,
 ) {

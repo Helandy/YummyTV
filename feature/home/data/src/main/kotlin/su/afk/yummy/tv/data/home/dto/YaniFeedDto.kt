@@ -26,6 +26,7 @@ data class YaniFeedResponseDto(
 @Serializable
 data class YaniLastWatchDto(
     @SerialName("anime_id") val animeId: Int? = null,
+    @SerialName("video_id") val videoId: Int? = null,
     @SerialName("anime_url") val animeUrl: String? = null,
     val title: String = "",
     val description: String = "",

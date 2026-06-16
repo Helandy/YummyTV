@@ -243,6 +243,18 @@ data class YaniPutVideoBodyDto(
 )
 
 @Serializable
+data class YaniPostVideoBodyDto(
+    val videos: List<YaniPostVideoItemDto>,
+)
+
+@Serializable
+data class YaniPostVideoItemDto(
+    @SerialName("video_id") val videoId: Int,
+    val time: Int,
+    val date: Int,
+)
+
+@Serializable
 data class YaniDeleteVideosBodyDto(
     @SerialName("video_ids") val videoIds: List<Int>,
 )

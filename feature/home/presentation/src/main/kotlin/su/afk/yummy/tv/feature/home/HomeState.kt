@@ -37,6 +37,7 @@ class HomeState {
         data class ContinueWatchingSelected(val entry: WatchProgressEntry) : Event
         data object FocusedItemRestoreHandled : Event
         data object ScreenResumed : Event
+        data object RefreshRequested : Event
         data object RetrySelected : Event
     }
 

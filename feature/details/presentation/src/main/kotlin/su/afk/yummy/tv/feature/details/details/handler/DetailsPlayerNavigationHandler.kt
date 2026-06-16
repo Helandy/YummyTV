@@ -31,6 +31,7 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
         animeId: Int,
         posterUrl: String,
         screenshotByEpisode: Map<String, String>,
+        resumeFromMs: Long = 0L,
     ): NavKey =
         getPlayerDestination(
             video = video.toPlayerVideoSource(),
@@ -38,6 +39,7 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
             animeId = animeId,
             posterUrl = posterUrl,
             screenshotByEpisode = screenshotByEpisode,
+            resumeFromMs = resumeFromMs,
         )
 
     fun getPlayerDestination(
@@ -46,6 +48,7 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
         animeId: Int,
         posterUrl: String,
         screenshotByEpisode: Map<String, String>,
+        resumeFromMs: Long = 0L,
     ): NavKey =
         playerNavigator.getPlayerDest(
             video = video,
@@ -53,5 +56,6 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
             animeId = animeId,
             posterUrl = posterUrl,
             screenshotByEpisode = screenshotByEpisode,
+            resumeFromMs = resumeFromMs,
         )
 }

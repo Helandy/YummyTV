@@ -1,10 +1,15 @@
 package su.afk.yummy.tv.feature.account.handler
 
+import android.util.Log
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
+import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
 import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
+import su.afk.yummy.tv.domain.account.usecase.SyncVideoWatchesUseCase
+import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.feature.account.utils.AccountLoginCredentials
 import javax.inject.Inject
 
@@ -13,6 +18,9 @@ internal class AccountAuthHandler @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val refreshAccountUseCase: RefreshAccountUseCase,
+    private val syncVideoWatches: SyncVideoWatchesUseCase,
+    private val refreshHomeFeed: RefreshHomeFeedUseCase,
+    private val watchProgressStore: WatchProgressStore,
 ) {
     suspend fun login(
         credentials: AccountLoginCredentials,
@@ -21,7 +29,11 @@ internal class AccountAuthHandler @Inject constructor(
         runCatching {
             loginUseCase(credentials.login, credentials.password, captchaResponse)
         }.fold(
-            onSuccess = { account -> AccountLoginResult.Success(account) },
+            onSuccess = { account ->
+                syncLocalWatchesAfterLogin()
+                refreshHomeFeedAfterLogin()
+                AccountLoginResult.Success(account)
+            },
             onFailure = { error ->
                 if (error is AccountCaptchaRequiredException) {
                     AccountLoginResult.CaptchaRequired(rejected = captchaResponse != null)
@@ -38,6 +50,37 @@ internal class AccountAuthHandler @Inject constructor(
             onSuccess = { account -> AccountRefreshResult.Success(account) },
             onFailure = { AccountRefreshResult.Failure },
         )
+
+    private suspend fun syncLocalWatchesAfterLogin() {
+        runCatching {
+            val videos = watchProgressStore
+                .allMeaningfulVideoProgress()
+                .map {
+                    VideoWatchSyncItem(
+                        videoId = it.videoId,
+                        timeSeconds = (it.positionMs / 1000L).toInt(),
+                        dateSeconds = (it.updatedAt / 1000L).toInt(),
+                    )
+                }
+            if (!syncVideoWatches(videos)) {
+                Log.w(TAG, "Post-login local watch sync returned false")
+            }
+        }.onFailure { error ->
+            Log.w(TAG, "Post-login local watch sync failed", error)
+        }
+    }
+
+    private suspend fun refreshHomeFeedAfterLogin() {
+        runCatching {
+            refreshHomeFeed()
+        }.onFailure { error ->
+            Log.w(TAG, "Post-login home feed refresh failed", error)
+        }
+    }
+
+    private companion object {
+        const val TAG = "AccountAuthHandler"
+    }
 }
 
 /** Outcome of a login attempt, including captcha-specific failure state. */

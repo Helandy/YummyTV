@@ -111,7 +111,14 @@ data class YaniAnimeVideoDto(
     @SerialName("iframe_url") val iframeUrl: String = "",
     val duration: Int? = null,
     val views: Int? = null,
+    val watched: YaniVideoWatchedDto? = null,
     val skips: YaniVideoSkipsDto? = null,
+)
+
+@Serializable
+data class YaniVideoWatchedDto(
+    @SerialName("end_time") val endTime: Int? = null,
+    val date: Long? = null,
 )
 
 @Serializable

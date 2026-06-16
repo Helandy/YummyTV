@@ -82,6 +82,12 @@ class YaniAnimeRepository(
             }
         }
 
+    override suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo> =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            fetchVideosFromNetwork(animeId, language.apiCode)
+        }
+
     override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()

@@ -5,17 +5,18 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import javax.inject.Inject
+import kotlin.math.abs
 
 class ContinueWatchingEnricher @Inject constructor(
     private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
     private val getCachedAnimeDetails: GetCachedAnimeDetailsUseCase,
-    private val getAnimeVideos: GetAnimeVideosUseCase,
+    private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
 ) {
     suspend fun enrich(
         items: List<HomeContinueWatchingItem>,
@@ -38,9 +39,11 @@ class ContinueWatchingEnricher @Inject constructor(
             runCatching {
                 val source = sources[item.animeId] ?: return@map item
                 val matched = watchEntries.match(item)
-                val video = source.videos.selectVideo(item, matched)
+                val playbackVideo = source.videos.selectPlaybackVideo(item, matched)
+                val thumbnailVideo = source.videos.selectThumbnailVideo(item, playbackVideo)
                 item.enrichedWith(
-                    video = video,
+                    playbackVideo = playbackVideo,
+                    thumbnailVideo = thumbnailVideo,
                     matched = matched,
                     details = source.details,
                 )
@@ -80,7 +83,7 @@ class ContinueWatchingEnricher @Inject constructor(
         fallback: List<AnimeVideo>,
     ): List<AnimeVideo> =
         try {
-            getAnimeVideos(animeId)
+            refreshAnimeVideos(animeId)
         } catch (error: CancellationException) {
             throw error
         } catch (_: Throwable) {
@@ -100,7 +103,7 @@ class ContinueWatchingEnricher @Inject constructor(
         videos: List<AnimeVideo>,
         watchEntries: List<WatchProgressEntry>,
     ): Boolean {
-        if (videos.isNotEmpty()) return false
+        if (videos.isNotEmpty() && !needsServerWatchedResolution()) return false
         val matched = watchEntries.match(this)
         return videoId <= 0 ||
                 episode.isBlank() ||
@@ -112,32 +115,34 @@ class ContinueWatchingEnricher @Inject constructor(
     }
 
     private fun HomeContinueWatchingItem.enrichedWith(
-        video: AnimeVideo?,
+        playbackVideo: AnimeVideo?,
+        thumbnailVideo: AnimeVideo?,
         matched: WatchProgressEntry?,
         details: AnimeDetails?,
     ): HomeContinueWatchingItem {
         val resolvedEpisode = episode.ifBlank {
-            video?.episode
+            playbackVideo?.episode
                 ?: matched?.episode
                 ?: ""
         }
         val resolvedEpisodeUrl = episodeUrl.ifBlank {
-            video?.iframeUrl
+            playbackVideo?.iframeUrl
                 ?: matched?.episodeUrl
                 ?: ""
         }
         val resolvedDurationMs = durationMs.takeIf { it > 0L }
-            ?: video?.durationSeconds?.takeIf { it > 0 }?.secondsToMillis()
+            ?: playbackVideo?.durationSeconds?.takeIf { it > 0 }?.secondsToMillis()
             ?: matched?.durationMs?.takeIf { it > 0L }
+            ?: thumbnailVideo?.durationSeconds?.takeIf { it > 0 }?.secondsToMillis()
             ?: 0L
-        val resolvedScreenshotUrl = screenshotUrl.ifBlank {
-            video?.iframeUrl?.takeIf { it.isKodikSourceUrl() }
-                ?: details?.screenshotForEpisode(resolvedEpisode)
-                ?: matched?.screenshotUrl.orEmpty()
-        }
+        val kodikThumbnailSource = thumbnailVideo?.iframeUrl?.takeIf { it.isKodikSourceUrl() }
+        val resolvedScreenshotUrl = kodikThumbnailSource
+            ?: screenshotUrl.takeIf { it.isNotBlank() }
+            ?: details?.screenshotForEpisode(resolvedEpisode)
+            ?: matched?.screenshotUrl.orEmpty()
 
         return copy(
-            videoId = video?.id?.takeIf { it > 0 }
+            videoId = playbackVideo?.id?.takeIf { it > 0 }
                 ?: videoId.takeIf { it > 0 }
                 ?: matched?.videoId
                 ?: 0,
@@ -146,12 +151,12 @@ class ContinueWatchingEnricher @Inject constructor(
             episodeUrl = resolvedEpisodeUrl,
             durationMs = resolvedDurationMs,
             playerName = playerName.ifBlank {
-                video?.player
+                playbackVideo?.player
                     ?: matched?.playerName
                     ?: ""
             },
             dubbing = dubbing.ifBlank {
-                video?.dubbing
+                playbackVideo?.dubbing
                     ?: matched?.dubbing
                     ?: ""
             },
@@ -161,15 +166,15 @@ class ContinueWatchingEnricher @Inject constructor(
 
     private fun List<WatchProgressEntry>.match(item: HomeContinueWatchingItem): WatchProgressEntry? {
         val episodeKey = item.episode.episodeKey()
-        return firstOrNull {
-            it.animeId == item.animeId &&
-                    episodeKey.isNotBlank() &&
-                    it.episode.episodeKey() == episodeKey
-        }
-            ?: firstOrNull { item.videoId > 0 && it.videoId == item.videoId }
+        return firstOrNull { item.videoId > 0 && it.videoId == item.videoId }
+            ?: firstOrNull {
+                it.animeId == item.animeId &&
+                        episodeKey.isNotBlank() &&
+                        it.episode.episodeKey() == episodeKey
+            }
     }
 
-    private fun List<AnimeVideo>.selectVideo(
+    private fun List<AnimeVideo>.selectPlaybackVideo(
         item: HomeContinueWatchingItem,
         matched: WatchProgressEntry?,
     ): AnimeVideo? {
@@ -187,7 +192,7 @@ class ContinueWatchingEnricher @Inject constructor(
         }
         val candidates = episodeMatches
             .ifEmpty { exactFallback }
-            .ifEmpty { this }
+        if (candidates.isEmpty()) return selectServerWatchedVideo(item)
         return candidates
             .takeIf { it.isNotEmpty() }
             ?.maxWithOrNull(compareBy<AnimeVideo> {
@@ -195,11 +200,61 @@ class ContinueWatchingEnricher @Inject constructor(
             }.thenBy {
                 it.matchesPreferredSource(item, matched)
             }.thenBy {
+                it.iframeUrl.isKodikSourceUrl()
+            }.thenBy {
                 it.iframeUrl.isSupportedSourceUrl()
             }.thenBy {
                 it.views ?: 0
             })
     }
+
+    private fun List<AnimeVideo>.selectServerWatchedVideo(item: HomeContinueWatchingItem): AnimeVideo? {
+        if (!item.needsServerWatchedResolution()) return null
+        val watchedCandidates = filter { video ->
+            video.watchedDateSeconds != null && video.iframeUrl.isSupportedSourceUrl()
+        }
+        val itemDateSeconds = item.updatedAt.takeIf { it > 0L }?.div(1_000L)
+        val exactDateMatches = watchedCandidates.filter { video ->
+            itemDateSeconds != null && video.watchedDateSeconds == itemDateSeconds
+        }
+        val exactPositionMatches = watchedCandidates.filter { video ->
+            item.positionMs > 0L && video.watchedEndTimeSeconds?.secondsToMillis() == item.positionMs
+        }
+        val candidates = exactDateMatches.ifEmpty { exactPositionMatches }
+        return candidates.minWithOrNull(compareBy<AnimeVideo> {
+            it.watchedDateDistanceSeconds(item)
+        }.thenBy {
+            it.watchedEndTimeDistanceMs(item)
+        }.thenByDescending {
+            it.iframeUrl.isKodikSourceUrl()
+        }.thenByDescending {
+            it.views ?: 0
+        })
+    }
+
+    private fun List<AnimeVideo>.selectThumbnailVideo(
+        item: HomeContinueWatchingItem,
+        playbackVideo: AnimeVideo?,
+    ): AnimeVideo? {
+        if (playbackVideo?.iframeUrl?.isKodikSourceUrl() == true) return playbackVideo
+
+        val playbackEpisodeKey = playbackVideo?.episode.orEmpty().episodeKey()
+        val episodeKodikVideo = takeIf { playbackEpisodeKey.isNotBlank() }
+            ?.filter { video ->
+                video.episode.episodeKey() == playbackEpisodeKey &&
+                        video.iframeUrl.isKodikSourceUrl()
+            }
+            ?.bestThumbnailCandidate()
+
+        return episodeKodikVideo ?: guessCandidates(item).bestThumbnailCandidate()
+    }
+
+    private fun List<AnimeVideo>.bestThumbnailCandidate(): AnimeVideo? =
+        maxWithOrNull(compareBy<AnimeVideo> {
+            it.iframeUrl.isKodikSourceUrl()
+        }.thenBy {
+            it.views ?: 0
+        })
 
     private fun AnimeVideo.matchesPreferredVideo(
         item: HomeContinueWatchingItem,
@@ -219,6 +274,31 @@ class ContinueWatchingEnricher @Inject constructor(
         return (expectedUrl.isNotBlank() && iframeUrl == expectedUrl) ||
                 (expectedPlayer.isNotBlank() && expectedDubbing.isNotBlank() &&
                         player == expectedPlayer && dubbing == expectedDubbing)
+    }
+
+    private fun List<AnimeVideo>.guessCandidates(item: HomeContinueWatchingItem): List<AnimeVideo> {
+        if (item.animeId <= 0 || item.positionMs <= 0L) return emptyList()
+        return filter { video ->
+            video.iframeUrl.isSupportedSourceUrl() &&
+                    video.durationSeconds.fitsPosition(item.positionMs)
+        }
+    }
+
+    private fun Int?.fitsPosition(positionMs: Long): Boolean =
+        this == null || positionMs <= secondsToMillis()
+
+    private fun HomeContinueWatchingItem.needsServerWatchedResolution(): Boolean =
+        videoId <= 0 && episode.isBlank() && episodeUrl.isBlank() && positionMs > 0L
+
+    private fun AnimeVideo.watchedDateDistanceSeconds(item: HomeContinueWatchingItem): Long {
+        val itemDateSeconds = item.updatedAt.takeIf { it > 0L }?.div(1_000L) ?: return 0L
+        return abs((watchedDateSeconds ?: return Long.MAX_VALUE) - itemDateSeconds)
+    }
+
+    private fun AnimeVideo.watchedEndTimeDistanceMs(item: HomeContinueWatchingItem): Long {
+        if (item.positionMs <= 0L) return 0L
+        val watchedPositionMs = watchedEndTimeSeconds?.secondsToMillis() ?: return Long.MAX_VALUE
+        return abs(watchedPositionMs - item.positionMs)
     }
 
     private fun AnimeDetails.screenshotForEpisode(episode: String): String? {

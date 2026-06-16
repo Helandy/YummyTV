@@ -16,16 +16,21 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
 
 internal suspend fun WatchProgressEntry.resolveMobileContinueWatchingImage(): String? {
     val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
+    val kodikEpisode = episodeUrl.takeIf { it.isKodikSourceUrl() }
     val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
     return kodikScreenshot?.let { KodikThumbnailExtractor.extract(it) }
+        ?: kodikEpisode?.let { KodikThumbnailExtractor.extract(it) }
         ?: directScreenshot
-        ?: episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
         ?: posterUrl.ifBlank { null }
 }
 
 @Composable
 internal fun WatchProgressEntry.episodeSubtitle(): String =
-    stringResource(R.string.home_mobile_episode, episode)
+    if (episode.isBlank()) {
+        stringResource(R.string.home_mobile_episode_unknown)
+    } else {
+        stringResource(R.string.home_mobile_episode, episode)
+    }
 
 internal fun WatchProgressEntry.timingSubtitle(): String =
     if (durationMs > 0L) {

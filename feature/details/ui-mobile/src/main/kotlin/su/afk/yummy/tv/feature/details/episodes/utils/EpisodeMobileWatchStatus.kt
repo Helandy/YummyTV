@@ -1,15 +1,14 @@
 package su.afk.yummy.tv.feature.details.episodes.utils
 
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeMobileWatchStatus
 
 internal fun List<AnimeVideo>.mobileWatchStatus(
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
 ): EpisodeMobileWatchStatus {
-    val best = mapNotNull { watchProgress[it.iframeUrl] }
-        .maxByOrNull { it.positionMs }
+    val best = watchProgress.bestFor(this)
         ?: return EpisodeMobileWatchStatus.None
 
     if (!WatchProgressStore.isMeaningfulProgressEntry(best)) {

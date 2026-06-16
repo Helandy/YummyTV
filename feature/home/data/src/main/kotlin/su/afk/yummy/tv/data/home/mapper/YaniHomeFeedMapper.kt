@@ -57,6 +57,8 @@ private fun List<YaniLastWatchDto>.toContinueWatchingItems(
     val usedIndexes = BooleanArray(watchEntries.size)
     return mapIndexedNotNull { index, item ->
         val matched = watchEntries.firstUnused(usedIndexes) {
+            item.matchesVideo(it)
+        } ?: watchEntries.firstUnused(usedIndexes) {
             item.matchesAnimeAndEpisode(it)
         } ?: if (item.animeId == null) {
             watchEntries.getOrNull(index)
@@ -81,6 +83,9 @@ private inline fun List<WatchProgressEntry>.firstUnused(
     }
     return null
 }
+
+private fun YaniLastWatchDto.matchesVideo(entry: WatchProgressEntry): Boolean =
+    videoId != null && videoId > 0 && entry.videoId == videoId
 
 private fun YaniLastWatchDto.matchesAnimeAndEpisode(entry: WatchProgressEntry): Boolean {
     val episode = episodeTitle?.takeIf { it.isNotBlank() } ?: return false
@@ -115,7 +120,7 @@ private fun YaniLastWatchDto.toContinueWatchingItem(
         animeTitle = safeTitle,
         description = description,
         poster = poster?.toHomePoster(),
-        videoId = matched?.videoId ?: 0,
+        videoId = videoId?.takeIf { it > 0 } ?: matched?.videoId ?: 0,
         episode = episode,
         episodeUrl = matched?.episodeUrl.orEmpty(),
         positionMs = positionMs,

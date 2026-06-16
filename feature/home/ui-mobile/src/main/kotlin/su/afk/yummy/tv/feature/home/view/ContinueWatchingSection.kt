@@ -43,7 +43,11 @@ internal fun ContinueWatchingSection(
                     "${entry.animeId}-${entry.episode}-${entry.videoId}-${entry.updatedAt}-$index"
                 },
             ) { _, entry ->
-                val episodeTitle = stringResource(R.string.home_mobile_episode, entry.episode)
+                val episodeTitle = if (entry.episode.isBlank()) {
+                    stringResource(R.string.home_mobile_episode_unknown)
+                } else {
+                    stringResource(R.string.home_mobile_episode, entry.episode)
+                }
                 val imageIdentity =
                     "${entry.animeId}-${entry.episode}-${entry.videoId}-${entry.updatedAt}"
                 val imageUrl by produceState<String?>(

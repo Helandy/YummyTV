@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
@@ -81,6 +81,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     )
     private var libraryMutationVersion = 0
     private var favoriteMutationVersion = 0
+    private var localWatchProgress: List<WatchProgressEntry> = emptyList()
 
     init {
         analytics.eventDetailsScreenOpened(animeId)
@@ -92,22 +93,31 @@ class DetailsViewModel @AssistedInject internal constructor(
             .onEach { favorite -> setState { copy(isFavorite = favorite || (isSignedIn && isFavorite)) } }
             .launchIn(viewModelScope)
         watchProgressStore.observeByAnimeId(animeId)
-            .map { entries -> entries.associateBy { it.episodeUrl } }
             .flowOn(Dispatchers.Default)
-            .onEach { progress -> setState { copy(watchProgress = progress) } }
+            .onEach { progress ->
+                localWatchProgress = progress
+                updateMergedWatchProgress()
+            }
             .launchIn(viewModelScope)
         settingsStore.detailsButtonOrder
             .onEach { order -> setState { copy(detailsButtonOrder = order) } }
             .launchIn(viewModelScope)
         yaniAuthPreferences.refreshToken
             .onEach { token ->
+                val wasSignedIn = currentState.isSignedIn
+                val signedIn = token.isNotBlank()
                 setState {
                     copy(
-                        isSignedIn = token.isNotBlank(),
-                        subscriptions = if (token.isBlank()) emptyList() else subscriptions,
-                        showSubscriptionsPicker = if (token.isBlank()) false else showSubscriptionsPicker,
-                        isSubscriptionsLoading = if (token.isBlank()) false else isSubscriptionsLoading,
+                        isSignedIn = signedIn,
+                        subscriptions = if (!signedIn) emptyList() else subscriptions,
+                        showSubscriptionsPicker = if (!signedIn) false else showSubscriptionsPicker,
+                        isSubscriptionsLoading = if (!signedIn) false else isSubscriptionsLoading,
                     )
+                }
+                if (signedIn && !wasSignedIn) {
+                    viewModelScope.launch { refreshVideosFromNetwork() }
+                } else if (!signedIn) {
+                    updateMergedWatchProgress(serverVideos = emptyList())
                 }
             }
             .launchIn(viewModelScope)
@@ -350,6 +360,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         videosState = VideosUiState.Empty,
+                        watchProgress = DetailsWatchProgressIndex.Empty,
                         isWatchLaunchPending = false,
                         isSubscriptionsLoading = false,
                     )
@@ -365,6 +376,9 @@ class DetailsViewModel @AssistedInject internal constructor(
         )
         if (cached != null) {
             setVideos(cached)
+            if (currentState.isSignedIn) {
+                refreshVideosFromNetwork()
+            }
             return
         }
         loadVideos()
@@ -375,9 +389,37 @@ class DetailsViewModel @AssistedInject internal constructor(
             copy(
                 videosState = result.videosState,
                 subscriptions = result.subscriptions,
+                watchProgress = result.videos.toWatchProgressIndex(),
             )
         }
     }
+
+    private suspend fun refreshVideosFromNetwork() {
+        videoHandler.refresh(
+            animeId = animeId,
+            optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+        ).onSuccess { result ->
+            setVideos(result)
+            if (currentState.isWatchLaunchPending) {
+                openInitialVideo(result.videos)
+            }
+        }
+    }
+
+    private fun updateMergedWatchProgress(
+        serverVideos: List<AnimeVideo> = (currentState.videosState as? VideosUiState.Content)?.videos.orEmpty(),
+    ) {
+        setState {
+            copy(watchProgress = serverVideos.toWatchProgressIndex())
+        }
+    }
+
+    private fun List<AnimeVideo>.toWatchProgressIndex(): DetailsWatchProgressIndex =
+        DetailsWatchProgressIndex.merge(
+            animeId = animeId,
+            localEntries = localWatchProgress,
+            videos = this,
+        )
 
     private fun onWatchSelected() {
         when (val videosState = currentState.videosState) {
@@ -510,6 +552,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 screenshotByEpisode = details?.screenshots.orEmpty().mapNotNull { screenshot ->
                     screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
                 }.toMap(),
+                resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
             )
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }
@@ -526,6 +569,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 screenshotByEpisode = details?.screenshots.orEmpty().mapNotNull { screenshot ->
                     screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
                 }.toMap(),
+                resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
             )
             withContext(Dispatchers.Main) { nav.navigate(destination) }
         }

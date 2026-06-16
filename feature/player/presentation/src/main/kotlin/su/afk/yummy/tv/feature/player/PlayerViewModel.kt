@@ -29,8 +29,11 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResult
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.utils.activeBalancerName
+import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.toPresentationSourceGraph
 
@@ -112,11 +115,15 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     override fun onEvent(event: PlayerState.Event) {
         when (event) {
-            PlayerState.Event.Back -> nav.back()
+            PlayerState.Event.Back -> saveCurrentProgressThenNavigate { nav.back() }
             PlayerState.Event.OpenDetails -> {
                 analytics.eventOpenDetails(currentState.animeId)
                 val animeId = currentState.animeId
-                if (animeId > 0) nav.navigate(detailsNavigator.getDetailsDest(animeId))
+                if (animeId > 0) {
+                    saveCurrentProgressThenNavigate {
+                        nav.navigate(detailsNavigator.getDetailsDest(animeId))
+                    }
+                }
             }
 
             PlayerState.Event.RetryStream -> {
@@ -128,7 +135,11 @@ class PlayerViewModel @AssistedInject internal constructor(
             PlayerState.Event.RateTitle -> {
                 analytics.eventRateTitle(currentState.animeId)
                 val animeId = currentState.animeId
-                if (animeId > 0) nav.navigate(detailsNavigator.getRatingDest(animeId))
+                if (animeId > 0) {
+                    saveCurrentProgressThenNavigate {
+                        nav.navigate(detailsNavigator.getRatingDest(animeId))
+                    }
+                }
             }
 
             is PlayerState.Event.PlaybackError -> {
@@ -151,10 +162,12 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             is PlayerState.Event.NextEpisode -> {
                 analytics.eventNextEpisode(currentState, event.source)
+                val nextState = sourceSelectionHandler.nextEpisode(currentState)
                 applySourceSelection(
-                    sourceSelectionHandler.nextEpisode(currentState),
+                    nextState,
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
                 )
+                nextState?.let(::saveContinueTarget)
             }
 
             is PlayerState.Event.EpisodeCompleted -> {
@@ -303,6 +316,100 @@ class PlayerViewModel @AssistedInject internal constructor(
             state = state,
             positionMs = position,
             durationMs = duration,
+        )
+        saveWatchedProgress(state, position, duration)
+    }
+
+    private fun saveCurrentProgressThenNavigate(navigate: () -> Unit) {
+        val state = currentState
+        val snapshot = state.progressSnapshot(
+            positionMs = state.playbackPositionMs,
+            durationMs = state.playbackDurationMs,
+        )
+        if (snapshot == null) {
+            navigate()
+            return
+        }
+
+        viewModelScope.launch {
+            runCatching {
+                progressHandler.saveProgress(
+                    context = state.progressContext(),
+                    snapshot = snapshot,
+                    forceRemoteSync = true,
+                )
+            }
+            navigate()
+        }
+    }
+
+    private fun saveContinueTarget(state: PlayerState.State) {
+        val snapshot = state.continueTargetSnapshot() ?: return
+        if (snapshot.episode.isFirstEpisodeNumber()) return
+        viewModelScope.launch {
+            progressHandler.saveContinueTarget(
+                context = PlayerProgressContext(
+                    animeId = state.animeId,
+                    animeTitle = state.animeTitle,
+                    posterUrl = state.posterUrl,
+                ),
+                snapshot = snapshot,
+            )
+        }
+    }
+
+    private fun String.isFirstEpisodeNumber(): Boolean {
+        val normalized = trim().replace(',', '.')
+        val number = normalized.toDoubleOrNull()
+            ?: Regex("""\d+(?:[.,]\d+)?""")
+                .find(normalized)
+                ?.value
+                ?.replace(',', '.')
+                ?.toDoubleOrNull()
+        return number == 1.0
+    }
+
+    private fun PlayerState.State.continueTargetSnapshot(): PlayerProgressSnapshot? {
+        return progressSnapshot(positionMs = 0L, durationMs = 0L)
+    }
+
+    private fun saveWatchedProgress(
+        state: PlayerState.State,
+        positionMs: Long,
+        durationMs: Long,
+    ) {
+        val snapshot = state.progressSnapshot(positionMs, durationMs) ?: return
+        viewModelScope.launch {
+            progressHandler.saveProgress(
+                context = state.progressContext(),
+                snapshot = snapshot,
+            )
+        }
+    }
+
+    private fun PlayerState.State.progressContext(): PlayerProgressContext =
+        PlayerProgressContext(
+            animeId = animeId,
+            animeTitle = animeTitle,
+            posterUrl = posterUrl,
+        )
+
+    private fun PlayerState.State.progressSnapshot(
+        positionMs: Long,
+        durationMs: Long,
+    ): PlayerProgressSnapshot? {
+        val episodeUrl = activeIframeUrl(this)
+        val episode = activeEpisode(this)
+        if (episodeUrl.isBlank() || episode.isBlank()) return null
+        return PlayerProgressSnapshot(
+            episode = episode,
+            episodeUrl = episodeUrl,
+            videoId = activeVideoId(this),
+            playerName = activeBalancerName(this),
+            dubbing = activeDubbingName(this),
+            screenshotUrl = activeScreenshotUrl(this),
+            positionMs = positionMs,
+            durationMs = durationMs,
         )
     }
 

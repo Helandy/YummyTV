@@ -22,9 +22,28 @@ interface WatchProgressDao {
         """
         SELECT * FROM watch_progress
         WHERE animeId > 0
-            AND durationMs > 0
-            AND positionMs >= :minPositionMs
-            AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+            AND (
+                (
+                    durationMs > 0
+                    AND positionMs >= :minPositionMs
+                    AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+                )
+                OR (
+                    durationMs = 0
+                    AND positionMs = 0
+                    AND episode != ''
+                    AND episodeUrl != ''
+                )
+                OR (
+                    durationMs = 0
+                    AND positionMs >= :minPositionMs
+                    AND (
+                        videoId > 0
+                        OR episode != ''
+                        OR episodeUrl != ''
+                    )
+                )
+            )
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = watch_progress.animeId
@@ -41,9 +60,28 @@ interface WatchProgressDao {
         """
         SELECT * FROM watch_progress
         WHERE animeId > 0
-            AND durationMs > 0
-            AND positionMs >= :minPositionMs
-            AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+            AND (
+                (
+                    durationMs > 0
+                    AND positionMs >= :minPositionMs
+                    AND CAST(positionMs AS REAL) / durationMs < :maxProgress
+                )
+                OR (
+                    durationMs = 0
+                    AND positionMs = 0
+                    AND episode != ''
+                    AND episodeUrl != ''
+                )
+                OR (
+                    durationMs = 0
+                    AND positionMs >= :minPositionMs
+                    AND (
+                        videoId > 0
+                        OR episode != ''
+                        OR episodeUrl != ''
+                    )
+                )
+            )
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = watch_progress.animeId
@@ -93,6 +131,39 @@ interface WatchProgressDao {
     suspend fun latestMeaningfulVideoProgress(
         minPositionMs: Long,
         limit: Int,
+    ): List<WatchProgressEntry>
+
+    @Query(
+        """
+        SELECT progress.* FROM watch_progress AS progress
+        WHERE progress.videoId > 0
+            AND progress.durationMs > 0
+            AND progress.positionMs >= :minPositionMs
+            AND NOT EXISTS (
+                SELECT 1 FROM watch_progress AS other
+                WHERE other.videoId = progress.videoId
+                    AND other.videoId > 0
+                    AND other.durationMs > 0
+                    AND other.positionMs >= :minPositionMs
+                    AND (
+                        other.updatedAt > progress.updatedAt
+                        OR (
+                            other.updatedAt = progress.updatedAt
+                            AND (
+                                other.animeId > progress.animeId
+                                OR (
+                                    other.animeId = progress.animeId
+                                    AND other.episode > progress.episode
+                                )
+                            )
+                        )
+                    )
+            )
+        ORDER BY progress.updatedAt DESC
+        """
+    )
+    suspend fun allMeaningfulVideoProgress(
+        minPositionMs: Long,
     ): List<WatchProgressEntry>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

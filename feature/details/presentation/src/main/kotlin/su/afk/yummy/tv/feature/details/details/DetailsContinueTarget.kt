@@ -16,11 +16,9 @@ data class DetailsContinueTarget(
 fun resolveDetailsContinueTarget(
     animeId: Int,
     videos: List<AnimeVideo>,
-    watchProgress: Map<String, WatchProgressEntry>,
+    watchProgress: DetailsWatchProgressIndex,
 ): DetailsContinueTarget? {
-    val latestEntry = watchProgress.values
-        .filter { it.animeId == animeId && WatchProgressStore.isMeaningfulProgressEntry(it) }
-        .maxByOrNull { it.updatedAt }
+    val latestEntry = watchProgress.latestMeaningful(animeId)
         ?: return null
     val videoSources = videos.map { it.toPlayerVideoSource() }
     if (videoSources.isEmpty()) return null

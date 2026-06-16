@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.home.HOME_FEED_GENERIC_WATCH_SIGNATURE
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
+import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
@@ -23,8 +23,8 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 
-private const val FEED_TTL_MS = 5 * 60 * 1000L
-private const val FEED_WATCH_LIMIT = 8
+private const val FEED_TTL_MS = 60 * 1000L
+private const val FEED_CACHE_SIGNATURE_VERSION = "cw5"
 private const val TAG = "YaniHomeFeed"
 
 class YaniHomeFeedRepository(
@@ -33,6 +33,7 @@ class YaniHomeFeedRepository(
     private val stringProvider: StringProvider,
     private val settingsStore: SettingsStore,
     private val watchProgressStore: WatchProgressStore,
+    private val remoteContinueWatchingStore: RemoteContinueWatchingStore,
     private val continueWatchingEnricher: ContinueWatchingEnricher,
 ) : HomeFeedRepository {
 
@@ -40,24 +41,17 @@ class YaniHomeFeedRepository(
 
     override suspend fun getCachedHomeFeed(): HomeFeed? = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.yaniContentLanguage.first().apiCode
-        val watchSignature = feedWatchEntries()
-            .map { it.toFeedWatchParam() }
-            .joinToString("|")
+        val accountKey = continueWatchingAccountKey()
+        val watchSignature = feedCacheSignature(accountKey)
         val displayWatchEntries = displayWatchEntries()
         val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
-        val stored = homeFeedStore.getFeed(languageCode, watchSignature)
-        stored?.toHomeFeed(stringProvider)
+        val storedFeed = homeFeedStore.getFeed(languageCode, watchSignature)
+            ?.toHomeFeed(stringProvider)
             ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
-            ?.withMergedContinueWatching(displayWatchEntries)
-            ?: if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
-                null
-            } else {
-                homeFeedStore
-                    .getFeed(languageCode, HOME_FEED_GENERIC_WATCH_SIGNATURE)
-                    ?.toHomeFeed(stringProvider)
-                    ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
-                    ?.withMergedContinueWatching(displayWatchEntries)
-            }
+            ?: return@withContext null
+        syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
+        val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
+        storedFeed.withMergedContinueWatching(remoteWatchEntries, displayWatchEntries)
     }
 
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
@@ -65,64 +59,62 @@ class YaniHomeFeedRepository(
     override suspend fun removeCachedContinueWatching(animeId: Int) {
         withContext(Dispatchers.IO) {
             homeFeedStore.deleteContinueWatchingByAnimeId(animeId)
+            remoteContinueWatchingStore.deleteByAnimeId(animeId)
         }
     }
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
         val languageCode = language.apiCode
-        val feedWatchEntries = feedWatchEntries()
+        val accountKey = continueWatchingAccountKey()
         val displayWatchEntries = displayWatchEntries()
         val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
-        val watches = feedWatchEntries.map { it.toFeedWatchParam() }
-        val watchSignature = watches.joinToString("|")
+        val watchSignature = feedCacheSignature(accountKey)
         val stored = homeFeedStore.getFeed(languageCode, watchSignature)
         if (!forceRefresh && stored?.isFresh(FEED_TTL_MS) == true) {
-            return@withContext stored
+            val storedFeed = stored
                 .toHomeFeed(stringProvider)
                 .withoutSuppressedContinueWatching(suppressedAnimeIds)
-                .withMergedContinueWatching(displayWatchEntries)
-        }
-        val genericStored = if (watchSignature == HOME_FEED_GENERIC_WATCH_SIGNATURE) {
-            stored
-        } else {
-            homeFeedStore.getFeed(languageCode, HOME_FEED_GENERIC_WATCH_SIGNATURE)
+            syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
+            val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
+            return@withContext storedFeed.withMergedContinueWatching(
+                remoteWatchEntries,
+                displayWatchEntries
+            )
         }
 
         try {
             fetchHomeFeed(
+                accountKey = accountKey,
                 languageCode = languageCode,
                 watchSignature = watchSignature,
-                watches = watches,
                 displayWatchEntries = displayWatchEntries,
                 suppressedAnimeIds = suppressedAnimeIds,
             )
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toHomeFeed(stringProvider)
+            val storedFeed = stored?.toHomeFeed(stringProvider)
                 ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
-                ?.withMergedContinueWatching(displayWatchEntries)
-                ?: genericStored?.toHomeFeed(stringProvider)
-                    ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
-                    ?.withMergedContinueWatching(displayWatchEntries)
                 ?: throw error
+            syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
+            val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
+            storedFeed.withMergedContinueWatching(remoteWatchEntries, displayWatchEntries)
         }
     }
 
     private suspend fun fetchHomeFeed(
+        accountKey: String,
         languageCode: String,
         watchSignature: String,
-        watches: List<String>,
         displayWatchEntries: List<WatchProgressEntry>,
         suppressedAnimeIds: Set<Int>,
     ): HomeFeed {
         Log.i(
             TAG,
-            "Fetch feed language=$languageCode watchSignature=$watchSignature " +
-                    "watches=${watches.joinToString()}",
+            "Fetch feed language=$languageCode watchSignature=$watchSignature",
         )
-        val dto = api.getFeed(watches)
+        val dto = api.getFeed()
         Log.i(TAG, "Feed dto ${dto.summaryForLog()}")
         val mappedFeed = dto
             .toHomeFeed(stringProvider, displayWatchEntries)
@@ -133,12 +125,14 @@ class YaniHomeFeedRepository(
         )
         val enrichedFeed = mappedFeed.copy(continueWatchingItems = enrichedItems)
             .withoutSuppressedContinueWatching(suppressedAnimeIds)
-        val feed = enrichedFeed.copy(
-            continueWatchingItems = mergeContinueWatchingItems(
-                feedItems = enrichedFeed.continueWatchingItems,
-                localEntries = displayWatchEntries,
-            )
-        ).withoutSuppressedContinueWatching(suppressedAnimeIds)
+        syncRemoteContinueWatching(accountKey, languageCode, enrichedFeed.continueWatchingItems)
+        val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
+        val feed = enrichedFeed
+            .withMergedContinueWatching(remoteWatchEntries, displayWatchEntries)
+            .withoutSuppressedContinueWatching(suppressedAnimeIds)
+        val cacheFeed = enrichedFeed
+            .withMergedContinueWatching(remoteWatchEntries, localEntries = emptyList())
+            .withoutSuppressedContinueWatching(suppressedAnimeIds)
         Log.i(
             TAG,
             "Feed mapped ${feed.summaryForLog()} enriched=" +
@@ -146,7 +140,7 @@ class YaniHomeFeedRepository(
                     "continueSamples=${enrichedItems.summaryForLog()}",
         )
         homeFeedStore.saveFeed(
-            enrichedFeed.toHomeFeedCache(
+            cacheFeed.toHomeFeedCache(
                 language = languageCode,
                 watchSignature = watchSignature,
                 cachedAt = System.currentTimeMillis(),
@@ -155,21 +149,42 @@ class YaniHomeFeedRepository(
         return feed
     }
 
-    private suspend fun feedWatchEntries(): List<WatchProgressEntry> =
-        watchProgressStore
-            .latestMeaningfulVideoProgress(FEED_WATCH_LIMIT)
-
     private suspend fun displayWatchEntries(): List<WatchProgressEntry> =
         watchProgressStore.continueWatching()
 
-    private fun WatchProgressEntry.toFeedWatchParam(): String =
-        "$videoId:${positionMs / 1000L}:${updatedAt / 1000L}"
+    private suspend fun remoteWatchEntries(
+        accountKey: String,
+        languageCode: String,
+    ): List<WatchProgressEntry> =
+        remoteContinueWatchingStore.get(accountKey, languageCode)
+
+    private suspend fun syncRemoteContinueWatching(
+        accountKey: String,
+        languageCode: String,
+        items: List<HomeContinueWatchingItem>,
+    ) {
+        remoteContinueWatchingStore.saveRemoteContinueWatching(
+            accountKey = accountKey,
+            language = languageCode,
+            entries = items.map { it.toWatchProgressEntry() },
+        )
+    }
+
+    private suspend fun continueWatchingAccountKey(): String {
+        val userId = settingsStore.yaniUserId.first()
+        return if (userId > 0) "user:$userId" else "anon"
+    }
+
+    private fun feedCacheSignature(accountKey: String): String {
+        return "$FEED_CACHE_SIGNATURE_VERSION:$accountKey"
+    }
 
     private fun HomeFeed.withMergedContinueWatching(
+        remoteEntries: List<WatchProgressEntry>,
         localEntries: List<WatchProgressEntry>,
     ): HomeFeed = copy(
         continueWatchingItems = mergeContinueWatchingItems(
-            feedItems = continueWatchingItems,
+            feedItems = remoteEntries.map { it.toHomeContinueWatchingItem() } + continueWatchingItems,
             localEntries = localEntries,
         )
     )
@@ -191,33 +206,16 @@ class YaniHomeFeedRepository(
         feedItems.forEach { item ->
             if (item.animeId <= 0) return@forEach
             val current = result[item.animeId]
-            if (current == null ||
-                ContinueWatchingMerge.isFurtherThan(
-                    entry = item.toWatchProgressEntry(),
-                    other = current.toWatchProgressEntry(),
-                )
-            ) {
+            if (current == null || item.updatedAt > current.updatedAt) {
                 result[item.animeId] = item
             }
         }
 
-        val localOnly = mutableListOf<HomeContinueWatchingItem>()
         ContinueWatchingMerge.bestByAnime(localEntries).forEach { local ->
-            val current = result[local.animeId]
-            val localItem = local.toHomeContinueWatchingItem()
-            if (current == null) {
-                localOnly += localItem
-            } else if (
-                ContinueWatchingMerge.isFurtherThan(
-                    entry = local,
-                    other = current.toWatchProgressEntry(),
-                )
-            ) {
-                result[local.animeId] = localItem
-            }
+            result[local.animeId] = local.toHomeContinueWatchingItem()
         }
 
-        return result.values.toList() + localOnly.sortedByDescending { it.updatedAt }
+        return result.values.sortedByDescending { it.updatedAt }
     }
 
     private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
