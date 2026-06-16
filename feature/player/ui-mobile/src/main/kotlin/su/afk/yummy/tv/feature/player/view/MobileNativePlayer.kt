@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -91,6 +92,7 @@ internal fun MobileNativePlayer(
     var wantsPlay by remember { mutableStateOf(true) }
     var resumeAfterLifecyclePause by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
+    var showNextEpisodePrompt by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
@@ -132,6 +134,11 @@ internal fun MobileNativePlayer(
     }
 
     fun toggleOverlay() {
+        if (showNextEpisodePrompt) {
+            showNextEpisodePrompt = false
+            showOverlay()
+            return
+        }
         if (overlayVisible) {
             hideJob?.cancel()
             overlayVisible = false
@@ -214,6 +221,7 @@ internal fun MobileNativePlayer(
     }
 
     fun stepSeek(direction: MobileSeekDirection) {
+        showNextEpisodePrompt = false
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
         seekToPosition(exoPlayer.currentPosition + offset, PlayerSeekSource.DoubleTap)
@@ -235,7 +243,15 @@ internal fun MobileNativePlayer(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                onEvent(PlayerState.Event.PlaybackError(error.localizedMessage ?: error.errorCodeName))
+                onEvent(
+                    PlayerState.Event.PlaybackError(
+                        message = error.localizedMessage
+                            ?: error.message
+                            ?: error.errorCodeName,
+                        errorCode = error.errorCodeName.takeIf { it.isNotBlank() },
+                        errorType = error.analyticsType(),
+                    )
+                )
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -251,6 +267,12 @@ internal fun MobileNativePlayer(
                         positionMs = position,
                         durationMs = dur,
                     )
+                    if (ui.hasNextEpisode && !isInPictureInPictureMode) {
+                        showNextEpisodePrompt = true
+                        overlayVisible = false
+                        settingsMode = null
+                        hideJob?.cancel()
+                    }
                 }
             }
         }
@@ -301,6 +323,7 @@ internal fun MobileNativePlayer(
     LaunchedEffect(isInPictureInPictureMode) {
         if (isInPictureInPictureMode) {
             overlayVisible = false
+            showNextEpisodePrompt = false
             transformGestureActive = false
             settingsMode = null
             stepSeekToastText = null
@@ -312,6 +335,16 @@ internal fun MobileNativePlayer(
     LaunchedEffect(transformScopeKey) {
         transformGestureActive = false
         liveVideoTransform = videoTransform
+    }
+
+    LaunchedEffect(ui.activeIframeUrl) {
+        showNextEpisodePrompt = false
+        settingsMode = null
+    }
+
+    BackHandler(enabled = showNextEpisodePrompt && !isInPictureInPictureMode) {
+        showNextEpisodePrompt = false
+        showOverlay()
     }
 
     LaunchedEffect(videoTransform) {
@@ -448,13 +481,18 @@ internal fun MobileNativePlayer(
                 showOverlay()
             },
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
-            onNextEpisode = { onEvent(PlayerState.Event.NextEpisode) },
+            onNextEpisode = {
+                showNextEpisodePrompt = false
+                onEvent(PlayerState.Event.NextEpisode)
+            },
             onTrackSettings = {
+                showNextEpisodePrompt = false
                 settingsMode = MobilePlayerSettingsMode.Track
                 overlayVisible = true
                 hideJob?.cancel()
             },
             onPlaybackSettings = {
+                showNextEpisodePrompt = false
                 settingsMode = MobilePlayerSettingsMode.Playback
                 overlayVisible = true
                 hideJob?.cancel()
@@ -476,6 +514,23 @@ internal fun MobileNativePlayer(
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
         )
+
+        if (showNextEpisodePrompt && ui.hasNextEpisode && !isInPictureInPictureMode) {
+            MobilePlayerEndPrompt(
+                title = stringResource(R.string.player_next_episode_prompt),
+                primaryLabel = stringResource(R.string.player_watch_next),
+                stayLabel = stringResource(R.string.player_stay),
+                onPrimary = {
+                    showNextEpisodePrompt = false
+                    onEvent(PlayerState.Event.NextEpisode)
+                },
+                onStay = {
+                    showNextEpisodePrompt = false
+                    showOverlay()
+                },
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
 
         val activeSettingsMode = settingsMode
         if (activeSettingsMode != null && !isInPictureInPictureMode) {
@@ -514,3 +569,6 @@ internal fun MobileNativePlayer(
         }
     }
 }
+
+private fun PlaybackException.analyticsType(): String =
+    this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"

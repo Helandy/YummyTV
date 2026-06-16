@@ -10,6 +10,7 @@ interface IPlayerNavigator {
         playerName: String,
         dubbing: String = "",
         selectedVideoId: Int = 0,
+        selectedPlayerId: Int? = null,
         selectedScreenshotUrl: String = "",
         animeId: Int = 0,
         posterUrl: String = "",

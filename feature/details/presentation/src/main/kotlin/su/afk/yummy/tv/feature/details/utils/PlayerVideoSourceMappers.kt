@@ -12,6 +12,7 @@ internal fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSo
     episode = episode,
     dubbing = dubbing,
     player = player,
+    playerId = playerId,
     iframeUrl = iframeUrl,
     views = views,
     skips = skips.toPlayerSkips(),

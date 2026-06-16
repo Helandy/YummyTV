@@ -8,12 +8,14 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
+import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import javax.inject.Inject
 
 private data class PlayerAnalyticsSource(
     val animeId: Int,
     val videoId: Int,
+    val playerId: Int?,
     val episode: String,
     val balancer: String,
     val dubbing: String,
@@ -141,23 +143,32 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Ошибка воспроизведения в плеере.
      *
-     * Параметры: screen, anime_id.
+     * Параметры: screen, anime_id, video_id, player_id, episode, player, balancer, dubbing,
+     * error_code, error_type, error_message.
      */
-    fun eventPlaybackError(animeId: Int) {
+    fun eventPlaybackError(
+        state: PlayerState.State,
+        message: String,
+        errorCode: String?,
+        errorType: String?,
+    ) {
         tracker.track(
             EVENT_PLAYER_ERROR,
-            analyticsParamsOf(
-                AnalyticsEvents.PARAM_SCREEN to SCREEN_PLAYER,
-                PARAM_ANIME_ID to animeId.takeIf { it > 0 },
-            ),
+            mapOf(AnalyticsEvents.PARAM_SCREEN to SCREEN_PLAYER) +
+                    sourceParams(state.analyticsSource()) +
+                    analyticsParamsOf(
+                        PARAM_ERROR_CODE to errorCode,
+                        PARAM_ERROR_TYPE to errorType,
+                        PARAM_ERROR_MESSAGE to message.analyticsMessage(),
+                    ),
         )
     }
 
     /**
      * Плееру не удалось получить playable stream URL из выбранного источника.
      *
-     * Параметры: anime_id, video_id, episode, player, balancer, dubbing, reason, error_type,
-     * error_message.
+     * Параметры: anime_id, video_id, player_id, episode, player, balancer, dubbing, reason,
+     * error_type, error_message.
      */
     fun eventStreamResolveFailed(
         state: PlayerState.State,
@@ -178,7 +189,7 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Плеер запустил поток из выбранного источника.
      *
-     * Параметры: anime_id, video_id, episode, player, balancer, dubbing.
+     * Параметры: anime_id, video_id, player_id, episode, player, balancer, dubbing.
      */
     fun eventStreamStarted(state: PlayerState.State) {
         tracker.track(EVENT_STREAM_STARTED, sourceParams(state.analyticsSource()))
@@ -187,7 +198,8 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Пользователь вручную пропустил opening/ending.
      *
-     * Параметры: anime_id, video_id, episode, player, balancer, dubbing, skip_type, from_ms, to_ms.
+     * Параметры: anime_id, video_id, player_id, episode, player, balancer, dubbing, skip_type,
+     * from_ms, to_ms.
      */
     fun eventSkipSegmentSelected(
         state: PlayerState.State,
@@ -222,6 +234,7 @@ internal class PlayerAnalytics @Inject constructor(
         PlayerAnalyticsSource(
             animeId = animeId,
             videoId = activeVideoId(this),
+            playerId = activePlayerId(this),
             episode = activeEpisode(this),
             balancer = activeBalancerName(this),
             dubbing = activeDubbingName(this),
@@ -231,6 +244,7 @@ internal class PlayerAnalytics @Inject constructor(
         analyticsParamsOf(
             PARAM_ANIME_ID to source.animeId.takeIf { it > 0 },
             PARAM_VIDEO_ID to source.videoId.takeIf { it > 0 },
+            PARAM_PLAYER_ID to source.playerId,
             PARAM_EPISODE to source.episode,
             PARAM_PLAYER to source.balancer,
             PARAM_BALANCER to source.balancer,
@@ -242,6 +256,11 @@ internal class PlayerAnalytics @Inject constructor(
 
     private fun Throwable.analyticsMessage(): String? =
         (localizedMessage ?: message)
+            ?.analyticsMessage()
+
+    private fun String.analyticsMessage(): String? =
+        trim()
+            .takeIf { it.isNotBlank() }
             ?.lineSequence()
             ?.joinToString(" ")
             ?.take(MAX_ERROR_MESSAGE_LENGTH)
@@ -267,6 +286,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_BALANCER = "balancer"
         private const val PARAM_DUBBING = "dubbing"
         private const val PARAM_EPISODE = "episode"
+        private const val PARAM_ERROR_CODE = "error_code"
         private const val PARAM_ERROR_MESSAGE = "error_message"
         private const val PARAM_ERROR_TYPE = "error_type"
         private const val PARAM_FROM_MS = "from_ms"
@@ -274,6 +294,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_LEVEL = "level"
         private const val PARAM_MODE = "mode"
         private const val PARAM_PLAYER = "player"
+        private const val PARAM_PLAYER_ID = "player_id"
         private const val PARAM_POSITION_MS = "position_ms"
         private const val PARAM_QUALITY = "quality"
         private const val PARAM_REASON = "reason"

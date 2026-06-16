@@ -51,6 +51,12 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             maxProgress = WATCHED_PROGRESS,
         )
 
+    suspend fun latestMeaningfulVideoProgress(limit: Int): List<WatchProgressEntry> =
+        dao.latestMeaningfulVideoProgress(
+            minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
+            limit = limit,
+        )
+
     suspend fun save(
         animeId: Int,
         episode: String,

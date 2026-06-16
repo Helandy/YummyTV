@@ -47,6 +47,7 @@ class GetPlayerSourceGraphUseCase @Inject constructor(
             episode = episode,
             dubbing = dubbing,
             player = playerName,
+            playerId = selectedPlayerId,
             iframeUrl = iframeUrl,
         )
 
@@ -93,6 +94,7 @@ class GetPlayerSourceGraphUseCase @Inject constructor(
                         .map { source ->
                             PlayerSourceEpisode(
                                 id = source.id,
+                                playerId = source.playerId,
                                 number = source.episode,
                                 iframeUrl = source.iframeUrl,
                                 screenshotUrl = kodikIframeByEpisode[source.episode]

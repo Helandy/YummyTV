@@ -14,6 +14,7 @@ data class PlayerDestination(
     val animeId: Int = 0,
     val posterUrl: String = "",
     val selectedVideoId: Int = 0,
+    val selectedPlayerId: Int? = null,
     val selectedScreenshotUrl: String = "",
 ) : NavKey, AnalyticsDestination {
     override val screenName: String = "player"

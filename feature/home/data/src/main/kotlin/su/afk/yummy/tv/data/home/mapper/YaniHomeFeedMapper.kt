@@ -1,12 +1,17 @@
 package su.afk.yummy.tv.data.home.mapper
 
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.data.home.R
 import su.afk.yummy.tv.data.home.dto.YaniAnimeDto
 import su.afk.yummy.tv.data.home.dto.YaniCollectionDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
+import su.afk.yummy.tv.data.home.dto.YaniLastWatchDto
 import su.afk.yummy.tv.data.home.dto.YaniPosterDto
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -14,7 +19,11 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 
-internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
+internal fun YaniFeedDto.toHomeFeed(
+    stringProvider: StringProvider,
+    watchEntries: List<WatchProgressEntry> = emptyList(),
+): HomeFeed {
+    val continueWatchingItems = response.lastWatches.toContinueWatchingItems(watchEntries)
     val heroItems = response.topCarousel.items.mapNotNull { it.toSeriesItem() }
     val newSection = response.newVideos.toNewVideosSection(
         type = HomeFeedSectionType.NEW_RELEASES,
@@ -36,8 +45,83 @@ internal fun YaniFeedDto.toHomeFeed(stringProvider: StringProvider): HomeFeed {
     )
 
     return HomeFeed(
+        continueWatchingItems = continueWatchingItems,
         heroItems = heroItems,
         sections = sections,
+    )
+}
+
+private fun List<YaniLastWatchDto>.toContinueWatchingItems(
+    watchEntries: List<WatchProgressEntry>,
+): List<HomeContinueWatchingItem> {
+    val usedIndexes = BooleanArray(watchEntries.size)
+    return mapIndexedNotNull { index, item ->
+        val matched = watchEntries.firstUnused(usedIndexes) {
+            item.matchesAnimeAndEpisode(it)
+        } ?: watchEntries.firstUnused(usedIndexes) {
+            item.animeId != null && it.animeId == item.animeId
+        } ?: watchEntries.getOrNull(index)
+            ?.takeUnless { usedIndexes.getOrNull(index) == true }
+            ?.also { usedIndexes[index] = true }
+        item.toContinueWatchingItem(matched)
+    }
+}
+
+private inline fun List<WatchProgressEntry>.firstUnused(
+    usedIndexes: BooleanArray,
+    predicate: (WatchProgressEntry) -> Boolean,
+): WatchProgressEntry? {
+    forEachIndexed { index, entry ->
+        if (!usedIndexes[index] && predicate(entry)) {
+            usedIndexes[index] = true
+            return entry
+        }
+    }
+    return null
+}
+
+private fun YaniLastWatchDto.matchesAnimeAndEpisode(entry: WatchProgressEntry): Boolean {
+    val episode = episodeTitle?.takeIf { it.isNotBlank() } ?: return false
+    return animeId != null &&
+            entry.animeId == animeId &&
+            entry.episode.episodeKey() == episode.episodeKey()
+}
+
+private fun YaniLastWatchDto.toContinueWatchingItem(
+    matched: WatchProgressEntry?,
+): HomeContinueWatchingItem? {
+    val id = animeId ?: matched?.animeId ?: return null
+    val safeTitle = title
+        .takeIf { it.isNotBlank() }
+        ?: matched?.animeTitle?.takeIf { it.isNotBlank() }
+        ?: return null
+    val episode = episodeTitle
+        ?.takeIf { it.isNotBlank() }
+        ?: matched?.episode.orEmpty()
+    val positionMs = endTime?.secondsToMillis()
+        ?: matched?.positionMs
+        ?: 0L
+    val durationMs = duration
+        ?.takeIf { it > 0L }
+        ?.secondsToMillis()
+        ?: matched?.durationMs
+        ?: 0L
+    val screenshotUrl = screenshotString()
+        ?: matched?.screenshotUrl.orEmpty()
+    return HomeContinueWatchingItem(
+        animeId = id,
+        animeTitle = safeTitle,
+        description = description,
+        poster = poster?.toHomePoster(),
+        videoId = matched?.videoId ?: 0,
+        episode = episode,
+        episodeUrl = matched?.episodeUrl.orEmpty(),
+        positionMs = positionMs,
+        durationMs = durationMs,
+        updatedAt = date?.secondsToMillis() ?: matched?.updatedAt ?: 0L,
+        playerName = matched?.playerName.orEmpty(),
+        dubbing = matched?.dubbing.orEmpty(),
+        screenshotUrl = screenshotUrl,
     )
 }
 
@@ -111,3 +195,17 @@ private fun String.toHttpsUrl(): String = when {
 }
 
 private fun Int.toCollectionDisplayId(): Int = -this
+
+private fun Long.secondsToMillis(): Long = this * 1000L
+
+private fun String.episodeKey(): String =
+    trim()
+        .trimStart('0')
+        .ifEmpty { trim() }
+        .lowercase()
+
+private fun YaniLastWatchDto.screenshotString(): String? =
+    (screenshot as? JsonPrimitive)
+        ?.contentOrNull
+        ?.takeIf { it.isNotBlank() }
+        ?.toHttpsUrl()

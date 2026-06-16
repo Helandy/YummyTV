@@ -11,6 +11,7 @@ class PlayerNavigator : IPlayerNavigator {
         playerName: String,
         dubbing: String,
         selectedVideoId: Int,
+        selectedPlayerId: Int?,
         selectedScreenshotUrl: String,
         animeId: Int,
         posterUrl: String,
@@ -23,6 +24,7 @@ class PlayerNavigator : IPlayerNavigator {
         animeId = animeId,
         posterUrl = posterUrl,
         selectedVideoId = selectedVideoId,
+        selectedPlayerId = selectedPlayerId,
         selectedScreenshotUrl = selectedScreenshotUrl,
     )
 }

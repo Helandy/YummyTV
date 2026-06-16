@@ -2,11 +2,6 @@ package su.afk.yummy.tv.feature.home
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
@@ -14,7 +9,8 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -31,7 +27,6 @@ class HomeViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val collectionNavigator: ICollectionNavigator,
     private val getHomeFeed: GetHomeFeedUseCase,
-    private val watchProgressStore: WatchProgressStore,
     private val stringProvider: StringProvider,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
     private val analytics: HomeAnalytics,
@@ -41,20 +36,6 @@ class HomeViewModel @Inject internal constructor(
 
     init {
         load()
-        watchProgressStore.observeContinueWatching()
-            .map { entries ->
-                WatchProgressStore.latestByAnime(entries)
-            }
-            .flowOn(Dispatchers.Default)
-            .onEach { inProgress ->
-                setState {
-                    copy(
-                        continueWatching = inProgress,
-                        isContinueWatchingLoaded = true,
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: HomeState.Event) {
@@ -134,7 +115,16 @@ class HomeViewModel @Inject internal constructor(
             setState { copy(isLoading = true, error = null) }
             runCatching { getHomeFeed() }.fold(
                 onSuccess = { feed ->
-                    setState { copy(isLoading = false, feed = feed) }
+                    setState {
+                        copy(
+                            isLoading = false,
+                            feed = feed,
+                            continueWatching = feed.continueWatchingItems.map {
+                                it.toWatchProgressEntry()
+                            },
+                            isContinueWatchingLoaded = true,
+                        )
+                    }
                 },
                 onFailure = { e ->
                     setState {
@@ -147,4 +137,23 @@ class HomeViewModel @Inject internal constructor(
             )
         }
     }
+
+    private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
+        WatchProgressEntry(
+            animeId = animeId,
+            episode = episode,
+            videoId = videoId,
+            episodeUrl = episodeUrl,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            updatedAt = updatedAt,
+            animeTitle = animeTitle,
+            posterUrl = poster?.bestUrl().orEmpty(),
+            playerName = playerName,
+            dubbing = dubbing,
+            screenshotUrl = screenshotUrl,
+        )
+
+    private fun HomePoster.bestUrl(): String? =
+        mega ?: fullsize ?: big ?: medium ?: small
 }

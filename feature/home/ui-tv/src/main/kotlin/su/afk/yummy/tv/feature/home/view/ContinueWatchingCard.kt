@@ -59,9 +59,15 @@ internal fun ContinueWatchingCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
-    val progress = if (entry.durationMs > 0) entry.positionMs.toFloat() / entry.durationMs else 0f
+    val progress = if (entry.durationMs > 0) {
+        (entry.positionMs.toFloat() / entry.durationMs).coerceIn(0f, 1f)
+    } else {
+        0f
+    }
     val positionLabel = entry.positionMs.msToTimeString()
     val durationLabel = entry.durationMs.msToTimeString()
+    val timingLabel =
+        if (entry.durationMs > 0L) "$positionLabel / $durationLabel" else positionLabel
 
     val kodikThumbnail by produceState<String?>(null, entry.screenshotUrl, entry.episodeUrl) {
         value = resolveEpisodeThumbnail(entry)
@@ -160,7 +166,7 @@ internal fun ContinueWatchingCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "$positionLabel / $durationLabel",
+                        text = timingLabel,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f),
                         maxLines = 1,

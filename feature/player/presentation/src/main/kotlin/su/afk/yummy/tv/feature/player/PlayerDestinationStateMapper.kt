@@ -30,6 +30,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
             playerName = dest.playerName,
             dubbing = dest.dubbing,
             selectedVideoId = dest.selectedVideoId,
+            selectedPlayerId = dest.selectedPlayerId,
             selectedScreenshotUrl = dest.selectedScreenshotUrl,
         )
 
@@ -44,6 +45,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
                             episodes = listOf(
                                 PlayerSourceEpisode(
                                     id = selectedVideoId,
+                                    playerId = selectedPlayerId,
                                     number = episode,
                                     iframeUrl = iframeUrl,
                                     screenshotUrl = selectedScreenshotUrl,

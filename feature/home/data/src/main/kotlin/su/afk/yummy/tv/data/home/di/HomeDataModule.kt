@@ -8,7 +8,9 @@ import io.ktor.client.HttpClient
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.data.home.repository.ContinueWatchingEnricher
 import su.afk.yummy.tv.data.home.repository.YaniHomeFeedRepository
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Singleton
@@ -28,6 +30,15 @@ object HomeDataModule {
         homeFeedStore: HomeFeedStore,
         stringProvider: StringProvider,
         settingsStore: SettingsStore,
+        watchProgressStore: WatchProgressStore,
+        continueWatchingEnricher: ContinueWatchingEnricher,
     ): HomeFeedRepository =
-        YaniHomeFeedRepository(api, homeFeedStore, stringProvider, settingsStore)
+        YaniHomeFeedRepository(
+            api,
+            homeFeedStore,
+            stringProvider,
+            settingsStore,
+            watchProgressStore,
+            continueWatchingEnricher,
+        )
 }

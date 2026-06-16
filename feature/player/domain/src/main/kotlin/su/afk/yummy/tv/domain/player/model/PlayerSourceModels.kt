@@ -8,6 +8,7 @@ data class PlayerSourceRequest(
     val playerName: String,
     val dubbing: String,
     val selectedVideoId: Int,
+    val selectedPlayerId: Int? = null,
     val selectedScreenshotUrl: String,
 )
 
@@ -21,6 +22,7 @@ data class PlayerSourceVideo(
     val episode: String,
     val dubbing: String,
     val player: String,
+    val playerId: Int? = null,
     val iframeUrl: String,
     val views: Int? = null,
     val skips: PlayerSourceSkips = PlayerSourceSkips.Empty,
@@ -44,6 +46,7 @@ data class PlayerSourceDubbing(
 
 data class PlayerSourceEpisode(
     val id: Int = 0,
+    val playerId: Int? = null,
     val number: String = "",
     val iframeUrl: String = "",
     val screenshotUrl: String = "",

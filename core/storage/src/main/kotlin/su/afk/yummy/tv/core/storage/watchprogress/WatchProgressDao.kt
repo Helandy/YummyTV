@@ -33,6 +33,41 @@ interface WatchProgressDao {
         maxProgress: Float,
     ): Flow<List<WatchProgressEntry>>
 
+    @Query(
+        """
+        SELECT progress.* FROM watch_progress AS progress
+        WHERE progress.videoId > 0
+            AND progress.durationMs > 0
+            AND progress.positionMs >= :minPositionMs
+            AND NOT EXISTS (
+                SELECT 1 FROM watch_progress AS other
+                WHERE other.videoId = progress.videoId
+                    AND other.videoId > 0
+                    AND other.durationMs > 0
+                    AND other.positionMs >= :minPositionMs
+                    AND (
+                        other.updatedAt > progress.updatedAt
+                        OR (
+                            other.updatedAt = progress.updatedAt
+                            AND (
+                                other.animeId > progress.animeId
+                                OR (
+                                    other.animeId = progress.animeId
+                                    AND other.episode > progress.episode
+                                )
+                            )
+                        )
+                    )
+            )
+        ORDER BY progress.updatedAt DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun latestMeaningfulVideoProgress(
+        minPositionMs: Long,
+        limit: Int,
+    ): List<WatchProgressEntry>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entry: WatchProgressEntry)
 

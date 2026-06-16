@@ -16,7 +16,9 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
 
 internal suspend fun WatchProgressEntry.resolveMobileContinueWatchingImage(): String? {
     val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
+    val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
     return kodikScreenshot?.let { KodikThumbnailExtractor.extract(it) }
+        ?: directScreenshot
         ?: episodeUrl.takeIf { it.isNotBlank() }?.let { KodikThumbnailExtractor.extract(it) }
         ?: posterUrl.ifBlank { null }
 }
@@ -26,7 +28,11 @@ internal fun WatchProgressEntry.episodeSubtitle(): String =
     stringResource(R.string.home_mobile_episode, episode)
 
 internal fun WatchProgressEntry.timingSubtitle(): String =
-    "${positionMs.toMobileTimeString()} / ${durationMs.toMobileTimeString()}"
+    if (durationMs > 0L) {
+        "${positionMs.toMobileTimeString()} / ${durationMs.toMobileTimeString()}"
+    } else {
+        positionMs.toMobileTimeString()
+    }
 
 internal fun WatchProgressEntry.watchProgress(): Float =
     if (durationMs <= 0L) 0f else (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
@@ -43,3 +49,6 @@ private fun Long.toMobileTimeString(): String {
 }
 
 private fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
+
+private fun String.isLikelyImageUrl(): Boolean =
+    Regex("""\.(webp|avif|jpe?g|png)(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(this)

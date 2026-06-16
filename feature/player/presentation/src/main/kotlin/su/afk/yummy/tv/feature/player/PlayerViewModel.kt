@@ -106,7 +106,12 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.PlaybackError -> {
-                analytics.eventPlaybackError(currentState.animeId)
+                analytics.eventPlaybackError(
+                    state = currentState,
+                    message = event.message,
+                    errorCode = event.errorCode,
+                    errorType = event.errorType,
+                )
                 setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
             }
 

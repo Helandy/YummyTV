@@ -37,6 +37,7 @@ private fun DomainPlayerSourceDubbing.toPresentationSourceDubbing(): PlayerSourc
 private fun DomainPlayerSourceEpisode.toPresentationSourceEpisode(): PlayerSourceEpisode =
     PlayerSourceEpisode(
         id = id,
+        playerId = playerId,
         number = number,
         iframeUrl = iframeUrl,
         screenshotUrl = screenshotUrl,

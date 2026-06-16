@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_COLLECTION
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_SERIES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_VIDEO
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_COLLECTIONS
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_CONTINUE_WATCHING
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_HERO
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_RECOMMENDATIONS
@@ -12,6 +13,7 @@ import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.data.home.R
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -21,17 +23,27 @@ import su.afk.yummy.tv.domain.home.model.HomePoster
 
 internal fun HomeFeed.toHomeFeedCache(
     language: String,
+    watchSignature: String,
     cachedAt: Long,
 ): HomeFeedCache =
     HomeFeedCache(
         entry = HomeFeedCacheEntry(
             language = language,
+            watchSignature = watchSignature,
             cachedAt = cachedAt,
         ),
-        items = heroItems.toHomeFeedItemEntries(language, HOME_FEED_CONTAINER_HERO) +
+        items = heroItems.toHomeFeedItemEntries(
+            language = language,
+            watchSignature = watchSignature,
+            container = HOME_FEED_CONTAINER_HERO,
+        ) + continueWatchingItems.toContinueWatchingEntries(
+            language = language,
+            watchSignature = watchSignature,
+        ) +
                 sections.flatMap { section ->
                     section.items.toHomeFeedItemEntries(
                         language = language,
+                        watchSignature = watchSignature,
                         container = section.type.toStorageContainer(),
                     )
                 },
@@ -39,6 +51,10 @@ internal fun HomeFeed.toHomeFeedCache(
 
 internal fun HomeFeedCache.toHomeFeed(stringProvider: StringProvider): HomeFeed =
     HomeFeed(
+        continueWatchingItems = items
+            .filter { it.container == HOME_FEED_CONTAINER_CONTINUE_WATCHING }
+            .sortedBy { it.position }
+            .map { it.toContinueWatchingItem() },
         heroItems = items
             .filter { it.container == HOME_FEED_CONTAINER_HERO }
             .sortedBy { it.position }
@@ -78,11 +94,13 @@ private fun HomeFeedCache.section(
 
 private fun List<HomeFeedItem>.toHomeFeedItemEntries(
     language: String,
+    watchSignature: String,
     container: String,
 ): List<HomeFeedItemEntry> =
     mapIndexed { index, item ->
         HomeFeedItemEntry(
             language = language,
+            watchSignature = watchSignature,
             container = container,
             position = index,
             itemId = item.id,
@@ -96,6 +114,38 @@ private fun List<HomeFeedItem>.toHomeFeedItemEntries(
             rating = item.rating,
             actionType = item.action.storageType,
             actionId = item.action.storageId,
+        )
+    }
+
+private fun List<HomeContinueWatchingItem>.toContinueWatchingEntries(
+    language: String,
+    watchSignature: String,
+): List<HomeFeedItemEntry> =
+    mapIndexed { index, item ->
+        HomeFeedItemEntry(
+            language = language,
+            watchSignature = watchSignature,
+            container = HOME_FEED_CONTAINER_CONTINUE_WATCHING,
+            position = index,
+            itemId = item.animeId,
+            title = item.animeTitle,
+            description = item.description,
+            posterSmallUrl = item.poster?.small,
+            posterMediumUrl = item.poster?.medium,
+            posterBigUrl = item.poster?.big,
+            posterFullsizeUrl = item.poster?.fullsize,
+            posterMegaUrl = item.poster?.mega,
+            rating = null,
+            actionType = if (item.videoId > 0) HOME_FEED_ACTION_VIDEO else HOME_FEED_ACTION_SERIES,
+            actionId = item.videoId.takeIf { it > 0 } ?: item.animeId,
+            episode = item.episode,
+            episodeUrl = item.episodeUrl,
+            positionMs = item.positionMs,
+            durationMs = item.durationMs,
+            updatedAt = item.updatedAt,
+            playerName = item.playerName,
+            dubbing = item.dubbing,
+            screenshotUrl = item.screenshotUrl,
         )
     }
 
@@ -117,6 +167,29 @@ private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
             HOME_FEED_ACTION_VIDEO -> HomeFeedItemAction.OpenVideo(actionId)
             else -> HomeFeedItemAction.OpenSeries(actionId)
         },
+    )
+
+private fun HomeFeedItemEntry.toContinueWatchingItem(): HomeContinueWatchingItem =
+    HomeContinueWatchingItem(
+        animeId = itemId,
+        animeTitle = title,
+        description = description,
+        poster = posterOrNull(
+            small = posterSmallUrl,
+            medium = posterMediumUrl,
+            big = posterBigUrl,
+            fullsize = posterFullsizeUrl,
+            mega = posterMegaUrl,
+        ),
+        videoId = actionId.takeIf { actionType == HOME_FEED_ACTION_VIDEO } ?: 0,
+        episode = episode,
+        episodeUrl = episodeUrl,
+        positionMs = positionMs,
+        durationMs = durationMs,
+        updatedAt = updatedAt,
+        playerName = playerName,
+        dubbing = dubbing,
+        screenshotUrl = screenshotUrl,
     )
 
 private fun HomeFeedSectionType.toStorageContainer(): String =

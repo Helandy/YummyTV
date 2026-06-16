@@ -87,7 +87,11 @@ class PlayerState {
             val toMs: Long,
         ) : Event
 
-        data class PlaybackError(val message: String) : Event
+        data class PlaybackError(
+            val message: String,
+            val errorCode: String? = null,
+            val errorType: String? = null,
+        ) : Event
         data object RetryStream : Event
         data object RateTitle : Event
     }

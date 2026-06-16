@@ -98,7 +98,7 @@ internal fun ExoPlayerView(
     onPrevEpisode: () -> Unit = {},
     onNextEpisode: () -> Unit = {},
     onRateTitle: () -> Unit = {},
-    onPlaybackError: (String) -> Unit = {},
+    onPlaybackError: (PlayerState.Event.PlaybackError) -> Unit = {},
     allDubbingNames: List<String> = emptyList(),
     allDubbingEpisodeCounts: List<Int> = emptyList(),
     allDubbingViews: List<Int> = emptyList(),
@@ -400,8 +400,15 @@ internal fun ExoPlayerView(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                onPlaybackError(error.errorCodeName.takeIf { it.isNotBlank() }
-                    ?: error.message.orEmpty())
+                onPlaybackError(
+                    PlayerState.Event.PlaybackError(
+                        message = error.localizedMessage
+                            ?: error.message
+                            ?: error.errorCodeName,
+                        errorCode = error.errorCodeName.takeIf { it.isNotBlank() },
+                        errorType = error.analyticsType(),
+                    )
+                )
             }
         }
         exoPlayer.addListener(listener)
@@ -927,3 +934,6 @@ private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
         ActiveSkipType.Opening -> PlayerSkipType.Opening
         ActiveSkipType.Ending -> PlayerSkipType.Ending
     }
+
+private fun PlaybackException.analyticsType(): String =
+    this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"

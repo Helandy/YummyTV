@@ -121,7 +121,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserProfileWatchTypeEntry::class,
         AccountUserProfileWatchHistoryEntry::class,
     ],
-    version = 18,
+    version = 20,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

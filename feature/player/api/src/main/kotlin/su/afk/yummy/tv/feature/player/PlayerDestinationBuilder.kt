@@ -7,6 +7,7 @@ data class PlayerVideoSource(
     val episode: String,
     val dubbing: String,
     val player: String,
+    val playerId: Int? = null,
     val iframeUrl: String,
     val views: Int? = null,
     val skips: PlayerSkips = PlayerSkips.Empty,
@@ -26,6 +27,7 @@ fun IPlayerNavigator.getPlayerDest(
         playerName = video.player,
         dubbing = video.dubbing,
         selectedVideoId = video.id,
+        selectedPlayerId = video.playerId,
         selectedScreenshotUrl = video.iframeUrl
             .takeIf { it.isKodikPlayerUrl() }
             ?: screenshotByEpisode[video.episode].orEmpty(),

@@ -1132,6 +1132,126 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_18_19 = object : Migration(18, 19) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP INDEX IF EXISTS index_home_feed_caches_cachedAt")
+            db.execSQL("DROP INDEX IF EXISTS index_home_feed_items_language_container")
+            db.execSQL("ALTER TABLE home_feed_caches RENAME TO home_feed_caches_old")
+            db.execSQL("ALTER TABLE home_feed_items RENAME TO home_feed_items_old")
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS home_feed_caches (
+                    language TEXT NOT NULL,
+                    watchSignature TEXT NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    PRIMARY KEY(language, watchSignature)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_home_feed_caches_cachedAt
+                ON home_feed_caches(cachedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS home_feed_items (
+                    language TEXT NOT NULL,
+                    watchSignature TEXT NOT NULL,
+                    container TEXT NOT NULL,
+                    position INTEGER NOT NULL,
+                    itemId INTEGER NOT NULL,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    posterSmallUrl TEXT,
+                    posterMediumUrl TEXT,
+                    posterBigUrl TEXT,
+                    posterFullsizeUrl TEXT,
+                    posterMegaUrl TEXT,
+                    rating REAL,
+                    actionType TEXT NOT NULL,
+                    actionId INTEGER NOT NULL,
+                    PRIMARY KEY(language, watchSignature, container, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_home_feed_items_language_signature_container
+                ON home_feed_items(language, watchSignature, container)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                INSERT INTO home_feed_caches (
+                    language,
+                    watchSignature,
+                    cachedAt
+                )
+                SELECT
+                    language,
+                    '',
+                    cachedAt
+                FROM home_feed_caches_old
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                INSERT INTO home_feed_items (
+                    language,
+                    watchSignature,
+                    container,
+                    position,
+                    itemId,
+                    title,
+                    description,
+                    posterSmallUrl,
+                    posterMediumUrl,
+                    posterBigUrl,
+                    posterFullsizeUrl,
+                    posterMegaUrl,
+                    rating,
+                    actionType,
+                    actionId
+                )
+                SELECT
+                    language,
+                    '',
+                    container,
+                    position,
+                    itemId,
+                    title,
+                    description,
+                    posterSmallUrl,
+                    posterMediumUrl,
+                    posterBigUrl,
+                    posterFullsizeUrl,
+                    posterMegaUrl,
+                    rating,
+                    actionType,
+                    actionId
+                FROM home_feed_items_old
+                """.trimIndent()
+            )
+            db.execSQL("DROP TABLE home_feed_caches_old")
+            db.execSQL("DROP TABLE home_feed_items_old")
+        }
+    }
+
+    private val MIGRATION_19_20 = object : Migration(19, 20) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN episode TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN episodeUrl TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN positionMs INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN durationMs INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN playerName TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN dubbing TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE home_feed_items ADD COLUMN screenshotUrl TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1148,6 +1268,8 @@ object StorageModule {
                 MIGRATION_15_16,
                 MIGRATION_16_17,
                 MIGRATION_17_18,
+                MIGRATION_18_19,
+                MIGRATION_19_20,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

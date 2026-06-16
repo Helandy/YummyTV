@@ -45,6 +45,7 @@ private fun AnimeVideo.toPlayerSourceVideo(): PlayerSourceVideo =
         episode = episode,
         dubbing = dubbing,
         player = player,
+        playerId = playerId,
         iframeUrl = iframeUrl,
         views = views,
         skips = skips.toPlayerSourceSkips(),

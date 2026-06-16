@@ -51,6 +51,9 @@ internal fun activeEpisode(state: PlayerState.State): String =
 internal fun activeVideoId(state: PlayerState.State): Int =
     activeEpisodeSource(state)?.id ?: 0
 
+internal fun activePlayerId(state: PlayerState.State): Int? =
+    activeEpisodeSource(state)?.playerId
+
 internal fun activeScreenshotUrl(state: PlayerState.State): String =
     activeEpisodeSource(state)?.screenshotUrl.orEmpty()
 

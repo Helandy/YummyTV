@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.home.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class YaniFeedDto(
@@ -14,11 +15,26 @@ data class YaniFeedResponseDto(
     @SerialName("top_carousel") val topCarousel: YaniCarouselDto = YaniCarouselDto(),
     val new: List<YaniAnimeDto> = emptyList(),
     val recommends: List<YaniAnimeDto> = emptyList(),
+    @SerialName("last_watches") val lastWatches: List<YaniLastWatchDto> = emptyList(),
     @SerialName("new_videos") val newVideos: List<YaniVideoDto> = emptyList(),
     val schedule: List<YaniAnimeDto> = emptyList(),
     val posts: YaniPostsDto = YaniPostsDto(),
     val blogger: YaniBloggerDto = YaniBloggerDto(),
     val collections: List<YaniCollectionDto> = emptyList(),
+)
+
+@Serializable
+data class YaniLastWatchDto(
+    @SerialName("anime_id") val animeId: Int? = null,
+    @SerialName("anime_url") val animeUrl: String? = null,
+    val title: String = "",
+    val description: String = "",
+    val poster: YaniPosterDto? = null,
+    val date: Long? = null,
+    @SerialName("end_time") val endTime: Long? = null,
+    val duration: Long? = null,
+    @SerialName("ep_title") val episodeTitle: String? = null,
+    val screenshot: JsonElement? = null,
 )
 
 @Serializable
