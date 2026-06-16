@@ -28,11 +28,11 @@ import su.afk.yummy.tv.data.account.dto.YaniAnimeUserRatingResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniBooleanResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniDeleteVideosBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniErrorResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationAnimeResponseDto
-import su.afk.yummy.tv.data.account.dto.YaniNotificationCountsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileResponseDto
@@ -81,7 +81,11 @@ class YaniAccountApi(
 
         if (!response.status.isSuccess()) {
             val error = response.toYaniError()
-            if (response.status == HttpStatusCode(420, "Captcha Required") || error.errorCode == CAPTCHA_ERROR_CODE) {
+            if (response.status == HttpStatusCode(
+                    420,
+                    "Captcha Required"
+                ) || error.errorCode == CAPTCHA_ERROR_CODE
+            ) {
                 throw YaniCaptchaRequiredException()
             }
             throw YaniAccountException(
@@ -150,8 +154,11 @@ class YaniAccountApi(
             setBody(YaniPutVideoBodyDto(time = timeSeconds, duration = durationSeconds))
         }.body<YaniBooleanResponseDto>().response
 
-    suspend fun removeWatched(videoId: Int): Boolean =
-        client.delete("$YANI_BASE_URL/video/$videoId").body<YaniBooleanResponseDto>().response
+    suspend fun removeWatched(videoIds: List<Int>): Boolean =
+        client.delete("$YANI_BASE_URL/video") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniDeleteVideosBodyDto(videoIds))
+        }.body<YaniBooleanResponseDto>().response
 
     suspend fun getRatingBuckets(animeId: Int): List<YaniRatingBucketDto> =
         client.get("$YANI_BASE_URL/anime/$animeId/rates")
@@ -174,17 +181,23 @@ class YaniAccountApi(
         client.delete("$YANI_BASE_URL/anime/$animeId/rate")
     }
 
-    suspend fun getAnimeCollections(animeId: Int, limit: Int, offset: Int): List<YaniCollectionSummaryDto> =
+    suspend fun getAnimeCollections(
+        animeId: Int,
+        limit: Int,
+        offset: Int
+    ): List<YaniCollectionSummaryDto> =
         client.get("$YANI_BASE_URL/anime/$animeId/collections") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniCollectionsResponseDto>().response
 
     suspend fun setSubscribed(videoId: Int): Boolean =
-        client.put("$YANI_BASE_URL/video/$videoId/subscribe").body<YaniBooleanResponseDto>().response
+        client.put("$YANI_BASE_URL/video/$videoId/subscribe")
+            .body<YaniBooleanResponseDto>().response
 
     suspend fun removeSubscribed(videoId: Int): Boolean =
-        client.delete("$YANI_BASE_URL/video/$videoId/subscribe").body<YaniBooleanResponseDto>().response
+        client.delete("$YANI_BASE_URL/video/$videoId/subscribe")
+            .body<YaniBooleanResponseDto>().response
 
     suspend fun getSubscriptions(userId: Int) =
         client.get("$YANI_BASE_URL/users/$userId/lists/subs")
@@ -222,11 +235,6 @@ class YaniAccountApi(
             .body<YaniNotificationAnimeResponseDto>()
             .response
             .animeId
-
-    suspend fun getNotificationCounts() =
-        client.get("$YANI_BASE_URL/profile/notifications/counts")
-            .body<YaniNotificationCountsResponseDto>()
-            .response
 
     suspend fun markNotificationRead(id: Int): Boolean =
         client.post("$YANI_BASE_URL/profile/notifications/$id/read")

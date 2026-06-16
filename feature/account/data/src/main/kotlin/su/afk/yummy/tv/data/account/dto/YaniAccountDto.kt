@@ -243,6 +243,11 @@ data class YaniPutVideoBodyDto(
 )
 
 @Serializable
+data class YaniDeleteVideosBodyDto(
+    @SerialName("video_ids") val videoIds: List<Int>,
+)
+
+@Serializable
 data class YaniRatingResponseDto(
     val response: List<YaniRatingBucketDto> = emptyList(),
 )

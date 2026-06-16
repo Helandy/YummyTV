@@ -9,13 +9,18 @@ class YaniVideoWatchesRepository(
     private val api: YaniAccountApi,
 ) : VideoWatchesRepository {
 
-    override suspend fun markWatched(videoId: Int, timeSeconds: Int, durationSeconds: Int): Boolean =
+    override suspend fun markWatched(
+        videoId: Int,
+        timeSeconds: Int,
+        durationSeconds: Int
+    ): Boolean =
         withContext(Dispatchers.IO) {
             api.markWatched(videoId, timeSeconds, durationSeconds)
         }
 
-    override suspend fun removeWatched(videoId: Int): Boolean =
+    override suspend fun removeWatched(videoIds: List<Int>): Boolean =
         withContext(Dispatchers.IO) {
-            api.removeWatched(videoId)
+            val ids = videoIds.filter { it > 0 }.distinct()
+            if (ids.isEmpty()) true else api.removeWatched(ids)
         }
 }

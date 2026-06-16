@@ -15,7 +15,6 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideoUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
@@ -23,6 +22,7 @@ import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
+import su.afk.yummy.tv.feature.library.handler.RemoteWatchProgressRemovalHandler
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import javax.inject.Inject
@@ -35,12 +35,12 @@ class LibraryViewModel @Inject internal constructor(
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
-    private val removeWatchedVideo: RemoveWatchedVideoUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
+    private val remoteWatchProgressRemovalHandler: RemoteWatchProgressRemovalHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
     private val analytics: LibraryAnalytics,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
@@ -149,30 +149,18 @@ class LibraryViewModel @Inject internal constructor(
             is LibraryState.Event.RemoveEntry -> removeEntry(event)
 
             is LibraryState.Event.RemoveWatchProgress ->
-                viewModelScope.launch {
-                    analytics.eventRemoveWatchProgress(event.animeId)
-                    val remoteVideoIds = if (signedInUserId > 0) {
-                        knownContinueWatchingEntriesFor(event.animeId)
-                            .mapNotNull { it.videoId.takeIf { id -> id > 0 } }
-                            .distinct()
-                    } else {
-                        emptyList()
-                    }
-                    watchProgressStore.suppressContinueWatching(event.animeId)
-                    removeCachedContinueWatching(event.animeId)
-                    cachedFeedContinueWatching =
-                        cachedFeedContinueWatching.filterNot { it.animeId == event.animeId }
-                    localContinueWatching =
-                        localContinueWatching.filterNot { it.animeId == event.animeId }
-                    localContinueWatchingEntries =
-                        localContinueWatchingEntries.filterNot { it.animeId == event.animeId }
-                    updateContinueWatchingState()
-                    remoteVideoIds.forEach { videoId ->
-                        runCatching { removeWatchedVideo(videoId) }
-                    }
-                    setEffect(LibraryState.Effect.ItemRemoved)
-                }
+                removeWatchProgress(event.animeId)
 
+        }
+    }
+
+    private fun removeWatchProgress(animeId: Int) {
+        analytics.eventRemoveWatchProgress(animeId)
+        viewModelScope.launch {
+            val knownRemoteVideoIds = knownRemoteVideoIdsFor(animeId)
+            suppressContinueWatchingLocally(animeId)
+            setEffect(LibraryState.Effect.ItemRemoved)
+            removeRemoteWatchProgress(animeId, knownRemoteVideoIds)
         }
     }
 
@@ -216,6 +204,38 @@ class LibraryViewModel @Inject internal constructor(
                         localContinueWatchingEntries
                 )
             .filter { it.animeId == animeId }
+
+    private fun knownRemoteVideoIdsFor(animeId: Int): List<Int> =
+        if (signedInUserId > 0) {
+            knownContinueWatchingEntriesFor(animeId)
+                .mapNotNull { it.videoId.takeIf { id -> id > 0 } }
+                .distinct()
+        } else {
+            emptyList()
+        }
+
+    private suspend fun suppressContinueWatchingLocally(animeId: Int) {
+        watchProgressStore.suppressContinueWatching(animeId)
+        removeCachedContinueWatching(animeId)
+        cachedFeedContinueWatching = cachedFeedContinueWatching.withoutAnime(animeId)
+        localContinueWatching = localContinueWatching.withoutAnime(animeId)
+        localContinueWatchingEntries = localContinueWatchingEntries.withoutAnime(animeId)
+        updateContinueWatchingState()
+    }
+
+    private suspend fun removeRemoteWatchProgress(
+        animeId: Int,
+        knownVideoIds: List<Int>,
+    ) {
+        if (signedInUserId <= 0) return
+        remoteWatchProgressRemovalHandler.removeAnimeWatchProgress(
+            animeId = animeId,
+            knownVideoIds = knownVideoIds,
+        )
+    }
+
+    private fun List<WatchProgressEntry>.withoutAnime(animeId: Int): List<WatchProgressEntry> =
+        filterNot { it.animeId == animeId }
 
     private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
         WatchProgressEntry(
