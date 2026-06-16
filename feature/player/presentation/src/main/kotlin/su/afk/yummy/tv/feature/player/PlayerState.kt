@@ -69,7 +69,11 @@ class PlayerState {
             val source: PlayerNextEpisodeSource = PlayerNextEpisodeSource.Controls,
         ) : Event
 
-        data class EpisodeCompleted(val positionMs: Long, val durationMs: Long) : Event
+        data class EpisodeCompleted(
+            val positionMs: Long,
+            val durationMs: Long,
+            val episodeUrl: String = "",
+        ) : Event
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
         data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
@@ -82,7 +86,11 @@ class PlayerState {
             val offsetY: Float,
         ) : Event
 
-        data class PlaybackPositionChanged(val positionMs: Long, val durationMs: Long) : Event
+        data class PlaybackPositionChanged(
+            val positionMs: Long,
+            val durationMs: Long,
+            val episodeUrl: String = "",
+        ) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
         data class SeekPerformed(
             val fromMs: Long,

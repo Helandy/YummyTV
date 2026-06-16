@@ -41,6 +41,11 @@ private data class PlayerCompletionAnalyticsKey(
     val iframeUrl: String,
 )
 
+private enum class PlayerStreamResumeMode {
+    PreserveCurrent,
+    SelectedSourceOnly,
+}
+
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
     @Assisted private val dest: PlayerDestination,
@@ -138,15 +143,22 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             PlayerState.Event.PrevEpisode -> {
                 analytics.eventPrevEpisode(currentState.animeId)
-                applySourceSelection(sourceSelectionHandler.previousEpisode(currentState))
+                applySourceSelection(
+                    sourceSelectionHandler.previousEpisode(currentState),
+                    resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                )
             }
 
             is PlayerState.Event.NextEpisode -> {
                 analytics.eventNextEpisode(currentState, event.source)
-                applySourceSelection(sourceSelectionHandler.nextEpisode(currentState))
+                applySourceSelection(
+                    sourceSelectionHandler.nextEpisode(currentState),
+                    resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                )
             }
 
             is PlayerState.Event.EpisodeCompleted -> {
+                if (!isActivePlaybackSource(event.episodeUrl)) return
                 reportEpisodeFullyCompleted(event.positionMs, event.durationMs)
                 reportEpisodeCompletedIfWatched(event.positionMs, event.durationMs)
             }
@@ -237,6 +249,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.PlaybackPositionChanged -> {
+                if (!isActivePlaybackSource(event.episodeUrl)) return
                 val position = event.positionMs.coerceAtLeast(0L)
                 val duration = event.durationMs.coerceAtLeast(0L)
                 setState {
@@ -322,15 +335,36 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun applySourceSelection(
         state: PlayerState.State?,
         sourceScopeChanged: Boolean = false,
+        resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
     ) {
         if (state == null) return
-        setState { state }
+        setState { state.preparingStreamLoad(resumeMode) }
         if (sourceScopeChanged) {
             observeActivePlayerResizeSettings()
             observeActivePlayerMobileVideoTransformSettings()
         }
-        loadStream()
+        loadStream(resumeMode)
     }
+
+    private fun PlayerState.State.preparingStreamLoad(
+        resumeMode: PlayerStreamResumeMode,
+    ): PlayerState.State {
+        val preservePlaybackPosition = resumeMode == PlayerStreamResumeMode.PreserveCurrent
+        return copy(
+            streamUrl = null,
+            streamHeaders = emptyMap(),
+            streamQualityMap = null,
+            playerError = null,
+            kodikBlockedError = null,
+            dubbingResumeMs = if (preservePlaybackPosition) dubbingResumeMs else -1L,
+            resumeFromMs = if (preservePlaybackPosition) resumeFromMs else 0L,
+            playbackPositionMs = if (preservePlaybackPosition) playbackPositionMs else 0L,
+            playbackDurationMs = if (preservePlaybackPosition) playbackDurationMs else 0L,
+        )
+    }
+
+    private fun isActivePlaybackSource(episodeUrl: String): Boolean =
+        episodeUrl.isBlank() || episodeUrl == activeIframeUrl(currentState)
 
     private fun loadSourceGraph() {
         val destination = activeDest
@@ -350,10 +384,15 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             val previousIframeUrl = activeIframeUrl(currentState)
             setState {
-                copy(
+                val nextState = copy(
                     sourceGraph = sourceGraph,
                     sourceSelection = sourceGraph.selection,
                 )
+                if (activeIframeUrl(nextState) != previousIframeUrl) {
+                    nextState.preparingStreamLoad(PlayerStreamResumeMode.PreserveCurrent)
+                } else {
+                    nextState
+                }
             }
             observeActivePlayerResizeSettings()
             observeActivePlayerMobileVideoTransformSettings()
@@ -437,11 +476,17 @@ class PlayerViewModel @AssistedInject internal constructor(
         return sourceSelectionHandler.resizeSettingsScope(currentState)
     }
 
-    private fun loadStream() {
+    private fun loadStream(
+        resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+    ) {
+        if (resumeMode == PlayerStreamResumeMode.SelectedSourceOnly) {
+            pendingDestinationResumeMs = null
+        }
         extractionJob?.cancel()
         extractionJob = viewModelScope.launch {
-            val stateResumeMs = currentState.resumeFromMs.takeIf { it > 0L }
-            val destinationResumeMs = pendingDestinationResumeMs
+            val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
+            val stateResumeMs = currentState.resumeFromMs.takeIf { canPreserveCurrent && it > 0L }
+            val destinationResumeMs = pendingDestinationResumeMs.takeIf { canPreserveCurrent }
             setState {
                 copy(
                     streamUrl = null,
@@ -455,7 +500,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
             }
             val s = currentState
-            val pendingResume = s.dubbingResumeMs.takeIf { it >= 0L }
+            val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it >= 0L }
                 ?: destinationResumeMs
                 ?: stateResumeMs
             val result = try {

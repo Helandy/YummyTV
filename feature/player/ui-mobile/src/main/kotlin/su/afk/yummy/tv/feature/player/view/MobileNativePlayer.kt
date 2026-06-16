@@ -163,7 +163,7 @@ internal fun MobileNativePlayer(
         onVideoTransformChanged(transform)
     }
 
-    val exoPlayer = remember(currentUrl, state.streamHeaders) {
+    val exoPlayer = remember(currentUrl, state.streamHeaders, ui.activeIframeUrl) {
         val trackSelector = DefaultTrackSelector(context).apply {
             setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
         }
@@ -180,9 +180,10 @@ internal fun MobileNativePlayer(
                 prepare()
             }
     }
+    val progressSource = remember(exoPlayer, ui) { ui }
 
     fun saveProgress(positionMs: Long = currentPosition, durationMs: Long = duration) {
-        val snapshot = ui.buildProgressSnapshot(
+        val snapshot = progressSource.buildProgressSnapshot(
             positionMs = positionMs,
             durationMs = durationMs,
         ) ?: return
@@ -192,6 +193,16 @@ internal fun MobileNativePlayer(
             )
         )
         lastSaveTime = System.currentTimeMillis()
+    }
+
+    fun notifyPlaybackPositionChanged(positionMs: Long, durationMs: Long) {
+        onEvent(
+            PlayerState.Event.PlaybackPositionChanged(
+                positionMs = positionMs,
+                durationMs = durationMs,
+                episodeUrl = progressSource.activeIframeUrl,
+            )
+        )
     }
 
     fun seekToPosition(positionMs: Long, seekSource: PlayerSeekSource? = null) {
@@ -213,12 +224,7 @@ internal fun MobileNativePlayer(
                 )
             )
         }
-        onEvent(
-            PlayerState.Event.PlaybackPositionChanged(
-                clamped,
-                playerDuration.coerceAtLeast(0L)
-            )
-        )
+        notifyPlaybackPositionChanged(clamped, playerDuration.coerceAtLeast(0L))
         saveProgress(clamped, playerDuration)
     }
 
@@ -264,14 +270,20 @@ internal fun MobileNativePlayer(
                 if (playbackState == Player.STATE_ENDED) {
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-                    onEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    notifyPlaybackPositionChanged(position, dur)
                     saveProgress(
                         positionMs = position,
                         durationMs = dur,
                     )
                     if (!completionReported) {
                         completionReported = true
-                        onEvent(PlayerState.Event.EpisodeCompleted(position, dur))
+                        onEvent(
+                            PlayerState.Event.EpisodeCompleted(
+                                positionMs = position,
+                                durationMs = dur,
+                                episodeUrl = progressSource.activeIframeUrl,
+                            )
+                        )
                     }
                     if (ui.hasNextEpisode && !isInPictureInPictureMode) {
                         showNextEpisodePrompt = true
@@ -295,7 +307,7 @@ internal fun MobileNativePlayer(
             MobilePlayerPipController.setPlayPauseAction(null)
             val position = exoPlayer.currentPosition.coerceAtLeast(0)
             val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-            onEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+            notifyPlaybackPositionChanged(position, dur)
             saveProgress(position, dur)
             exoPlayer.removeListener(listener)
             exoPlayer.release()
@@ -311,7 +323,7 @@ internal fun MobileNativePlayer(
                     resumeAfterLifecyclePause = wantsPlay && !keepPlayingInPip
                     val position = exoPlayer.currentPosition.coerceAtLeast(0)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-                    onEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    notifyPlaybackPositionChanged(position, dur)
                     saveProgress(position, dur)
                     if (!keepPlayingInPip) {
                         exoPlayer.pause()
@@ -372,7 +384,7 @@ internal fun MobileNativePlayer(
             if (!isSeeking) {
                 position = exoPlayer.currentPosition.coerceAtLeast(0)
                 dur = exoPlayer.duration.takeIf { it > 0 } ?: 0L
-                onEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                notifyPlaybackPositionChanged(position, dur)
             }
             val now = System.currentTimeMillis()
             if (dur > 0 && now - lastSaveTime >= 10_000L) {
@@ -386,7 +398,7 @@ internal fun MobileNativePlayer(
                     ) {
                         skippedSegments += segmentKey
                         exoPlayer.seekTo(segment.endMs)
-                        onEvent(PlayerState.Event.PlaybackPositionChanged(segment.endMs, dur))
+                        notifyPlaybackPositionChanged(segment.endMs, dur)
                     }
                 }
             }

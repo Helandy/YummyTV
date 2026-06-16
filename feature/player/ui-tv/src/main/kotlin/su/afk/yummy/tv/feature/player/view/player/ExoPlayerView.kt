@@ -199,7 +199,7 @@ internal fun ExoPlayerView(
     val currentUrl =
         remember(streamUrl, activeQuality, qualities) { qualities[activeQuality] ?: streamUrl }
 
-    val exoPlayer = remember(currentUrl, streamHeaders) {
+    val exoPlayer = remember(currentUrl, streamHeaders, episodeKey) {
         val trackSelector = DefaultTrackSelector(context).apply {
             setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
         }
@@ -215,20 +215,48 @@ internal fun ExoPlayerView(
                 prepare()
             }
     }
-
-    fun saveProgressIfReady(positionMs: Long = currentPosition, durationMs: Long = duration) {
-        val snapshot = buildTvProgressSnapshot(
-            episodeKey = episodeKey,
+    val progressSource = remember(
+        exoPlayer,
+        episodeKey,
+        episode,
+        videoId,
+        playerName,
+        dubbing,
+        screenshotUrl,
+    ) {
+        TvProgressSource(
+            episodeUrl = episodeKey,
             episode = episode,
             videoId = videoId,
             playerName = playerName,
             dubbing = dubbing,
             screenshotUrl = screenshotUrl,
+        )
+    }
+
+    fun saveProgressIfReady(positionMs: Long = currentPosition, durationMs: Long = duration) {
+        val snapshot = buildTvProgressSnapshot(
+            episodeKey = progressSource.episodeUrl,
+            episode = progressSource.episode,
+            videoId = progressSource.videoId,
+            playerName = progressSource.playerName,
+            dubbing = progressSource.dubbing,
+            screenshotUrl = progressSource.screenshotUrl,
             positionMs = positionMs,
             durationMs = durationMs,
         ) ?: return
         onSaveProgress(snapshot)
         lastSaveTime = System.currentTimeMillis()
+    }
+
+    fun notifyPlaybackPositionChanged(positionMs: Long, durationMs: Long) {
+        onPlayerEvent(
+            PlayerState.Event.PlaybackPositionChanged(
+                positionMs = positionMs,
+                durationMs = durationMs,
+                episodeUrl = progressSource.episodeUrl,
+            )
+        )
     }
 
     fun seekTo(positionMs: Long, seekSource: PlayerSeekSource? = null) {
@@ -253,7 +281,7 @@ internal fun ExoPlayerView(
                 )
             )
         }
-        onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(clamped, playerDuration))
+        notifyPlaybackPositionChanged(clamped, playerDuration)
         saveProgressIfReady(clamped)
     }
 
@@ -355,7 +383,7 @@ internal fun ExoPlayerView(
                 Lifecycle.Event.ON_PAUSE -> {
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-                    onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    notifyPlaybackPositionChanged(position, dur)
                     saveProgressIfReady(
                         positionMs = position,
                         durationMs = dur,
@@ -382,14 +410,20 @@ internal fun ExoPlayerView(
                 if (playbackState == Player.STATE_ENDED) {
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-                    onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+                    notifyPlaybackPositionChanged(position, dur)
                     saveProgressIfReady(
                         positionMs = position,
                         durationMs = dur,
                     )
                     if (!completionReported) {
                         completionReported = true
-                        onPlayerEvent(PlayerState.Event.EpisodeCompleted(position, dur))
+                        onPlayerEvent(
+                            PlayerState.Event.EpisodeCompleted(
+                                positionMs = position,
+                                durationMs = dur,
+                                episodeUrl = progressSource.episodeUrl,
+                            )
+                        )
                     }
                     if (hasNextEpisode) {
                         showNextEpisodePrompt = true
@@ -426,7 +460,7 @@ internal fun ExoPlayerView(
             exoPlayer.removeListener(listener)
             val position = exoPlayer.currentPosition.coerceAtLeast(0L)
             val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
-            onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(position, dur))
+            notifyPlaybackPositionChanged(position, dur)
             saveProgressIfReady(
                 positionMs = position,
                 durationMs = dur,
@@ -449,7 +483,7 @@ internal fun ExoPlayerView(
             if (dur > 0) duration = dur
             val now = System.currentTimeMillis()
             if (!isSeeking && duration > 0 && now - lastPositionNotifyTime >= 1_000L) {
-                onPlayerEvent(PlayerState.Event.PlaybackPositionChanged(currentPosition, duration))
+                notifyPlaybackPositionChanged(currentPosition, duration)
                 lastPositionNotifyTime = now
             }
             if (episodeKey.isNotBlank() && duration > 0 && now - lastSaveTime > 10_000L) {
@@ -944,3 +978,12 @@ private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
 
 private fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
+private data class TvProgressSource(
+    val episodeUrl: String,
+    val episode: String,
+    val videoId: Int,
+    val playerName: String,
+    val dubbing: String,
+    val screenshotUrl: String,
+)

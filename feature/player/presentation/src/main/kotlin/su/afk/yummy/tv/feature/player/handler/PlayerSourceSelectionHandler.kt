@@ -18,7 +18,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         return selection.episodeIndex
             .takeIf { it > 0 }
             ?.let {
-                state.copy(sourceSelection = selection.copy(episodeIndex = it - 1))
+                state.withEpisodeSelection(selection.copy(episodeIndex = it - 1))
             }
     }
 
@@ -26,7 +26,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         val selection = normalizedSourceSelection(state)
         val episodes = activeDubbingEpisodes(state)
         return if (selection.episodeIndex < episodes.size - 1) {
-            state.copy(sourceSelection = selection.copy(episodeIndex = selection.episodeIndex + 1))
+            state.withEpisodeSelection(selection.copy(episodeIndex = selection.episodeIndex + 1))
         } else {
             null
         }
@@ -97,6 +97,15 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         const val RESUME_BACKOFF_MS = 3_000L
     }
 }
+
+private fun PlayerState.State.withEpisodeSelection(selection: PlayerSourceSelection): PlayerState.State =
+    copy(
+        sourceSelection = selection,
+        dubbingResumeMs = -1L,
+        resumeFromMs = 0L,
+        playbackPositionMs = 0L,
+        playbackDurationMs = 0L,
+    )
 
 private fun PlayerSourceSelection.toDubbingSource() =
     su.afk.yummy.tv.feature.player.utils.DubbingSource(
