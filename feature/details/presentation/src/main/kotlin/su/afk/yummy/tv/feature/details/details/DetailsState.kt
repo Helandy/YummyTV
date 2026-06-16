@@ -6,7 +6,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
@@ -28,7 +27,7 @@ class DetailsState {
     data class State(
         val isLoading: Boolean = true,
         val details: AnimeDetails? = null,
-        val videosState: VideosUiState = VideosUiState.Loading,
+        val videosState: VideosUiState = VideosUiState.NotLoaded,
         val error: String? = null,
         val isInLibrary: Boolean = false,
         val isFavorite: Boolean = false,
@@ -38,7 +37,6 @@ class DetailsState {
         val pendingBalancerSelection: BalancerPickerState? = null,
         val showLibraryListPicker: Boolean = false,
         val isWatchLaunchPending: Boolean = false,
-        val collections: List<AnimeCollectionSummary> = emptyList(),
         val isSignedIn: Boolean = false,
         val subscriptions: List<SubscriptionOption> = emptyList(),
         val showSubscriptionsPicker: Boolean = false,
@@ -67,7 +65,6 @@ class DetailsState {
         data object PosterDismissed : Event
         data object BalancerPickerDismissed : Event
         data class BalancerConfirmed(val video: AnimeVideo) : Event
-        data class CollectionSelected(val collectionId: Int) : Event
         data object SubscriptionsRouteSelected : Event
         data object SubscriptionsSelected : Event
         data object SubscriptionsDismissed : Event
@@ -78,6 +75,7 @@ class DetailsState {
 }
 
 sealed interface VideosUiState {
+    data object NotLoaded : VideosUiState
     data object Loading : VideosUiState
     data object Empty : VideosUiState
     data class Content(val videos: List<AnimeVideo>) : VideosUiState

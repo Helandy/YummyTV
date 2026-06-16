@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
@@ -25,7 +26,8 @@ object DetailsDataModule {
     fun provideAnimeRepository(
         api: YaniAnimeApi,
         animeStorage: AnimeStorageStore,
+        accountStorage: AccountStorageStore,
         settingsStore: SettingsStore,
     ): AnimeRepository =
-        YaniAnimeRepository(api, animeStorage, settingsStore)
+        YaniAnimeRepository(api, animeStorage, accountStorage, settingsStore)
 }

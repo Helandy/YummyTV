@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account
 
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
+import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import javax.inject.Inject
 
 internal class AccountAnalytics @Inject constructor(
@@ -73,19 +74,22 @@ internal class AccountAnalytics @Inject constructor(
     /**
      * Пользователь запросил обновление блока аккаунта со статистикой и уведомлениями.
      */
-    fun eventRefreshHubSelected() {
-        tracker.track(EVENT_REFRESH_HUB_SELECTED)
+    fun eventRefreshAccountDataSelected() {
+        tracker.track(EVENT_REFRESH_ACCOUNT_DATA_SELECTED)
     }
 
     /**
      * Пользователь открыл уведомление о новом эпизоде.
      *
-     * Параметры: notification_id.
+     * Параметры: notification_id, anime_id.
      */
-    fun eventNotificationSelected(notificationId: Int) {
+    fun eventNotificationSelected(notification: ProfileNotification, animeId: Int) {
         tracker.track(
             EVENT_NOTIFICATION_SELECTED,
-            analyticsParamsOf(PARAM_NOTIFICATION_ID to notificationId)
+            analyticsParamsOf(
+                PARAM_NOTIFICATION_ID to notification.id,
+                PARAM_ANIME_ID to animeId,
+            )
         )
     }
 
@@ -121,6 +125,7 @@ internal class AccountAnalytics @Inject constructor(
     }
 
     internal companion object {
+        private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_NOTIFICATION_ID = "notification_id"
         private const val PARAM_REJECTED = "rejected"
         private const val PARAM_TAB = "tab"
@@ -133,7 +138,7 @@ internal class AccountAnalytics @Inject constructor(
         const val EVENT_LOGIN_CAPTCHA_REQUIRED = "account_login_captcha_required"
         const val EVENT_LOGOUT_SELECTED = "account_logout_selected"
         const val EVENT_REFRESH_PROFILE_SELECTED = "account_refresh_profile_selected"
-        const val EVENT_REFRESH_HUB_SELECTED = "account_refresh_hub_selected"
+        const val EVENT_REFRESH_ACCOUNT_DATA_SELECTED = "account_refresh_account_data_selected"
         const val EVENT_NOTIFICATION_SELECTED = "account_notification_selected"
         const val EVENT_NOTIFICATION_READ_SELECTED = "account_notification_read_selected"
         const val EVENT_ALL_NOTIFICATIONS_READ_SELECTED = "account_all_notifications_read_selected"

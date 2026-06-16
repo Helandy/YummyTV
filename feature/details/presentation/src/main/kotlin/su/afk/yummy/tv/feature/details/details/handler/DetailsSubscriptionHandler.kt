@@ -45,7 +45,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
                     )
                 )
             },
-            onFailure = { error -> ScreenSubscriptionBaseResult.Failure(error.message) },
+            onFailure = { error -> ScreenSubscriptionBaseResult.Failure(error.message, error) },
         )
     }
 
@@ -99,5 +99,5 @@ internal data class ScreenSubscriptionBase(
 internal sealed interface ScreenSubscriptionBaseResult {
     data object SignedOut : ScreenSubscriptionBaseResult
     data class Content(val base: ScreenSubscriptionBase) : ScreenSubscriptionBaseResult
-    data class Failure(val message: String?) : ScreenSubscriptionBaseResult
+    data class Failure(val message: String?, val error: Throwable) : ScreenSubscriptionBaseResult
 }

@@ -80,6 +80,7 @@ class CollectionViewModel @AssistedInject internal constructor(
             runCatching { getCollection(collectionId) }.fold(
                 onSuccess = { collection -> setState { copy(isLoading = false, collection = collection) } },
                 onFailure = { e ->
+                    analytics.eventLoadError(e)
                     setState { copy(isLoading = false, error = e.message ?: stringProvider.get(R.string.collection_load_error)) }
                 },
             )

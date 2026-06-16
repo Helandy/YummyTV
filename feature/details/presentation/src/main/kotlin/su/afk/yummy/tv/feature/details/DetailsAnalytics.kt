@@ -186,44 +186,31 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь выбрал коллекцию на экране деталей.
-     *
-     * Параметры: anime_id, collection_id.
-     */
-    fun eventDetailsCollectionSelected(animeId: Int, collectionId: Int) {
-        eventWithAnime(
-            eventName = EVENT_DETAILS_COLLECTION_SELECTED,
-            animeId = animeId,
-            params = analyticsParamsOf(PARAM_COLLECTION_ID to collectionId),
-        )
-    }
-
-    /**
-     * Пользователь открыл отдельный экран подписок.
+     * Пользователь открыл отдельный экран подписок с мобильного экрана деталей.
      *
      * Параметры: anime_id.
      */
-    fun eventDetailsSubscriptionsRouteSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_SUBSCRIPTIONS_ROUTE_SELECTED, animeId)
+    fun eventDetailsSubscriptionsMobileSelected(animeId: Int) {
+        eventWithAnime(EVENT_DETAILS_SUBSCRIPTIONS_MOBILE_SELECTED, animeId)
     }
 
     /**
-     * Пользователь открыл выбор подписок внутри экрана деталей.
+     * Пользователь открыл выбор подписок внутри TV экрана деталей.
      *
      * Параметры: anime_id.
      */
-    fun eventDetailsSubscriptionsSelected(animeId: Int) {
-        eventWithAnime(EVENT_DETAILS_SUBSCRIPTIONS_SELECTED, animeId)
+    fun eventDetailsSubscriptionsTvSelected(animeId: Int) {
+        eventWithAnime(EVENT_DETAILS_SUBSCRIPTIONS_TV_SELECTED, animeId)
     }
 
     /**
-     * Пользователь изменил подписку внутри экрана деталей.
+     * Пользователь изменил подписку внутри TV экрана деталей.
      *
      * Параметры: anime_id, video_id, target_state.
      */
-    fun eventDetailsSubscriptionToggled(animeId: Int, videoId: Int, targetState: Boolean) {
+    fun eventDetailsSubscriptionTvToggled(animeId: Int, videoId: Int, targetState: Boolean) {
         eventWithAnime(
-            eventName = EVENT_DETAILS_SUBSCRIPTION_TOGGLED,
+            eventName = EVENT_DETAILS_SUBSCRIPTION_TV_TOGGLED,
             animeId = animeId,
             params = analyticsParamsOf(
                 PARAM_VIDEO_ID to videoId,
@@ -239,6 +226,17 @@ internal class DetailsAnalytics @Inject constructor(
      */
     fun eventCollectionsRetry(animeId: Int) {
         eventWithAnime(EVENT_COLLECTIONS_RETRY, animeId)
+    }
+
+    /**
+     * Ошибка загрузки коллекций аниме.
+     */
+    fun eventCollectionsLoadError(throwable: Throwable) {
+        tracker.reportError(
+            groupIdentifier = ERROR_COLLECTIONS_LOAD,
+            message = "CollectionsViewModel: ${throwable.analyticsType()}",
+            throwable = throwable,
+        )
     }
 
     /**
@@ -261,6 +259,17 @@ internal class DetailsAnalytics @Inject constructor(
      */
     fun eventSubscriptionsRetry(animeId: Int) {
         eventWithAnime(EVENT_SUBSCRIPTIONS_RETRY, animeId)
+    }
+
+    /**
+     * Ошибка загрузки экрана подписок.
+     */
+    fun eventSubscriptionsLoadError(throwable: Throwable) {
+        tracker.reportError(
+            groupIdentifier = ERROR_SUBSCRIPTIONS_LOAD,
+            message = "SubscriptionsViewModel: ${throwable.analyticsType()}",
+            throwable = throwable,
+        )
     }
 
     /**
@@ -403,6 +412,17 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
+     * Ошибка загрузки экрана оценки.
+     */
+    fun eventRatingLoadError(throwable: Throwable) {
+        tracker.reportError(
+            groupIdentifier = ERROR_RATING_LOAD,
+            message = "RatingViewModel: ${throwable.analyticsType()}",
+            throwable = throwable,
+        )
+    }
+
+    /**
      * Пользователь выбрал оценку аниме.
      *
      * Параметры: anime_id, rating.
@@ -443,8 +463,14 @@ internal class DetailsAnalytics @Inject constructor(
         PARAM_EPISODE to video.episode,
     )
 
+    private fun Throwable.analyticsType(): String =
+        this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
     internal companion object {
+        private const val ERROR_COLLECTIONS_LOAD = "details_collections_load_error"
         private const val ERROR_DETAILS_LOAD = "details_load_error"
+        private const val ERROR_RATING_LOAD = "details_rating_load_error"
+        private const val ERROR_SUBSCRIPTIONS_LOAD = "details_subscriptions_load_error"
 
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_COLLECTION_ID = "collection_id"
@@ -474,14 +500,12 @@ internal class DetailsAnalytics @Inject constructor(
 
         const val EVENT_DETAILS_POSTER_CLICKED = "details_poster_clicked"
 
-        const val EVENT_DETAILS_COLLECTION_SELECTED = "details_collection_selected"
+        const val EVENT_DETAILS_SUBSCRIPTIONS_MOBILE_SELECTED =
+            "details_subscriptions_mobile_selected"
 
-        const val EVENT_DETAILS_SUBSCRIPTIONS_ROUTE_SELECTED =
-            "details_subscriptions_route_selected"
+        const val EVENT_DETAILS_SUBSCRIPTIONS_TV_SELECTED = "details_subscriptions_tv_selected"
 
-        const val EVENT_DETAILS_SUBSCRIPTIONS_SELECTED = "details_subscriptions_selected"
-
-        const val EVENT_DETAILS_SUBSCRIPTION_TOGGLED = "details_subscription_toggled"
+        const val EVENT_DETAILS_SUBSCRIPTION_TV_TOGGLED = "details_subscription_tv_toggled"
 
         const val EVENT_COLLECTIONS_RETRY = "details_collections_retry"
 

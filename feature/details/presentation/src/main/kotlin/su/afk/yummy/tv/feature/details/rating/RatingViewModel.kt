@@ -14,9 +14,9 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetCachedAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -29,8 +29,8 @@ class RatingViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val getAnimeRatingSummary: GetAnimeRatingSummaryUseCase,
-    private val getAnimeListStats: GetAnimeListStatsUseCase,
     private val getAnimeUserRating: GetAnimeUserRatingUseCase,
+    private val getCachedAnimeListStats: GetCachedAnimeListStatsUseCase,
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
     private val settingsStore: SettingsStore,
@@ -66,16 +66,17 @@ class RatingViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             val rating = runCatching { getAnimeRatingSummary(animeId) }
-            val stats = runCatching { getAnimeListStats(animeId) }
+            val stats = runCatching { getCachedAnimeListStats(animeId) }.getOrNull()
             val userRating = runCatching { getAnimeUserRating(animeId) }
 
-            if (rating.isFailure && stats.isFailure && userRating.isFailure) {
+            if (rating.isFailure && userRating.isFailure) {
+                val error = rating.exceptionOrNull()
+                    ?: userRating.exceptionOrNull()
+                error?.let(analytics::eventRatingLoadError)
                 setState {
                     copy(
                         isLoading = false,
-                        error = rating.exceptionOrNull()?.message
-                            ?: stats.exceptionOrNull()?.message
-                            ?: userRating.exceptionOrNull()?.message
+                        error = error?.message
                             ?: stringProvider.get(R.string.details_load_error),
                     )
                 }
@@ -87,7 +88,7 @@ class RatingViewModel @AssistedInject internal constructor(
                     isLoading = false,
                     error = null,
                     ratingSummary = rating.getOrDefault(ratingSummary),
-                    listStats = stats.getOrDefault(listStats),
+                    listStats = stats ?: listStats,
                     selectedUserRating = userRating.getOrNull(),
                 )
             }

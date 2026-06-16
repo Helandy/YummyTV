@@ -29,6 +29,17 @@ internal class CollectionAnalytics @Inject constructor(
     }
 
     /**
+     * Ошибка загрузки коллекции.
+     */
+    fun eventLoadError(throwable: Throwable) {
+        tracker.reportError(
+            groupIdentifier = EVENT_LOAD_ERROR,
+            message = "CollectionViewModel: ${throwable.analyticsType()}",
+            throwable = throwable,
+        )
+    }
+
+    /**
      * Пользователь выбрал аниме из коллекции.
      *
      * Параметры: collection_id, anime_id.
@@ -43,12 +54,16 @@ internal class CollectionAnalytics @Inject constructor(
         )
     }
 
+    private fun Throwable.analyticsType(): String =
+        this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
     internal companion object {
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_COLLECTION_ID = "collection_id"
 
         const val EVENT_SCREEN_OPENED = "collection_screen"
         const val EVENT_RETRY = "collection_retry"
+        const val EVENT_LOAD_ERROR = "collection_load_error"
         const val EVENT_ANIME_SELECTED = "collection_anime_selected"
     }
 }

@@ -85,7 +85,6 @@ internal fun DetailsButtonBar(
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
     canSubscribe: Boolean,
-    hasCollections: Boolean,
     buttonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     restoreFocusRequest: Int,
     firstFocusRequester: FocusRequester,
@@ -204,19 +203,14 @@ internal fun DetailsButtonBar(
             ButtonStyle.Normal,
             onRatingSelected,
         ),
-    ) + if (hasCollections) {
-        listOf(
-            ButtonData(
-                DetailsButtonAction.COLLECTIONS,
-                stringResource(R.string.details_collections_button),
-                Icons.Filled.CollectionsBookmark,
-                ButtonStyle.Normal,
-                onCollectionsSelected,
-            )
+        ButtonData(
+            DetailsButtonAction.COLLECTIONS,
+            stringResource(R.string.details_collections_button),
+            Icons.Filled.CollectionsBookmark,
+            ButtonStyle.Normal,
+            onCollectionsSelected,
         )
-    } else {
-        emptyList()
-    } + if (details.screenshots.isNotEmpty()) {
+    ) + if (details.screenshots.isNotEmpty()) {
         listOf(
             ButtonData(
                 DetailsButtonAction.SCREENSHOTS,

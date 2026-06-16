@@ -5,8 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.account.AccountStorageStore
+import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.core.storage.anime.isFresh
+import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
@@ -32,6 +35,7 @@ private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 class YaniAnimeRepository(
     private val api: YaniAnimeApi,
     private val animeStorage: AnimeStorageStore,
+    private val accountStorage: AccountStorageStore,
     private val settingsStore: SettingsStore,
 ) : AnimeRepository {
 
@@ -53,23 +57,36 @@ class YaniAnimeRepository(
         }
     }
 
-    override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> = withContext(Dispatchers.IO) {
-        val language = settingsStore.yaniContentLanguage.first()
-        val languageCode = language.apiCode
-        val stored = animeStorage.getVideos(animeId, languageCode)
-        if (stored?.isFresh(ANIME_VIDEOS_TTL_MS) == true) {
-            return@withContext stored.toAnimeVideos()
+    override suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails? =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            animeStorage.getDetails(animeId, language.apiCode)?.toAnimeDetails()
         }
 
-        try {
-            fetchVideosFromNetwork(animeId, languageCode)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
-            stored?.toAnimeVideos()
-                ?: throw error
+    override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            val languageCode = language.apiCode
+            val stored = animeStorage.getVideos(animeId, languageCode)
+            if (stored?.isFresh(ANIME_VIDEOS_TTL_MS) == true) {
+                return@withContext stored.toAnimeVideos()
+            }
+
+            try {
+                fetchVideosFromNetwork(animeId, languageCode)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toAnimeVideos()
+                    ?: throw error
+            }
         }
-    }
+
+    override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            animeStorage.getVideos(animeId, language.apiCode)?.toAnimeVideos()
+        }
 
     override suspend fun getAnimeRecommendations(
         animeId: Int,
@@ -118,15 +135,35 @@ class YaniAnimeRepository(
     ): AnimeDetails {
         val dto = api.getAnimeDetails(animeId)
         val details = dto.toAnimeDetails()
+        val cachedAt = System.currentTimeMillis()
         if (dto.response.animeId != null) {
             animeStorage.saveDetails(
                 details.toAnimeDetailsCache(
                     language = languageCode,
-                    cachedAt = System.currentTimeMillis(),
+                    cachedAt = cachedAt,
                 )
             )
         }
+        saveUserRatingFromDetails(dto, animeId, cachedAt)
         return details
+    }
+
+    private suspend fun saveUserRatingFromDetails(
+        dto: YaniAnimeDetailsDto,
+        animeId: Int,
+        cachedAt: Long,
+    ) {
+        val userId = settingsStore.yaniUserId.first()
+        if (userId <= 0 || dto.response.animeId == null) return
+
+        accountStorage.saveUserRating(
+            AccountUserRatingEntry(
+                userId = userId,
+                animeId = animeId,
+                rating = dto.response.user?.rating?.toInt()?.takeIf { it in 1..10 },
+                cachedAt = cachedAt,
+            )
+        )
     }
 
     private suspend fun fetchVideosFromNetwork(

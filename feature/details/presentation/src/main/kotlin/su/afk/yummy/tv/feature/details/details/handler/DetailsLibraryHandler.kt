@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.details.details.handler
 
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
@@ -13,10 +14,22 @@ import javax.inject.Inject
 /** Applies details-screen library and favorite mutations with local-first rollback support. */
 internal class DetailsLibraryHandler @Inject constructor(
     private val libraryStore: LibraryStore,
+    private val getAnimeListState: GetAnimeListStateUseCase,
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
 ) {
+    suspend fun refreshState(animeId: Int): Result<DetailsLibraryState?> =
+        runCatching { getAnimeListState(animeId) }
+            .map { state ->
+                state ?: return@map null
+                DetailsLibraryState(
+                    isInLibrary = state.list != null,
+                    libraryList = state.list,
+                    isFavorite = state.isFavorite,
+                )
+            }
+
     suspend fun removeFromLibrary(
         animeId: Int,
         details: AnimeDetails,
@@ -91,6 +104,13 @@ internal class DetailsLibraryHandler @Inject constructor(
         return DetailsLibraryMutationResult.RollbackFavorite(previousFavorite)
     }
 }
+
+/** Current user's remote list/favorite state for a details screen. */
+internal data class DetailsLibraryState(
+    val isInLibrary: Boolean,
+    val libraryList: UserAnimeList?,
+    val isFavorite: Boolean,
+)
 
 /** Outcome of a library mutation after local and remote updates are attempted. */
 internal sealed interface DetailsLibraryMutationResult {

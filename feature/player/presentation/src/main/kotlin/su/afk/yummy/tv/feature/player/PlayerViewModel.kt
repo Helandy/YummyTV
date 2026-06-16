@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerProgressContext
@@ -28,8 +29,17 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResult
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
+import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.toPresentationSourceGraph
+
+private data class PlayerCompletionAnalyticsKey(
+    val animeId: Int,
+    val videoId: Int,
+    val episode: String,
+    val iframeUrl: String,
+)
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -81,6 +91,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var playerMobileVideoTransformSettingsJob: Job? = null
     private var playerMobileVideoTransformSaveJob: Job? = null
     private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
+    private val completedAnalyticsSources = mutableSetOf<PlayerCompletionAnalyticsKey>()
+    private val fullyCompletedAnalyticsSources = mutableSetOf<PlayerCompletionAnalyticsKey>()
 
     init {
         analytics.eventScreenOpened(dest.animeId)
@@ -135,11 +147,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.EpisodeCompleted -> {
-                analytics.eventEpisodeCompleted(
-                    state = currentState,
-                    positionMs = event.positionMs,
-                    durationMs = event.durationMs,
-                )
+                reportEpisodeFullyCompleted(event.positionMs, event.durationMs)
+                reportEpisodeCompletedIfWatched(event.positionMs, event.durationMs)
             }
 
             is PlayerState.Event.DubbingSelected -> {
@@ -237,6 +246,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                         playbackDurationMs = duration,
                     )
                 }
+                reportEpisodeCompletedIfWatched(position, duration)
             }
 
             is PlayerState.Event.SeekPerformed -> Unit
@@ -265,6 +275,48 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
         }
+    }
+
+    private fun reportEpisodeCompletedIfWatched(positionMs: Long, durationMs: Long) {
+        val position = positionMs.coerceAtLeast(0L)
+        val duration = durationMs.coerceAtLeast(0L)
+        if (!WatchProgressStore.isWatchedProgress(position, duration)) return
+
+        val state = currentState
+        val key = state.completionAnalyticsKey() ?: return
+        if (!completedAnalyticsSources.add(key)) return
+
+        analytics.eventEpisodeCompleted(
+            state = state,
+            positionMs = position,
+            durationMs = duration,
+        )
+    }
+
+    private fun reportEpisodeFullyCompleted(positionMs: Long, durationMs: Long) {
+        val state = currentState
+        val key = state.completionAnalyticsKey() ?: return
+        if (!fullyCompletedAnalyticsSources.add(key)) return
+
+        analytics.eventEpisodeFullyCompleted(
+            state = state,
+            positionMs = positionMs.coerceAtLeast(0L),
+            durationMs = durationMs.coerceAtLeast(0L),
+        )
+    }
+
+    private fun PlayerState.State.completionAnalyticsKey(): PlayerCompletionAnalyticsKey? {
+        val animeId = animeId.takeIf { it > 0 } ?: return null
+        val videoId = activeVideoId(this)
+        val episode = activeEpisode(this)
+        val iframeUrl = activeIframeUrl(this)
+        if (videoId <= 0 && episode.isBlank() && iframeUrl.isBlank()) return null
+        return PlayerCompletionAnalyticsKey(
+            animeId = animeId,
+            videoId = videoId,
+            episode = episode,
+            iframeUrl = iframeUrl,
+        )
     }
 
     private fun applySourceSelection(

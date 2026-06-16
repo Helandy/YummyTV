@@ -28,6 +28,7 @@ data class YaniAnimeResponseDto(
     val studios: List<YaniNamedDto> = emptyList(),
     @SerialName("viewing_order") val viewingOrder: List<YaniViewingOrderItemDto> = emptyList(),
     @SerialName("random_screenshots") val randomScreenshots: List<YaniScreenshotDto> = emptyList(),
+    val user: YaniAnimeUserDto? = null,
 )
 
 @Serializable
@@ -47,6 +48,9 @@ data class YaniAnimeRatingDto(
     @SerialName("shikimori_rating") val shikimori: Double? = null,
     @SerialName("myanimelist_rating") val myAnimeList: Double? = null,
 )
+
+@Serializable
+data class YaniAnimeUserDto(val rating: Double? = null)
 
 @Serializable
 data class YaniNamedDto(val id: Int? = null, val title: String = "")

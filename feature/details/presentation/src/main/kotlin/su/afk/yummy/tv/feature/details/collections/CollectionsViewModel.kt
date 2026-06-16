@@ -62,6 +62,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
                 setState { copy(isLoading = false, collections = collections, error = null) }
             },
             onFailure = { e ->
+                analytics.eventCollectionsLoadError(e)
                 setState { copy(isLoading = false, error = e.message, collections = emptyList()) }
             },
         )

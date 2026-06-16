@@ -46,7 +46,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
 import su.afk.yummy.tv.core.designsystem.presenter.components.toRatingColor
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
@@ -66,7 +65,6 @@ internal fun DetailsHero(
     videosState: VideosUiState,
     isWatchLoading: Boolean,
     watchProgress: Map<String, WatchProgressEntry>,
-    collections: List<AnimeCollectionSummary>,
     canSubscribe: Boolean,
     detailsButtonOrder: List<DetailsButtonAction>,
     restoreButtonFocusRequest: Int,
@@ -157,7 +155,6 @@ internal fun DetailsHero(
                     isWatchLoading = isWatchLoading,
                     watchProgress = watchProgress,
                     canSubscribe = canSubscribe,
-                    hasCollections = collections.isNotEmpty(),
                     buttonOrder = detailsButtonOrder,
                     restoreFocusRequest = restoreButtonFocusRequest,
                     firstFocusRequester = downFocusRequester,

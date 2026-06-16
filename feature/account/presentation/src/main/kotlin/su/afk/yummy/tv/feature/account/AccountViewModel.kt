@@ -197,7 +197,7 @@ class AccountViewModel @Inject internal constructor(
             }
 
             AccountState.Event.RefreshHubSelected -> {
-                analytics.eventRefreshHubSelected()
+                analytics.eventRefreshAccountDataSelected()
                 maybeLoadHub(force = true)
             }
 
@@ -241,11 +241,11 @@ class AccountViewModel @Inject internal constructor(
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
         if (!notification.isNewEpisode) return
         val slug = notification.animeSlug ?: return
-        analytics.eventNotificationSelected(id)
         viewModelScope.launch {
             setState { copy(hubError = null) }
             when (val result = notificationHandler.resolveAnimeId(slug)) {
                 is AccountOpenNotificationResult.Navigate -> {
+                    analytics.eventNotificationSelected(notification, result.animeId)
                     setState {
                         copy(
                             focusedNotificationId = id,

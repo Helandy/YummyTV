@@ -96,6 +96,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
             }
 
             is ScreenSubscriptionBaseResult.Failure -> {
+                analytics.eventSubscriptionsLoadError(result.error)
                 setState {
                     copy(
                         isLoading = false,

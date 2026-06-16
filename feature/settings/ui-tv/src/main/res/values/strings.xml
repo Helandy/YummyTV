@@ -92,7 +92,7 @@
     <string name="settings_content_language_ukrainian">Ukrainian</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Application token</string>
-    <string name="settings_yani_application_token_hint">Create an application and copy its public token from https://yummyani.me/dev/applications/\nRequired for authorizing the app: the token is sent in the X-Application header. All API requests use JSON, including request bodies.</string>
+    <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.\nRequired for authorizing the app: the token is sent in the X-Application header. All API requests use JSON, including request bodies.</string>
     <string name="settings_account_signed_in">Yani account</string>
     <string name="settings_account_signed_out">Sign in to Yani</string>
     <string name="settings_account_unknown_user">Signed in</string>

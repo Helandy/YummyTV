@@ -1,16 +1,21 @@
 package su.afk.yummy.tv.data.home.repository
 
+import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import javax.inject.Inject
 
 class ContinueWatchingEnricher @Inject constructor(
+    private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
+    private val getCachedAnimeDetails: GetCachedAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
-    private val getAnimeDetails: GetAnimeDetailsUseCase,
 ) {
     suspend fun enrich(
         items: List<HomeContinueWatchingItem>,
@@ -19,13 +24,13 @@ class ContinueWatchingEnricher @Inject constructor(
         if (items.isEmpty()) return items
 
         val sources = items
-            .map { it.animeId }
-            .filter { it > 0 }
-            .distinct()
-            .associateWith { animeId ->
-                ContinueWatchingEnrichmentSource(
-                    videos = runCatching { getAnimeVideos(animeId) }.getOrNull().orEmpty(),
-                    details = runCatching { getAnimeDetails(animeId) }.getOrNull(),
+            .filter { it.animeId > 0 }
+            .groupBy { it.animeId }
+            .mapValues { (animeId, animeItems) ->
+                loadSource(
+                    animeId = animeId,
+                    items = animeItems,
+                    watchEntries = watchEntries,
                 )
             }
 
@@ -41,6 +46,69 @@ class ContinueWatchingEnricher @Inject constructor(
                 )
             }.getOrElse { item }
         }
+    }
+
+    private suspend fun loadSource(
+        animeId: Int,
+        items: List<HomeContinueWatchingItem>,
+        watchEntries: List<WatchProgressEntry>,
+    ): ContinueWatchingEnrichmentSource {
+        val cachedVideos = loadCachedVideos(animeId)
+        val videos = if (items.any { it.needsVideoEnrichment(cachedVideos, watchEntries) }) {
+            loadVideos(animeId, cachedVideos)
+        } else {
+            cachedVideos
+        }
+
+        return ContinueWatchingEnrichmentSource(
+            videos = videos,
+            details = loadCachedDetails(animeId),
+        )
+    }
+
+    private suspend fun loadCachedVideos(animeId: Int): List<AnimeVideo> =
+        try {
+            getCachedAnimeVideos(animeId).orEmpty()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Throwable) {
+            emptyList()
+        }
+
+    private suspend fun loadVideos(
+        animeId: Int,
+        fallback: List<AnimeVideo>,
+    ): List<AnimeVideo> =
+        try {
+            getAnimeVideos(animeId)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Throwable) {
+            fallback
+        }
+
+    private suspend fun loadCachedDetails(animeId: Int): AnimeDetails? =
+        try {
+            getCachedAnimeDetails(animeId)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Throwable) {
+            null
+        }
+
+    private fun HomeContinueWatchingItem.needsVideoEnrichment(
+        videos: List<AnimeVideo>,
+        watchEntries: List<WatchProgressEntry>,
+    ): Boolean {
+        if (videos.isNotEmpty()) return false
+        val matched = watchEntries.match(this)
+        return videoId <= 0 ||
+                episode.isBlank() ||
+                episodeUrl.isBlank() ||
+                durationMs <= 0L ||
+                playerName.isBlank() ||
+                dubbing.isBlank() ||
+                (screenshotUrl.isBlank() && matched?.screenshotUrl.isNullOrBlank())
     }
 
     private fun HomeContinueWatchingItem.enrichedWith(
@@ -63,8 +131,8 @@ class ContinueWatchingEnricher @Inject constructor(
             ?: matched?.durationMs?.takeIf { it > 0L }
             ?: 0L
         val resolvedScreenshotUrl = screenshotUrl.ifBlank {
-            details?.screenshotForEpisode(resolvedEpisode)
-                ?: video?.iframeUrl?.takeIf { it.isKodikSourceUrl() }
+            video?.iframeUrl?.takeIf { it.isKodikSourceUrl() }
+                ?: details?.screenshotForEpisode(resolvedEpisode)
                 ?: matched?.screenshotUrl.orEmpty()
         }
 
@@ -73,6 +141,7 @@ class ContinueWatchingEnricher @Inject constructor(
                 ?: videoId.takeIf { it > 0 }
                 ?: matched?.videoId
                 ?: 0,
+            poster = poster ?: details?.poster?.toHomePoster(),
             episode = resolvedEpisode,
             episodeUrl = resolvedEpisodeUrl,
             durationMs = resolvedDurationMs,
@@ -159,6 +228,15 @@ class ContinueWatchingEnricher @Inject constructor(
             .firstOrNull { it.episode?.episodeKey() == episodeKey }
             ?.let { it.full ?: it.small }
     }
+
+    private fun AnimePoster.toHomePoster(): HomePoster =
+        HomePoster(
+            small = small,
+            medium = medium,
+            big = big,
+            fullsize = fullsize,
+            mega = mega,
+        )
 
     private data class ContinueWatchingEnrichmentSource(
         val videos: List<AnimeVideo>,

@@ -47,6 +47,7 @@ internal fun EpisodesSection(
             }
         }
 
+        VideosUiState.NotLoaded,
         VideosUiState.Empty -> Unit
         is VideosUiState.Content -> EpisodesGrid(
             videos = state.videos,

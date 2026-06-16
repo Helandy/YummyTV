@@ -25,23 +25,20 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
-import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
+import su.afk.yummy.tv.feature.details.details.handler.DetailsWatchTarget
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
-import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
@@ -52,17 +49,14 @@ class DetailsViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val collectionNavigator: ICollectionNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
-    private val getAnimeVideos: GetAnimeVideosUseCase,
     private val libraryStore: LibraryStore,
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
-    private val getAnimeCollections: GetAnimeCollectionsUseCase,
-    private val getAnimeListState: GetAnimeListStateUseCase,
     private val stringProvider: StringProvider,
     private val libraryHandler: DetailsLibraryHandler,
+    private val videoHandler: DetailsVideoHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
     private val analytics: DetailsAnalytics,
@@ -112,17 +106,8 @@ class DetailsViewModel @AssistedInject internal constructor(
                         isSignedIn = token.isNotBlank(),
                         subscriptions = if (token.isBlank()) emptyList() else subscriptions,
                         showSubscriptionsPicker = if (token.isBlank()) false else showSubscriptionsPicker,
+                        isSubscriptionsLoading = if (token.isBlank()) false else isSubscriptionsLoading,
                     )
-                }
-                if (token.isNotBlank()) {
-                    refreshSubscriptions()
-                }
-            }
-            .launchIn(viewModelScope)
-        settingsStore.yaniUserId
-            .onEach { userId ->
-                if (userId > 0 && currentState.isSignedIn) {
-                    viewModelScope.launch { loadSubscriptions(userId) }
                 }
             }
             .launchIn(viewModelScope)
@@ -195,13 +180,9 @@ class DetailsViewModel @AssistedInject internal constructor(
             }
 
             DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
-            is DetailsState.Event.CollectionSelected -> {
-                analytics.eventDetailsCollectionSelected(animeId, event.collectionId)
-                nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
-            }
 
             DetailsState.Event.SubscriptionsRouteSelected -> {
-                analytics.eventDetailsSubscriptionsRouteSelected(animeId)
+                analytics.eventDetailsSubscriptionsMobileSelected(animeId)
                 nav.navigate(
                     detailsNavigator.getSubscriptionsDest(
                         animeId
@@ -210,8 +191,9 @@ class DetailsViewModel @AssistedInject internal constructor(
             }
 
             DetailsState.Event.SubscriptionsSelected -> {
-                analytics.eventDetailsSubscriptionsSelected(animeId)
+                analytics.eventDetailsSubscriptionsTvSelected(animeId)
                 setState { copy(showSubscriptionsPicker = true) }
+                loadSubscriptionsForPicker()
             }
 
             DetailsState.Event.SubscriptionsDismissed -> setState { copy(showSubscriptionsPicker = false) }
@@ -301,36 +283,29 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     private fun load() {
         viewModelScope.launch { loadDetails() }
-        viewModelScope.launch { loadExtras() }
+        viewModelScope.launch { refreshLibraryState() }
+        viewModelScope.launch { loadVideosIfCacheMissing() }
     }
 
-    private suspend fun loadExtras() {
+    private suspend fun refreshLibraryState() {
         val libraryVersion = libraryMutationVersion
         val favoriteVersion = favoriteMutationVersion
-        runCatching { getAnimeCollections(animeId) }
-            .onSuccess { setState { copy(collections = it) } }
-        runCatching { getAnimeListState(animeId) }
-            .onSuccess {
+        libraryHandler.refreshState(animeId)
+            .onSuccess { refreshed ->
                 setState {
                     var next = this
                     if (libraryVersion == libraryMutationVersion) {
                         next = next.copy(
-                            isInLibrary = isInLibrary || it?.list != null,
-                            libraryList = it?.list,
+                            isInLibrary = isInLibrary || (refreshed?.isInLibrary == true),
+                            libraryList = refreshed?.libraryList,
                         )
                     }
                     if (favoriteVersion == favoriteMutationVersion) {
-                        next = next.copy(isFavorite = isFavorite || it?.isFavorite == true)
+                        next = next.copy(isFavorite = isFavorite || (refreshed?.isFavorite == true))
                     }
                     next
                 }
             }
-    }
-
-    private fun refreshSubscriptions() {
-        val userId = yaniUserIdState.value
-        if (userId <= 0) return
-        viewModelScope.launch { loadSubscriptions(userId) }
     }
 
     private suspend fun loadDetails() {
@@ -343,7 +318,6 @@ class DetailsViewModel @AssistedInject internal constructor(
                     title = details.title,
                     poster = details.poster?.toLibraryPoster(),
                 )
-                loadVideos()
             },
             onFailure = { e ->
                 analytics.eventDetailsLoadError(e)
@@ -357,37 +331,58 @@ class DetailsViewModel @AssistedInject internal constructor(
         )
     }
 
-    private suspend fun loadVideos() {
+    private suspend fun loadVideos(loadSubscriptionsAfter: Boolean = false) {
         setState { copy(videosState = VideosUiState.Loading) }
-        runCatching { getAnimeVideos(animeId) }.fold(
-            onSuccess = { videos ->
-                setState {
-                    copy(
-                        videosState = if (videos.isEmpty()) VideosUiState.Empty else VideosUiState.Content(
-                            videos
-                        ),
-                        subscriptions = videos.toSubscriptionOptions(optimisticKeys = subscriptions.subscribedKeys()),
-                    )
+        videoHandler.load(
+            animeId = animeId,
+            optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+        ).fold(
+            onSuccess = { result ->
+                setVideos(result)
+                if (loadSubscriptionsAfter || currentState.showSubscriptionsPicker && currentState.isSubscriptionsLoading) {
+                    loadSubscriptions()
                 }
-                refreshSubscriptions()
                 if (currentState.isWatchLaunchPending) {
-                    openInitialVideo(videos)
+                    openInitialVideo(result.videos)
                 }
             },
             onFailure = {
                 setState {
                     copy(
                         videosState = VideosUiState.Empty,
-                        isWatchLaunchPending = false
+                        isWatchLaunchPending = false,
+                        isSubscriptionsLoading = false,
                     )
                 }
             },
         )
     }
 
+    private suspend fun loadVideosIfCacheMissing() {
+        val cached = videoHandler.loadCached(
+            animeId = animeId,
+            optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+        )
+        if (cached != null) {
+            setVideos(cached)
+            return
+        }
+        loadVideos()
+    }
+
+    private fun setVideos(result: DetailsVideosResult) {
+        setState {
+            copy(
+                videosState = result.videosState,
+                subscriptions = result.subscriptions,
+            )
+        }
+    }
+
     private fun onWatchSelected() {
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
+            VideosUiState.NotLoaded,
             VideosUiState.Empty -> {
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
@@ -397,28 +392,43 @@ class DetailsViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun openInitialVideo(videos: List<AnimeVideo>) {
-        val continueTarget = resolveDetailsContinueTarget(
-            animeId = animeId,
-            videos = videos,
-            watchProgress = currentState.watchProgress,
-        )
-        if (continueTarget != null) {
-            setState { copy(isWatchLaunchPending = false) }
-            navigateToPlayer(continueTarget.video)
+    private fun loadSubscriptionsForPicker() {
+        if (!currentState.isSignedIn || currentState.subscriptions.isNotEmpty() || currentState.isSubscriptionsLoading) {
             return
         }
+        when (currentState.videosState) {
+            is VideosUiState.Content -> viewModelScope.launch { loadSubscriptions() }
+            VideosUiState.NotLoaded,
+            VideosUiState.Empty -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
 
-        val video = videos.selectInitialDetailsVideo()
-        setState { copy(isWatchLaunchPending = false) }
-        if (video != null) {
-            showBalancerPicker(video)
+            VideosUiState.Loading -> setState { copy(isSubscriptionsLoading = true) }
         }
     }
 
-    private suspend fun loadSubscriptions(userId: Int) {
+    private fun openInitialVideo(videos: List<AnimeVideo>) {
+        when (val target = videoHandler.resolveWatchTarget(
+            animeId = animeId,
+            videos = videos,
+            watchProgress = currentState.watchProgress,
+        )) {
+            is DetailsWatchTarget.Continue -> {
+                setState { copy(isWatchLaunchPending = false) }
+                navigateToPlayer(target.video)
+            }
+
+            is DetailsWatchTarget.Initial -> {
+                setState { copy(isWatchLaunchPending = false) }
+                showBalancerPicker(target.video)
+            }
+
+            null -> setState { copy(isWatchLaunchPending = false) }
+        }
+    }
+
+    private suspend fun loadSubscriptions() {
+        val userId = yaniUserIdState.value
         val videos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        if (!currentState.isSignedIn) {
+        if (!currentState.isSignedIn || userId <= 0) {
             setState { copy(isSubscriptionsLoading = false, subscriptions = emptyList()) }
             return
         }
@@ -446,7 +456,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         if (!currentState.isSignedIn) return
         val option = currentState.subscriptions.firstOrNull { it.key == key } ?: return
         val wasSubscribed = option.isSubscribed
-        analytics.eventDetailsSubscriptionToggled(
+        analytics.eventDetailsSubscriptionTvToggled(
             animeId = animeId,
             videoId = option.representativeVideoId,
             targetState = !wasSubscribed,
@@ -460,7 +470,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             if (!changed) {
                 setSubscriptionState(key, wasSubscribed)
             } else {
-                refreshSubscriptions()
+                loadSubscriptions()
             }
         }
     }

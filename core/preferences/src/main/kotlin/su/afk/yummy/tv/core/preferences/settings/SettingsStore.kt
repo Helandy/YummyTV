@@ -146,7 +146,7 @@ class SettingsStore(private val context: Context) {
     }
 
     val yaniApplicationToken: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[yaniApplicationTokenKey].orEmpty()
+        prefs.yaniApplicationToken()
     }
 
     val yaniUserId: Flow<Int> = context.dataStore.data.map { prefs ->
@@ -196,7 +196,7 @@ class SettingsStore(private val context: Context) {
                     ?: PreviewCacheSize.MB_100
             },
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
-            yaniApplicationToken = prefs[yaniApplicationTokenKey].orEmpty(),
+            yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: YaniContentLanguage.fromSystemLocale(context),
             detailsButtonOrder = prefs[detailsButtonOrderKey].toDetailsButtonOrder(),
@@ -382,6 +382,9 @@ class SettingsStore(private val context: Context) {
             .normalizedDetailsButtonOrder()
     }
 
+    private fun Preferences.yaniApplicationToken(): String =
+        this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
+
     private fun List<DetailsButtonAction>.normalizedDetailsButtonOrder(): List<DetailsButtonAction> {
         val unique = distinct()
         val complete = unique + defaultDetailsButtonOrder.filterNot { it in unique }
@@ -460,6 +463,7 @@ class SettingsStore(private val context: Context) {
     }
 
     companion object {
+        private const val DEFAULT_YANI_APPLICATION_TOKEN = "ze645twqfeql6l1u"
         private const val DETAILS_BUTTON_ORDER_SEPARATOR = "|"
 
         val defaultDetailsButtonOrder: List<DetailsButtonAction> = listOf(

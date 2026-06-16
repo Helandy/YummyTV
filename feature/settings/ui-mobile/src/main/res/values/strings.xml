@@ -90,7 +90,7 @@
     <string name="settings_content_language_ukrainian">Ukrainian</string>
     <string name="settings_yani_application_token_label">X-Application</string>
     <string name="settings_yani_application_token_placeholder">Application token</string>
-    <string name="settings_yani_application_token_hint">Create an application and copy its public token from https://yummyani.me/dev/applications/</string>
+    <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.</string>
     <string name="settings_version_label">Version</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>

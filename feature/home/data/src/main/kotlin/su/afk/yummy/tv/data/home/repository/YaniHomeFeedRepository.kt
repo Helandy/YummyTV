@@ -23,7 +23,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 
-private const val FEED_TTL_MS = 60 * 60 * 1000L
+private const val FEED_TTL_MS = 5 * 60 * 1000L
 private const val FEED_WATCH_LIMIT = 8
 private const val TAG = "YaniHomeFeed"
 

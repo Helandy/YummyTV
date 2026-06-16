@@ -98,6 +98,13 @@ class YaniAnimeExtrasRepository(
             }
         }
 
+    override suspend fun getCachedListStats(animeId: Int): AnimeListStats? =
+        withContext(Dispatchers.IO) {
+            accountStorage.getListStats(animeId)
+                ?.takeIf { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) }
+                ?.toAnimeListStats()
+        }
+
     override suspend fun getCollections(animeId: Int, limit: Int, offset: Int): List<AnimeCollectionSummary> =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()

@@ -41,7 +41,7 @@ internal fun buildMobileActions(
                 onEpisodesSelected,
             )
         )
-        if (state.isSignedIn && state.subscriptions.isNotEmpty()) {
+        if (state.isSignedIn) {
             add(
                 MobileDetailsAction(
                     DetailsButtonAction.SUBSCRIPTIONS,
@@ -91,16 +91,14 @@ internal fun buildMobileActions(
                 onRatingScreenSelected,
             )
         )
-        if (state.collections.isNotEmpty()) {
-            add(
-                MobileDetailsAction(
-                    DetailsButtonAction.COLLECTIONS,
-                    stringResource(R.string.details_mobile_collections),
-                    Icons.Filled.CollectionsBookmark,
-                    onCollectionsSelected,
-                )
+        add(
+            MobileDetailsAction(
+                DetailsButtonAction.COLLECTIONS,
+                stringResource(R.string.details_mobile_collections),
+                Icons.Filled.CollectionsBookmark,
+                onCollectionsSelected,
             )
-        }
+        )
         if (details.screenshots.isNotEmpty()) {
             add(
                 MobileDetailsAction(

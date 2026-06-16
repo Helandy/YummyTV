@@ -110,7 +110,6 @@ class SettingsViewModel @Inject internal constructor(
                 analytics.eventDetailsButtonOrderScreenOpened()
             }
             SettingsState.Event.DetailsButtonOrderSelected -> {
-                analytics.eventDetailsButtonOrderSelected()
                 nav.navigate(SettingsDetailsButtonOrderDestination)
             }
             SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {

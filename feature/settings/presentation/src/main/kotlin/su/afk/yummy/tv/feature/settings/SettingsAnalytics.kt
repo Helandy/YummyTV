@@ -31,107 +31,122 @@ internal class SettingsAnalytics @Inject constructor(
     /**
      * Пользователь изменил тему приложения.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventAppThemeSelected(theme: AppTheme) {
-        eventSettingChange(SETTING_APP_THEME, theme.name.lowercase())
+        tracker.track(
+            EVENT_APP_THEME_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to theme.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь изменил качество постеров.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventPosterQualitySelected(quality: PosterQuality) {
-        eventSettingChange(SETTING_POSTER_QUALITY, quality.name.lowercase())
+        tracker.track(
+            EVENT_POSTER_QUALITY_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to quality.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь изменил размер карточек постеров.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventPosterCardSizeSelected(size: PosterCardSize) {
-        eventSettingChange(SETTING_POSTER_CARD_SIZE, size.name.lowercase())
+        tracker.track(
+            EVENT_POSTER_CARD_SIZE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь изменил предпочитаемый плеер.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventPreferredPlayerSelected(player: PreferredPlayer) {
-        eventSettingChange(SETTING_PREFERRED_PLAYER, player.name.lowercase())
+        tracker.track(
+            EVENT_PREFERRED_PLAYER_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to player.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь включил или выключил автопереход к следующей серии.
      *
-     * Параметры: setting, value.
+     * Параметры: target_state.
      */
     fun eventWatchNextToggled(enabled: Boolean) {
-        eventSettingChange(SETTING_WATCH_NEXT_ENABLED, enabled.toString())
+        tracker.track(
+            EVENT_WATCH_NEXT_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
     }
 
     /**
      * Пользователь изменил размер кэша превью.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventPreviewCacheSizeSelected(size: PreviewCacheSize) {
-        eventSettingChange(SETTING_PREVIEW_CACHE_SIZE, size.name.lowercase())
+        tracker.track(
+            EVENT_PREVIEW_CACHE_SIZE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь включил или выключил автопропуск опенингов и эндингов.
      *
-     * Параметры: setting, value.
+     * Параметры: target_state.
      */
     fun eventAutoSkipOpeningsEndingsToggled(enabled: Boolean) {
-        eventSettingChange(SETTING_AUTO_SKIP_OPENINGS_ENDINGS, enabled.toString())
+        tracker.track(
+            EVENT_AUTO_SKIP_OPENINGS_ENDINGS_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
     }
 
     /**
      * Пользователь изменил язык контента Yani.
      *
-     * Параметры: setting, value.
+     * Параметры: value.
      */
     fun eventContentLanguageSelected(language: YaniContentLanguage) {
-        eventSettingChange(SETTING_CONTENT_LANGUAGE, language.name.lowercase())
+        tracker.track(
+            EVENT_CONTENT_LANGUAGE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to language.name.lowercase()),
+        )
     }
 
     /**
      * Пользователь изменил порядок кнопок на экране деталей.
      *
-     * Параметры: setting, value.
+     * Параметры: action, direction.
      */
     fun eventDetailsButtonMoved(
         action: DetailsButtonAction,
         direction: DetailsButtonMoveDirection
     ) {
-        eventSettingChange(
-            setting = SETTING_DETAILS_BUTTON_ORDER,
-            value = "${action.name.lowercase()}_${direction.name.lowercase()}",
+        tracker.track(
+            EVENT_DETAILS_BUTTON_ORDER_MOVED,
+            analyticsParamsOf(
+                PARAM_ACTION to action.name.lowercase(),
+                PARAM_DIRECTION to direction.name.lowercase(),
+            ),
         )
     }
 
     /**
      * Пользователь сбросил порядок кнопок на экране деталей.
-     *
-     * Параметры: setting, value.
      */
     fun eventDetailsButtonOrderReset() {
-        eventSettingChange(SETTING_DETAILS_BUTTON_ORDER, VALUE_RESET)
-    }
-
-    private fun eventSettingChange(setting: String, value: String) {
-        tracker.track(
-            EVENT_SETTING_CHANGE,
-            analyticsParamsOf(
-                PARAM_SETTING to setting,
-                PARAM_VALUE to value,
-            ),
-        )
+        tracker.track(EVENT_DETAILS_BUTTON_ORDER_RESET)
     }
 
     /**
@@ -141,33 +156,27 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE)
     }
 
-    /**
-     * Пользователь открыл настройку порядка кнопок на экране деталей.
-     */
-    fun eventDetailsButtonOrderSelected() {
-        tracker.track(EVENT_DETAILS_BUTTON_ORDER_SELECTED)
-    }
-
     internal companion object {
-        private const val PARAM_SETTING = "setting"
+        private const val PARAM_ACTION = "action"
+        private const val PARAM_DIRECTION = "direction"
+        private const val PARAM_TARGET_STATE = "target_state"
         private const val PARAM_VALUE = "value"
-        private const val SETTING_APP_THEME = "app_theme"
-        private const val SETTING_AUTO_SKIP_OPENINGS_ENDINGS = "auto_skip_openings_endings"
-        private const val SETTING_CONTENT_LANGUAGE = "content_language"
-        private const val SETTING_DETAILS_BUTTON_ORDER = "details_button_order"
-        private const val SETTING_POSTER_CARD_SIZE = "poster_card_size"
-        private const val SETTING_POSTER_QUALITY = "poster_quality"
-        private const val SETTING_PREFERRED_PLAYER = "preferred_player"
-        private const val SETTING_PREVIEW_CACHE_SIZE = "preview_cache_size"
-        private const val SETTING_WATCH_NEXT_ENABLED = "watch_next_enabled"
-        private const val VALUE_RESET = "reset"
 
+        const val EVENT_APP_THEME_SELECTED = "settings_app_theme_selected"
+        const val EVENT_AUTO_SKIP_OPENINGS_ENDINGS_TOGGLED =
+            "settings_auto_skip_openings_endings_toggled"
+        const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
+        const val EVENT_DETAILS_BUTTON_ORDER_MOVED = "settings_details_button_order_moved"
+        const val EVENT_DETAILS_BUTTON_ORDER_RESET = "settings_details_button_order_reset"
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED =
             "settings_details_button_order_screen"
-        const val EVENT_SETTING_CHANGE = "setting_change"
+        const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
+        const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
+        const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"
+        const val EVENT_PREVIEW_CACHE_SIZE_SELECTED = "settings_preview_cache_size_selected"
         const val EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE =
             "settings_request_preview_channel_browsable"
-        const val EVENT_DETAILS_BUTTON_ORDER_SELECTED = "settings_details_button_order_selected"
+        const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
     }
 }

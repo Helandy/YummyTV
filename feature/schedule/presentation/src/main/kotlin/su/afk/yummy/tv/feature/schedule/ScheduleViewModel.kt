@@ -76,6 +76,7 @@ class ScheduleViewModel @Inject internal constructor(
                     }
                 },
                 onFailure = {
+                    analytics.eventLoadError(it)
                     setState {
                         copy(
                             isLoading = false,

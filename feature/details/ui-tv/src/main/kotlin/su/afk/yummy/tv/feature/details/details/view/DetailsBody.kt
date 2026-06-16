@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.VideosUiState
@@ -24,7 +23,6 @@ internal fun DetailsBody(
     isInLibrary: Boolean,
     isFavorite: Boolean,
     libraryList: UserAnimeList?,
-    collections: List<AnimeCollectionSummary>,
     canSubscribe: Boolean,
     detailsButtonOrder: List<DetailsButtonAction>,
     restoreButtonFocusRequest: Int,
@@ -56,7 +54,6 @@ internal fun DetailsBody(
             videosState = videosState,
             isWatchLoading = isWatchLoading,
             watchProgress = watchProgress,
-            collections = collections,
             canSubscribe = canSubscribe,
             detailsButtonOrder = detailsButtonOrder,
             restoreButtonFocusRequest = restoreButtonFocusRequest,
