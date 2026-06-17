@@ -199,6 +199,7 @@ fun LibraryTvScreen(
                     val favoriteItems =
                         remember(state.items) { state.items.filter { it.isFavorite } }
                     LibraryGrid(
+                        tab = LibraryTab.FAVORITES,
                         items = favoriteItems,
                         focusedItemId = state.focusedItemId,
                         gridFocusRequester = gridFocusRequester,
@@ -233,6 +234,7 @@ fun LibraryTvScreen(
                         state.items.filter { it.listId == localListId }
                     }
                     LibraryGrid(
+                        tab = state.selectedTab,
                         items = localItems,
                         focusedItemId = state.focusedItemId,
                         gridFocusRequester = gridFocusRequester,

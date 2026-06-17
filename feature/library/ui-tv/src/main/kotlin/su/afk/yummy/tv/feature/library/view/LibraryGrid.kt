@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -41,6 +42,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
+import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
@@ -50,11 +52,15 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
+import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.utils.tvDateText
+import su.afk.yummy.tv.feature.library.utils.tvUserRating
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LibraryGrid(
+    tab: LibraryTab,
     items: List<LibraryItem>,
     focusedItemId: Int?,
     gridFocusRequester: FocusRequester,
@@ -242,6 +248,7 @@ internal fun LibraryGrid(
             itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->
                 val stableOnClick = remember(item.animeId) { { onAnimeSelected(item.animeId) } }
                 val stableOnFocused = remember(item.animeId) { { onItemFocused(item.animeId) } }
+                val rating = item.tvUserRating()
                 val stableOnDelete = remember(item.animeId, index) {
                     {
                         pendingFocusAfterDeleteIndex = index
@@ -264,6 +271,17 @@ internal fun LibraryGrid(
                     onFocused = stableOnFocused,
                     onDelete = stableOnDelete,
                     cardWidth = adaptiveCardWidth,
+                    subtitle = item.tvDateText(tab),
+                    posterOverlay = rating?.let {
+                        {
+                            RatingBadge(
+                                rating = it,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp),
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {

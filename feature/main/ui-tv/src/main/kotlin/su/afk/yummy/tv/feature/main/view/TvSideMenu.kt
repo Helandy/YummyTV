@@ -177,8 +177,11 @@ internal fun TvSideMenu(
                     }
                 }
             }
-            .padding(horizontal = 14.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(
+                horizontal = TvSideMenuHorizontalPadding,
+                vertical = TvSideMenuVerticalPadding,
+            ),
+        verticalArrangement = Arrangement.spacedBy(TvSideMenuItemSpacing),
     ) {
         TvSideMenuAccountItem(
             label = accountLabel?.ifBlank { null } ?: stringResource(R.string.main_account_sign_in),
@@ -205,7 +208,7 @@ internal fun TvSideMenu(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         menuItems.forEachIndexed { index, item ->
             val isSelected = item.destination == selectedRoot

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -32,6 +33,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -623,15 +625,20 @@ internal fun ExoPlayerView(
                 PlayerView(ctx).apply {
                     useController = false
                     keepScreenOn = true
+                    isFocusable = false
+                    isFocusableInTouchMode = false
+                    descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
                     setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                     applyTvResizeMode(resizeMode, zoomLevel)
-                }.also { it.post { it.requestFocus() } }
+                }
             },
             update = { pv ->
                 if (pv.player !== exoPlayer) pv.player = exoPlayer
                 pv.applyTvResizeMode(resizeMode, zoomLevel)
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .focusProperties { canFocus = false },
         )
 
         if (!controllerVisible) {

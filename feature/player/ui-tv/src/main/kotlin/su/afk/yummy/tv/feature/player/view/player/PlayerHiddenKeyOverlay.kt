@@ -28,15 +28,19 @@ internal fun PlayerHiddenKeyOverlay(
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
-                    Key.DirectionLeft,
-                    Key.DirectionDown -> {
+                    Key.DirectionLeft -> {
                         onSeekBackward()
                         true
                     }
 
-                    Key.DirectionRight,
-                    Key.DirectionUp -> {
+                    Key.DirectionRight -> {
                         onSeekForward()
+                        true
+                    }
+
+                    Key.DirectionUp,
+                    Key.DirectionDown -> {
+                        onInteraction()
                         true
                     }
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.main.utils.moveFocusToContentOnKey
 
@@ -64,7 +65,7 @@ internal fun TvSideMenuItem(
         modifier = Modifier
             .focusRequester(focusRequester)
             .height(TvSideMenuItemHeight)
-            .width(TvSideMenuExpandedWidth - 28.dp)
+            .width(TvSideMenuExpandedWidth - TvSideMenuHorizontalPadding - TvSideMenuHorizontalPadding)
             .focusProperties {
                 this.canFocus = canFocus
                 upFocusRequester?.let { up = it }
@@ -80,8 +81,8 @@ internal fun TvSideMenuItem(
             .background(backgroundColor)
             .clickable(interactionSource = interactionSource, indication = null) { onActivated() }
             .moveFocusToContentOnKey(onMoveToContent)
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(horizontal = TvSideMenuItemHorizontalPadding),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
@@ -101,6 +102,7 @@ internal fun TvSideMenuItem(
                 fontWeight = if (focused || selected) FontWeight.Bold else FontWeight.SemiBold,
                 color = contentColor,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
