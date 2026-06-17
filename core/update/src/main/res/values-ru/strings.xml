@@ -6,6 +6,9 @@
     <string name="update_later">Не сейчас</string>
     <string name="update_install">Обновить</string>
     <string name="update_auto_update_unsupported">Ваше устройство не поддерживает автообновление. Установите новую версию вручную.</string>
+    <string name="update_manual_hint">Для обновления вручную скачайте последний релиз с GitHub.</string>
+    <string name="update_manual_open_releases">Открыть GitHub Releases</string>
+    <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>
     <string name="update_downloading">Загрузка обновления...</string>
     <string name="update_installing">Установка...</string>
     <string name="update_error_title">Ошибка обновления</string>

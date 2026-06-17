@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.update.nav
 
+import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +41,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -85,6 +88,8 @@ private fun AvailableContent(
     onEvent: (UpdateState.Event) -> Unit,
 ) {
     val autoUpdateSupported = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.O }
+    val isTelevision = LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+            Configuration.UI_MODE_TYPE_TELEVISION
     val closeFocus = remember { FocusRequester() }
     val updateFocus = remember { FocusRequester() }
     val changelogScrollState = rememberScrollState()
@@ -171,13 +176,18 @@ private fun AvailableContent(
 
         Spacer(Modifier.height(24.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Box(
                 modifier = Modifier
+                    .weight(1f)
                     .focusRequester(closeFocus)
                     .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
                     .padding(horizontal = 24.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(R.string.update_later),
@@ -187,14 +197,14 @@ private fun AvailableContent(
             }
 
             if (autoUpdateSupported) {
-                Spacer(Modifier.width(4.dp))
-
                 Box(
                     modifier = Modifier
+                        .weight(1f)
                         .focusRequester(updateFocus)
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                         .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
                         .padding(horizontal = 24.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = stringResource(R.string.update_install),
@@ -203,6 +213,36 @@ private fun AvailableContent(
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        ManualUpdateHint(isTelevision = isTelevision)
+    }
+}
+
+@Composable
+private fun ManualUpdateHint(isTelevision: Boolean) {
+    val releasesUrl = stringResource(R.string.update_manual_release_url)
+
+    Column {
+        Text(
+            text = stringResource(R.string.update_manual_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        if (isTelevision) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = releasesUrl,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            val uriHandler = LocalUriHandler.current
+            TextButton(onClick = { uriHandler.openUri(releasesUrl) }) {
+                Text(text = stringResource(R.string.update_manual_open_releases))
             }
         }
     }
