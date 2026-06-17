@@ -106,6 +106,42 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         dao.deleteNotificationsForUser(userId)
     }
 
+    suspend fun getUserFriends(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserFriendsPageCache? =
+        dao.getUserFriendsPage(userId, language, limit, offset)
+
+    suspend fun saveUserFriends(cache: AccountUserFriendsPageCache) {
+        dao.replaceUserFriendsPage(cache)
+    }
+
+    suspend fun getUserReviews(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserReviewsPageCache? =
+        dao.getUserReviewsPage(userId, language, limit, offset)
+
+    suspend fun saveUserReviews(cache: AccountUserReviewsPageCache) {
+        dao.replaceUserReviewsPage(cache)
+    }
+
+    suspend fun getUserPosts(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserPostsPageCache? =
+        dao.getUserPostsPage(userId, language, limit, offset)
+
+    suspend fun saveUserPosts(cache: AccountUserPostsPageCache) {
+        dao.replaceUserPostsPage(cache)
+    }
+
     suspend fun getNotificationCounts(userId: Int): AccountNotificationCountsCache? =
         dao.getNotificationCounts(userId)
 

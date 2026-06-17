@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.AccountState
+import su.afk.yummy.tv.feature.account.account.AccountState
 
 @Composable
 internal fun AccountHubPanel(
@@ -32,6 +32,7 @@ internal fun AccountHubPanel(
             onStatsContentFocusChanged = onStatsContentFocusChanged,
             modifier = contentModifier,
         )
+
         AccountState.AccountTab.NOTIFICATIONS -> NotificationsTab(
             state = state,
             onEvent = onEvent,

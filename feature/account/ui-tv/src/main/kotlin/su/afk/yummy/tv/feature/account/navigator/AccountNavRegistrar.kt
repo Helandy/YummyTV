@@ -7,8 +7,8 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.feature.account.AccountTvScreen
-import su.afk.yummy.tv.feature.account.AccountViewModel
+import su.afk.yummy.tv.feature.account.account.AccountTvScreen
+import su.afk.yummy.tv.feature.account.account.AccountViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import javax.inject.Inject

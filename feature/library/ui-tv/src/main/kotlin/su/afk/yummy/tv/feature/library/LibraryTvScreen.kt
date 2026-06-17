@@ -174,6 +174,7 @@ fun LibraryTvScreen(
             when (state.selectedTab) {
                 LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
                     entries = state.continueWatching,
+                    cardSize = state.continueWatchingCardSize,
                     focusedItemId = state.focusedItemId,
                     gridFocusRequester = gridFocusRequester,
                     selectedTabFocusRequester = selectedTabFocusRequester,
@@ -185,6 +186,10 @@ fun LibraryTvScreen(
                         restoreGridFocusOnResume = true
                         restoreContinueWatchingFirstOnResume = true
                         onEvent(LibraryState.Event.ContinueWatchingSelected(it))
+                    },
+                    onDetailsSelected = {
+                        restoreGridFocusOnResume = true
+                        onEvent(LibraryState.Event.ContinueWatchingDetailsSelected(it))
                     },
                     onItemFocused = { onEvent(LibraryState.Event.ItemFocused(it)) },
                     onRemoveWatchProgress = { onEvent(LibraryState.Event.RemoveWatchProgress(it)) },

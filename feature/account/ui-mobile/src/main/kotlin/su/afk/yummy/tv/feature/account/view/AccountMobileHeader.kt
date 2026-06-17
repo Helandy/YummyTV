@@ -18,10 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
-import su.afk.yummy.tv.feature.account.AccountState
+import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.account.mobile.utils.formatProfileDate
+import su.afk.yummy.tv.feature.account.account.mobile.utils.label
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.utils.formatProfileDate
-import su.afk.yummy.tv.feature.account.mobile.utils.label
 
 @Composable
 internal fun AccountMobileHeader(

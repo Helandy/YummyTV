@@ -47,6 +47,21 @@ internal class LibraryAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь открыл детали из продолжения просмотра.
+     *
+     * Параметры: anime_id, video_id.
+     */
+    fun eventContinueWatchingDetailsSelected(entry: HomeContinueWatchingItem) {
+        tracker.track(
+            EVENT_CONTINUE_WATCHING_DETAILS_SELECTED,
+            analyticsParamsOf(
+                PARAM_ANIME_ID to entry.animeId,
+                PARAM_VIDEO_ID to entry.videoId,
+            ),
+        )
+    }
+
+    /**
      * Пользователь выбрал вкладку библиотеки.
      *
      * Параметры: tab.
@@ -138,6 +153,8 @@ internal class LibraryAnalytics @Inject constructor(
         const val EVENT_SCREEN_OPENED = "library_screen"
         const val EVENT_ANIME_SELECTED = "library_anime_selected"
         const val EVENT_CONTINUE_WATCHING_SELECTED = "library_continue_watching_selected"
+        const val EVENT_CONTINUE_WATCHING_DETAILS_SELECTED =
+            "library_continue_watching_details_selected"
         const val EVENT_TAB_SELECTED = "library_tab_selected"
         const val EVENT_RETRY = "library_retry"
         const val EVENT_REMOVE_ENTRY = "library_remove_entry"

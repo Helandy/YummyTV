@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.account.R
-import su.afk.yummy.tv.feature.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 
 @Composable
 internal fun AccountUiError?.accountErrorMessage(): String? =

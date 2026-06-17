@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.library
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 
@@ -31,6 +32,8 @@ class LibraryState {
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
         val focusedItemId: Int? = null,
         val restoreFocusedItemOnEnter: Boolean = false,
+        val continueWatchingCardSize: LibraryContinueWatchingCardSize =
+            LibraryContinueWatchingCardSize.LARGE,
     ) : UiState
 
     /** Пользовательские действия на экране библиотеки. */
@@ -40,6 +43,9 @@ class LibraryState {
 
         /** Пользователь выбрал элемент продолжения просмотра. */
         data class ContinueWatchingSelected(val entry: HomeContinueWatchingItem) : Event
+
+        /** Пользователь открыл детали элемента продолжения просмотра. */
+        data class ContinueWatchingDetailsSelected(val entry: HomeContinueWatchingItem) : Event
 
         /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event

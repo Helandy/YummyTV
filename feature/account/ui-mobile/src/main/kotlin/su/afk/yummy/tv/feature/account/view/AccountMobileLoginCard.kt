@@ -23,9 +23,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.AppBrandIcon
-import su.afk.yummy.tv.feature.account.AccountState
+import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.account.mobile.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.utils.accountErrorMessage
 
 @Composable
 internal fun AccountMobileLoginCard(

@@ -17,8 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable

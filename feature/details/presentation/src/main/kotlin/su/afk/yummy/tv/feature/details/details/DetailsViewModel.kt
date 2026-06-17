@@ -28,6 +28,7 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
 import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
+import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
@@ -50,6 +51,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
+    private val commentsNavigator: ICommentsNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val observeAnimeLibraryState: ObserveAnimeLibraryStateUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
@@ -177,6 +179,9 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.CollectionsSelected ->
                 nav.navigate(detailsNavigator.getCollectionsDest(animeId))
+
+            DetailsState.Event.CommentsSelected ->
+                nav.navigate(commentsNavigator.getAnimeCommentsDest(animeId))
 
             DetailsState.Event.LibraryToggled ->
                 viewModelScope.launch { toggleLibrary() }

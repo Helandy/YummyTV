@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.home.R
 internal fun ContinueWatchingSection(
     items: List<HomeContinueWatchingItem>,
     onItemSelected: (HomeContinueWatchingItem) -> Unit,
+    onItemFocused: (HomeContinueWatchingItem) -> Unit = {},
     rowFocusRequester: FocusRequester? = null,
     restoreFirstItemToken: Int = 0,
     restoreItemKey: String? = null,
@@ -110,6 +111,10 @@ internal fun ContinueWatchingSection(
 
     fun restoreIndex(): Int {
         pendingRestoreIndex()?.let { return it }
+        val restoreKeyedIndex = restoreItemKey?.let { key ->
+            items.indexOfFirst { it.focusKey() == key }
+        } ?: -1
+        if (restoreKeyedIndex >= 0) return restoreKeyedIndex
         val keyedIndex = lastFocusedKey?.let { key ->
             items.indexOfFirst { it.focusKey() == key }
         } ?: -1
@@ -119,13 +124,15 @@ internal fun ContinueWatchingSection(
     fun rememberFocusedItem(index: Int, entry: HomeContinueWatchingItem) {
         lastFocusedIndex = index
         lastFocusedKey = entry.focusKey()
+        onItemFocused(entry)
     }
 
     suspend fun restorePendingItemFocus(): Boolean {
         val target = pendingRestoreIndex() ?: return false
-        if (target == lastFocusedIndex) return false
+        val wasAlreadyFocused = target == lastFocusedIndex
         handledRestoreFirstItemToken = restoreFirstItemToken
         items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
+        if (wasAlreadyFocused) return false
         requestItemFocus(target)
         return true
     }

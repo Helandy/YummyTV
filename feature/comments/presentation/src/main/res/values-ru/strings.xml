@@ -1,0 +1,8 @@
+<resources>
+    <string name="comments_load_error">Не удалось загрузить комментарии</string>
+    <string name="comments_action_error">Не удалось выполнить действие</string>
+    <string name="comments_auth_required">Войдите, чтобы писать комментарии</string>
+    <string name="comments_permission_denied">Вы не можете изменить этот комментарий</string>
+    <string name="comments_empty_text">Сначала напишите комментарий</string>
+    <string name="comments_report_sent">Жалоба отправлена</string>
+</resources>

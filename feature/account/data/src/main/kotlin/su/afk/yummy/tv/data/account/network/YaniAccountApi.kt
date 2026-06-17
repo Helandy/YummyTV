@@ -46,8 +46,12 @@ import su.afk.yummy.tv.data.account.dto.YaniSetFavoriteBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniSetListBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniTokenResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
+import su.afk.yummy.tv.data.account.dto.YaniUserCollectionsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserFriendsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserPostsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserProfileResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUserReviewsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsGenresResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsListsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsRatingsResponseDto
@@ -122,6 +126,34 @@ class YaniAccountApi(
         client.get("$YANI_BASE_URL/users/$userId/lists/$listId")
             .body<YaniUserListResponseDto>()
             .response
+
+    suspend fun getUserFriends(userId: Int, limit: Int, offset: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/friends") {
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }.body<YaniUserFriendsResponseDto>().response
+
+    suspend fun getUserReviews(userId: Int, limit: Int, offset: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/reviews") {
+            parameter("type", "approved")
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }.body<YaniUserReviewsResponseDto>().response
+
+    suspend fun getUserPosts(userId: Int, limit: Int, offset: Int) =
+        client.get("$YANI_BASE_URL/posts") {
+            parameter("user_id", userId)
+            parameter("status", "published")
+            parameter("sort", "new")
+            parameter("limit", limit)
+            parameter("skip", offset)
+        }.body<YaniUserPostsResponseDto>().response
+
+    suspend fun getUserCollections(userId: Int, limit: Int, offset: Int) =
+        client.get("$YANI_BASE_URL/users/$userId/collections") {
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }.body<YaniUserCollectionsResponseDto>().response.orEmpty()
 
     suspend fun getAnimeListState(animeId: Int): YaniAnimeListStateDto =
         client.get("$YANI_BASE_URL/anime/$animeId/list")

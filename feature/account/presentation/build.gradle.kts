@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:home:domain"))

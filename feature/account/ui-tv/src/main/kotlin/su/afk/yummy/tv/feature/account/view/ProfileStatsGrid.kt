@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.R
-import su.afk.yummy.tv.feature.account.model.ProfileStatSlice
+import su.afk.yummy.tv.feature.account.account.model.ProfileStatSlice
 import su.afk.yummy.tv.feature.account.utils.averageRatingLabel
 import su.afk.yummy.tv.feature.account.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.utils.listDurationSlices

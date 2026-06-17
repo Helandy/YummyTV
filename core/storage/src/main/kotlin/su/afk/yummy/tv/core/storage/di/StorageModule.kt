@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
+import su.afk.yummy.tv.core.storage.comments.CommentsStorageStore
 import su.afk.yummy.tv.core.storage.db.AppDatabase
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
@@ -1327,6 +1328,183 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_22_23 = object : Migration(22, 23) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS comment_pages (
+                    scopeType TEXT NOT NULL,
+                    ownerId INTEGER NOT NULL,
+                    sort TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    skip INTEGER NOT NULL,
+                    responseSize INTEGER NOT NULL,
+                    isModerator INTEGER NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    PRIMARY KEY(scopeType, ownerId, sort, `limit`, skip)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_comment_pages_cachedAt
+                ON comment_pages(cachedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_comment_pages_scope
+                ON comment_pages(scopeType, ownerId)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS comment_items (
+                    scopeType TEXT NOT NULL,
+                    ownerId INTEGER NOT NULL,
+                    sort TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    skip INTEGER NOT NULL,
+                    position INTEGER NOT NULL,
+                    commentId INTEGER NOT NULL,
+                    authorId INTEGER NOT NULL,
+                    authorName TEXT NOT NULL,
+                    avatarSmallUrl TEXT,
+                    avatarBigUrl TEXT,
+                    avatarFullUrl TEXT,
+                    text TEXT NOT NULL,
+                    createdAtEpochSeconds INTEGER NOT NULL,
+                    parentId INTEGER,
+                    childrenCount INTEGER NOT NULL,
+                    likes INTEGER NOT NULL,
+                    dislikes INTEGER NOT NULL,
+                    vote INTEGER NOT NULL,
+                    roles TEXT NOT NULL,
+                    deletedAtEpochSeconds INTEGER,
+                    PRIMARY KEY(scopeType, ownerId, sort, `limit`, skip, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_comment_items_page
+                ON comment_items(scopeType, ownerId, sort, `limit`, skip)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_comment_items_commentId
+                ON comment_items(commentId)
+                """.trimIndent()
+            )
+        }
+    }
+
+    private val MIGRATION_23_24 = object : Migration(23, 24) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_profile_content_pages (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    contentType TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    `offset` INTEGER NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language, contentType, `limit`, `offset`)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_profile_content_pages_cachedAt
+                ON account_user_profile_content_pages(cachedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_profile_content_pages_scope
+                ON account_user_profile_content_pages(userId, language, contentType)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_friends (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    `offset` INTEGER NOT NULL,
+                    position INTEGER NOT NULL,
+                    friendId INTEGER NOT NULL,
+                    nickname TEXT NOT NULL,
+                    avatarUrl TEXT,
+                    lastOnlineSeconds INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    PRIMARY KEY(userId, language, `limit`, `offset`, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_friends_page
+                ON account_user_friends(userId, language, `limit`, `offset`)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_reviews (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    `offset` INTEGER NOT NULL,
+                    position INTEGER NOT NULL,
+                    reviewId INTEGER NOT NULL,
+                    animeId INTEGER NOT NULL,
+                    animeTitle TEXT NOT NULL,
+                    animePosterUrl TEXT,
+                    textPreview TEXT NOT NULL,
+                    rating REAL,
+                    likes INTEGER NOT NULL,
+                    dislikes INTEGER NOT NULL,
+                    commentsCount INTEGER NOT NULL,
+                    updatedAtSeconds INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language, `limit`, `offset`, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_reviews_page
+                ON account_user_reviews(userId, language, `limit`, `offset`)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS account_user_posts (
+                    userId INTEGER NOT NULL,
+                    language TEXT NOT NULL,
+                    `limit` INTEGER NOT NULL,
+                    `offset` INTEGER NOT NULL,
+                    position INTEGER NOT NULL,
+                    postId INTEGER NOT NULL,
+                    title TEXT NOT NULL,
+                    previewImageUrl TEXT,
+                    contentPreview TEXT NOT NULL,
+                    categoryTitle TEXT NOT NULL,
+                    createdAtSeconds INTEGER NOT NULL,
+                    PRIMARY KEY(userId, language, `limit`, `offset`, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_account_user_posts_page
+                ON account_user_posts(userId, language, `limit`, `offset`)
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1347,6 +1525,8 @@ object StorageModule {
                 MIGRATION_19_20,
                 MIGRATION_20_21,
                 MIGRATION_21_22,
+                MIGRATION_22_23,
+                MIGRATION_23_24,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,
@@ -1407,4 +1587,9 @@ object StorageModule {
     @Singleton
     fun provideAccountStorageStore(db: AppDatabase): AccountStorageStore =
         AccountStorageStore(db.accountStorageDao())
+
+    @Provides
+    @Singleton
+    fun provideCommentsStorageStore(db: AppDatabase): CommentsStorageStore =
+        CommentsStorageStore(db.commentsStorageDao())
 }

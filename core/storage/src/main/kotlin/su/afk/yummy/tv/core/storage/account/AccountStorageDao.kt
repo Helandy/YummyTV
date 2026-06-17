@@ -299,6 +299,148 @@ abstract class AccountStorageDao {
     @Query("DELETE FROM account_notification_pages WHERE cachedAt < :minCachedAt")
     abstract suspend fun deleteNotificationPagesCachedBefore(minCachedAt: Long)
 
+    @Query(
+        """
+        SELECT * FROM account_user_profile_content_pages
+        WHERE userId = :userId
+            AND language = :language
+            AND contentType = :contentType
+            AND `limit` = :limit
+            AND `offset` = :offset
+        LIMIT 1
+        """
+    )
+    abstract suspend fun getUserProfileContentPageEntry(
+        userId: Int,
+        language: String,
+        contentType: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserProfileContentPageEntry?
+
+    @Query(
+        """
+        SELECT * FROM account_user_friends
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        ORDER BY position
+        """
+    )
+    abstract suspend fun getUserFriendEntries(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): List<AccountUserFriendEntry>
+
+    @Query(
+        """
+        SELECT * FROM account_user_reviews
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        ORDER BY position
+        """
+    )
+    abstract suspend fun getUserReviewEntries(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): List<AccountUserReviewEntry>
+
+    @Query(
+        """
+        SELECT * FROM account_user_posts
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        ORDER BY position
+        """
+    )
+    abstract suspend fun getUserPostEntries(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): List<AccountUserPostEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserProfileContentPage(entry: AccountUserProfileContentPageEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserFriends(entries: List<AccountUserFriendEntry>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserReviews(entries: List<AccountUserReviewEntry>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertUserPosts(entries: List<AccountUserPostEntry>)
+
+    @Query("DELETE FROM account_user_profile_content_pages WHERE userId = :userId")
+    abstract suspend fun deleteUserProfileContentPages(userId: Int)
+
+    @Query("DELETE FROM account_user_friends WHERE userId = :userId")
+    abstract suspend fun deleteUserFriends(userId: Int)
+
+    @Query("DELETE FROM account_user_reviews WHERE userId = :userId")
+    abstract suspend fun deleteUserReviews(userId: Int)
+
+    @Query("DELETE FROM account_user_posts WHERE userId = :userId")
+    abstract suspend fun deleteUserPosts(userId: Int)
+
+    @Query(
+        """
+        DELETE FROM account_user_profile_content_pages
+        WHERE userId = :userId
+            AND language = :language
+            AND contentType = :contentType
+            AND `limit` = :limit
+            AND `offset` = :offset
+        """
+    )
+    abstract suspend fun deleteUserProfileContentPage(
+        userId: Int,
+        language: String,
+        contentType: String,
+        limit: Int,
+        offset: Int,
+    )
+
+    @Query(
+        """
+        DELETE FROM account_user_friends
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        """
+    )
+    abstract suspend fun deleteUserFriendItems(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    )
+
+    @Query(
+        """
+        DELETE FROM account_user_reviews
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        """
+    )
+    abstract suspend fun deleteUserReviewItems(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    )
+
+    @Query(
+        """
+        DELETE FROM account_user_posts
+        WHERE userId = :userId AND language = :language AND `limit` = :limit AND `offset` = :offset
+        """
+    )
+    abstract suspend fun deleteUserPostItems(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    )
+
     @Query("SELECT * FROM account_notification_count_caches WHERE userId = :userId LIMIT 1")
     abstract suspend fun getNotificationCountCacheEntry(userId: Int): AccountNotificationCountCacheEntry?
 
@@ -639,6 +781,119 @@ abstract class AccountStorageDao {
     }
 
     @Transaction
+    open suspend fun getUserFriendsPage(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserFriendsPageCache? {
+        val entry = getUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_FRIENDS,
+            limit = limit,
+            offset = offset,
+        ) ?: return null
+        return AccountUserFriendsPageCache(
+            entry,
+            getUserFriendEntries(userId, language, limit, offset),
+        )
+    }
+
+    @Transaction
+    open suspend fun replaceUserFriendsPage(cache: AccountUserFriendsPageCache) {
+        val entry = cache.entry
+        deleteUserProfileContentPage(
+            entry.userId,
+            entry.language,
+            entry.contentType,
+            entry.limit,
+            entry.offset,
+        )
+        deleteUserFriendItems(entry.userId, entry.language, entry.limit, entry.offset)
+        insertUserProfileContentPage(entry)
+        if (cache.items.isNotEmpty()) insertUserFriends(cache.items)
+    }
+
+    @Transaction
+    open suspend fun getUserReviewsPage(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserReviewsPageCache? {
+        val entry = getUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_REVIEWS,
+            limit = limit,
+            offset = offset,
+        ) ?: return null
+        return AccountUserReviewsPageCache(
+            entry,
+            getUserReviewEntries(userId, language, limit, offset),
+        )
+    }
+
+    @Transaction
+    open suspend fun replaceUserReviewsPage(cache: AccountUserReviewsPageCache) {
+        val entry = cache.entry
+        deleteUserProfileContentPage(
+            entry.userId,
+            entry.language,
+            entry.contentType,
+            entry.limit,
+            entry.offset,
+        )
+        deleteUserReviewItems(entry.userId, entry.language, entry.limit, entry.offset)
+        insertUserProfileContentPage(entry)
+        if (cache.items.isNotEmpty()) insertUserReviews(cache.items)
+    }
+
+    @Transaction
+    open suspend fun getUserPostsPage(
+        userId: Int,
+        language: String,
+        limit: Int,
+        offset: Int,
+    ): AccountUserPostsPageCache? {
+        val entry = getUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_POSTS,
+            limit = limit,
+            offset = offset,
+        ) ?: return null
+        return AccountUserPostsPageCache(
+            entry,
+            getUserPostEntries(userId, language, limit, offset),
+        )
+    }
+
+    @Transaction
+    open suspend fun replaceUserPostsPage(cache: AccountUserPostsPageCache) {
+        val entry = cache.entry
+        deleteUserProfileContentPage(
+            entry.userId,
+            entry.language,
+            entry.contentType,
+            entry.limit,
+            entry.offset,
+        )
+        deleteUserPostItems(entry.userId, entry.language, entry.limit, entry.offset)
+        insertUserProfileContentPage(entry)
+        if (cache.items.isNotEmpty()) insertUserPosts(cache.items)
+    }
+
+    @Transaction
+    open suspend fun deleteUserProfileContentForUser(userId: Int) {
+        deleteUserProfileContentPages(userId)
+        deleteUserFriends(userId)
+        deleteUserReviews(userId)
+        deleteUserPosts(userId)
+    }
+
+    @Transaction
     open suspend fun getNotificationCounts(userId: Int): AccountNotificationCountsCache? {
         val entry = getNotificationCountCacheEntry(userId) ?: return null
         return AccountNotificationCountsCache(entry, getNotificationCountEntries(userId))
@@ -729,6 +984,7 @@ abstract class AccountStorageDao {
         deleteNotificationsForUser(userId)
         deleteNotificationCountCache(userId)
         deleteNotificationCounts(userId)
+        deleteUserProfileContentForUser(userId)
         deleteUserStatsForUser(userId)
     }
 }

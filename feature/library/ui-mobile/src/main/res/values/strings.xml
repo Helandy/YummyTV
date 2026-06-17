@@ -9,11 +9,13 @@
     <string name="library_mobile_tab_postponed">Postponed</string>
     <string name="library_mobile_tab_dropped">Dropped</string>
     <string name="library_mobile_episode">Episode %1$s</string>
+    <string name="library_mobile_empty_list">The list is empty for now - time to add something</string>
     <string name="library_mobile_retry">Retry</string>
     <string name="library_mobile_remove_title">Remove title?</string>
     <string name="library_mobile_remove_message">“%1$s” will be removed from “%2$s”.</string>
     <string name="library_mobile_remove_confirm">Remove</string>
     <string name="library_mobile_remove_cancel">Cancel</string>
     <string name="library_mobile_remove_success">Removed</string>
+    <string name="library_mobile_details_content_description">Open details</string>
     <string name="library_mobile_remove_content_description">Remove</string>
 </resources>

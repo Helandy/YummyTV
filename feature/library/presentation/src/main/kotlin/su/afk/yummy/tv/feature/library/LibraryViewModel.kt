@@ -99,6 +99,11 @@ class LibraryViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        settingsStore.libraryContinueWatchingCardSize
+            .onEach { size ->
+                setState { copy(continueWatchingCardSize = size) }
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: LibraryState.Event) {
@@ -111,6 +116,11 @@ class LibraryViewModel @Inject internal constructor(
             is LibraryState.Event.ContinueWatchingSelected -> {
                 analytics.eventContinueWatchingSelected(event.entry)
                 launchContinueWatching(event.entry)
+            }
+
+            is LibraryState.Event.ContinueWatchingDetailsSelected -> {
+                analytics.eventContinueWatchingDetailsSelected(event.entry)
+                openDetails(event.entry.animeId)
             }
 
             is LibraryState.Event.ItemFocused ->

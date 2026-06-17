@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.feature.account.account.mobile.utils.formatDate
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.utils.formatDate
 
 @Composable
 internal fun AccountMobileNotificationRow(

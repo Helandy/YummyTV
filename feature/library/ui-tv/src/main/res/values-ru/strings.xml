@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_empty_continue_watching">Нет незавершённых просмотров</string>
-    <string name="library_empty_list">Список пуст</string>
+    <string name="library_empty_continue_watching">Список пока пуст - самое время добавить что то</string>
+    <string name="library_empty_list">Список пока пуст - самое время добавить что то</string>
     <string name="library_episode">Серия</string>
     <string name="library_episode_number">Серия %1$s</string>
+    <string name="library_details">Детали</string>
     <string name="library_delete">Удалить</string>
     <string name="library_remove_success">Удалено</string>
     <string name="library_retry">Повторить</string>

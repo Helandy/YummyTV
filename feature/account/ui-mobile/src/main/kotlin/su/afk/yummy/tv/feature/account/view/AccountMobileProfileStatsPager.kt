@@ -31,15 +31,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.account.mobile.model.AccountMobileProfileStatSlice
+import su.afk.yummy.tv.feature.account.account.mobile.utils.averageRatingLabel
+import su.afk.yummy.tv.feature.account.account.mobile.utils.genreCountSlices
+import su.afk.yummy.tv.feature.account.account.mobile.utils.listDurationSlices
+import su.afk.yummy.tv.feature.account.account.mobile.utils.positiveValueSum
+import su.afk.yummy.tv.feature.account.account.mobile.utils.ratingCountSlices
+import su.afk.yummy.tv.feature.account.account.mobile.utils.toProfileHoursLabel
+import su.afk.yummy.tv.feature.account.account.mobile.utils.watchStatSlices
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.model.AccountMobileProfileStatSlice
-import su.afk.yummy.tv.feature.account.mobile.utils.averageRatingLabel
-import su.afk.yummy.tv.feature.account.mobile.utils.genreCountSlices
-import su.afk.yummy.tv.feature.account.mobile.utils.listDurationSlices
-import su.afk.yummy.tv.feature.account.mobile.utils.positiveValueSum
-import su.afk.yummy.tv.feature.account.mobile.utils.ratingCountSlices
-import su.afk.yummy.tv.feature.account.mobile.utils.toProfileHoursLabel
-import su.afk.yummy.tv.feature.account.mobile.utils.watchStatSlices
 
 @Composable
 internal fun AccountMobileProfileStatsPager(

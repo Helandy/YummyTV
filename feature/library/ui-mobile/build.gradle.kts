@@ -11,6 +11,8 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:preferences"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:home:domain"))

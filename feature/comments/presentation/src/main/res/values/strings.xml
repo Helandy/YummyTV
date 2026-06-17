@@ -1,0 +1,8 @@
+<resources>
+    <string name="comments_load_error">Could not load comments</string>
+    <string name="comments_action_error">Could not complete the action</string>
+    <string name="comments_auth_required">Sign in to comment</string>
+    <string name="comments_permission_denied">You cannot change this comment</string>
+    <string name="comments_empty_text">Write a comment first</string>
+    <string name="comments_report_sent">Report sent</string>
+</resources>

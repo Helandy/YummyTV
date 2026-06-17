@@ -81,6 +81,9 @@ fun HomeTvScreen(
             onContinueWatchingSelected = { entry ->
                 onEvent(HomeState.Event.ContinueWatchingSelected(entry))
             },
+            onContinueWatchingFocused = { entry ->
+                onEvent(HomeState.Event.ContinueWatchingFocused(entry))
+            },
             onItemSelected = onItemSelected,
             onItemFocused = onItemFocused,
             focusedSectionId = state.focusedSectionId,

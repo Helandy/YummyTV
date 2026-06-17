@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.account.utils
 
 import su.afk.yummy.tv.domain.account.model.NotificationCount
-import su.afk.yummy.tv.feature.account.AccountState
+import su.afk.yummy.tv.feature.account.account.AccountState
 
 internal data class AccountLoginCredentials(
     val login: String,

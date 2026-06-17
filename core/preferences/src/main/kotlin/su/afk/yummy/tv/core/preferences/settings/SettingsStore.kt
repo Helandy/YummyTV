@@ -22,6 +22,7 @@ data class SettingsSnapshot(
     val appTheme: AppTheme,
     val posterQuality: PosterQuality,
     val posterCardSize: PosterCardSize,
+    val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
     val preferredPlayer: PreferredPlayer,
     val watchNextEnabled: Boolean,
     val previewCacheSize: PreviewCacheSize,
@@ -46,6 +47,8 @@ class SettingsStore(private val context: Context) {
 
     private val posterQualityKey = stringPreferencesKey("poster_quality")
     private val posterCardSizeKey = stringPreferencesKey("poster_card_size")
+    private val libraryContinueWatchingCardSizeKey =
+        stringPreferencesKey("library_continue_watching_card_size")
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
@@ -80,6 +83,13 @@ class SettingsStore(private val context: Context) {
             runCatching { PosterCardSize.valueOf(name) }.getOrNull()
         } ?: PosterCardSize.STANDARD
     }
+
+    val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize> =
+        context.dataStore.data.map { prefs ->
+            prefs[libraryContinueWatchingCardSizeKey]?.let { name ->
+                runCatching { LibraryContinueWatchingCardSize.valueOf(name) }.getOrNull()
+            } ?: LibraryContinueWatchingCardSize.LARGE
+        }
 
     val preferredPlayer: Flow<PreferredPlayer> = context.dataStore.data.map { prefs ->
         prefs[preferredPlayerKey]?.let { name ->
@@ -191,6 +201,10 @@ class SettingsStore(private val context: Context) {
             posterCardSize = prefs[posterCardSizeKey]?.let { name ->
                 runCatching { PosterCardSize.valueOf(name) }.getOrNull()
             } ?: PosterCardSize.STANDARD,
+            libraryContinueWatchingCardSize =
+                prefs[libraryContinueWatchingCardSizeKey]?.let { name ->
+                    runCatching { LibraryContinueWatchingCardSize.valueOf(name) }.getOrNull()
+                } ?: LibraryContinueWatchingCardSize.LARGE,
             preferredPlayer = prefs[preferredPlayerKey]?.let { name ->
                 runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
             } ?: PreferredPlayer.NONE,
@@ -240,6 +254,12 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPosterCardSize(size: PosterCardSize) {
         context.dataStore.edit { prefs -> prefs[posterCardSizeKey] = size.name }
+    }
+
+    suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize) {
+        context.dataStore.edit { prefs ->
+            prefs[libraryContinueWatchingCardSizeKey] = size.name
+        }
     }
 
     suspend fun setPreferredPlayer(player: PreferredPlayer) {

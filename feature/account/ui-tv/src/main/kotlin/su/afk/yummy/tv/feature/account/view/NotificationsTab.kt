@@ -36,8 +36,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.feature.account.AccountState
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable

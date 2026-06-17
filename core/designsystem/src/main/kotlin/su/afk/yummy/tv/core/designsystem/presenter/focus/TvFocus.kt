@@ -34,10 +34,11 @@ fun Modifier.tvFocusableClick(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onLongClick: (() -> Unit)? = null,
     focusedScale: Float = 1.04f,
+    focusedBorderColor: Color = MaterialTheme.colorScheme.primary,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
     val scale = if (focused) focusedScale else 1f
-    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
+    val borderColor = if (focused) focusedBorderColor else Color.Transparent
 
     return this
         .graphicsLayer {

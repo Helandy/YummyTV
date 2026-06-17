@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
-import su.afk.yummy.tv.feature.account.mobile.utils.toDurationLabel
+import su.afk.yummy.tv.feature.account.account.mobile.utils.toDurationLabel
 
 @Composable
 internal fun AccountMobileListStatCard(

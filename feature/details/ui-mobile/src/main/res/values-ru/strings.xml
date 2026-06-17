@@ -21,6 +21,7 @@
     <string name="details_mobile_viewing_order">Порядок</string>
     <string name="details_mobile_rating">Рейтинг</string>
     <string name="details_mobile_collections">Коллекции</string>
+    <string name="details_mobile_show_comments">Показать комментарии</string>
     <string name="details_mobile_screenshots">Скриншоты</string>
     <string name="details_mobile_kinopoisk_rating">КП %1$s</string>
     <string name="details_mobile_shikimori_rating">Shikimori %1$s</string>

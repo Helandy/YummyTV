@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -113,6 +116,16 @@ fun DetailsMobileScreen(
                             description = details.description,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
+                    }
+                    item(key = "comments") {
+                        Button(
+                            onClick = { onEvent(DetailsState.Event.CommentsSelected) },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.details_mobile_show_comments))
+                        }
                     }
                     state.error?.let { error ->
                         item(key = "soft_error") {

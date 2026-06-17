@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -60,6 +61,18 @@ internal class SettingsAnalytics @Inject constructor(
     fun eventPosterCardSizeSelected(size: PosterCardSize) {
         tracker.track(
             EVENT_POSTER_CARD_SIZE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
+        )
+    }
+
+    /**
+     * Пользователь изменил размер карточек продолжения просмотра в библиотеке.
+     *
+     * Параметры: value.
+     */
+    fun eventLibraryContinueWatchingCardSizeSelected(size: LibraryContinueWatchingCardSize) {
+        tracker.track(
+            EVENT_LIBRARY_CONTINUE_WATCHING_CARD_SIZE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to size.name.lowercase()),
         )
     }
@@ -171,6 +184,8 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_DETAILS_BUTTON_ORDER_SCREEN_OPENED =
             "settings_details_button_order_screen"
+        const val EVENT_LIBRARY_CONTINUE_WATCHING_CARD_SIZE_SELECTED =
+            "settings_library_continue_watching_card_size_selected"
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
         const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"

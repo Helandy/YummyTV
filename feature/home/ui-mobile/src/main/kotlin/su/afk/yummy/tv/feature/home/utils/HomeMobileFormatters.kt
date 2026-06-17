@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.home.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
+import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
@@ -15,13 +15,11 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
 }
 
 internal suspend fun HomeContinueWatchingItem.resolveMobileContinueWatchingImage(): String? {
-    val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
-    val kodikEpisode = episodeUrl.takeIf { it.isKodikSourceUrl() }
-    val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
-    return kodikScreenshot?.let { KodikThumbnailExtractor.extract(it) }
-        ?: kodikEpisode?.let { KodikThumbnailExtractor.extract(it) }
-        ?: directScreenshot
-        ?: poster.bestUrl()
+    return resolveContinueWatchingImage(
+        screenshotUrl = screenshotUrl,
+        episodeUrl = episodeUrl,
+        posterUrl = poster.bestUrl(),
+    )
 }
 
 @Composable
@@ -52,8 +50,3 @@ private fun Long.toMobileTimeString(): String {
     val s = totalSec % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
 }
-
-private fun String.isKodikSourceUrl(): Boolean = contains("kodik", ignoreCase = true)
-
-private fun String.isLikelyImageUrl(): Boolean =
-    Regex("""\.(webp|avif|jpe?g|png)(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(this)

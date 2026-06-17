@@ -42,6 +42,9 @@ class HomeState {
         /** Пользователь выбрал элемент продолжения просмотра. */
         data class ContinueWatchingSelected(val entry: HomeContinueWatchingItem) : Event
 
+        /** Фокус переместился на элемент продолжения просмотра. */
+        data class ContinueWatchingFocused(val entry: HomeContinueWatchingItem) : Event
+
         /** UI завершил восстановление фокуса на элементе. */
         data object FocusedItemRestoreHandled : Event
 

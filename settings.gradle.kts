@@ -78,6 +78,12 @@ include(":feature:details:presentation")
 include(":feature:details:ui-tv")
 include(":feature:details:ui-mobile")
 
+include(":feature:comments:api")
+include(":feature:comments:domain")
+include(":feature:comments:data")
+include(":feature:comments:presentation")
+include(":feature:comments:ui-mobile")
+
 include(":feature:search:domain")
 include(":feature:search:data")
 include(":feature:search:presentation")

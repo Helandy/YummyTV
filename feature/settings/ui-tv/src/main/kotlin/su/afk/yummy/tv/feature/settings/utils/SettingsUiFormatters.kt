@@ -7,6 +7,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -16,34 +17,35 @@ import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonOrderItem
 
 @Composable
-internal fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsButtonOrderItem> = buildList {
-    var index = 0
-    while (index <= this@toDetailsButtonOrderItems.lastIndex) {
-        val action = this@toDetailsButtonOrderItems[index]
-        val nextAction = this@toDetailsButtonOrderItems.getOrNull(index + 1)
-        if (action == DetailsButtonAction.LIBRARY && nextAction == DetailsButtonAction.FAVORITE) {
-            add(
-                DetailsButtonOrderItem(
-                    key = "LIBRARY_FAVORITE",
-                    action = DetailsButtonAction.LIBRARY,
-                    label = stringResource(R.string.settings_details_button_library_favorite),
-                ),
-            )
-            index += 2
-        } else if (action != DetailsButtonAction.FAVORITE) {
-            add(
-                DetailsButtonOrderItem(
-                    key = action.name,
-                    action = action,
-                    label = action.label(),
-                ),
-            )
-            index += 1
-        } else {
-            index += 1
+internal fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsButtonOrderItem> =
+    buildList {
+        var index = 0
+        while (index <= this@toDetailsButtonOrderItems.lastIndex) {
+            val action = this@toDetailsButtonOrderItems[index]
+            val nextAction = this@toDetailsButtonOrderItems.getOrNull(index + 1)
+            if (action == DetailsButtonAction.LIBRARY && nextAction == DetailsButtonAction.FAVORITE) {
+                add(
+                    DetailsButtonOrderItem(
+                        key = "LIBRARY_FAVORITE",
+                        action = DetailsButtonAction.LIBRARY,
+                        label = stringResource(R.string.settings_details_button_library_favorite),
+                    ),
+                )
+                index += 2
+            } else if (action != DetailsButtonAction.FAVORITE) {
+                add(
+                    DetailsButtonOrderItem(
+                        key = action.name,
+                        action = action,
+                        label = action.label(),
+                    ),
+                )
+                index += 1
+            } else {
+                index += 1
+            }
         }
     }
-}
 
 @Composable
 internal fun AppTheme.label(): String = stringResource(
@@ -100,6 +102,34 @@ internal fun PosterCardSize.hint(): String = stringResource(
         PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact_hint
         PosterCardSize.STANDARD -> R.string.settings_poster_card_size_standard_hint
         PosterCardSize.LARGE -> R.string.settings_poster_card_size_large_hint
+    },
+)
+
+@Composable
+internal fun LibraryContinueWatchingCardSize.label(): String = stringResource(
+    when (this) {
+        LibraryContinueWatchingCardSize.COMPACT ->
+            R.string.settings_library_continue_watching_card_size_compact
+
+        LibraryContinueWatchingCardSize.STANDARD ->
+            R.string.settings_library_continue_watching_card_size_standard
+
+        LibraryContinueWatchingCardSize.LARGE ->
+            R.string.settings_library_continue_watching_card_size_large
+    },
+)
+
+@Composable
+internal fun LibraryContinueWatchingCardSize.hint(): String = stringResource(
+    when (this) {
+        LibraryContinueWatchingCardSize.COMPACT ->
+            R.string.settings_library_continue_watching_card_size_compact_hint
+
+        LibraryContinueWatchingCardSize.STANDARD ->
+            R.string.settings_library_continue_watching_card_size_standard_hint
+
+        LibraryContinueWatchingCardSize.LARGE ->
+            R.string.settings_library_continue_watching_card_size_large_hint
     },
 )
 

@@ -260,6 +260,101 @@ data class AccountNotificationEntry(
 )
 
 @Entity(
+    tableName = "account_user_profile_content_pages",
+    primaryKeys = ["userId", "language", "contentType", "limit", "offset"],
+    indices = [
+        Index(value = ["cachedAt"], name = "index_account_user_profile_content_pages_cachedAt"),
+        Index(
+            value = ["userId", "language", "contentType"],
+            name = "index_account_user_profile_content_pages_scope",
+        ),
+    ],
+)
+data class AccountUserProfileContentPageEntry(
+    val userId: Int,
+    val language: String,
+    val contentType: String,
+    val limit: Int,
+    val offset: Int,
+    val cachedAt: Long,
+)
+
+@Entity(
+    tableName = "account_user_friends",
+    primaryKeys = ["userId", "language", "limit", "offset", "position"],
+    indices = [
+        Index(
+            value = ["userId", "language", "limit", "offset"],
+            name = "index_account_user_friends_page",
+        ),
+    ],
+)
+data class AccountUserFriendEntry(
+    val userId: Int,
+    val language: String,
+    val limit: Int,
+    val offset: Int,
+    val position: Int,
+    val friendId: Int,
+    val nickname: String,
+    val avatarUrl: String? = null,
+    val lastOnlineSeconds: Long,
+    val status: String,
+)
+
+@Entity(
+    tableName = "account_user_reviews",
+    primaryKeys = ["userId", "language", "limit", "offset", "position"],
+    indices = [
+        Index(
+            value = ["userId", "language", "limit", "offset"],
+            name = "index_account_user_reviews_page",
+        ),
+    ],
+)
+data class AccountUserReviewEntry(
+    val userId: Int,
+    val language: String,
+    val limit: Int,
+    val offset: Int,
+    val position: Int,
+    val reviewId: Int,
+    val animeId: Int,
+    val animeTitle: String,
+    val animePosterUrl: String? = null,
+    val textPreview: String,
+    val rating: Double? = null,
+    val likes: Int,
+    val dislikes: Int,
+    val commentsCount: Int,
+    val updatedAtSeconds: Long,
+)
+
+@Entity(
+    tableName = "account_user_posts",
+    primaryKeys = ["userId", "language", "limit", "offset", "position"],
+    indices = [
+        Index(
+            value = ["userId", "language", "limit", "offset"],
+            name = "index_account_user_posts_page",
+        ),
+    ],
+)
+data class AccountUserPostEntry(
+    val userId: Int,
+    val language: String,
+    val limit: Int,
+    val offset: Int,
+    val position: Int,
+    val postId: Int,
+    val title: String,
+    val previewImageUrl: String? = null,
+    val contentPreview: String,
+    val categoryTitle: String,
+    val createdAtSeconds: Long,
+)
+
+@Entity(
     tableName = "account_notification_count_caches",
     primaryKeys = ["userId"],
     indices = [

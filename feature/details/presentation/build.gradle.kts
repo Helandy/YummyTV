@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
+    implementation(project(":feature:comments:api"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:library:domain"))

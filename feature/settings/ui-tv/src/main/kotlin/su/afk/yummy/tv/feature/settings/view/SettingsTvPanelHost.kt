@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -93,7 +94,7 @@ internal fun SettingsTvPanelHost(
                         }
                     }
 
-                    SettingsTab.POSTERS -> {
+                    SettingsTab.POSTER_SIZE -> {
                         SettingsSectionTitle(text = stringResource(R.string.settings_poster_size_title))
                         PosterCardSize.entries.forEachIndexed { index, size ->
                             QualityRow(
@@ -117,8 +118,13 @@ internal fun SettingsTvPanelHost(
                                     )
                                     .restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
-                            SettingsDivider()
+                            if (index < PosterCardSize.entries.lastIndex) {
+                                SettingsDivider()
+                            }
                         }
+                    }
+
+                    SettingsTab.POSTERS -> {
                         SettingsSectionTitle(text = stringResource(R.string.settings_poster_quality_title))
                         PosterQuality.entries.forEachIndexed { index, quality ->
                             QualityRow(
@@ -128,12 +134,55 @@ internal fun SettingsTvPanelHost(
                                 onClick = {
                                     onEvent(
                                         SettingsState.Event.PosterQualitySelected(
-                                            quality
-                                        )
+                                            quality,
+                                        ),
                                     )
                                 },
+                                modifier = Modifier
+                                    .then(
+                                        if (index == 0) {
+                                            Modifier.focusRequester(tabContentFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
                             )
                             if (index < PosterQuality.entries.lastIndex) {
+                                SettingsDivider()
+                            }
+                        }
+                    }
+
+                    SettingsTab.CONTINUE_WATCHING -> {
+                        SettingsSectionTitle(
+                            text = stringResource(
+                                R.string.settings_library_continue_watching_card_size_title,
+                            ),
+                        )
+                        LibraryContinueWatchingCardSize.entries.forEachIndexed { index, size ->
+                            QualityRow(
+                                label = size.label(),
+                                hint = size.hint(),
+                                selected = size == state.libraryContinueWatchingCardSize,
+                                onClick = {
+                                    onEvent(
+                                        SettingsState.Event.LibraryContinueWatchingCardSizeSelected(
+                                            size,
+                                        ),
+                                    )
+                                },
+                                modifier = Modifier
+                                    .then(
+                                        if (index == 0) {
+                                            Modifier.focusRequester(tabContentFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                            )
+                            if (index < LibraryContinueWatchingCardSize.entries.lastIndex) {
                                 SettingsDivider()
                             }
                         }

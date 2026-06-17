@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -77,6 +78,14 @@ fun SettingsMobileScreen(
                         value = state.posterCardSize.label(),
                         hint = state.posterCardSize.hint(),
                         onClick = { activePicker = SettingsMobilePicker.POSTER_SIZE },
+                    )
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_library_continue_watching_card_size_title),
+                        value = state.libraryContinueWatchingCardSize.label(),
+                        hint = state.libraryContinueWatchingCardSize.hint(),
+                        onClick = {
+                            activePicker = SettingsMobilePicker.LIBRARY_CONTINUE_WATCHING_SIZE
+                        },
                     )
                     SettingsMobileOptionRow(
                         label = stringResource(R.string.settings_mobile_poster_quality),
@@ -218,6 +227,23 @@ fun SettingsMobileScreen(
             onDismiss = { activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.PosterCardSizeSelected(it))
+                activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.LIBRARY_CONTINUE_WATCHING_SIZE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_library_continue_watching_card_size_title),
+            selectedValue = state.libraryContinueWatchingCardSize,
+            options = LibraryContinueWatchingCardSize.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    it.hint()
+                )
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.LibraryContinueWatchingCardSizeSelected(it))
                 activePicker = null
             },
         )

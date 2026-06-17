@@ -37,6 +37,7 @@ class SettingsViewModel @Inject internal constructor(
                         appTheme = snapshot.appTheme,
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
+                        libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
                         preferredPlayer = snapshot.preferredPlayer,
                         watchNextEnabled = snapshot.watchNextEnabled,
                         previewCacheSize = snapshot.previewCacheSize,
@@ -68,6 +69,12 @@ class SettingsViewModel @Inject internal constructor(
                 analytics.eventPosterCardSizeSelected(event.size)
                 settingsStore.setPosterCardSize(event.size)
             }
+            is SettingsState.Event.LibraryContinueWatchingCardSizeSelected ->
+                viewModelScope.launch {
+                    analytics.eventLibraryContinueWatchingCardSizeSelected(event.size)
+                    settingsStore.setLibraryContinueWatchingCardSize(event.size)
+                }
+
             is SettingsState.Event.PreferredPlayerSelected -> viewModelScope.launch {
                 analytics.eventPreferredPlayerSelected(event.player)
                 settingsStore.setPreferredPlayer(event.player)

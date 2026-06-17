@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -98,6 +99,34 @@ internal fun PosterCardSize.hint(): String = stringResource(
         PosterCardSize.COMPACT -> R.string.settings_poster_card_size_compact_hint
         PosterCardSize.STANDARD -> R.string.settings_poster_card_size_standard_hint
         PosterCardSize.LARGE -> R.string.settings_poster_card_size_large_hint
+    },
+)
+
+@Composable
+internal fun LibraryContinueWatchingCardSize.label(): String = stringResource(
+    when (this) {
+        LibraryContinueWatchingCardSize.COMPACT ->
+            R.string.settings_library_continue_watching_card_size_compact
+
+        LibraryContinueWatchingCardSize.STANDARD ->
+            R.string.settings_library_continue_watching_card_size_standard
+
+        LibraryContinueWatchingCardSize.LARGE ->
+            R.string.settings_library_continue_watching_card_size_large
+    },
+)
+
+@Composable
+internal fun LibraryContinueWatchingCardSize.hint(): String = stringResource(
+    when (this) {
+        LibraryContinueWatchingCardSize.COMPACT ->
+            R.string.settings_library_continue_watching_card_size_compact_hint
+
+        LibraryContinueWatchingCardSize.STANDARD ->
+            R.string.settings_library_continue_watching_card_size_standard_hint
+
+        LibraryContinueWatchingCardSize.LARGE ->
+            R.string.settings_library_continue_watching_card_size_large_hint
     },
 )
 

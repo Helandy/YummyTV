@@ -81,6 +81,9 @@ class DetailsState {
         /** Пользователь открыл коллекции с этим аниме. */
         data object CollectionsSelected : Event
 
+        /** Пользователь открыл комментарии к этому аниме. */
+        data object CommentsSelected : Event
+
         /** Пользователь переключил наличие тайтла в библиотеке. */
         data object LibraryToggled : Event
 

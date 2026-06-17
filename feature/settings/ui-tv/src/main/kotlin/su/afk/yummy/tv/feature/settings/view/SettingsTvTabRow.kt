@@ -1,10 +1,12 @@
 package su.afk.yummy.tv.feature.settings.view
 
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,24 +25,28 @@ internal fun SettingsTvTabRow(
     onSelectedTabChanged: (SettingsTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tabs = SettingsTab.entries
+    val scrollState = rememberScrollState()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .horizontalScroll(scrollState)
             .focusGroup()
             .padding(horizontal = 8.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SettingsTab.entries.forEachIndexed { index, tab ->
+        tabs.forEachIndexed { index, tab ->
             val tabContentFocusRequester = contentFocusRequesters.getValue(tab)
             SettingsTabItem(
                 label = stringResource(tab.labelRes),
                 selected = tab == selectedTab,
                 modifier = Modifier.focusRequester(tabFocusRequesters.getValue(tab)),
                 contentFocusRequester = tabContentFocusRequester,
-                leftFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index - 1)]
+                leftFocusRequester = tabFocusRequesters[tabs.getOrNull(index - 1)]
                     ?: mainMenuFocusRequester.takeIf { index == 0 },
-                rightFocusRequester = tabFocusRequesters[SettingsTab.entries.getOrNull(index + 1)]
+                rightFocusRequester = tabFocusRequesters[tabs.getOrNull(index + 1)]
                     ?: tabContentFocusRequester,
                 onSelected = {
                     onSelectedTabChanged(tab)

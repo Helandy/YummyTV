@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
@@ -22,6 +23,8 @@ class SettingsState {
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
+        val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
+            LibraryContinueWatchingCardSize.LARGE,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
         val isPreviewChannelBrowsable: Boolean = false,
         val watchNextEnabled: Boolean = true,
@@ -45,6 +48,11 @@ class SettingsState {
 
         /** Пользователь выбрал размер карточек постеров. */
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
+
+        /** Пользователь выбрал размер карточек продолжения просмотра в библиотеке. */
+        data class LibraryContinueWatchingCardSizeSelected(
+            val size: LibraryContinueWatchingCardSize,
+        ) : Event
 
         /** Пользователь выбрал предпочитаемый плеер. */
         data class PreferredPlayerSelected(val player: PreferredPlayer) : Event

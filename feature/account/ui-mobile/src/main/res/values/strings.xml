@@ -68,4 +68,20 @@
     <string name="account_error_load_notifications_failed">Could not load notifications</string>
     <string name="account_error_update_notification_failed">Could not update notification</string>
     <string name="account_error_update_notifications_failed">Could not update notifications</string>
+    <string name="user_profile_title">Profile</string>
+    <string name="user_profile_registered">Registered: %1$s</string>
+    <string name="user_profile_tab_overview">Overview</string>
+    <string name="user_profile_tab_lists">Lists</string>
+    <string name="user_profile_tab_collections">Collections</string>
+    <string name="user_profile_tab_posts">Posts</string>
+    <string name="user_profile_tab_reviews">Reviews</string>
+    <string name="user_profile_tab_friends">Friends</string>
+    <string name="user_profile_load_error">Could not load profile</string>
+    <string name="user_profile_section_error">Could not load this section</string>
+    <string name="user_profile_section_empty">Nothing here yet</string>
+    <string name="user_profile_retry">Retry</string>
+    <string name="user_profile_load_more">Load more</string>
+    <string name="user_profile_rating">Rating %1$s</string>
+    <string name="user_profile_review">Review</string>
+    <string name="user_profile_untitled">Untitled</string>
 </resources>

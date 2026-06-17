@@ -16,15 +16,19 @@ import su.afk.yummy.tv.core.storage.account.AccountProfileEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketEntry
 import su.afk.yummy.tv.core.storage.account.AccountStorageDao
+import su.afk.yummy.tv.core.storage.account.AccountUserFriendEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserGenreStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListWatchStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserPostEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileContentPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchHistoryEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchTypeEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserReviewEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserTypeStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionCacheEntry
@@ -44,6 +48,9 @@ import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageDao
+import su.afk.yummy.tv.core.storage.comments.CommentItemEntry
+import su.afk.yummy.tv.core.storage.comments.CommentPageEntry
+import su.afk.yummy.tv.core.storage.comments.CommentsStorageDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
@@ -116,6 +123,10 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountVideoSubscriptionEntry::class,
         AccountNotificationPageEntry::class,
         AccountNotificationEntry::class,
+        AccountUserProfileContentPageEntry::class,
+        AccountUserFriendEntry::class,
+        AccountUserReviewEntry::class,
+        AccountUserPostEntry::class,
         AccountNotificationCountCacheEntry::class,
         AccountNotificationCountEntry::class,
         AccountNotificationAnimeEntry::class,
@@ -127,8 +138,10 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserProfileSummaryCacheEntry::class,
         AccountUserProfileWatchTypeEntry::class,
         AccountUserProfileWatchHistoryEntry::class,
+        CommentPageEntry::class,
+        CommentItemEntry::class,
     ],
-    version = 22,
+    version = 24,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -142,4 +155,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun searchStorageDao(): SearchStorageDao
     abstract fun collectionStorageDao(): CollectionStorageDao
     abstract fun accountStorageDao(): AccountStorageDao
+    abstract fun commentsStorageDao(): CommentsStorageDao
 }

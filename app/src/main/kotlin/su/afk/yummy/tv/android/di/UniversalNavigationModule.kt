@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.navigation.TvUi
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
+import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.IHomeNavigator
 import su.afk.yummy.tv.feature.library.ILibraryNavigator
@@ -46,6 +47,11 @@ object UniversalNavigationModule {
     @Singleton
     fun provideCollectionNavigator(): ICollectionNavigator =
         su.afk.yummy.tv.feature.collection.navigator.CollectionNavigator()
+
+    @Provides
+    @Singleton
+    fun provideCommentsNavigator(): ICommentsNavigator =
+        su.afk.yummy.tv.feature.comments.navigator.CommentsNavigator()
 
     @Provides
     @Singleton
@@ -87,83 +93,129 @@ object UniversalNavigationModule {
     fun provideTopNavigator(): ITopNavigator =
         su.afk.yummy.tv.feature.top.navigator.TopNavigator()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileAccountNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.account.mobile.navigator.AccountNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileCollectionNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.collection.mobile.navigator.CollectionNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobileCommentsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.comments.mobile.navigator.CommentsNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileDetailsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.details.mobile.navigator.DetailsNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileHomeNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.home.mobile.navigator.HomeNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileLibraryNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.library.mobile.navigator.LibraryNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobilePlayerNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.player.mobile.navigator.PlayerNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileScheduleNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.schedule.mobile.navigator.ScheduleNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileSearchNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.search.mobile.navigator.SearchNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileSettingsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.settings.mobile.navigator.SettingsNavRegistrar()
 
-    @Provides @IntoSet @MobileUi
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileTopNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.top.mobile.navigator.TopNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvAccountNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.account.tv.navigator.AccountNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvCollectionNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.collection.tv.navigator.CollectionNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvDetailsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.details.tv.navigator.DetailsNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvHomeNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.home.tv.navigator.HomeNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvLibraryNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.library.tv.navigator.LibraryNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvPlayerNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.player.tv.navigator.PlayerNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvScheduleNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.schedule.tv.navigator.ScheduleNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvSearchNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.search.tv.navigator.SearchNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvSettingsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.settings.tv.navigator.SettingsNavRegistrar()
 
-    @Provides @IntoSet @TvUi
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvTopNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.top.tv.navigator.TopNavRegistrar()
 }

@@ -19,9 +19,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
+import su.afk.yummy.tv.feature.account.account.mobile.utils.hasAny
+import su.afk.yummy.tv.feature.account.account.mobile.utils.isEmpty
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.utils.hasAny
-import su.afk.yummy.tv.feature.account.mobile.utils.isEmpty
 
 @Composable
 internal fun AccountMobileStatsTab(

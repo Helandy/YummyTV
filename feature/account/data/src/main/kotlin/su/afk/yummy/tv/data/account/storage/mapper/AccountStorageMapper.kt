@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
+import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_FRIENDS
+import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_POSTS
+import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_REVIEWS
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionPageEntry
@@ -18,17 +21,24 @@ import su.afk.yummy.tv.core.storage.account.AccountProfileEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketsCache
+import su.afk.yummy.tv.core.storage.account.AccountUserFriendEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserFriendsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserGenreStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListCache
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListWatchStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserPostEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserPostsPageCache
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileContentPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCache
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchHistoryEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchTypeEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserReviewEntry
+import su.afk.yummy.tv.core.storage.account.AccountUserReviewsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserTypeStatEntry
@@ -47,12 +57,15 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
+import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
+import su.afk.yummy.tv.domain.account.model.UserPostSummary
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
+import su.afk.yummy.tv.domain.account.model.UserReviewSummary
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
@@ -332,6 +345,147 @@ internal fun AccountNotificationsPageCache.toNotifications(): List<ProfileNotifi
             objectId = it.objectId,
             animeSlug = it.animeSlug,
             isNewEpisode = it.isNewEpisode,
+        )
+    }
+
+internal fun List<UserFriend>.toUserFriendsPageCache(
+    userId: Int,
+    language: String,
+    limit: Int,
+    offset: Int,
+    cachedAt: Long,
+): AccountUserFriendsPageCache =
+    AccountUserFriendsPageCache(
+        entry = AccountUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_FRIENDS,
+            limit = limit,
+            offset = offset,
+            cachedAt = cachedAt,
+        ),
+        items = mapIndexed { index, item ->
+            AccountUserFriendEntry(
+                userId = userId,
+                language = language,
+                limit = limit,
+                offset = offset,
+                position = index,
+                friendId = item.id,
+                nickname = item.nickname,
+                avatarUrl = item.avatarUrl,
+                lastOnlineSeconds = item.lastOnlineSeconds,
+                status = item.status,
+            )
+        },
+    )
+
+internal fun AccountUserFriendsPageCache.toUserFriends(): List<UserFriend> =
+    items.map {
+        UserFriend(
+            id = it.friendId,
+            nickname = it.nickname,
+            avatarUrl = it.avatarUrl,
+            lastOnlineSeconds = it.lastOnlineSeconds,
+            status = it.status,
+        )
+    }
+
+internal fun List<UserReviewSummary>.toUserReviewsPageCache(
+    userId: Int,
+    language: String,
+    limit: Int,
+    offset: Int,
+    cachedAt: Long,
+): AccountUserReviewsPageCache =
+    AccountUserReviewsPageCache(
+        entry = AccountUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_REVIEWS,
+            limit = limit,
+            offset = offset,
+            cachedAt = cachedAt,
+        ),
+        items = mapIndexed { index, item ->
+            AccountUserReviewEntry(
+                userId = userId,
+                language = language,
+                limit = limit,
+                offset = offset,
+                position = index,
+                reviewId = item.id,
+                animeId = item.animeId,
+                animeTitle = item.animeTitle,
+                animePosterUrl = item.animePosterUrl,
+                textPreview = item.textPreview,
+                rating = item.rating,
+                likes = item.likes,
+                dislikes = item.dislikes,
+                commentsCount = item.commentsCount,
+                updatedAtSeconds = item.updatedAtSeconds,
+            )
+        },
+    )
+
+internal fun AccountUserReviewsPageCache.toUserReviews(): List<UserReviewSummary> =
+    items.map {
+        UserReviewSummary(
+            id = it.reviewId,
+            animeId = it.animeId,
+            animeTitle = it.animeTitle,
+            animePosterUrl = it.animePosterUrl,
+            textPreview = it.textPreview,
+            rating = it.rating,
+            likes = it.likes,
+            dislikes = it.dislikes,
+            commentsCount = it.commentsCount,
+            updatedAtSeconds = it.updatedAtSeconds,
+        )
+    }
+
+internal fun List<UserPostSummary>.toUserPostsPageCache(
+    userId: Int,
+    language: String,
+    limit: Int,
+    offset: Int,
+    cachedAt: Long,
+): AccountUserPostsPageCache =
+    AccountUserPostsPageCache(
+        entry = AccountUserProfileContentPageEntry(
+            userId = userId,
+            language = language,
+            contentType = ACCOUNT_USER_PROFILE_CONTENT_POSTS,
+            limit = limit,
+            offset = offset,
+            cachedAt = cachedAt,
+        ),
+        items = mapIndexed { index, item ->
+            AccountUserPostEntry(
+                userId = userId,
+                language = language,
+                limit = limit,
+                offset = offset,
+                position = index,
+                postId = item.id,
+                title = item.title,
+                previewImageUrl = item.previewImageUrl,
+                contentPreview = item.contentPreview,
+                categoryTitle = item.categoryTitle,
+                createdAtSeconds = item.createdAtSeconds,
+            )
+        },
+    )
+
+internal fun AccountUserPostsPageCache.toUserPosts(): List<UserPostSummary> =
+    items.map {
+        UserPostSummary(
+            id = it.postId,
+            title = it.title,
+            previewImageUrl = it.previewImageUrl,
+            contentPreview = it.contentPreview,
+            categoryTitle = it.categoryTitle,
+            createdAtSeconds = it.createdAtSeconds,
         )
     }
 

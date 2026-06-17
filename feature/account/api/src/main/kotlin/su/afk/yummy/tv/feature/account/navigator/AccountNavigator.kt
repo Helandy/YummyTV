@@ -5,4 +5,5 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 
 class AccountNavigator : IAccountNavigator {
     override fun getAccountDest(): NavKey = AccountDestination
+    override fun getUserProfileDest(userId: Int): NavKey = UserProfileDestination(userId)
 }

@@ -281,6 +281,11 @@ data class YaniCollectionsResponseDto(
 )
 
 @Serializable
+data class YaniUserCollectionsResponseDto(
+    val response: List<YaniCollectionSummaryDto>? = null,
+)
+
+@Serializable
 data class YaniCollectionSummaryDto(
     val id: Int? = null,
     val title: String = "",
@@ -293,6 +298,77 @@ data class YaniCollectionSummaryDto(
 @Serializable
 data class YaniCollectionAnimeDto(
     val poster: YaniAccountPosterDto? = null,
+)
+
+@Serializable
+data class YaniUserFriendsResponseDto(
+    val response: List<YaniUserFriendDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserFriendDto(
+    val id: Int = 0,
+    val nickname: String = "",
+    val avatars: YaniAvatarDto? = null,
+    @SerialName("last_online") val lastOnline: Long = 0L,
+    @SerialName("friend_status") val friendStatus: String = "",
+    val list: String = "",
+)
+
+@Serializable
+data class YaniUserReviewsResponseDto(
+    val response: List<YaniUserReviewDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserReviewDto(
+    @SerialName("review_id") val reviewId: Int = 0,
+    @SerialName("anime_id") val animeId: Int = 0,
+    @SerialName("text_preview") val textPreview: String = "",
+    val rating: YaniUserReviewRatingDto? = null,
+    val likes: YaniLikesDto? = null,
+    @SerialName("comments_count") val commentsCount: Int = 0,
+    @SerialName("update_date") val updatedAt: Long = 0L,
+    val anime: YaniUserReviewAnimeDto? = null,
+)
+
+@Serializable
+data class YaniUserReviewRatingDto(
+    val average: Double? = null,
+)
+
+@Serializable
+data class YaniLikesDto(
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+)
+
+@Serializable
+data class YaniUserReviewAnimeDto(
+    @SerialName("anime_id") val animeId: Int = 0,
+    val title: String = "",
+    val poster: YaniAccountPosterDto? = null,
+)
+
+@Serializable
+data class YaniUserPostsResponseDto(
+    val response: List<YaniUserPostDto> = emptyList(),
+)
+
+@Serializable
+data class YaniUserPostDto(
+    val id: Int = 0,
+    val title: String = "",
+    @SerialName("preview_image") val previewImage: String? = null,
+    @SerialName("content_preview") val contentPreview: String = "",
+    val category: YaniPostCategoryDto? = null,
+    @SerialName("created_at") val createdAt: Long = 0L,
+)
+
+@Serializable
+data class YaniPostCategoryDto(
+    val title: String = "",
+    val uri: String = "",
 )
 
 @Serializable

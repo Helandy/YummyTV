@@ -11,10 +11,13 @@ import su.afk.yummy.tv.data.account.dto.YaniNotificationDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
+import su.afk.yummy.tv.data.account.dto.YaniUserFriendDto
 import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
 import su.afk.yummy.tv.data.account.dto.YaniUserListWatchStatDto
+import su.afk.yummy.tv.data.account.dto.YaniUserPostDto
 import su.afk.yummy.tv.data.account.dto.YaniUserProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniUserRatingStatDto
+import su.afk.yummy.tv.data.account.dto.YaniUserReviewDto
 import su.afk.yummy.tv.data.account.dto.YaniUserWatchHistoryDayDto
 import su.afk.yummy.tv.data.account.dto.YaniUserWatchTypeDto
 import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionDto
@@ -26,12 +29,15 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
+import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserGenreStat
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
+import su.afk.yummy.tv.domain.account.model.UserPostSummary
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
+import su.afk.yummy.tv.domain.account.model.UserReviewSummary
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
@@ -98,6 +104,47 @@ internal fun YaniCollectionSummaryDto.toCollectionSummary(): AnimeCollectionSumm
         posterUrl = poster?.standardUrl,
         poster = poster,
         views = views,
+    )
+}
+
+internal fun YaniUserFriendDto.toUserFriend(): UserFriend? {
+    if (id <= 0) return null
+    return UserFriend(
+        id = id,
+        nickname = nickname,
+        avatarUrl = avatars?.full?.toHttpsUrl() ?: avatars?.big?.toHttpsUrl()
+        ?: avatars?.small?.toHttpsUrl(),
+        lastOnlineSeconds = lastOnline,
+        status = friendStatus.ifBlank { list },
+    )
+}
+
+internal fun YaniUserReviewDto.toUserReviewSummary(): UserReviewSummary? {
+    val id = reviewId.takeIf { it > 0 } ?: return null
+    val resolvedAnimeId = anime?.animeId?.takeIf { it > 0 } ?: animeId.takeIf { it > 0 } ?: 0
+    return UserReviewSummary(
+        id = id,
+        animeId = resolvedAnimeId,
+        animeTitle = anime?.title.orEmpty(),
+        animePosterUrl = anime?.poster?.bestUrl(),
+        textPreview = textPreview,
+        rating = rating?.average,
+        likes = likes?.likes ?: 0,
+        dislikes = likes?.dislikes ?: 0,
+        commentsCount = commentsCount,
+        updatedAtSeconds = updatedAt,
+    )
+}
+
+internal fun YaniUserPostDto.toUserPostSummary(): UserPostSummary? {
+    if (id <= 0) return null
+    return UserPostSummary(
+        id = id,
+        title = title,
+        previewImageUrl = previewImage?.toHttpsUrl(),
+        contentPreview = contentPreview,
+        categoryTitle = category?.title.orEmpty().ifBlank { category?.uri.orEmpty() },
+        createdAtSeconds = createdAt,
     )
 }
 

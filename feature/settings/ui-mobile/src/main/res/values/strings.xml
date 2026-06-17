@@ -52,6 +52,13 @@
     <string name="settings_poster_card_size_standard_hint">Current default size</string>
     <string name="settings_poster_card_size_large">Large</string>
     <string name="settings_poster_card_size_large_hint">Larger poster cards</string>
+    <string name="settings_library_continue_watching_card_size_title">Continue watching cards</string>
+    <string name="settings_library_continue_watching_card_size_compact">Compact</string>
+    <string name="settings_library_continue_watching_card_size_compact_hint">Narrower library cards</string>
+    <string name="settings_library_continue_watching_card_size_standard">Standard</string>
+    <string name="settings_library_continue_watching_card_size_standard_hint">Balanced width for the library</string>
+    <string name="settings_library_continue_watching_card_size_large">Large</string>
+    <string name="settings_library_continue_watching_card_size_large_hint">Current full-width library cards</string>
     <string name="settings_poster_quality_low">Low</string>
     <string name="settings_poster_quality_low_hint">~15 KB · WebP</string>
     <string name="settings_poster_quality_standard">Standard</string>

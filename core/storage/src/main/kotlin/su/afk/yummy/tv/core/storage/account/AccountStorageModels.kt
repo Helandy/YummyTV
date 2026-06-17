@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.core.storage.account
 
 const val ACCOUNT_PROFILE_KEY_CURRENT = "current"
+const val ACCOUNT_USER_PROFILE_CONTENT_FRIENDS = "friends"
+const val ACCOUNT_USER_PROFILE_CONTENT_REVIEWS = "reviews"
+const val ACCOUNT_USER_PROFILE_CONTENT_POSTS = "posts"
 
 fun accountProfileUserKey(userId: Int): String = "user:$userId"
 
@@ -42,6 +45,27 @@ data class AccountVideoSubscriptionsCache(
 data class AccountNotificationsPageCache(
     val entry: AccountNotificationPageEntry,
     val items: List<AccountNotificationEntry>,
+) {
+    val cachedAt: Long get() = entry.cachedAt
+}
+
+data class AccountUserFriendsPageCache(
+    val entry: AccountUserProfileContentPageEntry,
+    val items: List<AccountUserFriendEntry>,
+) {
+    val cachedAt: Long get() = entry.cachedAt
+}
+
+data class AccountUserReviewsPageCache(
+    val entry: AccountUserProfileContentPageEntry,
+    val items: List<AccountUserReviewEntry>,
+) {
+    val cachedAt: Long get() = entry.cachedAt
+}
+
+data class AccountUserPostsPageCache(
+    val entry: AccountUserProfileContentPageEntry,
+    val items: List<AccountUserPostEntry>,
 ) {
     val cachedAt: Long get() = entry.cachedAt
 }
@@ -96,6 +120,15 @@ fun AccountVideoSubscriptionsCache.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs
 
 fun AccountNotificationsPageCache.isFresh(ttlMs: Long): Boolean =
+    System.currentTimeMillis() - cachedAt < ttlMs
+
+fun AccountUserFriendsPageCache.isFresh(ttlMs: Long): Boolean =
+    System.currentTimeMillis() - cachedAt < ttlMs
+
+fun AccountUserReviewsPageCache.isFresh(ttlMs: Long): Boolean =
+    System.currentTimeMillis() - cachedAt < ttlMs
+
+fun AccountUserPostsPageCache.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs
 
 fun AccountNotificationCountsCache.isFresh(ttlMs: Long): Boolean =

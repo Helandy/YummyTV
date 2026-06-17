@@ -77,10 +77,27 @@ class HomeViewModel @Inject internal constructor(
                         continueWatchingRestoreToken = continueWatchingRestoreToken + 1,
                         continueWatchingRestoreKey = event.entry.continueWatchingFocusKey(),
                         focusedItemId = null,
-                        focusedSectionId = null,
+                        focusedSectionId = SECTION_CONTINUE_WATCHING,
                     )
                 }
                 launchContinueWatching(event.entry)
+            }
+
+            is HomeState.Event.ContinueWatchingFocused -> {
+                val focusKey = event.entry.continueWatchingFocusKey()
+                if (
+                    currentState.focusedSectionId == SECTION_CONTINUE_WATCHING &&
+                    currentState.continueWatchingRestoreKey == focusKey
+                ) {
+                    return
+                }
+                setState {
+                    copy(
+                        focusedSectionId = SECTION_CONTINUE_WATCHING,
+                        focusedItemId = null,
+                        continueWatchingRestoreKey = focusKey,
+                    )
+                }
             }
 
             HomeState.Event.RetrySelected -> {
@@ -207,4 +224,8 @@ class HomeViewModel @Inject internal constructor(
 
     private fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
         videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
+
+    private companion object {
+        const val SECTION_CONTINUE_WATCHING = "__continue_watching"
+    }
 }

@@ -30,8 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
+import su.afk.yummy.tv.feature.account.account.mobile.model.AccountMobileProfileSocialPage
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.mobile.model.AccountMobileProfileSocialPage
 
 @Composable
 internal fun AccountMobileProfileSocialPager(

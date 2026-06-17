@@ -46,6 +46,7 @@ internal fun HomeDashboard(
     feed: HomeFeed,
     continueWatching: List<HomeContinueWatchingItem>,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
+    onContinueWatchingFocused: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
     restoreFocusedItemOnEnter: Boolean = false,
@@ -159,7 +160,14 @@ internal fun HomeDashboard(
         }
     }
 
-    fun mainMenuEnterIndex(): Int = if (hasContinueWatching) 0 else focusedLazyIndex()
+    fun mainMenuEnterIndex(): Int =
+        if (focusedSectionId != null || focusedItemId != null) {
+            focusedLazyIndex()
+        } else if (hasContinueWatching) {
+            0
+        } else {
+            focusedLazyIndex()
+        }
 
     fun previousRowFocusRequester(index: Int): FocusRequester? =
         when {
@@ -281,6 +289,7 @@ internal fun HomeDashboard(
                     ContinueWatchingSection(
                         items = continueWatching,
                         onItemSelected = onContinueWatchingSelected,
+                        onItemFocused = onContinueWatchingFocused,
                         rowFocusRequester = continueWatchingFocusRequester,
                         restoreFirstItemToken = continueWatchingRestoreToken,
                         restoreItemKey = continueWatchingRestoreKey,

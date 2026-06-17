@@ -68,4 +68,20 @@
     <string name="account_error_load_notifications_failed">Не удалось загрузить уведомления</string>
     <string name="account_error_update_notification_failed">Не удалось обновить уведомление</string>
     <string name="account_error_update_notifications_failed">Не удалось обновить уведомления</string>
+    <string name="user_profile_title">Профиль</string>
+    <string name="user_profile_registered">Зарегистрирован: %1$s</string>
+    <string name="user_profile_tab_overview">Обзор</string>
+    <string name="user_profile_tab_lists">Списки</string>
+    <string name="user_profile_tab_collections">Коллекции</string>
+    <string name="user_profile_tab_posts">Посты</string>
+    <string name="user_profile_tab_reviews">Рецензии</string>
+    <string name="user_profile_tab_friends">Друзья</string>
+    <string name="user_profile_load_error">Не удалось загрузить профиль</string>
+    <string name="user_profile_section_error">Не удалось загрузить раздел</string>
+    <string name="user_profile_section_empty">Здесь пока пусто</string>
+    <string name="user_profile_retry">Повторить</string>
+    <string name="user_profile_load_more">Загрузить еще</string>
+    <string name="user_profile_rating">Оценка %1$s</string>
+    <string name="user_profile_review">Рецензия</string>
+    <string name="user_profile_untitled">Без названия</string>
 </resources>

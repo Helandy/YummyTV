@@ -14,6 +14,7 @@ import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
 import su.afk.yummy.tv.data.account.repository.YaniProfileNotificationsRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserListsRepository
+import su.afk.yummy.tv.data.account.repository.YaniUserProfileContentRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserProfileRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserStatsRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoSubscriptionRepository
@@ -23,6 +24,7 @@ import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
+import su.afk.yummy.tv.domain.account.repository.UserProfileContentRepository
 import su.afk.yummy.tv.domain.account.repository.UserProfileRepository
 import su.afk.yummy.tv.domain.account.repository.UserStatsRepository
 import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
@@ -118,6 +120,15 @@ object AccountDataModule {
         settingsStore: SettingsStore,
     ): UserProfileRepository =
         YaniUserProfileRepository(api, accountStorage, settingsStore)
+
+    @Provides
+    @Singleton
+    fun provideUserProfileContentRepository(
+        api: YaniAccountApi,
+        accountStorage: AccountStorageStore,
+        settingsStore: SettingsStore,
+    ): UserProfileContentRepository =
+        YaniUserProfileContentRepository(api, accountStorage, settingsStore)
 
     @Provides
     @Singleton
