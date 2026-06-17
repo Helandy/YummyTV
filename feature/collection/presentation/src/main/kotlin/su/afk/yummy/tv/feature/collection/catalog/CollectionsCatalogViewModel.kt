@@ -64,11 +64,11 @@ class CollectionsCatalogViewModel @Inject internal constructor(
                 onSuccess = { page ->
                     setState {
                         copy(
-                            items = if (replace) page else items + page,
+                            items = if (replace) page.items else items + page.items,
                             isLoading = false,
                             isLoadingMore = false,
-                            offset = offset + page.size,
-                            canLoadMore = page.size >= COLLECTIONS_PAGE_SIZE,
+                            offset = page.nextOffset,
+                            canLoadMore = page.canLoadMore,
                         )
                     }
                 },

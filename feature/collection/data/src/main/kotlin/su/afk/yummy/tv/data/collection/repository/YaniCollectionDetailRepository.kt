@@ -13,9 +13,9 @@ import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionCatalogPageCache
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetail
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetailCache
-import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionSummaries
+import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
-import su.afk.yummy.tv.domain.collection.model.CollectionSummary
+import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 
 private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
@@ -46,33 +46,38 @@ class YaniCollectionDetailRepository(
             }
         }
 
-    override suspend fun getCollections(limit: Int, offset: Int): List<CollectionSummary> =
+    override suspend fun getCollections(limit: Int, offset: Int): CollectionSummaryPage =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()
             val languageCode = language.apiCode
             val pageKey = catalogPageKey(languageCode, limit, offset)
             val stored = collectionStorage.getCatalogPage(pageKey)
             if (stored?.isFresh(COLLECTION_CATALOG_TTL_MS) == true) {
-                return@withContext stored.toCollectionSummaries()
+                return@withContext stored.toCollectionSummaryPage()
             }
 
             try {
-                val collections =
-                    api.getCollections(limit, offset).response.mapNotNull { it.toSummary() }
+                val response = api.getCollections(limit, offset).response
+                val collections = response.mapNotNull { it.toSummary() }
                 collectionStorage.saveCatalogPage(
                     collections.toCollectionCatalogPageCache(
                         pageKey = pageKey,
                         language = languageCode,
                         limit = limit,
                         offset = offset,
+                        responseSize = response.size,
                         cachedAt = System.currentTimeMillis(),
                     )
                 )
-                collections
+                CollectionSummaryPage(
+                    items = collections,
+                    nextOffset = offset + response.size,
+                    canLoadMore = response.size >= limit,
+                )
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toCollectionSummaries()
+                stored?.toCollectionSummaryPage()
                     ?: throw error
             }
         }

@@ -5,4 +5,5 @@ data class CollectionSummary(
     val title: String,
     val description: String,
     val posterUrl: String?,
+    val likesCount: Int,
 )

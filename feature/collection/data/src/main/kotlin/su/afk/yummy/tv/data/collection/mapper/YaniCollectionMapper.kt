@@ -27,6 +27,7 @@ internal fun YaniCollectionDetailDto.toSummary(): CollectionSummary? {
         title = safeTitle,
         description = description,
         posterUrl = posterPreviews.firstOrNull()?.toUrl(),
+        likesCount = likes?.likes?.coerceAtLeast(0) ?: 0,
     )
 }
 

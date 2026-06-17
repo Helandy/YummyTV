@@ -1514,6 +1514,7 @@ object StorageModule {
                     language TEXT NOT NULL,
                     pageLimit INTEGER NOT NULL,
                     pageOffset INTEGER NOT NULL,
+                    responseSize INTEGER NOT NULL,
                     cachedAt INTEGER NOT NULL,
                     PRIMARY KEY(pageKey)
                 )
@@ -1553,6 +1554,35 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_25_26 = object : Migration(25, 26) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                ALTER TABLE collection_catalog_pages
+                ADD COLUMN responseSize INTEGER NOT NULL DEFAULT 0
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                UPDATE collection_catalog_pages
+                SET responseSize = pageLimit
+                WHERE responseSize = 0
+                """.trimIndent()
+            )
+        }
+    }
+
+    private val MIGRATION_26_27 = object : Migration(26, 27) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                ALTER TABLE collection_catalog_items
+                ADD COLUMN likes INTEGER NOT NULL DEFAULT 0
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1576,6 +1606,8 @@ object StorageModule {
                 MIGRATION_22_23,
                 MIGRATION_23_24,
                 MIGRATION_24_25,
+                MIGRATION_25_26,
+                MIGRATION_26_27,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

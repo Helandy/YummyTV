@@ -19,8 +19,16 @@ data class YaniCollectionDetailDto(
     val title: String = "",
     val description: String = "",
     val views: Int = 0,
+    val likes: YaniCollectionLikesDto? = null,
     val animes: List<YaniCollectionAnimeDto> = emptyList(),
     @SerialName("poster_previews") val posterPreviews: List<YaniCollectionPosterDto> = emptyList(),
+)
+
+@Serializable
+data class YaniCollectionLikesDto(
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+    val vote: Int = 0,
 )
 
 @Serializable

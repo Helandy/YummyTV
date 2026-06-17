@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -317,8 +318,8 @@ private fun VoteButton(
     isLike: Boolean,
     onClick: () -> Unit,
 ) {
-    val tint =
-        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val voteColor = if (isLike) LikeColor else DislikeColor
+    val tint = if (selected) voteColor else voteColor.copy(alpha = 0.72f)
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -341,6 +342,9 @@ private fun VoteButton(
         )
     }
 }
+
+private val LikeColor = Color(0xFF69D38B)
+private val DislikeColor = Color(0xFFFF6B6B)
 
 @Composable
 private fun InlineTextAction(

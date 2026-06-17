@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummary
+import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
 
 internal fun CollectionDetail.toCollectionDetailCache(
     language: String,
@@ -61,6 +62,7 @@ internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
     language: String,
     limit: Int,
     offset: Int,
+    responseSize: Int,
     cachedAt: Long,
 ): CollectionCatalogPageCache =
     CollectionCatalogPageCache(
@@ -69,6 +71,7 @@ internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
             language = language,
             pageLimit = limit,
             pageOffset = offset,
+            responseSize = responseSize,
             cachedAt = cachedAt,
         ),
         items = mapIndexed { index, item ->
@@ -79,11 +82,12 @@ internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
                 title = item.title,
                 description = item.description,
                 posterUrl = item.posterUrl,
+                likes = item.likesCount,
             )
         },
     )
 
-internal fun CollectionCatalogPageCache.toCollectionSummaries(): List<CollectionSummary> =
+internal fun CollectionCatalogPageCache.toCollectionSummaryPage(): CollectionSummaryPage =
     items
         .sortedBy { it.position }
         .map {
@@ -92,5 +96,15 @@ internal fun CollectionCatalogPageCache.toCollectionSummaries(): List<Collection
                 title = it.title,
                 description = it.description,
                 posterUrl = it.posterUrl,
+                likesCount = it.likes,
+            )
+        }
+        .let { summaries ->
+            val responseSize = entry.responseSize.takeIf { it > 0 }
+                ?: if (summaries.isNotEmpty()) entry.pageLimit else 0
+            CollectionSummaryPage(
+                items = summaries,
+                nextOffset = entry.pageOffset + responseSize,
+                canLoadMore = responseSize >= entry.pageLimit,
             )
         }

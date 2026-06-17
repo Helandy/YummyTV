@@ -53,6 +53,7 @@ data class CollectionCatalogPageEntry(
     val language: String,
     val pageLimit: Int,
     val pageOffset: Int,
+    val responseSize: Int,
     val cachedAt: Long,
 )
 
@@ -70,4 +71,5 @@ data class CollectionCatalogItemEntry(
     val title: String,
     val description: String,
     val posterUrl: String? = null,
+    val likes: Int = 0,
 )
