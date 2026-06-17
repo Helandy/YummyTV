@@ -57,6 +57,7 @@ data class AccountUserListItemEntry(
     val posterFullsizeUrl: String? = null,
     val posterMegaUrl: String? = null,
     val rating: Double? = null,
+    val userRating: Int? = null,
     val year: Int? = null,
     val userListId: Int? = null,
     val isFavorite: Boolean,

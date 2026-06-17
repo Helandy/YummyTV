@@ -75,6 +75,8 @@
     <string name="user_profile_section_empty">Здесь пока пусто</string>
     <string name="user_profile_retry">Повторить</string>
     <string name="user_profile_load_more">Загрузить еще</string>
+    <string name="user_profile_list_added_date">Добавлено %1$s</string>
+    <string name="user_profile_user_rating">Оценка пользователя %1$d</string>
     <string name="user_profile_rating">Оценка %1$s</string>
     <string name="user_profile_review">Рецензия</string>
     <string name="user_profile_untitled">Без названия</string>

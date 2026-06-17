@@ -75,6 +75,8 @@
     <string name="user_profile_section_empty">Nothing here yet</string>
     <string name="user_profile_retry">Retry</string>
     <string name="user_profile_load_more">Load more</string>
+    <string name="user_profile_list_added_date">Added %1$s</string>
+    <string name="user_profile_user_rating">User rating %1$d</string>
     <string name="user_profile_rating">Rating %1$s</string>
     <string name="user_profile_review">Review</string>
     <string name="user_profile_untitled">Untitled</string>

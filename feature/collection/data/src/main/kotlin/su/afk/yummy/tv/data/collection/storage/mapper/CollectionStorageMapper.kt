@@ -10,6 +10,7 @@ import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
 
 internal fun CollectionDetail.toCollectionDetailCache(
     language: String,
@@ -23,6 +24,9 @@ internal fun CollectionDetail.toCollectionDetailCache(
             description = description,
             views = views,
             posterUrl = posterUrl,
+            likes = likesCount,
+            dislikes = dislikesCount,
+            vote = vote.apiValue,
             cachedAt = cachedAt,
         ),
         items = animes.mapIndexed { index, item ->
@@ -45,6 +49,9 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
         description = entry.description,
         views = entry.views,
         posterUrl = entry.posterUrl,
+        likesCount = entry.likes,
+        dislikesCount = entry.dislikes,
+        vote = CollectionVote.fromApi(entry.vote),
         animes = items
             .sortedBy { it.position }
             .map {

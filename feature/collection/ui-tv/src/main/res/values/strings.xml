@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="retry">Retry</string>
+    <string name="collection_catalog_tv_title">Collections</string>
+    <string name="collection_catalog_tv_empty">No collections yet</string>
 </resources>

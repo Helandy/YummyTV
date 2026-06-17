@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
+import su.afk.yummy.tv.data.collection.dto.YaniCollectionVoteBodyDto
 import su.afk.yummy.tv.data.collection.mapper.toDomain
 import su.afk.yummy.tv.data.collection.mapper.toSummary
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
@@ -16,10 +17,12 @@ import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
+import su.afk.yummy.tv.domain.collection.model.CollectionVoteResult
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 
-private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
-private const val COLLECTION_CATALOG_TTL_MS = 60 * 60 * 1000L
+private const val COLLECTION_TTL_MS = 60 * 1000L
+private const val COLLECTION_CATALOG_TTL_MS = 60 * 1000L
 
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,
@@ -80,6 +83,37 @@ class YaniCollectionDetailRepository(
                 stored?.toCollectionSummaryPage()
                     ?: throw error
             }
+        }
+
+    override suspend fun voteCollection(id: Int, vote: CollectionVote): CollectionVoteResult =
+        withContext(Dispatchers.IO) {
+            require(vote != CollectionVote.NEUTRAL)
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            val result = api.voteCollection(id, YaniCollectionVoteBodyDto(vote.apiValue))
+                .response
+                .toDomain()
+            collectionStorage.updateCollectionVote(
+                collectionId = id,
+                language = languageCode,
+                likes = result.likes,
+                dislikes = result.dislikes,
+                vote = vote.apiValue,
+            )
+            result
+        }
+
+    override suspend fun removeCollectionVote(id: Int): CollectionVoteResult =
+        withContext(Dispatchers.IO) {
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            val result = api.removeCollectionVote(id).response.toDomain()
+            collectionStorage.updateCollectionVote(
+                collectionId = id,
+                language = languageCode,
+                likes = result.likes,
+                dislikes = result.dislikes,
+                vote = CollectionVote.NEUTRAL.apiValue,
+            )
+            result
         }
 
     private suspend fun fetchCollection(id: Int, languageCode: String): CollectionDetail {

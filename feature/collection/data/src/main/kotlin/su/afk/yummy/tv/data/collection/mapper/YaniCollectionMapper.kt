@@ -3,9 +3,12 @@ package su.afk.yummy.tv.data.collection.mapper
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionAnimeDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
+import su.afk.yummy.tv.data.collection.dto.YaniCollectionVotePayloadDto
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummary
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
+import su.afk.yummy.tv.domain.collection.model.CollectionVoteResult
 
 internal fun YaniCollectionDetailDto.toDomain(fallbackId: Int): CollectionDetail {
     val resolvedId = id ?: fallbackId
@@ -15,6 +18,9 @@ internal fun YaniCollectionDetailDto.toDomain(fallbackId: Int): CollectionDetail
         description = description,
         views = views,
         posterUrl = posterPreviews.firstOrNull()?.toUrl(),
+        likesCount = likes?.likes?.coerceAtLeast(0) ?: 0,
+        dislikesCount = likes?.dislikes?.coerceAtLeast(0) ?: 0,
+        vote = CollectionVote.fromApi(likes?.vote),
         animes = animes.mapNotNull { it.toDomain() },
     )
 }
@@ -30,6 +36,12 @@ internal fun YaniCollectionDetailDto.toSummary(): CollectionSummary? {
         likesCount = likes?.likes?.coerceAtLeast(0) ?: 0,
     )
 }
+
+internal fun YaniCollectionVotePayloadDto.toDomain(): CollectionVoteResult =
+    CollectionVoteResult(
+        likes = likes.coerceAtLeast(0),
+        dislikes = dislikes.coerceAtLeast(0),
+    )
 
 private fun YaniCollectionAnimeDto.toDomain(): CollectionAnimeItem? {
     val resolvedId = animeId ?: return null

@@ -43,6 +43,12 @@ internal fun Long.formatProfileDate(): String =
         Locale.getDefault()
     ).format(Date(this * 1000L))
 
+internal fun Long.formatUserListDate(): String =
+    if (this <= 0L) "" else SimpleDateFormat(
+        "dd.MM.yyyy",
+        Locale.getDefault()
+    ).format(Date(this * 1000L))
+
 @Composable
 internal fun Long.toProfileHoursLabel(): String {
     val hours = this / SECONDS_IN_HOUR

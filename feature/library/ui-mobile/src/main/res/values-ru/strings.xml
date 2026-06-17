@@ -9,6 +9,7 @@
     <string name="library_mobile_tab_postponed">Отложено</string>
     <string name="library_mobile_tab_dropped">Брошено</string>
     <string name="library_mobile_episode">Серия %1$s</string>
+    <string name="library_mobile_added_date">Добавлено %1$s</string>
     <string name="library_mobile_empty_list">Список пока пуст - самое время добавить что то</string>
     <string name="library_mobile_retry">Повторить</string>
     <string name="library_mobile_remove_title">Удалить тайтл?</string>

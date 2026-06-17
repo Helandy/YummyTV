@@ -287,6 +287,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             listUpdatedAt = listUpdatedAt,
             favoriteUpdatedAt = if (isFavorite) favoriteUpdatedAt else current?.favoriteUpdatedAt
                 ?: 0L,
+            userRating = userRating ?: current?.userRating,
         )
 
     private fun UserAnimeListItem.updatedAtMillis(fallback: Long): Long =

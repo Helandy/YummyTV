@@ -10,6 +10,7 @@ data class UserAnimeListItem(
     val list: UserAnimeList?,
     val isFavorite: Boolean,
     val updatedAtSeconds: Long? = null,
+    val userRating: Int? = null,
 )
 
 data class UserAnimePoster(

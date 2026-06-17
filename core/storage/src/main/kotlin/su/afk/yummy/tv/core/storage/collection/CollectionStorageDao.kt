@@ -42,6 +42,23 @@ abstract class CollectionStorageDao {
     @Query("DELETE FROM collection_anime_items WHERE collectionId = :collectionId AND language = :language")
     abstract suspend fun deleteItems(collectionId: Int, language: String)
 
+    @Query(
+        """
+        UPDATE collection_details
+        SET likes = :likes,
+            dislikes = :dislikes,
+            vote = :vote
+        WHERE collectionId = :collectionId AND language = :language
+        """
+    )
+    abstract suspend fun updateDetailVote(
+        collectionId: Int,
+        language: String,
+        likes: Int,
+        dislikes: Int,
+        vote: Int,
+    )
+
     @Query("SELECT * FROM collection_catalog_pages WHERE pageKey = :pageKey LIMIT 1")
     abstract suspend fun getCatalogPageEntry(pageKey: String): CollectionCatalogPageEntry?
 

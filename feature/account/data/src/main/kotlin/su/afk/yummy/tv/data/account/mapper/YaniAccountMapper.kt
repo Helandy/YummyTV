@@ -86,6 +86,7 @@ internal fun YaniUserAnimeDto.toUserListItem(): UserAnimeListItem? {
         posterUrl = poster?.toUserAnimePoster()?.standardUrl,
         poster = poster?.toUserAnimePoster(),
         rating = rating?.takeIf { it > 0.0 },
+        userRating = user?.rating.toUserRating(),
         year = year?.takeIf { it > 0 },
         list = user?.list?.list?.id.toUserAnimeList(),
         isFavorite = user?.list?.isFav == true,
@@ -164,6 +165,9 @@ internal fun YaniVideoSubscriptionDto.toVideoSubscription(): VideoSubscription? 
 
 internal fun Int?.toUserAnimeList(): UserAnimeList? =
     UserAnimeList.entries.firstOrNull { it.id == this }
+
+private fun Double?.toUserRating(): Int? =
+    this?.toInt()?.takeIf { it in 1..10 }
 
 internal fun YaniAccountPosterDto.bestUrl(): String? =
     mega?.toHttpsUrl() ?: huge?.toHttpsUrl() ?: big?.toHttpsUrl() ?: medium?.toHttpsUrl()

@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
@@ -75,7 +76,10 @@ internal fun TopMobileGrid(
     }
 
     MobilePosterGrid(
-        contentPadding = PaddingValues(),
+        contentPadding = PaddingValues(
+            bottom = MobileBottomBarDefaults.PosterGridContentBottomPadding +
+                    MobileBottomBarDefaults.ExtraContentBottomPadding,
+        ),
         modifier = modifier.fillMaxSize(),
         state = gridState,
     ) {

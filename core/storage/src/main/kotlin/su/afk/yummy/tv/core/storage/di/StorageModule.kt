@@ -1580,6 +1580,38 @@ object StorageModule {
                 ADD COLUMN likes INTEGER NOT NULL DEFAULT 0
                 """.trimIndent()
             )
+            db.execSQL("UPDATE collection_catalog_pages SET cachedAt = 0")
+        }
+    }
+
+    private val MIGRATION_27_28 = object : Migration(27, 28) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                ALTER TABLE collection_details
+                ADD COLUMN likes INTEGER NOT NULL DEFAULT 0
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                ALTER TABLE collection_details
+                ADD COLUMN dislikes INTEGER NOT NULL DEFAULT 0
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                ALTER TABLE collection_details
+                ADD COLUMN vote INTEGER NOT NULL DEFAULT 0
+                """.trimIndent()
+            )
+            db.execSQL("UPDATE collection_details SET cachedAt = 0")
+        }
+    }
+
+    private val MIGRATION_28_29 = object : Migration(28, 29) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE account_user_list_items ADD COLUMN userRating INTEGER")
+            db.execSQL("ALTER TABLE library ADD COLUMN userRating INTEGER")
         }
     }
 
@@ -1608,6 +1640,8 @@ object StorageModule {
                 MIGRATION_24_25,
                 MIGRATION_25_26,
                 MIGRATION_26_27,
+                MIGRATION_27_28,
+                MIGRATION_28_29,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

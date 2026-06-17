@@ -9,6 +9,16 @@ class CollectionStorageStore(private val dao: CollectionStorageDao) {
         dao.replaceCollection(cache)
     }
 
+    suspend fun updateCollectionVote(
+        collectionId: Int,
+        language: String,
+        likes: Int,
+        dislikes: Int,
+        vote: Int,
+    ) {
+        dao.updateDetailVote(collectionId, language, likes, dislikes, vote)
+    }
+
     suspend fun getCatalogPage(pageKey: String): CollectionCatalogPageCache? =
         dao.getCatalogPage(pageKey)
 

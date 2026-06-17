@@ -11,7 +11,10 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
+import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
+import su.afk.yummy.tv.domain.collection.usecase.VoteCollectionUseCase
 import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 
@@ -24,6 +27,8 @@ class CollectionViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getCollection: GetCollectionUseCase,
+    private val voteCollection: VoteCollectionUseCase,
+    private val removeCollectionVote: RemoveCollectionVoteUseCase,
     private val stringProvider: StringProvider,
     private val analytics: CollectionAnalytics,
 ) : BaseViewModelNew<CollectionState.State, CollectionState.Event, CollectionState.Effect>(savedStateHandle) {
@@ -57,6 +62,7 @@ class CollectionViewModel @AssistedInject internal constructor(
                 }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
+            is CollectionState.Event.VoteSelected -> vote(event.vote)
             is CollectionState.Event.ItemFocused -> onItemFocused(event.animeId)
             is CollectionState.Event.GridScrolled -> setState {
                 copy(firstVisibleItemIndex = event.index, firstVisibleItemScrollOffset = event.offset)
@@ -72,6 +78,39 @@ class CollectionViewModel @AssistedInject internal constructor(
     private fun onItemFocused(animeId: Int) {
         if (currentState.focusedItemId == animeId) return
         setState { copy(focusedItemId = animeId) }
+    }
+
+    private fun vote(vote: CollectionVote) {
+        if (vote == CollectionVote.NEUTRAL) return
+        val collection = currentState.collection ?: return
+        if (currentState.isVoteLoading) return
+        viewModelScope.launch {
+            setState { copy(isVoteLoading = true) }
+            val currentVote = currentState.collection?.vote ?: CollectionVote.NEUTRAL
+            runCatching {
+                if (currentVote == vote) {
+                    removeCollectionVote(collectionId) to CollectionVote.NEUTRAL
+                } else {
+                    voteCollection(collectionId, vote) to vote
+                }
+            }.fold(
+                onSuccess = { (result, newVote) ->
+                    setState {
+                        copy(
+                            isVoteLoading = false,
+                            collection = collection.copy(
+                                likesCount = result.likes,
+                                dislikesCount = result.dislikes,
+                                vote = newVote,
+                            ),
+                        )
+                    }
+                },
+                onFailure = {
+                    setState { copy(isVoteLoading = false) }
+                },
+            )
+        }
     }
 
     private fun load() {

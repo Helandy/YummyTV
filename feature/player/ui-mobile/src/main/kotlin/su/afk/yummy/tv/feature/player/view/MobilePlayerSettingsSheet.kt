@@ -26,7 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
+import su.afk.yummy.tv.feature.player.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
 
@@ -60,6 +65,10 @@ internal fun MobilePlayerSettingsSheet(
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var selectedTrackTab by rememberSaveable {
+        mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing)
+    }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         LazyColumn(
             modifier = Modifier
@@ -81,57 +90,77 @@ internal fun MobilePlayerSettingsSheet(
             }
             if (mode == MobilePlayerSettingsMode.Playback) {
                 item {
-                    MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_quality)) {
-                        qualities.forEach { quality ->
-                            MobilePlayerSelectionRow(
-                                label = quality,
-                                selected = quality == selectedQuality,
-                                onClick = { onQualitySelected(quality) },
-                            )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        MobilePlayerSettingsSection(
+                            title = stringResource(UiR.string.player_mobile_quality),
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            qualities.forEach { quality ->
+                                MobilePlayerSelectionRow(
+                                    label = quality,
+                                    selected = quality == selectedQuality,
+                                    onClick = { onQualitySelected(quality) },
+                                )
+                            }
                         }
-                    }
-                }
-                item {
-                    MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_speed)) {
-                        speeds.forEach { speed ->
-                            val label = "${speed}x"
-                            MobilePlayerSelectionRow(
-                                label = label,
-                                selected = speed == selectedSpeed,
-                                onClick = { onSpeedSelected(speed) },
-                            )
+                        MobilePlayerSettingsSection(
+                            title = stringResource(UiR.string.player_mobile_speed),
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            speeds.forEach { speed ->
+                                val label = "${speed}x"
+                                MobilePlayerSelectionRow(
+                                    label = label,
+                                    selected = speed == selectedSpeed,
+                                    onClick = { onSpeedSelected(speed) },
+                                )
+                            }
                         }
                     }
                 }
             }
             if (mode == MobilePlayerSettingsMode.Track) {
                 item {
-                    MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_dubbing)) {
-                        dubbingNames.forEachIndexed { index, name ->
-                            MobilePlayerSelectionRow(
-                                label = name,
-                                selected = index == selectedDubbingIndex,
-                                metaContent = { contentColor ->
-                                    MobilePlayerDubbingMeta(
-                                        views = dubbingViews.getOrElse(index) { 0 },
-                                        episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
-                                        sourceNames = dubbingSourceNames.getOrElse(index) { "" },
-                                        contentColor = contentColor,
-                                    )
-                                },
-                                onClick = { onDubbingSelected(index) },
-                            )
+                    MobilePlayerTrackSettingsTabs(
+                        selectedTab = selectedTrackTab,
+                        dubbingLabel = stringResource(UiR.string.player_mobile_dubbing),
+                        playerLabel = stringResource(UiR.string.player_mobile_player),
+                        onTabSelected = { selectedTrackTab = it },
+                    )
+                }
+                when (selectedTrackTab) {
+                    MobilePlayerTrackSettingsTab.Dubbing -> item {
+                        MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_dubbing)) {
+                            dubbingNames.forEachIndexed { index, name ->
+                                MobilePlayerSelectionRow(
+                                    label = name,
+                                    selected = index == selectedDubbingIndex,
+                                    metaContent = { contentColor ->
+                                        MobilePlayerDubbingMeta(
+                                            views = dubbingViews.getOrElse(index) { 0 },
+                                            episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
+                                            sourceNames = dubbingSourceNames.getOrElse(index) { "" },
+                                            contentColor = contentColor,
+                                        )
+                                    },
+                                    onClick = { onDubbingSelected(index) },
+                                )
+                            }
                         }
                     }
-                }
-                item {
-                    MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_player)) {
-                        balancerNames.forEachIndexed { index, name ->
-                            MobilePlayerSelectionRow(
-                                label = name,
-                                selected = index == selectedBalancerIndex,
-                                onClick = { onBalancerSelected(index) },
-                            )
+
+                    MobilePlayerTrackSettingsTab.Player -> item {
+                        MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_player)) {
+                            balancerNames.forEachIndexed { index, name ->
+                                MobilePlayerSelectionRow(
+                                    label = name,
+                                    selected = index == selectedBalancerIndex,
+                                    onClick = { onBalancerSelected(index) },
+                                )
+                            }
                         }
                     }
                 }
@@ -143,9 +172,13 @@ internal fun MobilePlayerSettingsSheet(
 @Composable
 private fun MobilePlayerSettingsSection(
     title: String,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,

@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.schedule.mobile.R
@@ -59,7 +60,8 @@ fun ScheduleMobileScreen(
                     start = 16.dp,
                     top = 10.dp,
                     end = 16.dp,
-                    bottom = 24.dp,
+                    bottom = MobileBottomBarDefaults.ContentBottomPadding +
+                            MobileBottomBarDefaults.ExtraContentBottomPadding,
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {

@@ -33,7 +33,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
@@ -51,12 +50,14 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.R
 
 @Composable
 internal fun CollectionGridPane(
     collection: CollectionDetail?,
     isLoading: Boolean,
+    isVoteLoading: Boolean,
     error: String?,
     restoreFocusedItemOnEnter: Boolean = false,
     focusedItemId: Int?,
@@ -65,6 +66,7 @@ internal fun CollectionGridPane(
     onAnimeSelected: (Int) -> Unit,
     onItemFocused: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
+    onVote: (CollectionVote) -> Unit,
     onRetry: () -> Unit,
     onFocusedItemRestoreHandled: () -> Unit,
     modifier: Modifier = Modifier,
@@ -88,6 +90,7 @@ internal fun CollectionGridPane(
 
             collection != null -> CollectionGrid(
                 collection = collection,
+                isVoteLoading = isVoteLoading,
                 focusedItemId = focusedItemId,
                 firstVisibleItemIndex = firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
@@ -95,6 +98,7 @@ internal fun CollectionGridPane(
                 onAnimeSelected = onAnimeSelected,
                 onItemFocused = onItemFocused,
                 onScrollPositionChanged = onScrollPositionChanged,
+                onVote = onVote,
                 onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
             )
         }
@@ -104,6 +108,7 @@ internal fun CollectionGridPane(
 @Composable
 private fun CollectionGrid(
     collection: CollectionDetail,
+    isVoteLoading: Boolean,
     focusedItemId: Int?,
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
@@ -111,6 +116,7 @@ private fun CollectionGrid(
     onAnimeSelected: (Int) -> Unit,
     onItemFocused: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
+    onVote: (CollectionVote) -> Unit,
     onFocusedItemRestoreHandled: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -272,11 +278,10 @@ private fun CollectionGrid(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 CollectionHeader(
                     collection = collection,
-                    modifier = Modifier
-                        .focusRequester(headerFocusRequester)
-                        .focusProperties {
-                            if (focusRequesters.isNotEmpty()) down = focusRequesters[0]
-                        },
+                    isVoteLoading = isVoteLoading,
+                    onVote = onVote,
+                    titleFocusRequester = headerFocusRequester,
+                    downFocusRequester = focusRequesters.firstOrNull(),
                 )
             }
 

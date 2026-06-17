@@ -145,7 +145,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         CommentPageEntry::class,
         CommentItemEntry::class,
     ],
-    version = 27,
+    version = 29,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

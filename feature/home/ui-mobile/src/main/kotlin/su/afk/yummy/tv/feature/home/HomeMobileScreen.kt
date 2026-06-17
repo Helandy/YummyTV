@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -85,7 +86,11 @@ fun HomeMobileScreen(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp),
+            contentPadding = PaddingValues(
+                top = 12.dp,
+                bottom = MobileBottomBarDefaults.ContentBottomPadding +
+                        MobileBottomBarDefaults.ExtraContentBottomPadding,
+            ),
             verticalArrangement = Arrangement.spacedBy(26.dp),
         ) {
             val feed = state.feed

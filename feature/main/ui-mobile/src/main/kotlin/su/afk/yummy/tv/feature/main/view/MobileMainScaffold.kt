@@ -1,8 +1,12 @@
 package su.afk.yummy.tv.feature.main.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -31,21 +35,35 @@ internal fun <T> MobileMainScaffold(
         contentWindowInsets = WindowInsets(0.dp),
         bottomBar = {
             if (showBars) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    menuItems.forEach { item ->
-                        MobileNavigationItem(
-                            item = item,
-                            selected = item.destination == selectedDestination,
-                            onSelected = { onDestinationSelected(item.destination) },
-                        )
+                val surface = MaterialTheme.colorScheme.surface
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(surface)
+                        .navigationBarsPadding(),
+                ) {
+                    NavigationBar(
+                        containerColor = surface,
+                        windowInsets = WindowInsets(0.dp),
+                    ) {
+                        menuItems.forEach { item ->
+                            MobileNavigationItem(
+                                item = item,
+                                selected = item.destination == selectedDestination,
+                                onSelected = { onDestinationSelected(item.destination) },
+                            )
+                        }
                     }
                 }
             }
         },
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             content()
-            GlobalToastOverlay(text = toastMessage)
+            GlobalToastOverlay(
+                text = toastMessage,
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+            )
         }
     }
 }

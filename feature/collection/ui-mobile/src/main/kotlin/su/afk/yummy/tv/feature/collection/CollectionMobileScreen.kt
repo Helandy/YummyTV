@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
@@ -46,10 +47,14 @@ fun CollectionMobileScreen(
             }
         },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues()) {
+        MobilePosterGrid(contentPadding = PaddingValues(bottom = 80.dp)) {
             if (collection != null) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    CollectionMobileHeader(collection = collection)
+                    CollectionMobileHeader(
+                        collection = collection,
+                        isVoteLoading = state.isVoteLoading,
+                        onVote = { vote -> onEvent(CollectionState.Event.VoteSelected(vote)) },
+                    )
                 }
                 items(collection.animes, key = { it.id }) { item ->
                     MobilePosterCard(

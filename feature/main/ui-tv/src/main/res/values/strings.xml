@@ -2,6 +2,7 @@
 <resources>
     <string name="main_tab_search">Search</string>
     <string name="main_tab_home">Home</string>
+    <string name="main_tab_collections">Collections</string>
     <string name="main_tab_schedule">Schedule</string>
     <string name="main_tab_top">Top</string>
     <string name="main_tab_library">Library</string>

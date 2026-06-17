@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +54,7 @@ internal fun LibraryMobileTabs(
                 LibraryMobileTabChip(
                     title = tab.mobileTitle(),
                     count = tabCounts[tab] ?: 0,
+                    color = tab.mobileTabColor(),
                     selected = tab == selectedTab,
                     onClick = { onSelected(tab) },
                 )
@@ -65,6 +67,7 @@ internal fun LibraryMobileTabs(
 private fun LibraryMobileTabChip(
     title: String,
     count: Int,
+    color: Color,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -74,12 +77,12 @@ private fun LibraryMobileTabChip(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),
         color = if (selected) {
-            MaterialTheme.colorScheme.primary
+            color.copy(alpha = 0.18f)
         } else {
             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f)
         },
         contentColor = if (selected) {
-            MaterialTheme.colorScheme.onPrimary
+            MaterialTheme.colorScheme.onSurface
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
@@ -97,22 +100,22 @@ private fun LibraryMobileTabChip(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            LibraryMobileTabCountBadge(count = count, selected = selected)
+            LibraryMobileTabCountBadge(count = count, color = color, selected = selected)
         }
     }
 }
 
 @Composable
-private fun LibraryMobileTabCountBadge(count: Int, selected: Boolean) {
+private fun LibraryMobileTabCountBadge(count: Int, color: Color, selected: Boolean) {
     Surface(
         shape = RoundedCornerShape(percent = 50),
         color = if (selected) {
-            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
+            color.copy(alpha = 0.28f)
         } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+            color.copy(alpha = 0.18f)
         },
         contentColor = if (selected) {
-            MaterialTheme.colorScheme.onPrimary
+            MaterialTheme.colorScheme.onSurface
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
@@ -130,3 +133,15 @@ private fun LibraryMobileTabCountBadge(count: Int, selected: Boolean) {
         )
     }
 }
+
+@Composable
+private fun LibraryTab.mobileTabColor(): Color =
+    when (this) {
+        LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
+        LibraryTab.WATCHING -> Color(0xFFFF6B6B)
+        LibraryTab.PLANNED -> Color(0xFFA678E8)
+        LibraryTab.COMPLETED -> Color(0xFF69D38B)
+        LibraryTab.POSTPONED -> Color(0xFFFFC857)
+        LibraryTab.DROPPED -> Color(0xFF9CA3AF)
+        LibraryTab.FAVORITES -> Color(0xFFD86BFF)
+    }

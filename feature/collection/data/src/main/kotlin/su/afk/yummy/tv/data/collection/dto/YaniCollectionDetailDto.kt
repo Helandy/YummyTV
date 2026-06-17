@@ -32,6 +32,22 @@ data class YaniCollectionLikesDto(
 )
 
 @Serializable
+data class YaniCollectionVoteBodyDto(
+    val action: Int,
+)
+
+@Serializable
+data class YaniCollectionVoteResponseDto(
+    val response: YaniCollectionVotePayloadDto = YaniCollectionVotePayloadDto(),
+)
+
+@Serializable
+data class YaniCollectionVotePayloadDto(
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+)
+
+@Serializable
 data class YaniCollectionAnimeDto(
     @SerialName("anime_id") val animeId: Int? = null,
     val title: String = "",

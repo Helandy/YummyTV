@@ -96,7 +96,7 @@ fun CollectionsCatalogMobileScreen(
         },
     ) {
         MobilePosterGrid(
-            contentPadding = PaddingValues(0.dp),
+            contentPadding = PaddingValues(bottom = 80.dp),
             state = gridState,
         ) {
             val error = state.error

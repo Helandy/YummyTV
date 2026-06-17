@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.feature.account.account.mobile.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.view.AccountMobileHeader
@@ -46,7 +47,8 @@ fun AccountMobileScreen(
                     start = 16.dp,
                     top = 12.dp,
                     end = 16.dp,
-                    bottom = 32.dp
+                    bottom = MobileBottomBarDefaults.ContentBottomPadding +
+                            MobileBottomBarDefaults.ExtraContentBottomPadding,
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
@@ -66,7 +68,8 @@ fun AccountMobileScreen(
                     start = 16.dp,
                     top = 12.dp,
                     end = 16.dp,
-                    bottom = 32.dp,
+                    bottom = MobileBottomBarDefaults.ContentBottomPadding +
+                            MobileBottomBarDefaults.ExtraContentBottomPadding,
                 ),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {

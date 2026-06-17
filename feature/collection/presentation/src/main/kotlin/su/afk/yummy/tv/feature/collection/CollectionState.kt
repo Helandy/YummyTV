@@ -4,10 +4,12 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionVote
 
 class CollectionState {
     data class State(
         val isLoading: Boolean = true,
+        val isVoteLoading: Boolean = false,
         val collection: CollectionDetail? = null,
         val error: String? = null,
         val focusedItemId: Int? = null,
@@ -26,6 +28,9 @@ class CollectionState {
 
         /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
+
+        /** Пользователь выбрал лайк или дизлайк для коллекции. */
+        data class VoteSelected(val vote: CollectionVote) : Event
 
         /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event

@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 internal fun LibraryTopTabItem(
     label: String,
     count: Int,
+    color: Color,
     selected: Boolean,
     onActivated: () -> Unit,
     contentFocusRequester: FocusRequester,
@@ -55,13 +56,13 @@ internal fun LibraryTopTabItem(
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val contentColor = when {
-        focused -> MaterialTheme.colorScheme.primary
+        focused -> color
         selected -> MaterialTheme.colorScheme.onBackground
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val indicatorColor = when {
-        focused -> MaterialTheme.colorScheme.primary
-        selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+        focused -> color
+        selected -> color.copy(alpha = 0.65f)
         else -> Color.Transparent
     }
 
@@ -106,7 +107,7 @@ internal fun LibraryTopTabItem(
             }
             .onFocusChanged { if (it.isFocused || it.hasFocus) onFocused() }
             .background(
-                color = if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                color = if (focused) color.copy(alpha = 0.15f)
                 else Color.Transparent,
                 shape = shape,
             )
@@ -132,7 +133,12 @@ internal fun LibraryTopTabItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            LibraryTopTabCountBadge(count = count, selected = selected, focused = focused)
+            LibraryTopTabCountBadge(
+                count = count,
+                color = color,
+                selected = selected,
+                focused = focused,
+            )
         }
         Spacer(modifier = Modifier.height(4.dp))
         Box(
@@ -145,16 +151,21 @@ internal fun LibraryTopTabItem(
 }
 
 @Composable
-private fun LibraryTopTabCountBadge(count: Int, selected: Boolean, focused: Boolean) {
+private fun LibraryTopTabCountBadge(
+    count: Int,
+    color: Color,
+    selected: Boolean,
+    focused: Boolean,
+) {
     Surface(
         shape = RoundedCornerShape(percent = 50),
         color = when {
-            focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-            selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+            focused -> color.copy(alpha = 0.22f)
+            selected -> color.copy(alpha = 0.18f)
+            else -> color.copy(alpha = 0.12f)
         },
         contentColor = when {
-            focused -> MaterialTheme.colorScheme.primary
+            focused -> color
             selected -> MaterialTheme.colorScheme.onBackground
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         },

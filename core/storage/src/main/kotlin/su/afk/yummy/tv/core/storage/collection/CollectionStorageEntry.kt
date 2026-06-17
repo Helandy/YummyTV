@@ -17,6 +17,9 @@ data class CollectionDetailEntry(
     val description: String,
     val views: Int,
     val posterUrl: String? = null,
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+    val vote: Int = 0,
     val cachedAt: Long,
 )
 

@@ -4,6 +4,7 @@ enum class RootTab {
     ACCOUNT,
     SEARCH,
     HOME,
+    COLLECTIONS,
     SCHEDULE,
     TOP,
     LIBRARY,

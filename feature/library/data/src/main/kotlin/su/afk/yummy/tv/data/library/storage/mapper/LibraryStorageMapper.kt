@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.data.library.storage.mapper
 
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
-import su.afk.yummy.tv.core.storage.library.LibraryPoster as StorageLibraryPoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
+import su.afk.yummy.tv.core.storage.library.LibraryPoster as StorageLibraryPoster
 
 internal fun LibraryEntry.toLibraryItem(): LibraryItem =
     LibraryItem(
@@ -21,6 +21,7 @@ internal fun LibraryEntry.toLibraryItem(): LibraryItem =
         isFavorite = isFavorite,
         listUpdatedAt = listUpdatedAt,
         favoriteUpdatedAt = favoriteUpdatedAt,
+        userRating = userRating,
     )
 
 internal fun LibraryItem.toLibraryEntry(): LibraryEntry =
@@ -37,6 +38,7 @@ internal fun LibraryItem.toLibraryEntry(): LibraryEntry =
         isFavorite = isFavorite,
         listUpdatedAt = listUpdatedAt,
         favoriteUpdatedAt = favoriteUpdatedAt,
+        userRating = userRating,
     )
 
 internal fun LibraryPoster?.toStoragePoster(): StorageLibraryPoster? =

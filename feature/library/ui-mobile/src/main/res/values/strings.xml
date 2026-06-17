@@ -9,6 +9,7 @@
     <string name="library_mobile_tab_postponed">Postponed</string>
     <string name="library_mobile_tab_dropped">Dropped</string>
     <string name="library_mobile_episode">Episode %1$s</string>
+    <string name="library_mobile_added_date">Added %1$s</string>
     <string name="library_mobile_empty_list">The list is empty for now - time to add something</string>
     <string name="library_mobile_retry">Retry</string>
     <string name="library_mobile_remove_title">Remove title?</string>

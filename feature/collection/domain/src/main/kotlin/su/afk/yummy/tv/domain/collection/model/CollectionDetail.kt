@@ -6,6 +6,9 @@ data class CollectionDetail(
     val description: String,
     val views: Int,
     val posterUrl: String?,
+    val likesCount: Int,
+    val dislikesCount: Int,
+    val vote: CollectionVote,
     val animes: List<CollectionAnimeItem>,
 )
 
