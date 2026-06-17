@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import javax.inject.Inject
 
-/** Deletes a single profile notification. */
+/** Удаляет одно уведомление профиля. */
 class DeleteNotificationUseCase @Inject constructor(
     private val repository: ProfileNotificationsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

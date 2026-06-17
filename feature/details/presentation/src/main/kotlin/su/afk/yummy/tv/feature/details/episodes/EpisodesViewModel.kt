@@ -17,9 +17,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
@@ -46,7 +46,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
     private val settingsStore: SettingsStore,
-    private val yaniAuthPreferences: YaniAuthPreferences,
+    private val observeAccountSession: ObserveAccountSessionUseCase,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
     private val analytics: DetailsAnalytics,
 ) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(
@@ -83,10 +83,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 updateMergedWatchProgress()
             }
             .launchIn(viewModelScope)
-        yaniAuthPreferences.refreshToken
-            .onEach { token ->
+        observeAccountSession()
+            .onEach { session ->
                 val wasSignedIn = isSignedIn
-                isSignedIn = token.isNotBlank()
+                isSignedIn = session.isAuthorized
                 if (isSignedIn && !wasSignedIn) {
                     viewModelScope.launch { refreshVideosFromNetwork() }
                 } else if (!isSignedIn) {

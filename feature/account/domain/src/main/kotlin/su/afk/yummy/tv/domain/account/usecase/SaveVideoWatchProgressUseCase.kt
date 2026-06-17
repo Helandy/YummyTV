@@ -3,7 +3,7 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import javax.inject.Inject
 
-/** Saves background playback timing without notifying user-facing mutation errors. */
+/** Сохраняет прогресс просмотра видео без пользовательского уведомления об ошибках. */
 class SaveVideoWatchProgressUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
 ) {

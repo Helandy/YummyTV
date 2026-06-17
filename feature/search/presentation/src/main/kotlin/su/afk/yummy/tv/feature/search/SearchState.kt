@@ -25,30 +25,78 @@ class SearchState {
         val isLoadingFilterOptions: Boolean = false,
     ) : UiState
 
+    /** Пользовательские действия на экране поиска. */
     sealed interface Event : UiEvent {
+        /** Пользователь изменил поисковый запрос. */
         data class QueryChanged(val query: String) : Event
+
+        /** Внешний источник отправил поисковый запрос. */
         data class ExternalSearchSubmitted(val query: String) : Event
+
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class ItemSelected(val animeId: Int) : Event
+
+        /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event
+
+        /** Пользователь отправил текущий поисковый запрос. */
         data object SearchSubmitted : Event
+
+        /** Пользователь запросил повторную загрузку результатов. */
         data object RetrySelected : Event
+
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь запросил загрузку следующей страницы результатов. */
         data object LoadMore : Event
+
+        /** Пользователь открыл панель фильтров. */
         data object OpenFilters : Event
+
+        /** Пользователь закрыл панель фильтров. */
         data object CloseFilters : Event
+
+        /** Пользователь применил выбранные фильтры. */
         data object ApplyFilters : Event
+
+        /** Пользователь сбросил применённые фильтры. */
         data object ResetFilters : Event
+
+        /** Пользователь сбросил черновые изменения фильтров. */
         data object ResetDraftFilters : Event
+
+        /** Пользователь переключил жанр с указанным идентификатором. */
         data class GenreToggled(val id: String) : Event
+
+        /** Пользователь переключил исключённый жанр с указанным идентификатором. */
         data class ExcludedGenreToggled(val id: String) : Event
+
+        /** Пользователь переключил тип аниме с указанным идентификатором. */
         data class TypeToggled(val id: String) : Event
+
+        /** Пользователь переключил статус аниме с указанным идентификатором. */
         data class StatusToggled(val id: String) : Event
+
+        /** Пользователь переключил сезон с указанным идентификатором. */
         data class SeasonToggled(val id: String) : Event
+
+        /** Пользователь переключил возрастной рейтинг с указанным значением. */
         data class AgeRatingToggled(val value: Int) : Event
+
+        /** Пользователь изменил нижнюю границу года выпуска. */
         data class FromYearChanged(val year: Int?) : Event
+
+        /** Пользователь изменил верхнюю границу года выпуска. */
         data class ToYearChanged(val year: Int?) : Event
+
+        /** Пользователь выбрал сортировку результатов. */
         data class SortSelected(val sort: SearchSort) : Event
+
+        /** Пользователь переключил направление сортировки. */
         data object SortDirectionToggled : Event
+
+        /** UI завершил восстановление фокуса на элементе. */
         data object FocusedItemRestoreHandled : Event
     }
 

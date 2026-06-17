@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import javax.inject.Inject
 
-/** Saves the current user's rating for an anime. */
+/** Сохраняет оценку текущего пользователя для выбранного аниме. */
 class SetAnimeRatingUseCase @Inject constructor(
     private val repository: AnimeExtrasRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

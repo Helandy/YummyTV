@@ -12,8 +12,12 @@ class FullDetailsState {
         val error: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране полного описания. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь запросил повторную загрузку описания. */
         data object RetrySelected : Event
     }
 

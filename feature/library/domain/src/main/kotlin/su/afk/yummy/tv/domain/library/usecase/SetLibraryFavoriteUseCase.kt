@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
+/** Обновляет локальный признак избранного для тайтла. */
 class SetLibraryFavoriteUseCase @Inject constructor(
     private val repository: LibraryRepository,
 ) {

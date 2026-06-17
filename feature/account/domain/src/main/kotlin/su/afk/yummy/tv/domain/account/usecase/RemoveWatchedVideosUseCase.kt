@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import javax.inject.Inject
 
-/** Removes watched markers for remote videos. */
+/** Удаляет отметки просмотра для удалённых видео. */
 class RemoveWatchedVideosUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

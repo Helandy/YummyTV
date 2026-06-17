@@ -11,7 +11,9 @@ class TrailersState {
         val trailers: List<AnimeTrailer> = emptyList(),
     ) : UiState
 
+    /** Пользовательские действия на экране трейлеров. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
     }
 

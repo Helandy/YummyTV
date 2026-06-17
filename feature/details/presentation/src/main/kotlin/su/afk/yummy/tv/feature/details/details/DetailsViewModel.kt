@@ -18,10 +18,10 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
@@ -55,7 +55,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
     private val refreshLibraryMetadata: RefreshLibraryMetadataUseCase,
     private val settingsStore: SettingsStore,
-    private val yaniAuthPreferences: YaniAuthPreferences,
+    private val observeAccountSession: ObserveAccountSessionUseCase,
     private val stringProvider: StringProvider,
     private val libraryHandler: DetailsLibraryHandler,
     private val videoHandler: DetailsVideoHandler,
@@ -108,10 +108,10 @@ class DetailsViewModel @AssistedInject internal constructor(
         settingsStore.detailsButtonOrder
             .onEach { order -> setState { copy(detailsButtonOrder = order) } }
             .launchIn(viewModelScope)
-        yaniAuthPreferences.refreshToken
-            .onEach { token ->
+        observeAccountSession()
+            .onEach { session ->
                 val wasSignedIn = currentState.isSignedIn
-                val signedIn = token.isNotBlank()
+                val signedIn = session.isAuthorized
                 setState {
                     copy(
                         isSignedIn = signedIn,

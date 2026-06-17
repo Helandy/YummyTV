@@ -13,8 +13,12 @@ class ViewingOrderState {
         val error: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране порядка просмотра. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
     }
 

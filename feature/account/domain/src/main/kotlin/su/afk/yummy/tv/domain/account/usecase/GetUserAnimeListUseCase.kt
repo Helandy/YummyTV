@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import javax.inject.Inject
 
-/** Loads a user's anime list for the selected Yani list category. */
+/** Загружает список аниме пользователя для выбранной категории Yani. */
 class GetUserAnimeListUseCase @Inject constructor(private val repository: UserListsRepository) {
     suspend operator fun invoke(
         userId: Int,

@@ -32,24 +32,54 @@ class SettingsState {
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
     ) : UiState
 
+    /** Пользовательские действия на экране настроек. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь выбрал тему приложения. */
         data class AppThemeSelected(val theme: AppTheme) : Event
+
+        /** Пользователь выбрал качество постеров. */
         data class PosterQualitySelected(val quality: PosterQuality) : Event
+
+        /** Пользователь выбрал размер карточек постеров. */
         data class PosterCardSizeSelected(val size: PosterCardSize) : Event
+
+        /** Пользователь выбрал предпочитаемый плеер. */
         data class PreferredPlayerSelected(val player: PreferredPlayer) : Event
+
+        /** Пользователь запросил доступность preview-канала на TV. */
         data object RequestPreviewChannelBrowsable : Event
+
+        /** Пользователь переключил публикацию в Watch Next. */
         data object WatchNextToggled : Event
+
+        /** Пользователь выбрал размер кеша превью. */
         data class PreviewCacheSizeSelected(val size: PreviewCacheSize) : Event
+
+        /** Пользователь переключил автопропуск опенингов и эндингов. */
         data object AutoSkipOpeningsEndingsToggled : Event
+
+        /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event
+
+        /** Пользователь выбрал язык контента Yani. */
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
+
+        /** Пользователь переместил кнопку деталей в указанном направлении. */
         data class DetailsButtonMoved(
             val action: DetailsButtonAction,
             val direction: DetailsButtonMoveDirection,
         ) : Event
+
+        /** Пользователь открыл экран настройки порядка кнопок деталей. */
         data object DetailsButtonOrderScreenOpened : Event
+
+        /** Пользователь подтвердил текущий порядок кнопок деталей. */
         data object DetailsButtonOrderSelected : Event
+
+        /** Пользователь сбросил порядок кнопок деталей к стандартному. */
         data object DetailsButtonOrderReset : Event
     }
 

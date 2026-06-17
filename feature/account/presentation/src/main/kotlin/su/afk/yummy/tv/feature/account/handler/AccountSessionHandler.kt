@@ -8,19 +8,19 @@ internal class AccountSessionHandler @Inject constructor(
     private val authHandler: AccountAuthHandler,
 ) {
     private var loadedUserId: Int = 0
-    private var hasRefreshToken = false
+    private var isAuthorized = false
     private var missingProfileRefreshAttempted = false
     private var isMissingProfileRefreshRunning = false
 
-    fun onAuthSnapshot(refreshToken: String) {
-        hasRefreshToken = refreshToken.isNotBlank()
-        if (!hasRefreshToken) resetTransientState()
+    fun onSessionSnapshot(isAuthorized: Boolean) {
+        this.isAuthorized = isAuthorized
+        if (!isAuthorized) resetTransientState()
     }
 
-    fun hasRefreshToken(): Boolean = hasRefreshToken
+    fun isAuthorized(): Boolean = isAuthorized
 
     fun beginMissingProfileRecoveryIfNeeded(state: AccountState.State): Boolean {
-        if (!hasRefreshToken) return false
+        if (!isAuthorized) return false
         if (state.userId > 0) return false
         if (missingProfileRefreshAttempted || isMissingProfileRefreshRunning) return false
 
@@ -61,7 +61,7 @@ internal class AccountSessionHandler @Inject constructor(
         authHandler.refreshProfile()
 
     private fun resetSession() {
-        hasRefreshToken = false
+        isAuthorized = false
         resetTransientState()
     }
 

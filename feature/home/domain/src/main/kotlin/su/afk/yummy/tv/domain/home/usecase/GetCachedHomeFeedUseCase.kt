@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Inject
 
-/** Loads only the locally cached home feed without refreshing from the network. */
+/** Читает кешированную главную ленту без сетевого обновления. */
 class GetCachedHomeFeedUseCase @Inject constructor(
     private val homeFeedRepository: HomeFeedRepository,
 ) {

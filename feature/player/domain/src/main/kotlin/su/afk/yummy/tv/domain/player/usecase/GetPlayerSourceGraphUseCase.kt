@@ -14,15 +14,7 @@ import su.afk.yummy.tv.domain.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import javax.inject.Inject
 
-/**
- * Rebuilds the full player source graph from lightweight navigation data.
- *
- * Player routes intentionally keep only the selected source identifiers so Activity saved state
- * stays small. This use case loads the current anime sources, finds the requested source, and
- * builds the balancer/dubbing/episode graph used by the player controls. If sources cannot be
- * loaded or the anime id is missing, the caller can still use the route-derived single-source
- * fallback before invoking this use case.
- */
+/** Собирает граф доступных источников плеера из навигационных данных и списка видео. */
 class GetPlayerSourceGraphUseCase @Inject constructor(
     private val repository: PlayerSourceRepository,
 ) {

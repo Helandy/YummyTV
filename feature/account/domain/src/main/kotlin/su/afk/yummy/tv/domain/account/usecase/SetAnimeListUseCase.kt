@@ -6,7 +6,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import javax.inject.Inject
 
-/** Adds or moves an anime into the selected user list. */
+/** Добавляет или переносит аниме в выбранный пользовательский список. */
 class SetAnimeListUseCase @Inject constructor(
     private val repository: UserListsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

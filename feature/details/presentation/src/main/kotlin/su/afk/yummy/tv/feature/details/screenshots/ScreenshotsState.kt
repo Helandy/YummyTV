@@ -14,11 +14,21 @@ class ScreenshotsState {
         val error: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране скриншотов. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь открыл скриншот с указанным индексом. */
         data class ScreenshotSelected(val index: Int) : Event
+
+        /** Пользователь закрыл выбранный скриншот. */
         data object ScreenshotDismissed : Event
+
+        /** Пользователь перешёл к предыдущему скриншоту. */
         data object PreviousSelected : Event
+
+        /** Пользователь перешёл к следующему скриншоту. */
         data object NextSelected : Event
     }
 

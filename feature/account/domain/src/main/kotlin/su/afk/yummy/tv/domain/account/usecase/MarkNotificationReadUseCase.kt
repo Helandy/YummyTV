@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import javax.inject.Inject
 
-/** Marks a single profile notification as read. */
+/** Помечает одно уведомление профиля как прочитанное. */
 class MarkNotificationReadUseCase @Inject constructor(
     private val repository: ProfileNotificationsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

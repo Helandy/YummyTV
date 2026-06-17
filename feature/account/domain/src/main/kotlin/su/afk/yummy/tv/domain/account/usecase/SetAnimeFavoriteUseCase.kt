@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import javax.inject.Inject
 
-/** Updates the favorite flag for an anime in the current user's list. */
+/** Обновляет признак избранного для аниме в списках пользователя. */
 class SetAnimeFavoriteUseCase @Inject constructor(
     private val repository: UserListsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

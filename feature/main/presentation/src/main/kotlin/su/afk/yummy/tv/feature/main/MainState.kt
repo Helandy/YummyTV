@@ -21,7 +21,9 @@ object MainState {
         val unreadNotificationsCount: Int = 0,
     ) : UiState
 
+    /** Пользовательские действия в корневом контейнере приложения. */
     sealed class Event : UiEvent {
+        /** Фокус на TV переместился на корневую вкладку. */
         data class TvRootFocused(val root: RootTab) : Event()
     }
 

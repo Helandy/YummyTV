@@ -3,7 +3,7 @@ package su.afk.yummy.tv.domain.home.usecase
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Inject
 
-/** Returns known playable video ids for a continue-watching title. */
+/** Возвращает известные идентификаторы видео для продолжения просмотра тайтла. */
 class GetContinueWatchingVideoIdsUseCase @Inject constructor(
     private val homeFeedRepository: HomeFeedRepository,
 ) {

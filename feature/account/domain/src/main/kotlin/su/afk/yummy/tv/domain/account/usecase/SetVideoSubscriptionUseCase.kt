@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
 import javax.inject.Inject
 
-/** Toggles subscription state for updates on a video. */
+/** Переключает подписку на обновления выбранного видео. */
 class SetVideoSubscriptionUseCase @Inject constructor(
     private val repository: VideoSubscriptionRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

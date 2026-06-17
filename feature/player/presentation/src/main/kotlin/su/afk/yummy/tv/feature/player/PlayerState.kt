@@ -54,49 +54,82 @@ class PlayerState {
         val mobileVideoOffsetY: Float = 0f,
     ) : UiState
 
+    /** Пользовательские действия и события воспроизведения на экране плеера. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object Back : Event
+
+        /** Пользователь открыл экран деталей текущего тайтла. */
         data object OpenDetails : Event
+
+        /** Пользователь выбрал предыдущий эпизод. */
         data object PrevEpisode : Event
+
+        /** Пользователь выбрал следующий эпизод из указанного источника. */
         data class NextEpisode(
             val source: PlayerNextEpisodeSource = PlayerNextEpisodeSource.Controls,
         ) : Event
 
+        /** Воспроизведение эпизода дошло до завершения с текущей позицией и длительностью. */
         data class EpisodeCompleted(
             val positionMs: Long,
             val durationMs: Long,
             val episodeUrl: String = "",
         ) : Event
+
+        /** Пользователь выбрал озвучку по индексу, сохранив текущую позицию. */
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
+
+        /** Пользователь выбрал балансер по индексу, сохранив текущую позицию. */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
+
+        /** Пользователь выбрал качество потока, сохранив текущую позицию. */
         data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
+
+        /** Пользователь выбрал скорость воспроизведения. */
         data class SpeedSelected(val speed: Float) : Event
+
+        /** Пользователь выбрал режим изменения размера видео. */
         data class ResizeModeSelected(val mode: PlayerResizeMode) : Event
+
+        /** Пользователь выбрал уровень масштабирования видео. */
         data class ZoomLevelSelected(val level: PlayerZoomLevel) : Event
+
+        /** Пользователь изменил масштаб и смещение видео на мобильном экране. */
         data class MobileVideoTransformChanged(
             val scale: Float,
             val offsetX: Float,
             val offsetY: Float,
         ) : Event
 
+        /** Плеер сообщил текущую позицию, длительность и адрес эпизода. */
         data class PlaybackPositionChanged(
             val positionMs: Long,
             val durationMs: Long,
             val episodeUrl: String = "",
         ) : Event
+
+        /** Плеер запросил сохранение снимка прогресса просмотра. */
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
+
+        /** Пользователь выбрал пропуск сегмента указанного типа и диапазона. */
         data class SkipSegmentSelected(
             val type: PlayerSkipType,
             val fromMs: Long,
             val toMs: Long,
         ) : Event
 
+        /** Плеер сообщил об ошибке воспроизведения с техническими деталями. */
         data class PlaybackError(
             val message: String,
             val errorCode: String? = null,
             val errorType: String? = null,
         ) : Event
+
+        /** Пользователь запросил повторное получение потока. */
         data object RetryStream : Event
+
+        /** Пользователь перешёл к оценке текущего тайтла. */
         data object RateTitle : Event
     }
 

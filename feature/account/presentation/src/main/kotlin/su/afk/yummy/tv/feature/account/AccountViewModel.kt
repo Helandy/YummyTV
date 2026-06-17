@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.account
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -10,8 +9,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.account.handler.AccountHubHandler
 import su.afk.yummy.tv.feature.account.handler.AccountLoginResult
 import su.afk.yummy.tv.feature.account.handler.AccountNotificationHandler
@@ -33,7 +32,7 @@ class AccountViewModel @Inject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val settingsStore: SettingsStore,
-    private val yaniAuthPreferences: YaniAuthPreferences,
+    private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
     private val sessionHandler: AccountSessionHandler,
     private val hubHandler: AccountHubHandler,
@@ -46,15 +45,12 @@ class AccountViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
-        combine(
-            yaniAuthPreferences.refreshToken,
-            settingsStore.yaniUserId,
-        ) { token, userId -> token to userId }
-            .onEach { (token, userId) ->
-                sessionHandler.onAuthSnapshot(token)
-                val hasRefreshToken = sessionHandler.hasRefreshToken()
+        observeAccountSession()
+            .onEach { session ->
+                sessionHandler.onSessionSnapshot(session.isAuthorized)
+                val isAuthorized = sessionHandler.isAuthorized()
                 setState {
-                    if (!hasRefreshToken) {
+                    if (!isAuthorized) {
                         copy(
                             isSignedIn = false,
                             userId = 0,
@@ -66,8 +62,8 @@ class AccountViewModel @Inject internal constructor(
                         )
                     } else {
                         copy(
-                            isSignedIn = userId > 0,
-                            userId = userId,
+                            isSignedIn = session.userId > 0,
+                            userId = session.userId,
                         )
                     }
                 }

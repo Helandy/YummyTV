@@ -2,7 +2,10 @@ package su.afk.yummy.tv.data.account.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -15,6 +18,7 @@ import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
 import su.afk.yummy.tv.data.account.storage.mapper.toProfileEntry
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
+import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.data.account.storage.mapper.toAccount as toStoredAccount
@@ -60,6 +64,27 @@ class YaniAccountRepository(
         }
         profile
     }
+
+    override fun observeSession() =
+        combine(
+            yaniAuthPreferences.refreshToken,
+            settingsStore.yaniUserId,
+        ) { token, userId ->
+            AccountSession(
+                isAuthorized = token.isNotBlank(),
+                userId = userId,
+            )
+        }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+
+    override suspend fun getSession(): AccountSession =
+        withContext(Dispatchers.IO) {
+            AccountSession(
+                isAuthorized = yaniAuthPreferences.refreshToken.first().isNotBlank(),
+                userId = settingsStore.yaniUserId.first(),
+            )
+        }
 
     override suspend fun getProfile(): YaniAccount =
         withContext(Dispatchers.IO) {

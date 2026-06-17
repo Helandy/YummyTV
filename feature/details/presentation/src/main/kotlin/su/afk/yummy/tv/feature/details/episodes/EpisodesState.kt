@@ -15,11 +15,21 @@ class EpisodesState {
         val pendingBalancerSelection: BalancerPickerState? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране эпизодов. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь открыл озвучки для указанного эпизода. */
         data class EpisodeDubbingsSelected(val episode: String) : Event
+
+        /** Пользователь выбрал видео для просмотра. */
         data class VideoSelected(val video: AnimeVideo) : Event
+
+        /** Пользователь закрыл выбор балансера. */
         data object BalancerPickerDismissed : Event
+
+        /** Пользователь подтвердил видео для запуска после выбора балансера. */
         data class BalancerConfirmed(val video: AnimeVideo) : Event
     }
 

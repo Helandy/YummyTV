@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 
-/** Loads cached anime details without refreshing from the network. */
+/** Читает кешированную карточку аниме без сетевого обновления. */
 class GetCachedAnimeDetailsUseCase @Inject constructor(
     private val repository: AnimeRepository,
 ) {

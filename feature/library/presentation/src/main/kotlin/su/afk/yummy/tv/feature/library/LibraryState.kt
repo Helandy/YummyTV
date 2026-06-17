@@ -33,15 +33,33 @@ class LibraryState {
         val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 
+    /** Пользовательские действия на экране библиотеки. */
     sealed interface Event : UiEvent {
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
+
+        /** Пользователь выбрал элемент продолжения просмотра. */
         data class ContinueWatchingSelected(val entry: HomeContinueWatchingItem) : Event
+
+        /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event
+
+        /** Пользователь выбрал вкладку библиотеки. */
         data class TabSelected(val tab: LibraryTab) : Event
+
+        /** UI завершил восстановление фокуса на элементе. */
         data object FocusedItemRestoreHandled : Event
+
+        /** Экран снова стал активным для пользователя. */
         data object ScreenResumed : Event
+
+        /** Пользователь запросил повторную загрузку библиотеки. */
         data object RetrySelected : Event
+
+        /** Пользователь удалил тайтл из указанной части библиотеки. */
         data class RemoveEntry(val animeId: Int, val target: LibraryRemoveTarget) : Event
+
+        /** Пользователь удалил локальный прогресс просмотра тайтла. */
         data class RemoveWatchProgress(val animeId: Int) : Event
     }
 

@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Inject
 
-/** Observes merged remote feed and local playback progress for continue watching. */
+/** Наблюдает за объединённым списком продолжения просмотра из ленты и локального прогресса. */
 class ObserveContinueWatchingUseCase @Inject constructor(
     private val homeFeedRepository: HomeFeedRepository,
 ) {

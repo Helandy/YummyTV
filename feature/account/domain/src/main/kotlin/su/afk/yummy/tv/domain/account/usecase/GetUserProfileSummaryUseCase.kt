@@ -3,7 +3,7 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.repository.UserProfileRepository
 import javax.inject.Inject
 
-/** Loads the site-style profile summary for a Yani user. */
+/** Загружает краткую сводку профиля пользователя Yani. */
 class GetUserProfileSummaryUseCase @Inject constructor(
     private val repository: UserProfileRepository,
 ) {

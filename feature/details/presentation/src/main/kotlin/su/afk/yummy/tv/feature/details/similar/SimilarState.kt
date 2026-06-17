@@ -12,11 +12,21 @@ class SimilarState {
         val focusedItemId: Int? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране похожих аниме. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
+
+        /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event
+
+        /** Пользователь выбрал источник рекомендаций. */
         data class SourceSelected(val fromAi: Boolean) : Event
+
+        /** Пользователь переключил источник рекомендаций. */
         data object SourceToggled : Event
     }
 

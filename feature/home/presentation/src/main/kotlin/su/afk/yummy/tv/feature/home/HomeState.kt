@@ -20,23 +20,38 @@ class HomeState {
         val continueWatchingRestoreKey: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на главном экране. */
     sealed interface Event : UiEvent {
+        /** Пользователь выбрал аниме из указанной секции главной ленты. */
         data class AnimeSelected(
             val seriesId: Int,
             val sourceSectionId: String? = null,
             val displayId: Int? = null,
         ) : Event
+
+        /** Пользователь выбрал коллекцию из указанной секции главной ленты. */
         data class CollectionSelected(
             val collectionId: Int,
             val sourceSectionId: String? = null,
             val displayId: Int? = null,
         ) : Event
 
+        /** Фокус переместился на элемент главной ленты. */
         data class ItemFocused(val sectionId: String, val displayId: Int, val animeId: Int?) : Event
+
+        /** Пользователь выбрал элемент продолжения просмотра. */
         data class ContinueWatchingSelected(val entry: HomeContinueWatchingItem) : Event
+
+        /** UI завершил восстановление фокуса на элементе. */
         data object FocusedItemRestoreHandled : Event
+
+        /** Экран снова стал активным для пользователя. */
         data object ScreenResumed : Event
+
+        /** Пользователь запросил обновление главной ленты. */
         data object RefreshRequested : Event
+
+        /** Пользователь запросил повторную загрузку главной ленты. */
         data object RetrySelected : Event
     }
 

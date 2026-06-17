@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.combine
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import javax.inject.Inject
 
+/** Наблюдает, находится ли выбранное аниме в библиотеке и избранном. */
 class ObserveAnimeLibraryStateUseCase @Inject constructor(
     private val repository: LibraryRepository,
 ) {

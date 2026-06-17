@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import javax.inject.Inject
 
-/** Loads public rating counters and averages for an anime. */
+/** Загружает публичную сводку оценок для выбранного аниме. */
 class GetAnimeRatingSummaryUseCase @Inject constructor(private val repository: AnimeExtrasRepository) {
     suspend operator fun invoke(animeId: Int): AnimeRatingSummary = repository.getRatingSummary(animeId)
 }

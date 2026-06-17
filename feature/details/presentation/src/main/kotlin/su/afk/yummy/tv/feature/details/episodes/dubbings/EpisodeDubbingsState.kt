@@ -12,7 +12,9 @@ class EpisodeDubbingsState {
         val dubbings: List<String> = emptyList(),
     ) : UiState
 
+    /** Пользовательские действия на экране озвучек эпизода. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
     }
 

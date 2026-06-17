@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
 import javax.inject.Inject
 
-/** Loads a paged top anime list for the selected ranking type. */
+/** Загружает страницу топа аниме для выбранного рейтингового типа. */
 class GetAnimeTopUseCase @Inject constructor(
     private val repository: AnimeTopRepository,
 ) {

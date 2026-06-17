@@ -1,9 +1,7 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
@@ -18,8 +16,7 @@ import javax.inject.Inject
 
 /** Loads and mutates video subscription options shared by details and subscriptions screens. */
 internal class DetailsSubscriptionHandler @Inject constructor(
-    private val yaniAuthPreferences: YaniAuthPreferences,
-    private val settingsStore: SettingsStore,
+    private val getAccountSession: GetAccountSessionUseCase,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
@@ -29,16 +26,15 @@ internal class DetailsSubscriptionHandler @Inject constructor(
         animeId: Int,
         optimisticKeys: Set<String>,
     ): ScreenSubscriptionBaseResult {
-        val token = yaniAuthPreferences.refreshToken.first()
-        val userId = settingsStore.yaniUserId.first()
-        if (token.isBlank() || userId <= 0) return ScreenSubscriptionBaseResult.SignedOut
+        val session = getAccountSession()
+        if (!session.isAuthorized || session.userId <= 0) return ScreenSubscriptionBaseResult.SignedOut
 
         val details = runCatching { getAnimeDetails(animeId) }.getOrNull()
         return runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 ScreenSubscriptionBaseResult.Content(
                     ScreenSubscriptionBase(
-                        userId = userId,
+                        userId = session.userId,
                         details = details,
                         videos = videos,
                         subscriptions = videos.toSubscriptionOptions(optimisticKeys = optimisticKeys),

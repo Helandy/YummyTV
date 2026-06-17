@@ -1,10 +1,11 @@
 package su.afk.yummy.tv.domain.search.usecase
 
-import su.afk.yummy.tv.domain.search.model.*
-import su.afk.yummy.tv.domain.search.repository.*
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchPage
+import su.afk.yummy.tv.domain.search.repository.SearchRepository
 import javax.inject.Inject
 
-/** Searches anime with the selected query, filters, and paging. */
+/** Ищет аниме по запросу, фильтрам и параметрам страницы. */
 class SearchUseCase @Inject constructor(private val repository: SearchRepository) {
     suspend operator fun invoke(
         query: String,

@@ -3,7 +3,7 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import javax.inject.Inject
 
-/** Returns whether this user already has cached remote list pages on the device. */
+/** Проверяет, есть ли на устройстве кешированные страницы списков пользователя. */
 class HasCachedUserListsUseCase @Inject constructor(
     private val repository: UserListsRepository,
 ) {

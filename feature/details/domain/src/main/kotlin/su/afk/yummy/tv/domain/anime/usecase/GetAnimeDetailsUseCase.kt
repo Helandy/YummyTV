@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 
-/** Loads the full details page data for an anime. */
+/** Загружает полную карточку выбранного аниме. */
 class GetAnimeDetailsUseCase @Inject constructor(
     private val animeRepository: AnimeRepository,
 ) {

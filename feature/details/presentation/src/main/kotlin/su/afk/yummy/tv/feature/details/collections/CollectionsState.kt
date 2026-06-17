@@ -12,9 +12,15 @@ class CollectionsState {
         val error: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране коллекций тайтла. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь запросил повторную загрузку коллекций. */
         data object RetrySelected : Event
+
+        /** Пользователь выбрал коллекцию с указанным идентификатором. */
         data class CollectionSelected(val collectionId: Int) : Event
     }
 

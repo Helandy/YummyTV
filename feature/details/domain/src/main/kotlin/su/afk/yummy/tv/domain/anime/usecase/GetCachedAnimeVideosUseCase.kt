@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 
-/** Loads cached playable video entries without refreshing from the network. */
+/** Читает кешированные видео аниме без сетевого обновления. */
 class GetCachedAnimeVideosUseCase @Inject constructor(
     private val repository: AnimeRepository,
 ) {

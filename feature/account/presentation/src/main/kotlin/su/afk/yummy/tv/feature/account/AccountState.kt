@@ -43,23 +43,57 @@ class AccountState {
         NOTIFICATIONS,
     }
 
+    /** Пользовательские действия на экране аккаунта. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь выбрал вкладку аккаунта. */
         data class TabSelected(val tab: AccountTab) : Event
+
+        /** Пользователь изменил логин в форме входа. */
         data class LoginChanged(val login: String) : Event
+
+        /** Пользователь изменил пароль в форме входа. */
         data class PasswordChanged(val password: String) : Event
+
+        /** Пользователь отправил форму входа. */
         data object LoginSelected : Event
+
+        /** Пользователь успешно решил капчу и передал токен проверки. */
         data class CaptchaSolved(val token: String) : Event
+
+        /** Срок действия капчи истёк. */
         data object CaptchaExpired : Event
+
+        /** Проверка капчи завершилась ошибкой с необязательным сообщением. */
         data class CaptchaFailed(val message: String? = null) : Event
+
+        /** Пользователь выбрал выход из аккаунта. */
         data object LogoutSelected : Event
+
+        /** Пользователь запросил обновление профиля. */
         data object RefreshProfileSelected : Event
+
+        /** Пользователь запросил обновление данных вкладок аккаунта. */
         data object RefreshHubSelected : Event
+
+        /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
+
+        /** Фокус переместился на уведомление с указанным идентификатором. */
         data class NotificationFocused(val id: Int) : Event
+
+        /** UI завершил восстановление фокуса на уведомлении. */
         data object NotificationFocusRestoreHandled : Event
+
+        /** Пользователь отметил уведомление с указанным идентификатором прочитанным. */
         data class NotificationReadSelected(val id: Int) : Event
+
+        /** Пользователь отметил все уведомления прочитанными. */
         data object AllNotificationsReadSelected : Event
+
+        /** Пользователь удалил уведомление с указанным идентификатором. */
         data class NotificationDeleteSelected(val id: Int) : Event
     }
 

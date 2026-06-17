@@ -19,12 +19,24 @@ class TopState {
         val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 
+    /** Пользовательские действия на экране топа аниме. */
     sealed interface Event : UiEvent {
+        /** Пользователь выбрал тип рейтинга топа. */
         data class TypeSelected(val type: AnimeTopType) : Event
+
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
+
+        /** Фокус переместился на аниме с указанным идентификатором. */
         data class ItemFocused(val animeId: Int) : Event
+
+        /** UI завершил восстановление фокуса на элементе. */
         data object FocusedItemRestoreHandled : Event
+
+        /** Пользователь запросил загрузку следующей страницы топа. */
         data object LoadMore : Event
+
+        /** Пользователь запросил повторную загрузку топа. */
         data object RetrySelected : Event
     }
 

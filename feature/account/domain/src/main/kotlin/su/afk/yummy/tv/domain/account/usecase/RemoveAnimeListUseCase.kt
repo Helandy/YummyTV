@@ -5,7 +5,7 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import javax.inject.Inject
 
-/** Removes an anime from the current user's remote list. */
+/** Удаляет аниме из удалённого списка текущего пользователя. */
 class RemoveAnimeListUseCase @Inject constructor(
     private val repository: UserListsRepository,
     private val mutationErrorNotifier: AccountMutationErrorNotifier,

@@ -14,10 +14,18 @@ class ScheduleState {
         val error: String? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране расписания. */
     sealed interface Event : UiEvent {
+        /** Пользователь запросил повторную загрузку расписания. */
         data object RetrySelected : Event
+
+        /** Пользователь выбрал дату по значению epoch day. */
         data class DateSelected(val epochDay: Long) : Event
+
+        /** Фокус переместился на релиз в указанном дне расписания. */
         data class ReleaseFocused(val releaseKey: String, val epochDay: Long) : Event
+
+        /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
     }
 

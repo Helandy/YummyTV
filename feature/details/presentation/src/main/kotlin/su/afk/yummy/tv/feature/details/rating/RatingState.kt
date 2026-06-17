@@ -15,10 +15,18 @@ class RatingState {
         val selectedUserRating: Int? = null,
     ) : UiState
 
+    /** Пользовательские действия на экране рейтинга тайтла. */
     sealed interface Event : UiEvent {
+        /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь запросил повторную загрузку рейтинга. */
         data object RetrySelected : Event
+
+        /** Пользователь выбрал оценку для тайтла. */
         data class RatingSelected(val rating: Int) : Event
+
+        /** Пользователь удалил свою оценку тайтла. */
         data object RatingDeleted : Event
     }
 

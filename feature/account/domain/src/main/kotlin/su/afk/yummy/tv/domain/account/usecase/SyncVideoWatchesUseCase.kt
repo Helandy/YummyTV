@@ -4,7 +4,7 @@ import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import javax.inject.Inject
 
-/** Uploads locally saved watches after a user signs in. */
+/** Отправляет локально сохранённые просмотры после входа пользователя. */
 class SyncVideoWatchesUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
 ) {
