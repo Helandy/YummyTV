@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.details.utils
 
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
@@ -35,17 +35,13 @@ internal fun List<AnimeVideo>.selectInitialDetailsVideo(): AnimeVideo? {
         ?: source.firstOrNull()
 }
 
-internal fun AnimeDetails.toLibraryEntry(
+internal fun AnimeDetails.toLibraryItem(
     list: UserAnimeList,
     isFavorite: Boolean,
-) = LibraryEntry(
+) = LibraryItem(
     animeId = id,
     title = title,
-    posterSmallUrl = poster?.small,
-    posterMediumUrl = poster?.medium,
-    posterBigUrl = poster?.big,
-    posterFullsizeUrl = poster?.fullsize,
-    posterMegaUrl = poster?.mega,
+    poster = poster?.toLibraryPoster(),
     listId = list.id,
     isFavorite = isFavorite,
 )

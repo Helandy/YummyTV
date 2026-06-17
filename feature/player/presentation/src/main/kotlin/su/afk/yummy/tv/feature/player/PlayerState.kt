@@ -17,13 +17,6 @@ data class PlayerProgressSnapshot(
     val durationMs: Long,
 )
 
-enum class PlayerSeekSource {
-    DoubleTap,
-    ProgressBar,
-    RemoteStep,
-    Slider,
-}
-
 enum class PlayerSkipType {
     Opening,
     Ending,
@@ -92,13 +85,6 @@ class PlayerState {
             val episodeUrl: String = "",
         ) : Event
         data class SaveProgress(val snapshot: PlayerProgressSnapshot) : Event
-        data class SeekPerformed(
-            val fromMs: Long,
-            val toMs: Long,
-            val durationMs: Long,
-            val source: PlayerSeekSource,
-        ) : Event
-
         data class SkipSegmentSelected(
             val type: PlayerSkipType,
             val fromMs: Long,

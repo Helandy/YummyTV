@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.feature.details.details
 
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
+import su.afk.yummy.tv.domain.anime.model.isContinueWatchingProgress
 import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.player.isPlaceholderEpisode
@@ -23,7 +23,7 @@ fun resolveDetailsContinueTarget(
     val videoSources = videos.map { it.toPlayerVideoSource() }
     if (videoSources.isEmpty()) return null
 
-    val targetVideo = if (WatchProgressStore.isContinueWatchingEntry(latestEntry)) {
+    val targetVideo = if (latestEntry.isContinueWatchingProgress()) {
         videoSources.selectContinueWatchingVideo(
             videoId = latestEntry.videoId,
             episodeUrl = latestEntry.episodeUrl,
@@ -38,7 +38,7 @@ fun resolveDetailsContinueTarget(
     return DetailsContinueTarget(video = targetVideo)
 }
 
-private fun List<PlayerVideoSource>.selectNextEpisodeAfter(entry: WatchProgressEntry): PlayerVideoSource? {
+private fun List<PlayerVideoSource>.selectNextEpisodeAfter(entry: AnimeWatchProgress): PlayerVideoSource? {
     val currentEpisode = findProgressVideo(entry)
         ?.episode
         ?.takeUnless { it.isPlaceholderEpisode() }
@@ -59,7 +59,7 @@ private fun List<PlayerVideoSource>.selectNextEpisodeAfter(entry: WatchProgressE
     }
 }
 
-private fun List<PlayerVideoSource>.findProgressVideo(entry: WatchProgressEntry): PlayerVideoSource? =
+private fun List<PlayerVideoSource>.findProgressVideo(entry: AnimeWatchProgress): PlayerVideoSource? =
     firstOrNull { entry.videoId > 0 && it.id == entry.videoId }
         ?: firstOrNull { entry.episodeUrl.isNotBlank() && it.iframeUrl == entry.episodeUrl }
         ?: firstOrNull {

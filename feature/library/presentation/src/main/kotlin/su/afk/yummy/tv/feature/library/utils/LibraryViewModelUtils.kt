@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.library.utils
 
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.LibraryTab
 
 internal data class LocalLibrarySyncResult(
@@ -9,7 +9,7 @@ internal data class LocalLibrarySyncResult(
     val error: Throwable?,
 )
 
-internal fun LibraryEntry.userAnimeList(): UserAnimeList? =
+internal fun LibraryItem.userAnimeList(): UserAnimeList? =
     UserAnimeList.entries.firstOrNull { it.id == listId }
 
 internal fun LibraryTab.userAnimeList(): UserAnimeList? = when (this) {

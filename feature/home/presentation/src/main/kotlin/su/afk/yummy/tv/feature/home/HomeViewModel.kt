@@ -70,7 +70,6 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
             }
 
-            is HomeState.Event.VideoSelected -> Unit
             is HomeState.Event.ContinueWatchingSelected -> {
                 analytics.eventContinueWatchingSelected(event.entry)
                 setState {

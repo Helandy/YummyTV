@@ -41,7 +41,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
-import su.afk.yummy.tv.feature.player.PlayerSeekSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
@@ -205,8 +204,7 @@ internal fun MobileNativePlayer(
         )
     }
 
-    fun seekToPosition(positionMs: Long, seekSource: PlayerSeekSource? = null) {
-        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+    fun seekToPosition(positionMs: Long) {
         val playerDuration = exoPlayer.duration.takeIf { it > 0 } ?: duration
         val clamped = if (playerDuration > 0) {
             positionMs.coerceIn(0L, playerDuration)
@@ -214,16 +212,6 @@ internal fun MobileNativePlayer(
             positionMs.coerceAtLeast(0L)
         }
         exoPlayer.seekTo(clamped)
-        if (seekSource != null && clamped != fromPosition) {
-            onEvent(
-                PlayerState.Event.SeekPerformed(
-                    fromMs = fromPosition,
-                    toMs = clamped,
-                    durationMs = playerDuration.coerceAtLeast(0L),
-                    source = seekSource,
-                )
-            )
-        }
         notifyPlaybackPositionChanged(clamped, playerDuration.coerceAtLeast(0L))
         saveProgress(clamped, playerDuration)
     }
@@ -232,7 +220,7 @@ internal fun MobileNativePlayer(
         showNextEpisodePrompt = false
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekToPosition(exoPlayer.currentPosition + offset, PlayerSeekSource.DoubleTap)
+        seekToPosition(exoPlayer.currentPosition + offset)
         stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
@@ -495,7 +483,7 @@ internal fun MobileNativePlayer(
             onSeekFinished = {
                 if (duration > 0) {
                     val newPosition = (seekProgress * duration).toLong().coerceIn(0L, duration)
-                    seekToPosition(newPosition, PlayerSeekSource.Slider)
+                    seekToPosition(newPosition)
                 }
                 isSeeking = false
                 showOverlay()

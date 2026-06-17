@@ -1,12 +1,13 @@
 package su.afk.yummy.tv.feature.details.details
 
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
+import su.afk.yummy.tv.domain.anime.model.isContinueWatchingProgress
+import su.afk.yummy.tv.domain.anime.model.isMeaningfulProgress
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 
 data class DetailsWatchProgressIndex(
-    val entries: List<WatchProgressEntry> = emptyList(),
+    val entries: List<AnimeWatchProgress> = emptyList(),
 ) {
     fun resumeFromMsFor(video: AnimeVideo): Long =
         bestFor(listOf(video)).resumeFromMs()
@@ -18,7 +19,7 @@ data class DetailsWatchProgressIndex(
             episode = video.episode,
         ).bestMeaningful().resumeFromMs()
 
-    fun bestFor(videos: List<AnimeVideo>): WatchProgressEntry? {
+    fun bestFor(videos: List<AnimeVideo>): AnimeWatchProgress? {
         val matched = videos.flatMap { video ->
             matchedFor(
                 videoId = video.id,
@@ -33,7 +34,7 @@ data class DetailsWatchProgressIndex(
         videoId: Int,
         episodeUrl: String,
         episode: String,
-    ): List<WatchProgressEntry> =
+    ): List<AnimeWatchProgress> =
         listOfNotNull(
             entries.firstOrNull { videoId > 0 && it.videoId == videoId },
             entries.firstOrNull { episodeUrl.isNotBlank() && it.episodeUrl == episodeUrl },
@@ -42,18 +43,18 @@ data class DetailsWatchProgressIndex(
             },
         )
 
-    private fun List<WatchProgressEntry>.bestMeaningful(): WatchProgressEntry? =
+    private fun List<AnimeWatchProgress>.bestMeaningful(): AnimeWatchProgress? =
         distinct()
-            .filter { WatchProgressStore.isMeaningfulProgressEntry(it) }
-            .maxWithOrNull(compareBy<WatchProgressEntry> {
+            .filter { it.isMeaningfulProgress() }
+            .maxWithOrNull(compareBy<AnimeWatchProgress> {
                 it.updatedAt
             }.thenBy {
                 it.positionMs
             })
 
-    fun latestMeaningful(animeId: Int): WatchProgressEntry? =
+    fun latestMeaningful(animeId: Int): AnimeWatchProgress? =
         entries
-            .filter { it.animeId == animeId && WatchProgressStore.isMeaningfulProgressEntry(it) }
+            .filter { it.animeId == animeId && it.isMeaningfulProgress() }
             .maxByOrNull { it.updatedAt }
 
     companion object {
@@ -61,11 +62,11 @@ data class DetailsWatchProgressIndex(
 
         fun merge(
             animeId: Int,
-            localEntries: List<WatchProgressEntry>,
+            localEntries: List<AnimeWatchProgress>,
             videos: List<AnimeVideo>,
         ): DetailsWatchProgressIndex {
-            val result = linkedMapOf<String, WatchProgressEntry>()
-            (videos.mapNotNull { it.toServerProgressEntry(animeId) } + localEntries)
+            val result = linkedMapOf<String, AnimeWatchProgress>()
+            (videos.mapNotNull { it.toServerProgress(animeId) } + localEntries)
                 .forEach { entry ->
                     val key = entry.mergeKey()
                     val current = result[key]
@@ -76,11 +77,11 @@ data class DetailsWatchProgressIndex(
             return DetailsWatchProgressIndex(result.values.toList())
         }
 
-        private fun AnimeVideo.toServerProgressEntry(animeId: Int): WatchProgressEntry? {
+        private fun AnimeVideo.toServerProgress(animeId: Int): AnimeWatchProgress? {
             val positionSeconds = watchedEndTimeSeconds?.takeIf { it >= 0 } ?: return null
             val dateSeconds = watchedDateSeconds?.takeIf { it > 0L } ?: return null
             val durationMs = durationSeconds?.takeIf { it > 0 }?.times(1_000L) ?: return null
-            return WatchProgressEntry(
+            return AnimeWatchProgress(
                 animeId = animeId,
                 episode = episode,
                 videoId = id,
@@ -93,7 +94,7 @@ data class DetailsWatchProgressIndex(
             )
         }
 
-        private fun WatchProgressEntry.mergeKey(): String =
+        private fun AnimeWatchProgress.mergeKey(): String =
             when {
                 animeId > 0 && episode.isNotBlank() -> "$animeId:episode:${episode.episodeKey()}"
                 videoId > 0 -> "video:$videoId"
@@ -103,8 +104,8 @@ data class DetailsWatchProgressIndex(
     }
 }
 
-private fun WatchProgressEntry?.resumeFromMs(): Long =
-    this?.positionMs?.takeIf { WatchProgressStore.isContinueWatchingEntry(this) } ?: 0L
+private fun AnimeWatchProgress?.resumeFromMs(): Long =
+    this?.positionMs?.takeIf { isContinueWatchingProgress() } ?: 0L
 
 private fun String.episodeKey(): String =
     trim()

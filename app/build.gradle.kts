@@ -88,6 +88,7 @@ dependencies {
     implementation(project(":feature:home:ui-tv"))
     implementation(project(":feature:home:data"))
     implementation(project(":feature:library:api"))
+    implementation(project(":feature:library:data"))
     implementation(project(":feature:library:ui-mobile"))
     implementation(project(":feature:library:ui-tv"))
     implementation(project(":feature:main:api"))

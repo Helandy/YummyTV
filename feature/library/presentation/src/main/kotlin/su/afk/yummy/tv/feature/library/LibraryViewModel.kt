@@ -11,12 +11,14 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetContinueWatchingVideoIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
+import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
+import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
+import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
@@ -30,7 +32,9 @@ class LibraryViewModel @Inject internal constructor(
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
-    private val libraryStore: LibraryStore,
+    private val observeLibraryItems: ObserveLibraryItemsUseCase,
+    private val removeLibraryItem: RemoveLibraryItemUseCase,
+    private val setLibraryFavorite: SetLibraryFavoriteUseCase,
     private val settingsStore: SettingsStore,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
@@ -67,7 +71,7 @@ class LibraryViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
-        libraryStore.observeAll()
+        observeLibraryItems()
             .onEach { entries -> setState { copy(items = entries) } }
             .launchIn(viewModelScope)
 
@@ -261,8 +265,8 @@ class LibraryViewModel @Inject internal constructor(
 
     private suspend fun removeLocalEntry(event: LibraryState.Event.RemoveEntry) {
         when (event.target) {
-            LibraryRemoveTarget.LIST -> libraryStore.remove(event.animeId)
-            LibraryRemoveTarget.FAVORITE -> libraryStore.setFavorite(
+            LibraryRemoveTarget.LIST -> removeLibraryItem(event.animeId)
+            LibraryRemoveTarget.FAVORITE -> setLibraryFavorite(
                 event.animeId,
                 title = "",
                 poster = null,

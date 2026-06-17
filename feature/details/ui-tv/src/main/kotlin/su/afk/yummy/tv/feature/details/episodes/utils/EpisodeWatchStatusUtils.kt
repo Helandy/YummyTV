@@ -2,8 +2,10 @@ package su.afk.yummy.tv.feature.details.episodes.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.isMeaningfulProgress
+import su.afk.yummy.tv.domain.anime.model.isWatchedProgress
+import su.afk.yummy.tv.domain.anime.model.progress
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
@@ -14,12 +16,12 @@ internal fun List<AnimeVideo>.watchStatus(
     val best = watchProgress.bestFor(this)
         ?: return EpisodeWatchStatus.None
 
-    if (!WatchProgressStore.isMeaningfulProgressEntry(best)) {
+    if (!best.isMeaningfulProgress()) {
         return EpisodeWatchStatus.None
     }
 
-    val progress = WatchProgressStore.progress(best.positionMs, best.durationMs)
-    return if (WatchProgressStore.isWatchedProgressEntry(best)) {
+    val progress = best.progress()
+    return if (best.isWatchedProgress()) {
         EpisodeWatchStatus.Watched(
             positionMs = best.positionMs,
             durationMs = best.durationMs,

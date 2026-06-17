@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    api(libs.kotlinx.coroutines.android)
     implementation(libs.javax.inject)
 
     testImplementation(libs.kotlin.test)

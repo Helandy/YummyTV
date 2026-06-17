@@ -102,6 +102,8 @@ include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
 
 include(":feature:library:presentation")
+include(":feature:library:domain")
+include(":feature:library:data")
 include(":feature:library:ui-tv")
 include(":feature:library:ui-mobile")
 

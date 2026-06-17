@@ -55,7 +55,6 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
-import su.afk.yummy.tv.feature.player.PlayerSeekSource
 import su.afk.yummy.tv.feature.player.PlayerSkipType
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -259,8 +258,7 @@ internal fun ExoPlayerView(
         )
     }
 
-    fun seekTo(positionMs: Long, seekSource: PlayerSeekSource? = null) {
-        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+    fun seekTo(positionMs: Long) {
         val playerDuration = duration.coerceAtLeast(0L)
         val clamped =
             if (playerDuration > 0) {
@@ -271,16 +269,6 @@ internal fun ExoPlayerView(
         exoPlayer.seekTo(clamped)
         currentPosition = clamped
         lastSeekTime = System.currentTimeMillis()
-        if (seekSource != null && clamped != fromPosition) {
-            onPlayerEvent(
-                PlayerState.Event.SeekPerformed(
-                    fromMs = fromPosition,
-                    toMs = clamped,
-                    durationMs = playerDuration,
-                    source = seekSource,
-                )
-            )
-        }
         notifyPlaybackPositionChanged(clamped, playerDuration)
         saveProgressIfReady(clamped)
     }
@@ -288,7 +276,7 @@ internal fun ExoPlayerView(
     fun stepSeek(direction: SeekDirection) {
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekTo(exoPlayer.currentPosition + offset, PlayerSeekSource.RemoteStep)
+        seekTo(exoPlayer.currentPosition + offset)
         stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
@@ -726,10 +714,7 @@ internal fun ExoPlayerView(
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
                             if (isSeeking) {
-                                seekTo(
-                                    (seekProgress * duration).toLong(),
-                                    PlayerSeekSource.ProgressBar,
-                                )
+                                seekTo((seekProgress * duration).toLong())
                                 isSeeking = false
                             }
                         },

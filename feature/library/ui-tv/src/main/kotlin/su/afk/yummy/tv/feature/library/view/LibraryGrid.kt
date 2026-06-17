@@ -48,13 +48,14 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFoc
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
+import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.feature.library.R
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LibraryGrid(
-    items: List<LibraryEntry>,
+    items: List<LibraryItem>,
     focusedItemId: Int?,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
@@ -315,9 +316,11 @@ internal fun LibraryGrid(
     }
 }
 
-private fun LibraryEntry.posterUrl(quality: PosterQuality): String? = when (quality) {
-    PosterQuality.LOW -> posterMediumUrl ?: posterBigUrl ?: posterFullsizeUrl ?: posterSmallUrl
-    PosterQuality.STANDARD -> posterBigUrl ?: posterMediumUrl ?: posterFullsizeUrl ?: posterSmallUrl
-    PosterQuality.MEGA -> posterMegaUrl ?: posterBigUrl ?: posterMediumUrl ?: posterFullsizeUrl ?: posterSmallUrl
-    PosterQuality.HIGH -> posterFullsizeUrl ?: posterMegaUrl ?: posterBigUrl ?: posterMediumUrl ?: posterSmallUrl
+private fun LibraryItem.posterUrl(quality: PosterQuality): String? = poster.posterUrl(quality)
+
+private fun LibraryPoster?.posterUrl(quality: PosterQuality): String? = when (quality) {
+    PosterQuality.LOW -> this?.medium ?: this?.big ?: this?.fullsize ?: this?.small
+    PosterQuality.STANDARD -> this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
+    PosterQuality.MEGA -> this?.mega ?: this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
+    PosterQuality.HIGH -> this?.fullsize ?: this?.mega ?: this?.big ?: this?.medium ?: this?.small
 }

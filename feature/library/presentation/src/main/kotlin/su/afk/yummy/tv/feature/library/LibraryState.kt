@@ -3,8 +3,8 @@ package su.afk.yummy.tv.feature.library
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.library.model.LibraryItem
 
 enum class LibraryTab {
     CONTINUE_WATCHING,
@@ -23,7 +23,7 @@ enum class LibraryRemoveTarget {
 
 class LibraryState {
     data class State(
-        val items: List<LibraryEntry> = emptyList(),
+        val items: List<LibraryItem> = emptyList(),
         val continueWatching: List<HomeContinueWatchingItem> = emptyList(),
         val isSignedIn: Boolean = false,
         val isRemoteLoading: Boolean = false,

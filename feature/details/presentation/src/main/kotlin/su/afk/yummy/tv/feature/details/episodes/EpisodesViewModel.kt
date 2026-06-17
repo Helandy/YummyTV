@@ -20,11 +20,11 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -44,7 +44,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
-    private val watchProgressStore: WatchProgressStore,
+    private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val playerNavigationHandler: DetailsPlayerNavigationHandler,
@@ -69,14 +69,14 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var animeTitle = ""
     private var posterUrl = ""
     private var screenshotsByEpisode: Map<String, String> = emptyMap()
-    private var localWatchProgress: List<WatchProgressEntry> = emptyList()
+    private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var isSignedIn = false
 
     init {
         analytics.eventEpisodesScreenOpened(animeId)
         viewModelScope.launch { loadMeta() }
         viewModelScope.launch { loadVideos() }
-        watchProgressStore.observeByAnimeId(animeId)
+        observeAnimeWatchProgress(animeId)
             .flowOn(Dispatchers.Default)
             .onEach { progress ->
                 localWatchProgress = progress

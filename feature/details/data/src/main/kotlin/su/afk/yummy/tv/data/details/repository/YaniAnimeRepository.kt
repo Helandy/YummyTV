@@ -2,12 +2,15 @@ package su.afk.yummy.tv.data.details.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.core.storage.anime.isFresh
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
@@ -19,10 +22,12 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailersCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideosCache
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
@@ -38,6 +43,7 @@ class YaniAnimeRepository(
     private val animeStorage: AnimeStorageStore,
     private val accountStorage: AccountStorageStore,
     private val settingsStore: SettingsStore,
+    private val watchProgressStore: WatchProgressStore,
 ) : AnimeRepository {
 
     override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
@@ -135,6 +141,10 @@ class YaniAnimeRepository(
                     ?: emptyList()
             }
         }
+
+    override fun observeWatchProgress(animeId: Int): Flow<List<AnimeWatchProgress>> =
+        watchProgressStore.observeByAnimeId(animeId)
+            .map { entries -> entries.map { it.toAnimeWatchProgress() } }
 
     private suspend fun fetchDetailsFromNetwork(
         animeId: Int,

@@ -56,7 +56,7 @@ fun HomeMobileScreen(
         { item ->
             when (val action = item.action) {
                 is HomeFeedItemAction.OpenSeries -> onEvent(HomeState.Event.AnimeSelected(action.seriesId))
-                is HomeFeedItemAction.OpenVideo -> onEvent(HomeState.Event.VideoSelected(action.videoId))
+                is HomeFeedItemAction.OpenVideo -> Unit
                 is HomeFeedItemAction.OpenCollection -> onEvent(HomeState.Event.CollectionSelected(action.collectionId))
             }
         }

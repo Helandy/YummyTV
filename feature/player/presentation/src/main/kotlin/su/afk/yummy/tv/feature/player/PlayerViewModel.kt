@@ -275,8 +275,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                 reportEpisodeCompletedIfWatched(position, duration)
             }
 
-            is PlayerState.Event.SeekPerformed -> Unit
-
             is PlayerState.Event.SkipSegmentSelected -> {
                 analytics.eventSkipSegmentSelected(
                     state = currentState,

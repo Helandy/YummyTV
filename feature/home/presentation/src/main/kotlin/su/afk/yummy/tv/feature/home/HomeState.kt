@@ -26,7 +26,6 @@ class HomeState {
             val sourceSectionId: String? = null,
             val displayId: Int? = null,
         ) : Event
-        data class VideoSelected(val videoId: Int) : Event
         data class CollectionSelected(
             val collectionId: Int,
             val sourceSectionId: String? = null,

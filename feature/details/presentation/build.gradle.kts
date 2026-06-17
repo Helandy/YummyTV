@@ -15,11 +15,11 @@ dependencies {
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
-    implementation(project(":core:storage"))
     implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:library:domain"))
     implementation(project(":feature:player:api"))
 
     implementation(libs.bundles.compose.presentation)

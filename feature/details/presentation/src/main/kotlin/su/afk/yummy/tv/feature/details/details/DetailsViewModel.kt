@@ -21,12 +21,13 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.library.LibraryStore
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
+import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
+import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
@@ -50,8 +51,9 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
-    private val libraryStore: LibraryStore,
-    private val watchProgressStore: WatchProgressStore,
+    private val observeAnimeLibraryState: ObserveAnimeLibraryStateUseCase,
+    private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
+    private val refreshLibraryMetadata: RefreshLibraryMetadataUseCase,
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
     private val stringProvider: StringProvider,
@@ -81,18 +83,22 @@ class DetailsViewModel @AssistedInject internal constructor(
     )
     private var libraryMutationVersion = 0
     private var favoriteMutationVersion = 0
-    private var localWatchProgress: List<WatchProgressEntry> = emptyList()
+    private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
 
     init {
         analytics.eventDetailsScreenOpened(animeId)
         load()
-        libraryStore.observeIsInLibrary(animeId)
-            .onEach { inLibrary -> setState { copy(isInLibrary = inLibrary || (isSignedIn && libraryList != null)) } }
+        observeAnimeLibraryState(animeId)
+            .onEach { library ->
+                setState {
+                    copy(
+                        isInLibrary = library.isInLibrary || (isSignedIn && libraryList != null),
+                        isFavorite = library.isFavorite || (isSignedIn && isFavorite),
+                    )
+                }
+            }
             .launchIn(viewModelScope)
-        libraryStore.observeIsFavorite(animeId)
-            .onEach { favorite -> setState { copy(isFavorite = favorite || (isSignedIn && isFavorite)) } }
-            .launchIn(viewModelScope)
-        watchProgressStore.observeByAnimeId(animeId)
+        observeAnimeWatchProgress(animeId)
             .flowOn(Dispatchers.Default)
             .onEach { progress ->
                 localWatchProgress = progress
@@ -323,7 +329,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         runCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, details = details) }
-                libraryStore.refreshMetadata(
+                refreshLibraryMetadata(
                     animeId = details.id,
                     title = details.title,
                     poster = details.poster?.toLibraryPoster(),

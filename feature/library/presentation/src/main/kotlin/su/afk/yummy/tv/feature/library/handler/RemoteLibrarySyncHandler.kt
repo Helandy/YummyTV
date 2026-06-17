@@ -3,9 +3,6 @@ package su.afk.yummy.tv.feature.library.handler
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.core.storage.library.FAVORITE_ONLY_LIST_ID
-import su.afk.yummy.tv.core.storage.library.LibraryEntry
-import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
@@ -14,6 +11,10 @@ import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
+import su.afk.yummy.tv.domain.library.model.FAVORITE_ONLY_LIBRARY_LIST_ID
+import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.domain.library.model.LibraryPoster
+import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.feature.library.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.LocalLibrarySyncResult
@@ -22,7 +23,7 @@ import javax.inject.Inject
 
 /** Loads remote library tabs and syncs local-only library mutations back to the account. */
 internal class RemoteLibrarySyncHandler @Inject constructor(
-    private val libraryStore: LibraryStore,
+    private val libraryRepository: LibraryRepository,
     private val getUserAnimeList: GetUserAnimeListUseCase,
     private val getUserFavoriteAnimeList: GetUserFavoriteAnimeListUseCase,
     private val hasCachedUserLists: HasCachedUserListsUseCase,
@@ -36,7 +37,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     ): RemoteLibraryLoadResult {
         return try {
             val hasKnownRemoteState =
-                libraryStore.hasSyncState(userId) || hasCachedUserLists(userId)
+                libraryRepository.hasSyncState(userId) || hasCachedUserLists(userId)
             val allowLocalMissingUpload = !hasKnownRemoteState
             val remoteFetchedAt = System.currentTimeMillis()
             val remote = fetchRemoteLists(userId, forceRefresh)
@@ -56,7 +57,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
                 remoteFetchedAt = remoteFetchedAt,
             )
             if (syncResult.error == null) {
-                libraryStore.markSynced(userId)
+                libraryRepository.markSynced(userId)
             }
             RemoteLibraryLoadResult.Success(
                 syncError = syncResult.error,
@@ -119,7 +120,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
             .toMap()
         val remoteFavorites = remote[LibraryTab.FAVORITES].orEmpty()
             .associateBy { it.animeId }
-        val localItems = libraryStore.getAll()
+        val localItems = libraryRepository.getAll()
         var syncedAny = false
         var firstError: Throwable? = null
 
@@ -163,7 +164,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     }
 
     private fun shouldPushList(
-        entry: LibraryEntry,
+        entry: LibraryItem,
         localList: UserAnimeList,
         remoteList: RemoteListItem?,
         allowLocalMissingUpload: Boolean,
@@ -175,7 +176,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     }
 
     private fun shouldPushFavorite(
-        entry: LibraryEntry,
+        entry: LibraryItem,
         remoteFavorite: UserAnimeListItem?,
         allowLocalMissingUpload: Boolean,
         remoteFetchedAt: Long,
@@ -192,7 +193,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
         pruneMissingLocalEntries: Boolean,
         remoteFetchedAt: Long,
     ) {
-        val merged = libraryStore.getAll()
+        val merged = libraryRepository.getAll()
             .associateBy { it.animeId }
             .toMutableMap()
         val remoteAnimeIds = mutableSetOf<Int>()
@@ -218,7 +219,7 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
                 items.forEach { item ->
                     remoteAnimeIds += item.animeId
                     val current = merged[item.animeId]
-                    val next = item.toLibraryEntry(
+                    val next = item.toLibraryItem(
                         current = current,
                         listId = item.list?.id ?: list.id,
                         isFavorite = if (pruneMissingLocalEntries) {
@@ -234,50 +235,52 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
                             ?: 0L,
                     )
                     merged[item.animeId] = next
-                    libraryStore.add(next)
+                    libraryRepository.add(next)
                 }
             }
 
         remote[LibraryTab.FAVORITES].orEmpty().forEach { item ->
             remoteAnimeIds += item.animeId
             val current = merged[item.animeId]
-            val next = item.toLibraryEntry(
+            val next = item.toLibraryItem(
                 current = current,
                 listId = if (pruneMissingLocalEntries && item.animeId !in remotePrimaryAnimeIds) {
-                    FAVORITE_ONLY_LIST_ID
+                    FAVORITE_ONLY_LIBRARY_LIST_ID
                 } else {
-                    current?.listId ?: FAVORITE_ONLY_LIST_ID
+                    current?.listId ?: FAVORITE_ONLY_LIBRARY_LIST_ID
                 },
                 isFavorite = true,
                 listUpdatedAt = current?.listUpdatedAt ?: item.updatedAtMillis(remoteFetchedAt),
                 favoriteUpdatedAt = item.updatedAtMillis(remoteFetchedAt),
             )
             merged[item.animeId] = next
-            libraryStore.add(next)
+            libraryRepository.add(next)
         }
 
         if (pruneMissingLocalEntries) {
             merged.keys
                 .filterNot { it in remoteAnimeIds }
-                .forEach { animeId -> libraryStore.delete(animeId) }
+                .forEach { animeId -> libraryRepository.delete(animeId) }
         }
     }
 
-    private fun UserAnimeListItem.toLibraryEntry(
-        current: LibraryEntry?,
+    private fun UserAnimeListItem.toLibraryItem(
+        current: LibraryItem?,
         listId: Int,
         isFavorite: Boolean,
         listUpdatedAt: Long,
         favoriteUpdatedAt: Long,
-    ): LibraryEntry =
-        LibraryEntry(
+    ): LibraryItem =
+        LibraryItem(
             animeId = animeId,
             title = title.ifBlank { current?.title.orEmpty() },
-            posterSmallUrl = poster?.small ?: current?.posterSmallUrl,
-            posterMediumUrl = poster?.medium ?: posterUrl ?: current?.posterMediumUrl,
-            posterBigUrl = poster?.big ?: current?.posterBigUrl,
-            posterFullsizeUrl = poster?.fullsize ?: current?.posterFullsizeUrl,
-            posterMegaUrl = poster?.mega ?: current?.posterMegaUrl,
+            poster = LibraryPoster(
+                small = poster?.small ?: current?.poster?.small,
+                medium = poster?.medium ?: posterUrl ?: current?.poster?.medium,
+                big = poster?.big ?: current?.poster?.big,
+                fullsize = poster?.fullsize ?: current?.poster?.fullsize,
+                mega = poster?.mega ?: current?.poster?.mega,
+            ),
             addedAt = current?.addedAt ?: System.currentTimeMillis(),
             listId = listId,
             isFavorite = isFavorite,

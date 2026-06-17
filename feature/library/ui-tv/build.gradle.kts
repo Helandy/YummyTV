@@ -12,10 +12,10 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
-    implementation(project(":core:storage"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:library:api"))
+    implementation(project(":feature:library:domain"))
     implementation(project(":feature:library:presentation"))
     implementation(project(":feature:settings:api"))
 

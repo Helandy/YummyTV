@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -28,6 +29,7 @@ object DetailsDataModule {
         animeStorage: AnimeStorageStore,
         accountStorage: AccountStorageStore,
         settingsStore: SettingsStore,
+        watchProgressStore: WatchProgressStore,
     ): AnimeRepository =
-        YaniAnimeRepository(api, animeStorage, accountStorage, settingsStore)
+        YaniAnimeRepository(api, animeStorage, accountStorage, settingsStore, watchProgressStore)
 }
