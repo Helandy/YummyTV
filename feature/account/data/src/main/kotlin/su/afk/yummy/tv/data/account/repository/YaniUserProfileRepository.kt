@@ -8,9 +8,9 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.data.account.mapper.toProfileSummary
-import su.afk.yummy.tv.data.account.mapper.toUserProfileSummary
-import su.afk.yummy.tv.data.account.mapper.toUserProfileSummaryCache
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.storage.mapper.toUserProfileSummary
+import su.afk.yummy.tv.data.account.storage.mapper.toUserProfileSummaryCache
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.repository.UserProfileRepository
 

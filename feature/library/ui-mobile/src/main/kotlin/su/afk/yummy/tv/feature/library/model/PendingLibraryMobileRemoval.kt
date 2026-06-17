@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.library.model
 
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.library.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.LibraryState
 
@@ -11,7 +11,7 @@ internal sealed interface PendingLibraryMobileRemoval {
     fun event(): LibraryState.Event
 
     data class WatchProgress(
-        val entry: WatchProgressEntry,
+        val entry: HomeContinueWatchingItem,
         override val listTitle: String,
     ) : PendingLibraryMobileRemoval {
         override val title = entry.animeTitle.ifBlank { entry.episode }

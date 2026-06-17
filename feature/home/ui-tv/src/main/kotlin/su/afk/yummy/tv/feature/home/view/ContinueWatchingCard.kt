@@ -38,7 +38,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.R
 import su.afk.yummy.tv.feature.home.utils.isLikelyImageUrl
 import su.afk.yummy.tv.feature.home.utils.msToTimeString
@@ -50,7 +51,7 @@ private val InProgressColor = Color(0xFF4CAF50)
 
 @Composable
 internal fun ContinueWatchingCard(
-    entry: WatchProgressEntry,
+    entry: HomeContinueWatchingItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: () -> Unit = {},
@@ -75,7 +76,7 @@ internal fun ContinueWatchingCard(
     val directScreenshotUrl = entry.screenshotUrl.takeIf { it.isLikelyImageUrl() }
     val imageUrl = kodikThumbnail
         ?: directScreenshotUrl
-        ?: entry.posterUrl.ifBlank { null }
+        ?: entry.poster.bestUrl()
 
     val shape = RoundedCornerShape(8.dp)
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
@@ -176,3 +177,6 @@ internal fun ContinueWatchingCard(
         }
     }
 }
+
+private fun HomePoster?.bestUrl(): String? =
+    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small

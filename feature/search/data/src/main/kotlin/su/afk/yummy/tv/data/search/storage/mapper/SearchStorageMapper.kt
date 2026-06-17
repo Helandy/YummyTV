@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.search.mapper
+package su.afk.yummy.tv.data.search.storage.mapper
 
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsCache
 import su.afk.yummy.tv.core.storage.search.SearchFilterOptionsEntry

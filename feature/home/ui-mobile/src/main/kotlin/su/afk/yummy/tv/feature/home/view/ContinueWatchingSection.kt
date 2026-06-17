@@ -16,8 +16,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileProgressMediaCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileSectionHeader
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.home.mobile.R
+import su.afk.yummy.tv.feature.home.utils.bestUrl
 import su.afk.yummy.tv.feature.home.utils.episodeSubtitle
 import su.afk.yummy.tv.feature.home.utils.resolveMobileContinueWatchingImage
 import su.afk.yummy.tv.feature.home.utils.timingSubtitle
@@ -25,8 +26,8 @@ import su.afk.yummy.tv.feature.home.utils.watchProgress
 
 @Composable
 internal fun ContinueWatchingSection(
-    entries: List<WatchProgressEntry>,
-    onEntrySelected: (WatchProgressEntry) -> Unit,
+    entries: List<HomeContinueWatchingItem>,
+    onEntrySelected: (HomeContinueWatchingItem) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(
@@ -55,7 +56,7 @@ internal fun ContinueWatchingSection(
                     imageIdentity,
                     entry.screenshotUrl,
                     entry.episodeUrl,
-                    entry.posterUrl,
+                    entry.poster.bestUrl(),
                 ) {
                     value = null
                     value = entry.resolveMobileContinueWatchingImage()

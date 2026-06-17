@@ -14,19 +14,19 @@ import su.afk.yummy.tv.core.storage.search.isFresh
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.search.mapper.toSearchAnimeType
-import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptions
-import su.afk.yummy.tv.data.search.mapper.toSearchFilterOptionsCache
 import su.afk.yummy.tv.data.search.mapper.toSearchGenre
 import su.afk.yummy.tv.data.search.mapper.toSearchGenreGroup
 import su.afk.yummy.tv.data.search.mapper.toSearchItem
-import su.afk.yummy.tv.data.search.mapper.toSearchPage
-import su.afk.yummy.tv.data.search.mapper.toSearchPageCache
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
+import su.afk.yummy.tv.data.search.storage.mapper.toSearchFilterOptionsCache
+import su.afk.yummy.tv.data.search.storage.mapper.toSearchPageCache
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchPage
 import su.afk.yummy.tv.domain.search.repository.SearchRepository
+import su.afk.yummy.tv.data.search.storage.mapper.toSearchFilterOptions as toStoredSearchFilterOptions
+import su.afk.yummy.tv.data.search.storage.mapper.toSearchPage as toStoredSearchPage
 
 private const val SEARCH_FILTER_OPTIONS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val SEARCH_RESULTS_TTL_MS = 10 * 60 * 1000L
@@ -53,7 +53,7 @@ class YaniSearchRepository(
         val pageKey = searchCacheKey(query, filters, limit, offset, language)
         val stored = searchStorage.getPage(pageKey)
         if (stored?.isFresh(SEARCH_RESULTS_TTL_MS) == true) {
-            return@withContext stored.toSearchPage()
+            return@withContext stored.toStoredSearchPage()
         }
 
         try {
@@ -68,7 +68,7 @@ class YaniSearchRepository(
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toSearchPage()
+            stored?.toStoredSearchPage()
                 ?: throw error
         }
     }
@@ -78,7 +78,7 @@ class YaniSearchRepository(
         val languageCode = language.apiCode
         val stored = searchStorage.getFilterOptions(languageCode)
         if (stored?.isFresh(SEARCH_FILTER_OPTIONS_TTL_MS) == true) {
-            return@withContext stored.toSearchFilterOptions()
+            return@withContext stored.toStoredSearchFilterOptions()
         }
 
         try {
@@ -86,7 +86,7 @@ class YaniSearchRepository(
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toSearchFilterOptions()
+            stored?.toStoredSearchFilterOptions()
                 ?: throw error
         }
     }

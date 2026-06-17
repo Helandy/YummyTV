@@ -1,12 +1,13 @@
 package su.afk.yummy.tv.feature.watching.handler
 
 import androidx.navigation3.runtime.NavKey
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.PlayerSkips
@@ -21,7 +22,7 @@ class ContinueWatchingLaunchHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val playerNavigator: IPlayerNavigator,
 ) {
-    suspend fun getPlayerDestination(entry: WatchProgressEntry): NavKey {
+    suspend fun getPlayerDestination(entry: HomeContinueWatchingItem): NavKey {
         val videos = if (entry.animeId != 0) {
             runCatching { getAnimeVideos(entry.animeId) }.getOrNull().orEmpty()
         } else {
@@ -37,13 +38,13 @@ class ContinueWatchingLaunchHandler @Inject constructor(
             video = target.video,
             animeTitle = entry.animeTitle,
             animeId = entry.animeId,
-            posterUrl = entry.posterUrl,
+            posterUrl = entry.poster.bestUrl().orEmpty(),
             resumeFromMs = entry.positionMs,
         )
     }
 
     private suspend fun migratePlaceholderEpisode(
-        entry: WatchProgressEntry,
+        entry: HomeContinueWatchingItem,
         progressVideo: PlayerVideoSource,
         targetVideo: PlayerVideoSource,
     ) {
@@ -56,7 +57,7 @@ class ContinueWatchingLaunchHandler @Inject constructor(
             positionMs = entry.positionMs,
             durationMs = entry.durationMs,
             animeTitle = entry.animeTitle,
-            posterUrl = entry.posterUrl,
+            posterUrl = entry.poster.bestUrl().orEmpty(),
             playerName = targetVideo.player,
             dubbing = targetVideo.dubbing,
             screenshotUrl = entry.screenshotUrl,
@@ -76,13 +77,16 @@ private fun AnimeVideo.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSou
     skips = skips.toPlayerSkips(),
 )
 
-private fun WatchProgressEntry.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
+private fun HomeContinueWatchingItem.toPlayerVideoSource(): PlayerVideoSource = PlayerVideoSource(
     id = videoId,
     episode = episode,
     dubbing = dubbing,
     player = playerName,
     iframeUrl = episodeUrl,
 )
+
+private fun HomePoster?.bestUrl(): String? =
+    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 private fun AnimeVideoSkips.toPlayerSkips(): PlayerSkips = PlayerSkips(
     opening = opening.toPlayerSkipSegment(),

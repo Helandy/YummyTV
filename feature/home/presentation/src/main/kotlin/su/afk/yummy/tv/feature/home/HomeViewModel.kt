@@ -10,14 +10,11 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
-import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -36,7 +33,7 @@ class HomeViewModel @Inject internal constructor(
     private val getHomeFeed: GetHomeFeedUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
-    private val watchProgressStore: WatchProgressStore,
+    private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val stringProvider: StringProvider,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
     private val analytics: HomeAnalytics,
@@ -44,15 +41,16 @@ class HomeViewModel @Inject internal constructor(
 
     override fun createInitialState() = HomeState.State()
 
-    private var cachedFeedContinueWatching: List<WatchProgressEntry> = emptyList()
-    private var localContinueWatching: List<WatchProgressEntry> = emptyList()
-
     init {
         analytics.eventScreenOpened()
-        watchProgressStore.observeContinueWatching()
-            .onEach { entries ->
-                localContinueWatching = ContinueWatchingMerge.bestByAnime(entries)
-                updateContinueWatchingState()
+        observeContinueWatching()
+            .onEach { items ->
+                setState {
+                    copy(
+                        continueWatching = items,
+                        isContinueWatchingLoaded = true,
+                    )
+                }
             }
             .launchIn(viewModelScope)
         load()
@@ -129,7 +127,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
-    private fun launchContinueWatching(entry: WatchProgressEntry) {
+    private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         if (!entry.hasPlayableTarget()) {
             nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))
             return
@@ -197,56 +195,17 @@ class HomeViewModel @Inject internal constructor(
     }
 
     private fun applyFeed(feed: HomeFeed, isLoading: Boolean) {
-        cachedFeedContinueWatching = feed.continueWatchingItems.map {
-            it.toWatchProgressEntry()
-        }
         setState {
             copy(
                 isLoading = isLoading,
                 feed = feed,
-                continueWatching = mergeContinueWatching(),
-                isContinueWatchingLoaded = true,
             )
         }
     }
 
-    private fun updateContinueWatchingState() {
-        setState {
-            copy(
-                continueWatching = mergeContinueWatching(),
-                isContinueWatchingLoaded = true,
-            )
-        }
-    }
-
-    private fun mergeContinueWatching(): List<WatchProgressEntry> =
-        ContinueWatchingMerge.merge(
-            feedEntries = cachedFeedContinueWatching,
-            localEntries = localContinueWatching,
-        )
-
-    private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
-        WatchProgressEntry(
-            animeId = animeId,
-            episode = episode,
-            videoId = videoId,
-            episodeUrl = episodeUrl,
-            positionMs = positionMs,
-            durationMs = durationMs,
-            updatedAt = updatedAt,
-            animeTitle = animeTitle,
-            posterUrl = poster?.bestUrl().orEmpty(),
-            playerName = playerName,
-            dubbing = dubbing,
-            screenshotUrl = screenshotUrl,
-        )
-
-    private fun HomePoster.bestUrl(): String? =
-        mega ?: fullsize ?: big ?: medium ?: small
-
-    private fun WatchProgressEntry.continueWatchingFocusKey(): String =
+    private fun HomeContinueWatchingItem.continueWatchingFocusKey(): String =
         "$animeId:$episode"
 
-    private fun WatchProgressEntry.hasPlayableTarget(): Boolean =
+    private fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
         videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
 }

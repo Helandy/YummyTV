@@ -5,17 +5,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
-import su.afk.yummy.tv.data.account.mapper.toUserListCache
 import su.afk.yummy.tv.data.account.mapper.toUserListItem
-import su.afk.yummy.tv.data.account.mapper.toUserListItems
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStateEntry
+import su.afk.yummy.tv.data.account.storage.mapper.toUpdatedAnimeListStateEntry
+import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
+import su.afk.yummy.tv.data.account.storage.mapper.toUserListItems
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
+import su.afk.yummy.tv.data.account.storage.mapper.toUserListItem as toStoredUserListItem
 
 class YaniUserListsRepository(
     private val api: YaniAccountApi,
@@ -45,29 +46,31 @@ class YaniUserListsRepository(
             accountStorage.hasUserListCache(userId)
         }
 
-    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem = withContext(Dispatchers.IO) {
-        val userId = currentUserId()
-        val stored = accountStorage.getAnimeListState(userId, animeId)
-        if (stored?.isFresh(ANIME_LIST_STATE_TTL_MS) == true) {
-            return@withContext stored.toUserListItem()
+    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem =
+        withContext(Dispatchers.IO) {
+            val userId = currentUserId()
+            val stored = accountStorage.getAnimeListState(userId, animeId)
+            if (stored?.isFresh(ANIME_LIST_STATE_TTL_MS) == true) {
+                return@withContext stored.toStoredUserListItem()
+            }
+
+            try {
+                fetchAnimeListState(userId, animeId)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toStoredUserListItem()
+                    ?: throw error
+            }
         }
 
-        try {
-            fetchAnimeListState(userId, animeId)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
-            stored?.toUserListItem()
-                ?: throw error
+    override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) =
+        withContext(Dispatchers.IO) {
+            val userId = currentUserId()
+            api.setAnimeList(animeId, list.id)
+            updateCachedListState(userId, animeId, listId = list.id, updateList = true)
+            invalidateUserLists(userId)
         }
-    }
-
-    override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) = withContext(Dispatchers.IO) {
-        val userId = currentUserId()
-        api.setAnimeList(animeId, list.id)
-        updateCachedListState(userId, animeId, listId = list.id, updateList = true)
-        invalidateUserLists(userId)
-    }
 
     override suspend fun removeAnimeList(animeId: Int) = withContext(Dispatchers.IO) {
         val userId = currentUserId()
@@ -76,16 +79,17 @@ class YaniUserListsRepository(
         invalidateUserLists(userId)
     }
 
-    override suspend fun setFavorite(animeId: Int, favorite: Boolean) = withContext(Dispatchers.IO) {
-        val userId = currentUserId()
-        if (favorite) {
-            api.setFavorite(animeId)
-        } else {
-            api.removeFavorite(animeId)
+    override suspend fun setFavorite(animeId: Int, favorite: Boolean) =
+        withContext(Dispatchers.IO) {
+            val userId = currentUserId()
+            if (favorite) {
+                api.setFavorite(animeId)
+            } else {
+                api.removeFavorite(animeId)
+            }
+            updateCachedListState(userId, animeId, isFavorite = favorite)
+            invalidateUserLists(userId)
         }
-        updateCachedListState(userId, animeId, isFavorite = favorite)
-        invalidateUserLists(userId)
-    }
 
     private companion object {
         const val FAVORITES_LIST_ID = 4
@@ -135,13 +139,13 @@ class YaniUserListsRepository(
 
     private suspend fun fetchAnimeListState(userId: Int, animeId: Int): UserAnimeListItem {
         val state = api.getAnimeListState(animeId)
-        val entry = state.toEntry(
+        val entry = state.toAnimeListStateEntry(
             userId = userId,
             animeId = animeId,
             cachedAt = System.currentTimeMillis(),
         )
         accountStorage.saveAnimeListState(entry)
-        return entry.toUserListItem()
+        return entry.toStoredUserListItem()
     }
 
     private suspend fun updateCachedListState(
@@ -153,11 +157,12 @@ class YaniUserListsRepository(
     ) {
         val cached = accountStorage.getAnimeListState(userId, animeId)
         accountStorage.saveAnimeListState(
-            AccountAnimeListStateEntry(
+            cached.toUpdatedAnimeListStateEntry(
                 userId = userId,
                 animeId = animeId,
-                listId = if (updateList) listId else cached?.listId,
-                isFavorite = isFavorite ?: (cached?.isFavorite == true),
+                listId = listId,
+                updateList = updateList,
+                isFavorite = isFavorite,
                 cachedAt = System.currentTimeMillis(),
             )
         )
@@ -169,16 +174,4 @@ class YaniUserListsRepository(
         }
     }
 
-    private fun YaniAnimeListStateDto.toEntry(
-        userId: Int,
-        animeId: Int,
-        cachedAt: Long,
-    ): AccountAnimeListStateEntry =
-        AccountAnimeListStateEntry(
-            userId = userId,
-            animeId = animeId,
-            listId = list,
-            isFavorite = isFavorite,
-            cachedAt = cachedAt,
-        )
 }

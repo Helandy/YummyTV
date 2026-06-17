@@ -3,7 +3,7 @@ package su.afk.yummy.tv.domain.home.usecase
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import javax.inject.Inject
 
-/** Removes a title from locally cached home continue-watching rows. */
+/** Suppresses a title from local and cached continue-watching rows. */
 class RemoveCachedContinueWatchingUseCase @Inject constructor(
     private val homeFeedRepository: HomeFeedRepository,
 ) {

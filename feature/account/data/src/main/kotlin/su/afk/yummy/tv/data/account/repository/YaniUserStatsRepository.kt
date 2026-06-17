@@ -17,11 +17,11 @@ import su.afk.yummy.tv.data.account.mapper.toAnimeTypeStat
 import su.afk.yummy.tv.data.account.mapper.toGenreStat
 import su.afk.yummy.tv.data.account.mapper.toListWatchStat
 import su.afk.yummy.tv.data.account.mapper.toRatingStat
-import su.afk.yummy.tv.data.account.mapper.toUserStats
-import su.afk.yummy.tv.data.account.mapper.toUserStatsCache
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.storage.mapper.toUserStatsCache
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.repository.UserStatsRepository
+import su.afk.yummy.tv.data.account.storage.mapper.toUserStats as toStoredUserStats
 
 class YaniUserStatsRepository(
     private val api: YaniAccountApi,
@@ -33,7 +33,7 @@ class YaniUserStatsRepository(
         val languageCode = language.apiCode
         val stored = accountStorage.getUserStats(userId, languageCode)
         if (stored?.isFresh(ACCOUNT_MEDIUM_TTL_MS) == true) {
-            return@withContext stored.toUserStats()
+            return@withContext stored.toStoredUserStats()
         }
 
         try {
@@ -41,7 +41,7 @@ class YaniUserStatsRepository(
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toUserStats()
+            stored?.toStoredUserStats()
                 ?: throw error
         }
     }

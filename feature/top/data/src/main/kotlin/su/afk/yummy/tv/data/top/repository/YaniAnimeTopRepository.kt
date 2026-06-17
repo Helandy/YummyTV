@@ -8,13 +8,13 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
 import su.afk.yummy.tv.core.storage.top.isFresh
 import su.afk.yummy.tv.data.top.mapper.toAnimeTopItem
-import su.afk.yummy.tv.data.top.mapper.toAnimeTopPage
-import su.afk.yummy.tv.data.top.mapper.toAnimeTopPageCache
 import su.afk.yummy.tv.data.top.network.YaniAnimeTopApi
+import su.afk.yummy.tv.data.top.storage.mapper.toAnimeTopPageCache
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
+import su.afk.yummy.tv.data.top.storage.mapper.toAnimeTopPage as toStoredAnimeTopPage
 
 private const val ANIME_TOP_TTL_MS = 6 * 60 * 60 * 1000L
 private const val ANIME_TOP_CACHE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000L
@@ -31,7 +31,7 @@ class YaniAnimeTopRepository(
             val languageCode = language.apiCode
             val stored = topStore.getPage(type.apiValue, languageCode, limit, offset)
             if (stored?.isFresh(ANIME_TOP_TTL_MS) == true) {
-                return@withContext stored.toAnimeTopPage()
+                return@withContext stored.toStoredAnimeTopPage()
             }
 
             try {
@@ -39,7 +39,7 @@ class YaniAnimeTopRepository(
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toAnimeTopPage()
+                stored?.toStoredAnimeTopPage()
                     ?: throw error
             }
         }

@@ -1,5 +1,6 @@
-package su.afk.yummy.tv.data.details.mapper
+package su.afk.yummy.tv.data.details.storage.mapper
 
+import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_CREATOR
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_GENRE
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_STUDIO
@@ -136,6 +137,18 @@ internal fun AnimeDetails.toAnimeDetailsCache(
         },
     )
 }
+
+internal fun Int?.toAccountUserRatingEntry(
+    userId: Int,
+    animeId: Int,
+    cachedAt: Long,
+): AccountUserRatingEntry =
+    AccountUserRatingEntry(
+        userId = userId,
+        animeId = animeId,
+        rating = this,
+        cachedAt = cachedAt,
+    )
 
 internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
     val source = entry

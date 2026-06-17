@@ -6,27 +6,28 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
-import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.core.storage.anime.isFresh
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
-import su.afk.yummy.tv.data.details.mapper.toAnimeDetailsCache
 import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
-import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendations
-import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendationsCache
-import su.afk.yummy.tv.data.details.mapper.toAnimeTrailers
-import su.afk.yummy.tv.data.details.mapper.toAnimeTrailersCache
 import su.afk.yummy.tv.data.details.mapper.toAnimeVideo
-import su.afk.yummy.tv.data.details.mapper.toAnimeVideos
-import su.afk.yummy.tv.data.details.mapper.toAnimeVideosCache
 import su.afk.yummy.tv.data.details.mapper.toHttpsUrl
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
+import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailersCache
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideosCache
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAnimeTrailers
+import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnimeVideos
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
 private const val ANIME_VIDEOS_TTL_MS = 60 * 60 * 1000L
@@ -44,7 +45,7 @@ class YaniAnimeRepository(
         val languageCode = language.apiCode
         val stored = animeStorage.getDetails(animeId, languageCode)
         if (stored?.isFresh(ANIME_DETAILS_TTL_MS) == true) {
-            return@withContext stored.toAnimeDetails()
+            return@withContext stored.toStoredAnimeDetails()
         }
 
         try {
@@ -52,7 +53,7 @@ class YaniAnimeRepository(
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toAnimeDetails()
+            stored?.toStoredAnimeDetails()
                 ?: throw error
         }
     }
@@ -60,7 +61,7 @@ class YaniAnimeRepository(
     override suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails? =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()
-            animeStorage.getDetails(animeId, language.apiCode)?.toAnimeDetails()
+            animeStorage.getDetails(animeId, language.apiCode)?.toStoredAnimeDetails()
         }
 
     override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> =
@@ -69,7 +70,7 @@ class YaniAnimeRepository(
             val languageCode = language.apiCode
             val stored = animeStorage.getVideos(animeId, languageCode)
             if (stored?.isFresh(ANIME_VIDEOS_TTL_MS) == true) {
-                return@withContext stored.toAnimeVideos()
+                return@withContext stored.toStoredAnimeVideos()
             }
 
             try {
@@ -77,7 +78,7 @@ class YaniAnimeRepository(
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toAnimeVideos()
+                stored?.toStoredAnimeVideos()
                     ?: throw error
             }
         }
@@ -91,7 +92,7 @@ class YaniAnimeRepository(
     override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()
-            animeStorage.getVideos(animeId, language.apiCode)?.toAnimeVideos()
+            animeStorage.getVideos(animeId, language.apiCode)?.toStoredAnimeVideos()
         }
 
     override suspend fun getAnimeRecommendations(
@@ -103,7 +104,7 @@ class YaniAnimeRepository(
             val languageCode = language.apiCode
             val stored = animeStorage.getRecommendations(animeId, languageCode, fromAi)
             if (stored?.isFresh(ANIME_PUBLIC_EXTRAS_TTL_MS) == true) {
-                return@withContext stored.toAnimeRecommendations()
+                return@withContext stored.toStoredAnimeRecommendations()
             }
 
             try {
@@ -111,7 +112,7 @@ class YaniAnimeRepository(
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toAnimeRecommendations()
+                stored?.toStoredAnimeRecommendations()
                     ?: emptyList()
             }
         }
@@ -122,7 +123,7 @@ class YaniAnimeRepository(
             val languageCode = language.apiCode
             val stored = animeStorage.getTrailers(animeId, languageCode)
             if (stored?.isFresh(ANIME_PUBLIC_EXTRAS_TTL_MS) == true) {
-                return@withContext stored.toAnimeTrailers()
+                return@withContext stored.toStoredAnimeTrailers()
             }
 
             try {
@@ -130,7 +131,7 @@ class YaniAnimeRepository(
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toAnimeTrailers()
+                stored?.toStoredAnimeTrailers()
                     ?: emptyList()
             }
         }
@@ -163,10 +164,9 @@ class YaniAnimeRepository(
         if (userId <= 0 || dto.response.animeId == null) return
 
         accountStorage.saveUserRating(
-            AccountUserRatingEntry(
+            dto.response.user?.rating?.toInt()?.takeIf { it in 1..10 }.toAccountUserRatingEntry(
                 userId = userId,
                 animeId = animeId,
-                rating = dto.response.user?.rating?.toInt()?.takeIf { it in 1..10 },
                 cachedAt = cachedAt,
             )
         )

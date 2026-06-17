@@ -12,12 +12,10 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
-import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.GetContinueWatchingVideoIdsUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
@@ -33,9 +31,10 @@ class LibraryViewModel @Inject internal constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val libraryStore: LibraryStore,
-    private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
+    private val observeContinueWatching: ObserveContinueWatchingUseCase,
+    private val getContinueWatchingVideoIds: GetContinueWatchingVideoIdsUseCase,
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
@@ -65,9 +64,6 @@ class LibraryViewModel @Inject internal constructor(
 
     private var remoteListsJob: Job? = null
     private var signedInUserId: Int = 0
-    private var cachedFeedContinueWatching: List<WatchProgressEntry> = emptyList()
-    private var localContinueWatching: List<WatchProgressEntry> = emptyList()
-    private var localContinueWatchingEntries: List<WatchProgressEntry> = emptyList()
 
     init {
         analytics.eventScreenOpened()
@@ -75,11 +71,9 @@ class LibraryViewModel @Inject internal constructor(
             .onEach { entries -> setState { copy(items = entries) } }
             .launchIn(viewModelScope)
 
-        watchProgressStore.observeContinueWatching()
-            .onEach { entries ->
-                localContinueWatchingEntries = entries
-                localContinueWatching = ContinueWatchingMerge.bestByAnime(entries)
-                updateContinueWatchingState()
+        observeContinueWatching()
+            .onEach { items ->
+                setState { copy(continueWatching = items) }
             }
             .launchIn(viewModelScope)
         loadCachedContinueWatching()
@@ -166,61 +160,19 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun loadCachedContinueWatching() {
         viewModelScope.launch {
-            cachedFeedContinueWatching = runCatching {
-                getCachedHomeFeed()
-                    ?.continueWatchingItems
-                    .orEmpty()
-                    .map { it.toWatchProgressEntry() }
-            }.getOrDefault(emptyList())
-            updateContinueWatchingState()
+            runCatching { getCachedHomeFeed() }
         }
     }
 
-    private fun updateContinueWatchingState() {
-        setState {
-            copy(
-                continueWatching = mergeContinueWatching(
-                    cached = cachedFeedContinueWatching,
-                    local = localContinueWatching,
-                )
-            )
-        }
-    }
-
-    private fun mergeContinueWatching(
-        cached: List<WatchProgressEntry>,
-        local: List<WatchProgressEntry>,
-    ): List<WatchProgressEntry> =
-        ContinueWatchingMerge.merge(
-            feedEntries = cached,
-            localEntries = local,
-        )
-
-    private fun knownContinueWatchingEntriesFor(animeId: Int): List<WatchProgressEntry> =
-        (
-                currentState.continueWatching +
-                        cachedFeedContinueWatching +
-                        localContinueWatching +
-                        localContinueWatchingEntries
-                )
-            .filter { it.animeId == animeId }
-
-    private fun knownRemoteVideoIdsFor(animeId: Int): List<Int> =
+    private suspend fun knownRemoteVideoIdsFor(animeId: Int): List<Int> =
         if (signedInUserId > 0) {
-            knownContinueWatchingEntriesFor(animeId)
-                .mapNotNull { it.videoId.takeIf { id -> id > 0 } }
-                .distinct()
+            getContinueWatchingVideoIds(animeId)
         } else {
             emptyList()
         }
 
     private suspend fun suppressContinueWatchingLocally(animeId: Int) {
-        watchProgressStore.suppressContinueWatching(animeId)
         removeCachedContinueWatching(animeId)
-        cachedFeedContinueWatching = cachedFeedContinueWatching.withoutAnime(animeId)
-        localContinueWatching = localContinueWatching.withoutAnime(animeId)
-        localContinueWatchingEntries = localContinueWatchingEntries.withoutAnime(animeId)
-        updateContinueWatchingState()
     }
 
     private suspend fun removeRemoteWatchProgress(
@@ -233,28 +185,6 @@ class LibraryViewModel @Inject internal constructor(
             knownVideoIds = knownVideoIds,
         )
     }
-
-    private fun List<WatchProgressEntry>.withoutAnime(animeId: Int): List<WatchProgressEntry> =
-        filterNot { it.animeId == animeId }
-
-    private fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
-        WatchProgressEntry(
-            animeId = animeId,
-            episode = episode,
-            videoId = videoId,
-            episodeUrl = episodeUrl,
-            positionMs = positionMs,
-            durationMs = durationMs,
-            updatedAt = updatedAt,
-            animeTitle = animeTitle,
-            posterUrl = poster?.bestUrl().orEmpty(),
-            playerName = playerName,
-            dubbing = dubbing,
-            screenshotUrl = screenshotUrl,
-        )
-
-    private fun HomePoster.bestUrl(): String? =
-        mega ?: fullsize ?: big ?: medium ?: small
 
     private fun openDetails(animeId: Int) {
         setState {
@@ -347,7 +277,7 @@ class LibraryViewModel @Inject internal constructor(
         setState { copy(focusedItemId = animeId) }
     }
 
-    private fun launchContinueWatching(entry: WatchProgressEntry) {
+    private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         viewModelScope.launch {
             nav.navigate(continueWatchingLaunchHandler.getPlayerDestination(entry))
         }

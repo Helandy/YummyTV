@@ -49,19 +49,20 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.library.R
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun ContinueWatchingGrid(
-    entries: List<WatchProgressEntry>,
+    entries: List<HomeContinueWatchingItem>,
     focusedItemId: Int?,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
     restoreFirstItemToken: Int,
     focusStateKey: String,
-    onEntrySelected: (WatchProgressEntry) -> Unit,
+    onEntrySelected: (HomeContinueWatchingItem) -> Unit,
     onItemFocused: (Int) -> Unit,
     onRemoveWatchProgress: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -266,7 +267,7 @@ internal fun ContinueWatchingGrid(
                 }
                 LibraryAnimeCard(
                     title = entry.animeTitle,
-                    posterUrl = entry.posterUrl.ifBlank { null },
+                    posterUrl = entry.poster.bestUrl(),
                     subtitle = episodeLabel,
                     onClick = stableOnClick,
                     onFocused = stableOnFocused,
@@ -339,3 +340,6 @@ internal fun ContinueWatchingGrid(
         }
     }
 }
+
+private fun HomePoster?.bestUrl(): String? =
+    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small

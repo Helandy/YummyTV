@@ -11,12 +11,13 @@ import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.data.account.mapper.toAccount
-import su.afk.yummy.tv.data.account.mapper.toProfileEntry
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
+import su.afk.yummy.tv.data.account.storage.mapper.toProfileEntry
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
+import su.afk.yummy.tv.data.account.storage.mapper.toAccount as toStoredAccount
 
 class YaniAccountRepository(
     private val api: YaniAccountApi,
@@ -65,7 +66,7 @@ class YaniAccountRepository(
             val userId = settingsStore.yaniUserId.first()
             val stored = getStoredProfile(userId)
             if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
-                return@withContext stored.toAccount()
+                return@withContext stored.toStoredAccount()
             }
 
             try {
@@ -75,7 +76,7 @@ class YaniAccountRepository(
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
-                stored?.toAccount()
+                stored?.toStoredAccount()
                     ?: throw error
             }
         }
@@ -108,7 +109,7 @@ class YaniAccountRepository(
 
     private suspend fun getCachedProfileOrNull(): YaniAccount? {
         val userId = settingsStore.yaniUserId.first()
-        return getStoredProfile(userId)?.toAccount()
+        return getStoredProfile(userId)?.toStoredAccount()
     }
 
     private suspend fun getStoredProfile(userId: Int) =

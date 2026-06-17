@@ -4,7 +4,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 
 enum class LibraryTab {
     CONTINUE_WATCHING,
@@ -24,7 +24,7 @@ enum class LibraryRemoveTarget {
 class LibraryState {
     data class State(
         val items: List<LibraryEntry> = emptyList(),
-        val continueWatching: List<WatchProgressEntry> = emptyList(),
+        val continueWatching: List<HomeContinueWatchingItem> = emptyList(),
         val isSignedIn: Boolean = false,
         val isRemoteLoading: Boolean = false,
         val remoteError: String? = null,
@@ -35,7 +35,7 @@ class LibraryState {
 
     sealed interface Event : UiEvent {
         data class AnimeSelected(val animeId: Int) : Event
-        data class ContinueWatchingSelected(val entry: WatchProgressEntry) : Event
+        data class ContinueWatchingSelected(val entry: HomeContinueWatchingItem) : Event
         data class ItemFocused(val animeId: Int) : Event
         data class TabSelected(val tab: LibraryTab) : Event
         data object FocusedItemRestoreHandled : Event

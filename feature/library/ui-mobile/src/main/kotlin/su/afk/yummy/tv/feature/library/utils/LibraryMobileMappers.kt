@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.library.utils
 
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.LibraryTab
 
@@ -52,3 +53,6 @@ internal fun LibraryState.State.mobileTabItemCount(tab: LibraryTab): Int = when 
 
 internal fun LibraryEntry.posterUrl(): String? =
     posterMegaUrl ?: posterFullsizeUrl ?: posterBigUrl ?: posterMediumUrl ?: posterSmallUrl
+
+internal fun HomePoster?.posterUrl(): String? =
+    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small

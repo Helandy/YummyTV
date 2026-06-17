@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.home.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.mobile.R
@@ -14,32 +14,32 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
     HomeFeedSectionType.COLLECTIONS -> false
 }
 
-internal suspend fun WatchProgressEntry.resolveMobileContinueWatchingImage(): String? {
+internal suspend fun HomeContinueWatchingItem.resolveMobileContinueWatchingImage(): String? {
     val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
     val kodikEpisode = episodeUrl.takeIf { it.isKodikSourceUrl() }
     val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
     return kodikScreenshot?.let { KodikThumbnailExtractor.extract(it) }
         ?: kodikEpisode?.let { KodikThumbnailExtractor.extract(it) }
         ?: directScreenshot
-        ?: posterUrl.ifBlank { null }
+        ?: poster.bestUrl()
 }
 
 @Composable
-internal fun WatchProgressEntry.episodeSubtitle(): String =
+internal fun HomeContinueWatchingItem.episodeSubtitle(): String =
     if (episode.isBlank()) {
         stringResource(R.string.home_mobile_episode_unknown)
     } else {
         stringResource(R.string.home_mobile_episode, episode)
     }
 
-internal fun WatchProgressEntry.timingSubtitle(): String =
+internal fun HomeContinueWatchingItem.timingSubtitle(): String =
     if (durationMs > 0L) {
         "${positionMs.toMobileTimeString()} / ${durationMs.toMobileTimeString()}"
     } else {
         positionMs.toMobileTimeString()
     }
 
-internal fun WatchProgressEntry.watchProgress(): Float =
+internal fun HomeContinueWatchingItem.watchProgress(): Float =
     if (durationMs <= 0L) 0f else (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
 
 internal fun HomePoster?.bestUrl(): String? =

@@ -36,13 +36,13 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.home.R
 
 @Composable
 internal fun ContinueWatchingSection(
-    items: List<WatchProgressEntry>,
-    onItemSelected: (WatchProgressEntry) -> Unit,
+    items: List<HomeContinueWatchingItem>,
+    onItemSelected: (HomeContinueWatchingItem) -> Unit,
     rowFocusRequester: FocusRequester? = null,
     restoreFirstItemToken: Int = 0,
     restoreItemKey: String? = null,
@@ -96,7 +96,7 @@ internal fun ContinueWatchingSection(
         isRestoring.value = false
     }
 
-    fun WatchProgressEntry.focusKey(): String = "$animeId:$episode"
+    fun HomeContinueWatchingItem.focusKey(): String = "$animeId:$episode"
 
     fun hasPendingFirstItemRestore(): Boolean = restoreFirstItemToken > handledRestoreFirstItemToken
 
@@ -116,7 +116,7 @@ internal fun ContinueWatchingSection(
         return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
     }
 
-    fun rememberFocusedItem(index: Int, entry: WatchProgressEntry) {
+    fun rememberFocusedItem(index: Int, entry: HomeContinueWatchingItem) {
         lastFocusedIndex = index
         lastFocusedKey = entry.focusKey()
     }

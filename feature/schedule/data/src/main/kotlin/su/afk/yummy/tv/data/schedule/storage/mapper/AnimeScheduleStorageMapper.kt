@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.schedule.mapper
+package su.afk.yummy.tv.data.schedule.storage.mapper
 
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCache
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry

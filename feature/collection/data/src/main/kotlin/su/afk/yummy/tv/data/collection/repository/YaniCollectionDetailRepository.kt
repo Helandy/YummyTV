@@ -7,10 +7,10 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
-import su.afk.yummy.tv.data.collection.mapper.toCollectionDetail
-import su.afk.yummy.tv.data.collection.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.data.collection.mapper.toDomain
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
+import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetail
+import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetailCache
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 

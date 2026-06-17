@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.collection.mapper
+package su.afk.yummy.tv.data.collection.storage.mapper
 
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailCache

@@ -42,7 +42,7 @@ internal fun LibraryMobilePage(
                         title = entry.animeTitle.ifBlank {
                             stringResource(R.string.library_mobile_episode, entry.episode)
                         },
-                        posterUrl = entry.posterUrl.ifBlank { null },
+                        posterUrl = entry.poster.posterUrl(),
                         subtitle = stringResource(R.string.library_mobile_episode, entry.episode),
                         posterOverlay = {
                             LibraryMobileDeleteButton(

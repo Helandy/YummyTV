@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.home.mapper
+package su.afk.yummy.tv.data.home.storage.mapper
 
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_ACTION_COLLECTION
@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_RECOMMENDATIONS
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.data.home.R
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
@@ -76,6 +77,51 @@ internal fun HomeFeedCache.toHomeFeed(stringProvider: StringProvider): HomeFeed 
                 container = HOME_FEED_CONTAINER_COLLECTIONS,
             ),
         ),
+    )
+
+internal fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry =
+    WatchProgressEntry(
+        animeId = animeId,
+        episode = episode,
+        videoId = videoId,
+        episodeUrl = episodeUrl,
+        positionMs = positionMs,
+        durationMs = durationMs,
+        updatedAt = updatedAt,
+        animeTitle = animeTitle,
+        posterUrl = poster?.bestUrl().orEmpty(),
+        playerName = playerName,
+        dubbing = dubbing,
+        screenshotUrl = screenshotUrl,
+    )
+
+internal fun WatchProgressEntry.toHomeContinueWatchingItem(): HomeContinueWatchingItem =
+    HomeContinueWatchingItem(
+        animeId = animeId,
+        animeTitle = animeTitle,
+        description = "",
+        poster = posterUrl.takeIf { it.isNotBlank() }?.let { it.toHomePoster() },
+        videoId = videoId,
+        episode = episode,
+        episodeUrl = episodeUrl,
+        positionMs = positionMs,
+        durationMs = durationMs,
+        updatedAt = updatedAt,
+        playerName = playerName,
+        dubbing = dubbing,
+        screenshotUrl = screenshotUrl,
+    )
+
+private fun HomePoster.bestUrl(): String? =
+    mega ?: fullsize ?: big ?: medium ?: small
+
+private fun String.toHomePoster(): HomePoster =
+    HomePoster(
+        small = null,
+        medium = null,
+        big = null,
+        fullsize = null,
+        mega = this,
     )
 
 private fun HomeFeedCache.section(

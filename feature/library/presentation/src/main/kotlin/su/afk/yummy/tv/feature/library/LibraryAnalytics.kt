@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.library
 
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import javax.inject.Inject
 
 internal class LibraryAnalytics @Inject constructor(
@@ -36,7 +36,7 @@ internal class LibraryAnalytics @Inject constructor(
      *
      * Параметры: anime_id, video_id.
      */
-    fun eventContinueWatchingSelected(entry: WatchProgressEntry) {
+    fun eventContinueWatchingSelected(entry: HomeContinueWatchingItem) {
         tracker.track(
             EVENT_CONTINUE_WATCHING_SELECTED,
             analyticsParamsOf(

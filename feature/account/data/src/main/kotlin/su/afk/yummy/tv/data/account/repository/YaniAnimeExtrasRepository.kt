@@ -6,16 +6,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
-import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toAnimeListStats
-import su.afk.yummy.tv.data.account.mapper.toCollectionSummaries
 import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
-import su.afk.yummy.tv.data.account.mapper.toCollectionsPageCache
-import su.afk.yummy.tv.data.account.mapper.toRatingBucketsCache
-import su.afk.yummy.tv.data.account.mapper.toRatingSummary
-import su.afk.yummy.tv.data.account.mapper.toUserRating
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStats
+import su.afk.yummy.tv.data.account.storage.mapper.toCollectionSummaries
+import su.afk.yummy.tv.data.account.storage.mapper.toCollectionsPageCache
+import su.afk.yummy.tv.data.account.storage.mapper.toRatingBucketsCache
+import su.afk.yummy.tv.data.account.storage.mapper.toRatingSummary
+import su.afk.yummy.tv.data.account.storage.mapper.toUserRating
+import su.afk.yummy.tv.data.account.storage.mapper.toUserRatingEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
@@ -123,10 +123,9 @@ class YaniAnimeExtrasRepository(
             ?.toInt()
             ?.takeIf { it in 1..10 }
         accountStorage.saveUserRating(
-            AccountUserRatingEntry(
+            rating.toUserRatingEntry(
                 userId = userId,
                 animeId = animeId,
-                rating = rating,
                 cachedAt = System.currentTimeMillis(),
             )
         )
@@ -165,10 +164,9 @@ class YaniAnimeExtrasRepository(
 
     private suspend fun updateCachedUserRating(userId: Int, animeId: Int, rating: Int?) {
         accountStorage.saveUserRating(
-            AccountUserRatingEntry(
+            rating.toUserRatingEntry(
                 userId = userId,
                 animeId = animeId,
-                rating = rating,
                 cachedAt = System.currentTimeMillis(),
             )
         )

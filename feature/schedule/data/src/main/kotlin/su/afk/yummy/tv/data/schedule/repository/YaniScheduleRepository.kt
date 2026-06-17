@@ -7,11 +7,12 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.schedule.isFresh
-import su.afk.yummy.tv.data.schedule.mapper.toAnimeScheduleCache
 import su.afk.yummy.tv.data.schedule.mapper.toScheduleDays
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
+import su.afk.yummy.tv.data.schedule.storage.mapper.toAnimeScheduleCache
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 import su.afk.yummy.tv.domain.schedule.repository.AnimeScheduleRepository
+import su.afk.yummy.tv.data.schedule.storage.mapper.toScheduleDays as toStoredScheduleDays
 
 private const val SCHEDULE_TTL_MS = 60 * 60 * 1000L
 
@@ -26,7 +27,7 @@ class YaniScheduleRepository(
         val languageCode = language.apiCode
         val stored = scheduleStore.getSchedule(languageCode)
         if (stored?.isFresh(SCHEDULE_TTL_MS) == true) {
-            return@withContext stored.toScheduleDays()
+            return@withContext stored.toStoredScheduleDays()
         }
 
         try {
@@ -34,7 +35,7 @@ class YaniScheduleRepository(
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
-            stored?.toScheduleDays()
+            stored?.toStoredScheduleDays()
                 ?: throw error
         }
     }

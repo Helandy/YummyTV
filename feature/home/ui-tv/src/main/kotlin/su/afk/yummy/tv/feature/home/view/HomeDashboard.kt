@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
@@ -44,8 +44,8 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 @Composable
 internal fun HomeDashboard(
     feed: HomeFeed,
-    continueWatching: List<WatchProgressEntry>,
-    onContinueWatchingSelected: (WatchProgressEntry) -> Unit,
+    continueWatching: List<HomeContinueWatchingItem>,
+    onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
     restoreFocusedItemOnEnter: Boolean = false,

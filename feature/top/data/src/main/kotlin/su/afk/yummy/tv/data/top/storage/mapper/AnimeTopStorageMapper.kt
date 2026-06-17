@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.top.mapper
+package su.afk.yummy.tv.data.top.storage.mapper
 
 import su.afk.yummy.tv.core.storage.top.AnimeTopItemEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopPageCache

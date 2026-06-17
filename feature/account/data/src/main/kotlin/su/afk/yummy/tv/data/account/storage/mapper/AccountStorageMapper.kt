@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.data.account.mapper
+package su.afk.yummy.tv.data.account.storage.mapper
 
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionItemEntry
@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.storage.account.AccountUserTypeStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
+import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
@@ -42,6 +43,7 @@ import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserAnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeTypeStat
@@ -72,6 +74,47 @@ internal fun AccountProfileEntry.toAccount(): YaniAccount =
         id = userId,
         nickname = nickname,
         avatarUrl = avatarUrl,
+    )
+
+internal fun YaniAnimeListStateDto.toAnimeListStateEntry(
+    userId: Int,
+    animeId: Int,
+    cachedAt: Long,
+): AccountAnimeListStateEntry =
+    AccountAnimeListStateEntry(
+        userId = userId,
+        animeId = animeId,
+        listId = list,
+        isFavorite = isFavorite,
+        cachedAt = cachedAt,
+    )
+
+internal fun AccountAnimeListStateEntry?.toUpdatedAnimeListStateEntry(
+    userId: Int,
+    animeId: Int,
+    listId: Int? = null,
+    updateList: Boolean = false,
+    isFavorite: Boolean? = null,
+    cachedAt: Long,
+): AccountAnimeListStateEntry =
+    AccountAnimeListStateEntry(
+        userId = userId,
+        animeId = animeId,
+        listId = if (updateList) listId else this?.listId,
+        isFavorite = isFavorite ?: (this?.isFavorite == true),
+        cachedAt = cachedAt,
+    )
+
+internal fun Int?.toUserRatingEntry(
+    userId: Int,
+    animeId: Int,
+    cachedAt: Long,
+): AccountUserRatingEntry =
+    AccountUserRatingEntry(
+        userId = userId,
+        animeId = animeId,
+        rating = this,
+        cachedAt = cachedAt,
     )
 
 internal fun List<UserAnimeListItem>.toUserListCache(
@@ -523,6 +566,9 @@ private fun AccountUserListItemEntry.toUserListItem(): UserAnimeListItem {
         updatedAtSeconds = updatedAtSeconds,
     )
 }
+
+private fun Int?.toUserAnimeList(): UserAnimeList? =
+    UserAnimeList.entries.firstOrNull { it.id == this }
 
 private fun AccountCollectionItemEntry.toCollectionSummary(): AnimeCollectionSummary {
     val poster = collectionPosterOrNull()

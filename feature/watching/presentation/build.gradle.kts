@@ -9,6 +9,7 @@ android {
 dependencies {
     implementation(project(":core:storage"))
     implementation(project(":feature:details:domain"))
+    implementation(project(":feature:home:domain"))
     implementation(project(":feature:player:api"))
 
     implementation(libs.javax.inject)
