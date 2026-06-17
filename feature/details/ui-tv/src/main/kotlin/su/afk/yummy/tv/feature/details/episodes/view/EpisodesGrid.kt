@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.episodes.view
 
-import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
@@ -69,6 +70,7 @@ internal fun EpisodesGrid(
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     val gridState =
         rememberLazyGridState(initialFirstVisibleItemIndex = (lastFocusedIndex + 1).coerceAtLeast(0))
+    val gridFocusRequester = remember { FocusRequester() }
     val focusRequesters = remember(episodeKeys) { List(episodeGroups.size) { FocusRequester() } }
     val scope = rememberCoroutineScope()
     var gridHasFocus by remember { mutableStateOf(false) }
@@ -100,15 +102,22 @@ internal fun EpisodesGrid(
         state = gridState,
         columns = GridCells.Adaptive(minSize = 220.dp),
         modifier = modifier
+            .focusRequester(gridFocusRequester)
+            .tvFocusRestorer(
+                fallback = focusRequesters.getOrNull(lastFocusedIndex) ?: FocusRequester.Default,
+                enabled = episodeGroups.isNotEmpty(),
+            )
             .onFocusChanged { state ->
                 val hadFocus = gridHasFocus
                 gridHasFocus = state.hasFocus
-                if (!state.hasFocus) isRestoringFocus = false
-                if (state.hasFocus && !hadFocus && episodeGroups.isNotEmpty()) {
+                if (!state.hasFocus) {
+                    isRestoringFocus = false
+                }
+                if (state.isFocused && !hadFocus && episodeGroups.isNotEmpty() && !isRestoringFocus) {
                     requestEpisodeFocus(lastFocusedIndex)
                 }
             }
-            .focusGroup(),
+            .focusable(),
         contentPadding = PaddingValues(
             start = TvScreenPadding.Horizontal,
             top = TvScreenPadding.Vertical,
@@ -137,6 +146,7 @@ internal fun EpisodesGrid(
                 watchStatus = groupVideos.watchStatus(watchProgress),
                 kodikIframeUrl = groupVideos.kodikThumbnailIframeUrl(bestDubbing),
                 onClick = {
+                    lastFocusedIndex = index
                     val kodikOpts = groupVideos.filter {
                         it.iframeUrl.isKodikPlayerUrl() && !it.isAlloha()
                     }

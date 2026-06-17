@@ -9,7 +9,6 @@ class SimilarState {
     data class State(
         val similarState: SimilarUiState = SimilarUiState.Loading,
         val fromAi: Boolean = false,
-        val focusedItemId: Int? = null,
     ) : UiState
 
     /** Пользовательские действия на экране похожих аниме. */
@@ -19,9 +18,6 @@ class SimilarState {
 
         /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
-
-        /** Фокус переместился на аниме с указанным идентификатором. */
-        data class ItemFocused(val animeId: Int) : Event
 
         /** Пользователь выбрал источник рекомендаций. */
         data class SourceSelected(val fromAi: Boolean) : Event

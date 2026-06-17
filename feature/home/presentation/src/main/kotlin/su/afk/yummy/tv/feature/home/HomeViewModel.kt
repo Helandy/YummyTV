@@ -70,44 +70,17 @@ class HomeViewModel @Inject internal constructor(
         when (event) {
             is HomeState.Event.AnimeSelected -> {
                 analytics.eventAnimeSelected(event.seriesId)
-                setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.seriesId))
             }
 
             is HomeState.Event.CollectionSelected -> {
                 analytics.eventCollectionSelected(event.collectionId)
-                setSelectedItemRestoreState(event.sourceSectionId, event.displayId)
                 nav.navigate(collectionNavigator.getCollectionDest(event.collectionId))
             }
 
             is HomeState.Event.ContinueWatchingSelected -> {
                 analytics.eventContinueWatchingSelected(event.entry)
-                setState {
-                    copy(
-                        continueWatchingRestoreToken = continueWatchingRestoreToken + 1,
-                        continueWatchingRestoreKey = event.entry.continueWatchingFocusKey(),
-                        focusedItemId = null,
-                        focusedSectionId = SECTION_CONTINUE_WATCHING,
-                    )
-                }
                 launchContinueWatching(event.entry)
-            }
-
-            is HomeState.Event.ContinueWatchingFocused -> {
-                val focusKey = event.entry.continueWatchingFocusKey()
-                if (
-                    currentState.focusedSectionId == SECTION_CONTINUE_WATCHING &&
-                    currentState.continueWatchingRestoreKey == focusKey
-                ) {
-                    return
-                }
-                setState {
-                    copy(
-                        focusedSectionId = SECTION_CONTINUE_WATCHING,
-                        focusedItemId = null,
-                        continueWatchingRestoreKey = focusKey,
-                    )
-                }
             }
 
             HomeState.Event.RetrySelected -> {
@@ -124,18 +97,6 @@ class HomeViewModel @Inject internal constructor(
             }
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
-
-            is HomeState.Event.ItemFocused -> onItemFocused(
-                event.sectionId,
-                event.displayId,
-                event.animeId
-            )
-
-            HomeState.Event.FocusedItemRestoreHandled -> {
-                if (currentState.restoreFocusedItemOnEnter) {
-                    setState { copy(restoreFocusedItemOnEnter = false) }
-                }
-            }
         }
     }
 
@@ -182,26 +143,6 @@ class HomeViewModel @Inject internal constructor(
         setState { copy(supportPromptVisible = false) }
         viewModelScope.launch {
             settingsStore.dismissSupportPrompt()
-        }
-    }
-
-    private fun onItemFocused(sectionId: String, displayId: Int, animeId: Int?) {
-        if (currentState.focusedSectionId == sectionId && currentState.focusedItemId == displayId) return
-        setState {
-            copy(
-                focusedSectionId = sectionId,
-                focusedItemId = displayId,
-            )
-        }
-    }
-
-    private fun setSelectedItemRestoreState(sourceSectionId: String?, displayId: Int?) {
-        setState {
-            copy(
-                focusedSectionId = sourceSectionId ?: focusedSectionId,
-                focusedItemId = displayId ?: focusedItemId,
-                restoreFocusedItemOnEnter = true,
-            )
         }
     }
 
@@ -281,14 +222,10 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
-    private fun HomeContinueWatchingItem.continueWatchingFocusKey(): String =
-        "$animeId:$episode"
-
     private fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
         videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
 
     private companion object {
-        const val SECTION_CONTINUE_WATCHING = "__continue_watching"
         val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
     }
 }

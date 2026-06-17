@@ -183,4 +183,9 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         dao.saveSuppression(ContinueWatchingSuppressionEntry(animeId = animeId))
         dao.deleteByAnimeId(animeId)
     }
+
+    suspend fun suppressContinueWatchingDisplay(animeId: Int) {
+        if (animeId <= 0) return
+        dao.saveSuppression(ContinueWatchingSuppressionEntry(animeId = animeId))
+    }
 }

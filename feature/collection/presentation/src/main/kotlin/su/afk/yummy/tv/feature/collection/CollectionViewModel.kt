@@ -54,30 +54,13 @@ class CollectionViewModel @AssistedInject internal constructor(
             }
             is CollectionState.Event.AnimeSelected -> {
                 analytics.eventAnimeSelected(collectionId, event.animeId)
-                setState {
-                    copy(
-                        focusedItemId = event.animeId,
-                        restoreFocusedItemOnEnter = true,
-                    )
-                }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
             is CollectionState.Event.VoteSelected -> vote(event.vote)
-            is CollectionState.Event.ItemFocused -> onItemFocused(event.animeId)
             is CollectionState.Event.GridScrolled -> setState {
                 copy(firstVisibleItemIndex = event.index, firstVisibleItemScrollOffset = event.offset)
             }
-            CollectionState.Event.FocusedItemRestoreHandled -> {
-                if (currentState.restoreFocusedItemOnEnter) {
-                    setState { copy(restoreFocusedItemOnEnter = false) }
-                }
-            }
         }
-    }
-
-    private fun onItemFocused(animeId: Int) {
-        if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId) }
     }
 
     private fun vote(vote: CollectionVote) {

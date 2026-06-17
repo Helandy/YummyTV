@@ -16,6 +16,8 @@ import su.afk.yummy.tv.feature.main.model.RegisteredContentFocusRequester
 import su.afk.yummy.tv.feature.main.utils.isContentFocusKeyFor
 import su.afk.yummy.tv.feature.main.utils.requestFocusOnFrameBoundary
 
+private const val FOCUS_RESTORE_ATTEMPTS = 3
+
 internal class TvMainFocusController(
     initialShowMainMenu: Boolean,
 ) {
@@ -98,9 +100,6 @@ internal class TvMainFocusController(
         if (hasFocus) {
             isContentFocusInitialized = true
         }
-        if (isFocused) {
-            currentPreferredContentFocusRequester?.requestFocus()
-        }
         if (hasFocus && menuNavigationFocusLocked) {
             menuFocusRestoreAfterContentStealToken += 1
         }
@@ -147,14 +146,13 @@ internal fun TvMainFocusEffects(
         contentFocusKey,
         currentPreferredContentFocusRequester,
     ) {
-        val initialRequester = currentPreferredContentFocusRequester
-        if (focusController.initialContentFocusRequested || initialRequester == null) {
+        if (focusController.initialContentFocusRequested) {
             return@LaunchedEffect
         }
         withFrameNanos { }
         withFrameNanos { }
         val focused = runCatching {
-            initialRequester.requestFocus()
+            focusController.contentFocusRequester.requestFocus()
         }.getOrDefault(false)
         focusController.onInitialContentFocusRequested(focused)
     }
@@ -188,10 +186,13 @@ internal fun TvMainFocusEffects(
         focusController.restoreContentFocusAfterMenuShown,
     ) {
         if (!showMainMenu || !focusController.restoreContentFocusAfterMenuShown) return@LaunchedEffect
-        val requester =
-            currentPreferredContentFocusRequester ?: focusController.contentFocusRequester
-        val restored = requestFocusOnFrameBoundary(requester)
-        if (restored && currentPreferredContentFocusRequester != null) {
+        var restored = false
+        repeat(FOCUS_RESTORE_ATTEMPTS) {
+            restored = requestFocusOnFrameBoundary(focusController.contentFocusRequester)
+            if (restored) return@repeat
+            withFrameNanos { }
+        }
+        if (restored) {
             focusController.onContentFocusRestoredAfterMenuShown()
         }
     }
@@ -208,9 +209,14 @@ internal fun TvMainFocusEffects(
         }
         withFrameNanos { }
         withFrameNanos { }
-        val requester =
-            currentPreferredContentFocusRequester ?: focusController.contentFocusRequester
-        requestFocusOnFrameBoundary(requester)
-        focusController.clearPendingContentFocusRequest(request.token)
+        var restored = false
+        repeat(FOCUS_RESTORE_ATTEMPTS) {
+            restored = requestFocusOnFrameBoundary(focusController.contentFocusRequester)
+            if (restored) return@repeat
+            withFrameNanos { }
+        }
+        if (restored) {
+            focusController.clearPendingContentFocusRequest(request.token)
+        }
     }
 }

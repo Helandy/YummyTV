@@ -38,34 +38,18 @@ fun HomeTvScreen(
     }
 
     val onItemSelected: (String, HomeFeedItem) -> Unit = remember(onEvent) {
-        { sectionId, item ->
+        { _, item ->
             when (val action = item.action) {
                 is HomeFeedItemAction.OpenSeries -> onEvent(
-                    HomeState.Event.AnimeSelected(
-                        seriesId = action.seriesId,
-                        sourceSectionId = sectionId,
-                        displayId = item.id,
-                    ),
+                    HomeState.Event.AnimeSelected(seriesId = action.seriesId),
                 )
 
                 is HomeFeedItemAction.OpenVideo -> Unit
                 is HomeFeedItemAction.OpenCollection -> onEvent(
-                    HomeState.Event.CollectionSelected(
-                        collectionId = action.collectionId,
-                        sourceSectionId = sectionId,
-                        displayId = item.id,
-                    ),
+                    HomeState.Event.CollectionSelected(collectionId = action.collectionId),
                 )
             }
         }
-    }
-    val onItemFocused: (String, Int, Int?) -> Unit = remember(onEvent) {
-        { sectionId, displayId, animeId ->
-            onEvent(HomeState.Event.ItemFocused(sectionId, displayId, animeId))
-        }
-    }
-    val onFocusedItemRestoreHandled: () -> Unit = remember(onEvent) {
-        { onEvent(HomeState.Event.FocusedItemRestoreHandled) }
     }
 
     val error = state.error
@@ -84,17 +68,7 @@ fun HomeTvScreen(
             onContinueWatchingSelected = { entry ->
                 onEvent(HomeState.Event.ContinueWatchingSelected(entry))
             },
-            onContinueWatchingFocused = { entry ->
-                onEvent(HomeState.Event.ContinueWatchingFocused(entry))
-            },
             onItemSelected = onItemSelected,
-            onItemFocused = onItemFocused,
-            focusedSectionId = state.focusedSectionId,
-            restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
-            focusedItemId = state.focusedItemId,
-            continueWatchingRestoreToken = state.continueWatchingRestoreToken,
-            continueWatchingRestoreKey = state.continueWatchingRestoreKey,
-            onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
         )
     }
 

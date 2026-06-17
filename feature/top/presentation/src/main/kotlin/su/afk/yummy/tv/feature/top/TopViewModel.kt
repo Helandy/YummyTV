@@ -50,8 +50,6 @@ class TopViewModel @Inject internal constructor(
                             items = emptyList(),
                             offset = 0,
                             canLoadMore = true,
-                            focusedItemId = null,
-                            restoreFocusedItemOnEnter = false,
                         )
                     }
                     load(event.type, offset = 0, replace = true)
@@ -60,15 +58,7 @@ class TopViewModel @Inject internal constructor(
 
             is TopState.Event.AnimeSelected -> {
                 analytics.eventAnimeSelected(event.animeId)
-                setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
-            }
-
-            is TopState.Event.ItemFocused -> onItemFocused(event.animeId)
-            TopState.Event.FocusedItemRestoreHandled -> {
-                if (currentState.restoreFocusedItemOnEnter) {
-                    setState { copy(restoreFocusedItemOnEnter = false) }
-                }
             }
 
             TopState.Event.LoadMore -> {
@@ -87,11 +77,6 @@ class TopViewModel @Inject internal constructor(
                 )
             }
         }
-    }
-
-    private fun onItemFocused(animeId: Int) {
-        if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId) }
     }
 
     private fun load(type: AnimeTopType, offset: Int, replace: Boolean) {

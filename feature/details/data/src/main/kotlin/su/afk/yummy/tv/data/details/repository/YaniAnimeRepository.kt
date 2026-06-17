@@ -35,7 +35,7 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailers as toStoredAn
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideos as toStoredAnimeVideos
 
 private const val ANIME_DETAILS_TTL_MS = 24 * 60 * 60 * 1000L
-private const val ANIME_VIDEOS_TTL_MS = 60 * 60 * 1000L
+private const val ANIME_VIDEOS_TTL_MS = 5 * 60 * 1000L
 private const val ANIME_PUBLIC_EXTRAS_TTL_MS = 6 * 60 * 60 * 1000L
 
 class YaniAnimeRepository(

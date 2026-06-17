@@ -16,8 +16,6 @@ class SearchState {
         val error: String? = null,
         val canLoadMore: Boolean = false,
         val offset: Int = 0,
-        val focusedItemId: Int? = null,
-        val restoreFocusedItemOnEnter: Boolean = false,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,
         val filterOptions: SearchFilterOptions = SearchFilterOptions(),
@@ -35,9 +33,6 @@ class SearchState {
 
         /** Пользователь выбрал аниме с указанным идентификатором. */
         data class ItemSelected(val animeId: Int) : Event
-
-        /** Фокус переместился на аниме с указанным идентификатором. */
-        data class ItemFocused(val animeId: Int) : Event
 
         /** Пользователь отправил текущий поисковый запрос. */
         data object SearchSubmitted : Event
@@ -95,9 +90,6 @@ class SearchState {
 
         /** Пользователь переключил направление сортировки. */
         data object SortDirectionToggled : Event
-
-        /** UI завершил восстановление фокуса на элементе. */
-        data object FocusedItemRestoreHandled : Event
     }
 
     sealed interface Effect : UiEffect

@@ -28,7 +28,6 @@ fun SimilarTvScreen(
             fromAi = state.fromAi,
             onToggle = { onEvent(SimilarState.Event.SourceToggled) },
             onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
-            onItemFocused = { id -> onEvent(SimilarState.Event.ItemFocused(id)) },
             modifier = Modifier.fillMaxSize(),
         )
     }

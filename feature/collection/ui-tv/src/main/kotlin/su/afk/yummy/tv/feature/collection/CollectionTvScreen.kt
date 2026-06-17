@@ -14,8 +14,6 @@ fun CollectionTvScreen(
 ) {
     val onAnimeSelected =
         remember(onEvent) { { animeId: Int -> onEvent(CollectionState.Event.AnimeSelected(animeId)) } }
-    val onItemFocused =
-        remember(onEvent) { { animeId: Int -> onEvent(CollectionState.Event.ItemFocused(animeId)) } }
     val onScrollPositionChanged = remember(onEvent) {
         { index: Int, offset: Int ->
             onEvent(
@@ -34,23 +32,17 @@ fun CollectionTvScreen(
             )
         }
     }
-    val onFocusedItemRestoreHandled =
-        remember(onEvent) { { onEvent(CollectionState.Event.FocusedItemRestoreHandled) } }
 
     CollectionGridPane(
         collection = state.collection,
         isLoading = state.isLoading,
         isVoteLoading = state.isVoteLoading,
         error = state.error,
-        focusedItemId = state.focusedItemId,
         firstVisibleItemIndex = state.firstVisibleItemIndex,
         firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
         onAnimeSelected = onAnimeSelected,
-        onItemFocused = onItemFocused,
         onScrollPositionChanged = onScrollPositionChanged,
         onVote = onVote,
-        restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         onRetry = onRetry,
-        onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
     )
 }

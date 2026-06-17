@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,7 +23,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -34,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -46,15 +44,7 @@ internal fun HomeDashboard(
     feed: HomeFeed,
     continueWatching: List<HomeContinueWatchingItem>,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
-    onContinueWatchingFocused: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
-    onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
-    restoreFocusedItemOnEnter: Boolean = false,
-    focusedSectionId: String? = null,
-    focusedItemId: Int?,
-    continueWatchingRestoreToken: Int,
-    continueWatchingRestoreKey: String?,
-    onFocusedItemRestoreHandled: () -> Unit,
 ) {
     val lazyColumnState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -70,33 +60,8 @@ internal fun HomeDashboard(
     fun sectionKey(index: Int): String =
         feed.sections.getOrNull(index)?.let { "section_${it.type.name}" } ?: "section_$index"
 
-    // When returning to Home (e.g. back from details/collection) or stepping back down from
-    // the top bar, the column regains focus. Prefer the last focused row index because the
-    // same anime id can appear in several sections, then fall back to item lookup if the feed
-    // changed and that row no longer contains the focused item.
-    fun rowIndexForFocusedItem(): Int = when {
-        focusedSectionId == SECTION_HERO && hasHero -> heroLazyIdx
-        focusedSectionId == SECTION_CONTINUE_WATCHING && hasContinueWatching -> 0
-        focusedSectionId != null -> {
-            val sectionIdx = feed.sections.indices.indexOfFirst { index ->
-                sectionKey(index) == focusedSectionId
-            }
-            if (sectionIdx >= 0) sectionsBaseLazyIdx + sectionIdx else 0
-        }
-        focusedItemId != null && hasHero && feed.heroItems.any { it.id == focusedItemId } -> heroLazyIdx
-        focusedItemId != null -> {
-            val sectionIdx = feed.sections.indexOfFirst { section ->
-                section.items.any { it.id == focusedItemId }
-            }
-            if (sectionIdx >= 0) sectionsBaseLazyIdx + sectionIdx else 0
-        }
-        else -> if (hasHero) heroLazyIdx else 0
-    }.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
-
     var columnHasFocus by remember { mutableStateOf(false) }
-    var restoringFromMainMenu by remember { mutableStateOf(false) }
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
-    var handledContinueWatchingRestoreToken by rememberSaveable { mutableIntStateOf(0) }
     val homeContentFocusRequester = remember { FocusRequester() }
     val continueWatchingFocusRequester = remember { FocusRequester() }
     val heroFocusRequester = remember { FocusRequester() }
@@ -129,45 +94,10 @@ internal fun HomeDashboard(
         )
     }
 
-    fun lazyIndexContainsFocusedItem(index: Int): Boolean = when {
-        focusedItemId == null -> false
-        focusedSectionId == SECTION_HERO -> hasHero && index == heroLazyIdx
-        focusedSectionId == SECTION_CONTINUE_WATCHING -> hasContinueWatching && index == 0
-        focusedSectionId != null && index >= sectionsBaseLazyIdx -> {
-            val sectionIndex = index - sectionsBaseLazyIdx
-            sectionIndex in feed.sections.indices && sectionKey(sectionIndex) == focusedSectionId
-        }
-        hasHero && index == heroLazyIdx -> feed.heroItems.any { it.id == focusedItemId }
-        index >= sectionsBaseLazyIdx -> {
-            val sectionIndex = index - sectionsBaseLazyIdx
-            feed.sections.getOrNull(sectionIndex)?.items?.any { it.id == focusedItemId } == true
-        }
-        else -> false
-    }
-
     fun focusedLazyIndex(): Int {
         val savedIndex = lastFocusedLazyIndex.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
-        return when {
-            totalLazyItems <= 0 -> 0
-            hasPendingContinueWatchingRestore(
-                hasContinueWatching = hasContinueWatching,
-                restoreToken = continueWatchingRestoreToken,
-                handledToken = handledContinueWatchingRestoreToken,
-            ) -> 0
-            focusedItemId != null && lazyIndexContainsFocusedItem(savedIndex) -> savedIndex
-            focusedItemId != null -> rowIndexForFocusedItem()
-            else -> savedIndex
-        }
+        return if (totalLazyItems <= 0) 0 else savedIndex
     }
-
-    fun mainMenuEnterIndex(): Int =
-        if (focusedSectionId != null || focusedItemId != null) {
-            focusedLazyIndex()
-        } else if (hasContinueWatching) {
-            0
-        } else {
-            focusedLazyIndex()
-        }
 
     fun previousRowFocusRequester(index: Int): FocusRequester? =
         when {
@@ -180,12 +110,6 @@ internal fun HomeDashboard(
             totalLazyItems <= 0 || index >= totalLazyItems - 1 -> FocusRequester.Cancel
             else -> focusRequesterForLazyIndex(index + 1)
         }
-
-    fun restoreFocusRequester(direction: FocusDirection): FocusRequester = when {
-        totalLazyItems <= 0 -> FocusRequester.Default
-        direction == FocusDirection.Right -> focusRequesterForLazyIndex(mainMenuEnterIndex())
-        else -> focusRequesterForLazyIndex(focusedLazyIndex())
-    }
 
     fun requestRowFocus(index: Int) {
         if (totalLazyItems <= 0 || index !in 0 until totalLazyItems) return
@@ -200,30 +124,7 @@ internal fun HomeDashboard(
         }
     }
 
-    fun consumeContinueWatchingRestoreIfPending(): Boolean {
-        if (!hasPendingContinueWatchingRestore(
-                hasContinueWatching = hasContinueWatching,
-                restoreToken = continueWatchingRestoreToken,
-                handledToken = handledContinueWatchingRestoreToken,
-            )
-        ) {
-            return false
-        }
-        handledContinueWatchingRestoreToken = continueWatchingRestoreToken
-        lastFocusedLazyIndex = 0
-        return true
-    }
-
-    val preferredContentFocusRequester = if (totalLazyItems > 0) {
-        val preferredIndex = if (restoreFocusedItemOnEnter) {
-            focusedLazyIndex()
-        } else {
-            mainMenuEnterIndex()
-        }
-        focusRequesterForLazyIndex(preferredIndex)
-    } else {
-        null
-    }
+    val preferredContentFocusRequester = homeContentFocusRequester
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
@@ -239,43 +140,22 @@ internal fun HomeDashboard(
             .padding(top = 12.dp)
             .focusProperties {
                 mainMenuFocusRequester?.let { left = it }
-                onEnter = {
-                    restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
-                    if (consumeContinueWatchingRestoreIfPending()) {
-                        requestRowFocus(0)
-                    } else if (restoringFromMainMenu) {
-                        requestRowFocus(mainMenuEnterIndex())
-                    } else {
-                        restoreFocusRequester(requestedFocusDirection).requestFocus()
-                    }
-                }
             }
+            .tvFocusRestorer(fallback = focusRequesterForLazyIndex(focusedLazyIndex()))
             .onFocusChanged { state ->
                 val hadFocus = columnHasFocus
                 columnHasFocus = state.hasFocus
                 if (state.hasFocus && !hadFocus && totalLazyItems > 0) {
-                    val target = when {
-                        consumeContinueWatchingRestoreIfPending() -> 0
-                        restoringFromMainMenu -> mainMenuEnterIndex()
-                        focusedItemId != null -> focusedLazyIndex()
-                        else -> lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
-                    }
+                    val target = lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
                     scope.launch {
                         lazyColumnState.scrollToItem(target)
                         snapshotFlow {
                             lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
                         }.first { it }
                         runCatching { focusRequesterForLazyIndex(target).requestFocus() }
-                        restoringFromMainMenu = false
-                        if (restoreFocusedItemOnEnter) {
-                            onFocusedItemRestoreHandled()
-                        }
                     }
-                } else if (!state.hasFocus) {
-                    restoringFromMainMenu = false
                 }
-            }
-            .focusGroup(),
+            },
         contentPadding = PaddingValues(bottom = 520.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -289,10 +169,7 @@ internal fun HomeDashboard(
                     ContinueWatchingSection(
                         items = continueWatching,
                         onItemSelected = onContinueWatchingSelected,
-                        onItemFocused = onContinueWatchingFocused,
                         rowFocusRequester = continueWatchingFocusRequester,
-                        restoreFirstItemToken = continueWatchingRestoreToken,
-                        restoreItemKey = continueWatchingRestoreKey,
                         downFocusRequester = nextRowFocusRequester(0),
                         onMoveDown = if (totalLazyItems > 1) {
                             { requestRowFocus(1) }
@@ -322,7 +199,7 @@ internal fun HomeDashboard(
                 }
 
                 // Re-scroll when CW section appears/disappears while hero is already focused.
-                LaunchedEffect(heroLazyIdx, heroHasFocus, focusedItemId) {
+                LaunchedEffect(heroLazyIdx, heroHasFocus) {
                     pinHeroWhileFocused()
                 }
 
@@ -340,13 +217,9 @@ internal fun HomeDashboard(
                     HomeCarousel(
                         items = feed.heroItems,
                         onItemSelected = onItemSelected,
-                        onItemFocused = onItemFocused,
                         sectionKey = SECTION_HERO,
-                        focusedSectionId = focusedSectionId,
-                        focusedItemId = focusedItemId,
                         rowFocusRequester = heroFocusRequester,
                         rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
-                        restoreFocusedPageOnEnter = restoreFocusedItemOnEnter && focusedSectionId == SECTION_HERO,
                         upFocusRequester = previousRowFocusRequester(heroLazyIdx),
                         downFocusRequester = nextRowFocusRequester(heroLazyIdx),
                         onCarouselFocused = {
@@ -384,9 +257,6 @@ internal fun HomeDashboard(
                     title = section.title,
                     items = section.items,
                     onItemSelected = onItemSelected,
-                    onItemFocused = onItemFocused,
-                    focusedSectionId = focusedSectionId,
-                    focusedItemId = focusedItemId,
                     rowFocusRequester = sectionFocusRequesters[index],
                     rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,
                     rowKey = sectionKey(index),
@@ -422,11 +292,4 @@ private fun firstAvailableFocusRequester(
     else -> sectionFocusRequesters.firstOrNull() ?: FocusRequester.Default
 }
 
-private const val SECTION_CONTINUE_WATCHING = "__continue_watching"
 private const val SECTION_HERO = "__hero"
-
-private fun hasPendingContinueWatchingRestore(
-    hasContinueWatching: Boolean,
-    restoreToken: Int,
-    handledToken: Int,
-): Boolean = hasContinueWatching && restoreToken > handledToken

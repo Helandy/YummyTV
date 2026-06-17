@@ -1,8 +1,11 @@
 package su.afk.yummy.tv.feature.top.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,15 +21,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -37,11 +39,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -51,12 +48,16 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
+import kotlin.math.abs
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun TopBrowser(
     items: List<AnimeTopItem>,
@@ -65,13 +66,9 @@ internal fun TopBrowser(
     isLoadingMore: Boolean,
     canLoadMore: Boolean,
     error: String?,
-    focusedItemId: Int?,
-    restoreFocusedItemOnEnter: Boolean,
     isActiveDestination: Boolean,
     onItemSelected: (AnimeTopItem) -> Unit,
     onTypeSelected: (AnimeTopType) -> Unit,
-    onItemFocused: (Int) -> Unit,
-    onFocusedItemRestoreHandled: () -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,34 +79,52 @@ internal fun TopBrowser(
     val cardWidth = currentTvTitleCardDimensions().width
     val scope = rememberCoroutineScope()
     val typeFocusRequesters = remember { List(AnimeTopType.entries.size) { FocusRequester() } }
-    var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
-
-    var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val itemIds = remember(items) { items.map { it.id } }
+    val focusRequesters = remember(selectedType, itemIds) { List(items.size) { FocusRequester() } }
+    val itemFocusRequesters = remember(itemIds, focusRequesters) {
+        itemIds.zip(focusRequesters).toMap()
+    }
+    val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(selectedType.name)
+    var lastFocusedIndex by remember { mutableStateOf(0) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
-    var wasActiveDestination by remember { mutableStateOf(isActiveDestination) }
-    var suppressNextFocusedRowScroll by remember { mutableStateOf(false) }
-    val focusRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
-    val focusedItemIndex = focusedItemId
-        ?.let { id -> items.indexOfFirst { item -> item.id == id } }
-        ?: -1
+    var pendingContentFocusType by remember { mutableStateOf<AnimeTopType?>(null) }
+    val firstItemFocusRequester = focusRequesters.firstOrNull()
     val selectedTypeFocusRequester =
         typeFocusRequesters.getOrNull(AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0))
     val hasFocusableContent = items.isNotEmpty() && !isLoading
+    val preferredItemIndex = when {
+        items.isEmpty() -> -1
+        else -> (focusRestoreState.targetIndex(itemIds) ?: lastFocusedIndex).coerceIn(
+            0,
+            items.lastIndex
+        )
+    }
+    val gridFallbackFocusRequester = focusRequesters.getOrNull(preferredItemIndex)
+        ?: selectedTypeFocusRequester
+        ?: FocusRequester.Default
     val preferredContentFocusRequester = if (hasFocusableContent) {
         gridFocusRequester
     } else {
         selectedTypeFocusRequester ?: gridFocusRequester
     }
+    val tabContentFocusRequester = firstItemFocusRequester ?: gridFocusRequester
+
+    fun rememberFocusedItem(index: Int) {
+        val target = index.coerceIn(0, (items.size - 1).coerceAtLeast(0))
+        lastFocusedIndex = target
+        itemIds.getOrNull(target)?.let { key ->
+            focusRestoreState.onItemFocused(key, target)
+        }
+    }
 
     fun restoreTargetIndex(): Int {
         if (items.isEmpty()) return 0
-        return if (focusedItemIndex in items.indices) {
-            focusedItemIndex
-        } else {
-            lastFocusedIndex.coerceIn(0, items.lastIndex)
-        }
+        return (focusRestoreState.targetIndex(itemIds) ?: lastFocusedIndex).coerceIn(
+            0,
+            items.lastIndex
+        )
     }
 
     suspend fun requestFocusUntilTimeout(requester: FocusRequester): Boolean =
@@ -122,55 +137,58 @@ internal fun TopBrowser(
             focused
         } ?: false
 
-    suspend fun requestVisibleItemFocus(index: Int): Boolean {
-        val requester = focusRequesters.getOrNull(index) ?: return false
-        val visible = gridState.layoutInfo.visibleItemsInfo.any { it.index == index }
-        if (!visible) return false
-        suppressNextFocusedRowScroll = true
-        return requestFocusUntilTimeout(requester)
+    fun requestFirstContentItemFocus() {
+        if (!hasFocusableContent) {
+            pendingContentFocusType = selectedType
+            return
+        }
+        val firstItemRequester = focusRequesters.firstOrNull() ?: return
+        rememberFocusedItem(0)
+        restoreFocusJob?.cancel()
+        scope.launch {
+            gridState.scrollToItem(0)
+            snapshotFlow {
+                gridState.layoutInfo.visibleItemsInfo.any { it.index == 0 }
+            }.first { it }
+            requestFocusUntilTimeout(firstItemRequester)
+        }
+    }
+
+    fun requestContentFocusForType(type: AnimeTopType) {
+        if (type != selectedType) {
+            pendingContentFocusType = type
+            onTypeSelected(type)
+            return
+        }
+        if (hasFocusableContent) {
+            requestFirstContentItemFocus()
+        } else {
+            pendingContentFocusType = type
+        }
     }
 
     val launchItemFocusRestore = {
             index: Int,
             fallbackFocusRequester: FocusRequester,
-            clearPendingRestore: Boolean,
         ->
         if (items.isNotEmpty()) {
             val target = index.coerceIn(0, items.lastIndex)
-            lastFocusedIndex = target
+            rememberFocusedItem(target)
             restoreFocusJob?.cancel()
             isRestoringFocus = true
-            restoreFocusJob = scope.launch {
-                var completed = false
-                try {
-                    val restoredVisibleItem = if (clearPendingRestore) {
-                        false
-                    } else {
-                        requestVisibleItemFocus(target)
-                    }
-                    if (!restoredVisibleItem) {
-                        repeat(TOP_FOCUS_RESTORE_INITIAL_FRAME_WAIT) {
-                            withFrameNanos { }
-                        }
-                        gridState.scrollToItem(target)
-                        snapshotFlow {
-                            gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                        }.first { it }
-                        val itemRequester = focusRequesters.getOrNull(target)
-                        val restoredScrolledItem =
-                            itemRequester?.let { requestFocusUntilTimeout(it) } ?: false
-                        if (!restoredScrolledItem) {
-                            requestFocusUntilTimeout(fallbackFocusRequester)
-                        }
-                    }
-                    completed = true
-                } finally {
+            restoreFocusJob = launchTvLazyGridKeyFocusRestore(
+                previousJob = restoreFocusJob,
+                scope = scope,
+                restoreState = focusRestoreState,
+                keys = itemIds,
+                gridState = gridState,
+                itemFocusRequesters = itemFocusRequesters,
+                fallbackFocusRequester = fallbackFocusRequester,
+                fallbackIndex = target,
+                onRestoreFinished = {
                     isRestoringFocus = false
-                    if (completed && clearPendingRestore) {
-                        onFocusedItemRestoreHandled()
-                    }
-                }
-            }
+                },
+            )
         }
     }
     val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading, isLoadingMore) {
@@ -186,66 +204,51 @@ internal fun TopBrowser(
         }
     }
 
-    LaunchedEffect(gridState, items.size) {
-        snapshotFlow {
-            val visibleItems = gridState.layoutInfo.visibleItemsInfo
-            val minX = visibleItems.minOfOrNull { it.offset.x }
-            if (minX == null) {
-                emptySet()
-            } else {
-                visibleItems.filter { it.offset.x == minX }.map { it.index }.toSet()
-            }
-        }.collect { leftEdgeIndexes = it }
-    }
-
     DisposableEffect(Unit) {
         onDispose { restoreFocusJob?.cancel() }
     }
 
+    LaunchedEffect(selectedType) {
+        focusRestoreState.clear()
+        lastFocusedIndex = 0
+        isRestoringFocus = false
+        restoreFocusJob?.cancel()
+        gridState.scrollToItem(0)
+    }
+
+    LaunchedEffect(
+        selectedType,
+        hasFocusableContent,
+        focusRequesters,
+        pendingContentFocusType,
+    ) {
+        if (pendingContentFocusType != selectedType || !hasFocusableContent) {
+            return@LaunchedEffect
+        }
+        val firstItemRequester = focusRequesters.firstOrNull() ?: return@LaunchedEffect
+        pendingContentFocusType = null
+        rememberFocusedItem(0)
+        gridState.scrollToItem(0)
+        snapshotFlow {
+            gridState.layoutInfo.visibleItemsInfo.any { it.index == 0 }
+        }.first { it }
+        requestFocusUntilTimeout(firstItemRequester)
+    }
+
     LaunchedEffect(
         isActiveDestination,
-        restoreFocusedItemOnEnter,
-        focusedItemId,
         items,
         focusRequesters,
         gridHasFocus,
     ) {
-        val returnedToTop = isActiveDestination && !wasActiveDestination
-        wasActiveDestination = isActiveDestination
-
         if (!isActiveDestination) {
             gridHasFocus = false
             isRestoringFocus = false
             return@LaunchedEffect
         }
-        if (focusedItemIndex in items.indices) {
-            lastFocusedIndex = focusedItemIndex
-        }
         if (items.isEmpty()) {
             return@LaunchedEffect
         }
-
-        val shouldRestoreItem = returnedToTop || (restoreFocusedItemOnEnter && !gridHasFocus)
-        if (shouldRestoreItem) {
-            launchItemFocusRestore(
-                restoreTargetIndex(),
-                gridFocusRequester,
-                restoreFocusedItemOnEnter,
-            )
-        }
-    }
-
-    // Keep normal card-to-card navigation anchored, but don't move the list
-    // after restoring focus to a card that was already visible.
-    LaunchedEffect(lastFocusedIndex, gridHasFocus, isRestoringFocus) {
-        if (!gridHasFocus || isRestoringFocus || items.isEmpty()) {
-            return@LaunchedEffect
-        }
-        if (suppressNextFocusedRowScroll) {
-            suppressNextFocusedRowScroll = false
-            return@LaunchedEffect
-        }
-        gridState.scrollToItem(lastFocusedIndex.coerceIn(0, items.lastIndex))
     }
 
     LaunchedEffect(shouldLoadMore) {
@@ -263,26 +266,14 @@ internal fun TopBrowser(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .focusProperties {
-                onEnter = {
-                    if (hasFocusableContent) {
-                        launchItemFocusRestore(
-                            restoreTargetIndex(),
-                            gridFocusRequester,
-                            restoreFocusedItemOnEnter,
-                        )
-                    } else {
-                        selectedTypeFocusRequester?.requestFocus()
-                    }
-                }
-            }
             .focusGroup(),
     ) {
         TopFilterTabs(
             selectedType = selectedType,
             contentCanFocus = items.isNotEmpty() && !isLoading,
             onTypeSelected = onTypeSelected,
-            contentFocusRequester = gridFocusRequester,
+            onContentFocusRequested = ::requestContentFocusForType,
+            contentFocusRequester = tabContentFocusRequester,
             typeFocusRequesters = typeFocusRequesters,
             mainMenuFocusRequester = mainMenuFocusRequester,
         )
@@ -307,136 +298,77 @@ internal fun TopBrowser(
                                 (cardWidth.value + horizontalSpacing.value)).toInt()
                             .coerceAtLeast(1)
 
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = cardWidth),
-                        state = gridState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .focusRequester(gridFocusRequester)
-                            .focusProperties {
-                                onEnter = {
-                                    if (hasFocusableContent) {
+                    CompositionLocalProvider(
+                        LocalBringIntoViewSpec provides TvNoPivotBringIntoViewSpec,
+                    ) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(minSize = cardWidth),
+                            state = gridState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .focusRequester(gridFocusRequester)
+                                .tvFocusRestorer(
+                                    fallback = gridFallbackFocusRequester,
+                                    enabled = hasFocusableContent,
+                                )
+                                .onFocusChanged { state ->
+                                    gridHasFocus = state.hasFocus
+                                    if (state.isFocused && hasFocusableContent && !isRestoringFocus) {
                                         launchItemFocusRestore(
                                             restoreTargetIndex(),
-                                            gridFocusRequester,
-                                            restoreFocusedItemOnEnter,
+                                            gridFallbackFocusRequester,
                                         )
                                     }
-                                }
-                            }
-                            .onFocusChanged { state ->
-                                val hadFocus = gridHasFocus
-                                gridHasFocus = state.hasFocus
-                                if (!state.hasFocus) {
-                                    isRestoringFocus = false
-                                }
-                                if (
-                                    state.hasFocus &&
-                                    !hadFocus &&
-                                    !restoreFocusedItemOnEnter &&
-                                    items.isNotEmpty()
-                                ) {
-                                    launchItemFocusRestore(
-                                        lastFocusedIndex.coerceIn(0, items.lastIndex),
-                                        gridFocusRequester,
-                                        false,
-                                    )
-                                }
-                            }
-                            .focusGroup()
-                            .focusable(),
-                        contentPadding = PaddingValues(
-                            start = TvScreenPadding.Horizontal,
-                            end = TvScreenPadding.Horizontal,
-                            top = 16.dp,
-                            bottom = TvScreenPadding.Vertical,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
-                        horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
-                    ) {
-                        itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                            val stableOnClick = remember(item, index) {
-                                {
-                                    lastFocusedIndex = index
-                                    onItemFocused(item.id)
-                                    onItemSelected(item)
-                                }
-                            }
-                            val stableOnFocused = remember(item.id) { { onItemFocused(item.id) } }
-                            TopAnimeCard(
-                                item = item,
-                                rank = index + 1,
-                                onClick = stableOnClick,
-                                onFocused = stableOnFocused,
-                                modifier = Modifier
-                                    .focusRequester(focusRequesters[index])
-                                    .onPreviewKeyEvent { event ->
-                                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                                        when (event.key) {
-                                            Key.DirectionUp -> {
-                                                if (index < gridColumnCount) {
-                                                    runCatching { selectedTypeFocusRequester?.requestFocus() }
-                                                    true
-                                                } else {
-                                                    false
-                                                }
-                                            }
-
-                                            Key.DirectionLeft -> {
-                                                if (index !in leftEdgeIndexes) {
-                                                    val target = index - 1
-                                                    scope.launch {
-                                                        gridState.scrollToItem(target)
-                                                        snapshotFlow {
-                                                            gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                                        }.first { it }
-                                                        runCatching { focusRequesters[target].requestFocus() }
-                                                    }
-                                                    true
-                                                } else {
-                                                    runCatching { mainMenuFocusRequester?.requestFocus() }
-                                                    mainMenuFocusRequester != null
-                                                }
-                                            }
-
-                                            else -> {
-                                                val target = when (event.key) {
-                                                    Key.DirectionDown -> index + gridColumnCount
-                                                    Key.DirectionUp -> index - gridColumnCount
-                                                    else -> return@onPreviewKeyEvent false
-                                                }
-                                                when {
-                                                    target in items.indices -> {
-                                                        scope.launch {
-                                                            gridState.scrollToItem(target)
-                                                            snapshotFlow {
-                                                                gridState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                                                            }.first { it }
-                                                            runCatching { focusRequesters[target].requestFocus() }
-                                                        }
-                                                        true
-                                                    }
-
-                                                    else -> false
-                                                }
-                                            }
-                                        }
+                                    if (!state.hasFocus) {
+                                        isRestoringFocus = false
                                     }
-                                    .onFocusChanged { state ->
-                                        if (state.hasFocus) {
-                                            lastFocusedIndex = index
-                                            onItemFocused(item.id)
-                                            if (isRestoringFocus && restoreFocusedItemOnEnter && item.id == focusedItemId) {
-                                                onFocusedItemRestoreHandled()
+                                }
+                                .focusable(),
+                            contentPadding = PaddingValues(
+                                start = TvScreenPadding.Horizontal,
+                                end = TvScreenPadding.Horizontal,
+                                top = 16.dp,
+                                bottom = TvScreenPadding.Vertical + TvFocusedCardBottomInset,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
+                            horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+                        ) {
+                            itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                                val stableOnClick = remember(item, index) {
+                                    {
+                                        rememberFocusedItem(index)
+                                        onItemSelected(item)
+                                    }
+                                }
+                                val stableOnFocused =
+                                    remember(item.id, index) { { rememberFocusedItem(index) } }
+                                TopAnimeCard(
+                                    item = item,
+                                    rank = index + 1,
+                                    onClick = stableOnClick,
+                                    onFocused = stableOnFocused,
+                                    modifier = Modifier
+                                        .focusRequester(focusRequesters[index])
+                                        .focusProperties {
+                                            if (index % gridColumnCount == 0) {
+                                                mainMenuFocusRequester?.let { left = it }
+                                            }
+                                            if (index < gridColumnCount) {
+                                                selectedTypeFocusRequester?.let { up = it }
                                             }
                                         }
-                                    },
-                            )
-                        }
+                                        .onFocusChanged { state ->
+                                            if (state.hasFocus) {
+                                                rememberFocusedItem(index)
+                                            }
+                                        },
+                                )
+                            }
 
-                        if (isLoadingMore) {
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                TvLoadingFooter()
+                            if (isLoadingMore) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    TvLoadingFooter()
+                                }
                             }
                         }
                     }
@@ -448,4 +380,20 @@ internal fun TopBrowser(
 
 private const val LOAD_MORE_THRESHOLD = 4
 private const val TOP_FOCUS_RESTORE_TIMEOUT_MILLIS = 500L
-private const val TOP_FOCUS_RESTORE_INITIAL_FRAME_WAIT = 2
+private val TvFocusedCardBottomInset = 24.dp
+
+private object TvNoPivotBringIntoViewSpec : BringIntoViewSpec {
+    override fun calculateScrollDistance(
+        offset: Float,
+        size: Float,
+        containerSize: Float,
+    ): Float {
+        val trailingEdge = offset + size
+        return when {
+            offset >= 0f && trailingEdge <= containerSize -> 0f
+            offset < 0f && trailingEdge > containerSize -> 0f
+            abs(offset) < abs(trailingEdge - containerSize) -> offset
+            else -> trailingEdge - containerSize
+        }
+    }
+}

@@ -30,8 +30,6 @@ class LibraryState {
         val isRemoteLoading: Boolean = false,
         val remoteError: String? = null,
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
-        val focusedItemId: Int? = null,
-        val restoreFocusedItemOnEnter: Boolean = false,
         val continueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
     ) : UiState
@@ -47,14 +45,8 @@ class LibraryState {
         /** Пользователь открыл детали элемента продолжения просмотра. */
         data class ContinueWatchingDetailsSelected(val entry: HomeContinueWatchingItem) : Event
 
-        /** Фокус переместился на аниме с указанным идентификатором. */
-        data class ItemFocused(val animeId: Int) : Event
-
         /** Пользователь выбрал вкладку библиотеки. */
         data class TabSelected(val tab: LibraryTab) : Event
-
-        /** UI завершил восстановление фокуса на элементе. */
-        data object FocusedItemRestoreHandled : Event
 
         /** Экран снова стал активным для пользователя. */
         data object ScreenResumed : Event

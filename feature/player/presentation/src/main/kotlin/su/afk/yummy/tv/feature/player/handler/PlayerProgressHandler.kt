@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 10_000L
 
-/** Persists local watch progress and silently mirrors remote playback progress. */
+/** Сохраняет локальный прогресс просмотра и тихо синхронизирует его с сервером. */
 internal class PlayerProgressHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
@@ -64,6 +64,10 @@ internal class PlayerProgressHandler @Inject constructor(
         )
     }
 
+    suspend fun suppressContinueWatchingDisplay(context: PlayerProgressContext) {
+        watchProgressStore.suppressContinueWatchingDisplay(context.animeId)
+    }
+
     private suspend fun syncRemoteProgress(
         snapshot: PlayerProgressSnapshot,
         force: Boolean,
@@ -116,7 +120,7 @@ internal class PlayerProgressHandler @Inject constructor(
         }
 }
 
-/** Screen-level metadata needed to store a progress entry. */
+/** Метаданные экрана, нужные для сохранения записи прогресса. */
 internal data class PlayerProgressContext(
     val animeId: Int,
     val animeTitle: String,

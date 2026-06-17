@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.home.view
 
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +33,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.home.R
@@ -43,10 +42,7 @@ import su.afk.yummy.tv.feature.home.R
 internal fun ContinueWatchingSection(
     items: List<HomeContinueWatchingItem>,
     onItemSelected: (HomeContinueWatchingItem) -> Unit,
-    onItemFocused: (HomeContinueWatchingItem) -> Unit = {},
     rowFocusRequester: FocusRequester? = null,
-    restoreFirstItemToken: Int = 0,
-    restoreItemKey: String? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onMoveUp: (() -> Unit)? = null,
@@ -62,7 +58,6 @@ internal fun ContinueWatchingSection(
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
-    var handledRestoreFirstItemToken by rememberSaveable { mutableIntStateOf(0) }
     val focusRequesters = remember(items.size, rowFocusRequester) {
         List(items.size) { index ->
             if (index == 0) rowFocusRequester ?: FocusRequester() else FocusRequester()
@@ -81,40 +76,15 @@ internal fun ContinueWatchingSection(
         runCatching { focusRequesters[target].requestFocus() }
     }
 
-    fun moveFocusToIndex(targetIndex: Int) {
-        if (items.isEmpty()) return
-        val clamped = targetIndex.coerceIn(0, items.lastIndex)
-        lastFocusedIndex = clamped
-        focusMoveJob?.cancel()
-        focusMoveJob = scope.launch {
-            requestItemFocus(clamped)
-        }
-    }
-
     fun cancelPendingFocusMove() {
         focusMoveJob?.cancel()
         focusMoveJob = null
         isRestoring.value = false
     }
 
-    fun HomeContinueWatchingItem.focusKey(): String = "$animeId:$episode"
-
-    fun hasPendingFirstItemRestore(): Boolean = restoreFirstItemToken > handledRestoreFirstItemToken
-
-    fun pendingRestoreIndex(): Int? {
-        if (!hasPendingFirstItemRestore()) return null
-        val keyedIndex = restoreItemKey?.let { key ->
-            items.indexOfFirst { it.focusKey() == key }
-        } ?: -1
-        return keyedIndex.takeIf { it >= 0 } ?: 0
-    }
+    fun HomeContinueWatchingItem.focusKey(): String = "$animeId:$videoId:$episode:$episodeUrl"
 
     fun restoreIndex(): Int {
-        pendingRestoreIndex()?.let { return it }
-        val restoreKeyedIndex = restoreItemKey?.let { key ->
-            items.indexOfFirst { it.focusKey() == key }
-        } ?: -1
-        if (restoreKeyedIndex >= 0) return restoreKeyedIndex
         val keyedIndex = lastFocusedKey?.let { key ->
             items.indexOfFirst { it.focusKey() == key }
         } ?: -1
@@ -124,32 +94,6 @@ internal fun ContinueWatchingSection(
     fun rememberFocusedItem(index: Int, entry: HomeContinueWatchingItem) {
         lastFocusedIndex = index
         lastFocusedKey = entry.focusKey()
-        onItemFocused(entry)
-    }
-
-    suspend fun restorePendingItemFocus(): Boolean {
-        val target = pendingRestoreIndex() ?: return false
-        val wasAlreadyFocused = target == lastFocusedIndex
-        handledRestoreFirstItemToken = restoreFirstItemToken
-        items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
-        if (wasAlreadyFocused) return false
-        requestItemFocus(target)
-        return true
-    }
-
-    LaunchedEffect(
-        rowHasFocus.value,
-        restoreFirstItemToken,
-        restoreItemKey,
-        items.map { it.focusKey() },
-    ) {
-        if (!rowHasFocus.value) return@LaunchedEffect
-        isRestoring.value = true
-        try {
-            restorePendingItemFocus()
-        } finally {
-            isRestoring.value = false
-        }
     }
 
     Column {
@@ -165,7 +109,6 @@ internal fun ContinueWatchingSection(
             modifier = Modifier
                 .focusProperties {
                     upFocusRequester?.let { up = it }
-                    mainMenuFocusRequester?.let { left = it }
                     downFocusRequester?.let { down = it }
                 }
                 .onFocusChanged { state ->
@@ -176,11 +119,9 @@ internal fun ContinueWatchingSection(
                         isRestoring.value = true
                         focusMoveJob?.cancel()
                         focusMoveJob = scope.launch {
-                            if (!restorePendingItemFocus()) {
-                                val target = restoreIndex().coerceIn(0, items.lastIndex)
-                                requestItemFocus(target)
-                                items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
-                            }
+                            val target = restoreIndex().coerceIn(0, items.lastIndex)
+                            requestItemFocus(target)
+                            items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
                             isRestoring.value = false
                         }
                     }
@@ -194,19 +135,11 @@ internal fun ContinueWatchingSection(
                                 mainMenuFocusRequester?.requestFocus()
                                 mainMenuFocusRequester != null
                             } else {
-                                moveFocusToIndex(lastFocusedIndex - 1)
-                                true
-                            }
-                        }
-
-                        Key.DirectionRight -> {
-                            if (lastFocusedIndex < items.lastIndex) {
-                                moveFocusToIndex(lastFocusedIndex + 1)
-                                true
-                            } else {
                                 false
                             }
                         }
+
+                        Key.DirectionRight -> false
 
                         Key.DirectionUp -> {
                             cancelPendingFocusMove()
@@ -220,18 +153,14 @@ internal fun ContinueWatchingSection(
                             onMoveDown != null
                         }
 
-                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                            items.getOrNull(lastFocusedIndex)?.let { entry ->
-                                rememberFocusedItem(lastFocusedIndex, entry)
-                                onItemSelected(entry)
-                            }
-                            true
-                        }
+                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> false
 
                         else -> false
                     }
                 }
-                .focusGroup(),
+                .tvFocusRestorer(
+                    fallback = focusRequesters.getOrNull(restoreIndex()) ?: FocusRequester.Default,
+                ),
         ) {
             itemsIndexed(items = items, key = { _, e -> e.focusKey() }) { index, entry ->
                 ContinueWatchingCard(
@@ -244,6 +173,7 @@ internal fun ContinueWatchingSection(
                         onItemSelected(entry)
                     },
                     modifier = Modifier.focusRequester(focusRequesters[index]),
+                    leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },
                     upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,
                 )

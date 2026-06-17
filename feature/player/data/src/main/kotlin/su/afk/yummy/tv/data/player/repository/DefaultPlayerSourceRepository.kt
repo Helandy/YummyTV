@@ -19,8 +19,17 @@ class DefaultPlayerSourceRepository @Inject constructor(
     private val animeRepository: AnimeRepository,
 ) : PlayerSourceRepository {
 
-    override suspend fun getSources(animeId: Int): PlayerSourceData = coroutineScope {
-        val videos = async { animeRepository.getAnimeVideos(animeId) }
+    override suspend fun getSources(
+        animeId: Int,
+        forceRefreshVideos: Boolean,
+    ): PlayerSourceData = coroutineScope {
+        val videos = async {
+            if (forceRefreshVideos) {
+                animeRepository.refreshAnimeVideos(animeId)
+            } else {
+                animeRepository.getAnimeVideos(animeId)
+            }
+        }
         val details = async {
             runCatching { animeRepository.getAnimeDetails(animeId) }
                 .getOrElse { error ->

@@ -18,9 +18,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -31,9 +39,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerContainer
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
-import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
@@ -47,7 +53,6 @@ internal fun SimilarTab(
     fromAi: Boolean,
     onToggle: () -> Unit,
     onAnimeSelected: (Int) -> Unit,
-    onItemFocused: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -86,8 +91,29 @@ internal fun SimilarTab(
             }
 
             is SimilarUiState.Content -> {
-                val restorerState = rememberFocusRestorerState()
                 val focusManager = LocalFocusManager.current
+                val listState = rememberLazyListState()
+                val itemIds = remember(state.items) { state.items.map { it.animeId } }
+                val focusRequesters = remember(itemIds) {
+                    List(state.items.size) { FocusRequester() }
+                }
+                var lastFocusedItemId by rememberSaveable(fromAi) { mutableStateOf<Int?>(null) }
+                var lastFocusedIndex by rememberSaveable(fromAi) { mutableIntStateOf(0) }
+
+                fun restoreIndex(): Int {
+                    if (state.items.isEmpty()) return 0
+                    val keyedIndex = lastFocusedItemId?.let { id ->
+                        state.items.indexOfFirst { it.animeId == id }
+                    } ?: -1
+                    return keyedIndex.takeIf { it >= 0 }
+                        ?: lastFocusedIndex.coerceIn(0, state.items.lastIndex)
+                }
+
+                fun rememberFocusedItem(index: Int) {
+                    lastFocusedIndex = index
+                    lastFocusedItemId = state.items.getOrNull(index)?.animeId
+                }
+
                 val directionKeyModifier = Modifier.onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
@@ -105,12 +131,15 @@ internal fun SimilarTab(
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                     val sideInset = ((maxWidth - RelatedCardWidth) / 2).coerceAtLeast(24.dp)
                     LazyRow(
-                        state = rememberLazyListState(),
+                        state = listState,
                         horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
                         contentPadding = PaddingValues(horizontal = sideInset, vertical = 8.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRestorerContainer(restorerState),
+                            .tvFocusRestorer(
+                                fallback = focusRequesters.getOrNull(restoreIndex())
+                                    ?: FocusRequester.Default,
+                            ),
                     ) {
                         itemsIndexed(
                             items = state.items,
@@ -125,9 +154,9 @@ internal fun SimilarTab(
                                 onClick = { onAnimeSelected(item.animeId) },
                                 rating = item.rating,
                                 meta = meta,
-                                onFocused = { onItemFocused(item.animeId) },
+                                onFocused = { rememberFocusedItem(index) },
                                 modifier = Modifier
-                                    .focusRestorerItem(index, restorerState)
+                                    .focusRequester(focusRequesters[index])
                                     .then(directionKeyModifier),
                             )
                         }

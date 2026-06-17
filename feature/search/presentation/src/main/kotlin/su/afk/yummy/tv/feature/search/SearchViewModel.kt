@@ -54,11 +54,9 @@ class SearchViewModel @Inject internal constructor(
             is SearchState.Event.ExternalSearchSubmitted -> onExternalSearchSubmitted(event.query)
             is SearchState.Event.ItemSelected -> {
                 analytics.eventAnimeSelected(event.animeId)
-                setState { copy(focusedItemId = event.animeId, restoreFocusedItemOnEnter = true) }
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
 
-            is SearchState.Event.ItemFocused -> onItemFocused(event.animeId)
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
             SearchState.Event.RetrySelected -> onRetrySelected()
             SearchState.Event.BackSelected -> nav.back()
@@ -112,11 +110,6 @@ class SearchViewModel @Inject internal constructor(
             is SearchState.Event.ToYearChanged -> updateDraft { copy(toYear = event.year) }
             is SearchState.Event.SortSelected -> updateDraft { copy(sort = event.sort) }
             SearchState.Event.SortDirectionToggled -> updateDraft { copy(sortForward = !sortForward) }
-            SearchState.Event.FocusedItemRestoreHandled -> {
-                if (currentState.restoreFocusedItemOnEnter) {
-                    setState { copy(restoreFocusedItemOnEnter = false) }
-                }
-            }
         }
     }
 
@@ -131,8 +124,6 @@ class SearchViewModel @Inject internal constructor(
                 filters = SearchFilters.EMPTY,
                 draftFilters = SearchFilters.EMPTY,
                 isFilterPanelOpen = false,
-                focusedItemId = null,
-                restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
                 error = null,
             )
@@ -152,11 +143,6 @@ class SearchViewModel @Inject internal constructor(
         )
     }
 
-    private fun onItemFocused(animeId: Int) {
-        if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId) }
-    }
-
     private fun onQueryChanged(query: String) {
         searchPagingHandler.cancel()
         setState {
@@ -166,8 +152,6 @@ class SearchViewModel @Inject internal constructor(
                 offset = 0,
                 error = null,
                 canLoadMore = false,
-                focusedItemId = null,
-                restoreFocusedItemOnEnter = false,
             )
         }
         if (query.isBlank() && currentState.filters.isEmpty) {
@@ -224,8 +208,6 @@ class SearchViewModel @Inject internal constructor(
                 isFilterPanelOpen = false,
                 items = emptyList(),
                 offset = 0,
-                focusedItemId = null,
-                restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }
@@ -249,8 +231,6 @@ class SearchViewModel @Inject internal constructor(
                 draftFilters = SearchFilters.EMPTY,
                 items = emptyList(),
                 offset = 0,
-                focusedItemId = null,
-                restoreFocusedItemOnEnter = false,
                 canLoadMore = false,
             )
         }

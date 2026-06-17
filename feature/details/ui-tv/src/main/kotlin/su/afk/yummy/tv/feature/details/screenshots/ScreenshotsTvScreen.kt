@@ -22,8 +22,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
-import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
@@ -55,7 +54,6 @@ fun ScreenshotsTvScreen(
                 modifier = Modifier.align(Alignment.Center),
             )
             else -> {
-                val restorerState = rememberFocusRestorerState()
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 284.dp),
                     contentPadding = PaddingValues(
@@ -66,7 +64,9 @@ fun ScreenshotsTvScreen(
                     ),
                     horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
                     verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .tvFocusRestorer(),
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(
@@ -83,8 +83,7 @@ fun ScreenshotsTvScreen(
                         ScreenshotCard(
                             screenshot = screenshot,
                             onClick = { onEvent(ScreenshotsState.Event.ScreenshotSelected(index)) },
-                            modifier = Modifier
-                                .focusRestorerItem(index, restorerState),
+                            modifier = Modifier,
                         )
                     }
                 }

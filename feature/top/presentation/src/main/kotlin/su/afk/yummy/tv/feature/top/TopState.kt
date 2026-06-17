@@ -15,8 +15,6 @@ class TopState {
         val error: String? = null,
         val canLoadMore: Boolean = true,
         val offset: Int = 0,
-        val focusedItemId: Int? = null,
-        val restoreFocusedItemOnEnter: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на экране топа аниме. */
@@ -26,12 +24,6 @@ class TopState {
 
         /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
-
-        /** Фокус переместился на аниме с указанным идентификатором. */
-        data class ItemFocused(val animeId: Int) : Event
-
-        /** UI завершил восстановление фокуса на элементе. */
-        data object FocusedItemRestoreHandled : Event
 
         /** Пользователь запросил загрузку следующей страницы топа. */
         data object LoadMore : Event

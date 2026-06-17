@@ -16,7 +16,6 @@ fun SearchTvScreen(
     val onQueryChanged = remember(onEvent) { { q: String -> onEvent(SearchState.Event.QueryChanged(q)) } }
     val onSearchSubmitted = remember(onEvent) { { onEvent(SearchState.Event.SearchSubmitted) } }
     val onItemSelected = remember(onEvent) { { item: SearchItem -> onEvent(SearchState.Event.ItemSelected(item.id)) } }
-    val onItemFocused = remember(onEvent) { { animeId: Int -> onEvent(SearchState.Event.ItemFocused(animeId)) } }
     val onLoadMore = remember(onEvent) { { onEvent(SearchState.Event.LoadMore) } }
     val onOpenFilters = remember(onEvent) { { onEvent(SearchState.Event.OpenFilters) } }
     val onCloseFilters = remember(onEvent) { { onEvent(SearchState.Event.CloseFilters) } }
@@ -32,17 +31,12 @@ fun SearchTvScreen(
     val onToYearChanged = remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.ToYearChanged(year)) } }
     val onSortSelected = remember(onEvent) { { sort: SearchSort -> onEvent(SearchState.Event.SortSelected(sort)) } }
     val onSortDirectionToggled = remember(onEvent) { { onEvent(SearchState.Event.SortDirectionToggled) } }
-    val onFocusedItemRestoreHandled = remember(onEvent) {
-        { onEvent(SearchState.Event.FocusedItemRestoreHandled) }
-    }
 
     SearchResultsPane(
         query = state.query,
         items = state.items,
         isLoading = state.isLoading,
         canLoadMore = state.canLoadMore,
-        focusedItemId = state.focusedItemId,
-        restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         filters = state.filters,
         draftFilters = state.draftFilters,
         filterOptions = state.filterOptions,
@@ -51,7 +45,6 @@ fun SearchTvScreen(
         onQueryChanged = onQueryChanged,
         onSearchSubmitted = onSearchSubmitted,
         onItemSelected = onItemSelected,
-        onItemFocused = onItemFocused,
         onLoadMore = onLoadMore,
         onOpenFilters = onOpenFilters,
         onCloseFilters = onCloseFilters,
@@ -67,6 +60,5 @@ fun SearchTvScreen(
         onToYearChanged = onToYearChanged,
         onSortSelected = onSortSelected,
         onSortDirectionToggled = onSortDirectionToggled,
-        onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
     )
 }

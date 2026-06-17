@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.player
 
-import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import javax.inject.Inject
 
@@ -21,19 +20,6 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
             autoSkipOpeningsEndings = autoSkipOpeningsEndings,
         )
     }
-
-    fun toSourceRequest(dest: PlayerDestination): PlayerSourceRequest =
-        PlayerSourceRequest(
-            animeId = dest.animeId,
-            iframeUrl = dest.iframeUrl,
-            animeTitle = dest.animeTitle,
-            episode = dest.episode,
-            playerName = dest.playerName,
-            dubbing = dest.dubbing,
-            selectedVideoId = dest.selectedVideoId,
-            selectedPlayerId = dest.selectedPlayerId,
-            selectedScreenshotUrl = dest.selectedScreenshotUrl,
-        )
 
     private fun PlayerDestination.toSingleEpisodeSourceGraph(): PlayerSourceGraph =
         PlayerSourceGraph(

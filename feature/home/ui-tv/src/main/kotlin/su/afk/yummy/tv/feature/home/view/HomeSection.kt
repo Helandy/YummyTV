@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.home.view
 
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,18 +34,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
 @Composable
 internal fun HomeSection(
     title: String,
     items: List<HomeFeedItem>,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
-    onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
-    focusedItemId: Int?,
-    focusedSectionId: String?,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
     rowKey: String = "",
@@ -65,6 +60,7 @@ internal fun HomeSection(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable(rowKey.ifBlank { title }) { mutableIntStateOf(0) }
+    var lastFocusedItemId by rememberSaveable(rowKey.ifBlank { title }) { mutableStateOf<Int?>(null) }
     val rowFocusRequesterToUse = rowFocusRequester ?: remember { FocusRequester() }
     val focusRequesters = remember(items.size, rowFocusRequesterToUse) {
         List(items.size) { FocusRequester() }
@@ -82,32 +78,23 @@ internal fun HomeSection(
         runCatching { focusRequesters[target].requestFocus() }
     }
 
-    fun moveFocusToIndex(targetIndex: Int) {
-        if (items.isEmpty()) return
-        val clamped = targetIndex.coerceIn(0, items.lastIndex)
-        lastFocusedIndex = clamped
-        focusMoveJob?.cancel()
-        focusMoveJob = scope.launch {
-            requestItemFocus(clamped)
-        }
+    fun restoreIndex(): Int {
+        if (items.isEmpty()) return 0
+        val keyedIndex = lastFocusedItemId?.let { itemId ->
+            items.indexOfFirst { it.id == itemId }
+        } ?: -1
+        return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
+    }
+
+    fun rememberFocusedItem(index: Int) {
+        lastFocusedIndex = index
+        lastFocusedItemId = items.getOrNull(index)?.id
     }
 
     fun cancelPendingFocusMove() {
         focusMoveJob?.cancel()
         focusMoveJob = null
         isRestoringFocusState.value = false
-    }
-
-    LaunchedEffect(focusedSectionId, focusedItemId, items) {
-        if (focusedSectionId != null && focusedSectionId != rowKey) return@LaunchedEffect
-        val focusedIndex = items.indexOfFirst { it.id == focusedItemId }
-        if (focusedSectionId != null && focusedIndex < 0) return@LaunchedEffect
-        if (focusedIndex >= 0) {
-            lastFocusedIndex = focusedIndex
-            if (rowHasFocusState.value) {
-                requestItemFocus(focusedIndex)
-            }
-        }
     }
 
     Column {
@@ -128,10 +115,12 @@ internal fun HomeSection(
             modifier = Modifier
                 .focusProperties {
                     upFocusRequester?.let { up = it }
-                    mainMenuFocusRequester?.let { left = it }
                     downFocusRequester?.let { down = it }
                 }
                 .focusRequester(rowFocusRequesterToUse)
+                .tvFocusRestorer(
+                    fallback = focusRequesters.getOrNull(restoreIndex()) ?: FocusRequester.Default,
+                )
                 .focusable()
                 .onFocusChanged { state ->
                     val hadFocus = rowHasFocusState.value
@@ -141,12 +130,10 @@ internal fun HomeSection(
                         isRestoringFocusState.value = true
                         focusMoveJob?.cancel()
                         focusMoveJob = scope.launch {
-                            val target = lastFocusedIndex.coerceIn(0, items.lastIndex)
+                            val target = restoreIndex()
                             requestItemFocus(target)
                             isRestoringFocusState.value = false
-                            lastFocusedIndex = target
-                            val focusedItem = items[target]
-                            onItemFocused(rowKey, focusedItem.id, focusedItem.animeId)
+                            rememberFocusedItem(target)
                         }
                     }
                 }
@@ -159,19 +146,11 @@ internal fun HomeSection(
                                 mainMenuFocusRequester?.requestFocus()
                                 mainMenuFocusRequester != null
                             } else {
-                                moveFocusToIndex(lastFocusedIndex - 1)
-                                true
-                            }
-                        }
-
-                        Key.DirectionRight -> {
-                            if (lastFocusedIndex < items.lastIndex) {
-                                moveFocusToIndex(lastFocusedIndex + 1)
-                                true
-                            } else {
                                 false
                             }
                         }
+
+                        Key.DirectionRight -> false
 
                         Key.DirectionUp -> {
                             cancelPendingFocusMove()
@@ -185,27 +164,20 @@ internal fun HomeSection(
                             onMoveDown != null
                         }
 
-                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                            items.getOrNull(lastFocusedIndex)?.let { item ->
-                                onItemSelected(rowKey, item)
-                            }
-                            true
-                        }
+                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> false
 
                         else -> false
                     }
-                }
-                .focusGroup(),
+                },
         ) {
             itemsIndexed(items = items, key = { _, item -> item.id }) { index, item ->
                 val stableClick = remember(rowKey, item.id) { { onItemSelected(rowKey, item) } }
                 val wrappedOnFocused = remember(index, item.id) {
-                    { displayId: Int, animeId: Int? ->
+                    { _: Int, _: Int? ->
                         if (!isRestoringFocusState.value) {
                             if (rowHasFocusState.value) {
-                                lastFocusedIndex = index
+                                rememberFocusedItem(index)
                             }
-                            onItemFocused(rowKey, displayId, animeId)
                         }
                     }
                 }
@@ -214,16 +186,13 @@ internal fun HomeSection(
                     item = item,
                     onClick = stableClick,
                     onFocused = wrappedOnFocused,
+                    leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },
                     upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,
                     focusedScale = focusedCardScale,
-                    forceFocused = ((rowIsFocused || rowHasFocusState.value) && index == lastFocusedIndex) ||
-                            (focusedSectionId == rowKey && item.id == focusedItemId),
+                    forceFocused = (rowIsFocused || rowHasFocusState.value) && index == lastFocusedIndex,
                 )
             }
         }
     }
 }
-
-private val HomeFeedItem.animeId: Int?
-    get() = (action as? HomeFeedItemAction.OpenSeries)?.seriesId

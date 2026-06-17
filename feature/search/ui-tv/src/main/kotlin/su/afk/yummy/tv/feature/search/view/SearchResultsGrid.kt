@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.search.view
 
-import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,13 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
@@ -31,14 +27,15 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.domain.search.model.SearchItem
 
 @Composable
 internal fun SearchResultsGrid(
     items: List<SearchItem>,
     isLoading: Boolean,
-    focusedItemId: Int?,
     gridState: LazyGridState,
+    gridFocusRequester: FocusRequester,
     focusRequesters: List<FocusRequester>,
     mainMenuFocusRequester: FocusRequester?,
     onLastFocusedIndexChanged: (Int) -> Unit,
@@ -46,8 +43,8 @@ internal fun SearchResultsGrid(
     onGridHasFocusChanged: (Boolean) -> Unit,
     isRestoringFocus: Boolean,
     onRestoreGridFocus: () -> Unit,
+    gridFallbackFocusRequester: FocusRequester,
     onItemSelected: (SearchItem) -> Unit,
-    onItemFocused: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val cardWidth = currentTvTitleCardDimensions().width
@@ -71,24 +68,29 @@ internal fun SearchResultsGrid(
             verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
             modifier = Modifier
                 .fillMaxSize()
+                .focusRequester(gridFocusRequester)
+                .tvFocusRestorer(
+                    fallback = gridFallbackFocusRequester,
+                    enabled = items.isNotEmpty()
+                )
                 .onFocusChanged { state ->
                     val hadFocus = gridHasFocus
                     onGridHasFocusChanged(state.hasFocus)
-                    if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                    if (state.isFocused && !hadFocus && items.isNotEmpty() && !isRestoringFocus) {
                         onRestoreGridFocus()
                     }
                 }
-                .focusGroup(),
+                .focusable(),
         ) {
             itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
                 val stableOnClick = remember(item.id, index) {
                     {
                         onLastFocusedIndexChanged(index)
-                        onItemFocused(item.id)
                         onItemSelected(item)
                     }
                 }
-                val stableOnFocused = remember(item.id) { { onItemFocused(item.id) } }
+                val stableOnFocused =
+                    remember(item.id, index) { { onLastFocusedIndexChanged(index) } }
                 TvTitleCard(
                     title = item.title,
                     posterUrl = item.posterUrl,
@@ -96,12 +98,10 @@ internal fun SearchResultsGrid(
                     onFocused = stableOnFocused,
                     modifier = Modifier
                         .focusRequester(focusRequesters[index])
-                        .onPreviewKeyEvent { event ->
-                            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                            if (event.key != Key.DirectionLeft) return@onPreviewKeyEvent false
-                            if (index % gridColumnCount != 0) return@onPreviewKeyEvent false
-                            runCatching { mainMenuFocusRequester?.requestFocus() }
-                            mainMenuFocusRequester != null
+                        .focusProperties {
+                            if (index % gridColumnCount == 0) {
+                                mainMenuFocusRequester?.let { left = it }
+                            }
                         }
                         .onFocusChanged { state ->
                             if (state.hasFocus) {

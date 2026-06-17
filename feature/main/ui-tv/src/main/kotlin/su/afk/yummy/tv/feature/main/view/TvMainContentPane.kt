@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.main.view
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -16,6 +15,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -46,14 +46,13 @@ internal fun TvMainContentPane(
             .focusRequester(contentFocusRequester)
             .focusProperties {
                 left = selectedRootFocusRequester
-                onEnter = {
-                    currentPreferredContentFocusRequester?.requestFocus()
-                }
             }
+            .tvFocusRestorer(
+                fallback = currentPreferredContentFocusRequester ?: FocusRequester.Default,
+            )
             .onFocusChanged {
                 onFocusChanged(it.isFocused, it.hasFocus)
             }
-            .focusGroup(),
     ) {
         content()
     }

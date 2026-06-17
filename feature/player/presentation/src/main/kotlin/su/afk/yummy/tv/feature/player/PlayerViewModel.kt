@@ -5,7 +5,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -18,36 +17,17 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
-import su.afk.yummy.tv.feature.player.handler.PlayerProgressContext
-import su.afk.yummy.tv.feature.player.handler.PlayerProgressHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceSelectionHandler
-import su.afk.yummy.tv.feature.player.handler.PlayerStreamHandler
-import su.afk.yummy.tv.feature.player.handler.PlayerStreamResult
+import su.afk.yummy.tv.feature.player.handler.PlayerSourceStreamHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
+import su.afk.yummy.tv.feature.player.handler.PlayerStreamResumeMode
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbingName
-import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
-import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
-import su.afk.yummy.tv.feature.player.utils.toPresentationSourceGraph
-
-private data class PlayerCompletionAnalyticsKey(
-    val animeId: Int,
-    val videoId: Int,
-    val episode: String,
-    val iframeUrl: String,
-)
-
-private enum class PlayerStreamResumeMode {
-    PreserveCurrent,
-    SelectedSourceOnly,
-}
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -57,12 +37,11 @@ class PlayerViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
-    private val streamHandler: PlayerStreamHandler,
-    private val progressHandler: PlayerProgressHandler,
+    private val sourceStreamHandler: PlayerSourceStreamHandler,
+    private val playbackProgressHandler: PlayerPlaybackProgressHandler,
     private val settingsHandler: PlayerSettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
-    private val getPlayerSourceGraph: GetPlayerSourceGraphUseCase,
     private val analytics: PlayerAnalytics,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
@@ -99,8 +78,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var playerMobileVideoTransformSettingsJob: Job? = null
     private var playerMobileVideoTransformSaveJob: Job? = null
     private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
-    private val completedAnalyticsSources = mutableSetOf<PlayerCompletionAnalyticsKey>()
-    private val fullyCompletedAnalyticsSources = mutableSetOf<PlayerCompletionAnalyticsKey>()
 
     init {
         analytics.eventScreenOpened(dest.animeId)
@@ -129,7 +106,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             PlayerState.Event.RetryStream -> {
                 analytics.eventRetryStream(currentState.animeId)
                 setState { copy(retryKey = retryKey + 1) }
-                loadStream()
+                refreshSourceGraphThenLoadStream()
             }
 
             PlayerState.Event.RateTitle -> {
@@ -149,7 +126,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                     errorCode = event.errorCode,
                     errorType = event.errorType,
                 )
-                setState { copy(playerError = streamHandler.playbackErrorMessage(event.message)) }
+                setState {
+                    copy(playerError = sourceStreamHandler.playbackErrorMessage(event.message))
+                }
             }
 
             PlayerState.Event.PrevEpisode -> {
@@ -157,6 +136,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 applySourceSelection(
                     sourceSelectionHandler.previousEpisode(currentState),
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                    refreshSourcesBeforeStream = true,
                 )
             }
 
@@ -166,14 +146,19 @@ class PlayerViewModel @AssistedInject internal constructor(
                 applySourceSelection(
                     nextState,
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
+                    refreshSourcesBeforeStream = true,
                 )
                 nextState?.let(::saveContinueTarget)
             }
 
             is PlayerState.Event.EpisodeCompleted -> {
                 if (!isActivePlaybackSource(event.episodeUrl)) return
-                reportEpisodeFullyCompleted(event.positionMs, event.durationMs)
-                reportEpisodeCompletedIfWatched(event.positionMs, event.durationMs)
+                playbackProgressHandler.reportEpisodeFullyCompleted(
+                    state = currentState,
+                    positionMs = event.positionMs,
+                    durationMs = event.durationMs,
+                )
+                saveWatchedProgressIfNeeded(event.positionMs, event.durationMs)
             }
 
             is PlayerState.Event.DubbingSelected -> {
@@ -272,7 +257,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                         playbackDurationMs = duration,
                     )
                 }
-                reportEpisodeCompletedIfWatched(position, duration)
+                saveWatchedProgressIfNeeded(position, duration)
             }
 
             is PlayerState.Event.SkipSegmentSelected -> {
@@ -288,225 +273,156 @@ class PlayerViewModel @AssistedInject internal constructor(
                 val s = currentState
                 val snapshot = event.snapshot
                 viewModelScope.launch {
-                    progressHandler.saveProgress(
-                        context = PlayerProgressContext(
-                            animeId = s.animeId,
-                            animeTitle = s.animeTitle,
-                            posterUrl = s.posterUrl,
-                        ),
-                        snapshot = snapshot,
+                    playbackProgressHandler.saveProgress(
+                        playbackProgressHandler.progressSaveRequest(s, snapshot)
                     )
                 }
             }
         }
     }
 
-    private fun reportEpisodeCompletedIfWatched(positionMs: Long, durationMs: Long) {
-        val position = positionMs.coerceAtLeast(0L)
-        val duration = durationMs.coerceAtLeast(0L)
-        if (!WatchProgressStore.isWatchedProgress(position, duration)) return
-
-        val state = currentState
-        val key = state.completionAnalyticsKey() ?: return
-        if (!completedAnalyticsSources.add(key)) return
-
-        analytics.eventEpisodeCompleted(
-            state = state,
-            positionMs = position,
-            durationMs = duration,
-        )
-        saveWatchedProgress(state, position, duration)
-    }
-
     private fun saveCurrentProgressThenNavigate(navigate: () -> Unit) {
-        val state = currentState
-        val snapshot = state.progressSnapshot(
-            positionMs = state.playbackPositionMs,
-            durationMs = state.playbackDurationMs,
-        )
-        if (snapshot == null) {
+        val request = playbackProgressHandler.currentProgressSaveRequest(currentState)
+        if (request == null) {
             navigate()
             return
         }
 
         viewModelScope.launch {
             runCatching {
-                progressHandler.saveProgress(
-                    context = state.progressContext(),
-                    snapshot = snapshot,
-                    forceRemoteSync = true,
-                )
+                playbackProgressHandler.saveProgress(request)
             }
             navigate()
         }
     }
 
     private fun saveContinueTarget(state: PlayerState.State) {
-        val snapshot = state.continueTargetSnapshot() ?: return
-        if (snapshot.episode.isFirstEpisodeNumber()) return
+        val request = playbackProgressHandler.continueTargetRequest(state) ?: return
         viewModelScope.launch {
-            progressHandler.saveContinueTarget(
-                context = PlayerProgressContext(
-                    animeId = state.animeId,
-                    animeTitle = state.animeTitle,
-                    posterUrl = state.posterUrl,
-                ),
-                snapshot = snapshot,
-            )
+            playbackProgressHandler.saveContinueTarget(request)
         }
     }
 
-    private fun String.isFirstEpisodeNumber(): Boolean {
-        val normalized = trim().replace(',', '.')
-        val number = normalized.toDoubleOrNull()
-            ?: Regex("""\d+(?:[.,]\d+)?""")
-                .find(normalized)
-                ?.value
-                ?.replace(',', '.')
-                ?.toDoubleOrNull()
-        return number == 1.0
-    }
-
-    private fun PlayerState.State.continueTargetSnapshot(): PlayerProgressSnapshot? {
-        return progressSnapshot(positionMs = 0L, durationMs = 0L)
-    }
-
-    private fun saveWatchedProgress(
-        state: PlayerState.State,
-        positionMs: Long,
-        durationMs: Long,
-    ) {
-        val snapshot = state.progressSnapshot(positionMs, durationMs) ?: return
-        viewModelScope.launch {
-            progressHandler.saveProgress(
-                context = state.progressContext(),
-                snapshot = snapshot,
-            )
-        }
-    }
-
-    private fun PlayerState.State.progressContext(): PlayerProgressContext =
-        PlayerProgressContext(
-            animeId = animeId,
-            animeTitle = animeTitle,
-            posterUrl = posterUrl,
-        )
-
-    private fun PlayerState.State.progressSnapshot(
-        positionMs: Long,
-        durationMs: Long,
-    ): PlayerProgressSnapshot? {
-        val episodeUrl = activeIframeUrl(this)
-        val episode = activeEpisode(this)
-        if (episodeUrl.isBlank() || episode.isBlank()) return null
-        return PlayerProgressSnapshot(
-            episode = episode,
-            episodeUrl = episodeUrl,
-            videoId = activeVideoId(this),
-            playerName = activeBalancerName(this),
-            dubbing = activeDubbingName(this),
-            screenshotUrl = activeScreenshotUrl(this),
+    private fun saveWatchedProgressIfNeeded(positionMs: Long, durationMs: Long) {
+        val completionState = currentState
+        val request = playbackProgressHandler.watchedProgressRequest(
+            state = completionState,
             positionMs = positionMs,
             durationMs = durationMs,
-        )
+        ) ?: return
+        val nextState = sourceSelectionHandler.nextEpisode(completionState)
+        val nextTargetRequest = nextState?.let(playbackProgressHandler::continueTargetRequest)
+        viewModelScope.launch {
+            playbackProgressHandler.saveProgress(request)
+            if (nextTargetRequest != null) {
+                playbackProgressHandler.saveContinueTarget(nextTargetRequest)
+            } else {
+                playbackProgressHandler.suppressContinueWatchingDisplay(completionState)
+            }
+        }
     }
 
-    private fun reportEpisodeFullyCompleted(positionMs: Long, durationMs: Long) {
-        val state = currentState
-        val key = state.completionAnalyticsKey() ?: return
-        if (!fullyCompletedAnalyticsSources.add(key)) return
-
-        analytics.eventEpisodeFullyCompleted(
-            state = state,
-            positionMs = positionMs.coerceAtLeast(0L),
-            durationMs = durationMs.coerceAtLeast(0L),
-        )
-    }
-
-    private fun PlayerState.State.completionAnalyticsKey(): PlayerCompletionAnalyticsKey? {
-        val animeId = animeId.takeIf { it > 0 } ?: return null
-        val videoId = activeVideoId(this)
-        val episode = activeEpisode(this)
-        val iframeUrl = activeIframeUrl(this)
-        if (videoId <= 0 && episode.isBlank() && iframeUrl.isBlank()) return null
-        return PlayerCompletionAnalyticsKey(
-            animeId = animeId,
-            videoId = videoId,
-            episode = episode,
-            iframeUrl = iframeUrl,
-        )
-    }
-
+    /**
+     * Применяет выбранный пользователем источник и запускает загрузку потока.
+     *
+     * Переключение серии сначала обновляет `/videos`, а смена балансера или озвучки может
+     * использовать уже загруженный граф источников.
+     */
     private fun applySourceSelection(
         state: PlayerState.State?,
         sourceScopeChanged: Boolean = false,
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+        refreshSourcesBeforeStream: Boolean = false,
     ) {
         if (state == null) return
-        setState { state.preparingStreamLoad(resumeMode) }
+        setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode) }
         if (sourceScopeChanged) {
             observeActivePlayerResizeSettings()
             observeActivePlayerMobileVideoTransformSettings()
         }
-        loadStream(resumeMode)
-    }
-
-    private fun PlayerState.State.preparingStreamLoad(
-        resumeMode: PlayerStreamResumeMode,
-    ): PlayerState.State {
-        val preservePlaybackPosition = resumeMode == PlayerStreamResumeMode.PreserveCurrent
-        return copy(
-            streamUrl = null,
-            streamHeaders = emptyMap(),
-            streamQualityMap = null,
-            playerError = null,
-            kodikBlockedError = null,
-            dubbingResumeMs = if (preservePlaybackPosition) dubbingResumeMs else -1L,
-            resumeFromMs = if (preservePlaybackPosition) resumeFromMs else 0L,
-            playbackPositionMs = if (preservePlaybackPosition) playbackPositionMs else 0L,
-            playbackDurationMs = if (preservePlaybackPosition) playbackDurationMs else 0L,
-        )
+        if (refreshSourcesBeforeStream) {
+            refreshSourceGraphThenLoadStream(resumeMode)
+        } else {
+            loadStream(resumeMode)
+        }
     }
 
     private fun isActivePlaybackSource(episodeUrl: String): Boolean =
         episodeUrl.isBlank() || episodeUrl == activeIframeUrl(currentState)
 
-    private fun loadSourceGraph() {
+    /** Обновляет граф источников из сети и один раз запускает получение потока. */
+    private fun refreshSourceGraphThenLoadStream(
+        resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+    ) {
+        loadSourceGraph(
+            forceRefreshVideos = true,
+            loadStreamOnFailure = true,
+            loadStreamAfterRefresh = true,
+            resumeMode = resumeMode,
+            refreshStreamOnFailure = false,
+        )
+    }
+
+    /**
+     * Запускает загрузку графа источников и применяет результат handler-а к состоянию экрана.
+     *
+     * Проверка активного destination остается здесь, чтобы устаревший результат от старого экрана
+     * не обновил текущий плеер.
+     */
+    private fun loadSourceGraph(
+        forceRefreshVideos: Boolean = false,
+        loadStreamOnFailure: Boolean = false,
+        loadStreamAfterRefresh: Boolean = false,
+        resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+        refreshStreamOnFailure: Boolean = !forceRefreshVideos,
+    ) {
         val destination = activeDest
-        val request = destinationStateMapper.toSourceRequest(destination)
         sourceGraphJob?.cancel()
-        if (request.animeId <= 0) return
-
         sourceGraphJob = viewModelScope.launch {
-            val sourceGraph = try {
-                getPlayerSourceGraph(request).toPresentationSourceGraph()
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (_: Throwable) {
-                return@launch
-            }
-            if (destination != activeDest || sourceGraph.balancers.isEmpty()) return@launch
+            when (val result = sourceStreamHandler.loadSourceGraph(
+                state = currentState,
+                forceRefreshVideos = forceRefreshVideos,
+                loadStreamOnFailure = loadStreamOnFailure,
+                loadStreamAfterRefresh = loadStreamAfterRefresh,
+                resumeMode = resumeMode,
+                refreshStreamOnFailure = refreshStreamOnFailure,
+            )) {
+                PlayerSourceGraphLoadResult.Ignore -> Unit
 
-            val previousIframeUrl = activeIframeUrl(currentState)
-            setState {
-                val nextState = copy(
-                    sourceGraph = sourceGraph,
-                    sourceSelection = sourceGraph.selection,
-                )
-                if (activeIframeUrl(nextState) != previousIframeUrl) {
-                    nextState.preparingStreamLoad(PlayerStreamResumeMode.PreserveCurrent)
-                } else {
-                    nextState
+                is PlayerSourceGraphLoadResult.LoadStream -> {
+                    loadStream(
+                        resumeMode = result.resumeMode,
+                        refreshSourcesOnFailure = result.refreshSourcesOnFailure,
+                    )
                 }
-            }
-            observeActivePlayerResizeSettings()
-            observeActivePlayerMobileVideoTransformSettings()
-            if (activeIframeUrl(currentState) != previousIframeUrl) {
-                loadStream()
+
+                is PlayerSourceGraphLoadResult.SourceGraph -> {
+                    if (destination != activeDest) return@launch
+
+                    val previousIframeUrl = activeIframeUrl(currentState)
+                    setState {
+                        sourceStreamHandler.applySourceGraph(
+                            state = this,
+                            sourceGraph = result.sourceGraph,
+                        )
+                    }
+                    observeActivePlayerResizeSettings()
+                    observeActivePlayerMobileVideoTransformSettings()
+                    if (
+                        result.loadStreamAfterRefresh ||
+                        activeIframeUrl(currentState) != previousIframeUrl
+                    ) {
+                        loadStream(
+                            resumeMode = result.resumeMode,
+                            refreshSourcesOnFailure = result.refreshStreamOnFailure,
+                        )
+                    }
+                }
             }
         }
     }
 
+    /** Подписывается на настройки размера для текущей пары тайтл/плеер. */
     private fun observeActivePlayerResizeSettings(force: Boolean = false) {
         val scope = currentPlayerResizeSettingsScope()
         if (!force && scope == activePlayerResizeSettingsScope) return
@@ -533,6 +449,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Сохраняет настройки размера для текущей пары тайтл/плеер. */
     private fun savePlayerResizeSettings(settings: PlayerResizeSettings) {
         val scope = currentPlayerResizeSettingsScope()
         viewModelScope.launch {
@@ -540,6 +457,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    /** Подписывается на мобильные настройки масштаба и смещения для текущей пары тайтл/плеер. */
     private fun observeActivePlayerMobileVideoTransformSettings(force: Boolean = false) {
         val scope = currentPlayerResizeSettingsScope()
         if (!force && scope == activePlayerMobileVideoTransformSettingsScope) return
@@ -569,6 +487,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Сохраняет мобильные настройки масштаба и смещения для текущей пары тайтл/плеер. */
     private fun savePlayerMobileVideoTransformSettings(settings: PlayerMobileVideoTransformSettings) {
         val scope = currentPlayerResizeSettingsScope()
         playerMobileVideoTransformSaveJob?.cancel()
@@ -577,12 +496,20 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    /** Возвращает ключ хранения, общий для TV-настроек размера и мобильного transform. */
     private fun currentPlayerResizeSettingsScope(): PlayerResizeSettingsScope {
         return sourceSelectionHandler.resizeSettingsScope(currentState)
     }
 
+    /**
+     * Запускает получение потока для активного источника.
+     *
+     * Первая ошибка resolve может запросить принудительное обновление источников; повтор отключает
+     * этот флаг, чтобы последующие ошибки показались пользователю без бесконечного цикла.
+     */
     private fun loadStream(
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+        refreshSourcesOnFailure: Boolean = true,
     ) {
         if (resumeMode == PlayerStreamResumeMode.SelectedSourceOnly) {
             pendingDestinationResumeMs = null
@@ -592,80 +519,36 @@ class PlayerViewModel @AssistedInject internal constructor(
             val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
             val stateResumeMs = currentState.resumeFromMs.takeIf { canPreserveCurrent && it > 0L }
             val destinationResumeMs = pendingDestinationResumeMs.takeIf { canPreserveCurrent }
-            setState {
-                copy(
-                    streamUrl = null,
-                    streamHeaders = emptyMap(),
-                    streamQualityMap = null,
-                    playerError = null,
-                    kodikBlockedError = null,
-                    resumeFromMs = 0L,
-                    playbackPositionMs = 0L,
-                    playbackDurationMs = 0L,
-                )
-            }
+            setState { sourceStreamHandler.preparingStreamResolve(this) }
             val s = currentState
             val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it >= 0L }
                 ?: destinationResumeMs
                 ?: stateResumeMs
-            val result = try {
-                streamHandler.resolve(s, pendingResume)
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Throwable) {
-                analytics.eventStreamResolveFailed(
-                    state = s,
-                    reason = PlayerStreamResult.REASON_EXCEPTION,
-                    throwable = exception,
-                )
-                setState {
-                    copy(
-                        streamUrl = null,
-                        streamHeaders = emptyMap(),
-                        streamQualityMap = null,
-                        playerError = streamHandler.playbackErrorMessage(
-                            exception.localizedMessage ?: exception.message.orEmpty()
-                        ),
-                    )
+            when (val result = sourceStreamHandler.resolveStream(
+                state = s,
+                pendingResume = pendingResume,
+                destinationResumeMs = destinationResumeMs,
+                resumeMode = resumeMode,
+                refreshSourcesOnFailure = refreshSourcesOnFailure,
+            )) {
+                is PlayerStreamLoadResult.RefreshSources -> {
+                    refreshSourceGraphThenLoadStream(result.resumeMode)
                 }
-                return@launch
-            }
-            when (result) {
-                is PlayerStreamResult.Stream -> {
-                    if (destinationResumeMs != null && pendingResume == destinationResumeMs) {
+
+                is PlayerStreamLoadResult.State -> {
+                    if (result.consumedDestinationResume) {
                         pendingDestinationResumeMs = null
                     }
-                    analytics.eventStreamStarted(s)
                     setState {
                         copy(
-                            streamHeaders = result.headers,
-                            streamQualityMap = result.qualities,
-                            streamUrl = result.url,
-                            resumeFromMs = result.resumeFromMs,
-                            dubbingResumeMs = if (result.consumedPendingResume) -1L else dubbingResumeMs,
+                            streamUrl = result.state.streamUrl,
+                            streamHeaders = result.state.streamHeaders,
+                            streamQualityMap = result.state.streamQualityMap,
+                            playerError = result.state.playerError,
+                            kodikBlockedError = result.state.kodikBlockedError,
+                            resumeFromMs = result.state.resumeFromMs,
+                            dubbingResumeMs = result.state.dubbingResumeMs,
                         )
-                    }
-                }
-
-                is PlayerStreamResult.KodikBlocked -> {
-                    analytics.eventStreamResolveFailed(
-                        state = s,
-                        reason = PlayerStreamResult.REASON_KODIK_BLOCKED,
-                        message = result.message,
-                    )
-                    setState {
-                        copy(kodikBlockedError = result.message)
-                    }
-                }
-
-                is PlayerStreamResult.PlayerError -> {
-                    analytics.eventStreamResolveFailed(
-                        state = s,
-                        reason = result.reason,
-                        message = result.message,
-                    )
-                    setState {
-                        copy(playerError = result.message)
                     }
                 }
             }

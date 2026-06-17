@@ -51,19 +51,15 @@ class LibraryViewModel @Inject internal constructor(
     override fun createInitialState() = LibraryState.State(
         selectedTab = savedStateHandle.get<String>(KEY_SELECTED_TAB)
             ?.let { runCatching { LibraryTab.valueOf(it) }.getOrNull() }
-            ?: LibraryTab.CONTINUE_WATCHING,
-        focusedItemId = savedStateHandle.get<Int>(KEY_FOCUSED_ITEM_ID),
+            ?: LibraryTab.CONTINUE_WATCHING
     )
 
     override fun saveToSavedState(state: LibraryState.State) {
         savedStateHandle[KEY_SELECTED_TAB] = state.selectedTab.name
-        state.focusedItemId?.let { savedStateHandle[KEY_FOCUSED_ITEM_ID] = it }
-            ?: savedStateHandle.remove<Int>(KEY_FOCUSED_ITEM_ID)
     }
 
     private companion object {
         const val KEY_SELECTED_TAB = "selectedTab"
-        const val KEY_FOCUSED_ITEM_ID = "focusedItemId"
     }
 
     private var remoteListsJob: Job? = null
@@ -123,24 +119,10 @@ class LibraryViewModel @Inject internal constructor(
                 openDetails(event.entry.animeId)
             }
 
-            is LibraryState.Event.ItemFocused ->
-                onItemFocused(event.animeId)
-
             is LibraryState.Event.TabSelected -> {
                 if (event.tab != currentState.selectedTab) {
                     analytics.eventTabSelected(event.tab)
-                    setState {
-                        copy(
-                            selectedTab = event.tab,
-                            focusedItemId = null,
-                        )
-                    }
-                }
-            }
-
-            LibraryState.Event.FocusedItemRestoreHandled -> {
-                if (currentState.restoreFocusedItemOnEnter) {
-                    setState { copy(restoreFocusedItemOnEnter = false) }
+                    setState { copy(selectedTab = event.tab) }
                 }
             }
 
@@ -201,12 +183,6 @@ class LibraryViewModel @Inject internal constructor(
     }
 
     private fun openDetails(animeId: Int) {
-        setState {
-            copy(
-                focusedItemId = animeId,
-                restoreFocusedItemOnEnter = true
-            )
-        }
         nav.navigate(detailsNavigator.getDetailsDest(animeId))
     }
 
@@ -284,11 +260,6 @@ class LibraryViewModel @Inject internal constructor(
             )
         }
         setEffect(LibraryState.Effect.ItemRemoved)
-    }
-
-    private fun onItemFocused(animeId: Int) {
-        if (currentState.focusedItemId == animeId) return
-        setState { copy(focusedItemId = animeId) }
     }
 
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {

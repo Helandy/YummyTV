@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvProgressMediaCard
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
@@ -26,6 +25,7 @@ internal fun ContinueWatchingCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: () -> Unit = {},
+    leftFocusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
 ) {
@@ -51,7 +51,6 @@ internal fun ContinueWatchingCard(
             posterUrl = entry.poster.bestUrl(),
         )
     }
-    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val episodeLabel = if (entry.episode.isNotBlank()) {
         stringResource(R.string.home_episode_number, entry.episode)
     } else {
@@ -68,7 +67,7 @@ internal fun ContinueWatchingCard(
         modifier = modifier,
         width = CardWidth,
         thumbnailHeight = ThumbnailHeight,
-        leftFocusRequester = mainMenuFocusRequester,
+        leftFocusRequester = leftFocusRequester,
         upFocusRequester = upFocusRequester,
         downFocusRequester = downFocusRequester,
         onFocused = onFocused,

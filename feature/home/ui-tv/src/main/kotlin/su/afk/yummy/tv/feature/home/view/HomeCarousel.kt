@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.home.view
 
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +11,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -34,21 +35,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
 @Composable
 internal fun HomeCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
-    onItemFocused: (sectionId: String, displayId: Int, animeId: Int?) -> Unit,
     sectionKey: String,
-    focusedSectionId: String?,
-    focusedItemId: Int?,
     modifier: Modifier = Modifier,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
-    restoreFocusedPageOnEnter: Boolean = false,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onCarouselFocused: () -> Unit = {},
@@ -101,8 +98,6 @@ internal fun HomeCarousel(
                 onMoveRight = {},
                 onFocused = {
                     onCarouselFocused()
-                    val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
-                    onItemFocused(sectionKey, item.id, animeId)
                 },
             )
         }
@@ -115,11 +110,11 @@ internal fun HomeCarousel(
     var pageHasFocus by remember { mutableStateOf(false) }
     var showCarouselFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
+    var lastFocusedPage by rememberSaveable { mutableIntStateOf(0) }
     val pageRequesters = remember(items.size) { List(items.size) { FocusRequester() } }
 
     fun notifyPageFocused(page: Int) {
-        val item = items.getOrNull(page) ?: return
-        onItemFocused(sectionKey, item.id, item.animeId)
+        lastFocusedPage = page.coerceIn(0, items.lastIndex)
     }
 
     fun moveToPreviousPage() {
@@ -170,24 +165,14 @@ internal fun HomeCarousel(
     }
 
     fun focusedPageIndex(): Int {
-        if (focusedSectionId != sectionKey) return pagerState.currentPage
-        val focusedPage = items.indexOfFirst { it.id == focusedItemId }
-        return focusedPage.takeIf { it >= 0 } ?: pagerState.currentPage
+        return lastFocusedPage.coerceIn(0, items.lastIndex)
     }
 
     fun selectCurrentPage() {
         val page = pagerState.currentPage.coerceIn(0, items.lastIndex)
         val item = items[page]
-        onItemFocused(sectionKey, item.id, item.animeId)
+        notifyPageFocused(page)
         onItemSelected(sectionKey, item)
-    }
-
-    LaunchedEffect(focusedSectionId, focusedItemId, items) {
-        if (focusedSectionId != sectionKey) return@LaunchedEffect
-        val focusedPage = items.indexOfFirst { it.id == focusedItemId }
-        if (!isCarouselFocused && focusedPage >= 0 && focusedPage != pagerState.currentPage) {
-            pagerState.scrollToPage(focusedPage)
-        }
     }
 
     // After page settles and carousel still focused — move focus to the new page's content
@@ -248,6 +233,11 @@ internal fun HomeCarousel(
                 }
             }
             .then(if (rowFocusRequester != null) Modifier.focusRequester(rowFocusRequester) else Modifier)
+            .tvFocusRestorer(
+                fallback = pageRequesters.getOrNull(focusedPageIndex())
+                    ?: rowFocusRequester
+                    ?: FocusRequester.Default,
+            )
             .focusable()
             .focusProperties {
                 upFocusRequester?.let { up = it }
@@ -255,7 +245,6 @@ internal fun HomeCarousel(
                 right = FocusRequester.Cancel
                 downFocusRequester?.let { down = it }
             }
-            .focusGroup()
             .onFocusChanged { state ->
                 val hadFocus = isCarouselFocused
                 isCarouselFocused = state.hasFocus
@@ -263,11 +252,7 @@ internal fun HomeCarousel(
                     onCarouselFocused()
                     isRestoringFocus = true
                     scope.launch {
-                        val target = if (restoreFocusedPageOnEnter) {
-                            focusedPageIndex()
-                        } else {
-                            pagerState.currentPage
-                        }.coerceIn(0, items.lastIndex)
+                        val target = focusedPageIndex()
                         requestPageFocus(target)
                         isRestoringFocus = false
                     }
@@ -297,8 +282,7 @@ internal fun HomeCarousel(
                     pageHasFocus = true
                     showCarouselFocus = true
                     onCarouselFocused()
-                    val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
-                    onItemFocused(sectionKey, item.id, animeId)
+                    notifyPageFocused(page)
                 },
                 onFocusChanged = { focused ->
                     pageHasFocus = focused
@@ -318,6 +302,3 @@ internal fun HomeCarousel(
         )
     }
 }
-
-private val HomeFeedItem.animeId: Int?
-    get() = (action as? HomeFeedItemAction.OpenSeries)?.seriesId

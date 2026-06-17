@@ -18,9 +18,15 @@ import javax.inject.Inject
 class GetPlayerSourceGraphUseCase @Inject constructor(
     private val repository: PlayerSourceRepository,
 ) {
-    suspend operator fun invoke(request: PlayerSourceRequest): PlayerSourceGraph {
+    suspend operator fun invoke(
+        request: PlayerSourceRequest,
+        forceRefreshVideos: Boolean = false,
+    ): PlayerSourceGraph {
         val sourceData = if (request.animeId > 0) {
-            repository.getSources(request.animeId)
+            repository.getSources(
+                animeId = request.animeId,
+                forceRefreshVideos = forceRefreshVideos,
+            )
         } else {
             PlayerSourceData(emptyList())
         }

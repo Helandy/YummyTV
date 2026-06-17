@@ -12,8 +12,6 @@ class CollectionState {
         val isVoteLoading: Boolean = false,
         val collection: CollectionDetail? = null,
         val error: String? = null,
-        val focusedItemId: Int? = null,
-        val restoreFocusedItemOnEnter: Boolean = false,
         val firstVisibleItemIndex: Int = 0,
         val firstVisibleItemScrollOffset: Int = 0,
     ) : UiState
@@ -32,14 +30,8 @@ class CollectionState {
         /** Пользователь выбрал лайк или дизлайк для коллекции. */
         data class VoteSelected(val vote: CollectionVote) : Event
 
-        /** Фокус переместился на аниме с указанным идентификатором. */
-        data class ItemFocused(val animeId: Int) : Event
-
         /** Сетка коллекции прокрутилась к указанной позиции и смещению. */
         data class GridScrolled(val index: Int, val offset: Int) : Event
-
-        /** UI завершил восстановление фокуса на элементе. */
-        data object FocusedItemRestoreHandled : Event
     }
 
     sealed interface Effect : UiEffect

@@ -35,9 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerContainer
-import su.afk.yummy.tv.core.designsystem.presenter.focus.focusRestorerItem
-import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberFocusRestorerState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.feature.details.R
@@ -56,7 +54,6 @@ internal fun TrailerTab(
         return
     }
 
-    val restorerState = rememberFocusRestorerState()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = stringResource(R.string.details_trailers),
@@ -68,13 +65,12 @@ internal fun TrailerTab(
             state = rememberLazyListState(),
             horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
             contentPadding = PaddingValues(horizontal = 24.dp),
-            modifier = Modifier.focusRestorerContainer(restorerState),
+            modifier = Modifier.tvFocusRestorer(),
         ) {
             itemsIndexed(trailers) { index, trailer ->
                 TrailerItem(
                     number = index + 1,
                     trailer = trailer,
-                    thumbnailModifier = Modifier.focusRestorerItem(index, restorerState),
                 )
             }
         }

@@ -35,7 +35,6 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
-import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -47,6 +46,7 @@ internal fun HomeFeedCard(
     onClick: () -> Unit,
     onFocused: (displayId: Int, animeId: Int?) -> Unit,
     modifier: Modifier = Modifier,
+    leftFocusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     focusedScale: Float = 1.04f,
@@ -56,7 +56,6 @@ internal fun HomeFeedCard(
     val interactionSource = remember { MutableInteractionSource() }
     val active = isFocused || forceFocused
     val cardDimensions = currentTvHomeFeedCardDimensions()
-    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val animeId = (item.action as? HomeFeedItemAction.OpenSeries)?.seriesId
 
     val shape = RoundedCornerShape(8.dp)
@@ -71,8 +70,8 @@ internal fun HomeFeedCard(
             }
             .focusable(interactionSource = interactionSource)
             .focusProperties {
+                leftFocusRequester?.let { left = it }
                 upFocusRequester?.let { up = it }
-                mainMenuFocusRequester?.let { left = it }
                 downFocusRequester?.let { down = it }
             }
             .tvFocusableClick(

@@ -44,6 +44,7 @@ internal fun TopFilterTabs(
     selectedType: AnimeTopType,
     contentCanFocus: Boolean,
     onTypeSelected: (AnimeTopType) -> Unit,
+    onContentFocusRequested: (AnimeTopType) -> Unit,
     contentFocusRequester: FocusRequester,
     typeFocusRequesters: List<FocusRequester>,
     mainMenuFocusRequester: FocusRequester?,
@@ -73,8 +74,7 @@ internal fun TopFilterTabs(
                 label = type.label(),
                 selected = selectedType == type,
                 onActivated = {
-                    onTypeSelected(type)
-                    runCatching { contentFocusRequester.requestFocus() }
+                    onContentFocusRequested(type)
                 },
                 contentFocusRequester = contentFocusRequester,
                 focusRequester = typeFocusRequesters[index],
@@ -146,11 +146,7 @@ private fun TopFilterTabItem(
                     }
 
                     Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                        if (contentCanFocus) {
-                            onActivated()
-                        } else {
-                            onFocused()
-                        }
+                        onActivated()
                         true
                     }
 

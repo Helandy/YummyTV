@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.library.view
 
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,27 +17,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -46,7 +35,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridItemFocusRestore
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
@@ -57,18 +48,14 @@ import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.utils.tvDateText
 import su.afk.yummy.tv.feature.library.utils.tvUserRating
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LibraryGrid(
     tab: LibraryTab,
     items: List<LibraryItem>,
-    focusedItemId: Int?,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
-    restoreFocusedItemToken: Int,
     focusStateKey: String,
     onAnimeSelected: (Int) -> Unit,
-    onItemFocused: (Int) -> Unit,
     onRemoveEntry: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -76,56 +63,52 @@ internal fun LibraryGrid(
     val gridState = rememberLazyGridState()
     val itemIds = remember(items) { items.map { it.animeId } }
     val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
+    val itemFocusRequesters = remember(itemIds, focusRequesters) {
+        itemIds.zip(focusRequesters).toMap()
+    }
+    val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(focusStateKey)
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val posterQuality = LocalPosterQuality.current
     val cardWidth = currentTvTitleCardDimensions().width
-    var lastFocusedIndex by rememberSaveable(focusStateKey) {
-        mutableIntStateOf(focusedItemId?.let(itemIds::indexOf)?.takeIf { it >= 0 } ?: 0)
-    }
-    var lastFocusedItemId by rememberSaveable(focusStateKey) {
-        mutableStateOf(focusedItemId?.takeIf { it in itemIds })
-    }
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoringFromMainMenu by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
     var pendingFocusAfterDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingDeletedItemId by remember { mutableStateOf<Int?>(null) }
-    var leftEdgeIndexes by remember { mutableStateOf(emptySet<Int>()) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
 
-    fun currentIndexFor(itemId: Int?): Int? =
-        itemId?.let(itemIds::indexOf)?.takeIf { it >= 0 }
-
     fun rememberFocusedItem(index: Int) {
-        lastFocusedIndex = index
-        lastFocusedItemId = itemIds.getOrNull(index)
+        itemIds.getOrNull(index)?.let { key ->
+            focusRestoreState.onItemFocused(key, index)
+        }
     }
 
     fun restoreTargetIndex(): Int {
         if (items.isEmpty()) return 0
-        return (
-                currentIndexFor(focusedItemId)
-                    ?: currentIndexFor(lastFocusedItemId)
-                    ?: lastFocusedIndex
-                ).coerceIn(0, items.lastIndex)
+        return focusRestoreState.targetIndex(itemIds)?.coerceIn(0, items.lastIndex) ?: 0
     }
+
+    fun gridFallbackFocusRequester(): FocusRequester =
+        focusRequesters.getOrNull(restoreTargetIndex()) ?: selectedTabFocusRequester
 
     fun requestItemFocus(
         index: Int,
-        fallbackFocusRequester: FocusRequester = gridFocusRequester,
+        fallbackFocusRequester: FocusRequester? = null,
         clearMainMenuRestore: Boolean = true,
     ) {
         if (items.isEmpty()) return
         val target = index.coerceIn(0, items.lastIndex)
         rememberFocusedItem(target)
         isRestoringFocus = true
-        restoreFocusJob = launchTvLazyGridItemFocusRestore(
+        restoreFocusJob = launchTvLazyGridKeyFocusRestore(
             previousJob = restoreFocusJob,
             scope = scope,
-            itemIndex = target,
+            restoreState = focusRestoreState,
+            keys = itemIds,
             gridState = gridState,
-            itemFocusRequesters = focusRequesters,
-            fallbackFocusRequester = fallbackFocusRequester,
+            itemFocusRequesters = itemFocusRequesters,
+            fallbackFocusRequester = fallbackFocusRequester ?: gridFallbackFocusRequester(),
+            fallbackIndex = target,
             onRestoreFinished = {
                 isRestoringFocus = false
                 if (clearMainMenuRestore) {
@@ -139,40 +122,13 @@ internal fun LibraryGrid(
         onDispose { restoreFocusJob?.cancel() }
     }
 
-    LaunchedEffect(gridState, items.size) {
-        snapshotFlow {
-            val visibleItems = gridState.layoutInfo.visibleItemsInfo
-            val minX = visibleItems.minOfOrNull { it.offset.x }
-            if (minX == null) {
-                emptySet()
-            } else {
-                visibleItems.filter { it.offset.x == minX }.map { it.index }.toSet()
-            }
-        }.collect { leftEdgeIndexes = it }
-    }
-
-    LaunchedEffect(focusedItemId, items) {
-        currentIndexFor(focusedItemId)?.let { focusedIndex ->
-            rememberFocusedItem(focusedIndex)
-        }
-    }
-
-    LaunchedEffect(restoreFocusedItemToken) {
-        if (restoreFocusedItemToken <= 0 || items.isEmpty()) return@LaunchedEffect
-        requestItemFocus(
-            index = restoreTargetIndex(),
-            fallbackFocusRequester = selectedTabFocusRequester,
-            clearMainMenuRestore = false,
-        )
-    }
-
     LaunchedEffect(items, pendingFocusAfterDeleteIndex, pendingDeletedItemId) {
         val pendingIndex = pendingFocusAfterDeleteIndex ?: return@LaunchedEffect
         val deletedItemId = pendingDeletedItemId ?: return@LaunchedEffect
         if (items.any { it.animeId == deletedItemId }) return@LaunchedEffect
         if (items.isEmpty()) {
             isRestoringFocus = true
-            lastFocusedItemId = null
+            focusRestoreState.clear()
             repeat(6) {
                 runCatching { selectedTabFocusRequester.requestFocus() }
                 withFrameNanos { }
@@ -216,12 +172,10 @@ internal fun LibraryGrid(
             modifier = Modifier
                 .fillMaxSize()
                 .focusRequester(gridFocusRequester)
-                .focusProperties {
-                    onEnter = {
-                        restoringFromMainMenu = requestedFocusDirection == FocusDirection.Right
-                        requestItemFocus(if (restoringFromMainMenu) 0 else restoreTargetIndex())
-                    }
-                }
+                .tvFocusRestorer(
+                    fallback = gridFallbackFocusRequester(),
+                    enabled = items.isNotEmpty(),
+                )
                 .onFocusChanged { state ->
                     val hadFocus = gridHasFocus
                     gridHasFocus = state.hasFocus
@@ -229,12 +183,11 @@ internal fun LibraryGrid(
                         isRestoringFocus = false
                         restoringFromMainMenu = false
                     }
-                    if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
+                    if (state.isFocused && !hadFocus && items.isNotEmpty() && !isRestoringFocus) {
                         val target = if (restoringFromMainMenu) 0 else restoreTargetIndex()
                         requestItemFocus(target)
                     }
                 }
-                .focusGroup()
                 .focusable(),
             contentPadding = PaddingValues(
                 start = TvScreenPadding.Horizontal,
@@ -246,8 +199,14 @@ internal fun LibraryGrid(
             horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
         ) {
             itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->
-                val stableOnClick = remember(item.animeId) { { onAnimeSelected(item.animeId) } }
-                val stableOnFocused = remember(item.animeId) { { onItemFocused(item.animeId) } }
+                val stableOnClick = remember(item.animeId, index) {
+                    {
+                        rememberFocusedItem(index)
+                        onAnimeSelected(item.animeId)
+                    }
+                }
+                val stableOnFocused =
+                    remember(item.animeId, index) { { rememberFocusedItem(index) } }
                 val rating = item.tvUserRating()
                 val stableOnDelete = remember(item.animeId, index) {
                     {
@@ -258,7 +217,7 @@ internal fun LibraryGrid(
                             rememberFocusedItem(immediateTarget)
                             runCatching { focusRequesters[immediateTarget].requestFocus() }
                         } else {
-                            lastFocusedItemId = null
+                            focusRestoreState.clear()
                             runCatching { selectedTabFocusRequester.requestFocus() }
                         }
                         onRemoveEntry(item.animeId)
@@ -283,49 +242,26 @@ internal fun LibraryGrid(
                         }
                     },
                     modifier = Modifier
-                        .onPreviewKeyEvent { event ->
-                            if (event.type != KeyEventType.KeyDown || event.key != Key.DirectionLeft) {
-                                return@onPreviewKeyEvent false
-                            }
-                            if (index !in leftEdgeIndexes) {
-                                requestItemFocus(index - 1)
-                                true
-                            } else {
-                                runCatching { mainMenuFocusRequester?.requestFocus() }
-                                mainMenuFocusRequester != null
-                            }
-                        }
                         .onFocusChanged { state ->
                             if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
                                 rememberFocusedItem(index)
                             }
                         }
-                        .focusGroup(),
+                        .tvFocusRestorer(fallback = focusRequesters[index]),
                     cardModifier = Modifier
                         .focusRequester(focusRequesters[index])
-                        .onPreviewKeyEvent { event ->
-                            if (
-                                event.type == KeyEventType.KeyDown &&
-                                event.key == Key.DirectionUp &&
-                                index < gridColumnCount
-                            ) {
-                                runCatching { selectedTabFocusRequester.requestFocus() }
-                                true
-                            } else {
-                                false
-                            }
-                        }
                         .focusProperties {
-                            if (index !in leftEdgeIndexes) {
-                                focusRequesters.getOrNull(index - 1)?.let { left = it }
+                            if (index % gridColumnCount == 0) {
+                                mainMenuFocusRequester?.let { left = it }
                             }
-                            focusRequesters.getOrNull(index + 1)?.let { right = it }
+                            if (index < gridColumnCount) {
+                                up = selectedTabFocusRequester
+                            }
                         },
                     deleteModifier = Modifier.focusProperties {
-                        if (index !in leftEdgeIndexes) {
-                            focusRequesters.getOrNull(index - 1)?.let { left = it }
+                        if (index % gridColumnCount == 0) {
+                            mainMenuFocusRequester?.let { left = it }
                         }
-                        focusRequesters.getOrNull(index + 1)?.let { right = it }
                         up = focusRequesters[index]
                     },
                 )

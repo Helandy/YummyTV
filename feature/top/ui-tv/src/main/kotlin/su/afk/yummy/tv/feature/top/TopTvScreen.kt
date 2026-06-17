@@ -19,10 +19,6 @@ fun TopTvScreen(
         remember(onEvent) { { item: AnimeTopItem -> onEvent(TopState.Event.AnimeSelected(item.id)) } }
     val onTypeSelected =
         remember(onEvent) { { type: AnimeTopType -> onEvent(TopState.Event.TypeSelected(type)) } }
-    val onItemFocused =
-        remember(onEvent) { { animeId: Int -> onEvent(TopState.Event.ItemFocused(animeId)) } }
-    val onFocusedItemRestoreHandled =
-        remember(onEvent) { { onEvent(TopState.Event.FocusedItemRestoreHandled) } }
     val onLoadMore = remember(onEvent) { { onEvent(TopState.Event.LoadMore) } }
 
     TopBrowser(
@@ -32,13 +28,9 @@ fun TopTvScreen(
         isLoadingMore = state.isLoadingMore,
         canLoadMore = state.canLoadMore,
         error = state.error,
-        focusedItemId = state.focusedItemId,
-        restoreFocusedItemOnEnter = state.restoreFocusedItemOnEnter,
         isActiveDestination = isActiveDestination,
         onItemSelected = onItemSelected,
         onTypeSelected = onTypeSelected,
-        onItemFocused = onItemFocused,
-        onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
         onLoadMore = onLoadMore,
     )
 }

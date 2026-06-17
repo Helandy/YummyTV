@@ -46,7 +46,6 @@ class SimilarViewModel @AssistedInject internal constructor(
                 analytics.eventSimilarAnimeSelected(animeId, event.animeId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
-            is SimilarState.Event.ItemFocused -> onItemFocused(event.animeId)
             is SimilarState.Event.SourceSelected -> selectSource(event.fromAi)
             SimilarState.Event.SourceToggled -> selectSource(!currentState.fromAi)
         }
@@ -57,11 +56,6 @@ class SimilarViewModel @AssistedInject internal constructor(
         analytics.eventSimilarSourceSelected(animeId, fromAi)
         setState { copy(fromAi = fromAi) }
         viewModelScope.launch { load(fromAi) }
-    }
-
-    private fun onItemFocused(id: Int) {
-        if (currentState.focusedItemId == id) return
-        setState { copy(focusedItemId = id) }
     }
 
     private suspend fun load(fromAi: Boolean = currentState.fromAi) {
