@@ -5,3 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CollectionDestination(val collectionId: Int) : NavKey
+
+@Serializable
+data object CollectionsCatalogDestination : NavKey

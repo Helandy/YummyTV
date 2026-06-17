@@ -42,12 +42,6 @@
     <string name="account_profile_list_dropped">Брошено</string>
     <string name="account_profile_list_postponed">Отложено</string>
     <string name="account_profile_list_favorite">Любимое</string>
-    <string name="account_profile_social_friends">Друзья</string>
-    <string name="account_profile_social_reviews">Рецензии</string>
-    <string name="account_profile_social_comments">Комментарии</string>
-    <string name="account_profile_social_posts">Новости</string>
-    <string name="account_profile_social_collections">Коллекции</string>
-    <string name="account_profile_social_placeholder">%1$s: пока пусто</string>
     <string name="account_mark_read">Прочитать</string>
     <string name="account_mark_all_read">Прочитать все</string>
     <string name="account_delete">Удалить</string>

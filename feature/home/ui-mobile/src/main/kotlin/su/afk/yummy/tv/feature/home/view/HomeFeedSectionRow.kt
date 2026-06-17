@@ -18,6 +18,8 @@ import su.afk.yummy.tv.feature.home.utils.showMobileCardMetadata
 internal fun HomeFeedSectionRow(
     section: HomeFeedSection,
     onItemSelected: (HomeFeedItem) -> Unit,
+    actionLabel: String? = null,
+    onActionClick: (() -> Unit)? = null,
 ) {
     val showCardMetadata = section.type.showMobileCardMetadata()
 
@@ -25,6 +27,8 @@ internal fun HomeFeedSectionRow(
         MobileSectionHeader(
             title = section.title,
             modifier = Modifier.padding(horizontal = 16.dp),
+            trailingActionLabel = actionLabel,
+            onTrailingActionClick = onActionClick,
         )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),

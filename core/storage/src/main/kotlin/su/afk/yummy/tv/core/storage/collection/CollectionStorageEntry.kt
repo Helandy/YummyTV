@@ -39,3 +39,35 @@ data class CollectionAnimeItemEntry(
     val posterUrl: String? = null,
     val rating: Double? = null,
 )
+
+@Entity(
+    tableName = "collection_catalog_pages",
+    primaryKeys = ["pageKey"],
+    indices = [
+        Index(value = ["language"], name = "index_collection_catalog_pages_language"),
+        Index(value = ["cachedAt"], name = "index_collection_catalog_pages_cachedAt"),
+    ],
+)
+data class CollectionCatalogPageEntry(
+    val pageKey: String,
+    val language: String,
+    val pageLimit: Int,
+    val pageOffset: Int,
+    val cachedAt: Long,
+)
+
+@Entity(
+    tableName = "collection_catalog_items",
+    primaryKeys = ["pageKey", "position"],
+    indices = [
+        Index(value = ["pageKey"], name = "index_collection_catalog_items_pageKey"),
+    ],
+)
+data class CollectionCatalogItemEntry(
+    val pageKey: String,
+    val position: Int,
+    val collectionId: Int,
+    val title: String,
+    val description: String,
+    val posterUrl: String? = null,
+)

@@ -7,7 +7,6 @@ import su.afk.yummy.tv.domain.account.model.UserListWatchStat
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
-import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.feature.account.account.mobile.model.AccountMobileProfileStatSlice
@@ -146,9 +145,6 @@ internal fun List<AccountMobileProfileStatSlice>.positiveValueSum(): Long =
 
 internal fun UserProfileCounts.hasAny(): Boolean =
     watching + planned + completed + dropped + postponed + favorite > 0
-
-internal fun UserSocialCounts.hasAny(): Boolean =
-    friends + reviews + comments + posts + collections > 0
 
 private fun UserWatchTypeStat.profileColor(index: Int): Color =
     when (alias) {

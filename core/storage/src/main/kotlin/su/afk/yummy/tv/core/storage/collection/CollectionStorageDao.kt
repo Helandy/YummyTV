@@ -42,6 +42,24 @@ abstract class CollectionStorageDao {
     @Query("DELETE FROM collection_anime_items WHERE collectionId = :collectionId AND language = :language")
     abstract suspend fun deleteItems(collectionId: Int, language: String)
 
+    @Query("SELECT * FROM collection_catalog_pages WHERE pageKey = :pageKey LIMIT 1")
+    abstract suspend fun getCatalogPageEntry(pageKey: String): CollectionCatalogPageEntry?
+
+    @Query("SELECT * FROM collection_catalog_items WHERE pageKey = :pageKey ORDER BY position")
+    abstract suspend fun getCatalogItems(pageKey: String): List<CollectionCatalogItemEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertCatalogPage(entry: CollectionCatalogPageEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertCatalogItems(entries: List<CollectionCatalogItemEntry>)
+
+    @Query("DELETE FROM collection_catalog_pages WHERE pageKey = :pageKey")
+    abstract suspend fun deleteCatalogPage(pageKey: String)
+
+    @Query("DELETE FROM collection_catalog_items WHERE pageKey = :pageKey")
+    abstract suspend fun deleteCatalogItems(pageKey: String)
+
     @Transaction
     open suspend fun getCollection(collectionId: Int, language: String): CollectionDetailCache? {
         val entry = getDetailEntry(collectionId, language) ?: return null
@@ -60,5 +78,24 @@ abstract class CollectionStorageDao {
 
         insertDetail(cache.entry)
         if (cache.items.isNotEmpty()) insertItems(cache.items)
+    }
+
+    @Transaction
+    open suspend fun getCatalogPage(pageKey: String): CollectionCatalogPageCache? {
+        val entry = getCatalogPageEntry(pageKey) ?: return null
+        return CollectionCatalogPageCache(
+            entry = entry,
+            items = getCatalogItems(pageKey),
+        )
+    }
+
+    @Transaction
+    open suspend fun replaceCatalogPage(cache: CollectionCatalogPageCache) {
+        val pageKey = cache.entry.pageKey
+        deleteCatalogPage(pageKey)
+        deleteCatalogItems(pageKey)
+
+        insertCatalogPage(cache.entry)
+        if (cache.items.isNotEmpty()) insertCatalogItems(cache.items)
     }
 }

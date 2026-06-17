@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -87,6 +89,7 @@ fun UserProfileMobileScreen(
             item(key = "tabs") {
                 UserProfileTabs(
                     selected = state.selectedTab,
+                    profile = state.profile,
                     onSelected = { onEvent(UserProfileState.Event.TabSelected(it)) },
                 )
             }
@@ -186,6 +189,7 @@ private fun UserProfileHeader(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun UserProfileTabs(
     selected: UserProfileState.Tab,
+    profile: UserProfileSummary?,
     onSelected: (UserProfileState.Tab) -> Unit,
 ) {
     val tabs = UserProfileState.Tab.entries
@@ -195,15 +199,32 @@ private fun UserProfileTabs(
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
         tabs.forEach { tab ->
+            val count = tab.count(profile)
             Tab(
                 selected = tab == selected,
                 onClick = { onSelected(tab) },
                 text = {
-                    Text(
-                        text = tab.label(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = tab.label(),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (count != null) {
+                            Badge(
+                                modifier = Modifier.sizeIn(minWidth = 18.dp, minHeight = 18.dp),
+                            ) {
+                                Text(
+                                    text = count.tabCountLabel(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.ExtraBold,
+                                )
+                            }
+                        }
+                    }
                 },
             )
         }
@@ -554,6 +575,24 @@ private fun UserProfileState.Tab.label(): String = when (this) {
     UserProfileState.Tab.REVIEWS -> stringResource(R.string.user_profile_tab_reviews)
     UserProfileState.Tab.FRIENDS -> stringResource(R.string.user_profile_tab_friends)
 }
+
+private fun UserProfileState.Tab.count(profile: UserProfileSummary?): Int? {
+    if (profile == null) return null
+    return when (this) {
+        UserProfileState.Tab.OVERVIEW -> null
+        UserProfileState.Tab.LISTS -> with(profile.counts) {
+            watching + planned + completed + dropped + postponed + favorite
+        }
+
+        UserProfileState.Tab.COLLECTIONS -> profile.socialCounts.collections
+        UserProfileState.Tab.POSTS -> profile.socialCounts.posts
+        UserProfileState.Tab.REVIEWS -> profile.socialCounts.reviews
+        UserProfileState.Tab.FRIENDS -> profile.socialCounts.friends
+    }
+}
+
+private fun Int.tabCountLabel(): String =
+    if (this > 99) "99+" else coerceAtLeast(0).toString()
 
 @Composable
 private fun UserProfileState.ListFilter.label(): String = when (this) {

@@ -9,3 +9,13 @@ data class CollectionDetailCache(
 
 fun CollectionDetailCache.isFresh(ttlMs: Long): Boolean =
     System.currentTimeMillis() - cachedAt < ttlMs
+
+data class CollectionCatalogPageCache(
+    val entry: CollectionCatalogPageEntry,
+    val items: List<CollectionCatalogItemEntry>,
+) {
+    val cachedAt: Long get() = entry.cachedAt
+}
+
+fun CollectionCatalogPageCache.isFresh(ttlMs: Long): Boolean =
+    System.currentTimeMillis() - cachedAt < ttlMs

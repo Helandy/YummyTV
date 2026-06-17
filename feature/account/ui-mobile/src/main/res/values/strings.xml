@@ -42,12 +42,6 @@
     <string name="account_profile_list_dropped">Dropped</string>
     <string name="account_profile_list_postponed">Postponed</string>
     <string name="account_profile_list_favorite">Favorite</string>
-    <string name="account_profile_social_friends">Friends</string>
-    <string name="account_profile_social_reviews">Reviews</string>
-    <string name="account_profile_social_comments">Comments</string>
-    <string name="account_profile_social_posts">Posts</string>
-    <string name="account_profile_social_collections">Collections</string>
-    <string name="account_profile_social_placeholder">%1$s: empty for now</string>
     <string name="account_mark_read">Mark read</string>
     <string name="account_mark_all_read">Mark all read</string>
     <string name="account_delete">Delete</string>

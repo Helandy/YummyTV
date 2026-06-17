@@ -18,6 +18,7 @@ class HomeState {
         val isContinueWatchingLoaded: Boolean = false,
         val continueWatchingRestoreToken: Int = 0,
         val continueWatchingRestoreKey: String? = null,
+        val supportPromptVisible: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на главном экране. */
@@ -56,6 +57,12 @@ class HomeState {
 
         /** Пользователь запросил повторную загрузку главной ленты. */
         data object RetrySelected : Event
+
+        /** Пользователь открыл каталог коллекций с главного экрана. */
+        data object CollectionsCatalogSelected : Event
+
+        /** Пользователь отказался от предложения поддержать проект. */
+        data object SupportPromptDismissed : Event
     }
 
     sealed interface Effect : UiEffect

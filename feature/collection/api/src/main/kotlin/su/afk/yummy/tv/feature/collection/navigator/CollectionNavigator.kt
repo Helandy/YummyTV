@@ -5,4 +5,5 @@ import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 
 class CollectionNavigator : ICollectionNavigator {
     override fun getCollectionDest(collectionId: Int): NavKey = CollectionDestination(collectionId)
+    override fun getCollectionsCatalogDest(): NavKey = CollectionsCatalogDestination
 }

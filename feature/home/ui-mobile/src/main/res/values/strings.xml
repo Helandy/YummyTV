@@ -2,7 +2,11 @@
     <string name="home_mobile_title">Home</string>
     <string name="home_mobile_search_hint">Search anime</string>
     <string name="home_mobile_retry">Retry</string>
+    <string name="home_mobile_all">All</string>
     <string name="home_mobile_continue_watching">Continue watching</string>
     <string name="home_mobile_episode_unknown">Episode</string>
     <string name="home_mobile_episode">Episode %1$s</string>
+    <string name="home_support_prompt_title">Like the app? Support the author by rating the repository on GitHub</string>
+    <string name="home_support_prompt_message">It is free and takes less than a minute</string>
+    <string name="home_support_prompt_ok">Okay</string>
 </resources>

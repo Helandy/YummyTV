@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +24,8 @@ fun MobileSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     trailing: String? = null,
+    trailingActionLabel: String? = null,
+    onTrailingActionClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -51,6 +54,15 @@ fun MobileSectionHeader(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        if (!trailingActionLabel.isNullOrBlank() && onTrailingActionClick != null) {
+            TextButton(onClick = onTrailingActionClick) {
+                Text(
+                    text = trailingActionLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
 }

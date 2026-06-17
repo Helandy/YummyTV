@@ -186,6 +186,15 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь открыл комментарии с экрана деталей.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventDetailsCommentsSelected(animeId: Int) {
+        eventWithAnime(EVENT_DETAILS_COMMENTS_SELECTED, animeId)
+    }
+
+    /**
      * Пользователь открыл отдельный экран подписок с мобильного экрана деталей.
      *
      * Параметры: anime_id.
@@ -499,6 +508,8 @@ internal class DetailsAnalytics @Inject constructor(
         const val EVENT_DETAILS_LIBRARY_LIST_SELECTED = "details_library_list_selected"
 
         const val EVENT_DETAILS_POSTER_CLICKED = "details_poster_clicked"
+
+        const val EVENT_DETAILS_COMMENTS_SELECTED = "details_comments_selected"
 
         const val EVENT_DETAILS_SUBSCRIPTIONS_MOBILE_SELECTED =
             "details_subscriptions_mobile_selected"

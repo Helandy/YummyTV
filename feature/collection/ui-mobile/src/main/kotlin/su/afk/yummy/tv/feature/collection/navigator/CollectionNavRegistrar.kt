@@ -8,7 +8,10 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.collection.CollectionMobileScreen
 import su.afk.yummy.tv.feature.collection.CollectionViewModel
+import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogMobileScreen
+import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogViewModel
 import su.afk.yummy.tv.feature.collection.navigator.CollectionDestination
+import su.afk.yummy.tv.feature.collection.navigator.CollectionsCatalogDestination
 import javax.inject.Inject
 
 class CollectionNavRegistrar @Inject constructor() : NavRegistrar {
@@ -21,6 +24,16 @@ class CollectionNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     CollectionMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<CollectionsCatalogDestination> {
+                val viewModel = hiltViewModel<CollectionsCatalogViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    CollectionsCatalogMobileScreen(
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent
+                    )
                 }
             }
         }

@@ -1,10 +1,14 @@
 package su.afk.yummy.tv.data.collection.storage.mapper
 
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
+import su.afk.yummy.tv.core.storage.collection.CollectionCatalogItemEntry
+import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageCache
+import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailCache
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 
 internal fun CollectionDetail.toCollectionDetailCache(
     language: String,
@@ -51,3 +55,42 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
                 )
             },
     )
+
+internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
+    pageKey: String,
+    language: String,
+    limit: Int,
+    offset: Int,
+    cachedAt: Long,
+): CollectionCatalogPageCache =
+    CollectionCatalogPageCache(
+        entry = CollectionCatalogPageEntry(
+            pageKey = pageKey,
+            language = language,
+            pageLimit = limit,
+            pageOffset = offset,
+            cachedAt = cachedAt,
+        ),
+        items = mapIndexed { index, item ->
+            CollectionCatalogItemEntry(
+                pageKey = pageKey,
+                position = index,
+                collectionId = item.id,
+                title = item.title,
+                description = item.description,
+                posterUrl = item.posterUrl,
+            )
+        },
+    )
+
+internal fun CollectionCatalogPageCache.toCollectionSummaries(): List<CollectionSummary> =
+    items
+        .sortedBy { it.position }
+        .map {
+            CollectionSummary(
+                id = it.collectionId,
+                title = it.title,
+                description = it.description,
+                posterUrl = it.posterUrl,
+            )
+        }

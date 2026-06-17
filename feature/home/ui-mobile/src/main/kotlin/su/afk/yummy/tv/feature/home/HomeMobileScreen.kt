@@ -23,11 +23,13 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.mobile.R
 import su.afk.yummy.tv.feature.home.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.view.HomeSearchEntry
+import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +59,11 @@ fun HomeMobileScreen(
             when (val action = item.action) {
                 is HomeFeedItemAction.OpenSeries -> onEvent(HomeState.Event.AnimeSelected(action.seriesId))
                 is HomeFeedItemAction.OpenVideo -> Unit
-                is HomeFeedItemAction.OpenCollection -> onEvent(HomeState.Event.CollectionSelected(action.collectionId))
+                is HomeFeedItemAction.OpenCollection -> onEvent(
+                    HomeState.Event.CollectionSelected(
+                        action.collectionId
+                    )
+                )
             }
         }
     }
@@ -118,12 +124,29 @@ fun HomeMobileScreen(
                 .filter { it.items.isNotEmpty() }
                 .forEach { section ->
                     item(key = "section_${section.type.name}") {
+                        val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
                         HomeFeedSectionRow(
                             section = section,
                             onItemSelected = onItemSelected,
+                            actionLabel = if (isCollections) {
+                                stringResource(R.string.home_mobile_all)
+                            } else {
+                                null
+                            },
+                            onActionClick = if (isCollections) {
+                                { onEvent(HomeState.Event.CollectionsCatalogSelected) }
+                            } else {
+                                null
+                            },
                         )
                     }
                 }
         }
+    }
+
+    if (state.supportPromptVisible) {
+        HomeSupportPromptDialog(
+            onDismiss = { onEvent(HomeState.Event.SupportPromptDismissed) },
+        )
     }
 }

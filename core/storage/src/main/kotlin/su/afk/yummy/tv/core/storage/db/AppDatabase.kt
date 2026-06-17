@@ -46,6 +46,8 @@ import su.afk.yummy.tv.core.storage.anime.AnimeVideoCacheEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionAnimeItemEntry
+import su.afk.yummy.tv.core.storage.collection.CollectionCatalogItemEntry
+import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageDao
 import su.afk.yummy.tv.core.storage.comments.CommentItemEntry
@@ -108,6 +110,8 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         SearchTypeEntry::class,
         CollectionDetailEntry::class,
         CollectionAnimeItemEntry::class,
+        CollectionCatalogPageEntry::class,
+        CollectionCatalogItemEntry::class,
         AccountProfileEntry::class,
         AccountUserListPageEntry::class,
         AccountUserListItemEntry::class,
@@ -141,7 +145,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         CommentPageEntry::class,
         CommentItemEntry::class,
     ],
-    version = 24,
+    version = 25,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

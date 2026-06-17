@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="collection_load_error">Could not load collection</string>
+    <string name="collection_catalog_load_error">Could not load collections</string>
 </resources>

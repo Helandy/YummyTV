@@ -1,4 +1,5 @@
 <resources>
     <string name="collection_mobile_title">Collection</string>
+    <string name="collection_catalog_mobile_title">Collections</string>
     <string name="collection_mobile_retry">Retry</string>
 </resources>

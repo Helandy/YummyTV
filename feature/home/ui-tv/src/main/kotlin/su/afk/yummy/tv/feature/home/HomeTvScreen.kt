@@ -13,6 +13,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
+import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
 
 @Composable
 fun HomeTvScreen(
@@ -46,6 +47,7 @@ fun HomeTvScreen(
                         displayId = item.id,
                     ),
                 )
+
                 is HomeFeedItemAction.OpenVideo -> Unit
                 is HomeFeedItemAction.OpenCollection -> onEvent(
                     HomeState.Event.CollectionSelected(
@@ -74,6 +76,7 @@ fun HomeTvScreen(
             message = error,
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
         )
+
         state.isLoading || !isInitialContentReady -> TvLoadingScreen()
         else -> HomeDashboard(
             feed = feed,
@@ -92,6 +95,12 @@ fun HomeTvScreen(
             continueWatchingRestoreToken = state.continueWatchingRestoreToken,
             continueWatchingRestoreKey = state.continueWatchingRestoreKey,
             onFocusedItemRestoreHandled = onFocusedItemRestoreHandled,
+        )
+    }
+
+    if (state.supportPromptVisible) {
+        HomeSupportPromptDialog(
+            onDismiss = { onEvent(HomeState.Event.SupportPromptDismissed) },
         )
     }
 }

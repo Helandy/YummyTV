@@ -6,4 +6,7 @@
     <string name="home_season">Season %1$s</string>
     <string name="home_episode">Episode</string>
     <string name="home_episode_number">Episode %1$s</string>
+    <string name="home_support_prompt_title">Like the app? Support the author by rating the repository on GitHub</string>
+    <string name="home_support_prompt_message">It is free and takes less than a minute</string>
+    <string name="home_support_prompt_ok">Okay</string>
 </resources>

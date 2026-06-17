@@ -8,13 +8,18 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
 import su.afk.yummy.tv.data.collection.mapper.toDomain
+import su.afk.yummy.tv.data.collection.mapper.toSummary
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
+import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionCatalogPageCache
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetail
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetailCache
+import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionSummaries
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 
 private const val COLLECTION_TTL_MS = 24 * 60 * 60 * 1000L
+private const val COLLECTION_CATALOG_TTL_MS = 60 * 60 * 1000L
 
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,
@@ -41,6 +46,37 @@ class YaniCollectionDetailRepository(
             }
         }
 
+    override suspend fun getCollections(limit: Int, offset: Int): List<CollectionSummary> =
+        withContext(Dispatchers.IO) {
+            val language = settingsStore.yaniContentLanguage.first()
+            val languageCode = language.apiCode
+            val pageKey = catalogPageKey(languageCode, limit, offset)
+            val stored = collectionStorage.getCatalogPage(pageKey)
+            if (stored?.isFresh(COLLECTION_CATALOG_TTL_MS) == true) {
+                return@withContext stored.toCollectionSummaries()
+            }
+
+            try {
+                val collections =
+                    api.getCollections(limit, offset).response.mapNotNull { it.toSummary() }
+                collectionStorage.saveCatalogPage(
+                    collections.toCollectionCatalogPageCache(
+                        pageKey = pageKey,
+                        language = languageCode,
+                        limit = limit,
+                        offset = offset,
+                        cachedAt = System.currentTimeMillis(),
+                    )
+                )
+                collections
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toCollectionSummaries()
+                    ?: throw error
+            }
+        }
+
     private suspend fun fetchCollection(id: Int, languageCode: String): CollectionDetail {
         val collection = api.getCollection(id).response.toDomain(fallbackId = id)
         collectionStorage.saveCollection(
@@ -51,4 +87,7 @@ class YaniCollectionDetailRepository(
         )
         return collection
     }
+
+    private fun catalogPageKey(language: String, limit: Int, offset: Int): String =
+        "$language:$limit:$offset"
 }

@@ -110,9 +110,6 @@ private fun AccountMobileProfileSummaryPanel(
             if (summary.counts.hasAny()) {
                 AccountMobileProfileListCounters(counts = summary.counts)
             }
-            if (summary.socialCounts.hasAny()) {
-                AccountMobileProfileSocialPager(counts = summary.socialCounts)
-            }
             if (summary.about.isNotBlank()) {
                 Text(
                     text = summary.about,

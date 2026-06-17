@@ -42,6 +42,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private val getUserPosts: GetUserPostsUseCase,
     private val getUserReviews: GetUserReviewsUseCase,
     private val getUserFriends: GetUserFriendsUseCase,
+    private val analytics: UserProfileAnalytics,
 ) : BaseViewModelNew<UserProfileState.State, UserProfileState.Event, UserProfileState.Effect>(
     savedStateHandle
 ) {
@@ -54,20 +55,29 @@ class UserProfileViewModel @AssistedInject internal constructor(
     override fun createInitialState() = UserProfileState.State(userId = userId)
 
     init {
+        analytics.eventScreenOpened(userId)
         loadOverview()
     }
 
     override fun onEvent(event: UserProfileState.Event) {
         when (event) {
             UserProfileState.Event.BackSelected -> nav.back()
-            UserProfileState.Event.RetryOverviewSelected -> loadOverview()
+            UserProfileState.Event.RetryOverviewSelected -> {
+                analytics.eventRetryOverviewSelected(userId)
+                loadOverview()
+            }
+
             is UserProfileState.Event.TabSelected -> {
+                if (event.tab != currentState.selectedTab) {
+                    analytics.eventTabSelected(userId, event.tab)
+                }
                 setState { copy(selectedTab = event.tab) }
                 loadTabIfNeeded(event.tab)
             }
 
             is UserProfileState.Event.ListFilterSelected -> {
                 if (event.filter != currentState.selectedList) {
+                    analytics.eventListFilterSelected(userId, event.filter)
                     setState {
                         copy(
                             selectedList = event.filter,
@@ -78,20 +88,40 @@ class UserProfileViewModel @AssistedInject internal constructor(
                 loadLists(force = true)
             }
 
-            UserProfileState.Event.LoadMoreSelected -> loadSelectedTab(append = true)
-            UserProfileState.Event.RetryTabSelected -> loadSelectedTab(force = true)
+            UserProfileState.Event.LoadMoreSelected -> {
+                analytics.eventLoadMoreSelected(userId, currentState.selectedTab)
+                loadSelectedTab(append = true)
+            }
+
+            UserProfileState.Event.RetryTabSelected -> {
+                analytics.eventRetryTabSelected(userId, currentState.selectedTab)
+                loadSelectedTab(force = true)
+            }
+
             is UserProfileState.Event.AnimeSelected -> {
-                if (event.animeId > 0) nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+                if (event.animeId > 0) {
+                    analytics.eventAnimeSelected(userId, event.animeId)
+                    nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
+                }
             }
 
             is UserProfileState.Event.FriendSelected -> {
-                if (event.userId > 0) nav.navigate(accountNavigator.getUserProfileDest(event.userId))
+                if (event.userId > 0) {
+                    analytics.eventFriendSelected(userId, event.userId)
+                    nav.navigate(accountNavigator.getUserProfileDest(event.userId))
+                }
             }
         }
     }
 
     override fun onRetry() {
-        if (currentState.overviewError) loadOverview() else loadSelectedTab(force = true)
+        if (currentState.overviewError) {
+            analytics.eventRetryOverviewSelected(userId)
+            loadOverview()
+        } else {
+            analytics.eventRetryTabSelected(userId, currentState.selectedTab)
+            loadSelectedTab(force = true)
+        }
     }
 
     private fun loadOverview() {
@@ -115,7 +145,8 @@ class UserProfileViewModel @AssistedInject internal constructor(
                         )
                     }
                 },
-                onFailure = {
+                onFailure = { error ->
+                    analytics.eventOverviewLoadError(userId, error)
                     setState { copy(isOverviewLoading = false, overviewError = true) }
                 },
             )
@@ -159,7 +190,10 @@ class UserProfileViewModel @AssistedInject internal constructor(
                 if (append) emptyList() else items
             }.fold(
                 onSuccess = { items -> setState { copy(lists = lists.finish(items, append)) } },
-                onFailure = { setState { copy(lists = lists.fail(append)) } },
+                onFailure = { error ->
+                    analytics.eventTabLoadError(userId, UserProfileState.Tab.LISTS, error)
+                    setState { copy(lists = lists.fail(append)) }
+                },
             )
         }
     }
@@ -167,6 +201,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private fun loadCollections(force: Boolean = false, append: Boolean = false) =
         loadPaged(
             content = currentState.collections,
+            tab = UserProfileState.Tab.COLLECTIONS,
             force = force,
             append = append,
             fetch = { offset -> getUserCollections(userId, USER_PROFILE_PAGE_SIZE, offset) },
@@ -176,6 +211,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private fun loadPosts(force: Boolean = false, append: Boolean = false) =
         loadPaged(
             content = currentState.posts,
+            tab = UserProfileState.Tab.POSTS,
             force = force,
             append = append,
             fetch = { offset -> getUserPosts(userId, USER_PROFILE_PAGE_SIZE, offset) },
@@ -185,6 +221,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private fun loadReviews(force: Boolean = false, append: Boolean = false) =
         loadPaged(
             content = currentState.reviews,
+            tab = UserProfileState.Tab.REVIEWS,
             force = force,
             append = append,
             fetch = { offset -> getUserReviews(userId, USER_PROFILE_PAGE_SIZE, offset) },
@@ -194,6 +231,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private fun loadFriends(force: Boolean = false, append: Boolean = false) =
         loadPaged(
             content = currentState.friends,
+            tab = UserProfileState.Tab.FRIENDS,
             force = force,
             append = append,
             fetch = { offset -> getUserFriends(userId, USER_PROFILE_PAGE_SIZE, offset) },
@@ -202,6 +240,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
 
     private fun <T> loadPaged(
         content: UserProfileState.PagedContent<T>,
+        tab: UserProfileState.Tab,
         force: Boolean,
         append: Boolean,
         fetch: suspend (offset: Int) -> List<T>,
@@ -215,7 +254,8 @@ class UserProfileViewModel @AssistedInject internal constructor(
                 onSuccess = { items ->
                     setState { update(content.finish(items, append)) }
                 },
-                onFailure = {
+                onFailure = { error ->
+                    analytics.eventTabLoadError(userId, tab, error)
                     setState { update(content.fail(append)) }
                 },
             )

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,11 @@ data class MainSettingsSnapshot(
     val yaniUnreadNotificationsCount: Int,
 )
 
+data class SupportPromptSnapshot(
+    val dismissed: Boolean,
+    val firstInstallTimeMs: Long,
+)
+
 class SettingsStore(private val context: Context) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -66,6 +72,9 @@ class SettingsStore(private val context: Context) {
     private val yaniUnreadNotificationsCountKey = intPreferencesKey("yani_unread_notifications_count")
     private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
     private val yaniContentLanguageKey = stringPreferencesKey("yani_content_language")
+    private val supportPromptDismissedKey = booleanPreferencesKey("support_prompt_dismissed")
+    private val supportPromptFirstInstallTimeMsKey =
+        longPreferencesKey("support_prompt_first_install_time_ms")
 
     @Volatile private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
 
@@ -240,6 +249,14 @@ class SettingsStore(private val context: Context) {
         )
     }
 
+    val supportPromptSnapshot: Flow<SupportPromptSnapshot> = context.dataStore.data.map { prefs ->
+        SupportPromptSnapshot(
+            dismissed = prefs[supportPromptDismissedKey] ?: false,
+            firstInstallTimeMs = prefs[supportPromptFirstInstallTimeMsKey]
+                ?: context.firstInstallTimeMs(),
+        )
+    }
+
     init {
         scope.launch {
             previewCacheSize.collect { size ->
@@ -390,6 +407,20 @@ class SettingsStore(private val context: Context) {
         }
     }
 
+    suspend fun ensureSupportPromptInstallTimeInitialized() {
+        context.dataStore.edit { prefs ->
+            if (prefs[supportPromptFirstInstallTimeMsKey] == null) {
+                prefs[supportPromptFirstInstallTimeMsKey] = context.firstInstallTimeMs()
+            }
+        }
+    }
+
+    suspend fun dismissSupportPrompt() {
+        context.dataStore.edit { prefs ->
+            prefs[supportPromptDismissedKey] = true
+        }
+    }
+
     suspend fun markStartedVersion(versionCode: Int): Boolean {
         var isFreshVersion = true
         context.dataStore.edit { prefs ->
@@ -409,6 +440,11 @@ class SettingsStore(private val context: Context) {
 
     private fun Preferences.yaniApplicationToken(): String =
         this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
+
+    private fun Context.firstInstallTimeMs(): Long =
+        runCatching {
+            packageManager.getPackageInfo(packageName, 0).firstInstallTime
+        }.getOrDefault(System.currentTimeMillis())
 
     private fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState {
         val token = this[yaniApplicationTokenKey]?.trim().orEmpty()

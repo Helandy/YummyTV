@@ -1505,6 +1505,54 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_24_25 = object : Migration(24, 25) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS collection_catalog_pages (
+                    pageKey TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    pageLimit INTEGER NOT NULL,
+                    pageOffset INTEGER NOT NULL,
+                    cachedAt INTEGER NOT NULL,
+                    PRIMARY KEY(pageKey)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_collection_catalog_pages_language
+                ON collection_catalog_pages(language)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_collection_catalog_pages_cachedAt
+                ON collection_catalog_pages(cachedAt)
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS collection_catalog_items (
+                    pageKey TEXT NOT NULL,
+                    position INTEGER NOT NULL,
+                    collectionId INTEGER NOT NULL,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    posterUrl TEXT,
+                    PRIMARY KEY(pageKey, position)
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE INDEX IF NOT EXISTS index_collection_catalog_items_pageKey
+                ON collection_catalog_items(pageKey)
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1527,6 +1575,7 @@ object StorageModule {
                 MIGRATION_21_22,
                 MIGRATION_22_23,
                 MIGRATION_23_24,
+                MIGRATION_24_25,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

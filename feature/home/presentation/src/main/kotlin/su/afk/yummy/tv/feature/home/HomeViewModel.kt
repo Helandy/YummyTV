@@ -2,6 +2,8 @@ package su.afk.yummy.tv.feature.home
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -10,6 +12,8 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
@@ -20,6 +24,7 @@ import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,10 +41,14 @@ class HomeViewModel @Inject internal constructor(
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val stringProvider: StringProvider,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val settingsStore: SettingsStore,
     private val analytics: HomeAnalytics,
 ) : BaseViewModelNew<HomeState.State, HomeState.Event, HomeState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = HomeState.State()
+
+    private var supportPromptTimerJob: Job? = null
+    private var supportPromptDisplayedThisSession = false
 
     init {
         analytics.eventScreenOpened()
@@ -53,6 +62,7 @@ class HomeViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        observeSupportPrompt()
         load()
     }
 
@@ -109,6 +119,12 @@ class HomeViewModel @Inject internal constructor(
 
             HomeState.Event.RefreshRequested -> refresh()
 
+            HomeState.Event.CollectionsCatalogSelected -> {
+                nav.navigate(collectionNavigator.getCollectionsCatalogDest())
+            }
+
+            HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
+
             is HomeState.Event.ItemFocused -> onItemFocused(
                 event.sectionId,
                 event.displayId,
@@ -120,6 +136,52 @@ class HomeViewModel @Inject internal constructor(
                     setState { copy(restoreFocusedItemOnEnter = false) }
                 }
             }
+        }
+    }
+
+    private fun observeSupportPrompt() {
+        viewModelScope.launch {
+            settingsStore.ensureSupportPromptInstallTimeInitialized()
+        }
+        settingsStore.supportPromptSnapshot
+            .onEach(::applySupportPromptSnapshot)
+            .launchIn(viewModelScope)
+    }
+
+    private fun applySupportPromptSnapshot(snapshot: SupportPromptSnapshot) {
+        supportPromptTimerJob?.cancel()
+        if (snapshot.dismissed) {
+            if (!supportPromptDisplayedThisSession) {
+                setState { copy(supportPromptVisible = false) }
+            }
+            return
+        }
+
+        val remainingMs =
+            SUPPORT_PROMPT_DELAY_MS - (System.currentTimeMillis() - snapshot.firstInstallTimeMs)
+        if (remainingMs <= 0L) {
+            showSupportPromptOnce()
+        } else {
+            setState { copy(supportPromptVisible = false) }
+            supportPromptTimerJob = viewModelScope.launch {
+                delay(remainingMs)
+                showSupportPromptOnce()
+            }
+        }
+    }
+
+    private fun showSupportPromptOnce() {
+        supportPromptDisplayedThisSession = true
+        setState { copy(supportPromptVisible = true) }
+        viewModelScope.launch {
+            settingsStore.dismissSupportPrompt()
+        }
+    }
+
+    private fun dismissSupportPrompt() {
+        setState { copy(supportPromptVisible = false) }
+        viewModelScope.launch {
+            settingsStore.dismissSupportPrompt()
         }
     }
 
@@ -227,5 +289,6 @@ class HomeViewModel @Inject internal constructor(
 
     private companion object {
         const val SECTION_CONTINUE_WATCHING = "__continue_watching"
+        val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
     }
 }

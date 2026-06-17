@@ -180,8 +180,10 @@ class DetailsViewModel @AssistedInject internal constructor(
             DetailsState.Event.CollectionsSelected ->
                 nav.navigate(detailsNavigator.getCollectionsDest(animeId))
 
-            DetailsState.Event.CommentsSelected ->
+            DetailsState.Event.CommentsSelected -> {
+                analytics.eventDetailsCommentsSelected(animeId)
                 nav.navigate(commentsNavigator.getAnimeCommentsDest(animeId))
+            }
 
             DetailsState.Event.LibraryToggled ->
                 viewModelScope.launch { toggleLibrary() }

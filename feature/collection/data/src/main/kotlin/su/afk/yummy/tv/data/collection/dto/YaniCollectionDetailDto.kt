@@ -9,6 +9,11 @@ data class YaniCollectionDetailResponseDto(
 )
 
 @Serializable
+data class YaniCollectionListResponseDto(
+    val response: List<YaniCollectionDetailDto> = emptyList(),
+)
+
+@Serializable
 data class YaniCollectionDetailDto(
     val id: Int? = null,
     val title: String = "",

@@ -5,6 +5,7 @@ import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailDto
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
+import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 
 internal fun YaniCollectionDetailDto.toDomain(fallbackId: Int): CollectionDetail {
     val resolvedId = id ?: fallbackId
@@ -15,6 +16,17 @@ internal fun YaniCollectionDetailDto.toDomain(fallbackId: Int): CollectionDetail
         views = views,
         posterUrl = posterPreviews.firstOrNull()?.toUrl(),
         animes = animes.mapNotNull { it.toDomain() },
+    )
+}
+
+internal fun YaniCollectionDetailDto.toSummary(): CollectionSummary? {
+    val resolvedId = id ?: return null
+    val safeTitle = title.trim().takeIf { it.isNotEmpty() } ?: return null
+    return CollectionSummary(
+        id = resolvedId,
+        title = safeTitle,
+        description = description,
+        posterUrl = posterPreviews.firstOrNull()?.toUrl(),
     )
 }
 
