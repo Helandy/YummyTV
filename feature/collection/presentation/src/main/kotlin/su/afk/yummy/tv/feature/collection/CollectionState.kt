@@ -34,5 +34,7 @@ class CollectionState {
         data class GridScrolled(val index: Int, val offset: Int) : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data class ShowToast(val message: String) : Effect
+    }
 }

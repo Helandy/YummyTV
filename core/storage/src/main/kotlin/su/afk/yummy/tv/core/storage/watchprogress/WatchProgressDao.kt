@@ -47,6 +47,7 @@ interface WatchProgressDao {
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = watch_progress.animeId
+                    AND suppressed.suppressedAt >= watch_progress.updatedAt
             )
         ORDER BY updatedAt DESC
         """
@@ -85,6 +86,7 @@ interface WatchProgressDao {
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = watch_progress.animeId
+                    AND suppressed.suppressedAt >= watch_progress.updatedAt
             )
         ORDER BY updatedAt DESC
         """
@@ -103,6 +105,7 @@ interface WatchProgressDao {
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = progress.animeId
+                    AND suppressed.suppressedAt >= progress.updatedAt
             )
             AND NOT EXISTS (
                 SELECT 1 FROM watch_progress AS other
@@ -174,6 +177,9 @@ interface WatchProgressDao {
 
     @Query("SELECT animeId FROM continue_watching_suppressions")
     suspend fun suppressedAnimeIds(): List<Int>
+
+    @Query("SELECT * FROM continue_watching_suppressions")
+    suspend fun suppressions(): List<ContinueWatchingSuppressionEntry>
 
     @Query("DELETE FROM continue_watching_suppressions WHERE animeId = :animeId")
     suspend fun deleteSuppression(animeId: Int)

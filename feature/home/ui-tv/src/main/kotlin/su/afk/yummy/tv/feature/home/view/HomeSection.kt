@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.home.view
 
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 
 @Composable
 internal fun HomeSection(
@@ -46,6 +46,8 @@ internal fun HomeSection(
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
     rowKey: String = "",
+    restoreItemKey: String? = null,
+    onFocusedItemKeyChanged: ((String) -> Unit)? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     bottomPadding: Dp = 20.dp,
@@ -60,11 +62,28 @@ internal fun HomeSection(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable(rowKey.ifBlank { title }) { mutableIntStateOf(0) }
-    var lastFocusedItemId by rememberSaveable(rowKey.ifBlank { title }) { mutableStateOf<Int?>(null) }
+    var currentFocusedIndex by remember { mutableIntStateOf(-1) }
+    var lastFocusedItemKey by rememberSaveable(rowKey.ifBlank { title }) {
+        mutableStateOf<String?>(
+            null
+        )
+    }
     val rowFocusRequesterToUse = rowFocusRequester ?: remember { FocusRequester() }
-    val focusRequesters = remember(items.size, rowFocusRequesterToUse) {
+    val focusRequesters = remember(items.size) {
         List(items.size) { FocusRequester() }
     }
+
+    fun restoreIndex(): Int {
+        if (items.isEmpty()) return 0
+        val targetKey = restoreItemKey ?: lastFocusedItemKey
+        val keyedIndex = targetKey?.let { key ->
+            items.indexOfFirst { it.focusKey() == key }
+        } ?: -1
+        return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
+    }
+
+    fun focusRequesterForItem(index: Int): FocusRequester =
+        if (index == restoreIndex()) rowFocusRequesterToUse else focusRequesters[index]
 
     suspend fun requestItemFocus(index: Int) {
         val target = index.coerceIn(0, items.lastIndex)
@@ -73,22 +92,17 @@ internal fun HomeSection(
             listState.scrollToItem(target)
             withFrameNanos { }
         }
-        runCatching { focusRequesters[target].requestFocus() }
+        runCatching { focusRequesterForItem(target).requestFocus() }
         withFrameNanos { }
-        runCatching { focusRequesters[target].requestFocus() }
-    }
-
-    fun restoreIndex(): Int {
-        if (items.isEmpty()) return 0
-        val keyedIndex = lastFocusedItemId?.let { itemId ->
-            items.indexOfFirst { it.id == itemId }
-        } ?: -1
-        return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
+        runCatching { focusRequesterForItem(target).requestFocus() }
     }
 
     fun rememberFocusedItem(index: Int) {
+        currentFocusedIndex = index
         lastFocusedIndex = index
-        lastFocusedItemId = items.getOrNull(index)?.id
+        val itemKey = items.getOrNull(index)?.focusKey()
+        lastFocusedItemKey = itemKey
+        itemKey?.let { onFocusedItemKeyChanged?.invoke(it) }
     }
 
     fun cancelPendingFocusMove() {
@@ -117,15 +131,18 @@ internal fun HomeSection(
                     upFocusRequester?.let { up = it }
                     downFocusRequester?.let { down = it }
                 }
-                .focusRequester(rowFocusRequesterToUse)
                 .tvFocusRestorer(
-                    fallback = focusRequesters.getOrNull(restoreIndex()) ?: FocusRequester.Default,
+                    fallback = items.getOrNull(restoreIndex())?.let {
+                        focusRequesterForItem(restoreIndex())
+                    } ?: FocusRequester.Default,
                 )
-                .focusable()
                 .onFocusChanged { state ->
                     val hadFocus = rowHasFocusState.value
                     rowHasFocusState.value = state.hasFocus
-                    if (!state.hasFocus) cancelPendingFocusMove()
+                    if (!state.hasFocus) {
+                        currentFocusedIndex = -1
+                        cancelPendingFocusMove()
+                    }
                     if (state.hasFocus && !hadFocus && items.isNotEmpty()) {
                         isRestoringFocusState.value = true
                         focusMoveJob?.cancel()
@@ -141,7 +158,10 @@ internal fun HomeSection(
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
                         Key.DirectionLeft -> {
-                            if (lastFocusedIndex <= 0) {
+                            val focusedIndex = currentFocusedIndex
+                                .takeIf { it in items.indices }
+                                ?: lastFocusedIndex
+                            if (focusedIndex <= 0) {
                                 cancelPendingFocusMove()
                                 mainMenuFocusRequester?.requestFocus()
                                 mainMenuFocusRequester != null
@@ -170,29 +190,35 @@ internal fun HomeSection(
                     }
                 },
         ) {
-            itemsIndexed(items = items, key = { _, item -> item.id }) { index, item ->
-                val stableClick = remember(rowKey, item.id) { { onItemSelected(rowKey, item) } }
-                val wrappedOnFocused = remember(index, item.id) {
-                    { _: Int, _: Int? ->
-                        if (!isRestoringFocusState.value) {
-                            if (rowHasFocusState.value) {
-                                rememberFocusedItem(index)
-                            }
+            itemsIndexed(items = items, key = { _, item -> item.focusKey() }) { index, item ->
+                val wrappedOnFocused = { _: Int, _: Int? ->
+                    currentFocusedIndex = index
+                    if (!isRestoringFocusState.value) {
+                        if (rowHasFocusState.value) {
+                            rememberFocusedItem(index)
                         }
                     }
                 }
                 HomeFeedCard(
-                    modifier = Modifier.focusRequester(focusRequesters[index]),
+                    modifier = Modifier.focusRequester(focusRequesterForItem(index)),
                     item = item,
-                    onClick = stableClick,
+                    onClick = {
+                        rememberFocusedItem(index)
+                        onItemSelected(rowKey, item)
+                    },
                     onFocused = wrappedOnFocused,
                     leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },
                     upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,
                     focusedScale = focusedCardScale,
-                    forceFocused = (rowIsFocused || rowHasFocusState.value) && index == lastFocusedIndex,
                 )
             }
         }
     }
+}
+
+private fun HomeFeedItem.focusKey(): String = when (val action = action) {
+    is HomeFeedItemAction.OpenSeries -> "series:${action.seriesId}"
+    is HomeFeedItemAction.OpenCollection -> "collection:${action.collectionId}"
+    is HomeFeedItemAction.OpenVideo -> "video:${action.videoId}"
 }

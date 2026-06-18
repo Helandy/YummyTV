@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.home.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,8 +14,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +41,7 @@ import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeDashboard(
     feed: HomeFeed,
@@ -49,6 +52,7 @@ internal fun HomeDashboard(
     val lazyColumnState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
 
     val hasContinueWatching = continueWatching.isNotEmpty()
     val hasHero = feed.heroItems.isNotEmpty()
@@ -62,6 +66,11 @@ internal fun HomeDashboard(
 
     var columnHasFocus by remember { mutableStateOf(false) }
     var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
+    var lastFocusedSectionItemKeys by rememberSaveable {
+        mutableStateOf<Map<String, String>>(
+            emptyMap()
+        )
+    }
     val homeContentFocusRequester = remember { FocusRequester() }
     val continueWatchingFocusRequester = remember { FocusRequester() }
     val heroFocusRequester = remember { FocusRequester() }
@@ -78,13 +87,14 @@ internal fun HomeDashboard(
             val section = feed.sections.getOrNull(sectionIndex)
             section?.let { sectionFocusRequesters.getOrNull(sectionIndex) }
                 ?: firstAvailableFocusRequester(
-                hasHero = hasHero,
-                hasContinueWatching = hasContinueWatching,
-                continueWatchingFocusRequester = continueWatchingFocusRequester,
-                heroFocusRequester = heroFocusRequester,
-                sectionFocusRequesters = sectionFocusRequesters,
-            )
+                    hasHero = hasHero,
+                    hasContinueWatching = hasContinueWatching,
+                    continueWatchingFocusRequester = continueWatchingFocusRequester,
+                    heroFocusRequester = heroFocusRequester,
+                    sectionFocusRequesters = sectionFocusRequesters,
+                )
         }
+
         else -> firstAvailableFocusRequester(
             hasHero = hasHero,
             hasContinueWatching = hasContinueWatching,
@@ -124,157 +134,161 @@ internal fun HomeDashboard(
         }
     }
 
-    val preferredContentFocusRequester = homeContentFocusRequester
+    val preferredContentFocusRequester = focusRequesterForLazyIndex(focusedLazyIndex())
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
-    LazyColumn(
-        state = lazyColumnState,
-        modifier = Modifier
-            .fillMaxSize()
-            .focusRequester(homeContentFocusRequester)
-            .background(MaterialTheme.colorScheme.background)
-            .padding(top = 12.dp)
-            .focusProperties {
-                mainMenuFocusRequester?.let { left = it }
-            }
-            .tvFocusRestorer(fallback = focusRequesterForLazyIndex(focusedLazyIndex()))
-            .onFocusChanged { state ->
-                val hadFocus = columnHasFocus
-                columnHasFocus = state.hasFocus
-                if (state.hasFocus && !hadFocus && totalLazyItems > 0) {
-                    val target = lastFocusedLazyIndex.coerceIn(0, totalLazyItems - 1)
-                    scope.launch {
-                        lazyColumnState.scrollToItem(target)
-                        snapshotFlow {
-                            lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
-                        }.first { it }
-                        runCatching { focusRequesterForLazyIndex(target).requestFocus() }
-                    }
-                }
-            },
-        contentPadding = PaddingValues(bottom = 520.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+    CompositionLocalProvider(
+        LocalBringIntoViewSpec provides HomeColumnNoAutoBringIntoViewSpec,
     ) {
-        if (hasContinueWatching) {
-            item(key = "continue_watching") {
-                Box(
-                    modifier = Modifier.onFocusChanged { state ->
-                        if (state.hasFocus) lastFocusedLazyIndex = 0
-                    },
-                ) {
-                    ContinueWatchingSection(
-                        items = continueWatching,
-                        onItemSelected = onContinueWatchingSelected,
-                        rowFocusRequester = continueWatchingFocusRequester,
-                        downFocusRequester = nextRowFocusRequester(0),
-                        onMoveDown = if (totalLazyItems > 1) {
-                            { requestRowFocus(1) }
-                        } else {
-                            null
-                        },
-                    )
+        LazyColumn(
+            state = lazyColumnState,
+            modifier = Modifier
+                .fillMaxSize()
+                .focusRequester(homeContentFocusRequester)
+                .background(MaterialTheme.colorScheme.background)
+                .padding(top = 12.dp)
+                .focusProperties {
+                    mainMenuFocusRequester?.let { left = it }
                 }
-            }
-        }
-
-        if (hasHero) {
-            item(key = "hero_carousel") {
-                var heroHasFocus by remember { mutableStateOf(false) }
-                var heroPinJob by remember { mutableStateOf<Job?>(null) }
-
-                fun pinHeroWhileFocused() {
-                    if (!heroHasFocus) return
-                    heroPinJob?.cancel()
-                    heroPinJob = scope.launch {
-                        repeat(4) {
-                            if (!heroHasFocus) return@launch
-                            lazyColumnState.scrollToItem(heroLazyIdx)
-                            withFrameNanos { }
-                        }
-                    }
-                }
-
-                // Re-scroll when CW section appears/disappears while hero is already focused.
-                LaunchedEffect(heroLazyIdx, heroHasFocus) {
-                    pinHeroWhileFocused()
-                }
-
-                Box(
-                    modifier = Modifier.onFocusChanged { state ->
-                        heroHasFocus = state.hasFocus
-                        if (state.hasFocus) {
-                            lastFocusedLazyIndex = heroLazyIdx
-                            pinHeroWhileFocused()
-                        } else {
-                            heroPinJob?.cancel()
-                        }
-                    },
-                ) {
-                    HomeCarousel(
-                        items = feed.heroItems,
-                        onItemSelected = onItemSelected,
-                        sectionKey = SECTION_HERO,
-                        rowFocusRequester = heroFocusRequester,
-                        rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
-                        upFocusRequester = previousRowFocusRequester(heroLazyIdx),
-                        downFocusRequester = nextRowFocusRequester(heroLazyIdx),
-                        onCarouselFocused = {
-                            lastFocusedLazyIndex = heroLazyIdx
-                            pinHeroWhileFocused()
-                        },
-                        onMoveUp = if (heroLazyIdx > 0) {
-                            { requestRowFocus(heroLazyIdx - 1) }
-                        } else {
-                            null
-                        },
-                        onMoveDown = if (heroLazyIdx < totalLazyItems - 1) {
-                            { requestRowFocus(heroLazyIdx + 1) }
-                        } else {
-                            null
-                        },
-                    )
-                }
-            }
-        }
-
-        itemsIndexed(
-            feed.sections,
-            key = { index, _ -> sectionKey(index) },
-            contentType = { _, _ -> "section" }) { index, section ->
-            val lazyIdx = sectionsBaseLazyIdx + index
-            Box(
-                modifier = Modifier.onFocusChanged { state ->
-                    if (state.hasFocus) {
-                        lastFocusedLazyIndex = lazyIdx
-                    }
+                .tvFocusRestorer(fallback = focusRequesterForLazyIndex(focusedLazyIndex()))
+                .onFocusChanged { state ->
+                    columnHasFocus = state.hasFocus
                 },
-            ) {
-                HomeSection(
-                    title = section.title,
-                    items = section.items,
-                    onItemSelected = onItemSelected,
-                    rowFocusRequester = sectionFocusRequesters[index],
-                    rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,
-                    rowKey = sectionKey(index),
-                    upFocusRequester = previousRowFocusRequester(lazyIdx),
-                    downFocusRequester = nextRowFocusRequester(lazyIdx),
-                    bottomPadding = if (index == feed.sections.lastIndex) 96.dp else 20.dp,
-                    focusedCardScale = 1f,
-                    onMoveUp = if (lazyIdx > 0) {
-                        { requestRowFocus(lazyIdx - 1) }
-                    } else {
-                        null
-                    },
-                    onMoveDown = if (lazyIdx < totalLazyItems - 1) {
-                        { requestRowFocus(lazyIdx + 1) }
-                    } else {
-                        null
-                    },
-                )
+            contentPadding = PaddingValues(bottom = 520.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            if (hasContinueWatching) {
+                item(key = "continue_watching") {
+                    CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                        Box(
+                            modifier = Modifier.onFocusChanged { state ->
+                                if (state.hasFocus) lastFocusedLazyIndex = 0
+                            },
+                        ) {
+                            ContinueWatchingSection(
+                                items = continueWatching,
+                                onItemSelected = onContinueWatchingSelected,
+                                rowFocusRequester = continueWatchingFocusRequester,
+                                downFocusRequester = nextRowFocusRequester(0),
+                                onMoveDown = if (totalLazyItems > 1) {
+                                    { requestRowFocus(1) }
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (hasHero) {
+                item(key = "hero_carousel") {
+                    CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                        var heroRowHasFocus by remember { mutableStateOf(false) }
+                        var heroEnterScrollJob by remember { mutableStateOf<Job?>(null) }
+
+                        fun scrollHeroToTopWhileFocused() {
+                            heroEnterScrollJob?.cancel()
+                            heroEnterScrollJob = scope.launch {
+                                repeat(4) {
+                                    if (!heroRowHasFocus) return@launch
+                                    lazyColumnState.scrollToItem(heroLazyIdx)
+                                    withFrameNanos { }
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier.onFocusChanged { state ->
+                                val hadFocus = heroRowHasFocus
+                                heroRowHasFocus = state.hasFocus
+                                if (state.hasFocus) {
+                                    lastFocusedLazyIndex = heroLazyIdx
+                                    if (!hadFocus) {
+                                        scrollHeroToTopWhileFocused()
+                                    }
+                                } else {
+                                    heroEnterScrollJob?.cancel()
+                                }
+                            },
+                        ) {
+                            HomeCarousel(
+                                items = feed.heroItems,
+                                onItemSelected = onItemSelected,
+                                sectionKey = SECTION_HERO,
+                                rowFocusRequester = heroFocusRequester,
+                                rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
+                                upFocusRequester = previousRowFocusRequester(heroLazyIdx),
+                                downFocusRequester = nextRowFocusRequester(heroLazyIdx),
+                                onCarouselFocused = {
+                                    lastFocusedLazyIndex = heroLazyIdx
+                                },
+                                onCarouselFocusSettled = {
+                                    scrollHeroToTopWhileFocused()
+                                },
+                                onMoveUp = if (heroLazyIdx > 0) {
+                                    { requestRowFocus(heroLazyIdx - 1) }
+                                } else {
+                                    null
+                                },
+                                onMoveDown = if (heroLazyIdx < totalLazyItems - 1) {
+                                    { requestRowFocus(heroLazyIdx + 1) }
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+            itemsIndexed(
+                feed.sections,
+                key = { index, _ -> sectionKey(index) },
+                contentType = { _, _ -> "section" }) { index, section ->
+                CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                    val lazyIdx = sectionsBaseLazyIdx + index
+                    val rowKey = sectionKey(index)
+                    Box(
+                        modifier = Modifier.onFocusChanged { state ->
+                            if (state.hasFocus) {
+                                lastFocusedLazyIndex = lazyIdx
+                            }
+                        },
+                    ) {
+                        HomeSection(
+                            title = section.title,
+                            items = section.items,
+                            onItemSelected = onItemSelected,
+                            rowFocusRequester = sectionFocusRequesters[index],
+                            rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,
+                            rowKey = rowKey,
+                            restoreItemKey = lastFocusedSectionItemKeys[rowKey],
+                            onFocusedItemKeyChanged = { itemKey ->
+                                lastFocusedSectionItemKeys =
+                                    lastFocusedSectionItemKeys + (rowKey to itemKey)
+                            },
+                            upFocusRequester = previousRowFocusRequester(lazyIdx),
+                            downFocusRequester = nextRowFocusRequester(lazyIdx),
+                            bottomPadding = if (index == feed.sections.lastIndex) 96.dp else 20.dp,
+                            focusedCardScale = 1f,
+                            onMoveUp = if (lazyIdx > 0) {
+                                { requestRowFocus(lazyIdx - 1) }
+                            } else {
+                                null
+                            },
+                            onMoveDown = if (lazyIdx < totalLazyItems - 1) {
+                                { requestRowFocus(lazyIdx + 1) }
+                            } else {
+                                null
+                            },
+                        )
+                    }
+                }
             }
         }
     }
@@ -290,6 +304,15 @@ private fun firstAvailableFocusRequester(
     hasContinueWatching -> continueWatchingFocusRequester
     hasHero -> heroFocusRequester
     else -> sectionFocusRequesters.firstOrNull() ?: FocusRequester.Default
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private object HomeColumnNoAutoBringIntoViewSpec : BringIntoViewSpec {
+    override fun calculateScrollDistance(
+        offset: Float,
+        size: Float,
+        containerSize: Float,
+    ): Float = 0f
 }
 
 private const val SECTION_HERO = "__hero"

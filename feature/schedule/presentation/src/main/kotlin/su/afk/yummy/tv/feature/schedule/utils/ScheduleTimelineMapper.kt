@@ -14,50 +14,34 @@ import java.util.Locale
 internal fun List<AnimeScheduleDay>.toTimelineUi(
     zone: ZoneId = ZoneId.systemDefault(),
     now: ZonedDateTime = ZonedDateTime.now(zone),
-    focusedReleaseKey: String? = null,
-    focusedReleaseEpochDay: Long? = null,
+    selectedEpochDay: Long? = null,
 ): ScheduleTimelineUi {
     val today = now.toLocalDate()
     val dayGroups = toUiDayGroups(zone = zone, today = today)
     val availableEpochDays = dayGroups.map { it.date.toEpochDay() }
-    val selectedEpochDay = selectedEpochDay(
+    val nextSelectedEpochDay = selectedEpochDay(
         availableEpochDays = availableEpochDays,
         todayEpochDay = today.toEpochDay(),
-        focusedReleaseKey = focusedReleaseKey,
-        focusedReleaseEpochDay = focusedReleaseEpochDay,
+        selectedEpochDay = selectedEpochDay,
     )
 
     return ScheduleTimelineUi(
         zone = zone,
         now = now,
         dayGroups = dayGroups,
-        selectedEpochDay = selectedEpochDay,
-        focusedReleaseKey = focusedReleaseKey,
-        focusedReleaseEpochDay = focusedReleaseEpochDay,
+        selectedEpochDay = nextSelectedEpochDay,
     )
 }
 
 internal fun ScheduleTimelineUi.withSelectedDay(epochDay: Long): ScheduleTimelineUi =
     copy(selectedEpochDay = epochDay.takeIf { it in availableEpochDays } ?: selectedEpochDay)
 
-internal fun ScheduleTimelineUi.withFocusedRelease(
-    releaseKey: String,
-    epochDay: Long,
-): ScheduleTimelineUi =
-    copy(
-        selectedEpochDay = epochDay.takeIf { it in availableEpochDays } ?: selectedEpochDay,
-        focusedReleaseKey = releaseKey,
-        focusedReleaseEpochDay = epochDay,
-    )
-
 private fun selectedEpochDay(
     availableEpochDays: List<Long>,
     todayEpochDay: Long,
-    focusedReleaseKey: String?,
-    focusedReleaseEpochDay: Long?,
+    selectedEpochDay: Long?,
 ): Long? =
-    focusedReleaseEpochDay
-        ?.takeIf { focusedReleaseKey != null && it in availableEpochDays }
+    selectedEpochDay?.takeIf { it in availableEpochDays }
         ?: availableEpochDays.firstOrNull { it == todayEpochDay }
         ?: availableEpochDays.firstOrNull { it > todayEpochDay }
         ?: availableEpochDays.firstOrNull()

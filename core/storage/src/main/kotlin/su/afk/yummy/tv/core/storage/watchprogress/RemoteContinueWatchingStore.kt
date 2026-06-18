@@ -29,10 +29,14 @@ class RemoteContinueWatchingStore(
         limit: Int = DEFAULT_LIMIT,
     ) {
         if (entries.isEmpty()) return
-        val suppressedAnimeIds = watchProgressDao.suppressedAnimeIds().toSet()
+        val suppressionTimestamps = watchProgressDao
+            .suppressions()
+            .associate { it.animeId to it.suppressedAt }
         entries
             .filter { it.animeId > 0 }
-            .filterNot { it.animeId in suppressedAnimeIds }
+            .filterNot { entry ->
+                suppressionTimestamps[entry.animeId]?.let { it >= entry.updatedAt } == true
+            }
             .forEach { entry ->
                 val targetKey = entry.remoteTargetKey() ?: return@forEach
                 val existing = dao.get(

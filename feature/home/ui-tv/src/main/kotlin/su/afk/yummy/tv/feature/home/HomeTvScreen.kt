@@ -30,7 +30,6 @@ fun HomeTvScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 onEvent(HomeState.Event.ScreenResumed)
-                onEvent(HomeState.Event.RefreshRequested)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

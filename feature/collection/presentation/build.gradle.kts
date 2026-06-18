@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:account:domain"))
     implementation(project(":feature:collection:api"))
 
     api(project(":feature:collection:domain"))

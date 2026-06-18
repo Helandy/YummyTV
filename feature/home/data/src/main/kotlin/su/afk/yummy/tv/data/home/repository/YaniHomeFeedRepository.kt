@@ -53,10 +53,10 @@ class YaniHomeFeedRepository(
         val accountKey = continueWatchingAccountKey()
         val watchSignature = feedCacheSignature(accountKey)
         val displayWatchEntries = displayWatchEntries()
-        val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
+        val suppressionTimestamps = watchProgressStore.continueWatchingSuppressionTimestamps()
         val storedFeed = homeFeedStore.getFeed(languageCode, watchSignature)
             ?.toStoredHomeFeed(stringProvider)
-            ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
+            ?.withoutSuppressedContinueWatching(suppressionTimestamps)
             ?: return@withContext null
         syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
         val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
@@ -103,13 +103,13 @@ class YaniHomeFeedRepository(
         val languageCode = language.apiCode
         val accountKey = continueWatchingAccountKey()
         val displayWatchEntries = displayWatchEntries()
-        val suppressedAnimeIds = watchProgressStore.suppressedContinueWatchingAnimeIds()
+        val suppressionTimestamps = watchProgressStore.continueWatchingSuppressionTimestamps()
         val watchSignature = feedCacheSignature(accountKey)
         val stored = homeFeedStore.getFeed(languageCode, watchSignature)
         if (!forceRefresh && stored?.isFresh(FEED_TTL_MS) == true) {
             val storedFeed = stored
                 .toStoredHomeFeed(stringProvider)
-                .withoutSuppressedContinueWatching(suppressedAnimeIds)
+                .withoutSuppressedContinueWatching(suppressionTimestamps)
             syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
             val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
             return@withContext storedFeed
@@ -126,13 +126,13 @@ class YaniHomeFeedRepository(
                 languageCode = languageCode,
                 watchSignature = watchSignature,
                 displayWatchEntries = displayWatchEntries,
-                suppressedAnimeIds = suppressedAnimeIds,
+                suppressionTimestamps = suppressionTimestamps,
             )
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
             val storedFeed = stored?.toStoredHomeFeed(stringProvider)
-                ?.withoutSuppressedContinueWatching(suppressedAnimeIds)
+                ?.withoutSuppressedContinueWatching(suppressionTimestamps)
                 ?: throw error
             syncRemoteContinueWatching(accountKey, languageCode, storedFeed.continueWatchingItems)
             val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
@@ -147,7 +147,7 @@ class YaniHomeFeedRepository(
         languageCode: String,
         watchSignature: String,
         displayWatchEntries: List<WatchProgressEntry>,
-        suppressedAnimeIds: Set<Int>,
+        suppressionTimestamps: Map<Int, Long>,
     ): HomeFeed {
         Log.i(
             TAG,
@@ -157,21 +157,21 @@ class YaniHomeFeedRepository(
         Log.i(TAG, "Feed dto ${dto.summaryForLog()}")
         val mappedFeed = dto
             .toHomeFeed(stringProvider, displayWatchEntries)
-            .withoutSuppressedContinueWatching(suppressedAnimeIds)
+            .withoutSuppressedContinueWatching(suppressionTimestamps)
         val enrichedItems = continueWatchingEnricher.enrich(
             items = mappedFeed.continueWatchingItems,
             watchEntries = displayWatchEntries,
         )
         val enrichedFeed = mappedFeed.copy(continueWatchingItems = enrichedItems)
-            .withoutSuppressedContinueWatching(suppressedAnimeIds)
+            .withoutSuppressedContinueWatching(suppressionTimestamps)
         syncRemoteContinueWatching(accountKey, languageCode, enrichedFeed.continueWatchingItems)
         val remoteWatchEntries = remoteWatchEntries(accountKey, languageCode)
         val feed = enrichedFeed
             .withMergedContinueWatching(remoteWatchEntries, displayWatchEntries)
-            .withoutSuppressedContinueWatching(suppressedAnimeIds)
+            .withoutSuppressedContinueWatching(suppressionTimestamps)
         val cacheFeed = enrichedFeed
             .withMergedContinueWatching(remoteWatchEntries, localEntries = emptyList())
-            .withoutSuppressedContinueWatching(suppressedAnimeIds)
+            .withoutSuppressedContinueWatching(suppressionTimestamps)
         Log.i(
             TAG,
             "Feed mapped ${feed.summaryForLog()} enriched=" +
@@ -234,12 +234,16 @@ class YaniHomeFeedRepository(
     )
 
     private fun HomeFeed.withoutSuppressedContinueWatching(
-        suppressedAnimeIds: Set<Int>,
+        suppressionTimestamps: Map<Int, Long>,
     ): HomeFeed =
-        if (suppressedAnimeIds.isEmpty()) {
+        if (suppressionTimestamps.isEmpty()) {
             this
         } else {
-            copy(continueWatchingItems = continueWatchingItems.filterNot { it.animeId in suppressedAnimeIds })
+            copy(
+                continueWatchingItems = continueWatchingItems.filterNot { item ->
+                    suppressionTimestamps[item.animeId]?.let { it >= item.updatedAt } == true
+                }
+            )
         }
 
     private fun mergeContinueWatchingItems(
@@ -256,7 +260,10 @@ class YaniHomeFeedRepository(
         }
 
         ContinueWatchingMerge.bestByAnime(localEntries).forEach { local ->
-            result[local.animeId] = local.toHomeContinueWatchingItem()
+            val current = result[local.animeId]
+            if (current == null || local.updatedAt > current.updatedAt) {
+                result[local.animeId] = local.toHomeContinueWatchingItem()
+            }
         }
 
         return result.values.sortedByDescending { it.updatedAt }

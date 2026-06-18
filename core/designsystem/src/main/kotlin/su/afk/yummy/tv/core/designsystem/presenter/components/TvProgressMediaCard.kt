@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.presenter.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +64,6 @@ fun TvProgressMediaCard(
     Card(
         modifier = modifier
             .width(width)
-            .focusable(interactionSource = interactionSource)
             .focusProperties {
                 leftFocusRequester?.let { left = it }
                 rightFocusRequester?.let { right = it }

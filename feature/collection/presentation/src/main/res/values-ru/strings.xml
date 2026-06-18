@@ -2,4 +2,5 @@
 <resources>
     <string name="collection_load_error">Не удалось загрузить коллекцию</string>
     <string name="collection_catalog_load_error">Не удалось загрузить коллекции</string>
+    <string name="collection_vote_auth_required">Войдите, чтобы оценивать коллекции</string>
 </resources>

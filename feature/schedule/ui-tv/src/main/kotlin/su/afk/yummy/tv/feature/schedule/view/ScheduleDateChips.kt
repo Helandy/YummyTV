@@ -1,14 +1,13 @@
 package su.afk.yummy.tv.feature.schedule.view
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
@@ -17,35 +16,23 @@ import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
 internal fun ScheduleDateChips(
     groups: List<ScheduleDayUi>,
     selectedEpochDay: Long?,
-    selectedFocusRequester: FocusRequester,
+    chipFocusRequesters: Map<Long, FocusRequester>,
     downFocusRequester: FocusRequester,
     leftFocusRequester: FocusRequester?,
     onSelected: (Long) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    val chipFocusRequesters = remember { mutableStateMapOf<Long, FocusRequester>() }
 
     LazyRow(
         state = listState,
+        modifier = Modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
     ) {
         itemsIndexed(groups, key = { _, group -> group.date.toEpochDay() }) { index, group ->
             val selected = group.date.toEpochDay() == selectedEpochDay
             val epochDay = group.date.toEpochDay()
-            val chipFocusRequester = if (selected) {
-                selectedFocusRequester
-            } else {
-                remember(epochDay) { FocusRequester() }
-            }
-            DisposableEffect(epochDay, chipFocusRequester) {
-                chipFocusRequesters[epochDay] = chipFocusRequester
-                onDispose {
-                    if (chipFocusRequesters[epochDay] == chipFocusRequester) {
-                        chipFocusRequesters.remove(epochDay)
-                    }
-                }
-            }
+            val chipFocusRequester = chipFocusRequesters.getValue(epochDay)
             ScheduleDateChip(
                 group = group,
                 selected = selected,

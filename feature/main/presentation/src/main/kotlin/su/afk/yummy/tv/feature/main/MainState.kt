@@ -23,8 +23,8 @@ object MainState {
 
     /** Пользовательские действия в корневом контейнере приложения. */
     sealed class Event : UiEvent {
-        /** Фокус на TV переместился на корневую вкладку. */
-        data class TvRootFocused(val root: RootTab) : Event()
+        /** Корневая TV вкладка выбрана из меню. */
+        data class TvRootSelected(val root: RootTab) : Event()
     }
 
     sealed class Effect : UiEffect {

@@ -58,6 +58,7 @@ internal fun ContinueWatchingSection(
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
     var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var currentFocusedIndex by remember { mutableIntStateOf(-1) }
     val focusRequesters = remember(items.size, rowFocusRequester) {
         List(items.size) { index ->
             if (index == 0) rowFocusRequester ?: FocusRequester() else FocusRequester()
@@ -92,6 +93,7 @@ internal fun ContinueWatchingSection(
     }
 
     fun rememberFocusedItem(index: Int, entry: HomeContinueWatchingItem) {
+        currentFocusedIndex = index
         lastFocusedIndex = index
         lastFocusedKey = entry.focusKey()
     }
@@ -114,7 +116,10 @@ internal fun ContinueWatchingSection(
                 .onFocusChanged { state ->
                     val hadFocus = rowHasFocus.value
                     rowHasFocus.value = state.hasFocus
-                    if (!state.hasFocus) cancelPendingFocusMove()
+                    if (!state.hasFocus) {
+                        currentFocusedIndex = -1
+                        cancelPendingFocusMove()
+                    }
                     if (state.hasFocus && !hadFocus) {
                         isRestoring.value = true
                         focusMoveJob?.cancel()
@@ -130,7 +135,10 @@ internal fun ContinueWatchingSection(
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
                         Key.DirectionLeft -> {
-                            if (lastFocusedIndex <= 0) {
+                            val focusedIndex = currentFocusedIndex
+                                .takeIf { it in items.indices }
+                                ?: lastFocusedIndex
+                            if (focusedIndex <= 0) {
                                 cancelPendingFocusMove()
                                 mainMenuFocusRequester?.requestFocus()
                                 mainMenuFocusRequester != null
@@ -166,6 +174,7 @@ internal fun ContinueWatchingSection(
                 ContinueWatchingCard(
                     entry = entry,
                     onFocused = {
+                        currentFocusedIndex = index
                         if (rowHasFocus.value && !isRestoring.value) rememberFocusedItem(index, entry)
                     },
                     onClick = {

@@ -369,13 +369,10 @@ class SettingsStore(private val context: Context) {
         }
     }
 
-    suspend fun consumeLegacyYaniAccessToken(): String {
-        var token = ""
+    suspend fun clearLegacyYaniAccessToken() {
         context.dataStore.edit { prefs ->
-            token = prefs[yaniAccessTokenKey].orEmpty()
             prefs.remove(yaniAccessTokenKey)
         }
-        return token
     }
 
     suspend fun clearYaniAccount() {

@@ -16,7 +16,10 @@ object ContinueWatchingMerge {
         }
 
         bestByAnime(localEntries).forEach { local ->
-            result[local.animeId] = local
+            val current = result[local.animeId]
+            if (current == null || local.updatedAt > current.updatedAt) {
+                result[local.animeId] = local
+            }
         }
 
         return result.values.sortedByDescending { it.updatedAt }

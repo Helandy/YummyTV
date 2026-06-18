@@ -33,6 +33,8 @@ internal class TvMainFocusController(
         private set
     var isContentFocusInitialized by mutableStateOf(false)
         private set
+    var contentHasFocus by mutableStateOf(false)
+        private set
     var pendingContentFocusRequest by mutableStateOf<PendingContentFocusRequest?>(null)
         private set
     private var contentFocusRequestToken by mutableIntStateOf(0)
@@ -97,6 +99,7 @@ internal class TvMainFocusController(
         hasFocus: Boolean,
         currentPreferredContentFocusRequester: FocusRequester?,
     ) {
+        contentHasFocus = hasFocus
         if (hasFocus) {
             isContentFocusInitialized = true
         }
@@ -108,17 +111,20 @@ internal class TvMainFocusController(
     fun onInitialContentFocusRequested(focused: Boolean) {
         initialContentFocusRequested = true
         isContentFocusInitialized = focused
+        contentHasFocus = focused
     }
 
     fun onMainMenuShownAgain() {
         restoreContentFocusAfterMenuShown = true
         isContentFocusInitialized = false
+        contentHasFocus = false
         menuNavigationFocusLocked = false
     }
 
     fun onContentFocusRestoredAfterMenuShown() {
         restoreContentFocusAfterMenuShown = false
         isContentFocusInitialized = true
+        contentHasFocus = true
     }
 
     fun clearPendingContentFocusRequest(token: Int) {
@@ -186,11 +192,16 @@ internal fun TvMainFocusEffects(
         focusController.restoreContentFocusAfterMenuShown,
     ) {
         if (!showMainMenu || !focusController.restoreContentFocusAfterMenuShown) return@LaunchedEffect
+        val restoreRequester = currentPreferredContentFocusRequester
+            ?: focusController.contentFocusRequester
         var restored = false
-        repeat(FOCUS_RESTORE_ATTEMPTS) {
-            restored = requestFocusOnFrameBoundary(focusController.contentFocusRequester)
-            if (restored) return@repeat
-            withFrameNanos { }
+        var attempt = 0
+        while (!restored && attempt < FOCUS_RESTORE_ATTEMPTS) {
+            restored = requestFocusOnFrameBoundary(restoreRequester)
+            if (!restored) {
+                withFrameNanos { }
+            }
+            attempt += 1
         }
         if (restored) {
             focusController.onContentFocusRestoredAfterMenuShown()
@@ -207,13 +218,18 @@ internal fun TvMainFocusEffects(
         if (request.root != selectedRoot || !contentFocusKey.isContentFocusKeyFor(selectedRoot)) {
             return@LaunchedEffect
         }
+        val restoreRequester = currentPreferredContentFocusRequester
+            ?: focusController.contentFocusRequester
         withFrameNanos { }
         withFrameNanos { }
         var restored = false
-        repeat(FOCUS_RESTORE_ATTEMPTS) {
-            restored = requestFocusOnFrameBoundary(focusController.contentFocusRequester)
-            if (restored) return@repeat
-            withFrameNanos { }
+        var attempt = 0
+        while (!restored && attempt < FOCUS_RESTORE_ATTEMPTS) {
+            restored = requestFocusOnFrameBoundary(restoreRequester)
+            if (!restored) {
+                withFrameNanos { }
+            }
+            attempt += 1
         }
         if (restored) {
             focusController.clearPendingContentFocusRequest(request.token)

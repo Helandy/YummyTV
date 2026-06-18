@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
@@ -62,6 +62,8 @@ internal fun CollectionGridPane(
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
     onVote: (CollectionVote) -> Unit,
     onRetry: () -> Unit,
+    loadingFocusRequester: FocusRequester,
+    retryFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -70,7 +72,15 @@ internal fun CollectionGridPane(
             .background(MaterialTheme.colorScheme.background),
     ) {
         when {
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            isLoading -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .focusRequester(loadingFocusRequester)
+                    .focusable(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
 
             error != null -> Column(
                 modifier = Modifier.align(Alignment.Center),
@@ -78,7 +88,11 @@ internal fun CollectionGridPane(
             ) {
                 Text(text = error, color = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.height(12.dp))
-                Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                TvRetryButton(
+                    text = stringResource(R.string.retry),
+                    modifier = Modifier.focusRequester(retryFocusRequester),
+                    onClick = onRetry,
+                )
             }
 
             collection != null -> CollectionGrid(

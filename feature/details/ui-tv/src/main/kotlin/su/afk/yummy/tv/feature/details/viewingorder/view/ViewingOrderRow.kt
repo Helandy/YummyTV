@@ -12,16 +12,26 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyListKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 import su.afk.yummy.tv.feature.details.R
 
@@ -33,17 +43,59 @@ internal fun ViewingOrderRow(
     currentAnimeId: Int,
     onAnimeSelected: (Int) -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
     val rowState = rememberLazyListState()
-    val focusRequesters = remember(items.map { it.animeId }) {
+    val itemIds = remember(items) { items.map { it.animeId } }
+    val focusRequesters = remember(itemIds) {
         List(items.size) { FocusRequester() }
     }
-    val initialFocusIndex = remember(items, currentAnimeId) {
+    val itemFocusRequesters = remember(itemIds, focusRequesters) {
+        itemIds.zip(focusRequesters).toMap()
+    }
+    val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(currentAnimeId)
+    val initialFocusIndex = remember(itemIds, currentAnimeId) {
         items.indexOfFirst { it.animeId == currentAnimeId }.takeIf { it >= 0 } ?: 0
     }
-    LaunchedEffect(initialFocusIndex, items.size) {
-        if (focusRequesters.isNotEmpty()) {
-            rowState.scrollToItem(initialFocusIndex)
-            runCatching { focusRequesters[initialFocusIndex].requestFocus() }
+    var hasRememberedFocus by rememberSaveable(currentAnimeId) { mutableStateOf(false) }
+    var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
+
+    fun rememberFocusedItem(index: Int) {
+        itemIds.getOrNull(index)?.let { itemId ->
+            hasRememberedFocus = true
+            focusRestoreState.onItemFocused(itemId, index)
+        }
+    }
+
+    fun restoreTargetIndex(): Int {
+        if (items.isEmpty()) return 0
+        if (!hasRememberedFocus) return initialFocusIndex
+        return focusRestoreState.targetIndex(itemIds)?.coerceIn(0, items.lastIndex)
+            ?: initialFocusIndex
+    }
+
+    fun requestItemFocus(index: Int) {
+        if (items.isEmpty()) return
+        val target = index.coerceIn(0, items.lastIndex)
+        rememberFocusedItem(target)
+        restoreFocusJob = launchTvLazyListKeyFocusRestore(
+            previousJob = restoreFocusJob,
+            scope = scope,
+            restoreState = focusRestoreState,
+            keys = itemIds,
+            listState = rowState,
+            itemFocusRequesters = itemFocusRequesters,
+            fallbackFocusRequester = focusRequesters.getOrNull(target) ?: FocusRequester.Default,
+            fallbackIndex = target,
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { restoreFocusJob?.cancel() }
+    }
+
+    LaunchedEffect(itemIds) {
+        if (items.isNotEmpty()) {
+            requestItemFocus(restoreTargetIndex())
         }
     }
 
@@ -74,13 +126,22 @@ internal fun ViewingOrderRow(
                 state = rowState,
                 contentPadding = PaddingValues(horizontal = sideInset),
                 horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tvFocusRestorer(
+                        fallback = focusRequesters.getOrNull(restoreTargetIndex())
+                            ?: FocusRequester.Default,
+                    ),
             ) {
                 itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->
                     ViewingOrderCard(
                         index = index + 1,
                         item = item,
-                        onClick = { onAnimeSelected(item.animeId) },
+                        onClick = {
+                            rememberFocusedItem(index)
+                            onAnimeSelected(item.animeId)
+                        },
+                        onFocused = { rememberFocusedItem(index) },
                         modifier = Modifier.focusRequester(focusRequesters[index]),
                     )
                 }

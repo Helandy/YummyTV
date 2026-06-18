@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.presenter.focus
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -98,6 +99,41 @@ fun <Key : Any> launchTvLazyGridKeyFocusRestore(
     }
 }
 
+fun <Key : Any> launchTvLazyListKeyFocusRestore(
+    previousJob: Job?,
+    scope: CoroutineScope,
+    restoreState: TvLazyFocusRestoreState<Key>,
+    keys: List<Key>,
+    listState: LazyListState,
+    itemFocusRequesters: Map<Key, FocusRequester>,
+    fallbackFocusRequester: FocusRequester,
+    fallbackIndex: Int = 0,
+    lazyIndexOffset: Int = 0,
+    onRestoreFinished: () -> Unit = {},
+): Job {
+    previousJob?.cancel()
+    return scope.launch {
+        try {
+            val targetIndex = restoreState.targetIndex(keys)
+                ?: fallbackIndex.takeIf { it >= 0 && it < keys.size }
+            val focusRestored = targetIndex?.let { index ->
+                restoreTvLazyListKeyFocus(
+                    itemKey = keys[index],
+                    itemIndex = index + lazyIndexOffset,
+                    listState = listState,
+                    itemFocusRequesters = itemFocusRequesters,
+                )
+            } ?: false
+            if (!focusRestored) {
+                requestFocusUntilTimeout(fallbackFocusRequester)
+            }
+            onRestoreFinished()
+        } catch (e: CancellationException) {
+            throw e
+        }
+    }
+}
+
 private suspend fun <Key : Any> restoreTvLazyGridKeyFocus(
     itemKey: Key,
     itemIndex: Int,
@@ -110,6 +146,14 @@ private suspend fun <Key : Any> restoreTvLazyGridKeyFocus(
         repeat(TvLazyGridFocusRestoreInitialFrameWait) {
             withFrameNanos { }
         }
+        if (
+            gridState.layoutInfo.visibleItemsInfo.any { itemInfo ->
+                itemInfo.key == itemKey || itemInfo.index == itemIndex
+            } &&
+            requestFocusForFrames(itemFocusRequester)
+        ) {
+            return@withTimeoutOrNull true
+        }
         gridState.scrollToItem(itemIndex)
         snapshotFlow {
             gridState.layoutInfo.visibleItemsInfo.any { itemInfo ->
@@ -119,6 +163,49 @@ private suspend fun <Key : Any> restoreTvLazyGridKeyFocus(
 
         requestFocusUntilTimeout(itemFocusRequester)
     } ?: false
+}
+
+private suspend fun <Key : Any> restoreTvLazyListKeyFocus(
+    itemKey: Key,
+    itemIndex: Int,
+    listState: LazyListState,
+    itemFocusRequesters: Map<Key, FocusRequester>,
+): Boolean {
+    val itemFocusRequester = itemFocusRequesters[itemKey] ?: return false
+
+    return withTimeoutOrNull(TvLazyGridFocusRestoreTimeoutMillis) {
+        repeat(TvLazyGridFocusRestoreInitialFrameWait) {
+            withFrameNanos { }
+        }
+        if (
+            listState.layoutInfo.visibleItemsInfo.any { itemInfo ->
+                itemInfo.key == itemKey || itemInfo.index == itemIndex
+            } &&
+            requestFocusForFrames(itemFocusRequester)
+        ) {
+            return@withTimeoutOrNull true
+        }
+        listState.scrollToItem(itemIndex)
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo.any { itemInfo ->
+                itemInfo.key == itemKey || itemInfo.index == itemIndex
+            }
+        }.first { it }
+
+        requestFocusUntilTimeout(itemFocusRequester)
+    } ?: false
+}
+
+private suspend fun requestFocusForFrames(
+    requester: FocusRequester,
+): Boolean {
+    repeat(TvLazyGridFocusRestoreInitialFrameWait) {
+        withFrameNanos { }
+        if (runCatching { requester.requestFocus() }.getOrDefault(false)) {
+            return true
+        }
+    }
+    return false
 }
 
 private suspend fun requestFocusUntilTimeout(

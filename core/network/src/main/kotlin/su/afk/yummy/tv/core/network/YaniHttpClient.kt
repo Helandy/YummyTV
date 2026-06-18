@@ -38,9 +38,9 @@ fun buildYaniHttpClient(
 
     return HttpClient {
         install(HttpTimeout) {
-            connectTimeoutMillis = 10_000
-            requestTimeoutMillis = 20_000
-            socketTimeoutMillis = 20_000
+            connectTimeoutMillis = 20_000
+            requestTimeoutMillis = 40_000
+            socketTimeoutMillis = 40_000
         }
         install(ContentNegotiation) {
             json(

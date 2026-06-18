@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusableButton
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.feature.library.R
 
 @Composable
@@ -40,7 +40,7 @@ internal fun LibraryRemoteErrorBanner(
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier.weight(1f),
         )
-        TvFocusableButton(
+        TvRetryButton(
             text = stringResource(R.string.library_retry),
             enabled = !isLoading,
             onClick = onRetry,

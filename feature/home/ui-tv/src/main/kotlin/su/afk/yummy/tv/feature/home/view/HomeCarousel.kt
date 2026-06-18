@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
 @Composable
@@ -49,10 +50,13 @@ internal fun HomeCarousel(
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onCarouselFocused: () -> Unit = {},
+    onCarouselFocusSettled: () -> Unit = {},
     onMoveUp: (() -> Unit)? = null,
     onMoveDown: (() -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
+
+    val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
 
     if (items.size == 1) {
         val item = items[0]
@@ -65,7 +69,11 @@ internal fun HomeCarousel(
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
-                        Key.DirectionLeft,
+                        Key.DirectionLeft -> {
+                            mainMenuFocusRequester?.requestFocus()
+                            mainMenuFocusRequester != null
+                        }
+
                         Key.DirectionRight -> true
 
                         Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
@@ -94,7 +102,9 @@ internal fun HomeCarousel(
                 upFocusRequester = upFocusRequester,
                 downFocusRequester = downFocusRequester,
                 forceFocused = rowIsFocused,
-                onMoveLeft = {},
+                onMoveLeft = {
+                    mainMenuFocusRequester?.requestFocus()
+                },
                 onMoveRight = {},
                 onFocused = {
                     onCarouselFocused()
@@ -119,15 +129,16 @@ internal fun HomeCarousel(
 
     fun moveToPreviousPage() {
         if (pagerState.isScrollInProgress) return
+        if (pagerState.currentPage == 0) {
+            showCarouselFocus = false
+            mainMenuFocusRequester?.requestFocus()
+            return
+        }
         isCarouselFocused = true
         showCarouselFocus = true
         scope.launch {
             onCarouselFocused()
-            val previousPage = if (pagerState.currentPage == 0) {
-                items.lastIndex
-            } else {
-                pagerState.currentPage - 1
-            }
+            val previousPage = pagerState.currentPage - 1
             pagerState.animateScrollToPage(previousPage)
             notifyPageFocused(previousPage)
             onCarouselFocused()
@@ -179,7 +190,8 @@ internal fun HomeCarousel(
     LaunchedEffect(pagerState.currentPage, isCarouselFocused, isRestoringFocus) {
         if (isCarouselFocused && !isRestoringFocus) {
             onCarouselFocused()
-            scope.launch { requestPageFocus(pagerState.currentPage) }
+            requestPageFocus(pagerState.currentPage)
+            onCarouselFocusSettled()
         }
     }
 
@@ -254,6 +266,7 @@ internal fun HomeCarousel(
                     scope.launch {
                         val target = focusedPageIndex()
                         requestPageFocus(target)
+                        onCarouselFocusSettled()
                         isRestoringFocus = false
                     }
                 }

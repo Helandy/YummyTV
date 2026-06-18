@@ -93,6 +93,9 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun suppressedContinueWatchingAnimeIds(): Set<Int> =
         dao.suppressedAnimeIds().toSet()
 
+    suspend fun continueWatchingSuppressionTimestamps(): Map<Int, Long> =
+        dao.suppressions().associate { it.animeId to it.suppressedAt }
+
     suspend fun save(
         animeId: Int,
         episode: String,

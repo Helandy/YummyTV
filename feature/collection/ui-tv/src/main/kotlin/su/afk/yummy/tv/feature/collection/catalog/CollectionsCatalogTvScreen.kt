@@ -1,22 +1,25 @@
 package su.afk.yummy.tv.feature.collection.catalog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -25,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.feature.collection.R
 import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogGrid
@@ -36,15 +40,18 @@ fun CollectionsCatalogTvScreen(
     onEvent: (CollectionsCatalogState.Event) -> Unit,
 ) {
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
+    val loadingFocusRequester = remember { FocusRequester() }
     val retryFocusRequester = remember { FocusRequester() }
     val itemIds = remember(state.items) { state.items.map { it.id } }
     val itemFocusRequesters = remember(itemIds) { List(state.items.size) { FocusRequester() } }
     var lastFocusedItemId by rememberSaveable { mutableIntStateOf(0) }
+    var focusContentAfterInitialLoad by remember { mutableStateOf(false) }
     val focusedIndex = remember(itemIds, lastFocusedItemId) {
         itemIds.indexOf(lastFocusedItemId).takeIf { it >= 0 } ?: 0
     }
     val preferredContentFocusRequester = when {
         state.items.isNotEmpty() -> itemFocusRequesters.getOrNull(focusedIndex)
+        state.isLoading -> loadingFocusRequester
         state.error != null -> retryFocusRequester
         else -> null
     }
@@ -56,6 +63,35 @@ fun CollectionsCatalogTvScreen(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
+    LaunchedEffect(state.isLoading, state.items.isEmpty()) {
+        if (state.isLoading && state.items.isEmpty()) {
+            focusContentAfterInitialLoad = true
+        }
+    }
+
+    LaunchedEffect(
+        focusContentAfterInitialLoad,
+        state.isLoading,
+        itemIds,
+        focusedIndex,
+        itemFocusRequesters,
+    ) {
+        if (!focusContentAfterInitialLoad || state.isLoading || itemIds.isEmpty()) {
+            return@LaunchedEffect
+        }
+        val focusRequester = itemFocusRequesters.getOrNull(focusedIndex) ?: return@LaunchedEffect
+        var focused = false
+        repeat(3) {
+            if (!focused) {
+                withFrameNanos { }
+                focused = runCatching { focusRequester.requestFocus() }.getOrDefault(false)
+            }
+        }
+        if (focused) {
+            focusContentAfterInitialLoad = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -63,7 +99,11 @@ fun CollectionsCatalogTvScreen(
         contentAlignment = Alignment.Center,
     ) {
         when {
-            state.isLoading && state.items.isEmpty() -> TvLoadingScreen()
+            state.isLoading && state.items.isEmpty() -> TvLoadingScreen(
+                modifier = Modifier
+                    .focusRequester(loadingFocusRequester)
+                    .focusable(),
+            )
 
             shouldShowInitialError -> CollectionsCatalogMessage(
                 message = state.error.orEmpty(),
@@ -104,11 +144,10 @@ private fun CollectionsCatalogMessage(
     ) {
         Text(text = message, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
+        TvRetryButton(
+            text = stringResource(R.string.retry),
             modifier = Modifier.focusRequester(retryFocusRequester),
             onClick = onRetry,
-        ) {
-            Text(text = stringResource(R.string.retry))
-        }
+        )
     }
 }

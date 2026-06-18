@@ -16,7 +16,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,11 +31,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyListKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.feature.schedule.ScheduleState
 import su.afk.yummy.tv.feature.schedule.model.ScheduleTimelineUi
-import su.afk.yummy.tv.feature.schedule.utils.launchRestoreTimelineFocus
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -45,18 +46,48 @@ internal fun ScheduleTimeline(
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
     val selectedGroup = schedule.selectedGroup ?: return
-    val selectedChipFocusRequester = remember { FocusRequester() }
     val timelineEntryFocusRequester = remember { FocusRequester() }
     val listFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val releaseFocusRequesters = remember { mutableStateMapOf<String, FocusRequester>() }
+    val dayKeys = schedule.dayGroups.map { it.date.toEpochDay() }
+    val dateChipFocusRequesters = remember(dayKeys) {
+        dayKeys.associateWith { FocusRequester() }
+    }
+    val fallbackDateFocusRequester = remember { FocusRequester() }
+    val selectedChipFocusRequester = schedule.selectedEpochDay
+        ?.let(dateChipFocusRequesters::get)
+        ?: fallbackDateFocusRequester
+    val releaseKeys = selectedGroup.items.map { it.focusKey }
+    val focusRestoreState = rememberTvLazyFocusRestoreState<String>(schedule.selectedEpochDay)
+    val releaseFocusRequesters = remember(schedule.selectedEpochDay, releaseKeys) {
+        releaseKeys.associateWith { FocusRequester() }
+    }
+    val firstReleaseFocusRequester = releaseKeys.firstOrNull()?.let(releaseFocusRequesters::get)
+    val releaseEntryFocusRequester = firstReleaseFocusRequester ?: selectedChipFocusRequester
+    val savedReleaseFocusRequester = focusRestoreState.savedKey?.let(releaseFocusRequesters::get)
+    val releaseRestoreFocusRequester = savedReleaseFocusRequester ?: releaseEntryFocusRequester
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var restoreFocusRequestToken by remember { mutableIntStateOf(0) }
     var handledRestoreFocusRequestToken by remember { mutableIntStateOf(0) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
+    var pendingRestoreFocusKey by remember(schedule.selectedEpochDay) { mutableStateOf<String?>(null) }
+
+    fun launchReleaseFocusRestore(): Job {
+        pendingRestoreFocusKey = focusRestoreState.savedKey
+        return launchTvLazyListKeyFocusRestore(
+            previousJob = restoreFocusJob,
+            scope = scope,
+            restoreState = focusRestoreState,
+            keys = releaseKeys,
+            listState = listState,
+            itemFocusRequesters = releaseFocusRequesters,
+            fallbackFocusRequester = releaseRestoreFocusRequester,
+            onRestoreFinished = { pendingRestoreFocusKey = null },
+        )
+    }
 
     DisposableEffect(Unit) {
         onDispose { restoreFocusJob?.cancel() }
@@ -65,6 +96,7 @@ internal fun ScheduleTimeline(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                pendingRestoreFocusKey = focusRestoreState.savedKey
                 restoreFocusRequestToken += 1
             }
         }
@@ -73,30 +105,29 @@ internal fun ScheduleTimeline(
     }
 
     LaunchedEffect(
-        schedule.focusedReleaseKey,
         schedule.selectedEpochDay,
-        selectedGroup.items,
+        releaseKeys,
         restoreFocusRequestToken,
     ) {
         val hasPendingResumeRestore = restoreFocusRequestToken != handledRestoreFocusRequestToken
         if (hasPendingResumeRestore) {
-            if (hasPendingResumeRestore) {
-                handledRestoreFocusRequestToken = restoreFocusRequestToken
+            handledRestoreFocusRequestToken = restoreFocusRequestToken
+            if (focusRestoreState.savedKey == null) {
+                runCatching { selectedChipFocusRequester.requestFocus() }
+            } else {
+                restoreFocusJob = launchReleaseFocusRestore()
             }
-            restoreFocusJob = launchRestoreTimelineFocus(
-                previousJob = restoreFocusJob,
-                scope = scope,
-                focusedReleaseKey = schedule.focusedReleaseKey,
-                selectedGroup = selectedGroup,
-                listState = listState,
-                releaseFocusRequesters = releaseFocusRequesters,
-                fallbackFocusRequester = selectedChipFocusRequester,
-            )
         }
     }
 
-    DisposableEffect(timelineEntryFocusRequester, registerPreferredContentFocusRequester) {
-        registerPreferredContentFocusRequester?.invoke(timelineEntryFocusRequester)
+    val preferredContentFocusRequester = if (focusRestoreState.savedKey == null) {
+        timelineEntryFocusRequester
+    } else {
+        listFocusRequester
+    }
+
+    DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
+        registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose {
             registerPreferredContentFocusRequester?.invoke(null)
         }
@@ -107,7 +138,11 @@ internal fun ScheduleTimeline(
             .fillMaxSize()
             .focusProperties {
                 onEnter = {
-                    runCatching { selectedChipFocusRequester.requestFocus() }
+                    if (focusRestoreState.savedKey == null) {
+                        runCatching { selectedChipFocusRequester.requestFocus() }
+                    } else {
+                        restoreFocusJob = launchReleaseFocusRestore()
+                    }
                 }
             }
             .focusGroup()
@@ -123,7 +158,7 @@ internal fun ScheduleTimeline(
             modifier = Modifier
                 .focusRequester(timelineEntryFocusRequester)
                 .focusProperties {
-                    down = listFocusRequester
+                    down = releaseEntryFocusRequester
                     mainMenuFocusRequester?.let { left = it }
                     onEnter = {
                         runCatching { selectedChipFocusRequester.requestFocus() }
@@ -134,8 +169,8 @@ internal fun ScheduleTimeline(
             ScheduleDateChips(
                 groups = schedule.dayGroups,
                 selectedEpochDay = schedule.selectedEpochDay,
-                selectedFocusRequester = selectedChipFocusRequester,
-                downFocusRequester = listFocusRequester,
+                chipFocusRequesters = dateChipFocusRequesters,
+                downFocusRequester = releaseEntryFocusRequester,
                 leftFocusRequester = mainMenuFocusRequester,
                 onSelected = { onEvent(ScheduleState.Event.DateSelected(it)) },
             )
@@ -146,19 +181,15 @@ internal fun ScheduleTimeline(
             modifier = Modifier
                 .fillMaxSize()
                 .focusRequester(listFocusRequester)
+                .tvFocusRestorer(
+                    fallback = releaseRestoreFocusRequester,
+                    enabled = selectedGroup.items.isNotEmpty(),
+                )
                 .focusProperties {
                     mainMenuFocusRequester?.let { left = it }
                     up = selectedChipFocusRequester
                     onEnter = {
-                        restoreFocusJob = launchRestoreTimelineFocus(
-                            previousJob = restoreFocusJob,
-                            scope = scope,
-                            focusedReleaseKey = schedule.focusedReleaseKey,
-                            selectedGroup = selectedGroup,
-                            listState = listState,
-                            releaseFocusRequesters = releaseFocusRequesters,
-                            fallbackFocusRequester = selectedChipFocusRequester,
-                        )
+                        restoreFocusJob = launchReleaseFocusRestore()
                     }
                 },
             contentPadding = PaddingValues(bottom = 24.dp),
@@ -169,15 +200,7 @@ internal fun ScheduleTimeline(
                 key = { _, release -> release.focusKey },
             ) { index, release ->
                 val releaseKey = release.focusKey
-                val releaseFocusRequester = remember(releaseKey) { FocusRequester() }
-                DisposableEffect(releaseKey, releaseFocusRequester) {
-                    releaseFocusRequesters[releaseKey] = releaseFocusRequester
-                    onDispose {
-                        if (releaseFocusRequesters[releaseKey] == releaseFocusRequester) {
-                            releaseFocusRequesters.remove(releaseKey)
-                        }
-                    }
-                }
+                val releaseFocusRequester = releaseFocusRequesters.getValue(releaseKey)
                 ScheduleReleaseRow(
                     release = release,
                     now = schedule.now,
@@ -185,22 +208,18 @@ internal fun ScheduleTimeline(
                     focusRequester = releaseFocusRequester,
                     leftFocusRequester = mainMenuFocusRequester,
                     upFocusRequester = if (index == 0) selectedChipFocusRequester else null,
-                    selected = releaseKey == schedule.focusedReleaseKey,
+                    selected = releaseKey == focusRestoreState.savedKey,
                     onFocused = {
-                        onEvent(
-                            ScheduleState.Event.ReleaseFocused(
-                                releaseKey = releaseKey,
-                                epochDay = selectedGroup.date.toEpochDay(),
-                            )
-                        )
+                        val restoreKey = pendingRestoreFocusKey
+                        if (restoreKey == null || restoreKey == releaseKey) {
+                            focusRestoreState.onItemFocused(releaseKey, index)
+                            if (restoreKey == releaseKey) {
+                                pendingRestoreFocusKey = null
+                            }
+                        }
                     },
                     onClick = {
-                        onEvent(
-                            ScheduleState.Event.ReleaseFocused(
-                                releaseKey = releaseKey,
-                                epochDay = selectedGroup.date.toEpochDay(),
-                            )
-                        )
+                        focusRestoreState.onItemFocused(releaseKey, index)
                         onEvent(ScheduleState.Event.AnimeSelected(release.item.animeId))
                     },
                 )

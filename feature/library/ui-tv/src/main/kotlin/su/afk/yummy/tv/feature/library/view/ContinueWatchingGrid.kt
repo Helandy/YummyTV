@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.library.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
@@ -40,6 +44,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.library.R
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ContinueWatchingGrid(
     entries: List<HomeContinueWatchingItem>,
@@ -159,125 +164,133 @@ internal fun ContinueWatchingGrid(
         val gridSpacingWidth = horizontalSpacing * (gridColumnCount - 1).coerceAtLeast(0)
         val adaptiveCardWidth =
             (maxWidth - gridHorizontalPadding - gridSpacingWidth) / gridColumnCount
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Fixed(gridColumnCount),
-            modifier = Modifier
-                .fillMaxSize()
-                .focusRequester(gridFocusRequester)
-                .tvFocusRestorer(
-                    fallback = gridFallbackFocusRequester(),
-                    enabled = entries.isNotEmpty(),
-                )
-                .onFocusChanged { state ->
-                    val hadFocus = gridHasFocus
-                    gridHasFocus = state.hasFocus
-                    if (!state.hasFocus) {
-                        isRestoringFocus = false
-                        restoringFromMainMenu = false
-                    }
-                    if (state.isFocused && !hadFocus && entries.isNotEmpty() && !isRestoringFocus) {
-                        val target = if (restoringFromMainMenu) 0 else restoreTargetIndex()
-                        requestEntryFocus(target)
-                    }
-                }
-                .focusable(),
-            contentPadding = PaddingValues(
-                start = TvScreenPadding.Horizontal,
-                end = TvScreenPadding.Horizontal,
-                top = 16.dp,
-                bottom = TvScreenPadding.Vertical,
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+        CompositionLocalProvider(
+            LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
         ) {
-            itemsIndexed(
-                entries,
-                key = { _, entry -> entry.continueWatchingFocusKey() }) { index, entry ->
-                val episodeLabel = if (entry.episode.isNotBlank()) {
-                    stringResource(R.string.library_episode_number, entry.episode)
-                } else {
-                    stringResource(R.string.library_episode)
-                }
-                val stableOnClick = remember(entry, index) {
-                    {
-                        rememberFocusedEntry(index)
-                        onEntrySelected(entry)
-                    }
-                }
-                val stableOnDetails = remember(entry, index) {
-                    {
-                        rememberFocusedEntry(index)
-                        onDetailsSelected(entry)
-                    }
-                }
-                val stableOnFocused =
-                    remember(entry.animeId, index) { { rememberFocusedEntry(index) } }
-                val stableOnDelete = remember(entry.animeId, index) {
-                    {
-                        pendingFocusAfterDeleteIndex = index
-                        pendingDeletedEntryId = entry.animeId
-                        val immediateTarget =
-                            if (index < entries.lastIndex) index + 1 else index - 1
-                        if (immediateTarget >= 0) {
-                            rememberFocusedEntry(immediateTarget)
-                            runCatching { focusRequesters[immediateTarget].requestFocus() }
-                        } else {
-                            focusRestoreState.clear()
-                            runCatching { selectedTabFocusRequester.requestFocus() }
+            LazyVerticalGrid(
+                state = gridState,
+                columns = GridCells.Fixed(gridColumnCount),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .focusRequester(gridFocusRequester)
+                    .tvFocusRestorer(
+                        fallback = gridFallbackFocusRequester(),
+                        enabled = entries.isNotEmpty(),
+                    )
+                    .onFocusChanged { state ->
+                        val hadFocus = gridHasFocus
+                        gridHasFocus = state.hasFocus
+                        if (!state.hasFocus) {
+                            isRestoringFocus = false
+                            restoringFromMainMenu = false
                         }
-                        onRemoveWatchProgress(entry.animeId)
-                    }
-                }
-                ContinueWatchingGridCard(
-                    entry = entry,
-                    episodeLabel = episodeLabel,
-                    onClick = stableOnClick,
-                    onFocused = stableOnFocused,
-                    onDetails = stableOnDetails,
-                    onDelete = stableOnDelete,
-                    cardWidth = adaptiveCardWidth,
-                    modifier = Modifier
-                        .onFocusChanged { state ->
-                            if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
-                                rememberFocusedEntry(index)
-                            }
+                        if (state.isFocused && !hadFocus && entries.isNotEmpty() && !isRestoringFocus) {
+                            val target = if (restoringFromMainMenu) 0 else restoreTargetIndex()
+                            requestEntryFocus(target)
                         }
-                        .tvFocusRestorer(fallback = focusRequesters[index]),
-                    cardModifier = Modifier
-                        .focusRequester(focusRequesters[index])
-                        .focusProperties {
-                            if (index % gridColumnCount == 0) {
-                                mainMenuFocusRequester?.let { left = it }
-                            }
-                            if (index < gridColumnCount) {
-                                up = selectedTabFocusRequester
-                            }
-                        },
-                    detailsModifier = Modifier
-                        .focusRequester(detailsFocusRequesters[index])
-                        .focusProperties {
-                            up = focusRequesters[index]
-                            right = deleteFocusRequesters[index]
-                            if (index % gridColumnCount == 0) {
-                                mainMenuFocusRequester?.let { left = it }
-                            }
-                        },
-                    deleteModifier = Modifier
-                        .focusRequester(deleteFocusRequesters[index])
-                        .focusProperties {
-                            left = detailsFocusRequesters[index]
-                            up = focusRequesters[index]
-                        },
-                    leftFocusRequester = if (index % gridColumnCount == 0) {
-                        mainMenuFocusRequester
+                    }
+                    .focusable(),
+                contentPadding = PaddingValues(
+                    start = TvScreenPadding.Horizontal,
+                    end = TvScreenPadding.Horizontal,
+                    top = 16.dp,
+                    bottom = TvScreenPadding.Vertical,
+                ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+            ) {
+                itemsIndexed(
+                    entries,
+                    key = { _, entry -> entry.continueWatchingFocusKey() }) { index, entry ->
+                    val episodeLabel = if (entry.episode.isNotBlank()) {
+                        stringResource(R.string.library_episode_number, entry.episode)
                     } else {
-                        null
-                    },
-                    rightFocusRequester = null,
-                    upFocusRequester = if (index < gridColumnCount) selectedTabFocusRequester else null,
-                    downFocusRequester = detailsFocusRequesters[index],
-                )
+                        stringResource(R.string.library_episode)
+                    }
+                    val stableOnClick = remember(entry, index) {
+                        {
+                            rememberFocusedEntry(index)
+                            onEntrySelected(entry)
+                        }
+                    }
+                    val stableOnDetails = remember(entry, index) {
+                        {
+                            rememberFocusedEntry(index)
+                            onDetailsSelected(entry)
+                        }
+                    }
+                    val stableOnFocused =
+                        remember(entry.animeId, index) { { rememberFocusedEntry(index) } }
+                    val stableOnDelete = remember(entry.animeId, index) {
+                        {
+                            pendingFocusAfterDeleteIndex = index
+                            pendingDeletedEntryId = entry.animeId
+                            val immediateTarget =
+                                if (index < entries.lastIndex) index + 1 else index - 1
+                            if (immediateTarget >= 0) {
+                                rememberFocusedEntry(immediateTarget)
+                                runCatching { focusRequesters[immediateTarget].requestFocus() }
+                            } else {
+                                focusRestoreState.clear()
+                                runCatching { selectedTabFocusRequester.requestFocus() }
+                            }
+                            onRemoveWatchProgress(entry.animeId)
+                        }
+                    }
+                    ContinueWatchingGridCard(
+                        entry = entry,
+                        episodeLabel = episodeLabel,
+                        onClick = stableOnClick,
+                        onFocused = stableOnFocused,
+                        onDetails = stableOnDetails,
+                        onDelete = stableOnDelete,
+                        cardWidth = adaptiveCardWidth,
+                        modifier = Modifier
+                            .onFocusChanged { state ->
+                                if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
+                                    rememberFocusedEntry(index)
+                                }
+                            }
+                            .tvFocusRestorer(fallback = focusRequesters[index]),
+                        cardModifier = Modifier
+                            .focusRequester(focusRequesters[index])
+                            .focusProperties {
+                                if (index % gridColumnCount == 0) {
+                                    mainMenuFocusRequester?.let { left = it }
+                                }
+                                if (index < gridColumnCount) {
+                                    up = selectedTabFocusRequester
+                                }
+                            },
+                        detailsModifier = Modifier
+                            .focusRequester(detailsFocusRequesters[index])
+                            .focusProperties {
+                                up = focusRequesters[index]
+                                right = deleteFocusRequesters[index]
+                                if (index % gridColumnCount == 0) {
+                                    mainMenuFocusRequester?.let { left = it }
+                                }
+                            },
+                        deleteModifier = Modifier
+                            .focusRequester(deleteFocusRequesters[index])
+                            .focusProperties {
+                                left = detailsFocusRequesters[index]
+                                up = focusRequesters[index]
+                            },
+                        leftFocusRequester = if (index % gridColumnCount == 0) {
+                            mainMenuFocusRequester
+                        } else {
+                            null
+                        },
+                        rightFocusRequester = null,
+                        upFocusRequester = if (index < gridColumnCount) {
+                            selectedTabFocusRequester
+                        } else {
+                            null
+                        },
+                        downFocusRequester = detailsFocusRequesters[index],
+                    )
+                }
             }
         }
     }

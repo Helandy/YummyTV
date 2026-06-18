@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusableButton
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.feature.home.R
 
 @Composable
@@ -44,7 +44,7 @@ internal fun HomeError(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(modifier = Modifier.height(22.dp))
-        TvFocusableButton(
+        TvRetryButton(
             text = stringResource(R.string.retry),
             onClick = onRetry,
         )

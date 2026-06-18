@@ -8,8 +8,6 @@ data class ScheduleTimelineUi(
     val now: ZonedDateTime = ZonedDateTime.now(zone),
     val dayGroups: List<ScheduleDayUi> = emptyList(),
     val selectedEpochDay: Long? = null,
-    val focusedReleaseKey: String? = null,
-    val focusedReleaseEpochDay: Long? = null,
 ) {
     val selectedGroup: ScheduleDayUi?
         get() = dayGroups.firstOrNull { it.date.toEpochDay() == selectedEpochDay }

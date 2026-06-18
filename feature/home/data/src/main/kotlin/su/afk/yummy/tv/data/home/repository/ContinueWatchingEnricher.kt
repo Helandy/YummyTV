@@ -5,18 +5,16 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
-import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import javax.inject.Inject
 import kotlin.math.abs
 
 class ContinueWatchingEnricher @Inject constructor(
-    private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
+    private val getAnimeVideos: GetAnimeVideosUseCase,
     private val getCachedAnimeDetails: GetCachedAnimeDetailsUseCase,
-    private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
 ) {
     suspend fun enrich(
         items: List<HomeContinueWatchingItem>,
@@ -24,70 +22,64 @@ class ContinueWatchingEnricher @Inject constructor(
     ): List<HomeContinueWatchingItem> {
         if (items.isEmpty()) return items
 
-        val sources = items
-            .filter { it.animeId > 0 }
-            .groupBy { it.animeId }
-            .mapValues { (animeId, animeItems) ->
-                loadSource(
-                    animeId = animeId,
-                    items = animeItems,
-                    watchEntries = watchEntries,
-                )
-            }
+        val animeIds = items
+            .map { it.animeId }
+            .filter { it > 0 }
+            .distinct()
+        val detailsByAnimeId = animeIds.associateWithCachedDetails()
+        val videoEnrichmentAnimeIds = items
+            .sortedByDescending { it.updatedAt }
+            .asSequence()
+            .map { it.animeId }
+            .filter { it > 0 }
+            .distinct()
+            .take(VIDEO_ENRICH_LIMIT)
+            .toSet()
+        val videosByAnimeId = videoEnrichmentAnimeIds.associateWithVideos()
 
         return items.map { item ->
             runCatching {
-                val source = sources[item.animeId] ?: return@map item
+                val details = detailsByAnimeId[item.animeId]
+                val videos = videosByAnimeId[item.animeId].orEmpty()
+                if (item.animeId !in videoEnrichmentAnimeIds) {
+                    return@map item.withDetailsPoster(details)
+                }
                 val matched = watchEntries.match(item)
-                val playbackVideo = source.videos.selectPlaybackVideo(item, matched)
-                val thumbnailVideo = source.videos.selectThumbnailVideo(item, playbackVideo)
+                val playbackVideo = videos.selectPlaybackVideo(item, matched)
+                val thumbnailVideo = videos.selectThumbnailVideo(item, playbackVideo)
                 item.enrichedWith(
                     playbackVideo = playbackVideo,
                     thumbnailVideo = thumbnailVideo,
                     matched = matched,
-                    details = source.details,
+                    details = details,
                 )
             }.getOrElse { item }
         }
     }
 
-    private suspend fun loadSource(
-        animeId: Int,
-        items: List<HomeContinueWatchingItem>,
-        watchEntries: List<WatchProgressEntry>,
-    ): ContinueWatchingEnrichmentSource {
-        val cachedVideos = loadCachedVideos(animeId)
-        val videos = if (items.any { it.needsVideoEnrichment(cachedVideos, watchEntries) }) {
-            loadVideos(animeId, cachedVideos)
-        } else {
-            cachedVideos
+    private suspend fun List<Int>.associateWithCachedDetails(): Map<Int, AnimeDetails?> {
+        val result = linkedMapOf<Int, AnimeDetails?>()
+        forEach { animeId ->
+            result[animeId] = loadCachedDetails(animeId)
         }
-
-        return ContinueWatchingEnrichmentSource(
-            videos = videos,
-            details = loadCachedDetails(animeId),
-        )
+        return result
     }
 
-    private suspend fun loadCachedVideos(animeId: Int): List<AnimeVideo> =
+    private suspend fun Set<Int>.associateWithVideos(): Map<Int, List<AnimeVideo>> {
+        val result = linkedMapOf<Int, List<AnimeVideo>>()
+        forEach { animeId ->
+            result[animeId] = loadVideos(animeId)
+        }
+        return result
+    }
+
+    private suspend fun loadVideos(animeId: Int): List<AnimeVideo> =
         try {
-            getCachedAnimeVideos(animeId).orEmpty()
+            getAnimeVideos(animeId)
         } catch (error: CancellationException) {
             throw error
         } catch (_: Throwable) {
             emptyList()
-        }
-
-    private suspend fun loadVideos(
-        animeId: Int,
-        fallback: List<AnimeVideo>,
-    ): List<AnimeVideo> =
-        try {
-            refreshAnimeVideos(animeId)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (_: Throwable) {
-            fallback
         }
 
     private suspend fun loadCachedDetails(animeId: Int): AnimeDetails? =
@@ -99,20 +91,8 @@ class ContinueWatchingEnricher @Inject constructor(
             null
         }
 
-    private fun HomeContinueWatchingItem.needsVideoEnrichment(
-        videos: List<AnimeVideo>,
-        watchEntries: List<WatchProgressEntry>,
-    ): Boolean {
-        if (videos.isNotEmpty() && !needsServerWatchedResolution()) return false
-        val matched = watchEntries.match(this)
-        return videoId <= 0 ||
-                episode.isBlank() ||
-                episodeUrl.isBlank() ||
-                durationMs <= 0L ||
-                playerName.isBlank() ||
-                dubbing.isBlank() ||
-                (screenshotUrl.isBlank() && matched?.screenshotUrl.isNullOrBlank())
-    }
+    private fun HomeContinueWatchingItem.withDetailsPoster(details: AnimeDetails?): HomeContinueWatchingItem =
+        copy(poster = poster ?: details?.poster?.toHomePoster())
 
     private fun HomeContinueWatchingItem.enrichedWith(
         playbackVideo: AnimeVideo?,
@@ -318,10 +298,9 @@ class ContinueWatchingEnricher @Inject constructor(
             mega = mega,
         )
 
-    private data class ContinueWatchingEnrichmentSource(
-        val videos: List<AnimeVideo>,
-        val details: AnimeDetails?,
-    )
+    private companion object {
+        const val VIDEO_ENRICH_LIMIT = 10
+    }
 }
 
 private fun Int.secondsToMillis(): Long = this * 1_000L

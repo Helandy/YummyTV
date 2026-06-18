@@ -46,6 +46,9 @@ fun TvMainScaffold(
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     var menuExpanded by remember { mutableStateOf(false) }
+    val menuCanFocus = focusController.menuCanFocus &&
+            focusController.previousShowMainMenu &&
+            !focusController.restoreContentFocusAfterMenuShown
 
     LaunchedEffect(showMainMenu) {
         if (!showMainMenu) {
@@ -53,7 +56,13 @@ fun TvMainScaffold(
         }
     }
 
-    BackHandler(enabled = showMainMenu && !menuExpanded && focusController.menuCanFocus) {
+    BackHandler(
+        enabled = showMainMenu &&
+                focusController.previousShowMainMenu &&
+                !menuExpanded &&
+                menuCanFocus &&
+                focusController.contentHasFocus,
+    ) {
         val focused = runCatching { selectedRootFocusRequester.requestFocus() }.getOrDefault(false)
         if (focused) {
             menuExpanded = true
@@ -111,7 +120,7 @@ fun TvMainScaffold(
                     rootFocusRequesters = focusController.rootFocusRequesters,
                     menuEnterFocusRequester = selectedRootFocusRequester,
                     rightFocusRequesterForRoot = focusController.rightFocusRequesterForRoot,
-                    canFocus = focusController.menuCanFocus,
+                    canFocus = menuCanFocus,
                     onMenuNavigationFocusLocked = focusController::updateMenuNavigationFocusLocked,
                     onMoveToContent = focusController::requestContentFocus,
                 )

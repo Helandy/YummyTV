@@ -2,7 +2,9 @@ package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,9 +23,12 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
@@ -39,6 +44,7 @@ internal fun SearchResultsPane(
     query: String,
     items: List<SearchItem>,
     isLoading: Boolean,
+    error: String?,
     canLoadMore: Boolean,
     filters: SearchFilters,
     draftFilters: SearchFilters,
@@ -47,6 +53,7 @@ internal fun SearchResultsPane(
     isLoadingFilterOptions: Boolean,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
+    onRetry: () -> Unit,
     onItemSelected: (SearchItem) -> Unit,
     onLoadMore: () -> Unit,
     onOpenFilters: () -> Unit,
@@ -87,11 +94,13 @@ internal fun SearchResultsPane(
     val gridFocusRequester = remember { FocusRequester() }
     val searchFieldFocusRequester = remember { FocusRequester() }
     val filterButtonFocusRequester = remember { FocusRequester() }
+    val retryFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
     val focusStateKey = remember(query, filters) { "${query.trim()}|${filters.focusStateKey()}" }
     val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(focusStateKey)
+    val initialError = error?.takeIf { items.isEmpty() }
     val itemFocusRequesters = remember(itemIds, focusRequesters) {
         itemIds.zip(focusRequesters).toMap()
     }
@@ -140,6 +149,7 @@ internal fun SearchResultsPane(
     val preferredContentFocusRequester = when {
         isFilterPanelOpen -> filterPanelInitialFocusRequester
         restoreFilterButtonFocusToken > 0 -> filterButtonFocusRequester
+        initialError != null && !isLoading -> retryFocusRequester
         items.isNotEmpty() -> gridFocusRequester
 
         else -> searchFieldFocusRequester
@@ -211,6 +221,13 @@ internal fun SearchResultsPane(
                 )
 
                 items.isEmpty() && isLoading -> TvLoadingScreen()
+                initialError != null -> SearchErrorMessage(
+                    message = initialError,
+                    retryFocusRequester = retryFocusRequester,
+                    onRetry = onRetry,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+
                 items.isEmpty() && (query.isNotBlank() || !filters.isEmpty) -> {
                     Text(
                         text = stringResource(R.string.search_empty),
@@ -244,6 +261,31 @@ internal fun SearchResultsPane(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SearchErrorMessage(
+    message: String,
+    retryFocusRequester: FocusRequester,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        TvRetryButton(
+            text = stringResource(R.string.search_retry),
+            modifier = Modifier.focusRequester(retryFocusRequester),
+            onClick = onRetry,
+        )
     }
 }
 

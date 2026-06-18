@@ -25,9 +25,7 @@ class AccountState {
         val stats: UserStats? = null,
         val notifications: List<ProfileNotification> = emptyList(),
         val notificationCounts: List<NotificationCount> = emptyList(),
-        val focusedNotificationId: Int? = null,
-        val restoreFocusedNotificationOnEnter: Boolean = false,
-        val focusedNotificationRestoreToken: Int = 0,
+        val isNotificationOpening: Boolean = false,
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
         val isCaptchaRequired: Boolean = false,
@@ -80,12 +78,6 @@ class AccountState {
 
         /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
-
-        /** Фокус переместился на уведомление с указанным идентификатором. */
-        data class NotificationFocused(val id: Int) : Event
-
-        /** UI завершил восстановление фокуса на уведомлении. */
-        data object NotificationFocusRestoreHandled : Event
 
         /** Пользователь отметил уведомление с указанным идентификатором прочитанным. */
         data class NotificationReadSelected(val id: Int) : Event

@@ -14,6 +14,7 @@ internal fun ViewingOrderCard(
     item: AnimeViewingOrderItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onFocused: () -> Unit = {},
 ) {
     val meta = listOfNotNull(
         item.year?.toString(),
@@ -30,5 +31,6 @@ internal fun ViewingOrderCard(
         rating = item.rating,
         relation = item.relation,
         meta = meta,
+        onFocused = onFocused,
     )
 }

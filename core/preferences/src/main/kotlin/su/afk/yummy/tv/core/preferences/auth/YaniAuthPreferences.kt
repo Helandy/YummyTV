@@ -31,7 +31,7 @@ class YaniAuthPreferences(
     private val migrationMutex = Mutex()
 
     val refreshToken: Flow<String> = callbackFlow {
-        migrateLegacyTokenIfNeeded()
+        clearLegacyTokenIfNeeded()
         trySend(readRefreshToken())
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == KEY_REFRESH_TOKEN) trySend(readRefreshToken())
@@ -57,11 +57,9 @@ class YaniAuthPreferences(
         }
     }
 
-    private suspend fun migrateLegacyTokenIfNeeded() {
+    private suspend fun clearLegacyTokenIfNeeded() {
         migrationMutex.withLock {
-            if (readRefreshToken().isNotBlank()) return
-            val legacyToken = settingsStore.consumeLegacyYaniAccessToken()
-            if (legacyToken.isNotBlank()) setRefreshToken(legacyToken)
+            settingsStore.clearLegacyYaniAccessToken()
         }
     }
 

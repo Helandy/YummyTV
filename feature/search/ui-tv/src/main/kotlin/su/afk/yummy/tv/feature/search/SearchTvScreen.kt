@@ -15,6 +15,7 @@ fun SearchTvScreen(
 ) {
     val onQueryChanged = remember(onEvent) { { q: String -> onEvent(SearchState.Event.QueryChanged(q)) } }
     val onSearchSubmitted = remember(onEvent) { { onEvent(SearchState.Event.SearchSubmitted) } }
+    val onRetry = remember(onEvent) { { onEvent(SearchState.Event.RetrySelected) } }
     val onItemSelected = remember(onEvent) { { item: SearchItem -> onEvent(SearchState.Event.ItemSelected(item.id)) } }
     val onLoadMore = remember(onEvent) { { onEvent(SearchState.Event.LoadMore) } }
     val onOpenFilters = remember(onEvent) { { onEvent(SearchState.Event.OpenFilters) } }
@@ -36,6 +37,7 @@ fun SearchTvScreen(
         query = state.query,
         items = state.items,
         isLoading = state.isLoading,
+        error = state.error,
         canLoadMore = state.canLoadMore,
         filters = state.filters,
         draftFilters = state.draftFilters,
@@ -44,6 +46,7 @@ fun SearchTvScreen(
         isLoadingFilterOptions = state.isLoadingFilterOptions,
         onQueryChanged = onQueryChanged,
         onSearchSubmitted = onSearchSubmitted,
+        onRetry = onRetry,
         onItemSelected = onItemSelected,
         onLoadMore = onLoadMore,
         onOpenFilters = onOpenFilters,

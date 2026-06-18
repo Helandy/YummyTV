@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
@@ -27,6 +28,7 @@ class CollectionViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getCollection: GetCollectionUseCase,
+    private val getAccountSession: GetAccountSessionUseCase,
     private val voteCollection: VoteCollectionUseCase,
     private val removeCollectionVote: RemoveCollectionVoteUseCase,
     private val stringProvider: StringProvider,
@@ -68,6 +70,7 @@ class CollectionViewModel @AssistedInject internal constructor(
         val collection = currentState.collection ?: return
         if (currentState.isVoteLoading) return
         viewModelScope.launch {
+            if (!canVoteCollection()) return@launch
             setState { copy(isVoteLoading = true) }
             val currentVote = currentState.collection?.vote ?: CollectionVote.NEUTRAL
             runCatching {
@@ -94,6 +97,17 @@ class CollectionViewModel @AssistedInject internal constructor(
                 },
             )
         }
+    }
+
+    private suspend fun canVoteCollection(): Boolean {
+        val session = getAccountSession()
+        if (session.isAuthorized && session.userId > 0) return true
+        setEffect(
+            CollectionState.Effect.ShowToast(
+                stringProvider.get(R.string.collection_vote_auth_required)
+            )
+        )
+        return false
     }
 
     private fun load() {

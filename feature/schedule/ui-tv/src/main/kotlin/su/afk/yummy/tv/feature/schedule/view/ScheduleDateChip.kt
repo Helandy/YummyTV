@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,16 +47,18 @@ internal fun ScheduleDateChip(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
+    val selectedFocused = selected && focused
+    val selectedIdle = selected && !focused
     val shape = RoundedCornerShape(10.dp)
     val background = when {
-        selected -> MaterialTheme.colorScheme.primary
+        selectedFocused -> MaterialTheme.colorScheme.primary
         focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
     }
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = when {
+        selectedFocused -> MaterialTheme.colorScheme.onPrimary
+        selected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Box(
@@ -85,11 +88,12 @@ internal fun ScheduleDateChip(
                 onClick = onSelected,
                 interactionSource = interactionSource,
                 shape = shape
-            )
-            .padding(8.dp),
+            ),
     ) {
         Column(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -110,10 +114,11 @@ internal fun ScheduleDateChip(
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
+                .padding(8.dp)
                 .size(22.dp)
                 .clip(RoundedCornerShape(11.dp))
                 .background(
-                    color = if (selected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
+                    color = if (selectedFocused) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
                     else MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
                 ),
             contentAlignment = Alignment.Center,
@@ -123,6 +128,15 @@ internal fun ScheduleDateChip(
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = contentColor,
+            )
+        }
+        if (selectedIdle) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(MaterialTheme.colorScheme.primary),
             )
         }
     }

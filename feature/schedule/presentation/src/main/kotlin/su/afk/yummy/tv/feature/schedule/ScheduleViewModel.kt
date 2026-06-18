@@ -10,7 +10,6 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.schedule.utils.toTimelineUi
-import su.afk.yummy.tv.feature.schedule.utils.withFocusedRelease
 import su.afk.yummy.tv.feature.schedule.utils.withSelectedDay
 import javax.inject.Inject
 
@@ -48,10 +47,6 @@ class ScheduleViewModel @Inject internal constructor(
                 }
             }
 
-            is ScheduleState.Event.ReleaseFocused -> setState {
-                copy(tvSchedule = tvSchedule.withFocusedRelease(event.releaseKey, event.epochDay))
-            }
-
             ScheduleState.Event.RetrySelected -> {
                 analytics.eventRetry()
                 load()
@@ -69,8 +64,7 @@ class ScheduleViewModel @Inject internal constructor(
                             isLoading = false,
                             days = days,
                             tvSchedule = days.toTimelineUi(
-                                focusedReleaseKey = tvSchedule.focusedReleaseKey,
-                                focusedReleaseEpochDay = tvSchedule.focusedReleaseEpochDay,
+                                selectedEpochDay = tvSchedule.selectedEpochDay,
                             ),
                         )
                     }

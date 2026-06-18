@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,7 +67,6 @@ internal fun HomeFeedCard(
                 if (focused && !isFocused) onFocused(item.id, animeId)
                 isFocused = focused
             }
-            .focusable(interactionSource = interactionSource)
             .focusProperties {
                 leftFocusRequester?.let { left = it }
                 upFocusRequester?.let { up = it }

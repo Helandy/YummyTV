@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.data.home.mapper
 
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.data.home.R
@@ -113,8 +111,6 @@ private fun YaniLastWatchDto.toContinueWatchingItem(
         ?.secondsToMillis()
         ?: matched?.durationMs
         ?: 0L
-    val screenshotUrl = screenshotString()
-        ?: matched?.screenshotUrl.orEmpty()
     return HomeContinueWatchingItem(
         animeId = id,
         animeTitle = safeTitle,
@@ -128,7 +124,7 @@ private fun YaniLastWatchDto.toContinueWatchingItem(
         updatedAt = date?.secondsToMillis() ?: matched?.updatedAt ?: 0L,
         playerName = matched?.playerName.orEmpty(),
         dubbing = matched?.dubbing.orEmpty(),
-        screenshotUrl = screenshotUrl,
+        screenshotUrl = matched?.screenshotUrl.orEmpty(),
     )
 }
 
@@ -210,9 +206,3 @@ private fun String.episodeKey(): String =
         .trimStart('0')
         .ifEmpty { trim() }
         .lowercase()
-
-private fun YaniLastWatchDto.screenshotString(): String? =
-    (screenshot as? JsonPrimitive)
-        ?.contentOrNull
-        ?.takeIf { it.isNotBlank() }
-        ?.toHttpsUrl()

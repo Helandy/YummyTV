@@ -2,6 +2,7 @@
 <resources>
     <string name="search_placeholder">Поиск аниме...</string>
     <string name="search_empty">Ничего не найдено</string>
+    <string name="search_retry">Повторить</string>
     <string name="search_filters">Фильтры</string>
     <string name="search_filters_with_count">Фильтры (%1$d)</string>
     <string name="search_filters_apply">Применить</string>

@@ -2,4 +2,5 @@
 <resources>
     <string name="collection_load_error">Could not load collection</string>
     <string name="collection_catalog_load_error">Could not load collections</string>
+    <string name="collection_vote_auth_required">Sign in to rate collections</string>
 </resources>

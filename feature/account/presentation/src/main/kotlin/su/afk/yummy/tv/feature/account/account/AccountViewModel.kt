@@ -58,6 +58,7 @@ class AccountViewModel @Inject internal constructor(
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
+                            isNotificationOpening = false,
                             hubError = null,
                         )
                     } else {
@@ -154,6 +155,7 @@ class AccountViewModel @Inject internal constructor(
                             stats = null,
                             notifications = emptyList(),
                             notificationCounts = emptyList(),
+                            isNotificationOpening = false,
                             isCaptchaRequired = false,
                             captchaChallengeId = captchaChallengeId + 1,
                             captchaError = null,
@@ -198,18 +200,6 @@ class AccountViewModel @Inject internal constructor(
             }
 
             is AccountState.Event.NotificationSelected -> openNotification(event.id)
-            is AccountState.Event.NotificationFocused -> {
-                if (currentState.focusedNotificationId != event.id) {
-                    setState { copy(focusedNotificationId = event.id) }
-                }
-            }
-
-            AccountState.Event.NotificationFocusRestoreHandled -> {
-                if (currentState.restoreFocusedNotificationOnEnter) {
-                    setState { copy(restoreFocusedNotificationOnEnter = false) }
-                }
-            }
-
             is AccountState.Event.NotificationReadSelected -> {
                 analytics.eventNotificationReadSelected(event.id)
                 updateNotification {
@@ -234,26 +224,30 @@ class AccountViewModel @Inject internal constructor(
     }
 
     private fun openNotification(id: Int) {
+        if (currentState.isNotificationOpening) return
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
         if (!notification.isNewEpisode) return
         val slug = notification.animeSlug ?: return
         viewModelScope.launch {
-            setState { copy(hubError = null) }
+            setState { copy(isNotificationOpening = true, hubError = null) }
             when (val result = notificationHandler.resolveAnimeId(slug)) {
                 is AccountOpenNotificationResult.Navigate -> {
                     analytics.eventNotificationSelected(notification, result.animeId)
                     setState {
                         copy(
-                            focusedNotificationId = id,
-                            restoreFocusedNotificationOnEnter = true,
-                            focusedNotificationRestoreToken = focusedNotificationRestoreToken + 1,
+                            isNotificationOpening = false,
                         )
                     }
                     nav.navigate(detailsNavigator.getDetailsDest(result.animeId))
                 }
 
                 AccountOpenNotificationResult.Failure -> {
-                    setState { copy(hubError = AccountUiError.OPEN_NOTIFICATION_FAILED) }
+                    setState {
+                        copy(
+                            isNotificationOpening = false,
+                            hubError = AccountUiError.OPEN_NOTIFICATION_FAILED,
+                        )
+                    }
                 }
             }
         }

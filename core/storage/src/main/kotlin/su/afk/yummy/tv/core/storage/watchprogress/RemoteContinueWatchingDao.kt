@@ -17,6 +17,7 @@ interface RemoteContinueWatchingDao {
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = remote_continue_watching.animeId
+                    AND suppressed.suppressedAt >= remote_continue_watching.updatedAt
             )
         ORDER BY updatedAt DESC
         """
@@ -34,6 +35,7 @@ interface RemoteContinueWatchingDao {
             AND NOT EXISTS (
                 SELECT 1 FROM continue_watching_suppressions AS suppressed
                 WHERE suppressed.animeId = remote_continue_watching.animeId
+                    AND suppressed.suppressedAt >= remote_continue_watching.updatedAt
             )
         ORDER BY updatedAt DESC
         """

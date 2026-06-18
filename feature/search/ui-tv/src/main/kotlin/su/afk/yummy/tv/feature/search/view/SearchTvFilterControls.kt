@@ -161,21 +161,25 @@ internal fun SelectableRow(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
     val borderColor = when {
-        focused -> MaterialTheme.colorScheme.primary
+        focused -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
         selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
         else -> Color.Transparent
     }
     val backgroundColor = when {
-        selected && focused -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-        focused -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+        focused -> MaterialTheme.colorScheme.primary
         selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
         else -> Color.Transparent
+    }
+    val contentColor = when {
+        focused -> MaterialTheme.colorScheme.onPrimary
+        selected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onBackground
     }
 
     Row(
         modifier = modifier
             .clip(shape)
-            .border(width = 2.dp, color = borderColor, shape = shape)
+            .border(width = if (focused) 3.dp else 2.dp, color = borderColor, shape = shape)
             .background(backgroundColor, shape)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 10.dp),
@@ -184,8 +188,8 @@ internal fun SelectableRow(
         Text(
             text = if (selected) stringResource(R.string.search_filter_selected, label) else label,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+            fontWeight = if (selected || focused) FontWeight.SemiBold else FontWeight.Normal,
+            color = contentColor,
         )
     }
 }

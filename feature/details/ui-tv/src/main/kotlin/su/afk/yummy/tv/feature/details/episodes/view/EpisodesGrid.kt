@@ -76,25 +76,32 @@ internal fun EpisodesGrid(
     var gridHasFocus by remember { mutableStateOf(false) }
     var isRestoringFocus by remember { mutableStateOf(false) }
 
-    fun requestEpisodeFocus(index: Int) {
+    fun requestEpisodeFocus(index: Int, scrollToEpisode: Boolean = true) {
         if (episodeGroups.isEmpty()) return
         val target = index.coerceIn(0, episodeGroups.lastIndex)
         lastFocusedIndex = target
         isRestoringFocus = true
         scope.launch {
-            val gridIndex = target + 1
-            gridState.scrollToItem(gridIndex)
-            snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
-                .first { it }
-            runCatching { focusRequesters[target].requestFocus() }
-            isRestoringFocus = false
+            try {
+                val gridIndex = target + 1
+                if (scrollToEpisode) {
+                    gridState.scrollToItem(gridIndex)
+                    snapshotFlow { gridState.layoutInfo.visibleItemsInfo.any { it.index == gridIndex } }
+                        .first { it }
+                } else {
+                    withFrameNanos { }
+                }
+                runCatching { focusRequesters[target].requestFocus() }
+            } finally {
+                isRestoringFocus = false
+            }
         }
     }
 
     LaunchedEffect(restoreFocusRequest) {
         if (restoreFocusRequest > 0) {
             withFrameNanos { }
-            requestEpisodeFocus(lastFocusedIndex)
+            requestEpisodeFocus(lastFocusedIndex, scrollToEpisode = false)
         }
     }
 

@@ -53,7 +53,7 @@ class MainViewModel @Inject constructor(
 
     override fun onEvent(event: MainState.Event) {
         when (event) {
-            is MainState.Event.TvRootFocused -> nav.switchRoot(
+            is MainState.Event.TvRootSelected -> nav.switchRoot(
                 root = event.root,
                 reselectPopToRoot = false,
             )

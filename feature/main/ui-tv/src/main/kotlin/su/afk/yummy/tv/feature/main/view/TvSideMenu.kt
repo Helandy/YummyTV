@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -76,21 +75,11 @@ internal fun TvSideMenu(
     }
 
     var focusedIndex by remember { mutableIntStateOf(focusedIndexFor(selectedRoot)) }
-    var menuFocusRestoreRoot by remember { mutableStateOf<RootTab?>(null) }
-    var menuFocusRestoreToken by remember { mutableIntStateOf(0) }
-
-    fun selectRootFromMenuFocus(root: RootTab) {
-        onMenuNavigationFocusLocked(true)
-        menuFocusRestoreRoot = root
-        menuFocusRestoreToken += 1
-        onEvent(MainState.Event.TvRootFocused(root))
-    }
 
     fun enterRootContent(root: RootTab) {
-        menuFocusRestoreRoot = null
         onMenuNavigationFocusLocked(false)
         if (selectedRoot != root) {
-            onEvent(MainState.Event.TvRootFocused(root))
+            onEvent(MainState.Event.TvRootSelected(root))
         }
         onMoveToContent(root)
     }
@@ -102,16 +91,12 @@ internal fun TvSideMenu(
     )
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    LaunchedEffect(selectedRoot, menuFocusRestoreRoot, menuFocusRestoreToken) {
+    LaunchedEffect(selectedRoot, expanded) {
         val selectedIndex = focusedIndexFor(selectedRoot)
         focusedIndex = selectedIndex
-        val shouldRestoreMenuFocus = menuFocusRestoreRoot == selectedRoot
-        if (shouldRestoreMenuFocus || expanded) {
-            repeat(if (shouldRestoreMenuFocus) 24 else 1) {
+        if (expanded) {
+            repeat(1) {
                 withFrameNanos { }
-                if (shouldRestoreMenuFocus && menuFocusRestoreRoot != selectedRoot) {
-                    return@LaunchedEffect
-                }
                 runCatching { rowFocusRequesters[selectedIndex].requestFocus() }
             }
         }
@@ -138,10 +123,8 @@ internal fun TvSideMenu(
                     Key.DirectionUp -> {
                         val target = (focusedIndex - 1).coerceAtLeast(0)
                         if (target != focusedIndex) {
-                            val targetRoot = rootForFocusedIndex(target)
                             focusedIndex = target
                             runCatching { rowFocusRequesters[target].requestFocus() }
-                            selectRootFromMenuFocus(targetRoot)
                         }
                         true
                     }
@@ -149,10 +132,8 @@ internal fun TvSideMenu(
                     Key.DirectionDown -> {
                         val target = (focusedIndex + 1).coerceAtMost(rowFocusRequesters.lastIndex)
                         if (target != focusedIndex) {
-                            val targetRoot = rootForFocusedIndex(target)
                             focusedIndex = target
                             runCatching { rowFocusRequesters[target].requestFocus() }
-                            selectRootFromMenuFocus(targetRoot)
                         }
                         true
                     }
@@ -196,9 +177,6 @@ internal fun TvSideMenu(
             canFocus = canFocus,
             onFocused = {
                 focusedIndex = 0
-                if (selectedRoot != RootTab.ACCOUNT) {
-                    selectRootFromMenuFocus(RootTab.ACCOUNT)
-                }
             },
             onMoveToContent = { _ ->
                 enterRootContent(RootTab.ACCOUNT)
@@ -228,9 +206,6 @@ internal fun TvSideMenu(
                 canFocus = canFocus,
                 onFocused = {
                     focusedIndex = rowIndex
-                    if (item.destination != selectedRoot) {
-                        selectRootFromMenuFocus(item.destination)
-                    }
                 },
                 onMoveToContent = { _ ->
                     enterRootContent(item.destination)
@@ -254,9 +229,6 @@ internal fun TvSideMenu(
             canFocus = canFocus,
             onFocused = {
                 focusedIndex = rowFocusRequesters.lastIndex
-                if (selectedRoot != RootTab.SETTINGS) {
-                    selectRootFromMenuFocus(RootTab.SETTINGS)
-                }
             },
             onMoveToContent = { _ ->
                 enterRootContent(RootTab.SETTINGS)

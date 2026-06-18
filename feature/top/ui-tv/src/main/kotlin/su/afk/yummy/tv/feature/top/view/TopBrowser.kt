@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +47,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFo
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
@@ -55,7 +55,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequ
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import kotlin.math.abs
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -90,6 +89,7 @@ internal fun TopBrowser(
     var gridHasFocus by remember { mutableStateOf(false) }
     var restoreFocusJob by remember { mutableStateOf<Job?>(null) }
     var pendingContentFocusType by remember { mutableStateOf<AnimeTopType?>(null) }
+    var observedSelectedType by remember { mutableStateOf(selectedType) }
     val firstItemFocusRequester = focusRequesters.firstOrNull()
     val selectedTypeFocusRequester =
         typeFocusRequesters.getOrNull(AnimeTopType.entries.indexOf(selectedType).coerceAtLeast(0))
@@ -209,6 +209,8 @@ internal fun TopBrowser(
     }
 
     LaunchedEffect(selectedType) {
+        if (observedSelectedType == selectedType) return@LaunchedEffect
+        observedSelectedType = selectedType
         focusRestoreState.clear()
         lastFocusedIndex = 0
         isRestoringFocus = false
@@ -299,7 +301,7 @@ internal fun TopBrowser(
                             .coerceAtLeast(1)
 
                     CompositionLocalProvider(
-                        LocalBringIntoViewSpec provides TvNoPivotBringIntoViewSpec,
+                        LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
                     ) {
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = cardWidth),
@@ -381,19 +383,3 @@ internal fun TopBrowser(
 private const val LOAD_MORE_THRESHOLD = 4
 private const val TOP_FOCUS_RESTORE_TIMEOUT_MILLIS = 500L
 private val TvFocusedCardBottomInset = 24.dp
-
-private object TvNoPivotBringIntoViewSpec : BringIntoViewSpec {
-    override fun calculateScrollDistance(
-        offset: Float,
-        size: Float,
-        containerSize: Float,
-    ): Float {
-        val trailingEdge = offset + size
-        return when {
-            offset >= 0f && trailingEdge <= containerSize -> 0f
-            offset < 0f && trailingEdge > containerSize -> 0f
-            abs(offset) < abs(trailingEdge - containerSize) -> offset
-            else -> trailingEdge - containerSize
-        }
-    }
-}

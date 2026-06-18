@@ -6,6 +6,9 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.data.home"
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
