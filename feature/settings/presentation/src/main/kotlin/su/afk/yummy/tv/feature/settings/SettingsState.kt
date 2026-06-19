@@ -30,6 +30,7 @@ class SettingsState {
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
+        val suggestNextEpisodeOnWatched: Boolean = true,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
@@ -68,6 +69,9 @@ class SettingsState {
 
         /** Пользователь переключил автопропуск опенингов и эндингов. */
         data object AutoSkipOpeningsEndingsToggled : Event
+
+        /** Пользователь переключил предложение следующей серии после просмотра 90%. */
+        data object SuggestNextEpisodeOnWatchedToggled : Event
 
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event

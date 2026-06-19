@@ -13,7 +13,11 @@ class RemoteContinueWatchingStore(
         language: String,
     ): Flow<List<WatchProgressEntry>> =
         dao.observe(accountKey, language)
-            .map { entries -> entries.map { it.toWatchProgressEntry() } }
+            .map { entries ->
+                entries
+                    .map { it.toWatchProgressEntry() }
+                    .let(ContinueWatchingMerge::filterDisplayable)
+            }
 
     suspend fun get(
         accountKey: String,
@@ -21,6 +25,14 @@ class RemoteContinueWatchingStore(
     ): List<WatchProgressEntry> =
         dao.getAll(accountKey, language)
             .map { it.toWatchProgressEntry() }
+            .let(ContinueWatchingMerge::filterDisplayable)
+
+    suspend fun latestUpdatedAt(
+        accountKey: String,
+        language: String,
+        animeId: Int,
+    ): Long =
+        dao.latestUpdatedAt(accountKey, language, animeId) ?: 0L
 
     suspend fun saveRemoteContinueWatching(
         accountKey: String,

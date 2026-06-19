@@ -7,7 +7,7 @@ object ContinueWatchingMerge {
         localEntries: List<WatchProgressEntry>,
     ): List<WatchProgressEntry> {
         val result = linkedMapOf<Int, WatchProgressEntry>()
-        feedEntries.forEach { entry ->
+        filterDisplayable(feedEntries).forEach { entry ->
             if (entry.animeId <= 0) return@forEach
             val current = result[entry.animeId]
             if (current == null || entry.updatedAt > current.updatedAt) {
@@ -15,7 +15,7 @@ object ContinueWatchingMerge {
             }
         }
 
-        bestByAnime(localEntries).forEach { local ->
+        bestByAnime(filterDisplayable(localEntries)).forEach { local ->
             val current = result[local.animeId]
             if (current == null || local.updatedAt > current.updatedAt) {
                 result[local.animeId] = local
@@ -25,6 +25,10 @@ object ContinueWatchingMerge {
         return result.values.sortedByDescending { it.updatedAt }
     }
 
+    /**
+     * Выбирает самую дальнюю local-запись внутри тайтла; свежесть применяется позже
+     * при конфликте local-vs-network.
+     */
     fun bestByAnime(entries: List<WatchProgressEntry>): List<WatchProgressEntry> {
         val result = linkedMapOf<Int, WatchProgressEntry>()
         entries.forEach { entry ->
@@ -64,6 +68,19 @@ object ContinueWatchingMerge {
         if (positionComparison != 0) return positionComparison > 0
 
         return entry.updatedAt > other.updatedAt
+    }
+
+    fun filterDisplayable(entries: List<WatchProgressEntry>): List<WatchProgressEntry> {
+        val watchedByAnime = entries
+            .filter(WatchProgressStore::isWatchedProgressEntry)
+            .groupBy { it.animeId }
+        return entries.filterNot { entry ->
+            WatchProgressStore.isWatchedProgressEntry(entry) ||
+                    watchedByAnime[entry.animeId].orEmpty().any { watched ->
+                        watched.updatedAt >= entry.updatedAt &&
+                                !isFurtherThan(entry, watched)
+                    }
+        }
     }
 
     private fun WatchProgressEntry.progressScore(): Float =

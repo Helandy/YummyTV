@@ -144,6 +144,9 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
         progressHandler.suppressContinueWatchingDisplay(state.progressContext())
     }
 
+    suspend fun shouldSuggestNextEpisodeOnWatched(): Boolean =
+        progressHandler.shouldSuggestNextEpisodeOnWatched()
+
     private fun PlayerState.State.progressContext(): PlayerProgressContext =
         PlayerProgressContext(
             animeId = animeId,

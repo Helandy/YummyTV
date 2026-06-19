@@ -311,9 +311,14 @@ class PlayerViewModel @AssistedInject internal constructor(
             durationMs = durationMs,
         ) ?: return
         val nextState = sourceSelectionHandler.nextEpisode(completionState)
-        val nextTargetRequest = nextState?.let(playbackProgressHandler::continueTargetRequest)
         viewModelScope.launch {
             playbackProgressHandler.saveProgress(request)
+            val nextTargetRequest =
+                if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
+                    nextState?.let(playbackProgressHandler::continueTargetRequest)
+                } else {
+                    null
+                }
             if (nextTargetRequest != null) {
                 playbackProgressHandler.saveContinueTarget(nextTargetRequest)
             } else {

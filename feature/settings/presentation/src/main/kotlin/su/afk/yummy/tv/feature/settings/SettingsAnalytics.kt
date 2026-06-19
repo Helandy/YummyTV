@@ -126,6 +126,18 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь включил или выключил предложение следующей серии после просмотра 90%.
+     *
+     * Параметры: target_state.
+     */
+    fun eventSuggestNextEpisodeOnWatchedToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_SUGGEST_NEXT_EPISODE_ON_WATCHED_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /**
      * Пользователь изменил язык контента Yani.
      *
      * Параметры: value.
@@ -192,6 +204,8 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_PREVIEW_CACHE_SIZE_SELECTED = "settings_preview_cache_size_selected"
         const val EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE =
             "settings_request_preview_channel_browsable"
+        const val EVENT_SUGGEST_NEXT_EPISODE_ON_WATCHED_TOGGLED =
+            "settings_suggest_next_episode_on_watched_toggled"
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
     }
 }

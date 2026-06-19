@@ -62,6 +62,20 @@ interface RemoteContinueWatchingDao {
         targetKey: String,
     ): RemoteContinueWatchingEntry?
 
+    @Query(
+        """
+        SELECT MAX(updatedAt) FROM remote_continue_watching
+        WHERE accountKey = :accountKey
+            AND language = :language
+            AND animeId = :animeId
+        """
+    )
+    suspend fun latestUpdatedAt(
+        accountKey: String,
+        language: String,
+        animeId: Int,
+    ): Long?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entry: RemoteContinueWatchingEntry)
 

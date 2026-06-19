@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.core.storage.watchprogress
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 
 class WatchProgressStore(private val dao: WatchProgressDao) {
 
@@ -68,16 +70,23 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     fun observeByAnimeId(animeId: Int): Flow<List<WatchProgressEntry>> = dao.observeByAnimeId(animeId)
 
     fun observeContinueWatching(): Flow<List<WatchProgressEntry>> =
-        dao.observeContinueWatching(
-            minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
-            maxProgress = WATCHED_PROGRESS,
-        )
+        combine(
+            dao.observeContinueWatching(
+                minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
+                maxProgress = WATCHED_PROGRESS,
+            ),
+            observeWatchedProgress(),
+        ) { candidates, watchedEntries ->
+            ContinueWatchingMerge.filterDisplayable(candidates + watchedEntries)
+        }
 
-    suspend fun continueWatching(): List<WatchProgressEntry> =
-        dao.continueWatching(
+    suspend fun continueWatching(): List<WatchProgressEntry> {
+        val candidates = dao.continueWatching(
             minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
             maxProgress = WATCHED_PROGRESS,
         )
+        return ContinueWatchingMerge.filterDisplayable(candidates + watchedProgress())
+    }
 
     suspend fun latestMeaningfulVideoProgress(limit: Int): List<WatchProgressEntry> =
         dao.latestMeaningfulVideoProgress(
@@ -96,6 +105,23 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun continueWatchingSuppressionTimestamps(): Map<Int, Long> =
         dao.suppressions().associate { it.animeId to it.suppressedAt }
 
+    fun observeContinueWatchingSuppressionTimestamps(): Flow<Map<Int, Long>> =
+        dao.observeSuppressions().map { entries ->
+            entries.associate { it.animeId to it.suppressedAt }
+        }
+
+    suspend fun watchedProgress(): List<WatchProgressEntry> =
+        dao.watchedProgress(
+            minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
+            minProgress = WATCHED_PROGRESS,
+        )
+
+    fun observeWatchedProgress(): Flow<List<WatchProgressEntry>> =
+        dao.observeAll().map { entries ->
+            entries
+                .filter(WatchProgressStore::isWatchedProgressEntry)
+        }
+
     suspend fun save(
         animeId: Int,
         episode: String,
@@ -103,14 +129,15 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         episodeUrl: String,
         positionMs: Long,
         durationMs: Long,
+        updatedAt: Long = System.currentTimeMillis(),
         animeTitle: String = "",
         posterUrl: String = "",
         playerName: String = "",
         dubbing: String = "",
         screenshotUrl: String = "",
     ) {
+        val existing = dao.get(animeId, episode)
         if (positionMs < MIN_CONTINUE_WATCHING_POSITION_MS) {
-            val existing = dao.get(animeId, episode)
             if (existing != null && isContinueTargetEntry(existing)) {
                 dao.deleteSuppression(animeId)
                 dao.save(
@@ -122,7 +149,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                         playerName = playerName.ifBlank { existing.playerName },
                         dubbing = dubbing.ifBlank { existing.dubbing },
                         screenshotUrl = screenshotUrl.ifBlank { existing.screenshotUrl },
-                        updatedAt = System.currentTimeMillis(),
+                        updatedAt = updatedAt,
                     )
                 )
                 return
@@ -135,15 +162,16 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
             WatchProgressEntry(
                 animeId = animeId,
                 episode = episode,
-                videoId = videoId,
-                episodeUrl = episodeUrl,
+                videoId = videoId.takeIf { it > 0 } ?: existing?.videoId ?: 0,
+                episodeUrl = episodeUrl.ifBlank { existing?.episodeUrl.orEmpty() },
                 positionMs = positionMs,
-                durationMs = durationMs,
-                animeTitle = animeTitle,
-                posterUrl = posterUrl,
-                playerName = playerName,
-                dubbing = dubbing,
-                screenshotUrl = screenshotUrl,
+                durationMs = durationMs.takeIf { it > 0L } ?: existing?.durationMs ?: 0L,
+                updatedAt = updatedAt,
+                animeTitle = animeTitle.ifBlank { existing?.animeTitle.orEmpty() },
+                posterUrl = posterUrl.ifBlank { existing?.posterUrl.orEmpty() },
+                playerName = playerName.ifBlank { existing?.playerName.orEmpty() },
+                dubbing = dubbing.ifBlank { existing?.dubbing.orEmpty() },
+                screenshotUrl = screenshotUrl.ifBlank { existing?.screenshotUrl.orEmpty() },
             )
         )
     }
@@ -153,6 +181,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         episode: String,
         videoId: Int = 0,
         episodeUrl: String,
+        updatedAt: Long = System.currentTimeMillis(),
         animeTitle: String = "",
         posterUrl: String = "",
         playerName: String = "",
@@ -169,6 +198,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                 episodeUrl = episodeUrl,
                 positionMs = 0L,
                 durationMs = 0L,
+                updatedAt = updatedAt,
                 animeTitle = animeTitle,
                 posterUrl = posterUrl,
                 playerName = playerName,
@@ -187,8 +217,17 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         dao.deleteByAnimeId(animeId)
     }
 
-    suspend fun suppressContinueWatchingDisplay(animeId: Int) {
+    suspend fun suppressContinueWatchingDisplay(
+        animeId: Int,
+        suppressedAt: Long = System.currentTimeMillis(),
+    ) {
         if (animeId <= 0) return
-        dao.saveSuppression(ContinueWatchingSuppressionEntry(animeId = animeId))
+        dao.saveSuppression(
+            ContinueWatchingSuppressionEntry(
+                animeId = animeId,
+                suppressedAt = suppressedAt,
+            )
+        )
     }
+
 }

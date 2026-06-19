@@ -181,6 +181,23 @@ interface WatchProgressDao {
     @Query("SELECT * FROM continue_watching_suppressions")
     suspend fun suppressions(): List<ContinueWatchingSuppressionEntry>
 
+    @Query("SELECT * FROM continue_watching_suppressions")
+    fun observeSuppressions(): Flow<List<ContinueWatchingSuppressionEntry>>
+
+    @Query(
+        """
+        SELECT * FROM watch_progress
+        WHERE animeId > 0
+            AND durationMs > 0
+            AND positionMs >= :minPositionMs
+            AND CAST(positionMs AS REAL) / durationMs >= :minProgress
+        """
+    )
+    suspend fun watchedProgress(
+        minPositionMs: Long,
+        minProgress: Float,
+    ): List<WatchProgressEntry>
+
     @Query("DELETE FROM continue_watching_suppressions WHERE animeId = :animeId")
     suspend fun deleteSuppression(animeId: Int)
 

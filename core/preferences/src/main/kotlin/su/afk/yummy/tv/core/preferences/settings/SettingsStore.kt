@@ -28,6 +28,7 @@ data class SettingsSnapshot(
     val watchNextEnabled: Boolean,
     val previewCacheSize: PreviewCacheSize,
     val autoSkipOpeningsEndings: Boolean,
+    val suggestNextEpisodeOnWatched: Boolean,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,
@@ -59,6 +60,8 @@ class SettingsStore(private val context: Context) {
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    private val suggestNextEpisodeOnWatchedKey =
+        booleanPreferencesKey("suggest_next_episode_on_watched")
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
@@ -117,6 +120,10 @@ class SettingsStore(private val context: Context) {
 
     val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[autoSkipOpeningsEndingsKey] ?: false
+    }
+
+    val suggestNextEpisodeOnWatched: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[suggestNextEpisodeOnWatchedKey] ?: true
     }
 
     val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
@@ -224,6 +231,7 @@ class SettingsStore(private val context: Context) {
                     ?: PreviewCacheSize.MB_100
             },
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
+            suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: YaniContentLanguage.fromSystemLocale(context),
@@ -294,6 +302,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
+    }
+
+    suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[suggestNextEpisodeOnWatchedKey] = enabled }
     }
 
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode) {
