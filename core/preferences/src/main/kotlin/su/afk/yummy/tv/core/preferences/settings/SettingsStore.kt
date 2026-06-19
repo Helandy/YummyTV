@@ -45,7 +45,7 @@ data class MainSettingsSnapshot(
 
 data class SupportPromptSnapshot(
     val dismissed: Boolean,
-    val firstInstallTimeMs: Long,
+    val firstEligibleTimeMs: Long,
 )
 
 class SettingsStore(private val context: Context) {
@@ -260,8 +260,8 @@ class SettingsStore(private val context: Context) {
     val supportPromptSnapshot: Flow<SupportPromptSnapshot> = context.dataStore.data.map { prefs ->
         SupportPromptSnapshot(
             dismissed = prefs[supportPromptDismissedKey] ?: false,
-            firstInstallTimeMs = prefs[supportPromptFirstInstallTimeMsKey]
-                ?: context.firstInstallTimeMs(),
+            firstEligibleTimeMs = prefs[supportPromptFirstInstallTimeMsKey]
+                ?: System.currentTimeMillis(),
         )
     }
 
@@ -419,7 +419,7 @@ class SettingsStore(private val context: Context) {
     suspend fun ensureSupportPromptInstallTimeInitialized() {
         context.dataStore.edit { prefs ->
             if (prefs[supportPromptFirstInstallTimeMsKey] == null) {
-                prefs[supportPromptFirstInstallTimeMsKey] = context.firstInstallTimeMs()
+                prefs[supportPromptFirstInstallTimeMsKey] = System.currentTimeMillis()
             }
         }
     }
@@ -435,6 +435,9 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { prefs ->
             val lastStartedVersionCode = prefs[lastStartedVersionCodeKey]
             isFreshVersion = lastStartedVersionCode != versionCode
+            if (isFreshVersion && prefs[supportPromptDismissedKey] != true) {
+                prefs[supportPromptFirstInstallTimeMsKey] = System.currentTimeMillis()
+            }
             prefs[lastStartedVersionCodeKey] = versionCode
         }
         return isFreshVersion
@@ -449,11 +452,6 @@ class SettingsStore(private val context: Context) {
 
     private fun Preferences.yaniApplicationToken(): String =
         this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
-
-    private fun Context.firstInstallTimeMs(): Long =
-        runCatching {
-            packageManager.getPackageInfo(packageName, 0).firstInstallTime
-        }.getOrDefault(System.currentTimeMillis())
 
     private fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState {
         val token = this[yaniApplicationTokenKey]?.trim().orEmpty()

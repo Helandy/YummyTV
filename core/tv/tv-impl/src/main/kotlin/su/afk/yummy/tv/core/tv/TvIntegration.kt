@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.tv
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.ErrorAnalyticsReporter
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
 import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingStore
@@ -28,9 +30,13 @@ internal class TvIntegration @Inject constructor(
     private val previewChannelManager: PreviewChannelManager,
     private val getHomeFeed: GetHomeFeedUseCase,
     private val settingsStore: SettingsStore,
+    private val errorAnalyticsReporter: ErrorAnalyticsReporter,
 ) : ITvIntegration {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        errorAnalyticsReporter.reportCoroutineError(owner = "TvIntegration", throwable = throwable)
+    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + coroutineExceptionHandler)
 
     override val browsableChannelRequest: SharedFlow<Long> = previewChannelManager.browsableRequest
     override val previewChannelBrowsable: StateFlow<Boolean> = previewChannelManager.isBrowsable

@@ -119,7 +119,7 @@ class HomeViewModel @Inject internal constructor(
         }
 
         val remainingMs =
-            SUPPORT_PROMPT_DELAY_MS - (System.currentTimeMillis() - snapshot.firstInstallTimeMs)
+            SUPPORT_PROMPT_DELAY_MS - (System.currentTimeMillis() - snapshot.firstEligibleTimeMs)
         if (remainingMs <= 0L) {
             showSupportPromptOnce()
         } else {

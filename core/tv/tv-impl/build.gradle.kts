@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:analytics"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":core:tv:tv-api"))

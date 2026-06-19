@@ -1556,12 +1556,18 @@ object StorageModule {
 
     private val MIGRATION_25_26 = object : Migration(25, 26) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL(
-                """
-                ALTER TABLE collection_catalog_pages
-                ADD COLUMN responseSize INTEGER NOT NULL DEFAULT 0
-                """.trimIndent()
-            )
+            if (!db.hasColumn(
+                    tableName = "collection_catalog_pages",
+                    columnName = "responseSize"
+                )
+            ) {
+                db.execSQL(
+                    """
+                    ALTER TABLE collection_catalog_pages
+                    ADD COLUMN responseSize INTEGER NOT NULL DEFAULT 0
+                    """.trimIndent()
+                )
+            }
             db.execSQL(
                 """
                 UPDATE collection_catalog_pages
@@ -1660,7 +1666,8 @@ object StorageModule {
 
     @Provides
     @Singleton
-    fun provideWatchProgressStore(db: AppDatabase): WatchProgressStore = WatchProgressStore(db.watchProgressDao())
+    fun provideWatchProgressStore(db: AppDatabase): WatchProgressStore =
+        WatchProgressStore(db.watchProgressDao())
 
     @Provides
     @Singleton
@@ -1707,4 +1714,14 @@ object StorageModule {
     @Singleton
     fun provideCommentsStorageStore(db: AppDatabase): CommentsStorageStore =
         CommentsStorageStore(db.commentsStorageDao())
+
+    private fun SupportSQLiteDatabase.hasColumn(tableName: String, columnName: String): Boolean {
+        query("PRAGMA table_info($tableName)").use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == columnName) return true
+            }
+        }
+        return false
+    }
 }
