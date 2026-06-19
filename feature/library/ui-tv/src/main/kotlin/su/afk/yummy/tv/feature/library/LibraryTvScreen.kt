@@ -160,7 +160,9 @@ fun LibraryTvScreen(
                         restoreGridFocusOnResume = true
                         onEvent(LibraryState.Event.ContinueWatchingDetailsSelected(it))
                     },
-                    onRemoveWatchProgress = { onEvent(LibraryState.Event.RemoveWatchProgress(it)) },
+                    onRemoveWatchProgress = {
+                        onEvent(LibraryState.Event.RemoveWatchProgress(it))
+                    },
                 )
 
                 LibraryTab.FAVORITES -> {

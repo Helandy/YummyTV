@@ -19,7 +19,6 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
-import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import javax.inject.Singleton
 
@@ -1621,6 +1620,13 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_29_30 = object : Migration(29, 30) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE anime_videos ADD COLUMN watchedEndTimeSeconds INTEGER")
+            db.execSQL("ALTER TABLE anime_videos ADD COLUMN watchedDateSeconds INTEGER")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1648,6 +1654,7 @@ object StorageModule {
                 MIGRATION_26_27,
                 MIGRATION_27_28,
                 MIGRATION_28_29,
+                MIGRATION_29_30,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,
@@ -1668,14 +1675,6 @@ object StorageModule {
     @Singleton
     fun provideWatchProgressStore(db: AppDatabase): WatchProgressStore =
         WatchProgressStore(db.watchProgressDao())
-
-    @Provides
-    @Singleton
-    fun provideRemoteContinueWatchingStore(db: AppDatabase): RemoteContinueWatchingStore =
-        RemoteContinueWatchingStore(
-            dao = db.remoteContinueWatchingDao(),
-            watchProgressDao = db.watchProgressDao(),
-        )
 
     @Provides
     @Singleton

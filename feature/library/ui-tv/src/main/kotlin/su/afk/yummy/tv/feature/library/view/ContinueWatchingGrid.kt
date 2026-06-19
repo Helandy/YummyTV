@@ -54,7 +54,7 @@ internal fun ContinueWatchingGrid(
     focusStateKey: String,
     onEntrySelected: (HomeContinueWatchingItem) -> Unit,
     onDetailsSelected: (HomeContinueWatchingItem) -> Unit,
-    onRemoveWatchProgress: (Int) -> Unit,
+    onRemoveWatchProgress: (HomeContinueWatchingItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -234,7 +234,7 @@ internal fun ContinueWatchingGrid(
                                 focusRestoreState.clear()
                                 runCatching { selectedTabFocusRequester.requestFocus() }
                             }
-                            onRemoveWatchProgress(entry.animeId)
+                            onRemoveWatchProgress(entry)
                         }
                     }
                     ContinueWatchingGridCard(

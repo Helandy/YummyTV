@@ -158,6 +158,8 @@ data class AnimeVideoEntry(
     val iframeUrl: String,
     val durationSeconds: Int? = null,
     val views: Int? = null,
+    val watchedEndTimeSeconds: Int? = null,
+    val watchedDateSeconds: Long? = null,
     val openingStartMs: Long? = null,
     val openingEndMs: Long? = null,
     val endingStartMs: Long? = null,

@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.player.handler
 
 import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
@@ -13,7 +12,6 @@ private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 10_000L
 /** Сохраняет локальный прогресс просмотра и тихо синхронизирует его с сервером. */
 internal class PlayerProgressHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
-    private val remoteContinueWatchingStore: RemoteContinueWatchingStore,
     private val settingsStore: SettingsStore,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
 ) {
@@ -74,38 +72,18 @@ internal class PlayerProgressHandler @Inject constructor(
         val now = System.currentTimeMillis()
         if (animeId <= 0) return now
 
-        val accountKey = continueWatchingAccountKey()
-        val language = settingsStore.yaniContentLanguage.first().apiCode
-        val remoteUpdatedAt = remoteContinueWatchingStore.latestUpdatedAt(
-            accountKey = accountKey,
-            language = language,
-            animeId = animeId,
-        )
         val existingUpdatedAt = episode
             .takeIf { it.isNotBlank() }
             ?.let { watchProgressStore.get(animeId, it)?.updatedAt }
             ?: 0L
 
-        return maxOf(now, remoteUpdatedAt + 1L, existingUpdatedAt + 1L)
-    }
-
-    private suspend fun continueWatchingAccountKey(): String {
-        val userId = settingsStore.yaniUserId.first()
-        return if (userId > 0) "user:$userId" else "anon"
+        return maxOf(now, existingUpdatedAt + 1L)
     }
 
     suspend fun suppressContinueWatchingDisplay(context: PlayerProgressContext) {
-        val now = System.currentTimeMillis()
-        val accountKey = continueWatchingAccountKey()
-        val language = settingsStore.yaniContentLanguage.first().apiCode
-        val remoteUpdatedAt = remoteContinueWatchingStore.latestUpdatedAt(
-            accountKey = accountKey,
-            language = language,
-            animeId = context.animeId,
-        )
         watchProgressStore.suppressContinueWatchingDisplay(
             animeId = context.animeId,
-            suppressedAt = maxOf(now, remoteUpdatedAt + 1L),
+            suppressedAt = System.currentTimeMillis(),
         )
     }
 

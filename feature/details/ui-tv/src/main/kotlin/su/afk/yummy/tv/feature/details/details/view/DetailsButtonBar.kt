@@ -38,7 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -228,19 +228,22 @@ internal fun DetailsButtonBar(
     val buttons = buttonOrder.mapNotNull { availableButtons[it] } +
             availableButtons.values.filterNot { button -> button.action in buttonOrder }
     val buttonRows = buttons.toButtonRows()
-    val initialFocusedIndex = 0
+    val initialFocusedAction = buttons.firstOrNull()?.action ?: DetailsButtonAction.WATCH
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
-    var focusedIndex by rememberSaveable { mutableIntStateOf(initialFocusedIndex) }
-    val currentFocusedIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
-    val focusRequesters = remember(buttons.size) {
+    var focusedAction by rememberSaveable { mutableStateOf(initialFocusedAction) }
+    fun focusedButtonIndex(): Int =
+        buttons.indexOfFirst { it.action == focusedAction }.takeIf { it >= 0 } ?: 0
+
+    val currentFocusedIndex = focusedButtonIndex().coerceIn(0, buttons.lastIndex)
+    val focusRequesters = remember(buttons.map { it.action }) {
         List(buttons.size) { index ->
-            if (index == initialFocusedIndex) firstFocusRequester else FocusRequester()
+            if (index == 0) firstFocusRequester else FocusRequester()
         }
     }
     val requestFocusedButton: () -> Unit = {
-        val targetIndex = focusedIndex.coerceIn(0, buttons.lastIndex)
+        val targetIndex = focusedButtonIndex().coerceIn(0, buttons.lastIndex)
         scope.launch {
             listState.scrollToItem((buttonRows.rowIndexForButton(targetIndex) - 1).coerceAtLeast(0))
             focusRequesters.getOrNull(targetIndex)?.requestFocus()
@@ -264,7 +267,7 @@ internal fun DetailsButtonBar(
         }
     }
 
-    DisposableEffect(lifecycleOwner, buttons.size, focusedIndex) {
+    DisposableEffect(lifecycleOwner, buttons.size, focusedAction) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 requestFocusedButton()
@@ -305,7 +308,7 @@ internal fun DetailsButtonBar(
                                 alpha = itemAlpha(row.index),
                                 focusRequester = focusRequesters[row.index],
                                 onFocused = {
-                                    focusedIndex = row.index
+                                    focusedAction = row.button.action
                                     scope.launch {
                                         listState.scrollToItem(
                                             (rowIndex - 1).coerceAtLeast(
@@ -333,7 +336,7 @@ internal fun DetailsButtonBar(
                                 alpha = itemAlpha(row.libraryIndex),
                                 focusRequester = focusRequesters[row.libraryIndex],
                                 onFocused = {
-                                    focusedIndex = row.libraryIndex
+                                    focusedAction = row.libraryButton.action
                                     scope.launch {
                                         listState.scrollToItem(
                                             (rowIndex - 1).coerceAtLeast(
@@ -350,7 +353,7 @@ internal fun DetailsButtonBar(
                                 alpha = itemAlpha(row.favoriteIndex),
                                 focusRequester = focusRequesters[row.favoriteIndex],
                                 onFocused = {
-                                    focusedIndex = row.favoriteIndex
+                                    focusedAction = row.favoriteButton.action
                                     scope.launch {
                                         listState.scrollToItem(
                                             (rowIndex - 1).coerceAtLeast(
@@ -420,7 +423,10 @@ private fun DetailsActionButton(
         iconSize = iconSize,
         verticalPadding = verticalPadding,
         focusedScale = focusedScale,
-        onClick = button.onClick,
+        onClick = {
+            onFocused()
+            button.onClick()
+        },
         modifier = modifier
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->

@@ -57,8 +57,8 @@ class LibraryState {
         /** Пользователь удалил тайтл из указанной части библиотеки. */
         data class RemoveEntry(val animeId: Int, val target: LibraryRemoveTarget) : Event
 
-        /** Пользователь удалил локальный прогресс просмотра тайтла. */
-        data class RemoveWatchProgress(val animeId: Int) : Event
+        /** Пользователь скрыл запись продолжения просмотра. */
+        data class RemoveWatchProgress(val entry: HomeContinueWatchingItem) : Event
     }
 
     sealed interface Effect : UiEffect {

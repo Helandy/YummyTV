@@ -26,8 +26,11 @@ fun EpisodesTvScreen(
         onEvent(EpisodesState.Event.BalancerPickerDismissed)
         restoreEpisodesFocusRequest += 1
     }
+    val balancerPicker = state.pendingBalancerSelection
 
-    BackHandler { onEvent(EpisodesState.Event.BackSelected) }
+    BackHandler(enabled = balancerPicker == null) {
+        onEvent(EpisodesState.Event.BackSelected)
+    }
 
     Box(
         modifier = Modifier
@@ -41,7 +44,6 @@ fun EpisodesTvScreen(
             onVideoSelected = { video -> onEvent(EpisodesState.Event.VideoSelected(video)) },
         )
 
-        val balancerPicker = state.pendingBalancerSelection
         BackHandler(enabled = balancerPicker != null) {
             dismissBalancerPicker()
         }

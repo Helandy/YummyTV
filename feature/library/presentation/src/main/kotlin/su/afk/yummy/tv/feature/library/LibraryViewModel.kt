@@ -13,7 +13,6 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
-import su.afk.yummy.tv.domain.home.usecase.GetContinueWatchingVideoIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
@@ -22,7 +21,6 @@ import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
-import su.afk.yummy.tv.feature.library.handler.RemoteWatchProgressRemovalHandler
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import javax.inject.Inject
@@ -38,12 +36,10 @@ class LibraryViewModel @Inject internal constructor(
     private val settingsStore: SettingsStore,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
-    private val getContinueWatchingVideoIds: GetContinueWatchingVideoIdsUseCase,
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
-    private val remoteWatchProgressRemovalHandler: RemoteWatchProgressRemovalHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
     private val analytics: LibraryAnalytics,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
@@ -139,18 +135,17 @@ class LibraryViewModel @Inject internal constructor(
             is LibraryState.Event.RemoveEntry -> removeEntry(event)
 
             is LibraryState.Event.RemoveWatchProgress ->
-                removeWatchProgress(event.animeId)
+                removeWatchProgress(event.entry)
 
         }
     }
 
-    private fun removeWatchProgress(animeId: Int) {
+    private fun removeWatchProgress(entry: HomeContinueWatchingItem) {
+        val animeId = entry.animeId
         analytics.eventRemoveWatchProgress(animeId)
         viewModelScope.launch {
-            val knownRemoteVideoIds = knownRemoteVideoIdsFor(animeId)
             suppressContinueWatchingLocally(animeId)
             setEffect(LibraryState.Effect.ItemRemoved)
-            removeRemoteWatchProgress(animeId, knownRemoteVideoIds)
         }
     }
 
@@ -160,26 +155,8 @@ class LibraryViewModel @Inject internal constructor(
         }
     }
 
-    private suspend fun knownRemoteVideoIdsFor(animeId: Int): List<Int> =
-        if (signedInUserId > 0) {
-            getContinueWatchingVideoIds(animeId)
-        } else {
-            emptyList()
-        }
-
     private suspend fun suppressContinueWatchingLocally(animeId: Int) {
         removeCachedContinueWatching(animeId)
-    }
-
-    private suspend fun removeRemoteWatchProgress(
-        animeId: Int,
-        knownVideoIds: List<Int>,
-    ) {
-        if (signedInUserId <= 0) return
-        remoteWatchProgressRemovalHandler.removeAnimeWatchProgress(
-            animeId = animeId,
-            knownVideoIds = knownVideoIds,
-        )
     }
 
     private fun openDetails(animeId: Int) {

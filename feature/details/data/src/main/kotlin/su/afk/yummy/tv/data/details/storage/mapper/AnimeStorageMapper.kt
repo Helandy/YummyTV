@@ -211,6 +211,8 @@ internal fun List<AnimeVideo>.toAnimeVideosCache(
                 iframeUrl = video.iframeUrl,
                 durationSeconds = video.durationSeconds,
                 views = video.views,
+                watchedEndTimeSeconds = video.watchedEndTimeSeconds,
+                watchedDateSeconds = video.watchedDateSeconds,
                 openingStartMs = video.skips.opening?.startMs,
                 openingEndMs = video.skips.opening?.endMs,
                 endingStartMs = video.skips.ending?.startMs,
@@ -355,6 +357,8 @@ private fun AnimeVideoEntry.toAnimeVideo(): AnimeVideo =
         iframeUrl = iframeUrl,
         durationSeconds = durationSeconds,
         views = views,
+        watchedEndTimeSeconds = watchedEndTimeSeconds,
+        watchedDateSeconds = watchedDateSeconds,
         skips = AnimeVideoSkips(
             opening = skipSegment(openingStartMs, openingEndMs),
             ending = skipSegment(endingStartMs, endingEndMs),

@@ -16,7 +16,7 @@ internal sealed interface PendingLibraryMobileRemoval {
     ) : PendingLibraryMobileRemoval {
         override val title = entry.animeTitle.ifBlank { entry.episode }
         override fun event(): LibraryState.Event =
-            LibraryState.Event.RemoveWatchProgress(entry.animeId)
+            LibraryState.Event.RemoveWatchProgress(entry)
     }
 
     data class Favorite(
