@@ -8,7 +8,8 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
 
     companion object {
         const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
-        const val WATCHED_PROGRESS = 0.90f
+        const val WATCHED_REMAINING_MS = 5 * 60 * 1000L
+        const val SHORT_EPISODE_WATCHED_PROGRESS = 0.90f
 
         fun progress(positionMs: Long, durationMs: Long): Float =
             if (durationMs > 0) {
@@ -26,9 +27,14 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         fun isUnresolvedProgress(positionMs: Long, durationMs: Long): Boolean =
             durationMs == 0L && positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS
 
-        fun isWatchedProgress(positionMs: Long, durationMs: Long): Boolean =
-            isMeaningfulProgress(positionMs, durationMs) &&
-                    progress(positionMs, durationMs) >= WATCHED_PROGRESS
+        fun isWatchedProgress(positionMs: Long, durationMs: Long): Boolean {
+            if (!isMeaningfulProgress(positionMs, durationMs)) return false
+            return if (durationMs <= WATCHED_REMAINING_MS) {
+                progress(positionMs, durationMs) >= SHORT_EPISODE_WATCHED_PROGRESS
+            } else {
+                positionMs >= durationMs - WATCHED_REMAINING_MS
+            }
+        }
 
         fun isMeaningfulProgressEntry(entry: WatchProgressEntry): Boolean =
             isMeaningfulProgress(entry.positionMs, entry.durationMs)
@@ -73,7 +79,6 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         combine(
             dao.observeContinueWatching(
                 minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
-                maxProgress = WATCHED_PROGRESS,
             ),
             observeWatchedProgress(),
         ) { candidates, watchedEntries ->
@@ -83,7 +88,6 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun continueWatching(): List<WatchProgressEntry> {
         val candidates = dao.continueWatching(
             minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
-            maxProgress = WATCHED_PROGRESS,
         )
         return ContinueWatchingMerge.filterDisplayable(candidates + watchedProgress())
     }
@@ -113,8 +117,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     suspend fun watchedProgress(): List<WatchProgressEntry> =
         dao.watchedProgress(
             minPositionMs = MIN_CONTINUE_WATCHING_POSITION_MS,
-            minProgress = WATCHED_PROGRESS,
-        )
+        ).filter(WatchProgressStore::isWatchedProgressEntry)
 
     fun observeWatchedProgress(): Flow<List<WatchProgressEntry>> =
         dao.observeAll().map { entries ->

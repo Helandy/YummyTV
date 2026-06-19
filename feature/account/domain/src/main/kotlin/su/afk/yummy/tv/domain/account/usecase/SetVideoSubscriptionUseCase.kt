@@ -11,7 +11,7 @@ class SetVideoSubscriptionUseCase @Inject constructor(
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {
     suspend operator fun invoke(videoId: Int, subscribed: Boolean): Boolean =
-        notifyMutationFailure(
+        notifyBooleanMutationFailure(
             mutationErrorNotifier,
             if (subscribed) {
                 AccountMutationAction.SET_VIDEO_SUBSCRIPTION

@@ -16,3 +16,15 @@ internal suspend inline fun <T> notifyMutationFailure(
     notifier.notify(AccountMutationErrorEvent(action = action, message = error.message))
     throw error
 }
+
+internal suspend inline fun notifyBooleanMutationFailure(
+    notifier: AccountMutationErrorNotifier,
+    action: AccountMutationAction,
+    block: suspend () -> Boolean,
+): Boolean = notifyMutationFailure(notifier, action) {
+    block().also { success ->
+        if (!success) {
+            notifier.notify(AccountMutationErrorEvent(action = action, message = null))
+        }
+    }
+}

@@ -70,7 +70,7 @@ class SettingsState {
         /** Пользователь переключил автопропуск опенингов и эндингов. */
         data object AutoSkipOpeningsEndingsToggled : Event
 
-        /** Пользователь переключил предложение следующей серии после просмотра 90%. */
+        /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event
 
         /** Пользователь изменил токен приложения Yani. */

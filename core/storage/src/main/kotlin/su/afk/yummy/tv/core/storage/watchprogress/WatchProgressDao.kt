@@ -26,7 +26,6 @@ interface WatchProgressDao {
                 (
                     durationMs > 0
                     AND positionMs >= :minPositionMs
-                    AND CAST(positionMs AS REAL) / durationMs < :maxProgress
                 )
                 OR (
                     durationMs = 0
@@ -54,7 +53,6 @@ interface WatchProgressDao {
     )
     fun observeContinueWatching(
         minPositionMs: Long,
-        maxProgress: Float,
     ): Flow<List<WatchProgressEntry>>
 
     @Query(
@@ -65,7 +63,6 @@ interface WatchProgressDao {
                 (
                     durationMs > 0
                     AND positionMs >= :minPositionMs
-                    AND CAST(positionMs AS REAL) / durationMs < :maxProgress
                 )
                 OR (
                     durationMs = 0
@@ -93,7 +90,6 @@ interface WatchProgressDao {
     )
     suspend fun continueWatching(
         minPositionMs: Long,
-        maxProgress: Float,
     ): List<WatchProgressEntry>
 
     @Query(
@@ -190,12 +186,10 @@ interface WatchProgressDao {
         WHERE animeId > 0
             AND durationMs > 0
             AND positionMs >= :minPositionMs
-            AND CAST(positionMs AS REAL) / durationMs >= :minProgress
         """
     )
     suspend fun watchedProgress(
         minPositionMs: Long,
-        minProgress: Float,
     ): List<WatchProgressEntry>
 
     @Query("DELETE FROM continue_watching_suppressions WHERE animeId = :animeId")

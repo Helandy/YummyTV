@@ -332,17 +332,26 @@ class CommentsViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             setState { copy(isMutating = true) }
             runCatching { deleteComment(comment.id) }.fold(
-                onSuccess = {
-                    analytics.eventDeleted(animeId, comment.id)
-                    setState {
-                        copy(
-                            isMutating = false,
-                            pendingDelete = null,
-                            comments = comments.removeComment(comment.id),
-                        )
+                onSuccess = { deleted ->
+                    if (deleted) {
+                        analytics.eventDeleted(animeId, comment.id)
+                        setState {
+                            copy(
+                                isMutating = false,
+                                pendingDelete = null,
+                                comments = comments.removeComment(comment.id),
+                            )
+                        }
+                    } else {
+                        showMutationError(R.string.comments_delete_error, keepDialog = true)
                     }
                 },
-                onFailure = { showMutationError(it, keepDialog = true) },
+                onFailure = {
+                    showMutationError(
+                        R.string.comments_delete_error,
+                        keepDialog = true
+                    )
+                },
             )
         }
     }
@@ -353,12 +362,21 @@ class CommentsViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             setState { copy(isMutating = true) }
             runCatching { reportComment(comment.id, reason) }.fold(
-                onSuccess = {
-                    analytics.eventReported(animeId, comment.id, reason)
-                    setState { copy(isMutating = false, pendingReport = null) }
-                    showToast(R.string.comments_report_sent)
+                onSuccess = { reported ->
+                    if (reported) {
+                        analytics.eventReported(animeId, comment.id, reason)
+                        setState { copy(isMutating = false, pendingReport = null) }
+                        showToast(R.string.comments_report_sent)
+                    } else {
+                        showMutationError(R.string.comments_report_error, keepDialog = true)
+                    }
                 },
-                onFailure = { showMutationError(it, keepDialog = true) },
+                onFailure = {
+                    showMutationError(
+                        R.string.comments_report_error,
+                        keepDialog = true
+                    )
+                },
             )
         }
     }
@@ -382,9 +400,11 @@ class CommentsViewModel @AssistedInject internal constructor(
                         setState {
                             copy(comments = comments.updateVote(commentId, voteResult, newVote))
                         }
+                    } else {
+                        showMutationError(R.string.comments_vote_error)
                     }
                 },
-                onFailure = { showMutationError(it) },
+                onFailure = { showMutationError(R.string.comments_vote_error) },
             )
         }
     }
@@ -495,6 +515,17 @@ class CommentsViewModel @AssistedInject internal constructor(
     private fun showMutationError(error: Throwable, keepDialog: Boolean = false) {
         val message = error.message ?: stringProvider.get(R.string.comments_action_error)
         setEffect(CommentsState.Effect.ShowToast(message))
+        setState {
+            copy(
+                isMutating = false,
+                pendingDelete = if (keepDialog) pendingDelete else null,
+                pendingReport = if (keepDialog) pendingReport else null,
+            )
+        }
+    }
+
+    private fun showMutationError(resId: Int, keepDialog: Boolean = false) {
+        setEffect(CommentsState.Effect.ShowToast(stringProvider.get(resId)))
         setState {
             copy(
                 isMutating = false,

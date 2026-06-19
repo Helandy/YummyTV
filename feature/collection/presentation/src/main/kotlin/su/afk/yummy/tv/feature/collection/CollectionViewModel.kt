@@ -94,6 +94,11 @@ class CollectionViewModel @AssistedInject internal constructor(
                 },
                 onFailure = {
                     setState { copy(isVoteLoading = false) }
+                    setEffect(
+                        CollectionState.Effect.ShowToast(
+                            stringProvider.get(R.string.collection_vote_error)
+                        )
+                    )
                 },
             )
         }

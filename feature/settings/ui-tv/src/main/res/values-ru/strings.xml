@@ -88,8 +88,8 @@
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
-    <string name="settings_suggest_next_episode_on_watched_label">При достижении 90%</string>
-    <string name="settings_suggest_next_episode_on_watched_enabled">Предлагать следующую серию на главной</string>
+    <string name="settings_suggest_next_episode_on_watched_label">Следующая серия</string>
+    <string name="settings_suggest_next_episode_on_watched_enabled">Показывать на главной после завершения текущей</string>
     <string name="settings_cache_size_min">Минимальный</string>
     <string name="settings_cache_size_50">50 МБ</string>
     <string name="settings_cache_size_standard">Стандартный</string>

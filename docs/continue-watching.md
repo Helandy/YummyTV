@@ -3,15 +3,21 @@
 Этот документ фиксирует текущее техническое поведение карточек "Продолжить просмотр".
 Он описывает правила выбора display-кандидата, а не пользовательский FAQ.
 
+Список строится из локальных записей `watch_progress`. Home feed и cache не выбирают отдельный
+remote-кандидат для Continue Watching: `YaniHomeFeedRepository` берет уже подготовленные локальные
+элементы и подмешивает их в `HomeFeed`.
+
 ## Какие записи отображаются
 
 В Continue Watching попадают local-записи `watch_progress`, если это один из случаев:
 
-- meaningful progress: `durationMs > 0`, позиция не меньше 30 секунд и прогресс меньше 90%;
-- unresolved progress: `durationMs = 0`, позиция не меньше 30 секунд и есть playable target;
-- continue target: `positionMs = 0`, `durationMs = 0`, есть серия и ссылка на серию.
+- meaningful progress: `durationMs > 0`, `positionMs >= 30_000` и запись еще не watched;
+- unresolved progress: `durationMs = 0`, `positionMs >= 30_000` и есть `videoId`, `episode`
+  или `episodeUrl`;
+- continue target: `positionMs = 0`, `durationMs = 0`, непустые `episode` и `episodeUrl`.
 
-Прогресс `>= 90%` считается просмотренным. Такая запись не отображается как обычный progress.
+Watched-запись не отображается сама и может скрыть более ранние
+или не более дальние записи того же `animeId` через `ContinueWatchingMerge.filterDisplayable()`.
 
 ## Local-кандидат внутри одного тайтла
 
@@ -20,9 +26,10 @@
 
 Порядок приоритета:
 
-- более поздний номер серии важнее свежести клика;
-- если номер серии сравнить нельзя, используются target/progress, позиция и `updatedAt`;
-- watched-записи (`>= 90%`) уже отфильтрованы на уровне continue-query.
+- если у обеих записей распознается номер серии, побеждает более дальняя серия;
+- если одна запись является continue target, а другая нет, `updatedAt` применяется только для
+  сравнения target-vs-progress;
+- затем сравниваются progress score, `positionMs` и `updatedAt`.
 
 Пример:
 
@@ -35,39 +42,73 @@ Local result: `3 серия`, `4 / 25`.
 Если пользователь после этого кликнул по `1 серии`, local-кандидат все равно остается `3 серия`,
 потому что внутри local-истории "самая дальняя серия" важнее свежести клика.
 
-## Local vs feed/remote
+## Watched-записи
 
-После выбора лучшего local-кандидата он сравнивается с feed/remote-кандидатом по `animeId`.
+Watched-запись - это meaningful progress, где до конца серии осталось не больше 5 минут.
+Для серий длительностью 5 минут или меньше используется fallback: `positionMs / durationMs >= 0.90`.
 
-Правило конфликта:
+При сохранении watched-прогресса player нормализует снимок до полного просмотра:
+`positionMs = durationMs`. После этого `ContinueWatchingMerge.filterDisplayable()`:
 
-- побеждает запись с большим `updatedAt`;
-- при равном `updatedAt` остается уже выбранная запись;
-- если local побеждает, но у него беднее metadata, Home может взять fallback metadata из feed/remote
-  для картинки, постера, duration, player/dubbing и похожих полей.
+- удаляет саму watched-запись из display-списка;
+- скрывает записи того же `animeId`, если watched-запись свежее или равна по `updatedAt` и
+  display-кандидат не дальше watched-записи.
 
-Из примера выше remote может перебить local только если feed/remote пришел для того же `animeId`
-с более свежим `updatedAt`.
+Это позволяет не показывать уже досмотренную серию, но оставить возможность показать более дальний
+continue target или прогресс следующей серии.
+
+## Home feed/cache
+
+`observeContinueWatching()` возвращает локальный список из `WatchProgressStore`.
+
+`YaniHomeFeedRepository` использует этот список для Home:
+
+- при чтении cache локальные Continue Watching элементы подставляются поверх cached feed;
+- при refresh remote feed сохраняется без remote Continue Watching merge;
+- `HomeContinueWatchingItem` маппится из `WatchProgressEntry` и сохраняет `positionMs`,
+  `durationMs`, `videoId`, `episodeUrl`, player/dubbing и screenshot metadata.
+
+Если для одного `animeId` в подготовленном списке все еще есть несколько записей, Home оставляет
+самую свежую по `updatedAt`, затем по `positionMs`, `videoId` и `episode`.
 
 ## Manual suppression
 
 Ручное удаление из Continue Watching не блокирует `animeId` навсегда.
 
-Suppression timestamp-aware:
+Удаление из Home/Library сохраняет suppression timestamp:
 
 - записи с `updatedAt <= suppressedAt` скрываются;
 - записи с `updatedAt > suppressedAt` снова отображаются.
+
+Новая активность возвращает тайтл в список: `WatchProgressStore.save()` и
+`WatchProgressStore.saveContinueTarget()` удаляют suppression для `animeId` перед сохранением.
 
 Это позволяет сценарию с несколькими устройствами работать ожидаемо: если пользователь удалил тайтл
 на одном устройстве, а потом позже продолжил его на другом, более свежая активность снова покажет
 тайтл в Continue Watching.
 
-## Настройка "При достижении 90%"
+## Настройка "Следующая серия"
 
-Когда серия достигает 90%, текущая серия сохраняется как watched.
+Завершение текущей серии означает достижение watched-порога: до конца осталось не больше 5 минут,
+а для серий длительностью 5 минут или меньше - прогресс не меньше 90%. Когда серия достигает этого
+порога, текущая серия сохраняется как watched с `positionMs = durationMs`.
 
-Если настройка "При достижении 90%" включена, player дополнительно создает continue target для
-следующей серии: `positionMs = 0`, `durationMs = 0`.
+Если настройка "Следующая серия" включена и есть следующая серия, player дополнительно создает
+continue target для следующей серии: `positionMs = 0`, `durationMs = 0`.
 
-Если настройка выключена, следующая серия не сохраняется как `0 / 0`, и тайтл не появляется на
-главной только из-за достижения 90%.
+Если настройка выключена или следующей серии нет, player скрывает тайтл из Continue Watching через
+display suppression. История просмотра серий при этом не удаляется.
+
+## Запуск из карточки
+
+При выборе карточки `ContinueWatchingLaunchHandler` загружает список видео тайтла и резолвит
+актуальный источник через `resolveContinueWatchingTarget()`.
+
+Правила запуска:
+
+- позиция возобновления берется из `positionMs`;
+- актуальный источник выбирается по `videoId`, затем `episodeUrl`, затем по совпадению
+  `episode + player + dubbing`, затем по `episode`; если exact-кандидат не поддерживается,
+  выбирается поддерживаемый источник той же серии или первый поддерживаемый источник;
+- если запись была сохранена с placeholder episode, она может быть мигрирована на доверенный
+  реальный episode, когда совпадает `videoId` или `episodeUrl`.

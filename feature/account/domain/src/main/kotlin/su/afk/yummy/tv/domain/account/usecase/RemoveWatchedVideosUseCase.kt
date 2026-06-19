@@ -13,7 +13,10 @@ class RemoveWatchedVideosUseCase @Inject constructor(
     suspend operator fun invoke(videoIds: List<Int>): Boolean {
         val ids = videoIds.filter { it > 0 }.distinct()
         if (ids.isEmpty()) return true
-        return notifyMutationFailure(mutationErrorNotifier, AccountMutationAction.REMOVE_WATCHED) {
+        return notifyBooleanMutationFailure(
+            mutationErrorNotifier,
+            AccountMutationAction.REMOVE_WATCHED
+        ) {
             repository.removeWatched(ids)
         }
     }

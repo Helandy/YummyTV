@@ -11,7 +11,10 @@ class DeleteNotificationUseCase @Inject constructor(
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {
     suspend operator fun invoke(id: Int) =
-        notifyMutationFailure(mutationErrorNotifier, AccountMutationAction.DELETE_NOTIFICATION) {
+        notifyBooleanMutationFailure(
+            mutationErrorNotifier,
+            AccountMutationAction.DELETE_NOTIFICATION
+        ) {
             repository.deleteNotification(id)
         }
 }

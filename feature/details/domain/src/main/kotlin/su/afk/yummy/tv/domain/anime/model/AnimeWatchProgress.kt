@@ -1,7 +1,8 @@
 package su.afk.yummy.tv.domain.anime.model
 
 private const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
-private const val WATCHED_PROGRESS = 0.90f
+private const val WATCHED_REMAINING_MS = 5 * 60 * 1000L
+private const val SHORT_EPISODE_WATCHED_PROGRESS = 0.90f
 
 data class AnimeWatchProgress(
     val animeId: Int,
@@ -42,8 +43,14 @@ fun AnimeWatchProgress.isUnresolvedProgress(): Boolean =
             positionMs >= MIN_CONTINUE_WATCHING_POSITION_MS &&
             hasPlayableTarget()
 
-fun AnimeWatchProgress.isWatchedProgress(): Boolean =
-    isMeaningfulProgress() && progress() >= WATCHED_PROGRESS
+fun AnimeWatchProgress.isWatchedProgress(): Boolean {
+    if (!isMeaningfulProgress()) return false
+    return if (durationMs <= WATCHED_REMAINING_MS) {
+        progress() >= SHORT_EPISODE_WATCHED_PROGRESS
+    } else {
+        positionMs >= durationMs - WATCHED_REMAINING_MS
+    }
+}
 
 fun AnimeWatchProgress.isContinueWatchingProgress(): Boolean =
     isContinueTarget() ||

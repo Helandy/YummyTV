@@ -5,4 +5,7 @@
     <string name="comments_permission_denied">Вы не можете изменить этот комментарий</string>
     <string name="comments_empty_text">Сначала напишите комментарий</string>
     <string name="comments_report_sent">Жалоба отправлена</string>
+    <string name="comments_delete_error">Не удалось удалить комментарий</string>
+    <string name="comments_report_error">Не удалось отправить жалобу</string>
+    <string name="comments_vote_error">Не удалось оценить комментарий</string>
 </resources>

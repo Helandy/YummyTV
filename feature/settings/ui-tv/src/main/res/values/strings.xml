@@ -88,8 +88,8 @@
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
-    <string name="settings_suggest_next_episode_on_watched_label">At 90%</string>
-    <string name="settings_suggest_next_episode_on_watched_enabled">Suggest the next episode on Home</string>
+    <string name="settings_suggest_next_episode_on_watched_label">Next episode</string>
+    <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
     <string name="settings_cache_size_min">Minimum</string>
     <string name="settings_cache_size_50">50 MB</string>
     <string name="settings_cache_size_standard">Standard</string>

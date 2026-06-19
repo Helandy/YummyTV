@@ -5,4 +5,7 @@
     <string name="comments_permission_denied">You cannot change this comment</string>
     <string name="comments_empty_text">Write a comment first</string>
     <string name="comments_report_sent">Report sent</string>
+    <string name="comments_delete_error">Could not delete the comment</string>
+    <string name="comments_report_error">Could not send the report</string>
+    <string name="comments_vote_error">Could not rate the comment</string>
 </resources>

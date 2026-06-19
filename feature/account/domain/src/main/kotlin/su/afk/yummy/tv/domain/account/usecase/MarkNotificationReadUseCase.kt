@@ -11,7 +11,10 @@ class MarkNotificationReadUseCase @Inject constructor(
     private val mutationErrorNotifier: AccountMutationErrorNotifier,
 ) {
     suspend operator fun invoke(id: Int) =
-        notifyMutationFailure(mutationErrorNotifier, AccountMutationAction.MARK_NOTIFICATION_READ) {
+        notifyBooleanMutationFailure(
+            mutationErrorNotifier,
+            AccountMutationAction.MARK_NOTIFICATION_READ
+        ) {
             repository.markNotificationRead(id)
         }
 }
