@@ -12,7 +12,6 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.home.isFresh
-import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingMerge
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
@@ -141,7 +140,19 @@ class YaniHomeFeedRepository(
     private fun localContinueWatchingItems(
         entries: List<WatchProgressEntry>,
     ): List<HomeContinueWatchingItem> =
-        ContinueWatchingMerge.bestByAnime(entries)
+        entries
+            .filter { it.animeId > 0 }
+            .groupBy { it.animeId }
+            .values
+            .mapNotNull { group ->
+                group.maxWithOrNull(
+                    compareBy<WatchProgressEntry> { it.updatedAt }
+                        .thenBy { it.positionMs }
+                        .thenBy { it.videoId }
+                        .thenBy { it.episode }
+                )
+            }
+            .sortedByDescending { it.updatedAt }
             .map { it.toHomeContinueWatchingItem() }
 
     private fun YaniFeedDto.summaryForLog(): String {
