@@ -11,6 +11,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.feature.details.episodes.view.EpisodesSection
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
@@ -27,14 +32,32 @@ fun EpisodesTvScreen(
         restoreEpisodesFocusRequest += 1
     }
     val balancerPicker = state.pendingBalancerSelection
+    fun handleBack() {
+        if (balancerPicker != null) {
+            dismissBalancerPicker()
+        } else {
+            onEvent(EpisodesState.Event.BackSelected)
+        }
+    }
 
     BackHandler(enabled = balancerPicker == null) {
-        onEvent(EpisodesState.Event.BackSelected)
+        handleBack()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.Back, Key.Escape -> {
+                        handleBack()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
             .background(MaterialTheme.colorScheme.background),
     ) {
         EpisodesSection(
@@ -45,7 +68,7 @@ fun EpisodesTvScreen(
         )
 
         BackHandler(enabled = balancerPicker != null) {
-            dismissBalancerPicker()
+            handleBack()
         }
         if (balancerPicker != null) {
             BalancerPickerOverlay(

@@ -1,11 +1,18 @@
 package su.afk.yummy.tv.feature.collection
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
@@ -47,6 +54,9 @@ fun CollectionTvScreen(
             )
         }
     }
+    val handleBack = remember(onEvent) { { onEvent(CollectionState.Event.BackSelected) } }
+
+    BackHandler { handleBack() }
 
     LaunchedEffect(effect, context) {
         effect.collect { event ->
@@ -75,5 +85,16 @@ fun CollectionTvScreen(
         onRetry = onRetry,
         loadingFocusRequester = loadingFocusRequester,
         retryFocusRequester = retryFocusRequester,
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+            when (event.key) {
+                Key.Back, Key.Escape -> {
+                    handleBack()
+                    true
+                }
+
+                else -> false
+            }
+        },
     )
 }

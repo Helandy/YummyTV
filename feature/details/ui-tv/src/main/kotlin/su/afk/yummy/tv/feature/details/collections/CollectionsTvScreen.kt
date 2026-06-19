@@ -10,6 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.feature.details.R
@@ -24,12 +29,27 @@ fun CollectionsTvScreen(
     onEvent: (CollectionsState.Event) -> Unit,
 
 ) {
-    BackHandler { onEvent(CollectionsState.Event.BackSelected) }
+    fun handleBack() {
+        onEvent(CollectionsState.Event.BackSelected)
+    }
+
+    BackHandler { handleBack() }
     val error = state.error
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.Back, Key.Escape -> {
+                        handleBack()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
             .background(MaterialTheme.colorScheme.background),
     ) {
         when {

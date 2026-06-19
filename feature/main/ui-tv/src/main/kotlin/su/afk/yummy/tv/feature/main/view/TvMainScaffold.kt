@@ -46,6 +46,7 @@ fun TvMainScaffold(
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     var menuExpanded by remember { mutableStateOf(false) }
+    var suppressMenuAutoExpand by remember { mutableStateOf(false) }
     val menuCanFocus = focusController.menuCanFocus &&
             focusController.previousShowMainMenu &&
             !focusController.restoreContentFocusAfterMenuShown
@@ -53,6 +54,12 @@ fun TvMainScaffold(
     LaunchedEffect(showMainMenu) {
         if (!showMainMenu) {
             menuExpanded = false
+        }
+    }
+
+    LaunchedEffect(focusController.contentHasFocus) {
+        if (focusController.contentHasFocus) {
+            suppressMenuAutoExpand = false
         }
     }
 
@@ -115,14 +122,20 @@ fun TvMainScaffold(
                     accountAvatarUrl = accountAvatarUrl,
                     unreadNotificationsCount = state.unreadNotificationsCount,
                     expanded = menuExpanded,
-                    onExpandedChange = { menuExpanded = it },
+                    onExpandedChange = { expanded ->
+                        menuExpanded = expanded && !suppressMenuAutoExpand
+                    },
                     onEvent = onEvent,
                     rootFocusRequesters = focusController.rootFocusRequesters,
                     menuEnterFocusRequester = selectedRootFocusRequester,
                     rightFocusRequesterForRoot = focusController.rightFocusRequesterForRoot,
                     canFocus = menuCanFocus,
                     onMenuNavigationFocusLocked = focusController::updateMenuNavigationFocusLocked,
-                    onMoveToContent = focusController::requestContentFocus,
+                    onMoveToContent = { root ->
+                        suppressMenuAutoExpand = true
+                        menuExpanded = false
+                        focusController.requestContentFocus(root)
+                    },
                 )
             }
         }
