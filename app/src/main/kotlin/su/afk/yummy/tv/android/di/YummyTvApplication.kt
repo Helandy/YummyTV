@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.analytics.AnalyticsInitializer
+import su.afk.yummy.tv.core.featuretoggle.FeatureToggleInitializer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import java.io.File
 import javax.inject.Inject
@@ -26,11 +27,18 @@ import javax.inject.Inject
 @HiltAndroidApp
 class YummyTvApplication : Application(), Configuration.Provider {
 
-    @Inject lateinit var settingsStore: SettingsStore
-    @Inject lateinit var workerFactory: HiltWorkerFactory
-    @Inject lateinit var homeFeedRefreshScheduler: HomeFeedRefreshScheduler
+    @Inject
+    lateinit var settingsStore: SettingsStore
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+    @Inject
+    lateinit var homeFeedRefreshScheduler: HomeFeedRefreshScheduler
+
     @Inject
     lateinit var analyticsInitializer: AnalyticsInitializer
+
+    @Inject
+    lateinit var featureToggleInitializer: FeatureToggleInitializer
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -42,6 +50,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         setupAnalytics()
+        setupFeatureToggles()
         setupCoilImageLoader()
         homeFeedRefreshScheduler.schedule()
         applicationScope.launch {
@@ -58,6 +67,10 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     private fun setupAnalytics() {
         analyticsInitializer.initialize(this, BuildConfig.APPMETRICA_API_KEY)
+    }
+
+    private fun setupFeatureToggles() {
+        featureToggleInitializer.initialize(this, BuildConfig.VARIOQUB_CLIENT_ID)
     }
 
     @OptIn(ExperimentalCoilApi::class)

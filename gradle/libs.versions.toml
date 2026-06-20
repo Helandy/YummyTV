@@ -35,6 +35,7 @@ work = "2.11.2"
 desugar-jdk-libs = "2.1.5"
 
 appmetrica = "8.3.0"
+varioqub = "0.7.0"
 
 [libraries]
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -52,6 +53,8 @@ androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", vers
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 appmetrica-analytics = { module = "io.appmetrica.analytics:analytics", version.ref = "appmetrica" }
+varioqub-config = { module = "com.yandex.varioqub:config", version.ref = "varioqub" }
+varioqub-appmetrica-adapter = { module = "com.yandex.varioqub:appmetrica-adapter", version.ref = "varioqub" }
 
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "androidx-tv-tvprovider" }
 androidx-tv-foundation = { module = "androidx.tv:tv-foundation", version.ref = "androidx-tv-foundation" }

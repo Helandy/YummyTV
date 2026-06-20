@@ -10,6 +10,7 @@ val baseApplicationId = providers.gradleProperty("yummytv.applicationId").get()
 val appVersionName = providers.gradleProperty("yummytv.versionName").get()
 val appVersionCode = providers.gradleProperty("yummytv.versionCode").get().toInt()
 val appmetricaApiKey = providers.gradleProperty("yummytv.appmetricaApiKey").get()
+val varioqubClientId = providers.gradleProperty("yummytv.varioqubClientId").get()
 
 android {
     namespace = "su.afk.yummy.tv"
@@ -22,6 +23,7 @@ android {
         versionCode = appVersionCode
 
         buildConfigField("String", "APPMETRICA_API_KEY", appmetricaApiKey.toBuildConfigString())
+        buildConfigField("String", "VARIOQUB_CLIENT_ID", varioqubClientId.toBuildConfigString())
     }
 
     buildTypes {
@@ -67,6 +69,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":core:featuretoggle"))
     implementation(project(":core:tv:tv-impl"))
     implementation(project(":core:tv:tv-api"))
     implementation(project(":feature:account:api"))
