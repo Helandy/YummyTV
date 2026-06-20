@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="update_available_title">Доступно обновление</string>
-    <string name="update_version">Версия %1$s</string>
+    <string name="update_required_title">Требуется обновление</string>
+    <string name="update_version">Вышла новая версия %1$s</string>
+    <string name="update_required_message">Ваша версия больше не поддерживается. Обновите приложение, чтобы продолжить.</string>
     <string name="update_changelog_title">Что нового:</string>
     <string name="update_later">Не сейчас</string>
     <string name="update_install">Обновить</string>
     <string name="update_auto_update_unsupported">Ваше устройство не поддерживает автообновление. Установите новую версию вручную.</string>
-    <string name="update_manual_hint">Для обновления вручную скачайте последний релиз с GitHub.</string>
+    <string name="update_manual_hint">Или вы можете скачать APK-файл вручную с %1$s</string>
     <string name="update_manual_open_releases">Открыть GitHub Releases</string>
     <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>
     <string name="update_downloading">Загрузка обновления...</string>

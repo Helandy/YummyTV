@@ -32,6 +32,7 @@ object MainState {
             val version: String,
             val apkUrl: String,
             val changelog: String,
+            val required: Boolean = false,
         ) : Effect()
 
         data class ShowToast(val message: String) : Effect()

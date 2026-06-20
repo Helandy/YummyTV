@@ -31,7 +31,7 @@ internal class VarioqubFeatureToggleInitializer @Inject constructor(
             }
             Varioqub.init(settings, adapter, context)
             featureToggleState.markInitialized()
-            Varioqub.activateConfig { }
+            activateConfig()
             fetchConfig()
         }.onFailure { throwable ->
             featureToggleState.markNotInitialized()
@@ -41,12 +41,22 @@ internal class VarioqubFeatureToggleInitializer @Inject constructor(
 
     private fun fetchConfig() {
         Varioqub.fetchConfig(object : OnFetchCompleteListener {
-            override fun onSuccess() = Unit
+            override fun onSuccess() {
+                Log.d(TAG, "Feature toggles fetched successfully")
+                activateConfig()
+            }
 
             override fun onError(message: String, error: FetchError) {
                 Log.w(TAG, "Failed to fetch feature toggles: $error $message")
             }
         })
+    }
+
+    private fun activateConfig() {
+        Varioqub.activateConfig {
+            Log.d(TAG, "Feature toggles activated")
+            featureToggleState.notifyConfigActivated()
+        }
     }
 
     private companion object {

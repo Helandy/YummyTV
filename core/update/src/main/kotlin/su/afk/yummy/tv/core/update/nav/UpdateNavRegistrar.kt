@@ -19,7 +19,12 @@ class UpdateNavRegistrar @Inject constructor() : NavRegistrar {
                 val viewModel = hiltViewModel<UpdateViewModel>()
 
                 LaunchedEffect(dest) {
-                    viewModel.initWithUpdateInfo(dest.version, dest.apkUrl, dest.changelog)
+                    viewModel.initWithUpdateInfo(
+                        dest.version,
+                        dest.apkUrl,
+                        dest.changelog,
+                        dest.required
+                    )
                 }
 
                 ScreenNavigator(viewModel) { state, effect, onEvent ->

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="update_available_title">Update available</string>
-    <string name="update_version">Version %1$s</string>
+    <string name="update_required_title">Update required</string>
+    <string name="update_version">New version %1$s is available</string>
+    <string name="update_required_message">Your version is no longer supported. Update the app to continue.</string>
     <string name="update_changelog_title">What is new:</string>
     <string name="update_later">Not now</string>
     <string name="update_install">Update</string>
     <string name="update_auto_update_unsupported">Your device does not support auto-update. Install the new version manually.</string>
-    <string name="update_manual_hint">To update manually, download the latest release from GitHub.</string>
+    <string name="update_manual_hint">Or you can manually download the APK from %1$s</string>
     <string name="update_manual_open_releases">Open GitHub Releases</string>
     <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>
     <string name="update_downloading">Downloading update...</string>

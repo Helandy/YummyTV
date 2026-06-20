@@ -28,7 +28,12 @@ class UpdateViewModel @Inject internal constructor(
 
     override fun createInitialState() = UpdateState.State()
 
-    fun initWithUpdateInfo(version: String, apkUrl: String, changelog: String) {
+    fun initWithUpdateInfo(
+        version: String,
+        apkUrl: String,
+        changelog: String,
+        required: Boolean = false,
+    ) {
         if (currentState.status is UpdateState.State.Status.Idle) {
             updateVersion = version
             setState {
@@ -37,6 +42,7 @@ class UpdateViewModel @Inject internal constructor(
                         version = version,
                         changelog = changelog,
                         apkUrl = apkUrl,
+                        required = required,
                     )
                 )
             }
@@ -46,6 +52,7 @@ class UpdateViewModel @Inject internal constructor(
     override fun onEvent(event: UpdateState.Event) {
         when (event) {
             UpdateState.Event.Dismiss -> {
+                if ((currentState.status as? UpdateState.State.Status.Available)?.required == true) return
                 analytics.eventDismiss(currentUpdateVersion())
                 setState { copy(status = UpdateState.State.Status.Idle) }
                 setEffect(UpdateState.Effect.NavigateBack)

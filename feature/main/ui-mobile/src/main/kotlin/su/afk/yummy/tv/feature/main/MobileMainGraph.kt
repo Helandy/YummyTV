@@ -55,7 +55,10 @@ class MobileMainGraph @Inject internal constructor(
     @Composable
     override fun MainGraph() {
         val viewModel: MainViewModel = hiltViewModel()
+        val currentDestination = navManager.backStack.lastOrNull()
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
+        val isRequiredUpdateDestination =
+            currentDestination is UpdateDestination && currentDestination.required
 
         ScreenNavigator(viewModel) { state, effect, _ ->
             var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -69,9 +72,19 @@ class MobileMainGraph @Inject internal constructor(
             LaunchedEffect(Unit) {
                 effect.collect { eff ->
                     when (eff) {
-                        is MainState.Effect.NavigateToUpdate -> navManager.navigate(
-                            UpdateDestination(eff.version, eff.apkUrl, eff.changelog)
-                        )
+                        is MainState.Effect.NavigateToUpdate -> {
+                            val destination = UpdateDestination(
+                                eff.version,
+                                eff.apkUrl,
+                                eff.changelog,
+                                required = eff.required,
+                            )
+                            if (eff.required) {
+                                navManager.replace(destination)
+                            } else {
+                                navManager.navigate(destination)
+                            }
+                        }
                         is MainState.Effect.ShowToast -> {
                             toastMessage = eff.message
                             toastJob?.cancel()
@@ -131,7 +144,7 @@ class MobileMainGraph @Inject internal constructor(
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
                         menuItems = items,
-                        showBars = atTabRoot,
+                        showBars = atTabRoot && !isRequiredUpdateDestination,
                         onDestinationSelected = navManager::switchRoot,
                         toastMessage = toastMessage,
                     ) {

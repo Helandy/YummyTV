@@ -64,7 +64,9 @@ class TvMainGraph @Inject constructor(
         val inAppFlow = navManager.appBackStack.isNotEmpty()
         val atRoot = !inAppFlow && navManager.backStack.size <= 1
         val currentDestination = navManager.backStack.lastOrNull()
-        val showMainMenu = atRoot
+        val isRequiredUpdateDestination =
+            currentDestination is UpdateDestination && currentDestination.required
+        val showMainMenu = atRoot && !isRequiredUpdateDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
             var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -78,9 +80,19 @@ class TvMainGraph @Inject constructor(
             LaunchedEffect(Unit) {
                 effect.collect { eff ->
                     when (eff) {
-                        is MainState.Effect.NavigateToUpdate -> navManager.navigate(
-                            UpdateDestination(eff.version, eff.apkUrl, eff.changelog)
-                        )
+                        is MainState.Effect.NavigateToUpdate -> {
+                            val destination = UpdateDestination(
+                                eff.version,
+                                eff.apkUrl,
+                                eff.changelog,
+                                required = eff.required,
+                            )
+                            if (eff.required) {
+                                navManager.replace(destination)
+                            } else {
+                                navManager.navigate(destination)
+                            }
+                        }
                         is MainState.Effect.ShowToast -> {
                             toastMessage = eff.message
                             toastJob?.cancel()

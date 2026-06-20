@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -15,6 +16,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
+import su.afk.yummy.tv.core.featuretoggle.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.featuretoggle.VersionSupportChecker
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniApplicationTokenState
@@ -40,6 +43,8 @@ class MainViewModel @Inject constructor(
     private val settingsStore: SettingsStore,
     private val nav: NavigationManager,
     private val updateChecker: GitHubUpdateChecker,
+    private val versionSupportChecker: VersionSupportChecker,
+    private val featureToggleUpdateObserver: FeatureToggleUpdateObserver,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val getAccountSession: GetAccountSessionUseCase,
     private val refreshAccount: RefreshAccountUseCase,
@@ -65,6 +70,7 @@ class MainViewModel @Inject constructor(
     init {
         analyticsTracker.track(EVENT_SCREEN_OPENED)
         observeSettings()
+        observeFeatureToggleUpdates()
         observeAccountMutationErrors()
         refreshAccountIfNeeded()
         checkForUpdates()
@@ -137,18 +143,28 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun observeFeatureToggleUpdates() {
+        val initialActivationId = featureToggleUpdateObserver.currentActivationId
+        featureToggleUpdateObserver.updates
+            .filter { activationId -> activationId > initialActivationId }
+            .onEach { checkForUpdates() }
+            .launchIn(viewModelScope)
+    }
+
     private fun checkForUpdates() {
         viewModelScope.launch {
             runCatching {
+                val isCurrentVersionSupported = versionSupportChecker.isCurrentVersionSupported()
                 val release = updateChecker.getLatestRelease() ?: return@launch
                 val remoteVersion = release.tagName.trimStart('v')
-                if (isNewer(versionName, remoteVersion)) {
-                    val apkUrl = release.assets.firstOrNull()?.browserDownloadUrl ?: return@launch
+                val apkUrl = release.assets.firstOrNull()?.browserDownloadUrl ?: return@launch
+                if (!isCurrentVersionSupported || isNewer(versionName, remoteVersion)) {
                     setEffect(
                         MainState.Effect.NavigateToUpdate(
                             version = remoteVersion,
                             apkUrl = apkUrl,
                             changelog = release.body.orEmpty(),
+                            required = !isCurrentVersionSupported,
                         )
                     )
                 }

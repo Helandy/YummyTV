@@ -5,6 +5,8 @@ import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -56,6 +59,13 @@ fun UpdateDialog(
     status: UpdateState.State.Status,
     onEvent: (UpdateState.Event) -> Unit,
 ) {
+    val configuration = LocalConfiguration.current
+    val isTelevision = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+            Configuration.UI_MODE_TYPE_TELEVISION
+    val maxDialogWidth = if (isTelevision) 760.dp else 680.dp
+    val horizontalFill = if (isTelevision) 0.72f else 0.92f
+    val dialogPadding = if (configuration.screenWidthDp < 420) 20.dp else 32.dp
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -64,12 +74,13 @@ fun UpdateDialog(
     ) {
         Box(
             modifier = Modifier
-                .widthIn(max = 560.dp)
+                .fillMaxWidth(horizontalFill)
+                .widthIn(max = maxDialogWidth)
                 .background(
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(16.dp),
                 )
-                .padding(32.dp),
+                .padding(dialogPadding),
         ) {
             when (status) {
                 is UpdateState.State.Status.Available -> AvailableContent(status, onEvent)
@@ -88,12 +99,24 @@ private fun AvailableContent(
     onEvent: (UpdateState.Event) -> Unit,
 ) {
     val autoUpdateSupported = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.O }
-    val isTelevision = LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+    val configuration = LocalConfiguration.current
+    val isTelevision = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
             Configuration.UI_MODE_TYPE_TELEVISION
+    val changelogMinHeight = if (configuration.screenHeightDp < 640) 160.dp else 200.dp
+    val changelogMaxHeight = when {
+        configuration.screenHeightDp < 640 -> 220.dp
+        isTelevision -> 320.dp
+        else -> 280.dp
+    }
     val closeFocus = remember { FocusRequester() }
     val updateFocus = remember { FocusRequester() }
     val changelogScrollState = rememberScrollState()
     val changelogFocus = remember { FocusRequester() }
+    val formattedChangelog = remember(status.changelog) {
+        status.changelog.formatReleaseNotes()
+    }
+    val updateInteractionSource = remember { MutableInteractionSource() }
+    val updateFocused by updateInteractionSource.collectIsFocusedAsState()
     val scope = rememberCoroutineScope()
     var changelogFocused by remember { mutableStateOf(false) }
     LaunchedEffect(autoUpdateSupported) {
@@ -108,7 +131,9 @@ private fun AvailableContent(
 
     Column {
         Text(
-            text = stringResource(R.string.update_available_title),
+            text = stringResource(
+                if (status.required) R.string.update_required_title else R.string.update_available_title
+            ),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -120,27 +145,40 @@ private fun AvailableContent(
             color = MaterialTheme.colorScheme.primary,
         )
 
+        if (status.required) {
+            Spacer(Modifier.height(16.dp))
+            RequiredUpdateBanner()
+        }
+
         if (!autoUpdateSupported) {
             Spacer(Modifier.height(16.dp))
             UnsupportedAutoUpdateBanner()
         }
 
-        if (status.changelog.isNotBlank()) {
+        if (formattedChangelog.isNotBlank()) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.update_changelog_title),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .heightIn(min = changelogMinHeight, max = changelogMaxHeight)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        shape = RoundedCornerShape(8.dp),
+                    )
                     .border(
-                        width = 2.dp,
-                        color = if (changelogFocused) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        width = if (changelogFocused) 2.dp else 1.dp,
+                        color = if (changelogFocused) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
                         shape = RoundedCornerShape(8.dp),
                     )
                     .focusRequester(changelogFocus)
@@ -161,12 +199,12 @@ private fun AvailableContent(
                         true
                     }
                     .focusable()
-                    .padding(8.dp),
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = status.changelog,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = formattedChangelog,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(changelogScrollState),
@@ -180,20 +218,41 @@ private fun AvailableContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(closeFocus)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                    .tvFocusableClick(onClick = { onEvent(UpdateState.Event.Dismiss) })
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.update_later),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelLarge,
-                )
+            val buttonShape = RoundedCornerShape(8.dp)
+            val updateButtonFilled = !isTelevision || updateFocused
+            val updateButtonBackground = if (updateButtonFilled) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+            val updateButtonContentColor = if (updateButtonFilled) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            if (!status.required) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(closeFocus)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            buttonShape
+                        )
+                        .tvFocusableClick(
+                            onClick = { onEvent(UpdateState.Event.Dismiss) },
+                            shape = buttonShape,
+                            focusedScale = 1f,
+                        )
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.update_later),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
 
             if (autoUpdateSupported) {
@@ -201,14 +260,19 @@ private fun AvailableContent(
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(updateFocus)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                        .tvFocusableClick(onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) })
+                        .background(updateButtonBackground, buttonShape)
+                        .tvFocusableClick(
+                            onClick = { onEvent(UpdateState.Event.ConfirmUpdate(status.apkUrl)) },
+                            shape = buttonShape,
+                            interactionSource = updateInteractionSource,
+                            focusedScale = 1f,
+                        )
                         .padding(horizontal = 24.dp, vertical = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = stringResource(R.string.update_install),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = updateButtonContentColor,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelLarge,
                     )
@@ -221,30 +285,61 @@ private fun AvailableContent(
     }
 }
 
+private fun String.formatReleaseNotes(): String =
+    lines()
+        .joinToString(separator = "\n") { line ->
+            val trimmedEnd = line.trimEnd()
+            val content = trimmedEnd.trimStart()
+            val indent = trimmedEnd.take(trimmedEnd.length - content.length)
+            when {
+                content.startsWith("#") -> content.replace(Regex("^#{1,6}\\s*"), "")
+                content.startsWith("* ") -> indent + "- " + content.removePrefix("* ")
+                else -> trimmedEnd
+            }
+        }
+        .replace(Regex("""\[(.*?)]\((.*?)\)"""), "$1")
+        .replace("**", "")
+        .replace("*", "")
+        .replace("`", "")
+        .replace(Regex("\n{3,}"), "\n\n")
+        .trim()
+
 @Composable
 private fun ManualUpdateHint(isTelevision: Boolean) {
     val releasesUrl = stringResource(R.string.update_manual_release_url)
 
     Column {
         Text(
-            text = stringResource(R.string.update_manual_hint),
+            text = stringResource(R.string.update_manual_hint, releasesUrl),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        if (isTelevision) {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = releasesUrl,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        } else {
+        if (!isTelevision) {
             val uriHandler = LocalUriHandler.current
             TextButton(onClick = { uriHandler.openUri(releasesUrl) }) {
                 Text(text = stringResource(R.string.update_manual_open_releases))
             }
         }
+    }
+}
+
+@Composable
+private fun RequiredUpdateBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.errorContainer,
+                shape = RoundedCornerShape(8.dp),
+            )
+            .padding(12.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.update_required_message),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+        )
     }
 }
 
