@@ -13,6 +13,8 @@ import su.afk.yummy.tv.data.player.extractor.RutubeExtractor
 import su.afk.yummy.tv.data.player.extractor.RutubeResult
 import su.afk.yummy.tv.data.player.extractor.VkExtractor
 import su.afk.yummy.tv.data.player.extractor.VkResult
+import su.afk.yummy.tv.data.player.extractor.ZedfilmExtractor
+import su.afk.yummy.tv.data.player.extractor.ZedfilmResult
 import su.afk.yummy.tv.data.player.utils.BROWSER_STREAM_HEADERS
 import su.afk.yummy.tv.domain.player.isAksorPlayerUrl
 import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
@@ -20,6 +22,7 @@ import su.afk.yummy.tv.domain.player.isCvhPlayerUrl
 import su.afk.yummy.tv.domain.player.isKodikPlayerUrl
 import su.afk.yummy.tv.domain.player.isRutubePlayerUrl
 import su.afk.yummy.tv.domain.player.isVkPlayerUrl
+import su.afk.yummy.tv.domain.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
@@ -67,6 +70,12 @@ class DefaultPlayerStreamRepository @Inject constructor(
                 autoQualityLabel = request.autoQualityLabel,
             )?.toStream() ?: PlayerStreamResolveResult.Failed
 
+            url.isZedfilmPlayerUrl() -> ZedfilmExtractor.extract(
+                iframeUrl = url,
+                context = context,
+                autoQualityLabel = request.autoQualityLabel,
+            )?.toStream() ?: PlayerStreamResolveResult.Failed
+
             else -> PlayerStreamResolveResult.Unsupported
         }
     }
@@ -100,6 +109,13 @@ class DefaultPlayerStreamRepository @Inject constructor(
         )
 
     private fun RutubeResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
+
+    private fun ZedfilmResult.toStream(): PlayerStreamResolveResult.Stream =
         PlayerStreamResolveResult.Stream(
             url = url,
             headers = headers,

@@ -22,13 +22,18 @@ fun String.isVkPlayerUrl(): Boolean =
 fun String.isRutubePlayerUrl(): Boolean =
     contains("rutube.ru", ignoreCase = true)
 
+fun String.isZedfilmPlayerUrl(): Boolean =
+    contains("zedfilm.ru", ignoreCase = true) ||
+            contains("hlamer.ru", ignoreCase = true)
+
 fun String.isSupportedPlayerUrl(): Boolean =
     isKodikPlayerUrl() ||
             isAksorPlayerUrl() ||
             isCvhPlayerUrl() ||
             isAllohaPlayerUrl() ||
             isVkPlayerUrl() ||
-            isRutubePlayerUrl()
+            isRutubePlayerUrl() ||
+            isZedfilmPlayerUrl()
 
 fun String.playerDisplayOrderPriority(): Int =
     when {
