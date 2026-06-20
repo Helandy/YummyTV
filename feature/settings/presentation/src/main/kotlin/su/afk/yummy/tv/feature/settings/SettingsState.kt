@@ -31,6 +31,7 @@ class SettingsState {
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
+        val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
@@ -72,6 +73,9 @@ class SettingsState {
 
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event
+
+        /** Пользователь переключил запрос последнего прогресса при запуске продолжения просмотра. */
+        data object RefreshContinueWatchingProgressOnLaunchToggled : Event
 
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event

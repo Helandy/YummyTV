@@ -63,5 +63,6 @@ class LibraryState {
 
     sealed interface Effect : UiEffect {
         data object ItemRemoved : Effect
+        data class ShowToast(val message: String) : Effect
     }
 }

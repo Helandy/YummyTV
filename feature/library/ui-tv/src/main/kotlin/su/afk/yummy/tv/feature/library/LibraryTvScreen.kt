@@ -93,6 +93,9 @@ fun LibraryTvScreen(
                 LibraryState.Effect.ItemRemoved -> {
                     Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
                 }
+                is LibraryState.Effect.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

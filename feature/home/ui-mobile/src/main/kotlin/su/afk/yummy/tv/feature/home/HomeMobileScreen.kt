@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.home
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -39,8 +41,19 @@ fun HomeMobileScreen(
     effect: Flow<HomeState.Effect>,
     onEvent: (HomeState.Event) -> Unit,
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
+    }
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is HomeState.Effect.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current

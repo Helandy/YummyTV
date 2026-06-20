@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_remote_continue_progress_toast">Remote progress found. Episode %1$s (%2$s)</string>
+</resources>

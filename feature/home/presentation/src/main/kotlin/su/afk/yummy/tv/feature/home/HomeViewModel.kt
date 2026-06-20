@@ -153,7 +153,19 @@ class HomeViewModel @Inject internal constructor(
             return
         }
         viewModelScope.launch {
-            nav.navigate(continueWatchingLaunchHandler.getPlayerDestination(entry))
+            val result = continueWatchingLaunchHandler.getPlayerLaunchResult(entry)
+            result.remoteProgressSwitch?.let { progress ->
+                setEffect(
+                    HomeState.Effect.ShowToast(
+                        stringProvider.get(
+                            R.string.home_remote_continue_progress_toast,
+                            progress.episode,
+                            progress.positionMs.toToastTimeString(),
+                        )
+                    )
+                )
+            }
+            nav.navigate(result.destination)
         }
     }
 
@@ -225,6 +237,18 @@ class HomeViewModel @Inject internal constructor(
 
     private fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
         videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
+
+    private fun Long.toToastTimeString(): String {
+        val totalSeconds = coerceAtLeast(0L) / 1_000L
+        val hours = totalSeconds / 3_600L
+        val minutes = (totalSeconds % 3_600L) / 60L
+        val seconds = totalSeconds % 60L
+        return if (hours > 0) {
+            "%d:%02d:%02d".format(hours, minutes, seconds)
+        } else {
+            "%d:%02d".format(minutes, seconds)
+        }
+    }
 
     private companion object {
         val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)

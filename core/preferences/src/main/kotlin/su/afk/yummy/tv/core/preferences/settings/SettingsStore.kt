@@ -29,6 +29,7 @@ data class SettingsSnapshot(
     val previewCacheSize: PreviewCacheSize,
     val autoSkipOpeningsEndings: Boolean,
     val suggestNextEpisodeOnWatched: Boolean,
+    val refreshContinueWatchingProgressOnLaunch: Boolean,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,
@@ -62,6 +63,8 @@ class SettingsStore(private val context: Context) {
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
     private val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
+    private val refreshContinueWatchingProgressOnLaunchKey =
+        booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
@@ -125,6 +128,11 @@ class SettingsStore(private val context: Context) {
     val suggestNextEpisodeOnWatched: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[suggestNextEpisodeOnWatchedKey] ?: true
     }
+
+    val refreshContinueWatchingProgressOnLaunch: Flow<Boolean> =
+        context.dataStore.data.map { prefs ->
+            prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false
+        }
 
     val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
         prefs[playerResizeModeKey]?.let { name ->
@@ -232,6 +240,8 @@ class SettingsStore(private val context: Context) {
             },
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
+            refreshContinueWatchingProgressOnLaunch =
+                prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: YaniContentLanguage.fromSystemLocale(context),
@@ -306,6 +316,12 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[suggestNextEpisodeOnWatchedKey] = enabled }
+    }
+
+    suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[refreshContinueWatchingProgressOnLaunchKey] = enabled
+        }
     }
 
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode) {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
+import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -21,6 +22,7 @@ import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
+import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import javax.inject.Inject
@@ -41,6 +43,7 @@ class LibraryViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val stringProvider: StringProvider,
     private val analytics: LibraryAnalytics,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
@@ -241,7 +244,31 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         viewModelScope.launch {
-            nav.navigate(continueWatchingLaunchHandler.getPlayerDestination(entry))
+            val result = continueWatchingLaunchHandler.getPlayerLaunchResult(entry)
+            result.remoteProgressSwitch?.let { progress ->
+                setEffect(
+                    LibraryState.Effect.ShowToast(
+                        stringProvider.get(
+                            R.string.library_remote_continue_progress_toast,
+                            progress.episode,
+                            progress.positionMs.toToastTimeString(),
+                        )
+                    )
+                )
+            }
+            nav.navigate(result.destination)
+        }
+    }
+
+    private fun Long.toToastTimeString(): String {
+        val totalSeconds = coerceAtLeast(0L) / 1_000L
+        val hours = totalSeconds / 3_600L
+        val minutes = (totalSeconds % 3_600L) / 60L
+        val seconds = totalSeconds % 60L
+        return if (hours > 0) {
+            "%d:%02d:%02d".format(hours, minutes, seconds)
+        } else {
+            "%d:%02d".format(minutes, seconds)
         }
     }
 

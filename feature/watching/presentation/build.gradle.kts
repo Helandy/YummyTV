@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":feature:details:domain"))
     implementation(project(":feature:home:domain"))

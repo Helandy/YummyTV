@@ -43,5 +43,7 @@ class HomeState {
         data object SupportPromptDismissed : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data class ShowToast(val message: String) : Effect
+    }
 }

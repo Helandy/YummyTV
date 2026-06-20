@@ -1,9 +1,11 @@
 package su.afk.yummy.tv.feature.home
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -21,8 +23,19 @@ fun HomeTvScreen(
     effect: Flow<HomeState.Effect>,
     onEvent: (HomeState.Event) -> Unit,
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
+    }
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is HomeState.Effect.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current

@@ -43,6 +43,8 @@ class SettingsViewModel @Inject internal constructor(
                         previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
+                        refreshContinueWatchingProgressOnLaunch =
+                            snapshot.refreshContinueWatchingProgressOnLaunch,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
                         detailsButtonOrder = snapshot.detailsButtonOrder,
@@ -103,6 +105,12 @@ class SettingsViewModel @Inject internal constructor(
                 analytics.eventSuggestNextEpisodeOnWatchedToggled(enabled)
                 settingsStore.setSuggestNextEpisodeOnWatched(enabled)
             }
+            SettingsState.Event.RefreshContinueWatchingProgressOnLaunchToggled ->
+                viewModelScope.launch {
+                    val enabled = !currentState.refreshContinueWatchingProgressOnLaunch
+                    analytics.eventRefreshContinueWatchingProgressOnLaunchToggled(enabled)
+                    settingsStore.setRefreshContinueWatchingProgressOnLaunch(enabled)
+                }
             is SettingsState.Event.YaniApplicationTokenChanged -> {
                 setState { copy(yaniApplicationToken = event.token) }
                 viewModelScope.launch {
