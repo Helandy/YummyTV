@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
@@ -28,6 +29,7 @@ fun TopMobileScreen(
     effect: Flow<TopState.Effect>,
     onEvent: (TopState.Event) -> Unit,
 ) {
+    val items = state.items.collectAsLazyPagingItems()
     val pagerState = rememberPagerState(
         initialPage = state.selectedType.toTopTypePage(),
         pageCount = { topMobileTypes.size },
@@ -75,14 +77,13 @@ fun TopMobileScreen(
             ) { page ->
                 val pageType = page.toTopType()
                 TopMobileGrid(
-                    items = if (pageType == state.selectedType) state.items else emptyList(),
-                    isLoading = pageType != state.selectedType || state.isLoading,
-                    isLoadingMore = pageType == state.selectedType && state.isLoadingMore,
-                    error = state.error.takeIf { pageType == state.selectedType },
-                    canLoadMore = pageType == state.selectedType && state.canLoadMore,
+                    pagingItems = items,
+                    isActive = pageType == state.selectedType,
                     onAnimeSelected = { id -> onEvent(TopState.Event.AnimeSelected(id)) },
-                    onRetry = { onEvent(TopState.Event.RetrySelected) },
-                    onLoadMore = { onEvent(TopState.Event.LoadMore) },
+                    onRetry = {
+                        onEvent(TopState.Event.RetrySelected)
+                        items.retry()
+                    },
                 )
             }
         }

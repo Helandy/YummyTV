@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchSort
@@ -13,11 +14,16 @@ fun SearchTvScreen(
     effect: Flow<SearchState.Effect>,
     onEvent: (SearchState.Event) -> Unit,
 ) {
+    val results = state.results.collectAsLazyPagingItems()
     val onQueryChanged = remember(onEvent) { { q: String -> onEvent(SearchState.Event.QueryChanged(q)) } }
     val onSearchSubmitted = remember(onEvent) { { onEvent(SearchState.Event.SearchSubmitted) } }
-    val onRetry = remember(onEvent) { { onEvent(SearchState.Event.RetrySelected) } }
+    val onRetry = remember(onEvent, results) {
+        {
+            onEvent(SearchState.Event.RetrySelected)
+            results.retry()
+        }
+    }
     val onItemSelected = remember(onEvent) { { item: SearchItem -> onEvent(SearchState.Event.ItemSelected(item.id)) } }
-    val onLoadMore = remember(onEvent) { { onEvent(SearchState.Event.LoadMore) } }
     val onOpenFilters = remember(onEvent) { { onEvent(SearchState.Event.OpenFilters) } }
     val onCloseFilters = remember(onEvent) { { onEvent(SearchState.Event.CloseFilters) } }
     val onApplyFilters = remember(onEvent) { { onEvent(SearchState.Event.ApplyFilters) } }
@@ -35,10 +41,7 @@ fun SearchTvScreen(
 
     SearchResultsPane(
         query = state.query,
-        items = state.items,
-        isLoading = state.isLoading,
-        error = state.error,
-        canLoadMore = state.canLoadMore,
+        results = results,
         filters = state.filters,
         draftFilters = state.draftFilters,
         filterOptions = state.filterOptions,
@@ -48,7 +51,6 @@ fun SearchTvScreen(
         onSearchSubmitted = onSearchSubmitted,
         onRetry = onRetry,
         onItemSelected = onItemSelected,
-        onLoadMore = onLoadMore,
         onOpenFilters = onOpenFilters,
         onCloseFilters = onCloseFilters,
         onApplyFilters = onApplyFilters,

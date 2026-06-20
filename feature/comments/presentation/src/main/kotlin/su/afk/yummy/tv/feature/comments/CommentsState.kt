@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.comments
 
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
@@ -10,13 +13,12 @@ import su.afk.yummy.tv.domain.comments.model.CommentVote
 
 class CommentsState {
     data class State(
-        val isLoading: Boolean = true,
-        val isRefreshing: Boolean = false,
-        val isLoadingMore: Boolean = false,
         val error: String? = null,
-        val comments: List<CommentUi> = emptyList(),
+        val comments: Flow<PagingData<CommentUi>> = flowOf(PagingData.empty()),
+        val prependedComments: List<CommentUi> = emptyList(),
+        val commentOverlays: Map<Int, CommentUi> = emptyMap(),
+        val deletedCommentIds: Set<Int> = emptySet(),
         val sort: CommentSort = CommentSort.BEST,
-        val hasMore: Boolean = false,
         val isModerator: Boolean = false,
         val currentUserId: Int = 0,
         val composerText: String = "",
@@ -53,8 +55,8 @@ class CommentsState {
         data object BackSelected : Event
         data object RetrySelected : Event
         data object RefreshSelected : Event
-        data object LoadMoreSelected : Event
         data class SortSelected(val sort: CommentSort) : Event
+        data class VisibleCommentsChanged(val comments: List<CommentUi>) : Event
         data class ComposerTextChanged(val text: String) : Event
         data object SubmitSelected : Event
         data object ComposerCancelled : Event

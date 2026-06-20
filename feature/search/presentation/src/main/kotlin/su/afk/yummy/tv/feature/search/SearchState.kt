@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.search
 
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
@@ -11,11 +14,8 @@ import su.afk.yummy.tv.domain.search.model.SearchSort
 class SearchState {
     data class State(
         val query: String = "",
-        val items: List<SearchItem> = emptyList(),
-        val isLoading: Boolean = false,
+        val results: Flow<PagingData<SearchItem>> = flowOf(PagingData.empty()),
         val error: String? = null,
-        val canLoadMore: Boolean = false,
-        val offset: Int = 0,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,
         val filterOptions: SearchFilterOptions = SearchFilterOptions(),
@@ -42,9 +42,6 @@ class SearchState {
 
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
-
-        /** Пользователь запросил загрузку следующей страницы результатов. */
-        data object LoadMore : Event
 
         /** Пользователь открыл панель фильтров. */
         data object OpenFilters : Event

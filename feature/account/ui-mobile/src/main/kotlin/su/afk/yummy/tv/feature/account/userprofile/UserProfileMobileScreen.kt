@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -33,8 +32,6 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +40,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
@@ -67,8 +66,6 @@ import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.view.toMobileListFilterUi
 
-private const val LOAD_MORE_SENTINEL_KEY = "load_more_sentinel"
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun UserProfileMobileScreen(
@@ -77,17 +74,25 @@ fun UserProfileMobileScreen(
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
     val listState = rememberLazyListState()
-
-    LaunchedEffect(listState, state) {
-        snapshotFlow {
-            state.canAutoLoadMore() &&
-                    listState.layoutInfo.visibleItemsInfo.any {
-                        it.key == LOAD_MORE_SENTINEL_KEY
-                    }
-        }
-            .distinctUntilChanged()
-            .filter { it }
-            .collect { onEvent(UserProfileState.Event.LoadMoreSelected) }
+    val collections = if (state.selectedTab == UserProfileState.Tab.COLLECTIONS) {
+        state.collections.collectAsLazyPagingItems()
+    } else {
+        null
+    }
+    val posts = if (state.selectedTab == UserProfileState.Tab.POSTS) {
+        state.posts.collectAsLazyPagingItems()
+    } else {
+        null
+    }
+    val reviews = if (state.selectedTab == UserProfileState.Tab.REVIEWS) {
+        state.reviews.collectAsLazyPagingItems()
+    } else {
+        null
+    }
+    val friends = if (state.selectedTab == UserProfileState.Tab.FRIENDS) {
+        state.friends.collectAsLazyPagingItems()
+    } else {
+        null
     }
 
     BaseScreen(
@@ -140,16 +145,16 @@ fun UserProfileMobileScreen(
                 }
 
                 UserProfileState.Tab.COLLECTIONS ->
-                    collectionItems(state.collections, onEvent)
+                    collections?.let { collectionItems(it, onEvent) }
 
                 UserProfileState.Tab.POSTS ->
-                    postItems(state.posts, onEvent)
+                    posts?.let { postItems(it, onEvent) }
 
                 UserProfileState.Tab.REVIEWS ->
-                    reviewItems(state.reviews, onEvent)
+                    reviews?.let { reviewItems(it, onEvent) }
 
                 UserProfileState.Tab.FRIENDS ->
-                    friendItems(state.friends, onEvent)
+                    friends?.let { friendItems(it, onEvent) }
             }
         }
     }
@@ -357,68 +362,103 @@ private fun androidx.compose.foundation.lazy.LazyListScope.userAnimeListItems(
     content: UserProfileState.PagedContent<UserAnimeListItem>,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
-    pagedStateItems(content)
+    pagedStateItems(
+        content = content,
+        onRetry = { onEvent(UserProfileState.Event.RetryTabSelected) },
+    )
     items(content.items, key = { "anime_${it.animeId}" }) { item ->
         UserAnimeListRow(
             item = item,
             onClick = { onEvent(UserProfileState.Event.AnimeSelected(item.animeId)) },
         )
     }
-    loadMoreItem(content)
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.collectionItems(
-    content: UserProfileState.PagedContent<AnimeCollectionSummary>,
+    content: LazyPagingItems<AnimeCollectionSummary>,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
-    pagedStateItems(content)
-    items(content.items, key = { "collection_${it.id}" }) { item ->
-        UserCollectionRow(item = item)
+    val onRetry = {
+        onEvent(UserProfileState.Event.RetryTabSelected)
+        content.retry()
     }
-    loadMoreItem(content)
+    pagedStateItems(content, onRetry)
+    items(
+        count = content.itemCount,
+        key = content.itemKey { "collection_${it.id}" },
+    ) { index ->
+        content[index]?.let { item -> UserCollectionRow(item = item) }
+    }
+    appendStateItem(content, onRetry)
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.postItems(
-    content: UserProfileState.PagedContent<UserPostSummary>,
+    content: LazyPagingItems<UserPostSummary>,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
-    pagedStateItems(content)
-    items(content.items, key = { "post_${it.id}" }) { item ->
-        UserPostRow(item = item)
+    val onRetry = {
+        onEvent(UserProfileState.Event.RetryTabSelected)
+        content.retry()
     }
-    loadMoreItem(content)
+    pagedStateItems(content, onRetry)
+    items(
+        count = content.itemCount,
+        key = content.itemKey { "post_${it.id}" },
+    ) { index ->
+        content[index]?.let { item -> UserPostRow(item = item) }
+    }
+    appendStateItem(content, onRetry)
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.reviewItems(
-    content: UserProfileState.PagedContent<UserReviewSummary>,
+    content: LazyPagingItems<UserReviewSummary>,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
-    pagedStateItems(content)
-    items(content.items, key = { "review_${it.id}" }) { item ->
-        UserReviewRow(
-            item = item,
-            onClick = { onEvent(UserProfileState.Event.AnimeSelected(item.animeId)) },
-        )
+    val onRetry = {
+        onEvent(UserProfileState.Event.RetryTabSelected)
+        content.retry()
     }
-    loadMoreItem(content)
+    pagedStateItems(content, onRetry)
+    items(
+        count = content.itemCount,
+        key = content.itemKey { "review_${it.id}" },
+    ) { index ->
+        content[index]?.let { item ->
+            UserReviewRow(
+                item = item,
+                onClick = { onEvent(UserProfileState.Event.AnimeSelected(item.animeId)) },
+            )
+        }
+    }
+    appendStateItem(content, onRetry)
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.friendItems(
-    content: UserProfileState.PagedContent<UserFriend>,
+    content: LazyPagingItems<UserFriend>,
     onEvent: (UserProfileState.Event) -> Unit,
 ) {
-    pagedStateItems(content)
-    items(content.items, key = { "friend_${it.id}" }) { item ->
-        UserFriendRow(
-            item = item,
-            onClick = { onEvent(UserProfileState.Event.FriendSelected(item.id)) },
-        )
+    val onRetry = {
+        onEvent(UserProfileState.Event.RetryTabSelected)
+        content.retry()
     }
-    loadMoreItem(content)
+    pagedStateItems(content, onRetry)
+    items(
+        count = content.itemCount,
+        key = content.itemKey { "friend_${it.id}" },
+    ) { index ->
+        content[index]?.let { item ->
+            UserFriendRow(
+                item = item,
+                onClick = { onEvent(UserProfileState.Event.FriendSelected(item.id)) },
+            )
+        }
+    }
+    appendStateItem(content, onRetry)
 }
 
 private fun <T> androidx.compose.foundation.lazy.LazyListScope.pagedStateItems(
     content: UserProfileState.PagedContent<T>,
+    onRetry: () -> Unit,
 ) {
     when {
         content.isLoading -> item(key = "loading") {
@@ -433,9 +473,10 @@ private fun <T> androidx.compose.foundation.lazy.LazyListScope.pagedStateItems(
         }
 
         content.error && content.items.isEmpty() -> item(key = "error") {
-            AccountMobileEmptyText(
+            UserProfileMessage(
                 text = stringResource(R.string.user_profile_section_error),
-                modifier = Modifier.padding(horizontal = 16.dp),
+                action = stringResource(R.string.user_profile_retry),
+                onAction = onRetry,
             )
         }
 
@@ -448,11 +489,46 @@ private fun <T> androidx.compose.foundation.lazy.LazyListScope.pagedStateItems(
     }
 }
 
-private fun <T> androidx.compose.foundation.lazy.LazyListScope.loadMoreItem(
-    content: UserProfileState.PagedContent<T>,
+private fun <T : Any> androidx.compose.foundation.lazy.LazyListScope.pagedStateItems(
+    content: LazyPagingItems<T>,
+    onRetry: () -> Unit,
 ) {
-    if (content.isLoadingMore) {
-        item(key = "loading_more") {
+    val refreshState = content.loadState.refresh
+    when {
+        refreshState is LoadState.Loading -> item(key = "loading") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                AccountMobileLoadingIndicator()
+            }
+        }
+
+        refreshState is LoadState.Error && content.itemCount == 0 -> item(key = "error") {
+            UserProfileMessage(
+                text = refreshState.error.uiMessage(),
+                action = stringResource(R.string.user_profile_retry),
+                onAction = onRetry,
+            )
+        }
+
+        refreshState !is LoadState.Loading && content.itemCount == 0 -> item(key = "empty") {
+            AccountMobileEmptyText(
+                text = stringResource(R.string.user_profile_section_empty),
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
+    }
+}
+
+private fun <T : Any> androidx.compose.foundation.lazy.LazyListScope.appendStateItem(
+    content: LazyPagingItems<T>,
+    onRetry: () -> Unit,
+) {
+    when (val appendState = content.loadState.append) {
+        is LoadState.Loading -> item(key = "loading_more") {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -462,29 +538,18 @@ private fun <T> androidx.compose.foundation.lazy.LazyListScope.loadMoreItem(
                 CircularProgressIndicator(strokeWidth = 2.dp)
             }
         }
-    } else if (content.hasMore) {
-        item(key = LOAD_MORE_SENTINEL_KEY) {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp),
+
+        is LoadState.Error -> item(key = "append_error") {
+            UserProfileMessage(
+                text = appendState.error.uiMessage(),
+                action = stringResource(R.string.user_profile_retry),
+                onAction = onRetry,
             )
         }
+
+        is LoadState.NotLoading -> Unit
     }
 }
-
-private fun UserProfileState.State.canAutoLoadMore(): Boolean =
-    when (selectedTab) {
-        UserProfileState.Tab.OVERVIEW -> false
-        UserProfileState.Tab.LISTS -> lists.canAutoLoadMore()
-        UserProfileState.Tab.COLLECTIONS -> collections.canAutoLoadMore()
-        UserProfileState.Tab.POSTS -> posts.canAutoLoadMore()
-        UserProfileState.Tab.REVIEWS -> reviews.canAutoLoadMore()
-        UserProfileState.Tab.FRIENDS -> friends.canAutoLoadMore()
-    }
-
-private fun <T> UserProfileState.PagedContent<T>.canAutoLoadMore(): Boolean =
-    hasMore && !isLoading && !isLoadingMore
 
 @Composable
 private fun UserAnimeListRow(item: UserAnimeListItem, onClick: () -> Unit) {
@@ -674,3 +739,5 @@ private fun UserProfileState.Tab.count(profile: UserProfileSummary?): Int? {
 
 private fun Int.tabCountLabel(): String =
     if (this > 999) "999+" else coerceAtLeast(0).toString()
+
+private fun Throwable.uiMessage(): String = message ?: localizedMessage ?: toString()

@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
@@ -22,17 +25,15 @@ class UserProfileState {
         val overviewError: Boolean = false,
         val selectedList: ListFilter = ListFilter.WATCHING,
         val lists: PagedContent<UserAnimeListItem> = PagedContent(),
-        val collections: PagedContent<AnimeCollectionSummary> = PagedContent(),
-        val posts: PagedContent<UserPostSummary> = PagedContent(),
-        val reviews: PagedContent<UserReviewSummary> = PagedContent(),
-        val friends: PagedContent<UserFriend> = PagedContent(),
+        val collections: Flow<PagingData<AnimeCollectionSummary>> = flowOf(PagingData.empty()),
+        val posts: Flow<PagingData<UserPostSummary>> = flowOf(PagingData.empty()),
+        val reviews: Flow<PagingData<UserReviewSummary>> = flowOf(PagingData.empty()),
+        val friends: Flow<PagingData<UserFriend>> = flowOf(PagingData.empty()),
     ) : UiState
 
     data class PagedContent<T>(
         val items: List<T> = emptyList(),
         val isLoading: Boolean = false,
-        val isLoadingMore: Boolean = false,
-        val hasMore: Boolean = false,
         val error: Boolean = false,
         val loaded: Boolean = false,
     )
@@ -60,7 +61,6 @@ class UserProfileState {
         data object RetryOverviewSelected : Event
         data class TabSelected(val tab: Tab) : Event
         data class ListFilterSelected(val filter: ListFilter) : Event
-        data object LoadMoreSelected : Event
         data object RetryTabSelected : Event
         data class AnimeSelected(val animeId: Int) : Event
         data class FriendSelected(val userId: Int) : Event

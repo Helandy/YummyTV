@@ -26,6 +26,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
@@ -39,44 +41,53 @@ fun CollectionsCatalogTvScreen(
     effect: Flow<CollectionsCatalogState.Effect>,
     onEvent: (CollectionsCatalogState.Event) -> Unit,
 ) {
+    val items = state.items.collectAsLazyPagingItems()
+    val refreshState = items.loadState.refresh
+    val appendState = items.loadState.append
+    val itemCount = items.itemCount
+    val snapshotItems = items.itemSnapshotList.items
+    val isLoading = refreshState is LoadState.Loading
+    val initialError = (refreshState as? LoadState.Error)
+        ?.takeIf { itemCount == 0 }
+        ?.error
+        ?.uiMessage()
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val loadingFocusRequester = remember { FocusRequester() }
     val retryFocusRequester = remember { FocusRequester() }
-    val itemIds = remember(state.items) { state.items.map { it.id } }
-    val itemFocusRequesters = remember(itemIds) { List(state.items.size) { FocusRequester() } }
+    val itemIds = remember(snapshotItems) { snapshotItems.map { it.id } }
+    val itemFocusRequesters = remember(itemCount) { List(itemCount) { FocusRequester() } }
     var lastFocusedItemId by rememberSaveable { mutableIntStateOf(0) }
     var focusContentAfterInitialLoad by remember { mutableStateOf(false) }
     val focusedIndex = remember(itemIds, lastFocusedItemId) {
         itemIds.indexOf(lastFocusedItemId).takeIf { it >= 0 } ?: 0
     }
     val preferredContentFocusRequester = when {
-        state.items.isNotEmpty() -> itemFocusRequesters.getOrNull(focusedIndex)
-        state.isLoading -> loadingFocusRequester
-        state.error != null -> retryFocusRequester
+        itemCount > 0 -> itemFocusRequesters.getOrNull(focusedIndex)
+        isLoading -> loadingFocusRequester
+        initialError != null -> retryFocusRequester
         else -> null
     }
-    val shouldShowInitialError = state.error != null && state.items.isEmpty()
-    val shouldShowEmpty = !state.isLoading && state.error == null && state.items.isEmpty()
+    val shouldShowEmpty = !isLoading && initialError == null && itemCount == 0
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
-    LaunchedEffect(state.isLoading, state.items.isEmpty()) {
-        if (state.isLoading && state.items.isEmpty()) {
+    LaunchedEffect(isLoading, itemCount) {
+        if (isLoading && itemCount == 0) {
             focusContentAfterInitialLoad = true
         }
     }
 
     LaunchedEffect(
         focusContentAfterInitialLoad,
-        state.isLoading,
+        isLoading,
         itemIds,
         focusedIndex,
         itemFocusRequesters,
     ) {
-        if (!focusContentAfterInitialLoad || state.isLoading || itemIds.isEmpty()) {
+        if (!focusContentAfterInitialLoad || isLoading || itemIds.isEmpty()) {
             return@LaunchedEffect
         }
         val focusRequester = itemFocusRequesters.getOrNull(focusedIndex) ?: return@LaunchedEffect
@@ -99,15 +110,18 @@ fun CollectionsCatalogTvScreen(
         contentAlignment = Alignment.Center,
     ) {
         when {
-            state.isLoading && state.items.isEmpty() -> TvLoadingScreen(
+            isLoading && itemCount == 0 -> TvLoadingScreen(
                 modifier = Modifier
                     .focusRequester(loadingFocusRequester)
                     .focusable(),
             )
 
-            shouldShowInitialError -> CollectionsCatalogMessage(
-                message = state.error.orEmpty(),
-                onRetry = { onEvent(CollectionsCatalogState.Event.RetrySelected) },
+            initialError != null -> CollectionsCatalogMessage(
+                message = initialError,
+                onRetry = {
+                    onEvent(CollectionsCatalogState.Event.RetrySelected)
+                    items.retry()
+                },
                 retryFocusRequester = retryFocusRequester,
             )
 
@@ -117,16 +131,13 @@ fun CollectionsCatalogTvScreen(
             )
 
             else -> CollectionsCatalogGrid(
-                items = state.items,
-                canLoadMore = state.canLoadMore,
-                isLoading = state.isLoading,
-                isLoadingMore = state.isLoadingMore,
+                pagingItems = items,
+                isLoadingMore = appendState is LoadState.Loading,
                 itemFocusRequesters = itemFocusRequesters,
                 onCollectionSelected = {
                     onEvent(CollectionsCatalogState.Event.CollectionSelected(it))
                 },
                 onCollectionFocused = { lastFocusedItemId = it },
-                onLoadMore = { onEvent(CollectionsCatalogState.Event.LoadMoreSelected) },
             )
         }
     }
@@ -151,3 +162,6 @@ private fun CollectionsCatalogMessage(
         )
     }
 }
+
+private fun Throwable.uiMessage(): String =
+    message ?: localizedMessage ?: toString()

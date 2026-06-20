@@ -38,15 +38,6 @@ internal class CommentsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь запросил следующую страницу комментариев.
-     *
-     * Параметры: anime_id, sort.
-     */
-    fun eventLoadMoreSelected(animeId: Int, sort: CommentSort) {
-        eventWithAnime(EVENT_LOAD_MORE_SELECTED, animeId, sort)
-    }
-
-    /**
      * Пользователь сменил сортировку комментариев.
      *
      * Параметры: anime_id, sort.
@@ -268,7 +259,6 @@ internal class CommentsAnalytics @Inject constructor(
         const val EVENT_DELETED = "comments_deleted"
         const val EVENT_DELETE_SELECTED = "comments_delete_selected"
         const val EVENT_EDIT_SELECTED = "comments_edit_selected"
-        const val EVENT_LOAD_MORE_SELECTED = "comments_load_more_selected"
         const val EVENT_REFRESH_SELECTED = "comments_refresh_selected"
         const val EVENT_REPLIES_HIDDEN = "comments_replies_hidden"
         const val EVENT_REPLIES_LOAD_MORE_SELECTED = "comments_replies_load_more_selected"

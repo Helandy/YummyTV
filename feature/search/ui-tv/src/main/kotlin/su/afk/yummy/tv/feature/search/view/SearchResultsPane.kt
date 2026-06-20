@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +25,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
@@ -42,10 +43,7 @@ import su.afk.yummy.tv.feature.search.R
 @Composable
 internal fun SearchResultsPane(
     query: String,
-    items: List<SearchItem>,
-    isLoading: Boolean,
-    error: String?,
-    canLoadMore: Boolean,
+    results: LazyPagingItems<SearchItem>,
     filters: SearchFilters,
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
@@ -55,7 +53,6 @@ internal fun SearchResultsPane(
     onSearchSubmitted: () -> Unit,
     onRetry: () -> Unit,
     onItemSelected: (SearchItem) -> Unit,
-    onLoadMore: () -> Unit,
     onOpenFilters: () -> Unit,
     onCloseFilters: () -> Unit,
     onApplyFilters: () -> Unit,
@@ -74,23 +71,13 @@ internal fun SearchResultsPane(
 ) {
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading) {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val total = gridState.layoutInfo.totalItemsCount
-            items.isNotEmpty() &&
-                    canLoadMore &&
-                    !isLoading &&
-                    total > 0 &&
-                    lastVisible >= total - LOAD_MORE_THRESHOLD
-        }
-    }
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) onLoadMore()
-    }
-
-    val itemIds = remember(items) { items.map { it.id } }
-    val focusRequesters = remember(itemIds) { List(items.size) { FocusRequester() } }
+    val refreshState = results.loadState.refresh
+    val appendState = results.loadState.append
+    val itemCount = results.itemCount
+    val snapshotItems = results.itemSnapshotList.items
+    val isLoading = refreshState is LoadState.Loading
+    val itemIds = remember(snapshotItems) { snapshotItems.map { it.id } }
+    val focusRequesters = remember(itemCount) { List(itemCount) { FocusRequester() } }
     val gridFocusRequester = remember { FocusRequester() }
     val searchFieldFocusRequester = remember { FocusRequester() }
     val filterButtonFocusRequester = remember { FocusRequester() }
@@ -100,7 +87,6 @@ internal fun SearchResultsPane(
     val filterPanelInitialFocusRequester = remember { FocusRequester() }
     val focusStateKey = remember(query, filters) { "${query.trim()}|${filters.focusStateKey()}" }
     val focusRestoreState = rememberTvLazyFocusRestoreState<Int>(focusStateKey)
-    val initialError = error?.takeIf { items.isEmpty() }
     val itemFocusRequesters = remember(itemIds, focusRequesters) {
         itemIds.zip(focusRequesters).toMap()
     }
@@ -116,8 +102,8 @@ internal fun SearchResultsPane(
     }
 
     fun restoreTargetIndex(): Int {
-        if (items.isEmpty()) return 0
-        return focusRestoreState.targetIndex(itemIds)?.coerceIn(0, items.lastIndex) ?: 0
+        if (itemCount == 0) return 0
+        return focusRestoreState.targetIndex(itemIds)?.coerceIn(0, itemCount - 1) ?: 0
     }
 
     fun gridFallbackFocusRequester(): FocusRequester =
@@ -127,8 +113,8 @@ internal fun SearchResultsPane(
         index: Int,
         fallbackFocusRequester: FocusRequester? = null,
     ) {
-        if (items.isEmpty()) return
-        val target = index.coerceIn(0, items.lastIndex)
+        if (itemCount == 0) return
+        val target = index.coerceIn(0, itemCount - 1)
         rememberFocusedItem(target)
         isRestoringFocus = true
         restoreFocusJob = launchTvLazyGridKeyFocusRestore(
@@ -149,11 +135,15 @@ internal fun SearchResultsPane(
     val preferredContentFocusRequester = when {
         isFilterPanelOpen -> filterPanelInitialFocusRequester
         restoreFilterButtonFocusToken > 0 -> filterButtonFocusRequester
-        initialError != null && !isLoading -> retryFocusRequester
-        items.isNotEmpty() -> gridFocusRequester
+        refreshState is LoadState.Error && itemCount == 0 && !isLoading -> retryFocusRequester
+        itemCount > 0 -> gridFocusRequester
 
         else -> searchFieldFocusRequester
     }
+    val initialError = (refreshState as? LoadState.Error)
+        ?.takeIf { itemCount == 0 }
+        ?.error
+        ?.uiMessage()
 
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
@@ -220,7 +210,7 @@ internal fun SearchResultsPane(
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
 
-                items.isEmpty() && isLoading -> TvLoadingScreen()
+                itemCount == 0 && isLoading -> TvLoadingScreen()
                 initialError != null -> SearchErrorMessage(
                     message = initialError,
                     retryFocusRequester = retryFocusRequester,
@@ -228,7 +218,7 @@ internal fun SearchResultsPane(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-                items.isEmpty() && (query.isNotBlank() || !filters.isEmpty) -> {
+                itemCount == 0 && (query.isNotBlank() || !filters.isEmpty) -> {
                     Text(
                         text = stringResource(R.string.search_empty),
                         style = MaterialTheme.typography.bodyLarge,
@@ -239,8 +229,8 @@ internal fun SearchResultsPane(
 
                 else -> {
                     SearchResultsGrid(
-                        items = items,
-                        isLoading = isLoading,
+                        results = results,
+                        isLoading = appendState is LoadState.Loading,
                         gridState = gridState,
                         gridFocusRequester = gridFocusRequester,
                         focusRequesters = focusRequesters,
@@ -312,4 +302,5 @@ private fun SearchFilters.focusStateKey(): String = buildString {
     append(sortForward)
 }
 
-private const val LOAD_MORE_THRESHOLD = 6
+private fun Throwable.uiMessage(): String =
+    message ?: localizedMessage ?: toString()

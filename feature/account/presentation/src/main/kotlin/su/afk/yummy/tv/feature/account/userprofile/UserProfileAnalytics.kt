@@ -50,18 +50,6 @@ internal class UserProfileAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь запросил следующую страницу текущей вкладки.
-     *
-     * Параметры: user_id, tab.
-     */
-    fun eventLoadMoreSelected(userId: Int, tab: UserProfileState.Tab) {
-        tracker.track(
-            EVENT_LOAD_MORE_SELECTED,
-            userParams(userId) + analyticsParamsOf(PARAM_TAB to tab.analyticsValue()),
-        )
-    }
-
-    /**
      * Пользователь повторил загрузку текущей вкладки.
      *
      * Параметры: user_id, tab.
@@ -150,7 +138,6 @@ internal class UserProfileAnalytics @Inject constructor(
         const val EVENT_ANIME_SELECTED = "user_profile_anime_selected"
         const val EVENT_FRIEND_SELECTED = "user_profile_friend_selected"
         const val EVENT_LIST_FILTER_SELECTED = "user_profile_list_filter_selected"
-        const val EVENT_LOAD_MORE_SELECTED = "user_profile_load_more_selected"
         const val EVENT_RETRY_OVERVIEW_SELECTED = "user_profile_retry_overview_selected"
         const val EVENT_RETRY_TAB_SELECTED = "user_profile_retry_tab_selected"
         const val EVENT_SCREEN_OPENED = "user_profile_screen"

@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +41,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
@@ -61,6 +65,23 @@ fun CommentsMobileScreen(
     onEvent: (CommentsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    val pagingComments = state.comments.collectAsLazyPagingItems()
+    val refreshState = pagingComments.loadState.refresh
+    val appendState = pagingComments.loadState.append
+    val visibleComments = remember(
+        state.prependedComments,
+        state.commentOverlays,
+        state.deletedCommentIds,
+        pagingComments.itemSnapshotList.items,
+    ) {
+        (state.prependedComments + pagingComments.itemSnapshotList.items)
+            .distinctBy { it.comment.id }
+            .mapNotNull { it.resolve(state) }
+    }
+    val initialError = (refreshState as? LoadState.Error)
+        ?.takeIf { visibleComments.isEmpty() }
+        ?.error
+        ?.uiMessage()
     val listState = rememberLazyListState()
     var sortRowVisible by remember { mutableStateOf(true) }
     var previousScrollIndex by remember { mutableIntStateOf(0) }
@@ -96,28 +117,8 @@ fun CommentsMobileScreen(
         sortRowVisible = true
         listState.scrollToItem(0)
     }
-    LaunchedEffect(
-        listState,
-        state.hasMore,
-        state.isLoadingMore,
-        state.isLoading,
-        state.isRefreshing
-    ) {
-        snapshotFlow {
-            val layoutInfo = listState.layoutInfo
-            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            lastVisibleIndex to layoutInfo.totalItemsCount
-        }.collect { (lastVisibleIndex, totalItemsCount) ->
-            val shouldLoadMore = totalItemsCount > 0 &&
-                    lastVisibleIndex >= totalItemsCount - 3 &&
-                    state.hasMore &&
-                    !state.isLoadingMore &&
-                    !state.isLoading &&
-                    !state.isRefreshing
-            if (shouldLoadMore) {
-                onEvent(CommentsState.Event.LoadMoreSelected)
-            }
-        }
+    LaunchedEffect(visibleComments) {
+        onEvent(CommentsState.Event.VisibleCommentsChanged(visibleComments))
     }
 
     BaseScreen(
@@ -150,19 +151,26 @@ fun CommentsMobileScreen(
             }
             Box(Modifier.weight(1f)) {
                 PullToRefreshBox(
-                    isRefreshing = state.isRefreshing,
+                    isRefreshing = refreshState is LoadState.Loading && visibleComments.isNotEmpty(),
                     onRefresh = { onEvent(CommentsState.Event.RefreshSelected) },
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     MobileStateContent(
-                        isLoading = state.isLoading && state.comments.isEmpty(),
-                        error = state.error.takeIf { state.comments.isEmpty() },
-                        empty = !state.isLoading && state.comments.isEmpty() && state.error == null,
+                        isLoading = refreshState is LoadState.Loading && visibleComments.isEmpty(),
+                        error = initialError,
+                        empty = refreshState !is LoadState.Loading &&
+                                visibleComments.isEmpty() &&
+                                initialError == null,
                         emptyText = stringResource(R.string.comments_empty),
-                        onRetry = { onEvent(CommentsState.Event.RetrySelected) },
+                        onRetry = {
+                            onEvent(CommentsState.Event.RetrySelected)
+                            pagingComments.retry()
+                        },
                     ) {
                         CommentsList(
                             state = state,
+                            pagingComments = pagingComments,
+                            appendState = appendState,
                             listState = listState,
                             onEvent = onEvent,
                         )
@@ -194,6 +202,8 @@ fun CommentsMobileScreen(
 @Composable
 private fun CommentsList(
     state: CommentsState.State,
+    pagingComments: LazyPagingItems<CommentsState.CommentUi>,
+    appendState: LoadState,
     listState: LazyListState,
     onEvent: (CommentsState.Event) -> Unit,
 ) {
@@ -203,7 +213,7 @@ private fun CommentsList(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        state.error?.let { error ->
+        (appendState as? LoadState.Error)?.error?.uiMessage()?.let { error ->
             item(key = "soft_error") {
                 MobileMessage(
                     title = error,
@@ -212,10 +222,41 @@ private fun CommentsList(
                 )
             }
         }
+        itemsIndexed(
+            items = state.prependedComments,
+            key = { _, item -> "prepended_${item.comment.id}" },
+        ) { _, item ->
+            item.resolve(state)?.let { resolved ->
+                CommentThread(
+                    item = resolved,
+                    currentUserId = state.currentUserId,
+                    isModerator = state.isModerator,
+                    depth = 0,
+                    onReply = { onEvent(CommentsState.Event.ReplySelected(it)) },
+                    onEdit = { onEvent(CommentsState.Event.EditSelected(it)) },
+                    onDelete = { onEvent(CommentsState.Event.DeleteSelected(it)) },
+                    onReport = { onEvent(CommentsState.Event.ReportSelected(it)) },
+                    onVote = { commentId, vote ->
+                        onEvent(CommentsState.Event.VoteSelected(commentId, vote))
+                    },
+                    onToggleChildren = {
+                        onEvent(CommentsState.Event.ChildrenToggleSelected(it))
+                    },
+                    onLoadMoreChildren = {
+                        onEvent(CommentsState.Event.LoadMoreChildrenSelected(it))
+                    },
+                    onAuthorSelected = {
+                        onEvent(CommentsState.Event.AuthorSelected(it))
+                    },
+                )
+            }
+        }
         items(
-            items = state.comments,
-            key = { it.comment.id },
-        ) { item ->
+            count = pagingComments.itemCount,
+            key = pagingComments.itemKey { it.comment.id },
+        ) { index ->
+            val item = pagingComments[index]?.resolve(state) ?: return@items
+            if (state.prependedComments.any { it.comment.id == item.comment.id }) return@items
             CommentThread(
                 item = item,
                 currentUserId = state.currentUserId,
@@ -239,7 +280,7 @@ private fun CommentsList(
                 },
             )
         }
-        if (state.isLoadingMore) {
+        if (appendState is LoadState.Loading) {
             item(key = "loading_more") {
                 Row(
                     modifier = Modifier
@@ -262,6 +303,19 @@ private fun CommentsList(
         }
     }
 }
+
+private fun CommentsState.CommentUi.resolve(
+    state: CommentsState.State,
+): CommentsState.CommentUi? {
+    if (comment.id in state.deletedCommentIds) return null
+    val overlaid = state.commentOverlays[comment.id] ?: this
+    return overlaid.copy(
+        children = overlaid.children.mapNotNull { it.resolve(state) },
+    )
+}
+
+private fun Throwable.uiMessage(): String =
+    message ?: localizedMessage ?: toString()
 
 @Composable
 private fun CommentSortRow(

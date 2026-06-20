@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.account.userprofile
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -12,6 +15,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.utils.OffsetPage
+import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserCollectionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
@@ -52,7 +57,13 @@ class UserProfileViewModel @AssistedInject internal constructor(
         fun create(userId: Int): UserProfileViewModel
     }
 
-    override fun createInitialState() = UserProfileState.State(userId = userId)
+    override fun createInitialState() = UserProfileState.State(
+        userId = userId,
+        collections = createCollectionsFlow(),
+        posts = createPostsFlow(),
+        reviews = createReviewsFlow(),
+        friends = createFriendsFlow(),
+    )
 
     init {
         analytics.eventScreenOpened(userId)
@@ -86,11 +97,6 @@ class UserProfileViewModel @AssistedInject internal constructor(
                     }
                 }
                 loadLists(force = true)
-            }
-
-            UserProfileState.Event.LoadMoreSelected -> {
-                analytics.eventLoadMoreSelected(userId, currentState.selectedTab)
-                loadSelectedTab(append = true)
             }
 
             UserProfileState.Event.RetryTabSelected -> {
@@ -157,146 +163,117 @@ class UserProfileViewModel @AssistedInject internal constructor(
         when (tab) {
             UserProfileState.Tab.OVERVIEW -> Unit
             UserProfileState.Tab.LISTS -> if (!currentState.lists.loaded) loadLists()
-            UserProfileState.Tab.COLLECTIONS -> if (!currentState.collections.loaded) loadCollections()
-            UserProfileState.Tab.POSTS -> if (!currentState.posts.loaded) loadPosts()
-            UserProfileState.Tab.REVIEWS -> if (!currentState.reviews.loaded) loadReviews()
-            UserProfileState.Tab.FRIENDS -> if (!currentState.friends.loaded) loadFriends()
+            UserProfileState.Tab.COLLECTIONS,
+            UserProfileState.Tab.POSTS,
+            UserProfileState.Tab.REVIEWS,
+            UserProfileState.Tab.FRIENDS -> Unit
         }
     }
 
-    private fun loadSelectedTab(force: Boolean = false, append: Boolean = false) {
+    private fun loadSelectedTab(force: Boolean = false) {
         when (currentState.selectedTab) {
             UserProfileState.Tab.OVERVIEW -> loadOverview()
-            UserProfileState.Tab.LISTS -> loadLists(force = force, append = append)
-            UserProfileState.Tab.COLLECTIONS -> loadCollections(force = force, append = append)
-            UserProfileState.Tab.POSTS -> loadPosts(force = force, append = append)
-            UserProfileState.Tab.REVIEWS -> loadReviews(force = force, append = append)
-            UserProfileState.Tab.FRIENDS -> loadFriends(force = force, append = append)
+            UserProfileState.Tab.LISTS -> loadLists(force = force)
+            UserProfileState.Tab.COLLECTIONS,
+            UserProfileState.Tab.POSTS,
+            UserProfileState.Tab.REVIEWS,
+            UserProfileState.Tab.FRIENDS -> Unit
         }
     }
 
-    private fun loadLists(force: Boolean = false, append: Boolean = false) {
+    private fun loadLists(force: Boolean = false) {
         val content = currentState.lists
-        if (shouldSkipLoad(content, force, append)) return
+        if (content.isLoading || (!force && content.loaded)) return
         viewModelScope.launch {
-            setState { copy(lists = content.startLoading(append)) }
+            setState { copy(lists = content.startLoading()) }
             runCatching {
                 val filter = currentState.selectedList
-                val items = if (filter == UserProfileState.ListFilter.FAVORITES) {
+                if (filter == UserProfileState.ListFilter.FAVORITES) {
                     getUserFavoriteAnimeList(userId, forceRefresh = force)
                 } else {
                     getUserAnimeList(userId, requireNotNull(filter.list), forceRefresh = force)
                 }
-                if (append) emptyList() else items
             }.fold(
-                onSuccess = { items -> setState { copy(lists = lists.finish(items, append)) } },
+                onSuccess = { items -> setState { copy(lists = lists.finish(items)) } },
                 onFailure = { error ->
                     analytics.eventTabLoadError(userId, UserProfileState.Tab.LISTS, error)
-                    setState { copy(lists = lists.fail(append)) }
+                    setState { copy(lists = lists.fail()) }
                 },
             )
         }
     }
 
-    private fun loadCollections(force: Boolean = false, append: Boolean = false) =
-        loadPaged(
-            content = currentState.collections,
+    private fun createCollectionsFlow() =
+        createPagingFlow(
             tab = UserProfileState.Tab.COLLECTIONS,
-            force = force,
-            append = append,
-            fetch = { offset -> getUserCollections(userId, USER_PROFILE_PAGE_SIZE, offset) },
-            update = { copy(collections = it) },
+            fetch = { limit, offset -> getUserCollections(userId, limit, offset) },
         )
 
-    private fun loadPosts(force: Boolean = false, append: Boolean = false) =
-        loadPaged(
-            content = currentState.posts,
+    private fun createPostsFlow() =
+        createPagingFlow(
             tab = UserProfileState.Tab.POSTS,
-            force = force,
-            append = append,
-            fetch = { offset -> getUserPosts(userId, USER_PROFILE_PAGE_SIZE, offset) },
-            update = { copy(posts = it) },
+            fetch = { limit, offset -> getUserPosts(userId, limit, offset) },
         )
 
-    private fun loadReviews(force: Boolean = false, append: Boolean = false) =
-        loadPaged(
-            content = currentState.reviews,
+    private fun createReviewsFlow() =
+        createPagingFlow(
             tab = UserProfileState.Tab.REVIEWS,
-            force = force,
-            append = append,
-            fetch = { offset -> getUserReviews(userId, USER_PROFILE_PAGE_SIZE, offset) },
-            update = { copy(reviews = it) },
+            fetch = { limit, offset -> getUserReviews(userId, limit, offset) },
         )
 
-    private fun loadFriends(force: Boolean = false, append: Boolean = false) =
-        loadPaged(
-            content = currentState.friends,
+    private fun createFriendsFlow() =
+        createPagingFlow(
             tab = UserProfileState.Tab.FRIENDS,
-            force = force,
-            append = append,
-            fetch = { offset -> getUserFriends(userId, USER_PROFILE_PAGE_SIZE, offset) },
-            update = { copy(friends = it) },
+            fetch = { limit, offset -> getUserFriends(userId, limit, offset) },
         )
 
-    private fun <T> loadPaged(
-        content: UserProfileState.PagedContent<T>,
+    private fun <T : Any> createPagingFlow(
         tab: UserProfileState.Tab,
-        force: Boolean,
-        append: Boolean,
-        fetch: suspend (offset: Int) -> List<T>,
-        update: UserProfileState.State.(UserProfileState.PagedContent<T>) -> UserProfileState.State,
-    ) {
-        if (shouldSkipLoad(content, force, append)) return
-        viewModelScope.launch {
-            val offset = if (append) content.items.size else 0
-            setState { update(content.startLoading(append)) }
-            runCatching { fetch(offset) }.fold(
-                onSuccess = { items ->
-                    setState { update(content.finish(items, append)) }
-                },
-                onFailure = { error ->
-                    analytics.eventTabLoadError(userId, tab, error)
-                    setState { update(content.fail(append)) }
-                },
-            )
-        }
-    }
+        fetch: suspend (limit: Int, offset: Int) -> List<T>,
+    ) = Pager(
+        config = PagingConfig(
+            pageSize = USER_PROFILE_PAGE_SIZE,
+            initialLoadSize = USER_PROFILE_PAGE_SIZE,
+            enablePlaceholders = false,
+        ),
+        pagingSourceFactory = {
+            OffsetPagingSource { limit, offset ->
+                runCatching { fetch(limit, offset) }.fold(
+                    onSuccess = { items ->
+                        OffsetPage(
+                            items = items,
+                            nextOffset = offset + items.size,
+                            canLoadMore = items.size >= limit,
+                        )
+                    },
+                    onFailure = { error ->
+                        analytics.eventTabLoadError(userId, tab, error)
+                        throw error
+                    },
+                )
+            }
+        },
+    ).flow.cachedIn(viewModelScope)
 
-    private fun <T> shouldSkipLoad(
-        content: UserProfileState.PagedContent<T>,
-        force: Boolean,
-        append: Boolean,
-    ): Boolean {
-        if (content.isLoading || content.isLoadingMore) return true
-        if (append && !content.hasMore) return true
-        if (!force && !append && content.loaded) return true
-        return false
-    }
-
-    private fun <T> UserProfileState.PagedContent<T>.startLoading(append: Boolean) =
+    private fun <T> UserProfileState.PagedContent<T>.startLoading() =
         copy(
-            isLoading = !append,
-            isLoadingMore = append,
+            isLoading = true,
             error = false,
         )
 
     private fun <T> UserProfileState.PagedContent<T>.finish(
         incoming: List<T>,
-        append: Boolean,
     ) = copy(
-        items = if (append) items + incoming else incoming,
+        items = incoming,
         isLoading = false,
-        isLoadingMore = false,
-        hasMore = incoming.size >= USER_PROFILE_PAGE_SIZE,
         error = false,
         loaded = true,
     )
 
-    private fun <T> UserProfileState.PagedContent<T>.fail(append: Boolean) =
+    private fun <T> UserProfileState.PagedContent<T>.fail() =
         copy(
             isLoading = false,
-            isLoadingMore = false,
             error = true,
-            loaded = !append,
+            loaded = true,
         )
 }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -14,14 +13,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
@@ -40,30 +38,14 @@ fun SearchMobileScreen(
     effect: Flow<SearchState.Effect>,
     onEvent: (SearchState.Event) -> Unit,
 ) {
-    val initialError = state.error?.takeIf { state.items.isEmpty() }
+    val results = state.results.collectAsLazyPagingItems()
+    val refreshState = results.loadState.refresh
+    val appendState = results.loadState.append
+    val initialError = (refreshState as? LoadState.Error)
+        ?.takeIf { results.itemCount == 0 }
+        ?.error
+        ?.uiMessage()
     val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember(
-        gridState,
-        state.items.size,
-        state.canLoadMore,
-        state.isLoading
-    ) {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val total = gridState.layoutInfo.totalItemsCount
-            state.items.isNotEmpty() &&
-                    state.canLoadMore &&
-                    !state.isLoading &&
-                    total > 0 &&
-                    lastVisible >= total - LOAD_MORE_THRESHOLD
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onEvent(SearchState.Event.LoadMore)
-        }
-    }
 
     BaseScreen(
         isScroll = false,
@@ -73,9 +55,12 @@ fun SearchMobileScreen(
                 onBack = { onEvent(SearchState.Event.BackSelected) },
             )
         },
-        isLoading = state.isLoading && state.items.isEmpty(),
+        isLoading = refreshState is LoadState.Loading && results.itemCount == 0,
         error = initialError?.let { ErrorItem(title = it, message = it) },
-        onRetry = { onEvent(SearchState.Event.RetrySelected) },
+        onRetry = {
+            onEvent(SearchState.Event.RetrySelected)
+            results.retry()
+        },
         errorContent = initialError?.let { message ->
             { _, retry ->
                 MobileMessage(
@@ -122,21 +107,26 @@ fun SearchMobileScreen(
                     )
                 }
             }
-            val error = state.error
-            if (error != null && state.items.isNotEmpty()) {
+            val error = (appendState as? LoadState.Error)?.error?.uiMessage()
+            if (error != null && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(error, color = MaterialTheme.colorScheme.error)
                 }
             }
-            items(state.items, key = { it.id }) { item ->
-                MobilePosterCard(
-                    title = item.title,
-                    posterUrl = item.posterUrl,
-                    rating = item.rating,
-                    onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
-                )
+            items(
+                count = results.itemCount,
+                key = results.itemKey { it.id },
+            ) { index ->
+                results[index]?.let { item ->
+                    MobilePosterCard(
+                        title = item.title,
+                        posterUrl = item.posterUrl,
+                        rating = item.rating,
+                        onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
+                    )
+                }
             }
-            if (state.isLoading && state.items.isNotEmpty()) {
+            if (appendState is LoadState.Loading && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -173,4 +163,5 @@ fun SearchMobileScreen(
     }
 }
 
-private const val LOAD_MORE_THRESHOLD = 6
+private fun Throwable.uiMessage(): String =
+    message ?: localizedMessage ?: toString()

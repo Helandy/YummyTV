@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)
     implementation(libs.bundles.coil.full)
+    implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
 }

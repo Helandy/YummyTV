@@ -8,17 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
@@ -35,37 +33,21 @@ import su.afk.yummy.tv.feature.top.mobile.R
 
 @Composable
 internal fun TopMobileGrid(
-    items: List<AnimeTopItem>,
-    isLoading: Boolean,
-    isLoadingMore: Boolean,
-    error: String?,
-    canLoadMore: Boolean,
+    pagingItems: LazyPagingItems<AnimeTopItem>,
+    isActive: Boolean,
     onAnimeSelected: (Int) -> Unit,
     onRetry: () -> Unit,
-    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading, isLoadingMore) {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val total = gridState.layoutInfo.totalItemsCount
-            items.isNotEmpty() &&
-                    canLoadMore &&
-                    !isLoading &&
-                    !isLoadingMore &&
-                    total > 0 &&
-                    lastVisible >= total - LOAD_MORE_THRESHOLD
-        }
-    }
+    val refreshState = pagingItems.loadState.refresh
+    val appendState = pagingItems.loadState.append
+    val itemCount = if (isActive) pagingItems.itemCount else 0
+    val isLoading = !isActive || refreshState is LoadState.Loading
+    val refreshError = (refreshState as? LoadState.Error)?.error?.uiMessage()
+    val appendError = (appendState as? LoadState.Error)?.error?.uiMessage()
 
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onLoadMore()
-        }
-    }
-
-    if (isLoading && items.isEmpty()) {
+    if (isLoading && itemCount == 0) {
         Box(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -84,44 +66,49 @@ internal fun TopMobileGrid(
         state = gridState,
     ) {
         when {
-            error != null && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
+            refreshError != null && itemCount == 0 -> item(span = { GridItemSpan(maxLineSpan) }) {
                 MobileMessage(
-                    title = error,
+                    title = refreshError,
                     actionLabel = stringResource(R.string.top_mobile_retry),
                     onAction = onRetry,
                 )
             }
 
-            error != null -> item(span = { GridItemSpan(maxLineSpan) }) {
+            appendError != null -> item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(onClick = onRetry) {
                     Text(
                         stringResource(
                             R.string.top_mobile_retry_error,
-                            error,
+                            appendError,
                         ),
                     )
                 }
             }
         }
 
-        itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-            MobilePosterCard(
-                title = item.title,
-                posterUrl = item.posterUrl,
-                rating = item.rating,
-                posterOverlay = {
-                    TopMobileRankBadge(
-                        rank = index + 1,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(4.dp),
-                    )
-                },
-                onClick = { onAnimeSelected(item.id) },
-            )
+        items(
+            count = itemCount,
+            key = pagingItems.itemKey { it.id },
+        ) { index ->
+            pagingItems[index]?.let { item ->
+                MobilePosterCard(
+                    title = item.title,
+                    posterUrl = item.posterUrl,
+                    rating = item.rating,
+                    posterOverlay = {
+                        TopMobileRankBadge(
+                            rank = index + 1,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(4.dp),
+                        )
+                    },
+                    onClick = { onAnimeSelected(item.id) },
+                )
+            }
         }
 
-        if (isLoadingMore && items.isNotEmpty()) {
+        if (appendState is LoadState.Loading && itemCount > 0) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -153,4 +140,5 @@ private fun TopMobileRankBadge(
     )
 }
 
-private const val LOAD_MORE_THRESHOLD = 6
+private fun Throwable.uiMessage(): String =
+    message ?: localizedMessage ?: toString()

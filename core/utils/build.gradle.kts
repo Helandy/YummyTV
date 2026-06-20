@@ -7,5 +7,6 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.kotlinx.coroutines.android)
 }

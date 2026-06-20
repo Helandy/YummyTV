@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.search
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
-import su.afk.yummy.tv.feature.search.handler.SearchPagingRequest
+import su.afk.yummy.tv.domain.search.model.SearchFilters
 import javax.inject.Inject
 
 internal class SearchAnalytics @Inject constructor(
@@ -49,13 +49,13 @@ internal class SearchAnalytics @Inject constructor(
     /**
      * Результаты поиска не загрузились.
      */
-    fun eventLoadError(request: SearchPagingRequest, error: Throwable) {
+    fun eventLoadError(query: String, filters: SearchFilters, offset: Int, error: Throwable) {
         tracker.reportError(
             groupIdentifier = EVENT_LOAD_ERROR,
             message = "$ERROR_MESSAGE_PREFIX " +
-                    "(has_query=${request.query.isNotBlank()}, " +
-                    "filters=${request.filters.activeCount}, " +
-                    "replace=${request.replace}): ${error.analyticsType()}",
+                    "(has_query=${query.isNotBlank()}, " +
+                    "filters=${filters.activeCount}, " +
+                    "offset=$offset): ${error.analyticsType()}",
             throwable = error,
         )
     }

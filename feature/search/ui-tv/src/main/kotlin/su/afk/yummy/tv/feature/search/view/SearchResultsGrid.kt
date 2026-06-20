@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -24,6 +23,8 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
@@ -37,7 +38,7 @@ import su.afk.yummy.tv.domain.search.model.SearchItem
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun SearchResultsGrid(
-    items: List<SearchItem>,
+    results: LazyPagingItems<SearchItem>,
     isLoading: Boolean,
     gridState: LazyGridState,
     gridFocusRequester: FocusRequester,
@@ -53,6 +54,7 @@ internal fun SearchResultsGrid(
     modifier: Modifier = Modifier,
 ) {
     val cardWidth = currentTvTitleCardDimensions().width
+    val itemCount = results.itemCount
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
@@ -79,18 +81,22 @@ internal fun SearchResultsGrid(
                     .focusRequester(gridFocusRequester)
                     .tvFocusRestorer(
                         fallback = gridFallbackFocusRequester,
-                        enabled = items.isNotEmpty(),
+                        enabled = itemCount > 0,
                     )
                     .onFocusChanged { state ->
                         val hadFocus = gridHasFocus
                         onGridHasFocusChanged(state.hasFocus)
-                        if (state.isFocused && !hadFocus && items.isNotEmpty() && !isRestoringFocus) {
+                        if (state.isFocused && !hadFocus && itemCount > 0 && !isRestoringFocus) {
                             onRestoreGridFocus()
                         }
                     }
                     .focusable(),
             ) {
-                itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                items(
+                    count = itemCount,
+                    key = results.itemKey { it.id },
+                ) { index ->
+                    val item = results[index] ?: return@items
                     val stableOnClick = remember(item.id, index) {
                         {
                             onLastFocusedIndexChanged(index)
@@ -130,7 +136,7 @@ internal fun SearchResultsGrid(
                         },
                     )
                 }
-                if (isLoading && items.isNotEmpty()) {
+                if (isLoading && itemCount > 0) {
                     item {
                         Box(
                             modifier = Modifier.fillMaxWidth(),

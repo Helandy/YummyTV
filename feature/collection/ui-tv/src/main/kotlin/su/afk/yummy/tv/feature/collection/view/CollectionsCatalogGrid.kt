@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,10 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +34,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
@@ -50,37 +47,17 @@ import su.afk.yummy.tv.feature.collection.R
 
 @Composable
 internal fun CollectionsCatalogGrid(
-    items: List<CollectionSummary>,
-    canLoadMore: Boolean,
-    isLoading: Boolean,
+    pagingItems: LazyPagingItems<CollectionSummary>,
     isLoadingMore: Boolean,
     itemFocusRequesters: List<FocusRequester>,
     onCollectionSelected: (Int) -> Unit,
     onCollectionFocused: (Int) -> Unit,
-    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val gridState = rememberLazyGridState()
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val cardWidth = currentTvTitleCardDimensions().width
-    val shouldLoadMore by remember(gridState, items.size, canLoadMore, isLoading, isLoadingMore) {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val total = gridState.layoutInfo.totalItemsCount
-            items.isNotEmpty() &&
-                    canLoadMore &&
-                    !isLoading &&
-                    !isLoadingMore &&
-                    total > 0 &&
-                    lastVisible >= total - LOAD_MORE_THRESHOLD
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onLoadMore()
-        }
-    }
+    val itemCount = pagingItems.itemCount
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
@@ -112,7 +89,11 @@ internal fun CollectionsCatalogGrid(
                 )
             }
 
-            itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+            items(
+                count = itemCount,
+                key = pagingItems.itemKey { it.id },
+            ) { index ->
+                val item = pagingItems[index] ?: return@items
                 TvTitleCard(
                     title = item.title,
                     posterUrl = item.posterUrl,
@@ -175,6 +156,5 @@ private fun CollectionCatalogLikesBadge(
     }
 }
 
-private const val LOAD_MORE_THRESHOLD = 4
 private val CollectionLikeGreen = Color(0xFF4CAF50)
 private val CollectionLikeBadgeBackground = Color.Black.copy(alpha = 0.62f)

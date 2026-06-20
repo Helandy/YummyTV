@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.comments
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -14,6 +17,8 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.OffsetPage
+import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
@@ -32,9 +37,7 @@ import su.afk.yummy.tv.feature.comments.CommentsState.CommentUi
 import su.afk.yummy.tv.feature.comments.CommentsState.ComposerMode
 import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.findUi
-import su.afk.yummy.tv.feature.comments.utils.removeComment
 import su.afk.yummy.tv.feature.comments.utils.replaceComment
-import su.afk.yummy.tv.feature.comments.utils.updateCommentUi
 import su.afk.yummy.tv.feature.comments.utils.updateVote
 
 private const val COMMENTS_PAGE_SIZE = 20
@@ -67,14 +70,16 @@ class CommentsViewModel @AssistedInject internal constructor(
         fun create(animeId: Int): CommentsViewModel
     }
 
-    override fun createInitialState() = CommentsState.State()
+    override fun createInitialState() =
+        CommentsState.State(comments = createCommentsFlow(CommentSort.BEST))
+
+    private var visibleComments: Map<Int, CommentUi> = emptyMap()
 
     init {
         analytics.eventScreenOpened(animeId, currentState.sort)
         settingsStore.yaniUserId
             .onEach { userId -> setState { copy(currentUserId = userId) } }
             .launchIn(viewModelScope)
-        loadFirstPage()
     }
 
     override fun onEvent(event: CommentsState.Event) {
@@ -82,24 +87,33 @@ class CommentsViewModel @AssistedInject internal constructor(
             CommentsState.Event.BackSelected -> nav.back()
             CommentsState.Event.RetrySelected -> {
                 analytics.eventRetrySelected(animeId, currentState.sort)
-                loadFirstPage()
+                reloadComments()
             }
 
             CommentsState.Event.RefreshSelected -> {
                 analytics.eventRefreshSelected(animeId, currentState.sort)
-                loadFirstPage(
-                    forceRefresh = true,
-                    asRefresh = true
-                )
+                reloadComments(forceRefresh = true)
             }
 
-            CommentsState.Event.LoadMoreSelected -> loadMore()
             is CommentsState.Event.SortSelected -> {
                 if (event.sort != currentState.sort) {
                     analytics.eventSortSelected(animeId, event.sort)
-                    setState { copy(sort = event.sort) }
-                    loadFirstPage()
+                    setState {
+                        copy(
+                            sort = event.sort,
+                            comments = createCommentsFlow(event.sort),
+                            prependedComments = emptyList(),
+                            commentOverlays = emptyMap(),
+                            deletedCommentIds = emptySet(),
+                            error = null,
+                            isModerator = false,
+                        )
+                    }
                 }
+            }
+
+            is CommentsState.Event.VisibleCommentsChanged -> {
+                visibleComments = event.comments.associateBy { it.comment.id }
             }
 
             is CommentsState.Event.ComposerTextChanged -> setState { copy(composerText = event.text) }
@@ -143,97 +157,77 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     override fun onRetry() {
         analytics.eventRetrySelected(animeId, currentState.sort)
-        loadFirstPage()
+        reloadComments()
     }
 
-    private fun loadFirstPage(
-        forceRefresh: Boolean = false,
-        asRefresh: Boolean = false,
-    ) {
-        if (asRefresh && (currentState.isRefreshing || currentState.isLoading)) return
-        viewModelScope.launch {
-            setState {
-                copy(
-                    isLoading = !asRefresh,
-                    isRefreshing = asRefresh,
-                    isLoadingMore = false,
-                    error = null,
-                    hasMore = if (asRefresh) hasMore else false,
+    private fun reloadComments(forceRefresh: Boolean = false) {
+        visibleComments = emptyMap()
+        setState {
+            copy(
+                comments = createCommentsFlow(sort, forceRefreshFirstPage = forceRefresh),
+                prependedComments = emptyList(),
+                commentOverlays = emptyMap(),
+                deletedCommentIds = emptySet(),
+                error = null,
+                isModerator = false,
+            )
+        }
+    }
+
+    private fun createCommentsFlow(
+        sort: CommentSort,
+        forceRefreshFirstPage: Boolean = false,
+    ) = Pager(
+        config = PagingConfig(
+            pageSize = COMMENTS_PAGE_SIZE,
+            initialLoadSize = COMMENTS_PAGE_SIZE,
+            enablePlaceholders = false,
+        ),
+        pagingSourceFactory = {
+            OffsetPagingSource { limit, offset ->
+                loadCommentsPage(
+                    sort = sort,
+                    limit = limit,
+                    skip = offset,
+                    forceRefresh = forceRefreshFirstPage && offset == 0,
                 )
             }
-            runCatching {
-                getAnimeComments(
-                    animeId = animeId,
-                    limit = COMMENTS_PAGE_SIZE,
-                    skip = 0,
-                    sort = currentState.sort,
-                    forceRefresh = forceRefresh,
-                )
-            }.fold(
-                onSuccess = { page ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            error = null,
-                            comments = page.comments.map { CommentUi(it) },
-                            isModerator = page.isModerator,
-                            hasMore = page.comments.size >= COMMENTS_PAGE_SIZE,
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    analytics.eventLoadError(animeId, currentState.sort, error)
-                    setState {
-                        copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            error = error.message
-                                ?: stringProvider.get(R.string.comments_load_error),
-                        )
-                    }
-                },
-            )
-        }
-    }
+        },
+    ).flow.cachedIn(viewModelScope)
 
-    private fun loadMore() {
-        if (
-            currentState.isLoadingMore ||
-            currentState.isLoading ||
-            currentState.isRefreshing ||
-            !currentState.hasMore
-        ) return
-        viewModelScope.launch {
-            val skip = currentState.comments.size
-            analytics.eventLoadMoreSelected(animeId, currentState.sort)
-            setState { copy(isLoadingMore = true, error = null) }
-            runCatching {
-                getAnimeComments(animeId, COMMENTS_PAGE_SIZE, skip, currentState.sort)
-            }.fold(
-                onSuccess = { page ->
-                    setState {
-                        copy(
-                            isLoadingMore = false,
-                            comments = comments + page.comments.map { CommentUi(it) },
-                            isModerator = page.isModerator,
-                            hasMore = page.comments.size >= COMMENTS_PAGE_SIZE,
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    analytics.eventLoadError(animeId, currentState.sort, error)
-                    setState {
-                        copy(
-                            isLoadingMore = false,
-                            error = error.message
-                                ?: stringProvider.get(R.string.comments_load_error),
-                        )
-                    }
-                },
+    private suspend fun loadCommentsPage(
+        sort: CommentSort,
+        limit: Int,
+        skip: Int,
+        forceRefresh: Boolean,
+    ): OffsetPage<CommentUi> =
+        runCatching {
+            getAnimeComments(
+                animeId = animeId,
+                limit = limit,
+                skip = skip,
+                sort = sort,
+                forceRefresh = forceRefresh,
             )
-        }
-    }
+        }.fold(
+            onSuccess = { page ->
+                setState { copy(isModerator = isModerator || page.isModerator, error = null) }
+                OffsetPage(
+                    items = page.comments.map { CommentUi(it) },
+                    nextOffset = skip + page.comments.size,
+                    canLoadMore = page.comments.size >= limit,
+                )
+            },
+            onFailure = { error ->
+                analytics.eventLoadError(animeId, sort, error)
+                setState {
+                    copy(
+                        error = error.message ?: stringProvider.get(R.string.comments_load_error),
+                    )
+                }
+                throw error
+            },
+        )
 
     private fun submit() {
         if (!canMutate()) return
@@ -254,14 +248,14 @@ class CommentsViewModel @AssistedInject internal constructor(
                             isMutating = false,
                             composerText = "",
                             composerMode = ComposerMode.New,
-                            comments = if (sort == CommentSort.OLD) comments else listOf(
-                                CommentUi(
-                                    created
-                                )
-                            ) + comments,
+                            prependedComments = if (sort == CommentSort.OLD) {
+                                prependedComments
+                            } else {
+                                listOf(CommentUi(created)) + prependedComments
+                            },
                         )
                     }
-                    if (currentState.sort == CommentSort.OLD) loadFirstPage()
+                    if (currentState.sort == CommentSort.OLD) reloadComments(forceRefresh = true)
                 }.onFailure { showMutationError(it) }
 
                 is ComposerMode.Reply -> runCatching {
@@ -288,7 +282,14 @@ class CommentsViewModel @AssistedInject internal constructor(
                             isMutating = false,
                             composerText = "",
                             composerMode = ComposerMode.New,
-                            comments = comments.replaceComment(updated),
+                            commentOverlays = commentOverlays + (
+                                    updated.id to (
+                                            visibleCommentTree()
+                                                .replaceComment(updated)
+                                                .findUi(updated.id)
+                                                ?: CommentUi(updated)
+                                            )
+                                    ),
                         )
                     }
                 }.onFailure { showMutationError(it) }
@@ -339,7 +340,10 @@ class CommentsViewModel @AssistedInject internal constructor(
                             copy(
                                 isMutating = false,
                                 pendingDelete = null,
-                                comments = comments.removeComment(comment.id),
+                                deletedCommentIds = deletedCommentIds + comment.id,
+                                prependedComments = prependedComments.filterNot {
+                                    it.comment.id == comment.id
+                                },
                             )
                         }
                     } else {
@@ -398,7 +402,14 @@ class CommentsViewModel @AssistedInject internal constructor(
                     if (voteResult.success) {
                         analytics.eventVoteChanged(animeId, commentId, newVote)
                         setState {
-                            copy(comments = comments.updateVote(commentId, voteResult, newVote))
+                            val updated = visibleCommentTree()
+                                .updateVote(commentId, voteResult, newVote)
+                                .findUi(commentId)
+                            if (updated == null) {
+                                this
+                            } else {
+                                copy(commentOverlays = commentOverlays + (commentId to updated))
+                            }
                         }
                     } else {
                         showMutationError(R.string.comments_vote_error)
@@ -410,15 +421,15 @@ class CommentsViewModel @AssistedInject internal constructor(
     }
 
     private fun toggleChildren(commentId: Int) {
-        val item = currentState.comments.findUi(commentId) ?: return
+        val item = findCommentUi(commentId) ?: return
         if (item.childrenVisible) {
             analytics.eventRepliesHidden(animeId, commentId)
-            setState { copy(comments = comments.updateCommentUi(commentId) { copy(childrenVisible = false) }) }
+            updateCommentOverlay(commentId) { copy(childrenVisible = false) }
             return
         }
         if (item.children.isNotEmpty()) {
             analytics.eventRepliesShown(animeId, commentId)
-            setState { copy(comments = comments.updateCommentUi(commentId) { copy(childrenVisible = true) }) }
+            updateCommentOverlay(commentId) { copy(childrenVisible = true) }
             return
         }
         analytics.eventRepliesShown(animeId, commentId)
@@ -430,7 +441,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         append: Boolean,
         forceVisible: Boolean = false,
     ) {
-        val item = currentState.comments.findUi(commentId) ?: return
+        val item = findCommentUi(commentId) ?: return
         if (item.childrenLoading) return
         viewModelScope.launch {
             val skip = if (append) item.children.size else 0
@@ -438,33 +449,30 @@ class CommentsViewModel @AssistedInject internal constructor(
                 analytics.eventRepliesLoadMoreSelected(animeId, commentId)
             }
             setState {
-                copy(
-                    comments = comments.updateCommentUi(commentId) {
-                        copy(
-                            childrenLoading = true,
-                            childrenError = null,
-                            childrenVisible = forceVisible || childrenVisible,
-                        )
-                    }
+                val updated = item.copy(
+                    childrenLoading = true,
+                    childrenError = null,
+                    childrenVisible = forceVisible || item.childrenVisible,
                 )
+                copy(commentOverlays = commentOverlays + (commentId to updated))
             }
             runCatching { getCommentChildren(commentId, skip) }.fold(
                 onSuccess = { page ->
                     setState {
-                        copy(
-                            comments = comments.updateCommentUi(commentId) {
-                                copy(
-                                    children = if (append) children + page.comments.map {
-                                        CommentUi(
-                                            it
-                                        )
-                                    } else page.comments.map { CommentUi(it) },
-                                    childrenVisible = true,
-                                    childrenLoading = false,
-                                    childrenError = null,
-                                    childrenHasMore = page.comments.size >= COMMENTS_PAGE_SIZE,
-                                )
+                        val current = findCommentUi(commentId) ?: item
+                        val updated = current.copy(
+                            children = if (append) {
+                                current.children + page.comments.map { CommentUi(it) }
+                            } else {
+                                page.comments.map { CommentUi(it) }
                             },
+                            childrenVisible = true,
+                            childrenLoading = false,
+                            childrenError = null,
+                            childrenHasMore = page.comments.size >= COMMENTS_PAGE_SIZE,
+                        )
+                        copy(
+                            commentOverlays = commentOverlays + (commentId to updated),
                             isModerator = page.isModerator || isModerator,
                         )
                     }
@@ -472,14 +480,15 @@ class CommentsViewModel @AssistedInject internal constructor(
                 onFailure = { error ->
                     analytics.eventRepliesLoadError(animeId, commentId, error)
                     setState {
+                        val current = findCommentUi(commentId) ?: item
                         copy(
-                            comments = comments.updateCommentUi(commentId) {
-                                copy(
-                                    childrenLoading = false,
-                                    childrenError = error.message
-                                        ?: stringProvider.get(R.string.comments_load_error),
-                                )
-                            }
+                            commentOverlays = commentOverlays + (
+                                    commentId to current.copy(
+                                        childrenLoading = false,
+                                        childrenError = error.message
+                                            ?: stringProvider.get(R.string.comments_load_error),
+                                    )
+                                    )
                         )
                     }
                 },
@@ -510,7 +519,33 @@ class CommentsViewModel @AssistedInject internal constructor(
     }
 
     private fun findComment(commentId: Int): Comment? =
-        currentState.comments.findUi(commentId)?.comment
+        findCommentUi(commentId)?.comment
+
+    private fun findCommentUi(commentId: Int): CommentUi? =
+        visibleCommentTree().findUi(commentId)
+
+    private fun visibleCommentTree(): List<CommentUi> =
+        (currentState.prependedComments + visibleComments.values)
+            .filterNot { it.comment.id in currentState.deletedCommentIds }
+            .map { it.withCurrentOverlays() }
+
+    private fun CommentUi.withCurrentOverlays(): CommentUi {
+        val overlaid = currentState.commentOverlays[comment.id] ?: this
+        return overlaid.copy(
+            children = overlaid.children
+                .filterNot { it.comment.id in currentState.deletedCommentIds }
+                .map { it.withCurrentOverlays() },
+        )
+    }
+
+    private fun updateCommentOverlay(
+        commentId: Int,
+        update: CommentUi.() -> CommentUi,
+    ) {
+        val item = findCommentUi(commentId) ?: return
+        val updated = item.update()
+        setState { copy(commentOverlays = commentOverlays + (commentId to updated)) }
+    }
 
     private fun showMutationError(error: Throwable, keepDialog: Boolean = false) {
         val message = error.message ?: stringProvider.get(R.string.comments_action_error)
