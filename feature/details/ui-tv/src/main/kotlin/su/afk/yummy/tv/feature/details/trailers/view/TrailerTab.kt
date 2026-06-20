@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.feature.details.trailers.view
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +35,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.feature.details.R
 
@@ -90,8 +89,7 @@ private fun TrailerItem(
             number = number,
             thumbnailUrl = trailer.youtubeThumbnailUrl,
             onClick = {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailer.externalWatchUrl))
-                runCatching { context.startActivity(intent) }
+                context.openExternalUri(trailer.externalWatchUrl)
             },
             modifier = thumbnailModifier,
         )

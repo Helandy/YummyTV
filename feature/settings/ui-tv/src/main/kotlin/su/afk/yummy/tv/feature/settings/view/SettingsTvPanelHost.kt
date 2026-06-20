@@ -22,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,6 +33,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.feature.settings.BuildConfig
 import su.afk.yummy.tv.feature.settings.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.R
@@ -373,7 +374,7 @@ internal fun SettingsTvPanelHost(
 
                     SettingsTab.ABOUT -> {
                         val repositoryUrl = stringResource(R.string.settings_repository_url)
-                        val uriHandler = LocalUriHandler.current
+                        val context = LocalContext.current
 
                         AboutRow(
                             label = stringResource(R.string.settings_version_label),
@@ -387,7 +388,7 @@ internal fun SettingsTvPanelHost(
                             modifier = Modifier
                                 .focusRequester(tabContentFocusRequester)
                                 .restoreTabFocusOnUp(tabFocusRequester),
-                            onClick = { uriHandler.openUri(repositoryUrl) },
+                            onClick = { context.openExternalUri(repositoryUrl) },
                         )
                     }
                 }

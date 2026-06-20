@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.feature.settings.mobile.BuildConfig
 import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
@@ -49,7 +50,7 @@ fun SettingsMobileScreen(
 ) {
     var activePicker by remember { mutableStateOf<SettingsMobilePicker?>(null) }
     val title = stringResource(R.string.settings_mobile_title)
-    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     val repositoryUrl = stringResource(R.string.settings_repository_url)
 
     BaseScreen(
@@ -198,7 +199,7 @@ fun SettingsMobileScreen(
                     SettingsMobileAboutRow(
                         label = stringResource(R.string.settings_feedback_label),
                         hint = repositoryUrl,
-                        onClick = { uriHandler.openUri(repositoryUrl) },
+                        onClick = { context.openExternalUri(repositoryUrl) },
                     )
                 }
             }

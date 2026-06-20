@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:settings:presentation"))
 

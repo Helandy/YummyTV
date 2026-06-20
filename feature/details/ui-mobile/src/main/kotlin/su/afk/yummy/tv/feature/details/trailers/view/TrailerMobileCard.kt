@@ -1,10 +1,9 @@
 package su.afk.yummy.tv.feature.details.trailers.view
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.view.DetailsMediaCard
@@ -23,8 +22,7 @@ internal fun TrailerMobileCard(
         leadingIcon = DetailsPlayIcon,
         mediaWeight = 0.56f,
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailer.externalWatchUrl))
-            runCatching { context.startActivity(intent) }
+            context.openExternalUri(trailer.externalWatchUrl)
         },
     )
 }

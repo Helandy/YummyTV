@@ -45,7 +45,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.update.R
 import su.afk.yummy.tv.core.update.UpdateState
+import su.afk.yummy.tv.core.utils.openExternalUri
 
 @Composable
 fun UpdateDialog(
@@ -316,8 +317,8 @@ private fun ManualUpdateHint(isTelevision: Boolean) {
         )
 
         if (!isTelevision) {
-            val uriHandler = LocalUriHandler.current
-            TextButton(onClick = { uriHandler.openUri(releasesUrl) }) {
+            val context = LocalContext.current
+            TextButton(onClick = { context.openExternalUri(releasesUrl) }) {
                 Text(text = stringResource(R.string.update_manual_open_releases))
             }
         }
