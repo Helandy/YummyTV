@@ -44,7 +44,6 @@ internal fun resolveDetailsPlayerSelection(
 
     return when (supportedOptions.size) {
         0 -> DetailsPlayerSelection.Navigate(video)
-        1 -> DetailsPlayerSelection.Navigate(supportedOptions.first().video)
         else -> DetailsPlayerSelection.ShowPicker(BalancerPickerState(video.episode, options))
     }
 }
