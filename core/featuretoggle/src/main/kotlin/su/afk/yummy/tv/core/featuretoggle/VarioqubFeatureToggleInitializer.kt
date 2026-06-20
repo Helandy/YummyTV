@@ -23,7 +23,13 @@ internal class VarioqubFeatureToggleInitializer @Inject constructor(
         }
 
         runCatching {
-            val settings = VarioqubSettings.Builder(normalizedClientId).build()
+            val settingsBuilder = VarioqubSettings.Builder(normalizedClientId)
+            if (BuildConfig.DEBUG) {
+                settingsBuilder
+                    .withThrottleInterval(DEBUG_THROTTLE_INTERVAL_SECONDS)
+                    .withLogs()
+            }
+            val settings = settingsBuilder.build()
             val adapter = if (BuildConfig.DEBUG) {
                 NoAnalyticsVarioqubAdapter(context)
             } else {
@@ -61,5 +67,6 @@ internal class VarioqubFeatureToggleInitializer @Inject constructor(
 
     private companion object {
         const val TAG = "FeatureToggles"
+        const val DEBUG_THROTTLE_INTERVAL_SECONDS = 2L
     }
 }
