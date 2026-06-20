@@ -49,6 +49,16 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 class AndroidHiltConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            val kotlinMetadataJvmVersion =
+                libs.findVersion("kotlin-metadata-jvm").get().requiredVersion
+            configurations.configureEach {
+                resolutionStrategy.eachDependency {
+                    if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+                        useVersion(kotlinMetadataJvmVersion)
+                        because("Hilt 2.59.2 depends on kotlin-metadata-jvm 2.2.20, which cannot read Kotlin 2.3 metadata.")
+                    }
+                }
+            }
             pluginManager.apply("com.google.dagger.hilt.android")
             pluginManager.apply("com.google.devtools.ksp")
             dependencies.add("implementation", libs.findLibrary("hilt-android").get())
