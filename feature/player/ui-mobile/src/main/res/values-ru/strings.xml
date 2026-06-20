@@ -14,6 +14,8 @@
     <string name="player_mobile_back">Назад</string>
     <string name="player_mobile_details">Детали</string>
     <string name="player_mobile_forward">Дальше</string>
+    <string name="player_mobile_pip_rewind_10">Назад на 10 секунд</string>
     <string name="player_mobile_pip_pause">Пауза</string>
     <string name="player_mobile_pip_play">Играть</string>
+    <string name="player_mobile_pip_forward_10">Вперёд на 10 секунд</string>
 </resources>

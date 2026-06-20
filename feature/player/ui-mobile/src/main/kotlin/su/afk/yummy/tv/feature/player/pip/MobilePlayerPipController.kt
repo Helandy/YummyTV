@@ -17,7 +17,9 @@ import androidx.compose.runtime.setValue
 import su.afk.yummy.tv.feature.player.mobile.R
 
 object MobilePlayerPipController {
+    const val ACTION_SEEK_BACKWARD = "su.afk.yummy.tv.feature.player.pip.SEEK_BACKWARD"
     const val ACTION_PLAY_PAUSE = "su.afk.yummy.tv.feature.player.pip.PLAY_PAUSE"
+    const val ACTION_SEEK_FORWARD = "su.afk.yummy.tv.feature.player.pip.SEEK_FORWARD"
 
     private val defaultAspectRatio = Rational(16, 9)
 
@@ -36,6 +38,12 @@ object MobilePlayerPipController {
     @Volatile
     private var onPlayPause: (() -> Unit)? = null
 
+    @Volatile
+    private var onSeekBackward: (() -> Unit)? = null
+
+    @Volatile
+    private var onSeekForward: (() -> Unit)? = null
+
     var isInPictureInPictureMode by mutableStateOf(false)
         private set
 
@@ -46,6 +54,8 @@ object MobilePlayerPipController {
             aspectRatio = defaultAspectRatio
             pictureInPictureRequested = false
             onPlayPause = null
+            onSeekBackward = null
+            onSeekForward = null
         }
     }
 
@@ -58,6 +68,14 @@ object MobilePlayerPipController {
 
     fun setPlayPauseAction(action: (() -> Unit)?) {
         onPlayPause = action
+    }
+
+    fun setSeekActions(
+        backward: (() -> Unit)?,
+        forward: (() -> Unit)?,
+    ) {
+        onSeekBackward = backward
+        onSeekForward = forward
     }
 
     fun setAspectRatio(width: Int, height: Int) {
@@ -96,8 +114,10 @@ object MobilePlayerPipController {
     }
 
     fun handleAction(action: String?) {
-        if (action == ACTION_PLAY_PAUSE) {
-            onPlayPause?.invoke()
+        when (action) {
+            ACTION_SEEK_BACKWARD -> onSeekBackward?.invoke()
+            ACTION_PLAY_PAUSE -> onPlayPause?.invoke()
+            ACTION_SEEK_FORWARD -> onSeekForward?.invoke()
         }
     }
 
@@ -111,22 +131,71 @@ object MobilePlayerPipController {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             PictureInPictureParams.Builder()
                 .setAspectRatio(aspectRatio)
-                .setActions(listOf(playPauseAction(activity)))
+                .setActions(
+                    listOf(
+                        pipAction(
+                            activity = activity,
+                            action = ACTION_SEEK_BACKWARD,
+                            requestCode = 0,
+                            labelRes = R.string.player_mobile_pip_rewind_10,
+                            iconRes = android.R.drawable.ic_media_rew,
+                        ),
+                        playPauseAction(activity),
+                        pipAction(
+                            activity = activity,
+                            action = ACTION_SEEK_FORWARD,
+                            requestCode = 2,
+                            labelRes = R.string.player_mobile_pip_forward_10,
+                            iconRes = android.R.drawable.ic_media_ff,
+                        ),
+                    )
+                )
                 .build()
         } else {
             error("Picture-in-picture params require Android O+")
         }
 
     private fun playPauseAction(activity: Activity): RemoteAction {
-        val intent = Intent(activity, MobilePlayerPipActionReceiver::class.java)
-            .setAction(ACTION_PLAY_PAUSE)
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        val pendingIntent = PendingIntent.getBroadcast(activity, 0, intent, flags)
         val label = activity.getString(
             if (playing) R.string.player_mobile_pip_pause else R.string.player_mobile_pip_play,
         )
         val iconRes =
             if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+        return pipAction(
+            activity = activity,
+            action = ACTION_PLAY_PAUSE,
+            requestCode = 1,
+            label = label,
+            iconRes = iconRes,
+        )
+    }
+
+    private fun pipAction(
+        activity: Activity,
+        action: String,
+        requestCode: Int,
+        labelRes: Int,
+        iconRes: Int,
+    ): RemoteAction =
+        pipAction(
+            activity = activity,
+            action = action,
+            requestCode = requestCode,
+            label = activity.getString(labelRes),
+            iconRes = iconRes,
+        )
+
+    private fun pipAction(
+        activity: Activity,
+        action: String,
+        requestCode: Int,
+        label: String,
+        iconRes: Int,
+    ): RemoteAction {
+        val intent = Intent(activity, MobilePlayerPipActionReceiver::class.java)
+            .setAction(action)
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        val pendingIntent = PendingIntent.getBroadcast(activity, requestCode, intent, flags)
         return RemoteAction(
             Icon.createWithResource(activity, iconRes),
             label,

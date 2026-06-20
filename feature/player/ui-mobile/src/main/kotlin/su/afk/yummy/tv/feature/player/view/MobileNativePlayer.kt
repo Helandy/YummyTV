@@ -287,12 +287,21 @@ internal fun MobileNativePlayer(
         MobilePlayerPipController.setPlayPauseAction {
             if (exoPlayer.playWhenReady) exoPlayer.pause() else exoPlayer.play()
         }
+        MobilePlayerPipController.setSeekActions(
+            backward = {
+                seekToPosition(exoPlayer.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+            },
+            forward = {
+                seekToPosition(exoPlayer.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+            },
+        )
         if (wantsPlay) scheduleOverlayHide()
         onDispose {
             hideJob?.cancel()
             stepSeekToastJob?.cancel()
             MobilePlayerPipController.setPlaying(false, activity)
             MobilePlayerPipController.setPlayPauseAction(null)
+            MobilePlayerPipController.setSeekActions(backward = null, forward = null)
             val position = exoPlayer.currentPosition.coerceAtLeast(0)
             val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
             notifyPlaybackPositionChanged(position, dur)
@@ -580,3 +589,5 @@ internal fun MobileNativePlayer(
 
 private fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
+private const val MOBILE_PLAYER_PIP_SEEK_STEP_MS = 10_000L
