@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.account.network
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -20,6 +19,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
@@ -67,7 +67,7 @@ class YaniAccountApi(
 
     suspend fun login(login: String, password: String, captchaResponse: String? = null): String {
         val response = try {
-            logDebug { "POST /profile/login" }
+            AppLogger.d(TAG) { "POST /profile/login" }
             client.post("$YANI_BASE_URL/profile/login") {
                 contentType(ContentType.Application.Json)
                 setBody(
@@ -79,11 +79,11 @@ class YaniAccountApi(
                 )
             }
         } catch (e: ClientRequestException) {
-            logDebug { "POST /profile/login failed status=${e.response.status.value}" }
+            AppLogger.d(TAG) { "POST /profile/login failed status=${e.response.status.value}" }
             if (e.response.status.value == CAPTCHA_ERROR_CODE) throw YaniCaptchaRequiredException()
             throw e
         }
-        logDebug { "POST /profile/login status=${response.status.value}" }
+        AppLogger.d(TAG) { "POST /profile/login status=${response.status.value}" }
 
         if (!response.status.isSuccess()) {
             val error = response.toYaniError()
@@ -300,12 +300,6 @@ class YaniAccountApi(
         }.getOrElse {
             YaniErrorResponseDto(error = status.description.ifBlank { "Could not sign in" })
         }
-
-    private fun logDebug(message: () -> String) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.println(Log.DEBUG, TAG, message())
-        }
-    }
 
     private companion object {
         const val TAG = "YaniAccountApi"

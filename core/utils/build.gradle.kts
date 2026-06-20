@@ -7,6 +7,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:logger"))
+
     implementation(libs.androidx.paging.runtime)
     implementation(libs.kotlinx.coroutines.android)
 }

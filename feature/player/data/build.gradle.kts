@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:logger"))
     implementation(project(":feature:details:domain"))
     implementation(project(":feature:player:domain"))
 

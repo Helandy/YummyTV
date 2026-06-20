@@ -1,14 +1,13 @@
 package su.afk.yummy.tv.data.home.network
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
-import su.afk.yummy.tv.data.home.BuildConfig
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 
 class YaniHomeApi(
@@ -21,16 +20,14 @@ class YaniHomeApi(
     }
 
     private fun logFeedResponse(body: String) {
-        if (!BuildConfig.DEBUG) return
-        val root = runCatching { FEED_JSON.parseToJsonElement(body).jsonObject }
-        Log.d(
-            TAG,
+        AppLogger.d(TAG) {
+            val root = runCatching { FEED_JSON.parseToJsonElement(body).jsonObject }
             "Feed response chars=${body.length} " +
                     root.fold(
                         onSuccess = { it.feedKeysForLog() },
                         onFailure = { "keysError=${it::class.java.simpleName}" },
-                    ),
-        )
+                    )
+        }
     }
 
     private fun JsonObject.feedKeysForLog(): String {

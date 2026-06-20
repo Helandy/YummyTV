@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.featuretoggle
 
-import android.util.Log
+import su.afk.yummy.tv.core.logger.AppLogger
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -18,10 +18,9 @@ internal class FeatureToggleVersionSupportChecker @Inject constructor(
             currentVersion = versionName,
             minSupportedVersion = minSupportedVersion,
         )
-        Log.d(
-            TAG,
-            "Version support current=$versionName minSupported=$minSupportedVersion supported=$isSupported",
-        )
+        AppLogger.d(TAG) {
+            "Version support current=$versionName minSupported=$minSupportedVersion supported=$isSupported"
+        }
         return isSupported
     }
 

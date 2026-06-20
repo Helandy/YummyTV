@@ -36,6 +36,7 @@ dependencyResolutionManagement {
 include(":app")
 
 include(":core:navigation")
+include(":core:logger")
 include(":core:analytics")
 include(":core:utils")
 include(":core:designsystem")

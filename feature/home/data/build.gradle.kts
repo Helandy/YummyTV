@@ -13,6 +13,7 @@ android {
 
 dependencies {
     implementation(project(":core:error"))
+    implementation(project(":core:logger"))
     implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))

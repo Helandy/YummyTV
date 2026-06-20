@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.account.account.handler
 
-import android.util.Log
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
@@ -63,10 +63,10 @@ internal class AccountAuthHandler @Inject constructor(
                     )
                 }
             if (!syncVideoWatches(videos)) {
-                Log.w(TAG, "Post-login local watch sync returned false")
+                AppLogger.w(TAG) { "Post-login local watch sync returned false" }
             }
         }.onFailure { error ->
-            Log.w(TAG, "Post-login local watch sync failed", error)
+            AppLogger.w(TAG, error) { "Post-login local watch sync failed" }
         }
     }
 
@@ -74,7 +74,7 @@ internal class AccountAuthHandler @Inject constructor(
         runCatching {
             refreshHomeFeed()
         }.onFailure { error ->
-            Log.w(TAG, "Post-login home feed refresh failed", error)
+            AppLogger.w(TAG, error) { "Post-login home feed refresh failed" }
         }
     }
 

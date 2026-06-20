@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.analytics
 
-import android.util.Log
+import su.afk.yummy.tv.core.logger.AppLogger
 import javax.inject.Inject
 
 internal class LogcatAnalyticsTracker @Inject constructor(
@@ -12,9 +12,9 @@ internal class LogcatAnalyticsTracker @Inject constructor(
         if (eventName.isEmpty()) return
         val mergedParams = analyticsContext.params + params
         if (mergedParams.isEmpty()) {
-            Log.d(TAG, "Would send analytics event: $eventName")
+            AppLogger.d(TAG) { "Would send analytics event: $eventName" }
         } else {
-            Log.d(TAG, "Would send analytics event: $eventName, params=$mergedParams")
+            AppLogger.d(TAG) { "Would send analytics event: $eventName, params=$mergedParams" }
         }
     }
 
@@ -25,11 +25,9 @@ internal class LogcatAnalyticsTracker @Inject constructor(
     ) {
         val message = message.trim()
         if (message.isEmpty()) return
-        Log.d(
-            TAG,
-            "Would send analytics error: message=$message, group=$groupIdentifier",
-            throwable,
-        )
+        AppLogger.d(TAG, throwable) {
+            "Would send analytics error: message=$message, group=$groupIdentifier"
+        }
     }
 
     private companion object {

@@ -3,7 +3,7 @@ package su.afk.yummy.tv.core.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
+import su.afk.yummy.tv.core.logger.AppLogger
 
 private const val EXTERNAL_INTENT_TAG = "ExternalIntentUtils"
 
@@ -27,6 +27,6 @@ private fun Context.startActivitySafely(intent: Intent): Boolean =
         startActivity(intent)
         true
     } catch (e: RuntimeException) {
-        Log.w(EXTERNAL_INTENT_TAG, "Unable to start external intent", e)
+        AppLogger.w(EXTERNAL_INTENT_TAG, e) { "Unable to start external intent" }
         false
     }

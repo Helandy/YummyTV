@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.home.repository
 
-import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -9,6 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.home.isFresh
@@ -103,19 +103,15 @@ class YaniHomeFeedRepository(
         watchSignature: String,
         displayWatchEntries: List<WatchProgressEntry>,
     ): HomeFeed {
-        Log.i(
-            TAG,
-            "Fetch feed language=$languageCode watchSignature=$watchSignature",
-        )
+        AppLogger.i(TAG) { "Fetch feed language=$languageCode watchSignature=$watchSignature" }
         val dto = api.getFeed()
-        Log.i(TAG, "Feed dto ${dto.summaryForLog()}")
+        AppLogger.i(TAG) { "Feed dto ${dto.summaryForLog()}" }
         val remoteFeed = dto.toHomeFeed(stringProvider)
         val feed = remoteFeed.withLocalContinueWatching(displayWatchEntries)
-        Log.i(
-            TAG,
+        AppLogger.i(TAG) {
             "Feed mapped ${feed.summaryForLog()} " +
-                    "continueSamples=${feed.continueWatchingItems.summaryForLog()}",
-        )
+                    "continueSamples=${feed.continueWatchingItems.summaryForLog()}"
+        }
         homeFeedStore.saveFeed(
             remoteFeed.toHomeFeedCache(
                 language = languageCode,

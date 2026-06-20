@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.player.extractor
 
-import android.util.Log
+import su.afk.yummy.tv.core.logger.AppLogger
 import java.net.URI
 
 private const val TAG = "PlayerExtractor"
@@ -11,11 +11,8 @@ internal fun logExtractorFailure(
     reason: String,
     throwable: Throwable? = null,
 ) {
-    val message = "$extractor failed at ${url.safeUrlForLog()}: $reason"
-    if (throwable == null) {
-        Log.w(TAG, message)
-    } else {
-        Log.w(TAG, message, throwable)
+    AppLogger.w(TAG, throwable) {
+        "$extractor failed at ${url.safeUrlForLog()}: $reason"
     }
 }
 
