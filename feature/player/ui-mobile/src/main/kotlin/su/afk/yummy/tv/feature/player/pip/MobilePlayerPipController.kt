@@ -1,221 +1,69 @@
 package su.afk.yummy.tv.feature.player.pip
 
 import android.app.Activity
-import android.app.PendingIntent
-import android.app.PictureInPictureParams
-import android.app.RemoteAction
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Icon
 import android.os.Build
-import android.util.Rational
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import su.afk.yummy.tv.feature.player.mobile.R
 
 object MobilePlayerPipController {
     const val ACTION_SEEK_BACKWARD = "su.afk.yummy.tv.feature.player.pip.SEEK_BACKWARD"
     const val ACTION_PLAY_PAUSE = "su.afk.yummy.tv.feature.player.pip.PLAY_PAUSE"
     const val ACTION_SEEK_FORWARD = "su.afk.yummy.tv.feature.player.pip.SEEK_FORWARD"
 
-    private val defaultAspectRatio = Rational(16, 9)
-
     @Volatile
-    private var active = false
-
-    @Volatile
-    private var playing = false
-
-    @Volatile
-    private var aspectRatio: Rational = defaultAspectRatio
-
-    @Volatile
-    private var pictureInPictureRequested = false
-
-    @Volatile
-    private var onPlayPause: (() -> Unit)? = null
-
-    @Volatile
-    private var onSeekBackward: (() -> Unit)? = null
-
-    @Volatile
-    private var onSeekForward: (() -> Unit)? = null
+    private var currentSession: MobilePlayerPipSession? = null
 
     var isInPictureInPictureMode by mutableStateOf(false)
         private set
 
-    fun setPlayerActive(isActive: Boolean) {
-        active = isActive
-        if (!isActive) {
-            playing = false
-            aspectRatio = defaultAspectRatio
-            pictureInPictureRequested = false
-            onPlayPause = null
-            onSeekBackward = null
-            onSeekForward = null
+    internal fun createSession(): MobilePlayerPipSession =
+        MobilePlayerPipSession(
+            canEnterPictureInPicture = ::canEnter,
+            isInPictureInPictureMode = { isInPictureInPictureMode },
+        )
+
+    internal fun registerSession(session: MobilePlayerPipSession) {
+        currentSession?.takeUnless { it === session }?.release()
+        currentSession = session
+        session.activate()
+    }
+
+    internal fun unregisterSession(session: MobilePlayerPipSession) {
+        if (currentSession === session) {
+            currentSession = null
         }
-    }
-
-    fun setPlaying(isPlaying: Boolean, activity: Activity? = null) {
-        playing = isPlaying
-        if (activity != null && isInPictureInPictureMode) {
-            updateParams(activity)
-        }
-    }
-
-    fun setPlayPauseAction(action: (() -> Unit)?) {
-        onPlayPause = action
-    }
-
-    fun setSeekActions(
-        backward: (() -> Unit)?,
-        forward: (() -> Unit)?,
-    ) {
-        onSeekBackward = backward
-        onSeekForward = forward
-    }
-
-    fun setAspectRatio(width: Int, height: Int) {
-        aspectRatio = if (width > 0 && height > 0) {
-            Rational(width, height).normalizedForPip()
-        } else {
-            defaultAspectRatio
-        }
+        session.release()
     }
 
     fun updatePictureInPictureMode(enabled: Boolean) {
         isInPictureInPictureMode = enabled
-        pictureInPictureRequested = false
+        currentSession?.onPictureInPictureModeChanged()
     }
 
     fun shouldKeepPlayingOnPause(): Boolean =
-        active && (pictureInPictureRequested || isInPictureInPictureMode)
+        currentSession?.shouldKeepPlayingOnPause() == true
 
     fun canEnter(context: Context): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
-    fun enterIfPlaying(activity: Activity): Boolean {
-        if (!active || !playing) return false
-        return enter(activity)
-    }
+    fun enterIfPlaying(activity: Activity): Boolean =
+        currentSession?.enterIfPlaying(activity) == true
 
-    fun enter(activity: Activity): Boolean {
-        if (!canEnter(activity) || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
-        pictureInPictureRequested = true
-        return runCatching {
-            activity.enterPictureInPictureMode(buildParams(activity))
-        }.getOrDefault(false).also { entered ->
-            if (!entered) pictureInPictureRequested = false
-        }
-    }
+    fun enter(activity: Activity): Boolean =
+        currentSession?.enter(activity) == true
 
     fun handleAction(action: String?) {
-        when (action) {
-            ACTION_SEEK_BACKWARD -> onSeekBackward?.invoke()
-            ACTION_PLAY_PAUSE -> onPlayPause?.invoke()
-            ACTION_SEEK_FORWARD -> onSeekForward?.invoke()
-        }
-    }
-
-    private fun updateParams(activity: Activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && canEnter(activity)) {
-            activity.setPictureInPictureParams(buildParams(activity))
-        }
-    }
-
-    private fun buildParams(activity: Activity): PictureInPictureParams =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PictureInPictureParams.Builder()
-                .setAspectRatio(aspectRatio)
-                .setActions(
-                    listOf(
-                        pipAction(
-                            activity = activity,
-                            action = ACTION_SEEK_BACKWARD,
-                            requestCode = 0,
-                            labelRes = R.string.player_mobile_pip_rewind_10,
-                            iconRes = android.R.drawable.ic_media_rew,
-                        ),
-                        playPauseAction(activity),
-                        pipAction(
-                            activity = activity,
-                            action = ACTION_SEEK_FORWARD,
-                            requestCode = 2,
-                            labelRes = R.string.player_mobile_pip_forward_10,
-                            iconRes = android.R.drawable.ic_media_ff,
-                        ),
-                    )
-                )
-                .build()
-        } else {
-            error("Picture-in-picture params require Android O+")
-        }
-
-    private fun playPauseAction(activity: Activity): RemoteAction {
-        val label = activity.getString(
-            if (playing) R.string.player_mobile_pip_pause else R.string.player_mobile_pip_play,
-        )
-        val iconRes =
-            if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
-        return pipAction(
-            activity = activity,
-            action = ACTION_PLAY_PAUSE,
-            requestCode = 1,
-            label = label,
-            iconRes = iconRes,
-        )
-    }
-
-    private fun pipAction(
-        activity: Activity,
-        action: String,
-        requestCode: Int,
-        labelRes: Int,
-        iconRes: Int,
-    ): RemoteAction =
-        pipAction(
-            activity = activity,
-            action = action,
-            requestCode = requestCode,
-            label = activity.getString(labelRes),
-            iconRes = iconRes,
-        )
-
-    private fun pipAction(
-        activity: Activity,
-        action: String,
-        requestCode: Int,
-        label: String,
-        iconRes: Int,
-    ): RemoteAction {
-        val intent = Intent(activity, MobilePlayerPipActionReceiver::class.java)
-            .setAction(action)
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        val pendingIntent = PendingIntent.getBroadcast(activity, requestCode, intent, flags)
-        return RemoteAction(
-            Icon.createWithResource(activity, iconRes),
-            label,
-            label,
-            pendingIntent,
-        )
+        currentSession?.handleAction(action)
     }
 
     fun findActivity(context: Context): Activity? = when (context) {
         is Activity -> context
         is ContextWrapper -> findActivity(context.baseContext)
         else -> null
-    }
-}
-
-private fun Rational.normalizedForPip(): Rational {
-    val value = numerator.toFloat() / denominator.toFloat()
-    return when {
-        value > 2.39f -> Rational(239, 100)
-        value < 1f / 2.39f -> Rational(100, 239)
-        else -> this
     }
 }

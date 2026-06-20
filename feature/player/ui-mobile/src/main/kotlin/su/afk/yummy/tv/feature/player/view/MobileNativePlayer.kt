@@ -50,6 +50,7 @@ import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
+import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipCallbacks
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
@@ -72,6 +73,7 @@ internal fun MobileNativePlayer(
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
+    val pipSession = remember { MobilePlayerPipController.createSession() }
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val ui = remember(state, playerNamePrefix) {
         MobilePlayerUiState.from(
@@ -111,10 +113,10 @@ internal fun MobileNativePlayer(
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
     }
 
-    DisposableEffect(Unit) {
-        MobilePlayerPipController.setPlayerActive(true)
+    DisposableEffect(pipSession) {
+        MobilePlayerPipController.registerSession(pipSession)
         onDispose {
-            MobilePlayerPipController.setPlayerActive(false)
+            MobilePlayerPipController.unregisterSession(pipSession)
             playerViewHolder[0] = null
         }
     }
@@ -234,7 +236,7 @@ internal fun MobileNativePlayer(
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 wantsPlay = playWhenReady
-                MobilePlayerPipController.setPlaying(playWhenReady, activity)
+                pipSession.setPlaying(playWhenReady, activity)
                 if (playWhenReady) scheduleOverlayHide() else hideJob?.cancel()
             }
 
@@ -251,7 +253,7 @@ internal fun MobileNativePlayer(
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
-                MobilePlayerPipController.setAspectRatio(videoSize.width, videoSize.height)
+                pipSession.setAspectRatio(videoSize.width, videoSize.height)
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -283,25 +285,26 @@ internal fun MobileNativePlayer(
             }
         }
         exoPlayer.addListener(listener)
-        MobilePlayerPipController.setPlaying(exoPlayer.playWhenReady, activity)
-        MobilePlayerPipController.setPlayPauseAction {
-            if (exoPlayer.playWhenReady) exoPlayer.pause() else exoPlayer.play()
-        }
-        MobilePlayerPipController.setSeekActions(
-            backward = {
-                seekToPosition(exoPlayer.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
-            },
-            forward = {
-                seekToPosition(exoPlayer.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
-            },
+        pipSession.setPlaying(exoPlayer.playWhenReady, activity)
+        pipSession.setCallbacks(
+            MobilePlayerPipCallbacks(
+                onSeekBackward = {
+                    seekToPosition(exoPlayer.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+                },
+                onPlayPause = {
+                    if (exoPlayer.playWhenReady) exoPlayer.pause() else exoPlayer.play()
+                },
+                onSeekForward = {
+                    seekToPosition(exoPlayer.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+                },
+            )
         )
         if (wantsPlay) scheduleOverlayHide()
         onDispose {
             hideJob?.cancel()
             stepSeekToastJob?.cancel()
-            MobilePlayerPipController.setPlaying(false, activity)
-            MobilePlayerPipController.setPlayPauseAction(null)
-            MobilePlayerPipController.setSeekActions(backward = null, forward = null)
+            pipSession.setPlaying(false, activity)
+            pipSession.setCallbacks(null)
             val position = exoPlayer.currentPosition.coerceAtLeast(0)
             val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
             notifyPlaybackPositionChanged(position, dur)
@@ -316,7 +319,7 @@ internal fun MobileNativePlayer(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    val keepPlayingInPip = MobilePlayerPipController.shouldKeepPlayingOnPause()
+                    val keepPlayingInPip = pipSession.shouldKeepPlayingOnPause()
                     resumeAfterLifecyclePause = wantsPlay && !keepPlayingInPip
                     val position = exoPlayer.currentPosition.coerceAtLeast(0)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
@@ -371,7 +374,7 @@ internal fun MobileNativePlayer(
     LaunchedEffect(exoPlayer, selectedSpeed, wantsPlay) {
         exoPlayer.setPlaybackSpeed(selectedSpeed)
         exoPlayer.playWhenReady = wantsPlay
-        MobilePlayerPipController.setPlaying(wantsPlay, activity)
+        pipSession.setPlaying(wantsPlay, activity)
     }
 
     LaunchedEffect(exoPlayer, ui.activeIframeUrl, state.autoSkipOpeningsEndings) {
@@ -464,7 +467,7 @@ internal fun MobileNativePlayer(
             playerName = ui.activeBalancerName,
             onBack = { onEvent(PlayerState.Event.Back) },
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
-            onPictureInPicture = { activity?.let(MobilePlayerPipController::enter) },
+            onPictureInPicture = { activity?.let(pipSession::enter) },
             showDetails = state.animeId > 0,
             showPictureInPicture = supportsPictureInPicture && !isInPictureInPictureMode,
             visible = overlayVisible && !isInPictureInPictureMode,
