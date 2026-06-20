@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SupportPromptSnapshot
+import su.afk.yummy.tv.core.utils.runSuspendCatching
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
@@ -159,7 +160,7 @@ class HomeViewModel @Inject internal constructor(
     private fun load() {
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
-            runCatching { getHomeFeed() }.fold(
+            runSuspendCatching { getHomeFeed() }.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
                     analytics.eventLoadError(e)
@@ -181,7 +182,7 @@ class HomeViewModel @Inject internal constructor(
             if (showInitialLoading) {
                 setState { copy(isLoading = true, error = null) }
             }
-            runCatching { refreshHomeFeed() }.fold(
+            runSuspendCatching { refreshHomeFeed() }.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
                     analytics.eventLoadError(e)
@@ -203,7 +204,7 @@ class HomeViewModel @Inject internal constructor(
     private fun syncCachedContinueWatching() {
         if (currentState.feed == null) return
         viewModelScope.launch {
-            val cachedFeed = runCatching { getCachedHomeFeed() }.getOrNull() ?: return@launch
+            val cachedFeed = runSuspendCatching { getCachedHomeFeed() }.getOrNull() ?: return@launch
             val currentFeed = currentState.feed
             applyFeed(
                 feed = currentFeed?.copy(continueWatchingItems = cachedFeed.continueWatchingItems)

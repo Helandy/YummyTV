@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.utils.loadFirstNonEmptyOffsetPage
+import su.afk.yummy.tv.core.utils.runSuspendCatching
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchPage
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
@@ -49,7 +50,7 @@ internal class SearchPagingHandler @Inject constructor(
         searchJob = scope.launch {
             if (debounceMs > 0L) delay(debounceMs)
             onLoading(request)
-            runCatching {
+            runSuspendCatching {
                 loadVisiblePage(
                     query = request.query,
                     filters = request.filters,

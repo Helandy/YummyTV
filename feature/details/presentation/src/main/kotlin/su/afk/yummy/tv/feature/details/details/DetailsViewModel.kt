@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
@@ -333,7 +334,7 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     private suspend fun loadDetails() {
         setState { copy(isLoading = true, error = null) }
-        runCatching { getAnimeDetails(animeId) }.fold(
+        runSuspendCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, details = details) }
                 refreshLibraryMetadata(
