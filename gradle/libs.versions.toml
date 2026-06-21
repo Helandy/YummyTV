@@ -42,9 +42,7 @@ coil = "3.5.0"
 media3 = "1.10.1"
 
 # TV
-androidx-tv-foundation = "1.0.0"
 androidx-tv-tvprovider = "1.1.0"
-androidx-tv-material = "1.1.0"
 
 # Analytics / Feature flags
 appmetrica = "8.3.0"
@@ -124,8 +122,6 @@ work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "w
 
 # TV
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "androidx-tv-tvprovider" }
-androidx-tv-foundation = { module = "androidx.tv:tv-foundation", version.ref = "androidx-tv-foundation" }
-androidx-tv-material = { module = "androidx.tv:tv-material", version.ref = "androidx-tv-material" }
 
 # Analytics / Feature flags
 appmetrica-analytics = { module = "io.appmetrica.analytics:analytics", version.ref = "appmetrica" }
