@@ -50,7 +50,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         creators = source.creators.mapNotNull { it.toPerson() },
         studios = source.studios.mapNotNull { it.toStudio() },
         viewingOrder = source.viewingOrder.mapNotNull { it.toViewingOrderItem() },
-        screenshots = source.randomScreenshots.map { it.toAnimeScreenshot() },
+        screenshots = source.randomScreenshots.toAnimeScreenshots(),
     )
 }
 
@@ -132,6 +132,19 @@ private fun YaniScreenshotDto.toAnimeScreenshot(): AnimeScreenshot = AnimeScreen
     small = sizes.small?.toHttpsUrl(),
     full = sizes.full?.toHttpsUrl(),
 )
+
+private fun List<YaniScreenshotDto>.toAnimeScreenshots(): List<AnimeScreenshot> {
+    val seenImageUrls = mutableSetOf<String>()
+    return map { it.toAnimeScreenshot() }
+        .filter { screenshot ->
+            val imageUrl = screenshot.dedupeImageUrl()
+            imageUrl == null || seenImageUrls.add(imageUrl)
+        }
+}
+
+private fun AnimeScreenshot.dedupeImageUrl(): String? =
+    full?.takeIf { it.isNotBlank() }
+        ?: small?.takeIf { it.isNotBlank() }
 
 internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
     id = videoId,

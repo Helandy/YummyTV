@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotFullscreenDialog
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotMobileCard
@@ -54,7 +55,7 @@ fun ScreenshotsMobileScreen(
             ) {
                 itemsIndexed(
                     items = state.screenshots,
-                    key = { _, screenshot -> screenshot.id ?: screenshot.hashCode() },
+                    key = { index, screenshot -> screenshot.screenshotLazyKey(index) },
                 ) { index, screenshot ->
                     ScreenshotMobileCard(
                         screenshot = screenshot,
@@ -74,3 +75,8 @@ fun ScreenshotsMobileScreen(
         }
     }
 }
+
+private fun AnimeScreenshot.screenshotLazyKey(index: Int): String =
+    full?.takeIf { it.isNotBlank() }
+        ?: small?.takeIf { it.isNotBlank() }
+        ?: "empty:$index"

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
+import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
@@ -78,7 +79,7 @@ fun ScreenshotsTvScreen(
                     }
                     itemsIndexed(
                         items = state.screenshots,
-                        key = { _, item -> item.id ?: item.hashCode() },
+                        key = { index, item -> item.screenshotLazyKey(index) },
                     ) { index, screenshot ->
                         ScreenshotCard(
                             screenshot = screenshot,
@@ -101,3 +102,8 @@ fun ScreenshotsTvScreen(
         }
     }
 }
+
+private fun AnimeScreenshot.screenshotLazyKey(index: Int): String =
+    full?.takeIf { it.isNotBlank() }
+        ?: small?.takeIf { it.isNotBlank() }
+        ?: "empty:$index"
