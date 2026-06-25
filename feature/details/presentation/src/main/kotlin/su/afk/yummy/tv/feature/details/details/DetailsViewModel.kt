@@ -124,8 +124,12 @@ class DetailsViewModel @AssistedInject internal constructor(
                     )
                 }
                 if (signedIn && !wasSignedIn) {
-                    viewModelScope.launch { refreshVideosFromNetwork() }
+                    viewModelScope.launch {
+                        refreshLibraryState()
+                        refreshVideosFromNetwork()
+                    }
                 } else if (!signedIn) {
+                    setState { copy(libraryList = null) }
                     updateMergedWatchProgress(serverVideos = emptyList())
                 }
             }
@@ -312,9 +316,10 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun refreshLibraryState() {
+        if (!currentState.isSignedIn) return
         val libraryVersion = libraryMutationVersion
         val favoriteVersion = favoriteMutationVersion
-        libraryHandler.refreshState(animeId)
+        libraryHandler.refreshAuthorizedState(animeId)
             .onSuccess { refreshed ->
                 setState {
                     var next = this

@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.core.featuretoggle
 
 import android.content.Context
+import android.os.StrictMode
+import com.yandex.varioqub.analyticadapter.VarioqubConfigAdapter
 import com.yandex.varioqub.appmetricaadapter.AppMetricaAdapter
 import com.yandex.varioqub.config.FetchError
 import com.yandex.varioqub.config.OnFetchCompleteListener
@@ -31,17 +33,35 @@ internal class VarioqubFeatureToggleInitializer @Inject constructor(
             }
             val settings = settingsBuilder.build()
             val adapter = if (BuildConfig.DEBUG) {
-                NoAnalyticsVarioqubAdapter(context)
+                NoAnalyticsVarioqubAdapter()
             } else {
                 AppMetricaAdapter(context)
             }
-            Varioqub.init(settings, adapter, context)
+            initializeVarioqub(settings, adapter, context)
             featureToggleState.markInitialized()
             activateConfig()
             fetchConfig()
         }.onFailure { throwable ->
             featureToggleState.markNotInitialized()
             AppLogger.w(TAG, throwable) { "Failed to initialize feature toggles" }
+        }
+    }
+
+    private fun initializeVarioqub(
+        settings: VarioqubSettings,
+        adapter: VarioqubConfigAdapter,
+        context: Context,
+    ) {
+        if (!BuildConfig.DEBUG) {
+            Varioqub.init(settings, adapter, context)
+            return
+        }
+
+        val previousPolicy = StrictMode.allowThreadDiskReads()
+        try {
+            Varioqub.init(settings, adapter, context)
+        } finally {
+            StrictMode.setThreadPolicy(previousPolicy)
         }
     }
 

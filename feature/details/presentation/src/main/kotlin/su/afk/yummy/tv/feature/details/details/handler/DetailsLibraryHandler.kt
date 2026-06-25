@@ -19,7 +19,7 @@ internal class DetailsLibraryHandler @Inject constructor(
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
 ) {
-    suspend fun refreshState(animeId: Int): Result<DetailsLibraryState?> =
+    suspend fun refreshAuthorizedState(animeId: Int): Result<DetailsLibraryState?> =
         runCatching { getAnimeListState(animeId) }
             .map { state ->
                 state ?: return@map null

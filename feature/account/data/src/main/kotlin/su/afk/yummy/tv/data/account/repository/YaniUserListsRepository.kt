@@ -46,9 +46,11 @@ class YaniUserListsRepository(
             accountStorage.hasUserListCache(userId)
         }
 
-    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem =
+    override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? =
         withContext(Dispatchers.IO) {
             val userId = currentUserId()
+            if (userId <= 0) return@withContext null
+
             val stored = accountStorage.getAnimeListState(userId, animeId)
             if (stored?.isFresh(ANIME_LIST_STATE_TTL_MS) == true) {
                 return@withContext stored.toStoredUserListItem()
