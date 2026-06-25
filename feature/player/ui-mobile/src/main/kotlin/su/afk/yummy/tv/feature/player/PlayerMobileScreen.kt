@@ -75,22 +75,6 @@ fun PlayerMobileScreen(
     val streamUrl = state.streamUrl
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            streamUrl != null -> MobileNativePlayer(
-                state = state,
-                streamUrl = streamUrl,
-                videoTransform = videoTransform,
-                onVideoTransformChanged = { transform ->
-                    onEvent(
-                        PlayerState.Event.MobileVideoTransformChanged(
-                            scale = transform.scale,
-                            offsetX = transform.offset.x,
-                            offsetY = transform.offset.y,
-                        )
-                    )
-                },
-                onEvent = onEvent,
-            )
-
             state.kodikBlockedError != null -> PlayerMessage(
                 title = state.kodikBlockedError,
                 onBack = { onEvent(PlayerState.Event.Back) },
@@ -111,6 +95,22 @@ fun PlayerMobileScreen(
                     null
                 },
                 onBack = { onEvent(PlayerState.Event.Back) },
+            )
+
+            streamUrl != null -> MobileNativePlayer(
+                state = state,
+                streamUrl = streamUrl,
+                videoTransform = videoTransform,
+                onVideoTransformChanged = { transform ->
+                    onEvent(
+                        PlayerState.Event.MobileVideoTransformChanged(
+                            scale = transform.scale,
+                            offsetX = transform.offset.x,
+                            offsetY = transform.offset.y,
+                        )
+                    )
+                },
+                onEvent = onEvent,
             )
 
             else -> Box(

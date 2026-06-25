@@ -127,7 +127,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                     errorType = event.errorType,
                 )
                 setState {
-                    copy(playerError = sourceStreamHandler.playbackErrorMessage(event.message))
+                    copy(
+                        streamUrl = null,
+                        playerError = sourceStreamHandler.playbackErrorMessage(event.message),
+                    )
                 }
             }
 

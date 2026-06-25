@@ -65,24 +65,19 @@ internal object CvhExtractor {
             }
 
             val videoJson = fetchJson("$VIDEO_URL/$vkId", referer = REFERER)
+            val failoverHost = videoJson.optString("failoverHost").takeIf { it.isNotBlank() }
             val sources = videoJson.optJSONObject("sources") ?: run {
                 return@withContext null
             }
 
             // Auto HLS first so keys.last() = best available MP4 (used as default quality)
             val qualities = LinkedHashMap<String, String>()
-            sources.optString("hlsUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities[autoQualityLabel] = it }
-            sources.optString("mpegLowestUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities["240p"] = it }
-            sources.optString("mpegLowUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities["360p"] = it }
-            sources.optString("mpegMediumUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities["480p"] = it }
-            sources.optString("mpegHighUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities["720p"] = it }
-            sources.optString("mpegFullHdUrl").takeIf { it.isNotEmpty() }
-                ?.let { qualities["1080p"] = it }
+            qualities.putCvhQuality(autoQualityLabel, sources.optString("hlsUrl"), failoverHost)
+            qualities.putCvhQuality("240p", sources.optString("mpegLowestUrl"), failoverHost)
+            qualities.putCvhQuality("360p", sources.optString("mpegLowUrl"), failoverHost)
+            qualities.putCvhQuality("480p", sources.optString("mpegMediumUrl"), failoverHost)
+            qualities.putCvhQuality("720p", sources.optString("mpegHighUrl"), failoverHost)
+            qualities.putCvhQuality("1080p", sources.optString("mpegFullHdUrl"), failoverHost)
 
             if (qualities.isEmpty()) {
                 return@withContext null
@@ -116,4 +111,26 @@ internal object CvhExtractor {
             conn.disconnect()
         }
     }
+
+    private fun LinkedHashMap<String, String>.putCvhQuality(
+        label: String,
+        url: String,
+        failoverHost: String?,
+    ) {
+        val sourceUrl = url.takeIf { it.isNotBlank() } ?: return
+        this[label] = normalizeOkCdnIpUrl(sourceUrl, failoverHost)
+    }
+
+    private fun normalizeOkCdnIpUrl(url: String, failoverHost: String?): String {
+        val host = failoverHost?.takeIf { it.isNotBlank() } ?: return url
+        val parsed = runCatching { URL(url) }.getOrNull() ?: return url
+        if (!parsed.protocol.equals("https", ignoreCase = true)) return url
+        if (!IPV4_HOST_REGEX.matches(parsed.host)) return url
+
+        return runCatching {
+            URL(parsed.protocol, host, parsed.port, parsed.file).toString()
+        }.getOrDefault(url)
+    }
+
+    private val IPV4_HOST_REGEX = Regex("""\d{1,3}(?:\.\d{1,3}){3}""")
 }
