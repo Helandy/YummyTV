@@ -6,6 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +42,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.cast.MobileCastButton
+import su.afk.yummy.tv.feature.player.cast.MobileCastMedia
+import su.afk.yummy.tv.feature.player.cast.rememberMobileCastController
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
@@ -57,6 +63,7 @@ import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.segments
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
+import su.afk.yummy.tv.feature.player.mobile.R as MobileR
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -114,9 +121,13 @@ internal fun MobileNativePlayer(
     }
     val mediaController = rememberMobileMediaController()
     val playbackConfig = rememberMobilePlayerPlaybackConfig()
+    val castController = rememberMobileCastController()
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
+    var castMessageJob by remember { mutableStateOf<Job?>(null) }
+    var castMessageText by remember { mutableStateOf<String?>(null) }
+    var localPausedForCast by remember { mutableStateOf(false) }
     val playerViewHolder = remember { arrayOfNulls<PlayerView>(1) }
     var liveVideoTransform by remember { mutableStateOf(videoTransform) }
     var transformGestureActive by remember { mutableStateOf(false) }
@@ -146,6 +157,15 @@ internal fun MobileNativePlayer(
     fun showOverlay() {
         overlayVisible = true
         if (wantsPlay) scheduleOverlayHide() else hideJob?.cancel()
+    }
+
+    fun showCastMessage(text: String) {
+        castMessageJob?.cancel()
+        castMessageText = text
+        castMessageJob = coroutineScope.launch {
+            delay(MOBILE_PLAYER_CAST_MESSAGE_DURATION_MS)
+            castMessageText = null
+        }
     }
 
     fun toggleOverlay() {
@@ -256,6 +276,19 @@ internal fun MobileNativePlayer(
         }
     }
 
+    fun buildCastMedia(positionMs: Long): MobileCastMedia =
+        MobileCastMedia(
+            url = currentUrl,
+            title = state.animeTitle,
+            subtitle = listOf(ui.activeEpisode, ui.activeDubbing)
+                .filter { it.isNotBlank() }
+                .joinToString(" • "),
+            imageUrl = ui.activeScreenshotUrl.ifBlank { state.posterUrl },
+            positionMs = positionMs,
+            durationMs = duration,
+            headers = state.streamHeaders,
+        )
+
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -327,6 +360,7 @@ internal fun MobileNativePlayer(
         onDispose {
             hideJob?.cancel()
             stepSeekToastJob?.cancel()
+            castMessageJob?.cancel()
             pipSession.setPlaying(false, activity)
             pipSession.setCallbacks(null)
             val position = player.currentPosition.coerceAtLeast(0)
@@ -377,6 +411,33 @@ internal fun MobileNativePlayer(
         }
     }
 
+    LaunchedEffect(castController.isCasting, playbackConfigKey, ui.activeIframeUrl) {
+        if (castController.isCasting) {
+            if (state.streamHeaders.isNotEmpty()) {
+                showCastMessage(context.getString(MobileR.string.player_mobile_cast_unsupported_headers))
+                return@LaunchedEffect
+            }
+            val position = player.currentPosition.coerceAtLeast(0L)
+            castController.load(buildCastMedia(position)) {
+                localPausedForCast = true
+                player.pause()
+                notifyPlaybackPositionChanged(position, duration)
+                saveProgress(position, duration)
+                overlayVisible = false
+                settingsMode = null
+            }
+        } else if (localPausedForCast) {
+            localPausedForCast = false
+            val remotePosition = castController.remotePositionMs()
+            if (remotePosition > 0L) {
+                player.seekTo(remotePosition)
+                notifyPlaybackPositionChanged(remotePosition, duration)
+                saveProgress(remotePosition, duration)
+            }
+            player.play()
+        }
+    }
+
     LaunchedEffect(transformScopeKey) {
         transformGestureActive = false
         liveVideoTransform = videoTransform
@@ -409,7 +470,11 @@ internal fun MobileNativePlayer(
             var position = currentPosition
             var dur = duration
             if (!isSeeking) {
-                position = player.currentPosition.coerceAtLeast(0)
+                position = if (castController.isCasting) {
+                    castController.remotePositionMs()
+                } else {
+                    player.currentPosition.coerceAtLeast(0)
+                }
                 dur = player.duration.takeIf { it > 0 } ?: 0L
                 notifyPlaybackPositionChanged(position, dur)
             }
@@ -479,7 +544,7 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureLayer(
-            enabled = !isInPictureInPictureMode,
+            enabled = !isInPictureInPictureMode && !castController.isCasting,
             onTap = { toggleOverlay() },
             onDoubleTap = ::stepSeek,
             onTransformStart = {
@@ -503,11 +568,14 @@ internal fun MobileNativePlayer(
             showDetails = state.animeId > 0,
             showPictureInPicture = supportsPictureInPicture && !isInPictureInPictureMode,
             visible = overlayVisible && !isInPictureInPictureMode,
+            castButton = {
+                MobileCastButton(modifier = Modifier.size(32.dp))
+            },
         )
 
         MobilePlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = overlayVisible && !isInPictureInPictureMode,
+            visible = overlayVisible && !isInPictureInPictureMode && !castController.isCasting,
             wantsPlay = wantsPlay,
             displayTime = displayTime,
             duration = duration,
@@ -560,6 +628,17 @@ internal fun MobileNativePlayer(
                 .padding(bottom = if (overlayVisible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
+        val castingText = castController.deviceName
+            .takeIf { castController.isCasting && it.isNotBlank() }
+            ?.let { stringResource(MobileR.string.player_mobile_casting_to, it) }
+        MobilePlayerSeekToast(
+            text = (castMessageText ?: castingText).takeUnless { isInPictureInPictureMode },
+            icon = Icons.Filled.Info,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = if (overlayVisible && !isInPictureInPictureMode) 128.dp else 36.dp),
+        )
+
         MobilePlayerZoomIndicator(
             visible = transformGestureActive && !isInPictureInPictureMode,
             scale = liveVideoTransform.scale,
@@ -586,7 +665,7 @@ internal fun MobileNativePlayer(
         }
 
         val activeSettingsMode = settingsMode
-        if (activeSettingsMode != null && !isInPictureInPictureMode) {
+        if (activeSettingsMode != null && !isInPictureInPictureMode && !castController.isCasting) {
             MobilePlayerSettingsSheet(
                 mode = activeSettingsMode,
                 qualities = qualities.keys.toList(),
@@ -645,3 +724,4 @@ private fun calculateBufferedProgress(
 }
 
 private const val MOBILE_PLAYER_PIP_SEEK_STEP_MS = 10_000L
+private const val MOBILE_PLAYER_CAST_MESSAGE_DURATION_MS = 2_500L

@@ -20,7 +20,9 @@ dependencies {
     implementation(libs.bundles.media3.player.dash)
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.mediarouter)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.play.services.cast.framework)
 }
