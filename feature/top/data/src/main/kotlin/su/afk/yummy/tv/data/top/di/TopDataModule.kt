@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
 import su.afk.yummy.tv.data.top.network.YaniAnimeTopApi
@@ -18,7 +18,8 @@ object TopDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniAnimeTopApi(client: HttpClient): YaniAnimeTopApi = YaniAnimeTopApi(client)
+    fun provideYaniAnimeTopApi(clientProvider: YaniHttpClientProvider): YaniAnimeTopApi =
+        YaniAnimeTopApi(clientProvider)
 
     @Provides
     @Singleton

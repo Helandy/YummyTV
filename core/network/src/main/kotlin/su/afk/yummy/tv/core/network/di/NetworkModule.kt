@@ -4,11 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
-import su.afk.yummy.tv.core.network.buildYaniHttpClient
-import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import javax.inject.Singleton
 
 @Module
@@ -18,11 +14,4 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideJson(): Json = Json { ignoreUnknownKeys = true; isLenient = true }
-
-    @Provides
-    @Singleton
-    fun provideHttpClient(
-        settingsStore: SettingsStore,
-        yaniAuthPreferences: YaniAuthPreferences,
-    ): HttpClient = buildYaniHttpClient(settingsStore, yaniAuthPreferences)
 }

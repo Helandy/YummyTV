@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
@@ -17,7 +17,8 @@ import javax.inject.Singleton
 object ScheduleDataModule {
     @Provides
     @Singleton
-    fun provideYaniScheduleApi(client: HttpClient): YaniScheduleApi = YaniScheduleApi(client)
+    fun provideYaniScheduleApi(clientProvider: YaniHttpClientProvider): YaniScheduleApi =
+        YaniScheduleApi(clientProvider)
 
     @Provides
     @Singleton

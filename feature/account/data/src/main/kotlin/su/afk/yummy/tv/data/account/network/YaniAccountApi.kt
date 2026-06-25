@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.account.network
 
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.delete
@@ -21,6 +20,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeUserRatingDto
@@ -62,13 +62,13 @@ class YaniCaptchaRequiredException : RuntimeException("Captcha required")
 class YaniAccountException(message: String, val code: Int? = null) : RuntimeException(message)
 
 class YaniAccountApi(
-    private val client: HttpClient,
+    private val clientProvider: YaniHttpClientProvider,
 ) {
 
     suspend fun login(login: String, password: String, captchaResponse: String? = null): String {
         val response = try {
             AppLogger.d(TAG) { "POST /profile/login" }
-            client.post("$YANI_BASE_URL/profile/login") {
+            clientProvider.get().post("$YANI_BASE_URL/profile/login") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     YaniLoginBodyDto(
@@ -104,44 +104,45 @@ class YaniAccountApi(
     }
 
     suspend fun refreshToken(): String =
-        client.get("$YANI_BASE_URL/profile/token").body<YaniTokenResponseDto>().response.token
+        clientProvider.get().get("$YANI_BASE_URL/profile/token")
+            .body<YaniTokenResponseDto>().response.token
 
     suspend fun getProfile(token: String? = null): YaniProfileDto =
-        client.get("$YANI_BASE_URL/profile") {
+        clientProvider.get().get("$YANI_BASE_URL/profile") {
             if (!token.isNullOrBlank()) {
                 header(HttpHeaders.Authorization, YANI_AUTHORIZATION_PREFIX + token.trim())
             }
         }.body<YaniProfileResponseDto>().response
 
     suspend fun getUserProfile(userId: Int): YaniUserProfileResponseDto =
-        client.get("$YANI_BASE_URL/users/id$userId") {
+        clientProvider.get().get("$YANI_BASE_URL/users/id$userId") {
             parameter("need_counts", true)
         }.body()
 
     suspend fun logout() {
-        client.post("$YANI_BASE_URL/profile/logout")
+        clientProvider.get().post("$YANI_BASE_URL/profile/logout")
     }
 
     suspend fun getUserList(userId: Int, listId: Int): List<YaniUserAnimeDto> =
-        client.get("$YANI_BASE_URL/users/$userId/lists/$listId")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/lists/$listId")
             .body<YaniUserListResponseDto>()
             .response
 
     suspend fun getUserFriends(userId: Int, limit: Int, offset: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/friends") {
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/friends") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniUserFriendsResponseDto>().response
 
     suspend fun getUserReviews(userId: Int, limit: Int, offset: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/reviews") {
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/reviews") {
             parameter("type", "approved")
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniUserReviewsResponseDto>().response
 
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Int) =
-        client.get("$YANI_BASE_URL/posts") {
+        clientProvider.get().get("$YANI_BASE_URL/posts") {
             parameter("user_id", userId)
             parameter("status", "published")
             parameter("sort", "new")
@@ -150,75 +151,75 @@ class YaniAccountApi(
         }.body<YaniUserPostsResponseDto>().response
 
     suspend fun getUserCollections(userId: Int, limit: Int, offset: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/collections") {
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/collections") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniUserCollectionsResponseDto>().response.orEmpty()
 
     suspend fun getAnimeListState(animeId: Int): YaniAnimeListStateDto =
-        client.get("$YANI_BASE_URL/anime/$animeId/list")
+        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/list")
             .body<YaniAnimeListStateResponseDto>()
             .response
 
     suspend fun setAnimeList(animeId: Int, listId: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/list") {
+        clientProvider.get().put("$YANI_BASE_URL/anime/$animeId/list") {
             contentType(ContentType.Application.Json)
             setBody(YaniSetListBodyDto(listId))
         }
     }
 
     suspend fun removeAnimeList(animeId: Int) {
-        client.delete("$YANI_BASE_URL/anime/$animeId/list")
+        clientProvider.get().delete("$YANI_BASE_URL/anime/$animeId/list")
     }
 
     suspend fun setFavorite(animeId: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/list/fav") {
+        clientProvider.get().put("$YANI_BASE_URL/anime/$animeId/list/fav") {
             contentType(ContentType.Application.Json)
             setBody(YaniSetFavoriteBodyDto())
         }
     }
 
     suspend fun removeFavorite(animeId: Int) {
-        client.delete("$YANI_BASE_URL/anime/$animeId/list/fav")
+        clientProvider.get().delete("$YANI_BASE_URL/anime/$animeId/list/fav")
     }
 
     suspend fun markWatched(videoId: Int, timeSeconds: Int, durationSeconds: Int): Boolean =
-        client.put("$YANI_BASE_URL/video/$videoId") {
+        clientProvider.get().put("$YANI_BASE_URL/video/$videoId") {
             contentType(ContentType.Application.Json)
             setBody(YaniPutVideoBodyDto(time = timeSeconds, duration = durationSeconds))
         }.body<YaniBooleanResponseDto>().response
 
     suspend fun syncWatched(videos: List<YaniPostVideoItemDto>): Boolean =
-        client.post("$YANI_BASE_URL/video") {
+        clientProvider.get().post("$YANI_BASE_URL/video") {
             contentType(ContentType.Application.Json)
             setBody(YaniPostVideoBodyDto(videos))
         }.body<YaniBooleanResponseDto>().response
 
     suspend fun removeWatched(videoIds: List<Int>): Boolean =
-        client.delete("$YANI_BASE_URL/video") {
+        clientProvider.get().delete("$YANI_BASE_URL/video") {
             contentType(ContentType.Application.Json)
             setBody(YaniDeleteVideosBodyDto(videoIds))
         }.body<YaniBooleanResponseDto>().response
 
     suspend fun getRatingBuckets(animeId: Int): List<YaniRatingBucketDto> =
-        client.get("$YANI_BASE_URL/anime/$animeId/rates")
+        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/rates")
             .body<YaniRatingResponseDto>()
             .response
 
     suspend fun getUserRating(animeId: Int): YaniAnimeUserRatingDto =
-        client.get("$YANI_BASE_URL/anime/$animeId")
+        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId")
             .body<YaniAnimeUserRatingResponseDto>()
             .response
 
     suspend fun setRating(animeId: Int, rating: Int) {
-        client.put("$YANI_BASE_URL/anime/$animeId/rate") {
+        clientProvider.get().put("$YANI_BASE_URL/anime/$animeId/rate") {
             contentType(ContentType.Application.Json)
             setBody(YaniRateBodyDto(rating.coerceIn(1, 10)))
         }
     }
 
     suspend fun deleteRating(animeId: Int) {
-        client.delete("$YANI_BASE_URL/anime/$animeId/rate")
+        clientProvider.get().delete("$YANI_BASE_URL/anime/$animeId/rate")
     }
 
     suspend fun getAnimeCollections(
@@ -226,63 +227,63 @@ class YaniAccountApi(
         limit: Int,
         offset: Int
     ): List<YaniCollectionSummaryDto> =
-        client.get("$YANI_BASE_URL/anime/$animeId/collections") {
+        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/collections") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniCollectionsResponseDto>().response
 
     suspend fun setSubscribed(videoId: Int): Boolean =
-        client.put("$YANI_BASE_URL/video/$videoId/subscribe")
+        clientProvider.get().put("$YANI_BASE_URL/video/$videoId/subscribe")
             .body<YaniBooleanResponseDto>().response
 
     suspend fun removeSubscribed(videoId: Int): Boolean =
-        client.delete("$YANI_BASE_URL/video/$videoId/subscribe")
+        clientProvider.get().delete("$YANI_BASE_URL/video/$videoId/subscribe")
             .body<YaniBooleanResponseDto>().response
 
     suspend fun getSubscriptions(userId: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/lists/subs")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/lists/subs")
             .body<YaniVideoSubscriptionsResponseDto>()
             .response
 
     suspend fun getUserStatsGenres(userId: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/stats/genres")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/stats/genres")
             .body<YaniUserStatsGenresResponseDto>()
             .response
 
     suspend fun getUserStatsRatings(userId: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/stats/ratings")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/stats/ratings")
             .body<YaniUserStatsRatingsResponseDto>()
             .response
 
     suspend fun getUserStatsLists(userId: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/stats/lists")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/stats/lists")
             .body<YaniUserStatsListsResponseDto>()
             .response
 
     suspend fun getUserStatsTypes(userId: Int) =
-        client.get("$YANI_BASE_URL/users/$userId/stats/types-v2")
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/stats/types-v2")
             .body<YaniUserStatsTypesResponseDto>()
             .response
 
     suspend fun getNotifications(limit: Int, offset: Int) =
-        client.get("$YANI_BASE_URL/profile/notifications") {
+        clientProvider.get().get("$YANI_BASE_URL/profile/notifications") {
             parameter("limit", limit)
             parameter("offset", offset)
         }.body<YaniNotificationsResponseDto>().response
 
     suspend fun getNotificationAnimeId(slug: String): Int? =
-        client.get("$YANI_BASE_URL/anime/$slug")
+        clientProvider.get().get("$YANI_BASE_URL/anime/$slug")
             .body<YaniNotificationAnimeResponseDto>()
             .response
             .animeId
 
     suspend fun markNotificationRead(id: Int): Boolean =
-        client.post("$YANI_BASE_URL/profile/notifications/$id/read")
+        clientProvider.get().post("$YANI_BASE_URL/profile/notifications/$id/read")
             .body<YaniBooleanResponseDto>()
             .response
 
     suspend fun markAllNotificationsRead(): Boolean {
-        val response = client.post("$YANI_BASE_URL/profile/notifications/read") {
+        val response = clientProvider.get().post("$YANI_BASE_URL/profile/notifications/read") {
             contentType(ContentType.Application.Json)
             setBody(buildJsonObject { })
         }
@@ -290,7 +291,7 @@ class YaniAccountApi(
     }
 
     suspend fun deleteNotification(id: Int): Boolean =
-        client.delete("$YANI_BASE_URL/profile/notifications/$id")
+        clientProvider.get().delete("$YANI_BASE_URL/profile/notifications/$id")
             .body<YaniBooleanResponseDto>()
             .response
 

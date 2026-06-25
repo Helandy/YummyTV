@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.android.di
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import coil3.ImageLoader
@@ -29,8 +30,10 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var settingsStore: SettingsStore
+
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
     @Inject
     lateinit var homeFeedRefreshScheduler: HomeFeedRefreshScheduler
 
@@ -49,6 +52,18 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
+                    .penaltyLog()
+                    .build()
+            )
+        }
+
         setupAnalytics()
         setupFeatureToggles()
         setupCoilImageLoader()

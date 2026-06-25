@@ -20,15 +20,39 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import javax.inject.Inject
+import javax.inject.Singleton
 
 const val YANI_BASE_URL = "https://api.yani.tv"
 private const val YANI_API_HOST = "api.yani.tv"
 private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_LANGUAGE_HEADER = "Lang"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
+
+@Singleton
+class YaniHttpClientProvider @Inject constructor(
+    private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
+) {
+    private val mutex = Mutex()
+
+    @Volatile
+    private var client: HttpClient? = null
+
+    suspend fun get(): HttpClient {
+        client?.let { return it }
+        return mutex.withLock {
+            client?.let { return it }
+            withContext(Dispatchers.IO) {
+                buildYaniHttpClient(settingsStore, yaniAuthPreferences)
+            }.also { client = it }
+        }
+    }
+}
 
 fun buildYaniHttpClient(
     settingsStore: SettingsStore,

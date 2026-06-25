@@ -4,8 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
@@ -20,7 +20,8 @@ object HomeDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniHomeApi(client: HttpClient): YaniHomeApi = YaniHomeApi(client)
+    fun provideYaniHomeApi(clientProvider: YaniHttpClientProvider): YaniHomeApi =
+        YaniHomeApi(clientProvider)
 
     @Provides
     @Singleton

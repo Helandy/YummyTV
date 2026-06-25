@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.comments.network
 
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -12,6 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.data.comments.dto.YaniBooleanResponseDto
 import su.afk.yummy.tv.data.comments.dto.YaniClaimCommentBodyDto
 import su.afk.yummy.tv.data.comments.dto.YaniCommentResponseDto
@@ -23,7 +23,7 @@ import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentBodyDto
 import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentResponseDto
 
 class YaniCommentsApi(
-    private val client: HttpClient,
+    private val clientProvider: YaniHttpClientProvider,
 ) {
     suspend fun getAnimeComments(
         animeId: Int,
@@ -31,7 +31,7 @@ class YaniCommentsApi(
         skip: Int,
         sort: String,
     ): YaniCommentsResponseDto =
-        client.get("$YANI_BASE_URL/comments/anime/$animeId") {
+        clientProvider.get().get("$YANI_BASE_URL/comments/anime/$animeId") {
             parameter("limit", limit)
             parameter("skip", skip)
             parameter("sort", sort)
@@ -41,7 +41,7 @@ class YaniCommentsApi(
         commentId: Int,
         skip: Int,
     ): YaniCommentsResponseDto =
-        client.get("$YANI_BASE_URL/comments/$commentId/children") {
+        clientProvider.get().get("$YANI_BASE_URL/comments/$commentId/children") {
             parameter("skip", skip)
         }.body()
 
@@ -49,7 +49,7 @@ class YaniCommentsApi(
         animeId: Int,
         body: YaniPostCommentBodyDto,
     ): YaniCommentResponseDto =
-        client.post("$YANI_BASE_URL/comments/anime/$animeId") {
+        clientProvider.get().post("$YANI_BASE_URL/comments/anime/$animeId") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()
@@ -58,13 +58,13 @@ class YaniCommentsApi(
         commentId: Int,
         body: YaniPatchCommentBodyDto,
     ): YaniCommentResponseDto =
-        client.patch("$YANI_BASE_URL/comments/$commentId") {
+        clientProvider.get().patch("$YANI_BASE_URL/comments/$commentId") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()
 
     suspend fun deleteComment(commentId: Int): YaniBooleanResponseDto =
-        client.delete("$YANI_BASE_URL/comments/$commentId") {
+        clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId") {
             contentType(ContentType.Application.Json)
             setBody(YaniDeleteCommentBodyDto())
         }.body()
@@ -73,19 +73,19 @@ class YaniCommentsApi(
         commentId: Int,
         body: YaniVoteCommentBodyDto,
     ): YaniVoteCommentResponseDto =
-        client.put("$YANI_BASE_URL/comments/$commentId/vote") {
+        clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/vote") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()
 
     suspend fun removeCommentVote(commentId: Int): YaniVoteCommentResponseDto =
-        client.delete("$YANI_BASE_URL/comments/$commentId/vote").body()
+        clientProvider.get().delete("$YANI_BASE_URL/comments/$commentId/vote").body()
 
     suspend fun reportComment(
         commentId: Int,
         body: YaniClaimCommentBodyDto,
     ): YaniBooleanResponseDto =
-        client.put("$YANI_BASE_URL/comments/$commentId/claim") {
+        clientProvider.get().put("$YANI_BASE_URL/comments/$commentId/claim") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()

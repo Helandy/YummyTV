@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.storage.comments.CommentsStorageStore
 import su.afk.yummy.tv.data.comments.network.YaniCommentsApi
 import su.afk.yummy.tv.data.comments.repository.YaniCommentsRepository
@@ -17,8 +17,8 @@ object CommentsDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniCommentsApi(client: HttpClient): YaniCommentsApi =
-        YaniCommentsApi(client)
+    fun provideYaniCommentsApi(clientProvider: YaniHttpClientProvider): YaniCommentsApi =
+        YaniCommentsApi(clientProvider)
 
     @Provides
     @Singleton

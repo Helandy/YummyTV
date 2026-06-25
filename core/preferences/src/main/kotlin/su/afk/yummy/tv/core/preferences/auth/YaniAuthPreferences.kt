@@ -27,7 +27,10 @@ class YaniAuthPreferences(
     @ApplicationContext context: Context,
     private val settingsStore: SettingsStore,
 ) {
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs: SharedPreferences by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
     private val migrationMutex = Mutex()
 
     val refreshToken: Flow<String> = callbackFlow {

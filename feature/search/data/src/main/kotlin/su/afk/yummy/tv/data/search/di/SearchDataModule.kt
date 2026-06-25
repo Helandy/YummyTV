@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
@@ -18,7 +18,8 @@ object SearchDataModule {
 
     @Provides
     @Singleton
-    fun provideYaniSearchApi(client: HttpClient): YaniSearchApi = YaniSearchApi(client)
+    fun provideYaniSearchApi(clientProvider: YaniHttpClientProvider): YaniSearchApi =
+        YaniSearchApi(clientProvider)
 
     @Provides
     @Singleton

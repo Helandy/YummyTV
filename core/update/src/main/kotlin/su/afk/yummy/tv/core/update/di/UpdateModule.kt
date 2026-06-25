@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.update.apk.ApkDownloader
 import su.afk.yummy.tv.core.update.apk.ApkInstaller
 import su.afk.yummy.tv.core.update.github.GitHubUpdateChecker
@@ -18,8 +18,8 @@ import javax.inject.Singleton
 object UpdateModule {
 
     @Provides @Singleton
-    fun provideGitHubUpdateChecker(client: HttpClient): GitHubUpdateChecker =
-        GitHubUpdateChecker(client)
+    fun provideGitHubUpdateChecker(clientProvider: YaniHttpClientProvider): GitHubUpdateChecker =
+        GitHubUpdateChecker(clientProvider)
 
     @Provides @Singleton
     fun provideApkDownloader(@ApplicationContext context: Context): ApkDownloader =

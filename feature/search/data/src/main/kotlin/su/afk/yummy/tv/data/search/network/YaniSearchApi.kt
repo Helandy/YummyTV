@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.data.search.network
 
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
+import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogResponseDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
@@ -14,10 +14,10 @@ import su.afk.yummy.tv.data.search.dto.YaniSearchResponseDto
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 
 class YaniSearchApi(
-    private val client: HttpClient,
+    private val clientProvider: YaniHttpClientProvider,
 ) {
     suspend fun search(query: String, filters: SearchFilters, limit: Int, offset: Int): List<YaniSearchItemDto> =
-        client.get("$YANI_BASE_URL/anime") {
+        clientProvider.get().get("$YANI_BASE_URL/anime") {
             query.takeIf { it.isNotBlank() }?.let { parameter("q", it) }
             filters.genres.forEach { parameter("genres", it) }
             filters.excludedGenres.forEach { parameter("exclude_genres", it) }
@@ -34,12 +34,12 @@ class YaniSearchApi(
         }.body<YaniSearchResponseDto>().response
 
     suspend fun getGenres(): YaniSearchGenresDto =
-        client.get("$YANI_BASE_URL/anime/genres")
+        clientProvider.get().get("$YANI_BASE_URL/anime/genres")
             .body<YaniSearchGenresResponseDto>()
             .response
 
     suspend fun getCatalog(): YaniSearchCatalogDto =
-        client.get("$YANI_BASE_URL/anime/catalog") {
+        clientProvider.get().get("$YANI_BASE_URL/anime/catalog") {
             parameter("limit", 1)
             parameter("offset", 0)
         }.body<YaniSearchCatalogResponseDto>().response
