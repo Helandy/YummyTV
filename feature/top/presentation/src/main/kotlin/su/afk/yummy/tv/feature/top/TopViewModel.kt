@@ -69,8 +69,14 @@ class TopViewModel @Inject internal constructor(
                 enablePlaceholders = false,
             ),
             pagingSourceFactory = {
+                val seenAnimeIds = mutableSetOf<Int>()
                 OffsetPagingSource { limit, offset ->
-                    loadTopPage(type, limit, offset)
+                    val page = loadTopPage(type, limit, offset)
+                    page.copy(
+                        items = page.items.filter { item ->
+                            seenAnimeIds.add(item.id)
+                        },
+                    )
                 }
             },
         ).flow.cachedIn(viewModelScope)

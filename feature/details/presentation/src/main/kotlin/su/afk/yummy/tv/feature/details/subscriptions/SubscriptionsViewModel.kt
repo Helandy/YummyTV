@@ -47,6 +47,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
                 analytics.eventSubscriptionsRetry(animeId)
                 viewModelScope.launch { load() }
             }
+
             is SubscriptionsState.Event.SubscriptionToggled -> toggleSubscription(event.key)
         }
     }
@@ -59,6 +60,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
         when (val result = subscriptionHandler.loadScreenSubscriptionBase(
             animeId = animeId,
             optimisticKeys = currentState.subscriptions.subscribedKeys(),
+            optimisticStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
         )) {
             ScreenSubscriptionBaseResult.SignedOut -> {
                 setState { copy(isLoading = false, subscriptions = emptyList()) }
@@ -73,6 +75,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
                     videos = base.videos,
                     userId = base.userId,
                     optimisticKeys = currentState.subscriptions.subscribedKeys(),
+                    optimisticStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
                 ).fold(
                     onSuccess = { subscriptions ->
                         setState {
@@ -116,6 +119,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
             videoId = option.representativeVideoId,
             targetState = !wasSubscribed,
         )
+        subscriptionHandler.updateOptimisticSubscriptionState(animeId, option, !wasSubscribed)
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
             val changed = subscriptionHandler.commitSubscriptionChange(
@@ -123,6 +127,11 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
                 subscribed = !wasSubscribed,
             )
             if (!changed) {
+                subscriptionHandler.updateOptimisticSubscriptionState(
+                    animeId,
+                    option,
+                    wasSubscribed
+                )
                 setSubscriptionState(key, wasSubscribed)
             } else {
                 load(showLoading = false)

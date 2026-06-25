@@ -10,6 +10,7 @@ internal const val SUBSCRIPTION_REFRESH_DELAY_MS = 350L
 internal fun List<AnimeVideo>.toSubscriptionOptions(
     remoteSubscriptions: List<VideoSubscription> = emptyList(),
     optimisticKeys: Set<String> = emptySet(),
+    optimisticStates: Map<String, Boolean> = emptyMap(),
 ): List<SubscriptionOption> {
     val sortedOptions = filter { it.id > 0 && it.dubbing.isNotBlank() }
         .groupBy { subscriptionGroupKey(it.playerId, it.player, it.dubbing) }
@@ -24,16 +25,22 @@ internal fun List<AnimeVideo>.toSubscriptionOptions(
                 player = representative.player,
                 dubbing = representative.dubbing,
             )
+            val optimisticState = matchKeys.optimisticSubscriptionState(optimisticStates)
             SubscriptionOptionWithViews(
                 option = SubscriptionOption(
-                    key = subscriptionGroupKey(representative.playerId, representative.player, representative.dubbing),
+                    key = subscriptionGroupKey(
+                        representative.playerId,
+                        representative.player,
+                        representative.dubbing
+                    ),
                     playerId = representative.playerId,
                     player = representative.player,
                     dubbing = representative.dubbing,
                     episodesCount = videos.size,
                     representativeVideoId = representative.id,
-                    isSubscribed = matchKeys.any { it in optimisticKeys } ||
-                        remoteSubscriptions.any { it.matchesExactSubscription(representative) },
+                    isSubscribed = optimisticState
+                        ?: (matchKeys.any { it in optimisticKeys } ||
+                                remoteSubscriptions.any { it.matchesExactSubscription(representative) }),
                 ),
                 totalViews = videos.sumOf { it.views ?: 0 },
             )
@@ -56,7 +63,13 @@ internal fun List<AnimeVideo>.toSubscriptionOptions(
 
     return sortedOptions.map { item ->
         val option = item.option
-        if (option.key in blankDubbingFallbackKeys) option.copy(isSubscribed = true) else option
+        val optimisticState =
+            option.subscriptionMatchKeys().optimisticSubscriptionState(optimisticStates)
+        if (option.key in blankDubbingFallbackKeys && optimisticState != false) {
+            option.copy(isSubscribed = true)
+        } else {
+            option
+        }
     }
 }
 
@@ -67,8 +80,11 @@ private data class SubscriptionOptionWithViews(
 
 internal fun List<SubscriptionOption>.subscribedKeys(): Set<String> =
     filter { it.isSubscribed }
-        .flatMap { subscriptionMatchKeys(it.playerId, it.player, it.dubbing) }
+        .flatMap { it.subscriptionMatchKeys() }
         .toSet()
+
+internal fun SubscriptionOption.subscriptionMatchKeys(): Set<String> =
+    subscriptionMatchKeys(playerId = playerId, player = player, dubbing = dubbing)
 
 private fun VideoSubscription.subscriptionMatchKeys(): Set<String> =
     subscriptionMatchKeys(playerId = playerId, player = player, dubbing = dubbing)
@@ -84,7 +100,8 @@ internal fun VideoSubscription.matchesCurrentAnime(
 
 private fun VideoSubscription.matchesExactSubscription(video: AnimeVideo): Boolean {
     if (dubbing.isBlank()) return false
-    val dubbingMatches = dubbing.relaxedSubscriptionPart().matchesRelaxed(video.dubbing.relaxedSubscriptionPart())
+    val dubbingMatches =
+        dubbing.relaxedSubscriptionPart().matchesRelaxed(video.dubbing.relaxedSubscriptionPart())
     if (!dubbingMatches) return false
 
     return matchesPlayer(
@@ -100,19 +117,24 @@ private fun VideoSubscription.matchesPlayer(playerId: Int?, player: String): Boo
     val playerIdMatches = this.playerId != null && playerId != null && this.playerId == playerId
     if (playerIdMatches) return true
 
-    val playerMatches = this.player.relaxedSubscriptionPart().matchesRelaxed(player.relaxedSubscriptionPart())
+    val playerMatches =
+        this.player.relaxedSubscriptionPart().matchesRelaxed(player.relaxedSubscriptionPart())
     if (playerMatches) return true
 
     return this.playerId == null && this.player.isBlank()
 }
 
-private fun subscriptionMatchKeys(playerId: Int?, player: String, dubbing: String): Set<String> = buildSet {
-    val normalizedDubbing = dubbing.normalizedSubscriptionPart()
-    if (normalizedDubbing.isBlank()) return@buildSet
-    if (playerId != null) add("playerId:$playerId|dubbing:$normalizedDubbing")
-    val normalizedPlayer = player.normalizedSubscriptionPart()
-    if (normalizedPlayer.isNotBlank()) add("player:$normalizedPlayer|dubbing:$normalizedDubbing")
-}
+private fun subscriptionMatchKeys(playerId: Int?, player: String, dubbing: String): Set<String> =
+    buildSet {
+        val normalizedDubbing = dubbing.normalizedSubscriptionPart()
+        if (normalizedDubbing.isBlank()) return@buildSet
+        if (playerId != null) add("playerId:$playerId|dubbing:$normalizedDubbing")
+        val normalizedPlayer = player.normalizedSubscriptionPart()
+        if (normalizedPlayer.isNotBlank()) add("player:$normalizedPlayer|dubbing:$normalizedDubbing")
+    }
+
+private fun Set<String>.optimisticSubscriptionState(optimisticStates: Map<String, Boolean>): Boolean? =
+    firstNotNullOfOrNull { optimisticStates[it] }
 
 private fun subscriptionGroupKey(playerId: Int?, player: String, dubbing: String): String {
     val normalizedDubbing = dubbing.normalizedSubscriptionPart()
@@ -132,4 +154,6 @@ private fun String.relaxedSubscriptionPart(): String =
         .filter { it.isLetterOrDigit() }
 
 private fun String.matchesRelaxed(other: String): Boolean =
-    isNotBlank() && other.isNotBlank() && (this == other || this.contains(other) || other.contains(this))
+    isNotBlank() && other.isNotBlank() && (this == other || this.contains(other) || other.contains(
+        this
+    ))

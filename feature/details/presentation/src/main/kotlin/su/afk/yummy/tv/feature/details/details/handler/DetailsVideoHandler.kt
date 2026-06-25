@@ -22,22 +22,35 @@ internal class DetailsVideoHandler @Inject constructor(
     suspend fun loadCached(
         animeId: Int,
         optimisticSubscriptionKeys: Set<String>,
+        optimisticSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): DetailsVideosResult? =
         runCatching { getCachedAnimeVideos(animeId) }
             .getOrNull()
-            ?.toResult(optimisticSubscriptionKeys)
+            ?.toResult(optimisticSubscriptionKeys, optimisticSubscriptionStates)
 
     suspend fun load(
         animeId: Int,
         optimisticSubscriptionKeys: Set<String>,
+        optimisticSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
-        runCatching { getAnimeVideos(animeId).toResult(optimisticSubscriptionKeys) }
+        runCatching {
+            getAnimeVideos(animeId).toResult(
+                optimisticSubscriptionKeys,
+                optimisticSubscriptionStates
+            )
+        }
 
     suspend fun refresh(
         animeId: Int,
         optimisticSubscriptionKeys: Set<String>,
+        optimisticSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
-        runCatching { refreshAnimeVideos(animeId).toResult(optimisticSubscriptionKeys) }
+        runCatching {
+            refreshAnimeVideos(animeId).toResult(
+                optimisticSubscriptionKeys,
+                optimisticSubscriptionStates
+            )
+        }
 
     fun resolveWatchTarget(
         animeId: Int,
@@ -58,11 +71,15 @@ internal class DetailsVideoHandler @Inject constructor(
 
     private fun List<AnimeVideo>.toResult(
         optimisticSubscriptionKeys: Set<String>,
+        optimisticSubscriptionStates: Map<String, Boolean>,
     ): DetailsVideosResult =
         DetailsVideosResult(
             videos = this,
             videosState = if (isEmpty()) VideosUiState.Empty else VideosUiState.Content(this),
-            subscriptions = toSubscriptionOptions(optimisticKeys = optimisticSubscriptionKeys),
+            subscriptions = toSubscriptionOptions(
+                optimisticKeys = optimisticSubscriptionKeys,
+                optimisticStates = optimisticSubscriptionStates,
+            ),
         )
 }
 

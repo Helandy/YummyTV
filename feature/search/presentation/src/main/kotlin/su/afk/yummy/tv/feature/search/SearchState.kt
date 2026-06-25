@@ -15,6 +15,7 @@ class SearchState {
     data class State(
         val query: String = "",
         val results: Flow<PagingData<SearchItem>> = flowOf(PagingData.empty()),
+        val isSearchActive: Boolean = false,
         val error: String? = null,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,

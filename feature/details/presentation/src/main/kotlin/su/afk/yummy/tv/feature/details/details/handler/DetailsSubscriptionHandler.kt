@@ -11,10 +11,13 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
 import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
+import su.afk.yummy.tv.feature.details.utils.subscriptionMatchKeys
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /** Loads and mutates video subscription options shared by details and subscriptions screens. */
+@Singleton
 internal class DetailsSubscriptionHandler @Inject constructor(
     private val getAccountSession: GetAccountSessionUseCase,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
@@ -22,9 +25,26 @@ internal class DetailsSubscriptionHandler @Inject constructor(
     private val getVideoSubscriptions: GetVideoSubscriptionsUseCase,
     private val setVideoSubscription: SetVideoSubscriptionUseCase,
 ) {
+    private var optimisticSubscriptionStatesByAnimeId = emptyMap<Int, Map<String, Boolean>>()
+
+    fun optimisticSubscriptionStates(animeId: Int): Map<String, Boolean> =
+        optimisticSubscriptionStatesByAnimeId[animeId].orEmpty()
+
+    fun updateOptimisticSubscriptionState(
+        animeId: Int,
+        option: SubscriptionOption,
+        subscribed: Boolean,
+    ) {
+        val currentStates = optimisticSubscriptionStatesByAnimeId[animeId].orEmpty()
+        optimisticSubscriptionStatesByAnimeId += animeId to (
+                currentStates + option.subscriptionMatchKeys().associateWith { subscribed }
+                )
+    }
+
     suspend fun loadScreenSubscriptionBase(
         animeId: Int,
         optimisticKeys: Set<String>,
+        optimisticStates: Map<String, Boolean> = emptyMap(),
     ): ScreenSubscriptionBaseResult {
         val session = getAccountSession()
         if (!session.isAuthorized || session.userId <= 0) return ScreenSubscriptionBaseResult.SignedOut
@@ -37,7 +57,10 @@ internal class DetailsSubscriptionHandler @Inject constructor(
                         userId = session.userId,
                         details = details,
                         videos = videos,
-                        subscriptions = videos.toSubscriptionOptions(optimisticKeys = optimisticKeys),
+                        subscriptions = videos.toSubscriptionOptions(
+                            optimisticKeys = optimisticKeys,
+                            optimisticStates = optimisticStates,
+                        ),
                     )
                 )
             },
@@ -51,6 +74,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
         videos: List<AnimeVideo>,
         userId: Int,
         optimisticKeys: Set<String>,
+        optimisticStates: Map<String, Boolean> = emptyMap(),
     ): Result<List<SubscriptionOption>> =
         loadRemoteSubscriptions(
             animeId = animeId,
@@ -58,6 +82,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
             videos = videos,
             userId = userId,
             optimisticKeys = optimisticKeys,
+            optimisticStates = optimisticStates,
         )
 
     suspend fun commitSubscriptionChange(videoId: Int, subscribed: Boolean): Boolean {
@@ -72,6 +97,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
         videos: List<AnimeVideo>,
         userId: Int,
         optimisticKeys: Set<String>,
+        optimisticStates: Map<String, Boolean>,
     ): Result<List<SubscriptionOption>> =
         runCatching {
             val animeSubscriptions = getVideoSubscriptions(userId)
@@ -79,6 +105,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
             videos.toSubscriptionOptions(
                 remoteSubscriptions = animeSubscriptions,
                 optimisticKeys = optimisticKeys,
+                optimisticStates = optimisticStates,
             )
         }
 }

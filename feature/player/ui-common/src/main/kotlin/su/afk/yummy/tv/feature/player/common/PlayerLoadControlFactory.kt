@@ -20,8 +20,8 @@ object PlayerLoadControlFactory {
             .build()
 
     // Balanced-профиль: старт остаётся быстрым, а при воспроизведении плеер держит больший запас данных.
-    private const val MIN_BUFFER_MS = 50_000
-    private const val MAX_BUFFER_MS = 120_000
+    private const val MIN_BUFFER_MS = 15_000
+    private const val MAX_BUFFER_MS = 60_000
     private const val BUFFER_FOR_PLAYBACK_MS = 2_500
     private const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5_000
 

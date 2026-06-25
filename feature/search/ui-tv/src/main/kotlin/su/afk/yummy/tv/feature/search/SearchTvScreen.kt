@@ -43,6 +43,7 @@ fun SearchTvScreen(
         query = state.query,
         results = results,
         filters = state.filters,
+        isSearchActive = state.isSearchActive,
         draftFilters = state.draftFilters,
         filterOptions = state.filterOptions,
         isFilterPanelOpen = state.isFilterPanelOpen,

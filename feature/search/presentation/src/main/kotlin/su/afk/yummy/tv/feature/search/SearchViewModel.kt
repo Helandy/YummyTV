@@ -141,19 +141,24 @@ class SearchViewModel @Inject internal constructor(
 
     private fun onQueryChanged(query: String) {
         searchJob?.cancel()
-        setState { copy(query = query) }
+        setState {
+            copy(
+                query = query,
+                results = flowOf(PagingData.empty()),
+                isSearchActive = false,
+            )
+        }
         if (query.isBlank() && currentState.filters.isEmpty) {
-            setEmptyResults()
             return
         }
         searchJob = viewModelScope.launch {
             delay(DEBOUNCE_MS)
-            setSearchResults(query, currentState.filters)
+            setSearchResults(query.trim(), currentState.filters)
         }
     }
 
     private fun onSearchSubmitted() {
-        val query = currentState.query
+        val query = currentState.query.trim()
         val filters = currentState.filters
         if (query.isBlank() && filters.isEmpty) return
         analytics.eventManualSearchSubmitted(
@@ -161,6 +166,7 @@ class SearchViewModel @Inject internal constructor(
             filterCount = filters.activeCount,
         )
         searchJob?.cancel()
+        setState { copy(query = query) }
         setSearchResults(query, filters)
     }
 
@@ -219,7 +225,12 @@ class SearchViewModel @Inject internal constructor(
     }
 
     private fun setEmptyResults() {
-        setState { copy(results = flowOf(PagingData.empty())) }
+        setState {
+            copy(
+                results = flowOf(PagingData.empty()),
+                isSearchActive = false,
+            )
+        }
     }
 
     private fun setSearchResults(query: String, filters: SearchFilters) {
@@ -239,7 +250,7 @@ class SearchViewModel @Inject internal constructor(
                 }
             },
         ).flow.cachedIn(viewModelScope)
-        setState { copy(results = pagingFlow) }
+        setState { copy(results = pagingFlow, isSearchActive = true) }
     }
 
     private suspend fun loadSearchPage(

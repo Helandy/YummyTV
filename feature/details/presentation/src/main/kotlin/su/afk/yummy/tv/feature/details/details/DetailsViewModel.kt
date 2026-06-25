@@ -365,6 +365,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         videoHandler.load(
             animeId = animeId,
             optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+            optimisticSubscriptionStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
         ).fold(
             onSuccess = { result ->
                 setVideos(result)
@@ -392,6 +393,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         val cached = videoHandler.loadCached(
             animeId = animeId,
             optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+            optimisticSubscriptionStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
         )
         if (cached != null) {
             setVideos(cached)
@@ -417,6 +419,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         videoHandler.refresh(
             animeId = animeId,
             optimisticSubscriptionKeys = currentState.subscriptions.subscribedKeys(),
+            optimisticSubscriptionStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
         ).onSuccess { result ->
             setVideos(result)
             if (currentState.isWatchLaunchPending) {
@@ -454,7 +457,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     }
 
     private fun loadSubscriptionsForPicker() {
-        if (!currentState.isSignedIn || currentState.subscriptions.isNotEmpty() || currentState.isSubscriptionsLoading) {
+        if (!currentState.isSignedIn || currentState.isSubscriptionsLoading) {
             return
         }
         when (currentState.videosState) {
@@ -500,6 +503,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             videos = videos,
             userId = userId,
             optimisticKeys = currentState.subscriptions.subscribedKeys(),
+            optimisticStates = subscriptionHandler.optimisticSubscriptionStates(animeId),
         ).fold(
             onSuccess = { subscriptions ->
                 setState {
@@ -522,6 +526,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             videoId = option.representativeVideoId,
             targetState = !wasSubscribed,
         )
+        subscriptionHandler.updateOptimisticSubscriptionState(animeId, option, !wasSubscribed)
         setSubscriptionState(key, !wasSubscribed)
         viewModelScope.launch {
             val changed = subscriptionHandler.commitSubscriptionChange(
@@ -529,6 +534,11 @@ class DetailsViewModel @AssistedInject internal constructor(
                 subscribed = !wasSubscribed,
             )
             if (!changed) {
+                subscriptionHandler.updateOptimisticSubscriptionState(
+                    animeId,
+                    option,
+                    wasSubscribed
+                )
                 setSubscriptionState(key, wasSubscribed)
             } else {
                 loadSubscriptions()

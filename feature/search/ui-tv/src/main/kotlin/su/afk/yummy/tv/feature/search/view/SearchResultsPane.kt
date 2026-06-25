@@ -45,6 +45,7 @@ internal fun SearchResultsPane(
     query: String,
     results: LazyPagingItems<SearchItem>,
     filters: SearchFilters,
+    isSearchActive: Boolean,
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
     isFilterPanelOpen: Boolean,
@@ -75,7 +76,7 @@ internal fun SearchResultsPane(
     val appendState = results.loadState.append
     val itemCount = results.itemCount
     val snapshotItems = results.itemSnapshotList.items
-    val hasActiveSearch = query.isNotBlank() || !filters.isEmpty
+    val hasActiveSearch = isSearchActive
     val isLoading = hasActiveSearch && refreshState is LoadState.Loading
     val itemIds = remember(snapshotItems) { snapshotItems.map { it.id } }
     val focusRequesters = remember(itemCount) { List(itemCount) { FocusRequester() } }
