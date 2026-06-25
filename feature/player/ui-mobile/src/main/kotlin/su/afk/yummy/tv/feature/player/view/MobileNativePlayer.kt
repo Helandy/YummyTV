@@ -33,17 +33,12 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
-import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
@@ -54,6 +49,8 @@ import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipCallbacks
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.service.rememberMobileMediaController
+import su.afk.yummy.tv.feature.player.service.rememberMobilePlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
@@ -105,12 +102,25 @@ internal fun MobileNativePlayer(
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
     val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
     val currentUrl = qualities[selectedQuality] ?: streamUrl
+    val playbackConfigKey = remember(currentUrl, state.streamHeaders) {
+        buildString {
+            append(currentUrl)
+            state.streamHeaders.entries
+                .sortedBy { it.key.lowercase() }
+                .forEach { (key, value) ->
+                    append('|').append(key).append('=').append(value)
+                }
+        }
+    }
+    val mediaController = rememberMobileMediaController()
+    val playbackConfig = rememberMobilePlayerPlaybackConfig()
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
     val playerViewHolder = remember { arrayOfNulls<PlayerView>(1) }
     var liveVideoTransform by remember { mutableStateOf(videoTransform) }
     var transformGestureActive by remember { mutableStateOf(false) }
+    var configuredPlaybackKey by remember { mutableStateOf<String?>(null) }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
     }
@@ -166,25 +176,36 @@ internal fun MobileNativePlayer(
         onVideoTransformChanged(transform)
     }
 
-    val exoPlayer = remember(currentUrl, state.streamHeaders, ui.activeIframeUrl) {
-        val trackSelector = DefaultTrackSelector(context).apply {
-            setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
+    val player = mediaController
+    val progressSource = remember(player, ui) { ui }
+
+    LaunchedEffect(player, playbackConfigKey, ui.activeIframeUrl) {
+        val activePlayer = player ?: return@LaunchedEffect
+        val currentMediaUri = activePlayer.currentMediaItem
+            ?.localConfiguration
+            ?.uri
+            ?.toString()
+        playbackConfig.updateStreamHeaders(state.streamHeaders)
+        if (currentMediaUri != currentUrl || configuredPlaybackKey != playbackConfigKey) {
+            val resumePosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
+            activePlayer.setMediaItem(
+                PlayerMediaItemFactory.mediaItemFor(currentUrl),
+                resumePosition
+            )
+            activePlayer.prepare()
+            configuredPlaybackKey = playbackConfigKey
         }
-        val dataSourceFactory = PlayerDataSourceFactory.create(state.streamHeaders)
-        ExoPlayer.Builder(context)
-            .setTrackSelector(trackSelector)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-            .setLoadControl(PlayerLoadControlFactory.create())
-            .setHandleAudioBecomingNoisy(true)
-            .build()
-            .apply {
-                setMediaItem(PlayerMediaItemFactory.mediaItemFor(currentUrl))
-                seekTo(state.resumeFromMs)
-                playWhenReady = wantsPlay
-                prepare()
-            }
+        activePlayer.playWhenReady = wantsPlay
     }
-    val progressSource = remember(exoPlayer, ui) { ui }
+
+    if (player == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+        )
+        return
+    }
 
     fun saveProgress(positionMs: Long = currentPosition, durationMs: Long = duration) {
         val snapshot = progressSource.buildProgressSnapshot(
@@ -210,13 +231,13 @@ internal fun MobileNativePlayer(
     }
 
     fun seekToPosition(positionMs: Long) {
-        val playerDuration = exoPlayer.duration.takeIf { it > 0 } ?: duration
+        val playerDuration = player.duration.takeIf { it > 0 } ?: duration
         val clamped = if (playerDuration > 0) {
             positionMs.coerceIn(0L, playerDuration)
         } else {
             positionMs.coerceAtLeast(0L)
         }
-        exoPlayer.seekTo(clamped)
+        player.seekTo(clamped)
         notifyPlaybackPositionChanged(clamped, playerDuration.coerceAtLeast(0L))
         saveProgress(clamped, playerDuration)
     }
@@ -225,7 +246,7 @@ internal fun MobileNativePlayer(
         showNextEpisodePrompt = false
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekToPosition(exoPlayer.currentPosition + offset)
+        seekToPosition(player.currentPosition + offset)
         stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
@@ -235,7 +256,7 @@ internal fun MobileNativePlayer(
         }
     }
 
-    DisposableEffect(exoPlayer) {
+    DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 wantsPlay = playWhenReady
@@ -261,8 +282,8 @@ internal fun MobileNativePlayer(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
-                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
-                    val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+                    val position = player.currentPosition.coerceAtLeast(0L)
+                    val dur = player.duration.takeIf { it > 0 } ?: duration
                     notifyPlaybackPositionChanged(position, dur)
                     saveProgress(
                         positionMs = position,
@@ -287,18 +308,18 @@ internal fun MobileNativePlayer(
                 }
             }
         }
-        exoPlayer.addListener(listener)
-        pipSession.setPlaying(exoPlayer.playWhenReady, activity)
+        player.addListener(listener)
+        pipSession.setPlaying(player.playWhenReady, activity)
         pipSession.setCallbacks(
             MobilePlayerPipCallbacks(
                 onSeekBackward = {
-                    seekToPosition(exoPlayer.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+                    seekToPosition(player.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
                 },
                 onPlayPause = {
-                    if (exoPlayer.playWhenReady) exoPlayer.pause() else exoPlayer.play()
+                    if (player.playWhenReady) player.pause() else player.play()
                 },
                 onSeekForward = {
-                    seekToPosition(exoPlayer.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
+                    seekToPosition(player.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
                 },
             )
         )
@@ -308,32 +329,35 @@ internal fun MobileNativePlayer(
             stepSeekToastJob?.cancel()
             pipSession.setPlaying(false, activity)
             pipSession.setCallbacks(null)
-            val position = exoPlayer.currentPosition.coerceAtLeast(0)
-            val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+            val position = player.currentPosition.coerceAtLeast(0)
+            val dur = player.duration.takeIf { it > 0 } ?: duration
             notifyPlaybackPositionChanged(position, dur)
             saveProgress(position, dur)
-            exoPlayer.removeListener(listener)
-            exoPlayer.release()
+            player.removeListener(listener)
+            if (!pipSession.shouldKeepPlayingOnPause()) {
+                player.stop()
+                player.clearMediaItems()
+            }
         }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, exoPlayer) {
+    DisposableEffect(lifecycleOwner, player) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
                     val keepPlayingInPip = pipSession.shouldKeepPlayingOnPause()
                     resumeAfterLifecyclePause = wantsPlay && !keepPlayingInPip
-                    val position = exoPlayer.currentPosition.coerceAtLeast(0)
-                    val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
+                    val position = player.currentPosition.coerceAtLeast(0)
+                    val dur = player.duration.takeIf { it > 0 } ?: duration
                     notifyPlaybackPositionChanged(position, dur)
                     saveProgress(position, dur)
                     if (!keepPlayingInPip) {
-                        exoPlayer.pause()
+                        player.pause()
                     }
                 }
 
-                Lifecycle.Event.ON_RESUME -> if (resumeAfterLifecyclePause) exoPlayer.play()
+                Lifecycle.Event.ON_RESUME -> if (resumeAfterLifecyclePause) player.play()
                 else -> Unit
             }
         }
@@ -374,23 +398,23 @@ internal fun MobileNativePlayer(
         }
     }
 
-    LaunchedEffect(exoPlayer, selectedSpeed, wantsPlay) {
-        exoPlayer.setPlaybackSpeed(selectedSpeed)
-        exoPlayer.playWhenReady = wantsPlay
+    LaunchedEffect(player, selectedSpeed, wantsPlay) {
+        player.setPlaybackSpeed(selectedSpeed)
+        player.playWhenReady = wantsPlay
         pipSession.setPlaying(wantsPlay, activity)
     }
 
-    LaunchedEffect(exoPlayer, ui.activeIframeUrl, state.autoSkipOpeningsEndings) {
+    LaunchedEffect(player, ui.activeIframeUrl, state.autoSkipOpeningsEndings) {
         while (true) {
             var position = currentPosition
             var dur = duration
             if (!isSeeking) {
-                position = exoPlayer.currentPosition.coerceAtLeast(0)
-                dur = exoPlayer.duration.takeIf { it > 0 } ?: 0L
+                position = player.currentPosition.coerceAtLeast(0)
+                dur = player.duration.takeIf { it > 0 } ?: 0L
                 notifyPlaybackPositionChanged(position, dur)
             }
             bufferedProgress = calculateBufferedProgress(
-                bufferedPosition = exoPlayer.bufferedPosition,
+                bufferedPosition = player.bufferedPosition,
                 currentPosition = position,
                 duration = dur,
             )
@@ -405,7 +429,7 @@ internal fun MobileNativePlayer(
                         position in segment.startMs..segment.endMs
                     ) {
                         skippedSegments += segmentKey
-                        exoPlayer.seekTo(segment.endMs)
+                        player.seekTo(segment.endMs)
                         notifyPlaybackPositionChanged(segment.endMs, dur)
                     }
                 }
@@ -436,7 +460,7 @@ internal fun MobileNativePlayer(
             factory = { viewContext ->
                 PlayerView(viewContext).apply {
                     playerViewHolder[0] = this
-                    player = exoPlayer
+                    this.player = player
                     useController = false
                     keepScreenOn = true
                     clipChildren = true
@@ -449,7 +473,7 @@ internal fun MobileNativePlayer(
             },
             update = {
                 playerViewHolder[0] = it
-                it.player = exoPlayer
+                it.player = player
                 it.applyMobileVideoTransform(liveVideoTransform.scale, liveVideoTransform.offset)
             },
         )
@@ -492,7 +516,7 @@ internal fun MobileNativePlayer(
             hasPrevEpisode = ui.hasPrevEpisode,
             hasNextEpisode = ui.hasNextEpisode,
             onPlayPause = {
-                if (wantsPlay) exoPlayer.pause() else exoPlayer.play()
+                if (wantsPlay) player.pause() else player.play()
                 showOverlay()
             },
             onSeekChange = { value ->
@@ -568,7 +592,7 @@ internal fun MobileNativePlayer(
                 qualities = qualities.keys.toList(),
                 selectedQuality = selectedQuality,
                 onQualitySelected = { quality ->
-                    val position = exoPlayer.currentPosition.coerceAtLeast(0)
+                    val position = player.currentPosition.coerceAtLeast(0)
                     saveProgress(position)
                     onEvent(PlayerState.Event.QualitySelected(quality, position))
                 },
@@ -580,7 +604,14 @@ internal fun MobileNativePlayer(
                 dubbingViews = ui.dubbingViews,
                 dubbingSourceNames = ui.dubbingSourceNames,
                 selectedDubbingIndex = ui.currentDubbingIndex,
-                onDubbingSelected = { onEvent(PlayerState.Event.DubbingSelected(it, exoPlayer.currentPosition)) },
+                onDubbingSelected = {
+                    onEvent(
+                        PlayerState.Event.DubbingSelected(
+                            it,
+                            player.currentPosition
+                        )
+                    )
+                },
                 balancerNames = ui.balancerNames,
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
@@ -589,7 +620,7 @@ internal fun MobileNativePlayer(
                     onEvent(
                         PlayerState.Event.BalancerSelected(
                             balancerIndex,
-                            exoPlayer.currentPosition
+                            player.currentPosition
                         )
                     )
                 },
