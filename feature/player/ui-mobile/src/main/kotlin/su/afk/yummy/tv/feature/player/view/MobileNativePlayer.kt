@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
+import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
@@ -172,6 +173,7 @@ internal fun MobileNativePlayer(
         ExoPlayer.Builder(context)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setLoadControl(PlayerLoadControlFactory.create())
             .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
