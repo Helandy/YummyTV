@@ -141,6 +141,7 @@ internal fun ExoPlayerView(
     var duration by remember { mutableLongStateOf(0L) }
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
+    var bufferedProgress by remember(streamUrl, episodeKey) { mutableFloatStateOf(0f) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
     var controllerVisible by remember { mutableStateOf(true) }
     var showQualityPanel by remember { mutableStateOf(false) }
@@ -473,6 +474,11 @@ internal fun ExoPlayerView(
             }
             val dur = exoPlayer.duration
             if (dur > 0) duration = dur
+            bufferedProgress = calculateBufferedProgress(
+                bufferedPosition = exoPlayer.bufferedPosition,
+                currentPosition = currentPosition,
+                duration = duration,
+            )
             val now = System.currentTimeMillis()
             if (!isSeeking && duration > 0 && now - lastPositionNotifyTime >= 1_000L) {
                 notifyPlaybackPositionChanged(currentPosition, duration)
@@ -717,6 +723,7 @@ internal fun ExoPlayerView(
                         duration = duration,
                         isSeeking = isSeeking,
                         seekProgress = seekProgress,
+                        bufferedProgress = bufferedProgress,
                         currentPosition = currentPosition,
                         playFocusRequester = playFocusRequester,
                         onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
@@ -972,6 +979,17 @@ private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
 
 private fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
+private fun calculateBufferedProgress(
+    bufferedPosition: Long,
+    currentPosition: Long,
+    duration: Long,
+): Float {
+    if (duration <= 0L) return 0f
+    val playedProgress = currentPosition.toFloat() / duration
+    val loadedProgress = bufferedPosition.coerceAtLeast(0L).toFloat() / duration
+    return loadedProgress.coerceIn(playedProgress.coerceIn(0f, 1f), 1f)
+}
 
 private data class TvProgressSource(
     val episodeUrl: String,

@@ -41,6 +41,7 @@ fun SearchMobileScreen(
     val results = state.results.collectAsLazyPagingItems()
     val refreshState = results.loadState.refresh
     val appendState = results.loadState.append
+    val hasActiveSearch = state.query.isNotBlank() || !state.filters.isEmpty
     val initialError = (refreshState as? LoadState.Error)
         ?.takeIf { results.itemCount == 0 }
         ?.error
@@ -55,7 +56,7 @@ fun SearchMobileScreen(
                 onBack = { onEvent(SearchState.Event.BackSelected) },
             )
         },
-        isLoading = refreshState is LoadState.Loading && results.itemCount == 0,
+        isLoading = hasActiveSearch && refreshState is LoadState.Loading && results.itemCount == 0,
         error = initialError?.let { ErrorItem(title = it, message = it) },
         onRetry = {
             onEvent(SearchState.Event.RetrySelected)

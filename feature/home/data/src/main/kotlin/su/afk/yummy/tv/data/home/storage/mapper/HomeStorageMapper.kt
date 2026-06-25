@@ -207,7 +207,7 @@ private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
             fullsize = posterFullsizeUrl,
             mega = posterMegaUrl,
         ),
-        rating = rating,
+        rating = rating?.takeIf { it > 0.0 },
         action = when (actionType) {
             HOME_FEED_ACTION_COLLECTION -> HomeFeedItemAction.OpenCollection(actionId)
             HOME_FEED_ACTION_VIDEO -> HomeFeedItemAction.OpenVideo(actionId)

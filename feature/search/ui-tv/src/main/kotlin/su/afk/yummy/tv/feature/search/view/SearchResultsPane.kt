@@ -75,7 +75,8 @@ internal fun SearchResultsPane(
     val appendState = results.loadState.append
     val itemCount = results.itemCount
     val snapshotItems = results.itemSnapshotList.items
-    val isLoading = refreshState is LoadState.Loading
+    val hasActiveSearch = query.isNotBlank() || !filters.isEmpty
+    val isLoading = hasActiveSearch && refreshState is LoadState.Loading
     val itemIds = remember(snapshotItems) { snapshotItems.map { it.id } }
     val focusRequesters = remember(itemCount) { List(itemCount) { FocusRequester() } }
     val gridFocusRequester = remember { FocusRequester() }
@@ -218,7 +219,7 @@ internal fun SearchResultsPane(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-                itemCount == 0 && (query.isNotBlank() || !filters.isEmpty) -> {
+                itemCount == 0 && hasActiveSearch -> {
                     Text(
                         text = stringResource(R.string.search_empty),
                         style = MaterialTheme.typography.bodyLarge,

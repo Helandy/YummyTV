@@ -80,7 +80,7 @@ private fun YaniAnimeDto.toSeriesItem(): HomeFeedItem? {
         title = safeTitle,
         description = description,
         poster = poster?.toHomePoster(),
-        rating = rating?.average,
+        rating = rating?.average?.takeIf { it > 0.0 },
         action = HomeFeedItemAction.OpenSeries(id),
     )
 }

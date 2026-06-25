@@ -102,7 +102,7 @@ fun buildYaniHttpClient(
         if (BuildConfig.DEBUG) {
             install(Logging) {
                 logger = Logger.ANDROID
-                level = LogLevel.HEADERS
+                level = LogLevel.BODY
                 sanitizeHeader { header ->
                     header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
                         header.equals(HttpHeaders.Cookie, ignoreCase = true) ||

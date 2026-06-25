@@ -98,6 +98,7 @@ internal fun MobileNativePlayer(
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
     var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
+    var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
     var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
@@ -388,6 +389,11 @@ internal fun MobileNativePlayer(
                 dur = exoPlayer.duration.takeIf { it > 0 } ?: 0L
                 notifyPlaybackPositionChanged(position, dur)
             }
+            bufferedProgress = calculateBufferedProgress(
+                bufferedPosition = exoPlayer.bufferedPosition,
+                currentPosition = position,
+                duration = dur,
+            )
             val now = System.currentTimeMillis()
             if (dur > 0 && now - lastSaveTime >= 10_000L) {
                 saveProgress(position, dur)
@@ -482,6 +488,7 @@ internal fun MobileNativePlayer(
             displayTime = displayTime,
             duration = duration,
             seekProgress = progress,
+            bufferedProgress = bufferedProgress,
             hasPrevEpisode = ui.hasPrevEpisode,
             hasNextEpisode = ui.hasNextEpisode,
             onPlayPause = {
@@ -594,5 +601,16 @@ internal fun MobileNativePlayer(
 
 private fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
+
+private fun calculateBufferedProgress(
+    bufferedPosition: Long,
+    currentPosition: Long,
+    duration: Long,
+): Float {
+    if (duration <= 0L) return 0f
+    val playedProgress = currentPosition.toFloat() / duration
+    val loadedProgress = bufferedPosition.coerceAtLeast(0L).toFloat() / duration
+    return loadedProgress.coerceIn(playedProgress.coerceIn(0f, 1f), 1f)
+}
 
 private const val MOBILE_PLAYER_PIP_SEEK_STEP_MS = 10_000L
