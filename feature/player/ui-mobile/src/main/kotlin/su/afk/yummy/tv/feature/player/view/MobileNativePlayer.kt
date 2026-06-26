@@ -143,7 +143,7 @@ internal fun MobileNativePlayer(
         notificationSubtitle,
         ui.activeDubbing.takeIf { it.isNotBlank() },
         ui.activeBalancerName.takeIf { it.isNotBlank() },
-    ).joinToString(separator = "\n")
+    ).joinToString(separator = " • ")
     var notificationArtworkUrl by remember { mutableStateOf<String?>(null) }
     val mediaItemKey = remember(
         playbackConfigKey,
