@@ -37,6 +37,7 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
@@ -121,8 +122,54 @@ internal fun MobileNativePlayer(
     var liveVideoTransform by remember { mutableStateOf(videoTransform) }
     var transformGestureActive by remember { mutableStateOf(false) }
     var configuredPlaybackKey by remember { mutableStateOf<String?>(null) }
+    var configuredMediaItemKey by remember { mutableStateOf<String?>(null) }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
+    }
+    val notificationSubtitle = ui.activeEpisode.takeIf { it.isNotBlank() }?.let {
+        stringResource(R.string.player_notification_episode, it)
+    }
+    val notificationDescription = when {
+        ui.activeBalancerName.isNotBlank() && ui.activeDubbing.isNotBlank() ->
+            stringResource(
+                R.string.player_notification_details,
+                ui.activeDubbing,
+                ui.activeBalancerName,
+            )
+
+        else -> ui.activeBalancerName.ifBlank { ui.activeDubbing }.takeIf { it.isNotBlank() }
+    }
+    val notificationContentText = listOfNotNull(
+        notificationSubtitle,
+        ui.activeDubbing.takeIf { it.isNotBlank() },
+        ui.activeBalancerName.takeIf { it.isNotBlank() },
+    ).joinToString(separator = "\n")
+    var notificationArtworkUrl by remember { mutableStateOf<String?>(null) }
+    val mediaItemKey = remember(
+        playbackConfigKey,
+        state.animeTitle,
+        notificationSubtitle,
+        notificationDescription,
+        notificationContentText,
+        notificationArtworkUrl,
+    ) {
+        buildString {
+            append(playbackConfigKey)
+            append('|').append(state.animeTitle)
+            append('|').append(notificationSubtitle.orEmpty())
+            append('|').append(notificationDescription.orEmpty())
+            append('|').append(notificationContentText)
+            append('|').append(notificationArtworkUrl.orEmpty())
+        }
+    }
+
+    LaunchedEffect(ui.activeScreenshotUrl, ui.activeIframeUrl, state.posterUrl) {
+        notificationArtworkUrl = state.posterUrl.takeIf { it.isNotBlank() }
+        notificationArtworkUrl = resolveContinueWatchingImage(
+            screenshotUrl = ui.activeScreenshotUrl,
+            episodeUrl = ui.activeIframeUrl,
+            posterUrl = state.posterUrl,
+        )
     }
 
     DisposableEffect(pipSession) {
@@ -179,21 +226,34 @@ internal fun MobileNativePlayer(
     val player = mediaController
     val progressSource = remember(player, ui) { ui }
 
-    LaunchedEffect(player, playbackConfigKey, ui.activeIframeUrl) {
+    LaunchedEffect(player, playbackConfigKey, mediaItemKey, ui.activeIframeUrl) {
         val activePlayer = player ?: return@LaunchedEffect
         val currentMediaUri = activePlayer.currentMediaItem
             ?.localConfiguration
             ?.uri
             ?.toString()
+        val mediaItem = PlayerMediaItemFactory.mediaItemFor(
+            url = currentUrl,
+            title = state.animeTitle,
+            artist = notificationContentText,
+            subtitle = notificationSubtitle,
+            description = notificationDescription,
+            artworkUri = notificationArtworkUrl,
+        )
         playbackConfig.updateStreamHeaders(state.streamHeaders)
         if (currentMediaUri != currentUrl || configuredPlaybackKey != playbackConfigKey) {
             val resumePosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
             activePlayer.setMediaItem(
-                PlayerMediaItemFactory.mediaItemFor(currentUrl),
+                mediaItem,
                 resumePosition
             )
             activePlayer.prepare()
             configuredPlaybackKey = playbackConfigKey
+            configuredMediaItemKey = mediaItemKey
+        } else if (configuredMediaItemKey != mediaItemKey && activePlayer.mediaItemCount > 0) {
+            val itemIndex = activePlayer.currentMediaItemIndex.takeIf { it >= 0 } ?: 0
+            activePlayer.replaceMediaItem(itemIndex, mediaItem)
+            configuredMediaItemKey = mediaItemKey
         }
         activePlayer.playWhenReady = wantsPlay
     }
