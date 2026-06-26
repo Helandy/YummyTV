@@ -44,7 +44,6 @@ internal fun MobilePlayerTopBar(
     showPictureInPicture: Boolean,
     visible: Boolean,
     modifier: Modifier = Modifier,
-    castButton: @Composable (() -> Unit)? = null,
 ) {
     if (!visible) return
     Column(
@@ -96,7 +95,7 @@ internal fun MobilePlayerTopBar(
                     )
                 }
             }
-            if (playerName.isNotBlank() || showDetails || showPictureInPicture || castButton != null) {
+            if (playerName.isNotBlank() || showDetails || showPictureInPicture) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     modifier = Modifier.padding(start = 8.dp),
@@ -115,7 +114,7 @@ internal fun MobilePlayerTopBar(
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                         )
                     }
-                    if (showDetails || showPictureInPicture || castButton != null) {
+                    if (showDetails || showPictureInPicture) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(top = 2.dp),
@@ -137,9 +136,7 @@ internal fun MobilePlayerTopBar(
                             if (showPictureInPicture) {
                                 IconButton(
                                     onClick = onPictureInPicture,
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .padding(end = if (castButton != null) 10.dp else 0.dp),
+                                    modifier = Modifier.size(32.dp),
                                 ) {
                                     Icon(
                                         Icons.Filled.PictureInPictureAlt,
@@ -148,7 +145,6 @@ internal fun MobilePlayerTopBar(
                                     )
                                 }
                             }
-                            castButton?.invoke()
                         }
                     }
                 }

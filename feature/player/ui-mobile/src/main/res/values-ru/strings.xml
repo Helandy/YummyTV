@@ -18,7 +18,4 @@
     <string name="player_mobile_pip_pause">Пауза</string>
     <string name="player_mobile_pip_play">Играть</string>
     <string name="player_mobile_pip_forward_10">Вперёд на 10 секунд</string>
-    <string name="player_mobile_cast_title">Трансляция</string>
-    <string name="player_mobile_casting_to">Трансляция на %1$s</string>
-    <string name="player_mobile_cast_unsupported_headers">Этот источник нельзя передать на другое устройство</string>
 </resources>

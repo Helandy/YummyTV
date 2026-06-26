@@ -32,10 +32,6 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
-        <meta-data
-            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="su.afk.yummy.tv.feature.player.cast.MobileCastOptionsProvider" />
-
         <activity
             android:name=".android.TvActivity"
             android:exported="true"
