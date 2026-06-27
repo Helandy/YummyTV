@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.main
 
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -10,6 +11,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.AnalyticsEvents
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
@@ -152,21 +155,29 @@ class MainViewModel @Inject constructor(
     }
 
     private fun checkForUpdates() {
-        viewModelScope.launch {
-            runCatching {
+        viewModelScope.launch(Dispatchers.IO) {
+            val update = runCatching {
                 val isCurrentVersionSupported = versionSupportChecker.isCurrentVersionSupported()
-                val release = updateChecker.getLatestRelease() ?: return@launch
+                val release = withTimeoutOrNull(GITHUB_UPDATE_TIMEOUT_MS) {
+                    updateChecker.getLatestRelease()
+                } ?: return@runCatching null
                 val remoteVersion = release.tagName.trimStart('v')
-                val apkUrl = release.assets.firstOrNull()?.browserDownloadUrl ?: return@launch
+                val apkUrl =
+                    release.assets.firstOrNull()?.browserDownloadUrl ?: return@runCatching null
                 if (!isCurrentVersionSupported || isNewer(versionName, remoteVersion)) {
-                    setEffect(
-                        MainState.Effect.NavigateToUpdate(
-                            version = remoteVersion,
-                            apkUrl = apkUrl,
-                            changelog = release.body.orEmpty(),
-                            required = !isCurrentVersionSupported,
-                        )
+                    MainState.Effect.NavigateToUpdate(
+                        version = remoteVersion,
+                        apkUrl = apkUrl,
+                        changelog = release.body.orEmpty(),
+                        required = !isCurrentVersionSupported,
                     )
+                } else {
+                    null
+                }
+            }.getOrNull()
+            update?.let { effect ->
+                withContext(Dispatchers.Main) {
+                    setEffect(effect)
                 }
             }
         }
@@ -191,3 +202,4 @@ private fun YaniApplicationTokenState.analyticsValue(): String =
     }
 
 private const val EVENT_SCREEN_OPENED = "main_screen"
+private const val GITHUB_UPDATE_TIMEOUT_MS = 5_000L

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <receiver
+            android:name="su.afk.yummy.tv.feature.player.pip.MobilePlayerPipActionReceiver"
+            android:exported="false" />
+
+        <service
+            android:name="su.afk.yummy.tv.feature.player.service.MobilePlayerMediaSessionService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>

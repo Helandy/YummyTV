@@ -70,23 +70,6 @@
                 android:resource="@xml/searchable" />
         </activity>
 
-        <receiver
-            android:name="su.afk.yummy.tv.feature.player.pip.MobilePlayerPipActionReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name="su.afk.yummy.tv.core.update.apk.ApkInstallReceiver"
-            android:exported="false" />
-
-        <service
-            android:name="su.afk.yummy.tv.feature.player.service.MobilePlayerMediaSessionService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="androidx.media3.session.MediaSessionService" />
-            </intent-filter>
-        </service>
-
         <provider
             android:name=".android.search.SystemSearchProvider"
             android:authorities="${applicationId}.search"
