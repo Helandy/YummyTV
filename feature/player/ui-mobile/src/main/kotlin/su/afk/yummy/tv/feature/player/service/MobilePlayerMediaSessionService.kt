@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.service
 
+import android.app.PendingIntent
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
@@ -38,7 +39,9 @@ class MobilePlayerMediaSessionService : MediaSessionService() {
             .build()
 
         player = exoPlayer
-        mediaSession = MediaSession.Builder(this, exoPlayer).build()
+        mediaSession = MediaSession.Builder(this, exoPlayer)
+            .setSessionActivity(createSessionActivityPendingIntent())
+            .build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
@@ -62,5 +65,21 @@ class MobilePlayerMediaSessionService : MediaSessionService() {
         mediaSession = null
         player = null
         super.onDestroy()
+    }
+
+    private fun createSessionActivityPendingIntent(): PendingIntent {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+            ?: Intent(Intent.ACTION_MAIN).setPackage(packageName)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        return PendingIntent.getActivity(
+            this,
+            REQUEST_CODE_SESSION_ACTIVITY,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private companion object {
+        const val REQUEST_CODE_SESSION_ACTIVITY = 40_101
     }
 }

@@ -13,6 +13,7 @@ object PlayerMediaItemFactory {
         subtitle: String? = null,
         description: String? = null,
         artworkUri: String? = null,
+        durationMs: Long? = null,
     ): MediaItem {
         val cleanUrl = url.substringBefore('?').substringBefore('#')
         val mimeType = when {
@@ -26,6 +27,7 @@ object PlayerMediaItemFactory {
             .setSubtitle(subtitle.nonBlank())
             .setDescription(description.nonBlank())
             .setArtworkUri(artworkUri.nonBlank()?.let(Uri::parse))
+            .setDurationMs(durationMs?.takeIf { it > 0L })
             .build()
         return MediaItem.Builder()
             .setUri(url)

@@ -152,6 +152,7 @@ internal fun MobileNativePlayer(
         notificationDescription,
         notificationContentText,
         notificationArtworkUrl,
+        state.playbackDurationMs,
     ) {
         buildString {
             append(playbackConfigKey)
@@ -160,6 +161,7 @@ internal fun MobileNativePlayer(
             append('|').append(notificationDescription.orEmpty())
             append('|').append(notificationContentText)
             append('|').append(notificationArtworkUrl.orEmpty())
+            append('|').append(state.playbackDurationMs.coerceAtLeast(0L))
         }
     }
 
@@ -239,6 +241,7 @@ internal fun MobileNativePlayer(
             subtitle = notificationSubtitle,
             description = notificationDescription,
             artworkUri = notificationArtworkUrl,
+            durationMs = state.playbackDurationMs,
         )
         playbackConfig.updateStreamHeaders(state.streamHeaders)
         if (currentMediaUri != currentUrl || configuredPlaybackKey != playbackConfigKey) {
