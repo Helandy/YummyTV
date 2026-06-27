@@ -42,9 +42,10 @@ internal fun resolveDetailsPlayerSelection(
         if (preferred != null) return DetailsPlayerSelection.Navigate(preferred.video)
     }
 
-    return when (supportedOptions.size) {
-        0 -> DetailsPlayerSelection.Navigate(video)
-        else -> DetailsPlayerSelection.ShowPicker(BalancerPickerState(video.episode, options))
+    return if (options.isNotEmpty()) {
+        DetailsPlayerSelection.ShowPicker(BalancerPickerState(video.episode, options))
+    } else {
+        DetailsPlayerSelection.Navigate(video)
     }
 }
 
