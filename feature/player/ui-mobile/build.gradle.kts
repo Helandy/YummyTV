@@ -18,7 +18,7 @@ dependencies {
 
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)
-    implementation(libs.bundles.media3.player.dash)
+    implementation(libs.bundles.media3.player)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.material.icons.core)

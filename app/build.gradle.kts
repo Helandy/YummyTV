@@ -70,6 +70,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":core:featuretoggle"))
+    implementation(project(":core:update"))
     implementation(project(":core:tv:tv-impl"))
     implementation(project(":core:tv:tv-api"))
     implementation(project(":feature:account:api"))
