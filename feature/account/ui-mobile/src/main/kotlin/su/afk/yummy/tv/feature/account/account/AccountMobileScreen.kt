@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,17 +13,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.feature.account.account.mobile.utils.accountErrorMessage
+import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoginCard
 import su.afk.yummy.tv.feature.account.view.AccountMobileLogoutConfirmDialog
+import su.afk.yummy.tv.feature.account.view.AccountMobileNavigationButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileNotificationsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSettingsButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
@@ -57,6 +62,15 @@ fun AccountMobileScreen(
                         AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
                     }
                 }
+                item(key = "downloaded_episodes") {
+                    AccountMobileNavigationButton(
+                        title = stringResource(R.string.account_downloaded_episodes),
+                        icon = Icons.Filled.VideoLibrary,
+                        onClick = {
+                            onEvent(AccountState.Event.DownloadedEpisodesSelected)
+                        },
+                    )
+                }
                 item {
                     AccountMobileLoginCard(state = state, onEvent = onEvent)
                 }
@@ -77,6 +91,15 @@ fun AccountMobileScreen(
                     item(key = "settings") {
                         AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
                     }
+                }
+                item(key = "downloaded_episodes") {
+                    AccountMobileNavigationButton(
+                        title = stringResource(R.string.account_downloaded_episodes),
+                        icon = Icons.Filled.VideoLibrary,
+                        onClick = {
+                            onEvent(AccountState.Event.DownloadedEpisodesSelected)
+                        },
+                    )
                 }
                 item(key = "profile") {
                     AccountMobileHeader(

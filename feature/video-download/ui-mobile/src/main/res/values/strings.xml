@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_download_mobile_title">Downloaded episodes</string>
+    <string name="video_download_empty">No downloaded episodes yet</string>
+</resources>

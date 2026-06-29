@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:home:domain"))
+    implementation(project(":feature:video-download:api"))
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)

@@ -76,6 +76,9 @@ class AccountState {
         /** Пользователь запросил обновление данных вкладок аккаунта. */
         data object RefreshHubSelected : Event
 
+        /** Пользователь открыл скачанные серии на устройстве. */
+        data object DownloadedEpisodesSelected : Event
+
         /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
 

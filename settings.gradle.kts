@@ -109,6 +109,10 @@ include(":feature:settings:presentation")
 include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
 
+include(":feature:video-download:api")
+include(":feature:video-download:presentation")
+include(":feature:video-download:ui-mobile")
+
 include(":feature:library:presentation")
 include(":feature:library:domain")
 include(":feature:library:data")

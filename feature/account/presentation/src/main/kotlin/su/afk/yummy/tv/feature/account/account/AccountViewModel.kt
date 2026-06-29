@@ -23,6 +23,7 @@ import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +35,7 @@ class AccountViewModel @Inject internal constructor(
     private val settingsStore: SettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
+    private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val sessionHandler: AccountSessionHandler,
     private val hubHandler: AccountHubHandler,
     private val notificationHandler: AccountNotificationHandler,
@@ -197,6 +199,10 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.RefreshHubSelected -> {
                 analytics.eventRefreshAccountDataSelected()
                 maybeLoadHub(force = true)
+            }
+
+            AccountState.Event.DownloadedEpisodesSelected -> {
+                nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
             }
 
             is AccountState.Event.NotificationSelected -> openNotification(event.id)

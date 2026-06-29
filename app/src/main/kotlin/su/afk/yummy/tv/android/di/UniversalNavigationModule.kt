@@ -21,6 +21,7 @@ import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.top.ITopNavigator
+import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 import javax.inject.Singleton
 
 @Module
@@ -96,6 +97,11 @@ object UniversalNavigationModule {
         su.afk.yummy.tv.feature.top.navigator.TopNavigator()
 
     @Provides
+    @Singleton
+    fun provideVideoDownloadNavigator(): IVideoDownloadNavigator =
+        su.afk.yummy.tv.feature.videodownload.navigator.VideoDownloadNavigator()
+
+    @Provides
     @IntoSet
     @MobileUi
     fun provideMobileAccountNavRegistrar(): NavRegistrar =
@@ -160,6 +166,12 @@ object UniversalNavigationModule {
     @MobileUi
     fun provideMobileTopNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.top.mobile.navigator.TopNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobileVideoDownloadNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.videodownload.navigator.VideoDownloadNavRegistrar()
 
     @Provides
     @IntoSet

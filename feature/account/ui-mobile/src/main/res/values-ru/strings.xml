@@ -5,6 +5,7 @@
     <string name="account_unknown_user">Неизвестный пользователь</string>
     <string name="account_refresh">Обновить профиль</string>
     <string name="account_settings">Настройки</string>
+    <string name="account_downloaded_episodes">Скачанные серии</string>
     <string name="account_logout">Выйти</string>
     <string name="account_login">Войти</string>
     <string name="account_login_placeholder">Email или никнейм</string>
