@@ -3,9 +3,12 @@ package su.afk.yummy.tv.data.player.extractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import java.net.HttpURLConnection
+import su.afk.yummy.tv.domain.player.isVkPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
 import java.net.URLDecoder
+import javax.inject.Inject
 
 internal data class VkResult(
     val url: String,
@@ -13,14 +16,14 @@ internal data class VkResult(
     val qualities: LinkedHashMap<String, String>? = null,
 )
 
-internal object VkExtractor {
+internal class VkExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
-    private const val DEFAULT_REFERER = "https://vk.com/"
-    private const val YUMMY_ORIGIN = "https://ru.yummyani.me"
-    private const val VIDEO_EXT_URL = "https://vk.com/video_ext.php"
-    private const val HTTP_OK_START = 200
-    private const val HTTP_OK_END = 299
-    private const val VK_ID_DELIMITER = "_"
+    private val DEFAULT_REFERER = "https://vk.com/"
+    private val YUMMY_ORIGIN = "https://ru.yummyani.me"
+    private val VIDEO_EXT_URL = "https://vk.com/video_ext.php"
+    private val VK_ID_DELIMITER = "_"
 
     private val QUALITY_KEYS =
         listOf("auto", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p")
@@ -57,7 +60,18 @@ internal object VkExtractor {
         Regex("(?i)<source[^>]+src=['\"]([^'\"]+\\.(?:m3u8|mp4)[^'\"]*)['\"]"),
     )
 
-    suspend fun extract(
+    override fun supports(url: String): Boolean = url.isVkPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: android.content.Context,
+    ): PlayerStreamResolveResult =
+        extractStream(
+            iframeUrl = request.iframeUrl,
+            autoQualityLabel = request.autoQualityLabel,
+        )?.toStream() ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractStream(
         iframeUrl: String,
         autoQualityLabel: String = "auto"
     ): VkResult? = withContext(Dispatchers.IO) {
@@ -410,27 +424,29 @@ internal object VkExtractor {
             ignoreCase = true
         )
 
-    private fun fetchText(url: String, referer: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept", "*/*")
-            val responseCode = conn.responseCode
-            if (responseCode !in HTTP_OK_START..HTTP_OK_END) {
-                val error = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
-                throw IllegalStateException("HTTP $responseCode: ${error.take(80)}")
-            }
-            conn.inputStream.bufferedReader().use { it.readText() }
-        } finally {
-            conn.disconnect()
+    private suspend fun fetchText(url: String, referer: String): String {
+        val response = httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to referer,
+                "User-Agent" to CHROME_UA,
+                "Accept" to "*/*",
+            ),
+        )
+        if (!response.isSuccess) {
+            throw IllegalStateException("HTTP ${response.statusCode}: ${response.body.take(80)}")
         }
+        return response.body
     }
 
     private val VIDEO_EXT_FROM_IFRAME_PATTERNS = listOf(
         Regex("video_ext\\.php[^\"']*?oid=([^&\"']+)&id=([^&\"']+)", RegexOption.IGNORE_CASE),
     )
+
+    private fun VkResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 }

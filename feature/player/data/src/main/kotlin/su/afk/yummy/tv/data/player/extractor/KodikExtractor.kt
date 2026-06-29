@@ -6,9 +6,11 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.data.player.utils.BROWSER_STREAM_HEADERS
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import java.net.HttpURLConnection
-import java.net.URL
+import su.afk.yummy.tv.domain.player.isKodikPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URLEncoder
+import javax.inject.Inject
 
 internal sealed interface KodikResult {
     data class Stream(
@@ -25,128 +27,148 @@ internal sealed interface KodikResult {
     data object Failed : KodikResult
 }
 
-internal object KodikExtractor {
+internal class KodikExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
     private val QUALITY_ORDER = listOf(240, 360, 480, 720, 1080)
     private val HLS_QUALITY_MANIFEST_PATTERN =
         Regex("""/(\d+)\.mp4:hls:manifest\.m3u8(?=$|[?#])""")
 
-    suspend fun extract(iframeUrl: String): KodikResult = withContext(Dispatchers.IO) {
-        val fullUrl = when {
-            iframeUrl.startsWith("//") -> "https:$iframeUrl"
-            iframeUrl.startsWith("http") -> iframeUrl
-            else -> "https://$iframeUrl"
+    override fun supports(url: String): Boolean = url.isKodikPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: android.content.Context,
+    ): PlayerStreamResolveResult =
+        when (val result = extractStream(request.iframeUrl)) {
+            is KodikResult.Stream -> result.toStream()
+            is KodikResult.Blocked -> PlayerStreamResolveResult.KodikBlocked(
+                message = result.message,
+                statusCode = result.statusCode,
+            )
+
+            KodikResult.Failed -> PlayerStreamResolveResult.Failed
         }
-        try {
-            // Cookies from the page load are required for /ftor auth
-            val (html, cookies) = fetchHtmlWithCookies(fullUrl, referer = "https://yani.tv/")
-            val flat = html.replace("\n", "").replace("\r", "")
 
-            val urlParamsStr = Regex("""\burlParams\s*=\s*'([^']+)'""").find(flat)
-                ?.groupValues?.get(1) ?: run {
-                logExtractorFailure("Kodik", fullUrl, "urlParams were not found")
-                return@withContext KodikResult.Failed
+    private suspend fun extractStream(iframeUrl: String): KodikResult =
+        withContext(Dispatchers.IO) {
+            val fullUrl = when {
+                iframeUrl.startsWith("//") -> "https:$iframeUrl"
+                iframeUrl.startsWith("http") -> iframeUrl
+                else -> "https://$iframeUrl"
             }
-            val type = Regex("""\b(?:videoInfo|vInfo)\.type\s*=\s*'([^']+)'""").find(flat)
-                ?.groupValues?.get(1) ?: run {
-                logExtractorFailure("Kodik", fullUrl, "video type was not found")
-                return@withContext KodikResult.Failed
-            }
-            val hash = Regex("""\b(?:videoInfo|vInfo)\.hash\s*=\s*'([^']+)'""").find(flat)
-                ?.groupValues?.get(1) ?: run {
-                logExtractorFailure("Kodik", fullUrl, "video hash was not found")
-                return@withContext KodikResult.Failed
-            }
-            val id = Regex("""\b(?:videoInfo|vInfo)\.id\s*=\s*'([^']+)'""").find(flat)
-                ?.groupValues?.get(1) ?: run {
-                logExtractorFailure("Kodik", fullUrl, "video id was not found")
-                return@withContext KodikResult.Failed
-            }
+            try {
+                // Cookies from the page load are required for /ftor auth
+                val (html, cookies) = fetchHtmlWithCookies(fullUrl, referer = "https://yani.tv/")
+                val flat = html.replace("\n", "").replace("\r", "")
 
-            val playerSrc = Regex("""src="((?://[^"]+)?/assets/js/app\.player_single[^"]+)"""")
-                .find(flat)?.groupValues?.get(1) ?: run {
-                logExtractorFailure("Kodik", fullUrl, "player script URL was not found")
-                return@withContext KodikResult.Failed
-            }
-
-            // Derive origin from fullUrl so relative paths (/assets/js/...) work too
-            val urlOrigin = fullUrl.let { url ->
-                val schemeEnd = url.indexOf("://")
-                if (schemeEnd >= 0) {
-                    val afterScheme = url.substring(schemeEnd + 3)
-                    val slashIdx = afterScheme.indexOf('/')
-                    if (slashIdx >= 0) url.substring(0, schemeEnd + 3 + slashIdx) else url
-                } else url
-            }
-            val playerScriptUrl = when {
-                playerSrc.startsWith("//") -> "https:$playerSrc"
-                playerSrc.startsWith("/") -> "$urlOrigin$playerSrc"
-                else -> playerSrc
-            }
-            val origin = playerScriptUrl.substringBefore("/assets/js/")
-
-            val playerScript = fetchHtml(playerScriptUrl, referer = fullUrl)
-
-            // Kodik encodes the endpoint path as base64 inside atob("...") in the player script
-            val endpointPath = Regex("""atob\("([A-Za-z0-9+/=]+)"\)""").findAll(playerScript)
-                .mapNotNull { m ->
-                    try {
-                        val decoded = String(Base64.decode(m.groupValues[1], Base64.DEFAULT))
-                        decoded.takeIf { it.startsWith("/") && !decoded.startsWith("//") && decoded.length <= 10 }
-                    } catch (_: Exception) {
-                        null
-                    }
+                val urlParamsStr = Regex("""\burlParams\s*=\s*'([^']+)'""").find(flat)
+                    ?.groupValues?.get(1) ?: run {
+                    logExtractorFailure("Kodik", fullUrl, "urlParams were not found")
+                    return@withContext KodikResult.Failed
                 }
-                .firstOrNull() ?: "/ftor"
+                val type = Regex("""\b(?:videoInfo|vInfo)\.type\s*=\s*'([^']+)'""").find(flat)
+                    ?.groupValues?.get(1) ?: run {
+                    logExtractorFailure("Kodik", fullUrl, "video type was not found")
+                    return@withContext KodikResult.Failed
+                }
+                val hash = Regex("""\b(?:videoInfo|vInfo)\.hash\s*=\s*'([^']+)'""").find(flat)
+                    ?.groupValues?.get(1) ?: run {
+                    logExtractorFailure("Kodik", fullUrl, "video hash was not found")
+                    return@withContext KodikResult.Failed
+                }
+                val id = Regex("""\b(?:videoInfo|vInfo)\.id\s*=\s*'([^']+)'""").find(flat)
+                    ?.groupValues?.get(1) ?: run {
+                    logExtractorFailure("Kodik", fullUrl, "video id was not found")
+                    return@withContext KodikResult.Failed
+                }
 
-            val endpointUrl = "$origin$endpointPath"
+                val playerSrc = Regex("""src="((?://[^"]+)?/assets/js/app\.player_single[^"]+)"""")
+                    .find(flat)?.groupValues?.get(1) ?: run {
+                    logExtractorFailure("Kodik", fullUrl, "player script URL was not found")
+                    return@withContext KodikResult.Failed
+                }
 
-            val urlParams = JSONObject(urlParamsStr)
-            val postBody = buildString {
-                append("d=").append(enc(urlParams.optString("d")))
-                append("&d_sign=").append(enc(urlParams.optString("d_sign")))
-                append("&pd=").append(enc(urlParams.optString("pd")))
-                append("&pd_sign=").append(enc(urlParams.optString("pd_sign")))
-                // ref is already URL-encoded in the JSON (e.g. "https%3A%2F%2F..."), use as-is
-                append("&ref=").append(urlParams.optString("ref"))
-                append("&ref_sign=").append(enc(urlParams.optString("ref_sign")))
-                append("&bad_user=true")
-                append("&cdn_is_working=true")
-                append("&type=").append(enc(type))
-                append("&hash=").append(enc(hash))
-                append("&id=").append(enc(id))
-                append("&info=%7B%7D")
-            }
+                // Derive origin from fullUrl so relative paths (/assets/js/...) work too
+                val urlOrigin = fullUrl.let { url ->
+                    val schemeEnd = url.indexOf("://")
+                    if (schemeEnd >= 0) {
+                        val afterScheme = url.substring(schemeEnd + 3)
+                        val slashIdx = afterScheme.indexOf('/')
+                        if (slashIdx >= 0) url.substring(0, schemeEnd + 3 + slashIdx) else url
+                    } else url
+                }
+                val playerScriptUrl = when {
+                    playerSrc.startsWith("//") -> "https:$playerSrc"
+                    playerSrc.startsWith("/") -> "$urlOrigin$playerSrc"
+                    else -> playerSrc
+                }
+                val origin = playerScriptUrl.substringBefore("/assets/js/")
 
-            val responseText = postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
+                val playerScript = fetchHtml(playerScriptUrl, referer = fullUrl)
 
-            val qualities = parseQualityMap(responseText)
-            val streamUrl = qualities?.values?.lastOrNull()
-            if (streamUrl != null) {
-                KodikResult.Stream(
-                    url = streamUrl,
-                    qualities = qualities,
+                // Kodik encodes the endpoint path as base64 inside atob("...") in the player script
+                val endpointPath = Regex("""atob\("([A-Za-z0-9+/=]+)"\)""").findAll(playerScript)
+                    .mapNotNull { m ->
+                        try {
+                            val decoded = String(Base64.decode(m.groupValues[1], Base64.DEFAULT))
+                            decoded.takeIf { it.startsWith("/") && !decoded.startsWith("//") && decoded.length <= 10 }
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    .firstOrNull() ?: "/ftor"
+
+                val endpointUrl = "$origin$endpointPath"
+
+                val urlParams = JSONObject(urlParamsStr)
+                val postBody = buildString {
+                    append("d=").append(enc(urlParams.optString("d")))
+                    append("&d_sign=").append(enc(urlParams.optString("d_sign")))
+                    append("&pd=").append(enc(urlParams.optString("pd")))
+                    append("&pd_sign=").append(enc(urlParams.optString("pd_sign")))
+                    // ref is already URL-encoded in the JSON (e.g. "https%3A%2F%2F..."), use as-is
+                    append("&ref=").append(urlParams.optString("ref"))
+                    append("&ref_sign=").append(enc(urlParams.optString("ref_sign")))
+                    append("&bad_user=true")
+                    append("&cdn_is_working=true")
+                    append("&type=").append(enc(type))
+                    append("&hash=").append(enc(hash))
+                    append("&id=").append(enc(id))
+                    append("&info=%7B%7D")
+                }
+
+                val responseText =
+                    postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
+
+                val qualities = parseQualityMap(responseText)
+                val streamUrl = qualities?.values?.lastOrNull()
+                if (streamUrl != null) {
+                    KodikResult.Stream(
+                        url = streamUrl,
+                        qualities = qualities,
+                    )
+                } else {
+                    logExtractorFailure(
+                        "Kodik",
+                        endpointUrl,
+                        "stream URL was not found in endpoint response"
+                    )
+                    KodikResult.Failed
+                }
+            } catch (e: KodikBlockedException) {
+                KodikResult.Blocked(
+                    message = e.message,
+                    statusCode = e.statusCode,
                 )
-            } else {
-                logExtractorFailure(
-                    "Kodik",
-                    endpointUrl,
-                    "stream URL was not found in endpoint response"
-                )
+            } catch (e: Exception) {
+                logExtractorFailure("Kodik", fullUrl, "unexpected extractor error", e)
                 KodikResult.Failed
             }
-        } catch (e: KodikBlockedException) {
-            KodikResult.Blocked(
-                message = e.message,
-                statusCode = e.statusCode,
-            )
-        } catch (e: Exception) {
-            logExtractorFailure("Kodik", fullUrl, "unexpected extractor error", e)
-            KodikResult.Failed
         }
-    }
 
-    private fun parseQualityMap(response: String): LinkedHashMap<String, String>? {
+    private suspend fun parseQualityMap(response: String): LinkedHashMap<String, String>? {
         return try {
             val json = JSONObject(response)
             val links = json.optJSONObject("links") ?: return null
@@ -172,7 +194,7 @@ internal object KodikExtractor {
         val url: String,
     )
 
-    private fun resolveQualityStreamUrl(url: String, expectedQuality: Int): QualityStream {
+    private suspend fun resolveQualityStreamUrl(url: String, expectedQuality: Int): QualityStream {
         val actualQuality =
             hlsManifestQuality(url) ?: return QualityStream("${expectedQuality}p", url)
         if (actualQuality == expectedQuality) return QualityStream("${expectedQuality}p", url)
@@ -198,21 +220,10 @@ internal object KodikExtractor {
         return url.replaceRange(match.range, "/$quality.mp4:hls:manifest.m3u8")
     }
 
-    private fun isUrlAvailable(url: String): Boolean {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.requestMethod = "HEAD"
-            conn.connectTimeout = 4_000
-            conn.readTimeout = 4_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.responseCode in 200..299
-        } catch (_: Exception) {
-            false
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun isUrlAvailable(url: String): Boolean =
+        runCatching {
+            httpClient.head(url = url, headers = mapOf("User-Agent" to CHROME_UA)).isSuccess
+        }.getOrDefault(false)
 
     // Stream URLs from /ftor are encoded: ROT18 applied to letters, then base64 decoded
     private fun decodeKodikSrc(src: String): String? {
@@ -239,74 +250,63 @@ internal object KodikExtractor {
 
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
-    private fun fetchHtmlWithCookies(
+    private suspend fun fetchHtmlWithCookies(
         url: String,
         referer: String,
     ): Pair<String, String> {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                val errorHtml = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                throw KodikBlockedException(
-                    message = parseErrorMessage(errorHtml),
-                    statusCode = code,
-                )
-            }
-            val html = conn.inputStream.bufferedReader().use { it.readText() }
-            val cookies = conn.headerFields["Set-Cookie"]
-                ?.joinToString("; ") { it.split(";").first() }
-                ?: ""
-            html to cookies
-        } finally {
-            conn.disconnect()
+        val response = httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to referer,
+                "User-Agent" to CHROME_UA,
+                "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
+            ),
+        )
+        if (!response.isSuccess) {
+            throw KodikBlockedException(
+                message = parseErrorMessage(response.body),
+                statusCode = response.statusCode,
+            )
         }
+        return response.body to response.setCookieHeader
     }
 
     private fun parseErrorMessage(html: String): String? =
         Regex("""<div[^>]+class=["']message["'][^>]*>([^<]+)<""").find(html)
             ?.groupValues?.get(1)?.trim()?.takeIf { it.isNotBlank() }
 
-    private fun fetchHtml(url: String, referer: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
-            conn.inputStream.bufferedReader().use { it.readText() }
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun fetchHtml(url: String, referer: String): String =
+        httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to referer,
+                "User-Agent" to CHROME_UA,
+                "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
+            ),
+        ).body
 
-    private fun postForm(url: String, body: String, referer: String, cookies: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.requestMethod = "POST"
-            conn.doOutput = true
-            conn.connectTimeout = 8_000
-            conn.readTimeout = 10_000
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-            conn.setRequestProperty("X-Requested-With", "XMLHttpRequest")
-            if (cookies.isNotEmpty()) conn.setRequestProperty("Cookie", cookies)
-            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
-            val code = conn.responseCode
-            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-            val bytes = stream?.use { it.readBytes() } ?: byteArrayOf()
-            bytes.toString(Charsets.UTF_8)
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun postForm(
+        url: String,
+        body: String,
+        referer: String,
+        cookies: String
+    ): String =
+        httpClient.postText(
+            url = url,
+            body = body,
+            headers = buildMap {
+                put("Referer", referer)
+                put("User-Agent", CHROME_UA)
+                put("Content-Type", "application/x-www-form-urlencoded")
+                put("X-Requested-With", "XMLHttpRequest")
+                if (cookies.isNotEmpty()) put("Cookie", cookies)
+            },
+        ).body
+
+    private fun KodikResult.Stream.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 }

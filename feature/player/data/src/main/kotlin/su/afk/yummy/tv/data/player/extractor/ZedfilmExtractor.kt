@@ -17,8 +17,12 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
 import su.afk.yummy.tv.data.player.utils.withBrowserUserAgent
-import java.net.HttpURLConnection
+import su.afk.yummy.tv.domain.player.isZedfilmPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
+import java.nio.charset.Charset
+import javax.inject.Inject
 import kotlin.coroutines.resume
 
 internal data class ZedfilmResult(
@@ -27,15 +31,15 @@ internal data class ZedfilmResult(
     val qualities: LinkedHashMap<String, String>? = null,
 )
 
-internal object ZedfilmExtractor {
+internal class ZedfilmExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
-    private const val ZEDFILM_ORIGIN = "https://zedfilm.ru"
-    private const val HLAMER_ORIGIN = "https://hlamer.ru"
-    private const val YANI_REFERER = "https://yani.tv/"
-    private const val TIMEOUT_MS = 20_000L
-    private const val STREAM_SETTLE_DELAY_MS = 2_000L
-    private const val HTTP_OK_START = 200
-    private const val HTTP_OK_END = 299
+    private val ZEDFILM_ORIGIN = "https://zedfilm.ru"
+    private val HLAMER_ORIGIN = "https://hlamer.ru"
+    private val YANI_REFERER = "https://yani.tv/"
+    private val TIMEOUT_MS = 20_000L
+    private val STREAM_SETTLE_DELAY_MS = 2_000L
 
     private val QUALITY_KEYS =
         listOf("auto", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p")
@@ -55,7 +59,19 @@ internal object ZedfilmExtractor {
      * Main flow: GET iframe HTML, decode video_Init(Base64 JSON), use url as DASH .mpd and url2
      * as MP4 fallback. If that page contract changes, fall back to WebView request interception.
      */
-    suspend fun extract(
+    override fun supports(url: String): Boolean = url.isZedfilmPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: Context,
+    ): PlayerStreamResolveResult =
+        extractStream(
+            iframeUrl = request.iframeUrl,
+            context = context,
+            autoQualityLabel = request.autoQualityLabel,
+        )?.toStream() ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractStream(
         iframeUrl: String,
         context: Context,
         autoQualityLabel: String = "auto",
@@ -69,7 +85,7 @@ internal object ZedfilmExtractor {
         }
     }
 
-    private fun extractStatic(
+    private suspend fun extractStatic(
         playerUrl: String,
         autoQualityLabel: String,
     ): ZedfilmResult? {
@@ -353,30 +369,16 @@ internal object ZedfilmExtractor {
         "User-Agent" to CHROME_UA,
     )
 
-    private fun fetchText(url: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", YANI_REFERER)
-            conn.setRequestProperty("Origin", HLAMER_ORIGIN)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty(
-                "Accept",
-                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-            )
-            val responseCode = conn.responseCode
-            val stream = if (responseCode in HTTP_OK_START..HTTP_OK_END) {
-                conn.inputStream
-            } else {
-                conn.errorStream ?: conn.inputStream
-            }
-            stream.bufferedReader(charset("windows-1251")).use { it.readText() }
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun fetchText(url: String): String =
+        httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to YANI_REFERER,
+                "Origin" to HLAMER_ORIGIN,
+                "User-Agent" to CHROME_UA,
+                "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            ),
+        ).body(Charset.forName("windows-1251"))
 
     private fun playProbeScript(): String = """
         (function(){
@@ -394,4 +396,11 @@ internal object ZedfilmExtractor {
         val url: String,
         val headers: Map<String, String>,
     )
+
+    private fun ZedfilmResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 }

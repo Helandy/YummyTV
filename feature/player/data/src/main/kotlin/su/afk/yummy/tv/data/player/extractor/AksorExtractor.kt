@@ -4,9 +4,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import java.net.HttpURLConnection
+import su.afk.yummy.tv.domain.player.isAksorPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URI
-import java.net.URL
+import javax.inject.Inject
 
 internal data class AksorResult(
     val url: String,
@@ -14,41 +16,52 @@ internal data class AksorResult(
     val qualities: LinkedHashMap<String, String>?,
 )
 
-internal object AksorExtractor {
+internal class AksorExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
-    private const val PLAYER_ORIGIN = "https://player.aksor.tv"
+    private val PLAYER_ORIGIN = "https://player.aksor.tv"
     private val QUALITY_ORDER = listOf("q360", "q480", "q720", "q1080", "q2k", "q4k")
 
-    suspend fun extract(iframeUrl: String): AksorResult? = withContext(Dispatchers.IO) {
-        try {
-            val playerUrl = normalizeUrl(iframeUrl)
-            val hash = extractHash(playerUrl) ?: run {
-                return@withContext null
+    override fun supports(url: String): Boolean = url.isAksorPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: android.content.Context,
+    ): PlayerStreamResolveResult =
+        extractStream(request.iframeUrl)?.toStream() ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractStream(iframeUrl: String): AksorResult? =
+        withContext(Dispatchers.IO) {
+            try {
+                val playerUrl = normalizeUrl(iframeUrl)
+                val hash = extractHash(playerUrl) ?: run {
+                    return@withContext null
+                }
+                val headers = streamHeaders(playerUrl)
+                val apiUrl = "$PLAYER_ORIGIN/api/video/$hash"
+
+                val qualities = runCatching {
+                    fetchJson(apiUrl, referer = playerUrl)
+                        .optJSONObject("qualities")
+                        ?.toQualityMap()
+                        ?.takeIf { it.isNotEmpty() }
+                }.getOrNull()
+
+                val streamUrl = qualities?.values?.lastOrNull()
+                    ?: fetchFallbackStreamUrl(playerUrl, hash)
+                    ?: return@withContext null
+
+                AksorResult(
+                    url = streamUrl,
+                    headers = headers,
+                    qualities = qualities,
+                )
+            } catch (e: Exception) {
+                logExtractorFailure("Aksor", iframeUrl, "unexpected extractor error", e)
+                null
             }
-            val headers = streamHeaders(playerUrl)
-            val apiUrl = "$PLAYER_ORIGIN/api/video/$hash"
-
-            val qualities = runCatching {
-                fetchJson(apiUrl, referer = playerUrl)
-                    .optJSONObject("qualities")
-                    ?.toQualityMap()
-                    ?.takeIf { it.isNotEmpty() }
-            }.getOrNull()
-
-            val streamUrl = qualities?.values?.lastOrNull()
-                ?: fetchFallbackStreamUrl(playerUrl, hash)
-                ?: return@withContext null
-
-            AksorResult(
-                url = streamUrl,
-                headers = headers,
-                qualities = qualities,
-            )
-        } catch (e: Exception) {
-            logExtractorFailure("Aksor", iframeUrl, "unexpected extractor error", e)
-            null
         }
-    }
 
     private fun normalizeUrl(url: String): String {
         val trimmed = url.trim()
@@ -99,7 +112,7 @@ internal object AksorExtractor {
         "User-Agent" to CHROME_UA,
     )
 
-    private fun fetchFallbackStreamUrl(playerUrl: String, hash: String): String? {
+    private suspend fun fetchFallbackStreamUrl(playerUrl: String, hash: String): String? {
         val html = fetchText(playerUrl, referer = "https://yani.tv/", accept = "text/html")
         extractMetaVideoUrl(html)?.let { return it }
 
@@ -150,23 +163,23 @@ internal object AksorExtractor {
             ?.trim()
             ?.takeIf { it.isNotBlank() && !it.contains("{{") }
 
-    private fun fetchJson(url: String, referer: String): JSONObject =
+    private suspend fun fetchJson(url: String, referer: String): JSONObject =
         JSONObject(fetchText(url, referer = referer, accept = "application/json"))
 
-    private fun fetchText(url: String, referer: String, accept: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept", accept)
-            conn.inputStream.bufferedReader().use { it.readText() }
-        } catch (_: Exception) {
-            conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun fetchText(url: String, referer: String, accept: String): String =
+        httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to referer,
+                "User-Agent" to CHROME_UA,
+                "Accept" to accept,
+            ),
+        ).body
+
+    private fun AksorResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 }

@@ -16,6 +16,10 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
 import su.afk.yummy.tv.data.player.utils.withBrowserUserAgent
+import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import javax.inject.Inject
 import kotlin.coroutines.resume
 
 /**
@@ -47,15 +51,23 @@ internal data class AllohaResult(
  * [shouldInterceptRequest][WebViewClient.shouldInterceptRequest] capture the resulting stream URL
  * plus headers for each quality.
  */
-internal object AllohaExtractor {
+internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
 
-    private const val TIMEOUT_MS = 25_000L
-    private const val QUALITY_SWITCH_DELAY_MS = 1_500L
-    private const val STREAM_SETTLE_DELAY_MS = 2_500L
+    private val TIMEOUT_MS = 25_000L
+    private val QUALITY_SWITCH_DELAY_MS = 1_500L
+    private val STREAM_SETTLE_DELAY_MS = 2_500L
     private val KNOWN_QUALITY_LEVELS = setOf(240, 360, 480, 540, 720, 1080, 1440, 2160)
     private val QUALITY_IN_URL_REGEX = Regex("""(?<!\d)(\d{3,4})(?:p|\.mp4|/)""")
 
-    suspend fun extract(iframeUrl: String, context: Context): AllohaResult? {
+    override fun supports(url: String): Boolean = url.isAllohaPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: Context,
+    ): PlayerStreamResolveResult =
+        extractStream(request.iframeUrl, context)?.toStream() ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractStream(iframeUrl: String, context: Context): AllohaResult? {
         val fullUrl = normalizeUrl(iframeUrl)
         return withContext(Dispatchers.Main) {
             extractViaWebView(fullUrl, context)
@@ -255,6 +267,13 @@ internal object AllohaExtractor {
     }
 
     private data class CapturedStream(val url: String, val headers: Map<String, String>)
+
+    private fun AllohaResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 
     private fun LinkedHashMap<String, CapturedStream>.toQualityMap(): LinkedHashMap<String, String> {
         val sortedEntries = entries.sortedWith { first, second ->

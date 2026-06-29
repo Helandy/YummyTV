@@ -4,8 +4,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import java.net.HttpURLConnection
+import su.afk.yummy.tv.domain.player.isRutubePlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
+import javax.inject.Inject
 
 internal data class RutubeResult(
     val url: String,
@@ -13,19 +16,29 @@ internal data class RutubeResult(
     val qualities: LinkedHashMap<String, String>? = null,
 )
 
-internal object RutubeExtractor {
+internal class RutubeExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
-    private const val RUTUBE_ORIGIN = "https://rutube.ru"
-    private const val OPTIONS_URL = "$RUTUBE_ORIGIN/api/play/options/%s/?no_404=true"
-    private const val HTTP_OK_START = 200
-    private const val HTTP_OK_END = 299
-
+    private val RUTUBE_ORIGIN = "https://rutube.ru"
+    private val OPTIONS_URL = "$RUTUBE_ORIGIN/api/play/options/%s/?no_404=true"
     private val QUALITY_KEYS =
         listOf("auto", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p")
     private val VIDEO_ID_PATTERN = Regex("(?i)([a-f0-9]{32})")
     private val RESOLUTION_PATTERN = Regex("(?i)RESOLUTION=(\\d+)x(\\d+)")
 
-    suspend fun extract(
+    override fun supports(url: String): Boolean = url.isRutubePlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: android.content.Context,
+    ): PlayerStreamResolveResult =
+        extractStream(
+            iframeUrl = request.iframeUrl,
+            autoQualityLabel = request.autoQualityLabel,
+        )?.toStream() ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractStream(
         iframeUrl: String,
         autoQualityLabel: String = "auto"
     ): RutubeResult? = withContext(Dispatchers.IO) {
@@ -66,7 +79,7 @@ internal object RutubeExtractor {
         }
     }
 
-    private fun buildQualityMap(
+    private suspend fun buildQualityMap(
         streamUrl: String,
         referer: String,
         autoQualityLabel: String,
@@ -178,24 +191,26 @@ internal object RutubeExtractor {
         "User-Agent" to CHROME_UA,
     )
 
-    private fun fetchText(url: String, referer: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("Origin", RUTUBE_ORIGIN)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept", "*/*")
-            val responseCode = conn.responseCode
-            if (responseCode !in HTTP_OK_START..HTTP_OK_END) {
-                val error = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
-                throw IllegalStateException("HTTP $responseCode: ${error.take(80)}")
-            }
-            conn.inputStream.bufferedReader().use { it.readText() }
-        } finally {
-            conn.disconnect()
+    private suspend fun fetchText(url: String, referer: String): String {
+        val response = httpClient.getText(
+            url = url,
+            headers = mapOf(
+                "Referer" to referer,
+                "Origin" to RUTUBE_ORIGIN,
+                "User-Agent" to CHROME_UA,
+                "Accept" to "*/*",
+            ),
+        )
+        if (!response.isSuccess) {
+            throw IllegalStateException("HTTP ${response.statusCode}: ${response.body.take(80)}")
         }
+        return response.body
     }
+
+    private fun RutubeResult.toStream(): PlayerStreamResolveResult.Stream =
+        PlayerStreamResolveResult.Stream(
+            url = url,
+            headers = headers,
+            qualities = qualities,
+        )
 }

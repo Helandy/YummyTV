@@ -3,24 +3,47 @@ package su.afk.yummy.tv.data.player.extractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import su.afk.yummy.tv.data.player.utils.BROWSER_STREAM_HEADERS
 import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import java.net.HttpURLConnection
+import su.afk.yummy.tv.domain.player.isCvhPlayerUrl
+import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
+import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
 import java.net.URLDecoder
+import javax.inject.Inject
 
 // CVH (CdnVideoHub) iframe URL format:
 //   //ru.yummyani.me/iframeCVH.html?dubbing_code=AnilibriaTV&anime_id=31240&episode=1
 //
 // Flow: playlist API → find vkId by episode+voice → video API → hlsUrl
-internal object CvhExtractor {
+internal class CvhExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
-    private const val PLAYLIST_URL = "https://plapi.cdnvideohub.com/api/v1/player/sv/playlist"
-    private const val VIDEO_URL = "https://plapi.cdnvideohub.com/api/v1/player/sv/video"
-    private const val PUBLISHER_ID = "745"
-    private const val AGGREGATOR = "mali"
-    private const val REFERER = "https://ru.yummyani.me/"
+    private val PLAYLIST_URL = "https://plapi.cdnvideohub.com/api/v1/player/sv/playlist"
+    private val VIDEO_URL = "https://plapi.cdnvideohub.com/api/v1/player/sv/video"
+    private val PUBLISHER_ID = "745"
+    private val AGGREGATOR = "mali"
+    private val REFERER = "https://ru.yummyani.me/"
 
-    suspend fun extract(
+    override fun supports(url: String): Boolean = url.isCvhPlayerUrl()
+
+    override suspend fun extract(
+        request: PlayerStreamRequest,
+        context: android.content.Context,
+    ): PlayerStreamResolveResult =
+        extractQualities(
+            iframeUrl = request.iframeUrl,
+            autoQualityLabel = request.autoQualityLabel,
+        )?.let { qualities ->
+            PlayerStreamResolveResult.Stream(
+                url = qualities.values.last(),
+                headers = BROWSER_STREAM_HEADERS,
+                qualities = qualities,
+            )
+        } ?: PlayerStreamResolveResult.Failed
+
+    private suspend fun extractQualities(
         iframeUrl: String,
         autoQualityLabel: String
     ): LinkedHashMap<String, String>? = withContext(Dispatchers.IO) {
@@ -96,21 +119,17 @@ internal object CvhExtractor {
             else pair.substring(0, eq) to URLDecoder.decode(pair.substring(eq + 1), "UTF-8")
         }.toMap()
 
-    private fun fetchJson(url: String, referer: String): JSONObject {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 15_000
-            conn.instanceFollowRedirects = true
-            conn.setRequestProperty("Referer", referer)
-            conn.setRequestProperty("User-Agent", CHROME_UA)
-            conn.setRequestProperty("Accept", "application/json")
-            val body = conn.inputStream.bufferedReader().use { it.readText() }
-            JSONObject(body)
-        } finally {
-            conn.disconnect()
-        }
-    }
+    private suspend fun fetchJson(url: String, referer: String): JSONObject =
+        JSONObject(
+            httpClient.getText(
+                url = url,
+                headers = mapOf(
+                    "Referer" to referer,
+                    "User-Agent" to CHROME_UA,
+                    "Accept" to "application/json",
+                ),
+            ).body,
+        )
 
     private fun LinkedHashMap<String, String>.putCvhQuality(
         label: String,
