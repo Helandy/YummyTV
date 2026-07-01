@@ -31,6 +31,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.utils.openExternalUri
@@ -213,6 +214,32 @@ internal fun SettingsTvPanelHost(
                     )
 
                     SettingsTab.PLAYER -> {
+                        SettingsSectionTitle(text = stringResource(R.string.settings_preferred_video_quality_title))
+                        PreferredVideoQuality.entries.forEachIndexed { index, quality ->
+                            QualityRow(
+                                label = quality.label(),
+                                hint = quality.hint(),
+                                selected = quality == state.preferredVideoQuality,
+                                onClick = {
+                                    onEvent(
+                                        SettingsState.Event.PreferredVideoQualitySelected(
+                                            quality,
+                                        ),
+                                    )
+                                },
+                                modifier = Modifier
+                                    .then(
+                                        if (index == 0) {
+                                            Modifier.focusRequester(tabContentFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                            )
+                            SettingsDivider()
+                        }
+                        SettingsSectionTitle(text = stringResource(R.string.settings_player_playback_title))
                         ToggleRow(
                             label = stringResource(R.string.settings_auto_skip_label),
                             hint = if (state.autoSkipOpeningsEndings) {
@@ -222,9 +249,6 @@ internal fun SettingsTvPanelHost(
                             },
                             enabled = state.autoSkipOpeningsEndings,
                             onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
-                            modifier = Modifier
-                                .focusRequester(tabContentFocusRequester)
-                                .restoreTabFocusOnUp(tabFocusRequester),
                         )
                         SettingsDivider()
                         ToggleRow(

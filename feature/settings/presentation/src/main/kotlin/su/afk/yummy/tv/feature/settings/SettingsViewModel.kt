@@ -39,6 +39,7 @@ class SettingsViewModel @Inject internal constructor(
                         posterCardSize = snapshot.posterCardSize,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
                         preferredPlayer = snapshot.preferredPlayer,
+                        preferredVideoQuality = snapshot.preferredVideoQuality,
                         watchNextEnabled = snapshot.watchNextEnabled,
                         previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
@@ -81,6 +82,10 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PreferredPlayerSelected -> viewModelScope.launch {
                 analytics.eventPreferredPlayerSelected(event.player)
                 settingsStore.setPreferredPlayer(event.player)
+            }
+            is SettingsState.Event.PreferredVideoQualitySelected -> viewModelScope.launch {
+                analytics.eventPreferredVideoQualitySelected(event.quality)
+                settingsStore.setPreferredVideoQuality(event.quality)
             }
             SettingsState.Event.RequestPreviewChannelBrowsable -> {
                 analytics.eventRequestPreviewChannelBrowsable()

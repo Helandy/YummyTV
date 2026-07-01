@@ -191,6 +191,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     state.copy(
                         streamHeaders = result.headers,
                         streamQualityMap = result.qualities,
+                        selectedQuality = result.selectedQuality,
                         streamUrl = result.url,
                         resumeFromMs = result.resumeFromMs,
                         dubbingResumeMs = if (result.consumedPendingResume) {

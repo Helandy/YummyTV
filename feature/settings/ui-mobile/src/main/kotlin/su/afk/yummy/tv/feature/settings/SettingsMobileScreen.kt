@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.utils.openExternalUri
@@ -104,6 +105,12 @@ fun SettingsMobileScreen(
                         value = state.preferredPlayer.label(),
                         hint = state.preferredPlayer.hint(),
                         onClick = { activePicker = SettingsMobilePicker.PLAYER },
+                    )
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_preferred_video_quality_title),
+                        value = state.preferredVideoQuality.label(),
+                        hint = state.preferredVideoQuality.hint(),
+                        onClick = { activePicker = SettingsMobilePicker.VIDEO_QUALITY },
                     )
                     SettingsMobileToggleRow(
                         label = stringResource(R.string.settings_auto_skip_label),
@@ -288,6 +295,23 @@ fun SettingsMobileScreen(
             onDismiss = { activePicker = null },
             onSelected = {
                 onEvent(SettingsState.Event.PreferredPlayerSelected(it))
+                activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.VIDEO_QUALITY -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_preferred_video_quality_title),
+            selectedValue = state.preferredVideoQuality,
+            options = PreferredVideoQuality.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    it.hint()
+                )
+            },
+            onDismiss = { activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.PreferredVideoQualitySelected(it))
                 activePicker = null
             },
         )

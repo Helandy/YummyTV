@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.player.handler
 
+import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.error.StringProvider
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -14,6 +16,7 @@ import javax.inject.Inject
 /** Resolves the active player iframe into a playable stream and presentation-ready stream errors. */
 internal class PlayerStreamHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
+    private val settingsStore: SettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val strings: StringProvider,
 ) {
@@ -35,6 +38,7 @@ internal class PlayerStreamHandler @Inject constructor(
                     url = result.url,
                     headers = result.headers,
                     qualities = result.qualities,
+                    selectedQuality = selectedQuality(result.qualities),
                     resumeFromMs = resume,
                     consumedPendingResume = pendingResumeMs != null,
                 )
@@ -73,6 +77,27 @@ internal class PlayerStreamHandler @Inject constructor(
         return entry.positionMs.takeIf { WatchProgressStore.isContinueWatchingEntry(entry) }
     }
 
+    private suspend fun selectedQuality(
+        qualities: LinkedHashMap<String, String>?,
+    ): String? {
+        val preferred = settingsStore.preferredVideoQuality.first()
+        val preferredHeight = preferred.height ?: return null
+        val available = qualities
+            ?.keys
+            ?.mapNotNull { label -> label.qualityHeight()?.let { height -> label to height } }
+            .orEmpty()
+        if (available.isEmpty()) return null
+        return available.firstOrNull { (_, height) -> height == preferredHeight }?.first
+            ?: available
+                .filter { (_, height) -> height < preferredHeight }
+                .maxByOrNull { (_, height) -> height }
+                ?.first
+            ?: available.maxByOrNull { (_, height) -> height }?.first
+    }
+
+    private fun String.qualityHeight(): Int? =
+        Regex("""\d+""").find(this)?.value?.toIntOrNull()
+
     private fun PlayerStreamResolveResult.KodikBlocked.toMessage(): String =
         message
             ?: statusCode?.let { strings.get(R.string.player_server_error, it) }
@@ -85,6 +110,7 @@ internal sealed interface PlayerStreamResult {
         val url: String,
         val headers: Map<String, String>,
         val qualities: LinkedHashMap<String, String>?,
+        val selectedQuality: String?,
         val resumeFromMs: Long,
         val consumedPendingResume: Boolean,
     ) : PlayerStreamResult

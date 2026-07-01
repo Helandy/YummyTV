@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
@@ -26,6 +27,7 @@ class SettingsState {
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
         val preferredPlayer: PreferredPlayer = PreferredPlayer.NONE,
+        val preferredVideoQuality: PreferredVideoQuality = PreferredVideoQuality.BEST,
         val isPreviewChannelBrowsable: Boolean = false,
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
@@ -58,6 +60,9 @@ class SettingsState {
 
         /** Пользователь выбрал предпочитаемый плеер. */
         data class PreferredPlayerSelected(val player: PreferredPlayer) : Event
+
+        /** Пользователь выбрал предпочитаемое качество видео. */
+        data class PreferredVideoQualitySelected(val quality: PreferredVideoQuality) : Event
 
         /** Пользователь запросил доступность preview-канала на TV. */
         data object RequestPreviewChannelBrowsable : Event

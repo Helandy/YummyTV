@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import javax.inject.Inject
@@ -86,6 +87,18 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(
             EVENT_PREFERRED_PLAYER_SELECTED,
             analyticsParamsOf(PARAM_VALUE to player.name.lowercase()),
+        )
+    }
+
+    /**
+     * Пользователь изменил предпочитаемое качество видео.
+     *
+     * Параметры: value.
+     */
+    fun eventPreferredVideoQualitySelected(quality: PreferredVideoQuality) {
+        tracker.track(
+            EVENT_PREFERRED_VIDEO_QUALITY_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to quality.name.lowercase()),
         )
     }
 
@@ -213,6 +226,8 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
         const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"
+        const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =
+            "settings_preferred_video_quality_selected"
         const val EVENT_PREVIEW_CACHE_SIZE_SELECTED = "settings_preview_cache_size_selected"
         const val EVENT_REQUEST_PREVIEW_CHANNEL_BROWSABLE =
             "settings_request_preview_channel_browsable"

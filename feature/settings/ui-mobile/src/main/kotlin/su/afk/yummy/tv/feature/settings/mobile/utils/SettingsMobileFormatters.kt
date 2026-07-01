@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
+import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.settings.mobile.R
@@ -171,6 +172,32 @@ internal fun PreferredPlayer.hint(): String = when (this) {
     PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk_hint)
     PreferredPlayer.RUTUBE -> stringResource(R.string.settings_preferred_player_rutube_hint)
 }
+
+@Composable
+internal fun PreferredVideoQuality.label(): String = stringResource(
+    when (this) {
+        PreferredVideoQuality.BEST -> R.string.settings_preferred_video_quality_best
+        PreferredVideoQuality.P2160 -> R.string.settings_preferred_video_quality_2160
+        PreferredVideoQuality.P1440 -> R.string.settings_preferred_video_quality_1440
+        PreferredVideoQuality.P1080 -> R.string.settings_preferred_video_quality_1080
+        PreferredVideoQuality.P720 -> R.string.settings_preferred_video_quality_720
+        PreferredVideoQuality.P480 -> R.string.settings_preferred_video_quality_480
+        PreferredVideoQuality.P360 -> R.string.settings_preferred_video_quality_360
+    },
+)
+
+@Composable
+internal fun PreferredVideoQuality.hint(): String = stringResource(
+    when (this) {
+        PreferredVideoQuality.BEST -> R.string.settings_preferred_video_quality_best_hint
+        PreferredVideoQuality.P2160,
+        PreferredVideoQuality.P1440,
+        PreferredVideoQuality.P1080,
+        PreferredVideoQuality.P720,
+        PreferredVideoQuality.P480,
+        PreferredVideoQuality.P360 -> R.string.settings_preferred_video_quality_fallback_hint
+    },
+)
 
 @Composable
 internal fun PreviewCacheSize.label(): String = stringResource(

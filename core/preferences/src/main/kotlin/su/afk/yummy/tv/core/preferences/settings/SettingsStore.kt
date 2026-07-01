@@ -25,6 +25,7 @@ data class SettingsSnapshot(
     val posterCardSize: PosterCardSize,
     val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
     val preferredPlayer: PreferredPlayer,
+    val preferredVideoQuality: PreferredVideoQuality,
     val watchNextEnabled: Boolean,
     val previewCacheSize: PreviewCacheSize,
     val autoSkipOpeningsEndings: Boolean,
@@ -58,6 +59,7 @@ class SettingsStore(private val context: Context) {
     private val libraryContinueWatchingCardSizeKey =
         stringPreferencesKey("library_continue_watching_card_size")
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
+    private val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
@@ -110,6 +112,12 @@ class SettingsStore(private val context: Context) {
         prefs[preferredPlayerKey]?.let { name ->
             runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
         } ?: PreferredPlayer.NONE
+    }
+
+    val preferredVideoQuality: Flow<PreferredVideoQuality> = context.dataStore.data.map { prefs ->
+        prefs[preferredVideoQualityKey]?.let { name ->
+            runCatching { PreferredVideoQuality.valueOf(name) }.getOrNull()
+        } ?: PreferredVideoQuality.BEST
     }
 
     val watchNextEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -232,6 +240,9 @@ class SettingsStore(private val context: Context) {
             preferredPlayer = prefs[preferredPlayerKey]?.let { name ->
                 runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
             } ?: PreferredPlayer.NONE,
+            preferredVideoQuality = prefs[preferredVideoQualityKey]?.let { name ->
+                runCatching { PreferredVideoQuality.valueOf(name) }.getOrNull()
+            } ?: PreferredVideoQuality.BEST,
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
             previewCacheSize = (prefs[previewCacheSizeKey]
                 ?: PreviewCacheSize.MB_100.megabytes).let { mb ->
@@ -299,6 +310,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPreferredPlayer(player: PreferredPlayer) {
         context.dataStore.edit { prefs -> prefs[preferredPlayerKey] = player.name }
+    }
+
+    suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality) {
+        context.dataStore.edit { prefs -> prefs[preferredVideoQualityKey] = quality.name }
     }
 
     suspend fun setWatchNextEnabled(enabled: Boolean) {

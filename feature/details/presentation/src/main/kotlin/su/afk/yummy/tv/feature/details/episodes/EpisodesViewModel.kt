@@ -99,7 +99,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         downloadStatuses = statuses.values.associate {
-                            it.uiStatusKey to it.toUiStatus()
+                            it.uiStatusKey to it.toUiState()
                         }
                     )
                 }
@@ -252,7 +252,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private fun prepareEpisodeDownload(video: AnimeVideo) {
         val key = video.downloadStatusKey()
-        if (currentState.downloadStatuses[key]?.isActive == true || key in currentState.resolvingDownloadKeys) {
+        if (currentState.downloadStatuses[key]?.status?.isActive == true || key in currentState.resolvingDownloadKeys) {
             return
         }
         viewModelScope.launch {
@@ -385,19 +385,22 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val VideoDownloadItem.uiStatusKey: String
         get() = listOf(videoId.toString(), iframeUrl).joinToString("|")
 
-    private fun VideoDownloadItem.toUiStatus(): EpisodesState.EpisodeDownloadUiStatus =
-        when (status) {
-            VideoDownloadStatus.Queued,
-            VideoDownloadStatus.Resolving -> EpisodesState.EpisodeDownloadUiStatus.Queued
+    private fun VideoDownloadItem.toUiState(): EpisodesState.EpisodeDownloadUiState =
+        EpisodesState.EpisodeDownloadUiState(
+            status = when (status) {
+                VideoDownloadStatus.Queued,
+                VideoDownloadStatus.Resolving -> EpisodesState.EpisodeDownloadUiStatus.Queued
 
-            VideoDownloadStatus.Downloading,
-            VideoDownloadStatus.Deleting -> EpisodesState.EpisodeDownloadUiStatus.Downloading
+                VideoDownloadStatus.Downloading,
+                VideoDownloadStatus.Deleting -> EpisodesState.EpisodeDownloadUiStatus.Downloading
 
-            VideoDownloadStatus.Downloaded -> EpisodesState.EpisodeDownloadUiStatus.Downloaded
-            VideoDownloadStatus.Failed -> EpisodesState.EpisodeDownloadUiStatus.Failed
-            VideoDownloadStatus.Idle,
-            VideoDownloadStatus.Deleted -> EpisodesState.EpisodeDownloadUiStatus.Failed
-        }
+                VideoDownloadStatus.Downloaded -> EpisodesState.EpisodeDownloadUiStatus.Downloaded
+                VideoDownloadStatus.Failed -> EpisodesState.EpisodeDownloadUiStatus.Failed
+                VideoDownloadStatus.Idle,
+                VideoDownloadStatus.Deleted -> EpisodesState.EpisodeDownloadUiStatus.Failed
+            },
+            progress = progress.coerceIn(0f, 1f),
+        )
 
     private val EpisodesState.EpisodeDownloadUiStatus.isActive: Boolean
         get() = this != EpisodesState.EpisodeDownloadUiStatus.Failed

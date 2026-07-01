@@ -38,7 +38,7 @@ internal fun EpisodeMobileCard(
     video: AnimeVideo,
     watchStatus: EpisodeMobileWatchStatus,
     kodikIframeUrl: String?,
-    downloadStatus: EpisodesState.EpisodeDownloadUiStatus?,
+    downloadStatus: EpisodesState.EpisodeDownloadUiState?,
     downloadResolving: Boolean,
     onInfoClick: () -> Unit,
     onDownloadClick: () -> Unit,
@@ -83,30 +83,31 @@ internal fun EpisodeMobileCard(
 
 @Composable
 private fun EpisodeDownloadButton(
-    status: EpisodesState.EpisodeDownloadUiStatus?,
+    status: EpisodesState.EpisodeDownloadUiState?,
     resolving: Boolean,
     onClick: () -> Unit,
 ) {
     val busy = resolving ||
-            status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-            status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
     IconButton(
-        enabled = !busy && status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+        enabled = !busy && status?.status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
         onClick = onClick,
     ) {
         when {
             busy -> CircularProgressIndicator(
+                progress = { status?.progress ?: 0f },
                 strokeWidth = 2.dp,
                 modifier = Modifier.size(22.dp),
             )
 
-            status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
                 Icon(
                     imageVector = Icons.Filled.Done,
                     contentDescription = stringResource(R.string.details_mobile_episode_downloaded_action),
                 )
 
-            status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
                 Icon(
                     imageVector = Icons.Filled.ErrorOutline,
                     contentDescription = stringResource(R.string.details_mobile_episode_download_action),

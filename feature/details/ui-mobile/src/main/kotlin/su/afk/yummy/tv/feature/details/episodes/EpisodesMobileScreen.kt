@@ -97,15 +97,15 @@ fun EpisodesMobileScreen(
                     val downloadStatus = downloadKeys
                         .mapNotNull { state.downloadStatuses[it] }
                         .firstOrNull {
-                            it == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                                    it == EpisodesState.EpisodeDownloadUiStatus.Downloading
+                            it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+                                    it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
                         }
                         ?: downloadKeys
                             .mapNotNull { state.downloadStatuses[it] }
-                            .firstOrNull { it == EpisodesState.EpisodeDownloadUiStatus.Downloaded }
+                            .firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded }
                         ?: downloadKeys
                             .mapNotNull { state.downloadStatuses[it] }
-                            .firstOrNull { it == EpisodesState.EpisodeDownloadUiStatus.Failed }
+                            .firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed }
                     val downloadResolving = downloadKeys.any { it in state.resolvingDownloadKeys }
                     EpisodeMobileCard(
                         video = group.video,
@@ -184,10 +184,10 @@ private fun EpisodeDownloadDubbingSheet(
             } else {
                 selection.options.forEach { option ->
                     val busy = option.resolving ||
-                            option.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                            option.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+                            option.status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+                            option.status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
                     TextButton(
-                        enabled = !busy && option.status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+                        enabled = !busy && option.status?.status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
                         onClick = { onSelected(option.video) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -220,18 +220,23 @@ private fun EpisodeDownloadDubbingSheet(
 
 @Composable
 private fun EpisodeDownloadStatusIcon(
-    status: EpisodesState.EpisodeDownloadUiStatus?,
+    status: EpisodesState.EpisodeDownloadUiState?,
     resolving: Boolean,
 ) {
     val busy = resolving ||
-            status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-            status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+            status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
     when {
-        busy -> CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
-        status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
+        busy -> CircularProgressIndicator(
+            progress = { status?.progress ?: 0f },
+            strokeWidth = 2.dp,
+            modifier = Modifier.size(22.dp),
+        )
+
+        status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
             Icon(Icons.Filled.Done, contentDescription = null)
 
-        status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
+        status?.status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
             Icon(Icons.Filled.ErrorOutline, contentDescription = null)
 
         else -> Icon(Icons.Filled.Download, contentDescription = null)

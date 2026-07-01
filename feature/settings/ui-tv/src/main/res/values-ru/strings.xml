@@ -86,6 +86,17 @@
     <string name="settings_preferred_player_vk_hint">VK</string>
     <string name="settings_preferred_player_rutube">Rutube</string>
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
+    <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
+    <string name="settings_preferred_video_quality_best">Лучшее доступное</string>
+    <string name="settings_preferred_video_quality_best_hint">Использовать максимальное качество потока</string>
+    <string name="settings_preferred_video_quality_2160">2160p</string>
+    <string name="settings_preferred_video_quality_1440">1440p</string>
+    <string name="settings_preferred_video_quality_1080">1080p</string>
+    <string name="settings_preferred_video_quality_720">720p</string>
+    <string name="settings_preferred_video_quality_480">480p</string>
+    <string name="settings_preferred_video_quality_360">360p</string>
+    <string name="settings_preferred_video_quality_fallback_hint">Если качества нет, будет выбрано ближайшее ниже</string>
+    <string name="settings_player_playback_title">Воспроизведение</string>
     <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
     <string name="settings_suggest_next_episode_on_watched_label">Следующая серия</string>
