@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
+import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import javax.inject.Singleton
 
@@ -1627,6 +1628,47 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_30_31 = object : Migration(30, 31) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS video_downloads (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    animeId INTEGER NOT NULL,
+                    animeTitle TEXT NOT NULL,
+                    posterUrl TEXT NOT NULL,
+                    episode TEXT NOT NULL,
+                    videoId INTEGER NOT NULL,
+                    playerName TEXT NOT NULL,
+                    playerId INTEGER,
+                    dubbing TEXT NOT NULL,
+                    iframeUrl TEXT NOT NULL,
+                    screenshotUrl TEXT NOT NULL,
+                    qualityLabel TEXT NOT NULL,
+                    streamUrl TEXT NOT NULL,
+                    headersJson TEXT NOT NULL,
+                    cacheKey TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    progress REAL NOT NULL,
+                    bytesDownloaded INTEGER NOT NULL,
+                    totalBytes INTEGER,
+                    errorMessage TEXT,
+                    createdAt INTEGER NOT NULL,
+                    updatedAt INTEGER NOT NULL
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS index_video_downloads_duplicate_key
+                ON video_downloads(animeId, videoId, iframeUrl, qualityLabel)
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_video_downloads_status ON video_downloads(status)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_video_downloads_updatedAt ON video_downloads(updatedAt)")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1655,6 +1697,7 @@ object StorageModule {
                 MIGRATION_27_28,
                 MIGRATION_28_29,
                 MIGRATION_29_30,
+                MIGRATION_30_31,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,
@@ -1713,6 +1756,11 @@ object StorageModule {
     @Singleton
     fun provideCommentsStorageStore(db: AppDatabase): CommentsStorageStore =
         CommentsStorageStore(db.commentsStorageDao())
+
+    @Provides
+    @Singleton
+    fun provideVideoDownloadStore(db: AppDatabase): VideoDownloadStore =
+        VideoDownloadStore(db.videoDownloadDao())
 
     private fun SupportSQLiteDatabase.hasColumn(tableName: String, columnName: String): Boolean {
         query("PRAGMA table_info($tableName)").use { cursor ->

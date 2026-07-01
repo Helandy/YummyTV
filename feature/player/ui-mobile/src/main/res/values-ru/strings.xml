@@ -7,6 +7,8 @@
     <string name="player_mobile_speed">Скорость</string>
     <string name="player_mobile_dubbing">Озвучка</string>
     <string name="player_mobile_player">Плеер</string>
+    <string name="player_mobile_episodes">Серии</string>
+    <string name="player_mobile_download_quality_title">Качество скачивания</string>
     <string name="player_mobile_done">Готово</string>
     <string name="player_mobile_episode_number">%1$s Серия</string>
     <string name="player_mobile_previous_episode">Предыдущая</string>

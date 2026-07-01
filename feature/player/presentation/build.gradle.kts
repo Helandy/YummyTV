@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:player:domain"))
+    implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)

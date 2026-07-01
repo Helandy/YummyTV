@@ -5,7 +5,11 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +62,7 @@ import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.segments
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
+import su.afk.yummy.tv.feature.player.mobile.R as MobileR
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -242,8 +247,12 @@ internal fun MobileNativePlayer(
             description = notificationDescription,
             artworkUri = notificationArtworkUrl,
             durationMs = state.playbackDurationMs,
+            customCacheKey = state.offlineCacheKey,
         )
-        playbackConfig.updateStreamHeaders(state.streamHeaders)
+        playbackConfig.updateStream(
+            headers = state.streamHeaders,
+            offlineCacheKey = state.offlineCacheKey.takeIf { state.isOfflinePlayback },
+        )
         if (currentMediaUri != currentUrl || configuredPlaybackKey != playbackConfigKey) {
             val resumePosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
             activePlayer.setMediaItem(
@@ -254,8 +263,15 @@ internal fun MobileNativePlayer(
             configuredPlaybackKey = playbackConfigKey
             configuredMediaItemKey = mediaItemKey
         } else if (configuredMediaItemKey != mediaItemKey && activePlayer.mediaItemCount > 0) {
-            val itemIndex = activePlayer.currentMediaItemIndex.takeIf { it >= 0 } ?: 0
-            activePlayer.replaceMediaItem(itemIndex, mediaItem)
+            val itemIndex = activePlayer.currentMediaItemIndex
+            if (itemIndex >= 0) {
+                activePlayer.replaceMediaItem(itemIndex, mediaItem)
+            } else {
+                val resumePosition =
+                    state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
+                activePlayer.setMediaItem(mediaItem, resumePosition)
+                activePlayer.prepare()
+            }
             configuredMediaItemKey = mediaItemKey
         }
         activePlayer.playWhenReady = wantsPlay
@@ -398,8 +414,8 @@ internal fun MobileNativePlayer(
             saveProgress(position, dur)
             player.removeListener(listener)
             if (!pipSession.shouldKeepPlayingOnPause()) {
-                player.stop()
                 player.clearMediaItems()
+                player.stop()
             }
         }
     }
@@ -687,7 +703,52 @@ internal fun MobileNativePlayer(
                         )
                     )
                 },
+                animeId = state.animeId,
+                episodes = ui.activeEpisodes,
+                selectedEpisodeIndex = state.sourceSelection.episodeIndex,
+                downloadStatuses = state.downloadStatuses,
+                resolvingDownloadKeys = state.resolvingDownloadKeys,
+                onEpisodeSelected = { index ->
+                    onEvent(PlayerState.Event.EpisodeSelected(index, player.currentPosition))
+                },
+                onEpisodeDownloadSelected = { index ->
+                    onEvent(PlayerState.Event.DownloadEpisodeSelected(index))
+                },
                 onDismiss = { settingsMode = null },
+            )
+        }
+
+        val candidate = state.downloadQualityCandidate
+        if (candidate != null && !isInPictureInPictureMode) {
+            AlertDialog(
+                onDismissRequest = {
+                    onEvent(PlayerState.Event.DownloadQualityPickerDismissed)
+                },
+                title = { Text(stringResource(MobileR.string.player_mobile_download_quality_title)) },
+                text = {
+                    androidx.compose.foundation.layout.Column {
+                        candidate.options.forEach { option ->
+                            TextButton(
+                                onClick = {
+                                    onEvent(PlayerState.Event.DownloadQualitySelected(option))
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(option.label)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            onEvent(PlayerState.Event.DownloadQualityPickerDismissed)
+                        }
+                    ) {
+                        Text(stringResource(MobileR.string.player_mobile_done))
+                    }
+                },
             )
         }
     }

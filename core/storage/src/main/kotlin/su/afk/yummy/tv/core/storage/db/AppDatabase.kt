@@ -72,6 +72,8 @@ import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopDao
 import su.afk.yummy.tv.core.storage.top.AnimeTopItemEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopPageEntry
+import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadDao
+import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadEntry
 import su.afk.yummy.tv.core.storage.watchprogress.ContinueWatchingSuppressionEntry
 import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingDao
 import su.afk.yummy.tv.core.storage.watchprogress.RemoteContinueWatchingEntry
@@ -144,8 +146,9 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserProfileWatchHistoryEntry::class,
         CommentPageEntry::class,
         CommentItemEntry::class,
+        VideoDownloadEntry::class,
     ],
-    version = 30,
+    version = 31,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -160,4 +163,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun collectionStorageDao(): CollectionStorageDao
     abstract fun accountStorageDao(): AccountStorageDao
     abstract fun commentsStorageDao(): CommentsStorageDao
+    abstract fun videoDownloadDao(): VideoDownloadDao
 }

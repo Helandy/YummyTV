@@ -110,6 +110,8 @@ include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
 
 include(":feature:video-download:api")
+include(":feature:video-download:domain")
+include(":feature:video-download:data")
 include(":feature:video-download:presentation")
 include(":feature:video-download:ui-mobile")
 

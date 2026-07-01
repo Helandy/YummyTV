@@ -2,4 +2,5 @@
 <resources>
     <string name="video_download_mobile_title">Скачанные серии</string>
     <string name="video_download_empty">Скачанных серий пока нет</string>
+    <string name="video_download_item_meta">%1$s серия • %2$s • %3$s</string>
 </resources>

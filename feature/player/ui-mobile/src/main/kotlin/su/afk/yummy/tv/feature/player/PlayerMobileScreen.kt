@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -11,6 +12,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,8 +46,18 @@ fun PlayerMobileScreen(
     effect: Flow<PlayerState.Effect>,
     onEvent: (PlayerState.Event) -> Unit,
 
-) {
+    ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(effect, context) {
+        effect.collect { playerEffect ->
+            when (playerEffect) {
+                is PlayerState.Effect.ShowMessage ->
+                    Toast.makeText(context, playerEffect.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     HideMobilePlayerStatusBar()
 

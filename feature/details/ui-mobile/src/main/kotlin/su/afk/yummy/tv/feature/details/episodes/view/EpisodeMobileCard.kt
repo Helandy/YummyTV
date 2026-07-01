@@ -2,11 +2,16 @@ package su.afk.yummy.tv.feature.details.episodes.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -19,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeMobileWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.formatDuration
 import su.afk.yummy.tv.feature.details.episodes.utils.timingLabel
@@ -32,7 +38,10 @@ internal fun EpisodeMobileCard(
     video: AnimeVideo,
     watchStatus: EpisodeMobileWatchStatus,
     kodikIframeUrl: String?,
+    downloadStatus: EpisodesState.EpisodeDownloadUiStatus?,
+    downloadResolving: Boolean,
     onInfoClick: () -> Unit,
+    onDownloadClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val thumbnailUrl by produceState<String?>(null, kodikIframeUrl) {
@@ -54,15 +63,62 @@ internal fun EpisodeMobileCard(
             }
         },
         trailingAction = {
-            IconButton(onClick = onInfoClick) {
-                Icon(
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = stringResource(R.string.details_mobile_episode_dubbings_action),
+            Column {
+                IconButton(onClick = onInfoClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = stringResource(R.string.details_mobile_episode_dubbings_action),
+                    )
+                }
+                EpisodeDownloadButton(
+                    status = downloadStatus,
+                    resolving = downloadResolving,
+                    onClick = onDownloadClick,
                 )
             }
         },
         onClick = onClick,
     )
+}
+
+@Composable
+private fun EpisodeDownloadButton(
+    status: EpisodesState.EpisodeDownloadUiStatus?,
+    resolving: Boolean,
+    onClick: () -> Unit,
+) {
+    val busy = resolving ||
+            status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+            status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+    IconButton(
+        enabled = !busy && status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+        onClick = onClick,
+    ) {
+        when {
+            busy -> CircularProgressIndicator(
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(22.dp),
+            )
+
+            status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
+                Icon(
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = stringResource(R.string.details_mobile_episode_downloaded_action),
+                )
+
+            status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
+                Icon(
+                    imageVector = Icons.Filled.ErrorOutline,
+                    contentDescription = stringResource(R.string.details_mobile_episode_download_action),
+                )
+
+            else ->
+                Icon(
+                    imageVector = Icons.Filled.Download,
+                    contentDescription = stringResource(R.string.details_mobile_episode_download_action),
+                )
+        }
+    }
 }
 
 @Composable

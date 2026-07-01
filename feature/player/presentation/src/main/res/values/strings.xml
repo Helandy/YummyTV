@@ -17,6 +17,9 @@
     <string name="player_stream_error">Could not load stream</string>
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>
+    <string name="player_download_missing">Downloaded episode is missing from local cache</string>
+    <string name="player_download_resolve_error">Could not prepare this episode for download</string>
+    <string name="player_download_enqueue_error">Could not queue download</string>
     <string name="player_server_error">Server error (%1$d)</string>
     <string name="player_quality_auto">auto</string>
     <string name="player_selected">Current</string>

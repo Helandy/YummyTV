@@ -2,4 +2,8 @@
 <resources>
     <string name="details_load_error">Не удалось загрузить деталку</string>
     <string name="details_rating_auth_required">Для оценки нужно авторизоваться</string>
+    <string name="details_quality_auto">авто</string>
+    <string name="details_download_resolving_quality">Получаем доступные качества...</string>
+    <string name="details_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
+    <string name="details_download_enqueue_error">Не удалось поставить скачивание в очередь</string>
 </resources>

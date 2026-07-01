@@ -17,6 +17,9 @@
     <string name="player_stream_error">Не удалось получить поток</string>
     <string name="player_unsupported">Плеер не поддерживается</string>
     <string name="player_kodik_blocked">Просмотр заблокирован</string>
+    <string name="player_download_missing">Скачанная серия отсутствует в локальном кэше</string>
+    <string name="player_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
+    <string name="player_download_enqueue_error">Не удалось поставить скачивание в очередь</string>
     <string name="player_server_error">Ошибка сервера (%1$d)</string>
     <string name="player_quality_auto">авто</string>
     <string name="player_selected">Сейчас</string>

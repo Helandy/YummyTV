@@ -2,4 +2,5 @@
 <resources>
     <string name="video_download_mobile_title">Downloaded episodes</string>
     <string name="video_download_empty">No downloaded episodes yet</string>
+    <string name="video_download_item_meta">Episode %1$s • %2$s • %3$s</string>
 </resources>

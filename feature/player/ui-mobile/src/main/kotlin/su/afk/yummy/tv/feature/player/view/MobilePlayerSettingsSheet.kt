@@ -18,10 +18,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -39,6 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
+import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
@@ -63,6 +71,13 @@ internal fun MobilePlayerSettingsSheet(
     balancerNames: List<String>,
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
+    animeId: Int,
+    episodes: List<PlayerSourceEpisode>,
+    selectedEpisodeIndex: Int,
+    downloadStatuses: Map<String, VideoDownloadItem>,
+    resolvingDownloadKeys: Set<String>,
+    onEpisodeSelected: (Int) -> Unit,
+    onEpisodeDownloadSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var selectedTrackTab by rememberSaveable {
@@ -128,6 +143,7 @@ internal fun MobilePlayerSettingsSheet(
                         selectedTab = selectedTrackTab,
                         dubbingLabel = stringResource(UiR.string.player_mobile_dubbing),
                         playerLabel = stringResource(UiR.string.player_mobile_player),
+                        episodesLabel = stringResource(UiR.string.player_mobile_episodes),
                         onTabSelected = { selectedTrackTab = it },
                     )
                 }
@@ -163,8 +179,89 @@ internal fun MobilePlayerSettingsSheet(
                             }
                         }
                     }
+
+                    MobilePlayerTrackSettingsTab.Episodes -> item {
+                        MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_episodes)) {
+                            episodes.forEachIndexed { index, episode ->
+                                val key = listOf(
+                                    animeId.toString(),
+                                    episode.id.toString(),
+                                    episode.iframeUrl
+                                )
+                                    .joinToString("|")
+                                val status = downloadStatuses[key]?.status
+                                val resolving = key in resolvingDownloadKeys
+                                MobilePlayerEpisodeRow(
+                                    episode = episode.number,
+                                    selected = index == selectedEpisodeIndex,
+                                    status = status,
+                                    progress = downloadStatuses[key]?.progress ?: 0f,
+                                    resolving = resolving,
+                                    onClick = { onEpisodeSelected(index) },
+                                    onDownloadClick = { onEpisodeDownloadSelected(index) },
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MobilePlayerEpisodeRow(
+    episode: String,
+    selected: Boolean,
+    status: VideoDownloadStatus?,
+    progress: Float,
+    resolving: Boolean,
+    onClick: () -> Unit,
+    onDownloadClick: () -> Unit,
+) {
+    MobilePlayerSelectionRow(
+        label = stringResource(UiR.string.player_mobile_episode_number, episode),
+        selected = selected,
+        trailingContent = {
+            EpisodeDownloadAction(
+                status = status,
+                progress = progress,
+                resolving = resolving,
+                onClick = onDownloadClick,
+            )
+        },
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun EpisodeDownloadAction(
+    status: VideoDownloadStatus?,
+    progress: Float,
+    resolving: Boolean,
+    onClick: () -> Unit,
+) {
+    val busy =
+        resolving || status == VideoDownloadStatus.Queued || status == VideoDownloadStatus.Downloading
+    IconButton(
+        enabled = !busy && status != VideoDownloadStatus.Downloaded,
+        onClick = onClick,
+        modifier = Modifier.size(42.dp),
+    ) {
+        when {
+            busy -> CircularProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f).takeIf { it > 0f } ?: 0f },
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(22.dp),
+            )
+
+            status == VideoDownloadStatus.Downloaded ->
+                Icon(Icons.Filled.Done, contentDescription = null)
+
+            status == VideoDownloadStatus.Failed ->
+                Icon(Icons.Filled.ErrorOutline, contentDescription = null)
+
+            else -> Icon(Icons.Filled.Download, contentDescription = null)
         }
     }
 }
@@ -194,6 +291,7 @@ private fun MobilePlayerSelectionRow(
     label: String,
     selected: Boolean,
     metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
+    trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(10.dp)
@@ -239,6 +337,7 @@ private fun MobilePlayerSelectionRow(
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)
         }
+        trailingContent?.invoke()
     }
 }
 

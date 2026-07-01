@@ -16,4 +16,6 @@ interface IPlayerNavigator {
         posterUrl: String = "",
         resumeFromMs: Long = 0L,
     ): NavKey
+
+    fun getDownloadedPlayerDest(downloadId: Long): NavKey
 }

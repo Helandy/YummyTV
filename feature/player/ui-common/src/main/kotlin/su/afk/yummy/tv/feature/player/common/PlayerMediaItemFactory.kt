@@ -14,6 +14,7 @@ object PlayerMediaItemFactory {
         description: String? = null,
         artworkUri: String? = null,
         durationMs: Long? = null,
+        customCacheKey: String? = null,
     ): MediaItem {
         val cleanUrl = url.substringBefore('?').substringBefore('#')
         val mimeType = when {
@@ -32,6 +33,7 @@ object PlayerMediaItemFactory {
         return MediaItem.Builder()
             .setUri(url)
             .setMediaMetadata(mediaMetadata)
+            .setCustomCacheKey(customCacheKey.nonBlank())
             .apply { if (mimeType != null) setMimeType(mimeType) }
             .build()
     }

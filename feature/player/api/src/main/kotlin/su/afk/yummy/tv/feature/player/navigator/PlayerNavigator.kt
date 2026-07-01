@@ -29,4 +29,13 @@ class PlayerNavigator : IPlayerNavigator {
         selectedScreenshotUrl = selectedScreenshotUrl,
         resumeFromMs = resumeFromMs,
     )
+
+    override fun getDownloadedPlayerDest(downloadId: Long): NavKey =
+        PlayerDestination(
+            iframeUrl = "",
+            animeTitle = "",
+            episode = "",
+            playerName = "",
+            downloadId = downloadId,
+        )
 }

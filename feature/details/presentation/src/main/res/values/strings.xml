@@ -2,4 +2,8 @@
 <resources>
     <string name="details_load_error">Could not load details</string>
     <string name="details_rating_auth_required">Sign in to rate titles</string>
+    <string name="details_quality_auto">auto</string>
+    <string name="details_download_resolving_quality">Getting available qualities...</string>
+    <string name="details_download_resolve_error">Could not prepare this episode for download</string>
+    <string name="details_download_enqueue_error">Could not queue download</string>
 </resources>

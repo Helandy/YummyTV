@@ -5,6 +5,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadQualityOption
 
 data class PlayerProgressSnapshot(
     val episode: String,
@@ -26,6 +28,17 @@ enum class PlayerNextEpisodeSource {
     Controls,
     EndPrompt,
 }
+
+data class PlayerEpisodeDownloadCandidate(
+    val episodeIndex: Int,
+    val episode: String,
+    val videoId: Int,
+    val playerId: Int?,
+    val iframeUrl: String,
+    val screenshotUrl: String,
+    val options: List<VideoDownloadQualityOption>,
+    val headers: Map<String, String>,
+)
 
 class PlayerState {
     data class State(
@@ -52,6 +65,11 @@ class PlayerState {
         val mobileVideoScale: Float = 1f,
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,
+        val isOfflinePlayback: Boolean = false,
+        val offlineCacheKey: String? = null,
+        val downloadStatuses: Map<String, VideoDownloadItem> = emptyMap(),
+        val resolvingDownloadKeys: Set<String> = emptySet(),
+        val downloadQualityCandidate: PlayerEpisodeDownloadCandidate? = null,
     ) : UiState
 
     /** Пользовательские действия и события воспроизведения на экране плеера. */
@@ -82,6 +100,8 @@ class PlayerState {
 
         /** Пользователь выбрал балансер по индексу, сохранив текущую позицию. */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
+
+        data class EpisodeSelected(val index: Int, val currentPosMs: Long) : Event
 
         /** Пользователь выбрал качество потока, сохранив текущую позицию. */
         data class QualitySelected(val quality: String, val currentPosMs: Long) : Event
@@ -131,7 +151,15 @@ class PlayerState {
 
         /** Пользователь перешёл к оценке текущего тайтла. */
         data object RateTitle : Event
+
+        data class DownloadEpisodeSelected(val episodeIndex: Int) : Event
+
+        data class DownloadQualitySelected(val option: VideoDownloadQualityOption) : Event
+
+        data object DownloadQualityPickerDismissed : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data class ShowMessage(val message: String) : Effect
+    }
 }

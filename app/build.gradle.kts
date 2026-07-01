@@ -122,6 +122,8 @@ dependencies {
     implementation(project(":feature:top:ui-tv"))
     implementation(project(":feature:top:data"))
     implementation(project(":feature:video-download:api"))
+    implementation(project(":feature:video-download:data"))
+    implementation(project(":feature:video-download:domain"))
     implementation(project(":feature:video-download:ui-mobile"))
 
     implementation(libs.bundles.coil.full)
