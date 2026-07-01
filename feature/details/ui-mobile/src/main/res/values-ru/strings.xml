@@ -48,6 +48,10 @@
     <string name="details_mobile_episode_dubbings_action">Информация о серии</string>
     <string name="details_mobile_episode_download_action">Скачать серию</string>
     <string name="details_mobile_episode_downloaded_action">Серия скачана</string>
+    <string name="details_mobile_episode_download_restart_action">Перезапустить скачивание</string>
+    <string name="details_mobile_episode_download_progress">Идет загрузка %1$d%%</string>
+    <string name="details_mobile_episode_download_error">Ошибка загрузки: %1$s</string>
+    <string name="details_mobile_episode_download_error_unknown">Ошибка загрузки</string>
     <string name="details_mobile_download_dubbing_title">Серия %1$s · Озвучка</string>
     <string name="details_mobile_download_dubbing_empty">Озвучки недоступны</string>
     <string name="details_mobile_download_quality_title">Качество скачивания</string>

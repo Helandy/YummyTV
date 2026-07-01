@@ -40,6 +40,8 @@ internal fun DetailsMediaCard(
     modifier: Modifier = Modifier,
     footerText: String? = null,
     footerTextColor: Color = Color.Unspecified,
+    secondaryFooterText: String? = null,
+    secondaryFooterTextColor: Color = Color.Unspecified,
     badge: String? = null,
     leadingIcon: ImageVector? = null,
     trailingAction: (@Composable () -> Unit)? = null,
@@ -60,6 +62,11 @@ internal fun DetailsMediaCard(
         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f)
     } else {
         footerTextColor
+    }
+    val resolvedSecondaryFooterTextColor = if (secondaryFooterTextColor == Color.Unspecified) {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f)
+    } else {
+        secondaryFooterTextColor
     }
     Card(
         modifier = modifier
@@ -173,6 +180,15 @@ internal fun DetailsMediaCard(
                             style = MaterialTheme.typography.labelSmall,
                             color = resolvedFooterTextColor,
                             maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (!secondaryFooterText.isNullOrBlank()) {
+                        Text(
+                            text = secondaryFooterText,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = resolvedSecondaryFooterTextColor,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }

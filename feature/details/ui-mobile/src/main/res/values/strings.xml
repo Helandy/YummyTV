@@ -48,6 +48,10 @@
     <string name="details_mobile_episode_dubbings_action">Episode info</string>
     <string name="details_mobile_episode_download_action">Download episode</string>
     <string name="details_mobile_episode_downloaded_action">Episode downloaded</string>
+    <string name="details_mobile_episode_download_restart_action">Restart download</string>
+    <string name="details_mobile_episode_download_progress">Downloading %1$d%%</string>
+    <string name="details_mobile_episode_download_error">Download error: %1$s</string>
+    <string name="details_mobile_episode_download_error_unknown">Download error</string>
     <string name="details_mobile_download_dubbing_title">Episode %1$s · Dubbing</string>
     <string name="details_mobile_download_dubbing_empty">No dubbings available</string>
     <string name="details_mobile_download_quality_title">Download quality</string>

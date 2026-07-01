@@ -53,6 +53,7 @@ class EpisodesState {
     data class EpisodeDownloadUiState(
         val status: EpisodeDownloadUiStatus,
         val progress: Float,
+        val errorMessage: String?,
     )
 
     /** Пользовательские действия на экране эпизодов. */

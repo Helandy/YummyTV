@@ -400,6 +400,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 VideoDownloadStatus.Deleted -> EpisodesState.EpisodeDownloadUiStatus.Failed
             },
             progress = progress.coerceIn(0f, 1f),
+            errorMessage = errorMessage?.takeIf { it.isNotBlank() },
         )
 
     private val EpisodesState.EpisodeDownloadUiStatus.isActive: Boolean
