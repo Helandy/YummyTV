@@ -19,12 +19,18 @@ internal fun logExtractorFailure(
 private fun String.safeUrlForLog(): String =
     runCatching {
         val uri = URI(this)
+        val fileName = uri.path
+            ?.substringAfterLast('/')
+            ?.takeIf { it.isNotBlank() }
         buildString {
             append(uri.scheme ?: "https")
             append("://")
             append(uri.host ?: this@safeUrlForLog.substringBefore('/'))
-            uri.path?.takeIf { it.isNotBlank() }?.let(::append)
+            if (fileName != null) {
+                append("/.../")
+                append(fileName)
+            }
         }
     }.getOrElse {
-        substringBefore('?')
+        substringBefore('?').substringBefore('#')
     }

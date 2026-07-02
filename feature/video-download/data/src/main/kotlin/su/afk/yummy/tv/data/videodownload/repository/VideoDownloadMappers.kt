@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.data.videodownload.repository
 
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadEntry
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
@@ -61,6 +59,9 @@ internal fun VideoDownloadRequest.toEntry(now: Long): VideoDownloadEntry =
         createdAt = now,
         updatedAt = now,
     )
+
+internal fun Map<String, String>.toVideoDownloadHeadersJson(): String =
+    videoDownloadJson.encodeToString(this)
 
 internal fun VideoDownloadStatus.storageName(): String = name
 

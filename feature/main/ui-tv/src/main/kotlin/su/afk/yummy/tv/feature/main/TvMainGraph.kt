@@ -37,6 +37,7 @@ import su.afk.yummy.tv.feature.main.model.TvMenuItem
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class TvMainGraph @Inject constructor(
@@ -97,7 +98,7 @@ class TvMainGraph @Inject constructor(
                             toastMessage = eff.message
                             toastJob?.cancel()
                             toastJob = coroutineScope.launch {
-                                delay(GLOBAL_TOAST_DURATION_MS)
+                                delay(GLOBAL_TOAST_DURATION)
                                 if (toastMessage == eff.message) {
                                     toastMessage = null
                                 }
@@ -133,4 +134,4 @@ class TvMainGraph @Inject constructor(
     }
 }
 
-private const val GLOBAL_TOAST_DURATION_MS = 3_000L
+private val GLOBAL_TOAST_DURATION = 3.seconds

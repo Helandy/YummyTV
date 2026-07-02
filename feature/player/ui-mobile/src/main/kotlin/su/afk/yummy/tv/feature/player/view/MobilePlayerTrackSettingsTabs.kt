@@ -23,7 +23,6 @@ internal fun MobilePlayerTrackSettingsTabs(
     selectedTab: MobilePlayerTrackSettingsTab,
     dubbingLabel: String,
     playerLabel: String,
-    episodesLabel: String,
     onTabSelected: (MobilePlayerTrackSettingsTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -47,12 +46,6 @@ internal fun MobilePlayerTrackSettingsTabs(
                 label = playerLabel,
                 selected = selectedTab == MobilePlayerTrackSettingsTab.Player,
                 onClick = { onTabSelected(MobilePlayerTrackSettingsTab.Player) },
-                modifier = Modifier.weight(1f),
-            )
-            MobilePlayerTrackSettingsTabItem(
-                label = episodesLabel,
-                selected = selectedTab == MobilePlayerTrackSettingsTab.Episodes,
-                onClick = { onTabSelected(MobilePlayerTrackSettingsTab.Episodes) },
                 modifier = Modifier.weight(1f),
             )
         }

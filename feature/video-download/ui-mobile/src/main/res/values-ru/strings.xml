@@ -2,6 +2,16 @@
 <resources>
     <string name="video_download_mobile_title">Скачанные серии</string>
     <string name="video_download_empty">Скачанных серий пока нет</string>
-    <string name="video_download_item_episode_dubbing">%1$s серия • %2$s</string>
+    <string name="video_download_item_episode_title">Серия %1$s</string>
+    <string name="video_download_item_dubbing">%1$s</string>
     <string name="video_download_item_quality_balancer">%1$s • %2$s</string>
+    <string name="video_download_item_disk_size">На диске: %1$s</string>
+    <string name="video_download_item_progress">Идет загрузка %1$d%%</string>
+    <string name="video_download_item_paused">На паузе %1$d%%</string>
+    <string name="video_download_item_error_unknown">Ошибка загрузки</string>
+    <string name="video_download_open_details">Открыть деталку</string>
+    <string name="video_download_pause">Поставить на паузу</string>
+    <string name="video_download_resume">Продолжить скачивание</string>
+    <string name="video_download_restart">Перезапустить скачивание</string>
+    <string name="video_download_delete">Удалить скачивание</string>
 </resources>

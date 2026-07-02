@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.feature.player.model
 
 import su.afk.yummy.tv.feature.player.PlayerSkips
-import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
-import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.PlayerState
 
 internal data class MobilePlayerUiState(
@@ -23,7 +21,6 @@ internal data class MobilePlayerUiState(
     val balancerNames: List<String>,
     val availableBalancerIndices: List<Int>,
     val currentBalancerIndex: Int,
-    val activeEpisodes: List<PlayerSourceEpisode>,
 ) {
     companion object {
         fun from(
@@ -49,15 +46,7 @@ internal data class MobilePlayerUiState(
                 balancerNames = playback.balancerNames,
                 availableBalancerIndices = playback.availableBalancerIndices,
                 currentBalancerIndex = playback.currentBalancerIndex,
-                activeEpisodes = state.activeDubbingEpisodes(),
             )
         }
     }
-}
-
-private fun PlayerState.State.activeDubbingEpisodes(): List<PlayerSourceEpisode> {
-    val balancer = sourceGraph.balancers.getOrNull(sourceSelection.balancerIndex)
-    val dubbing: PlayerSourceDubbing = balancer?.dubbings?.getOrNull(sourceSelection.dubbingIndex)
-        ?: return emptyList()
-    return dubbing.episodes
 }

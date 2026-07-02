@@ -30,6 +30,7 @@ enum class VideoDownloadStatus {
     Resolving,
     Queued,
     Downloading,
+    Paused,
     Downloaded,
     Failed,
     Deleting,
@@ -39,6 +40,7 @@ enum class VideoDownloadStatus {
 data class VideoDownloadQualityOption(
     val label: String,
     val url: String,
+    val headers: Map<String, String> = emptyMap(),
 )
 
 data class VideoDownloadRequest(
@@ -55,3 +57,14 @@ data class VideoDownloadRequest(
     val quality: VideoDownloadQualityOption,
     val headers: Map<String, String>,
 )
+
+data class VideoDownloadRestartStream(
+    val qualityLabel: String,
+    val url: String,
+    val headers: Map<String, String>,
+)
+
+sealed interface VideoDownloadStreamRefreshResult {
+    data class Success(val stream: VideoDownloadRestartStream) : VideoDownloadStreamRefreshResult
+    data class Failure(val message: String) : VideoDownloadStreamRefreshResult
+}

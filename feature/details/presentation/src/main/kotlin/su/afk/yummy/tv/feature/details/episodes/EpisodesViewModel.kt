@@ -34,6 +34,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadQualityOption
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRequest
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
+import su.afk.yummy.tv.domain.videodownload.usecase.CancelOrDeleteVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
@@ -44,6 +45,7 @@ import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject internal constructor(
@@ -63,6 +65,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
     private val enqueueVideoDownload: EnqueueVideoDownloadUseCase,
+    private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
     private val observeVideoDownloadStatuses: ObserveVideoDownloadStatusesUseCase,
     private val stringProvider: StringProvider,
     private val analytics: DetailsAnalytics,
@@ -89,6 +92,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
     private var isSignedIn = false
     private var pendingDownloadCandidate: DownloadCandidate? = null
+    private var pendingReplacementDownloadId: Long? = null
 
     init {
         analytics.eventEpisodesScreenOpened(animeId)
@@ -144,21 +148,76 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 navigateToPlayer(event.video)
             }
 
-            is EpisodesState.Event.EpisodeDownloadSelected -> showDownloadDubbingPicker(event.videos)
+            is EpisodesState.Event.EpisodeDownloadSelected -> {
+                pendingReplacementDownloadId = null
+                showDownloadDubbingPicker(event.videos)
+            }
+
+            is EpisodesState.Event.DownloadedEpisodeSelected -> {
+                val downloadedDubbing = event.download.dubbing.ifBlank { return }
+                setState {
+                    copy(
+                        pendingDownloadedEpisodeAction = EpisodesState.DownloadedEpisodeAction(
+                            downloadId = event.download.downloadId,
+                            episode = event.videos.firstOrNull()?.episode.orEmpty(),
+                            downloadedDubbing = downloadedDubbing,
+                            playerName = event.download.playerName,
+                            qualityLabel = event.download.qualityLabel,
+                            bytesDownloaded = event.download.bytesDownloaded,
+                            videos = event.videos,
+                            hasAlternativeDubbings = event.videos.any {
+                                it.downloadDubbingName() != downloadedDubbing
+                            },
+                        )
+                    )
+                }
+            }
+
+            EpisodesState.Event.PlayDownloadedEpisodeSelected -> {
+                val action = currentState.pendingDownloadedEpisodeAction ?: return
+                setState { copy(pendingDownloadedEpisodeAction = null) }
+                nav.navigate(playerNavigationHandler.getDownloadedPlayerDestination(action.downloadId))
+            }
+
+            EpisodesState.Event.RedownloadDubbingSelected -> {
+                val action = currentState.pendingDownloadedEpisodeAction ?: return
+                pendingReplacementDownloadId = action.downloadId
+                setState { copy(pendingDownloadedEpisodeAction = null) }
+                showDownloadDubbingPicker(
+                    videos = action.videos,
+                    excludedDubbing = action.downloadedDubbing,
+                )
+            }
+
+            EpisodesState.Event.DownloadedEpisodeActionDismissed -> {
+                setState { copy(pendingDownloadedEpisodeAction = null) }
+            }
 
             is EpisodesState.Event.DownloadDubbingSelected -> {
                 setState { copy(pendingDownloadDubbingSelection = null) }
+                showDownloadBalancerPicker(event.videos)
+            }
+
+            is EpisodesState.Event.DownloadBalancerSelected -> {
+                setState { copy(pendingDownloadBalancerSelection = null) }
                 prepareEpisodeDownload(event.video)
             }
 
             EpisodesState.Event.DownloadDubbingPickerDismissed -> {
+                pendingReplacementDownloadId = null
                 setState { copy(pendingDownloadDubbingSelection = null) }
+            }
+
+            EpisodesState.Event.DownloadBalancerPickerDismissed -> {
+                pendingReplacementDownloadId = null
+                setState { copy(pendingDownloadBalancerSelection = null) }
             }
 
             is EpisodesState.Event.DownloadQualitySelected -> enqueueSelectedDownload(event.option)
 
             EpisodesState.Event.DownloadQualityPickerDismissed -> {
                 pendingDownloadCandidate = null
+                pendingReplacementDownloadId = null
                 setState { copy(pendingDownloadQualitySelection = null) }
             }
 
@@ -226,17 +285,33 @@ class EpisodesViewModel @AssistedInject internal constructor(
             videos = this,
         )
 
-    private fun showDownloadDubbingPicker(videos: List<AnimeVideo>) {
-        val options = videos
-            .sortedWith(compareBy({ it.dubbing }, { it.player }, { it.playerId ?: 0 }, { it.id }))
-            .map { video ->
-                val key = video.downloadStatusKey()
+    private fun showDownloadDubbingPicker(
+        videos: List<AnimeVideo>,
+        excludedDubbing: String? = null,
+    ) {
+        val availableVideos = videos.filter { video ->
+            excludedDubbing == null || video.downloadDubbingName() != excludedDubbing
+        }
+        val options = availableVideos
+            .groupBy { it.downloadDubbingName() }
+            .entries
+            .sortedWith(
+                compareByDescending<Map.Entry<String, List<AnimeVideo>>> { (_, group) ->
+                    group.sumOf { it.views ?: 0 }
+                }
+                    .thenBy { (dubbing, _) -> dubbing }
+            )
+            .map { (dubbing, group) ->
                 EpisodesState.EpisodeDownloadDubbingOption(
-                    video = video,
-                    title = video.dubbing.ifBlank { video.player },
-                    subtitle = video.player.takeIf { it.isNotBlank() && it != video.dubbing },
-                    status = currentState.downloadStatuses[key],
-                    resolving = key in currentState.resolvingDownloadKeys,
+                    videos = group,
+                    title = dubbing,
+                    subtitle = group
+                        .map { it.player }
+                        .distinct()
+                        .joinToString(" / ")
+                        .takeIf { it.isNotBlank() && it != dubbing },
+                    status = group.aggregateDubbingDownloadStatus(),
+                    resolving = group.all { it.downloadStatusKey() in currentState.resolvingDownloadKeys },
                 )
             }
         val episode = videos.firstOrNull()?.episode.orEmpty()
@@ -244,6 +319,44 @@ class EpisodesViewModel @AssistedInject internal constructor(
             copy(
                 pendingDownloadDubbingSelection = EpisodesState.EpisodeDownloadDubbingSelection(
                     episode = episode,
+                    options = options,
+                    hasAlternativeDubbings = excludedDubbing != null,
+                )
+            )
+        }
+    }
+
+    private fun showDownloadBalancerPicker(videos: List<AnimeVideo>) {
+        val options = videos
+            .sortedWith(
+                compareByDescending<AnimeVideo> { it.views ?: 0 }
+                    .thenBy {
+                        minOf(
+                            it.player.playerDisplayOrderPriority(),
+                            it.iframeUrl.playerDisplayOrderPriority(),
+                        )
+                    }
+                    .thenBy { it.player }
+                    .thenBy { it.playerId ?: Int.MAX_VALUE }
+                    .thenBy { it.id }
+            )
+            .map { video ->
+                val key = video.downloadStatusKey()
+                EpisodesState.EpisodeDownloadBalancerOption(
+                    video = video,
+                    title = video.player.ifBlank { video.dubbing },
+                    subtitle = null,
+                    status = currentState.downloadStatuses[key],
+                    resolving = key in currentState.resolvingDownloadKeys,
+                )
+            }
+        val firstVideo = videos.firstOrNull()
+        val dubbing = firstVideo?.dubbing?.ifBlank { firstVideo.player }.orEmpty()
+        setState {
+            copy(
+                pendingDownloadBalancerSelection = EpisodesState.EpisodeDownloadBalancerSelection(
+                    episode = firstVideo?.episode.orEmpty(),
+                    dubbing = dubbing,
                     options = options,
                 )
             )
@@ -300,7 +413,11 @@ class EpisodesViewModel @AssistedInject internal constructor(
         result: PlayerStreamResolveResult.Stream,
     ) {
         val key = video.downloadStatusKey()
-        val options = prepareDownloadQualities(result.url, result.qualities)
+        val options = prepareDownloadQualities(
+            streamUrl = result.url,
+            qualityMap = result.qualities,
+            qualityHeaders = result.qualityHeaders,
+        )
         pendingDownloadCandidate = DownloadCandidate(
             video = video,
             options = options,
@@ -336,14 +453,28 @@ class EpisodesViewModel @AssistedInject internal constructor(
             iframeUrl = video.iframeUrl,
             screenshotUrl = screenshotsByEpisode[video.episode].orEmpty(),
             quality = quality,
-            headers = candidate.headers,
+            headers = quality.headers.ifEmpty { candidate.headers },
         )
+        val replacementDownloadId = pendingReplacementDownloadId
         viewModelScope.launch {
             runCatching { enqueueVideoDownload(request) }
+                .onSuccess {
+                    replacementDownloadId?.let { downloadId ->
+                        runCatching { cancelOrDeleteVideoDownload(downloadId) }
+                            .onFailure {
+                                setEffect(
+                                    EpisodesState.Effect.ShowToast(
+                                        stringProvider.get(R.string.details_download_replace_delete_error)
+                                    )
+                                )
+                            }
+                    }
+                }
                 .onFailure {
                     setEffect(EpisodesState.Effect.ShowToast(stringProvider.get(R.string.details_download_enqueue_error)))
                 }
             pendingDownloadCandidate = null
+            pendingReplacementDownloadId = null
             setState { copy(pendingDownloadQualitySelection = null) }
         }
     }
@@ -382,11 +513,18 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private fun AnimeVideo.downloadStatusKey(): String =
         listOf(id.toString(), iframeUrl).joinToString("|")
 
+    private fun AnimeVideo.downloadDubbingName(): String = dubbing.ifBlank { player }
+
     private val VideoDownloadItem.uiStatusKey: String
         get() = listOf(videoId.toString(), iframeUrl).joinToString("|")
 
     private fun VideoDownloadItem.toUiState(): EpisodesState.EpisodeDownloadUiState =
         EpisodesState.EpisodeDownloadUiState(
+            downloadId = id,
+            dubbing = dubbing.ifBlank { playerName },
+            playerName = playerName,
+            qualityLabel = qualityLabel,
+            bytesDownloaded = bytesDownloaded,
             status = when (status) {
                 VideoDownloadStatus.Queued,
                 VideoDownloadStatus.Resolving -> EpisodesState.EpisodeDownloadUiStatus.Queued
@@ -394,6 +532,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 VideoDownloadStatus.Downloading,
                 VideoDownloadStatus.Deleting -> EpisodesState.EpisodeDownloadUiStatus.Downloading
 
+                VideoDownloadStatus.Paused -> EpisodesState.EpisodeDownloadUiStatus.Paused
                 VideoDownloadStatus.Downloaded -> EpisodesState.EpisodeDownloadUiStatus.Downloaded
                 VideoDownloadStatus.Failed -> EpisodesState.EpisodeDownloadUiStatus.Failed
                 VideoDownloadStatus.Idle,
@@ -406,8 +545,28 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val EpisodesState.EpisodeDownloadUiStatus.isActive: Boolean
         get() = this != EpisodesState.EpisodeDownloadUiStatus.Failed
 
+    private fun List<AnimeVideo>.aggregateDubbingDownloadStatus(): EpisodesState.EpisodeDownloadUiState? {
+        val statuses = map { currentState.downloadStatuses[it.downloadStatusKey()] }
+        if (statuses.isEmpty() || statuses.any { it == null }) return null
+        val present = statuses.filterNotNull()
+        return when {
+            present.all {
+                it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+                        it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+            } -> present.first()
+
+            present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded } -> present.first()
+            present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Paused } -> present.first()
+            present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed } -> present.first()
+            else -> null
+        }
+    }
+
     private fun VideoDownloadQualityOption.toUiOption(): EpisodesState.EpisodeDownloadQualityOption =
-        EpisodesState.EpisodeDownloadQualityOption(label = label, url = url)
+        EpisodesState.EpisodeDownloadQualityOption(
+            label = label,
+            url = url,
+        )
 
     private data class DownloadCandidate(
         val video: AnimeVideo,

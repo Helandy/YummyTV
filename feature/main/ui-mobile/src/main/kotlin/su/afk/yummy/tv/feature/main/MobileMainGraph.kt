@@ -42,6 +42,7 @@ import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class MobileMainGraph @Inject internal constructor(
@@ -89,7 +90,7 @@ class MobileMainGraph @Inject internal constructor(
                             toastMessage = eff.message
                             toastJob?.cancel()
                             toastJob = coroutineScope.launch {
-                                delay(GLOBAL_TOAST_DURATION_MS)
+                                delay(GLOBAL_TOAST_DURATION)
                                 if (toastMessage == eff.message) {
                                     toastMessage = null
                                 }
@@ -160,4 +161,4 @@ class MobileMainGraph @Inject internal constructor(
     }
 }
 
-private const val GLOBAL_TOAST_DURATION_MS = 3_000L
+private val GLOBAL_TOAST_DURATION = 3.seconds

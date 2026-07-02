@@ -38,6 +38,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun HomeCarousel(
@@ -198,7 +199,7 @@ internal fun HomeCarousel(
     LaunchedEffect(isCarouselFocused, pageHasFocus, rowIsFocused) {
         if (isCarouselFocused || pageHasFocus || rowIsFocused) return@LaunchedEffect
         while (true) {
-            delay(5_000L)
+            delay(5.seconds)
             if (!pagerState.isScrollInProgress && !pageHasFocus && !rowIsFocused) {
                 val next = (pagerState.currentPage + 1) % items.size
                 pagerState.animateScrollToPage(next)

@@ -18,6 +18,7 @@ import su.afk.yummy.tv.R
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
+import kotlin.time.Duration.Companion.milliseconds
 
 class SystemSearchProvider : ContentProvider() {
 
@@ -43,7 +44,7 @@ class SystemSearchProvider : ContentProvider() {
 
         return runCatching {
             val items = runBlocking {
-                withTimeout(SEARCH_TIMEOUT_MS) {
+                withTimeout(SEARCH_TIMEOUT) {
                     searchUseCase(appContext)(
                         normalizedQuery,
                         SearchFilters.EMPTY,
@@ -109,7 +110,7 @@ class SystemSearchProvider : ContentProvider() {
 
     private companion object {
         const val SEARCH_LIMIT = 10
-        const val SEARCH_TIMEOUT_MS = 2_500L
+        val SEARCH_TIMEOUT = 2_500.milliseconds
         const val MIN_QUERY_LENGTH = 2
         const val CONTENT_TYPE_VIDEO = "video/*"
 

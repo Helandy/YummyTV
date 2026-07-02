@@ -58,4 +58,7 @@ internal class DetailsPlayerNavigationHandler @Inject constructor(
             screenshotByEpisode = screenshotByEpisode,
             resumeFromMs = resumeFromMs,
         )
+
+    fun getDownloadedPlayerDestination(downloadId: Long): NavKey =
+        playerNavigator.getDownloadedPlayerDest(downloadId)
 }

@@ -9,13 +9,23 @@ class EpisodeDubbingsState {
         val episode: String = "",
         val isLoading: Boolean = true,
         val error: String? = null,
-        val dubbings: List<String> = emptyList(),
+        val dubbings: List<DubbingItem> = emptyList(),
     ) : UiState
+
+    data class DubbingItem(
+        val name: String,
+        val views: Int,
+        val episodeCount: Int,
+        val supportedBalancers: String,
+    )
 
     /** Пользовательские действия на экране озвучек эпизода. */
     sealed interface Event : UiEvent {
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь выбрал озвучку для запуска текущей серии. */
+        data class DubbingSelected(val name: String) : Event
     }
 
     sealed interface Effect : UiEffect

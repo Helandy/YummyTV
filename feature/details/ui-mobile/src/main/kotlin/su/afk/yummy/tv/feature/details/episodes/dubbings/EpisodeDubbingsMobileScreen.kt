@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,12 +38,14 @@ fun EpisodeDubbingsMobileScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
+        modifier = Modifier.fillMaxHeight(),
         sheetState = sheetState,
         onDismissRequest = { onEvent(EpisodeDubbingsState.Event.BackSelected) },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .navigationBarsPadding()
                 .padding(horizontal = 16.dp),
         ) {
@@ -84,12 +86,17 @@ fun EpisodeDubbingsMobileScreen(
                 else -> LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 420.dp),
+                        .weight(1f),
                     contentPadding = PaddingValues(bottom = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(state.dubbings, key = { it }) { dubbing ->
-                        EpisodeDubbingMobileRow(dubbing = dubbing)
+                    items(state.dubbings, key = { it.name }) { dubbing ->
+                        EpisodeDubbingMobileRow(
+                            dubbing = dubbing,
+                            onClick = {
+                                onEvent(EpisodeDubbingsState.Event.DubbingSelected(dubbing.name))
+                            },
+                        )
                     }
                 }
             }

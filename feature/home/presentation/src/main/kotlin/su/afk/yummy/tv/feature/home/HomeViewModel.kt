@@ -27,6 +27,7 @@ import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HomeViewModel @Inject internal constructor(
@@ -126,7 +127,7 @@ class HomeViewModel @Inject internal constructor(
         } else {
             setState { copy(supportPromptVisible = false) }
             supportPromptTimerJob = viewModelScope.launch {
-                delay(remainingMs)
+                delay(remainingMs.milliseconds)
                 showSupportPromptOnce()
             }
         }

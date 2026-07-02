@@ -8,7 +8,10 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:logger"))
     implementation(project(":core:storage"))
+    implementation(project(":core:utils"))
+    implementation(project(":feature:player:domain"))
     implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.core.ktx)

@@ -56,6 +56,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequ
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -131,7 +132,7 @@ internal fun TopBrowser(
     }
 
     suspend fun requestFocusUntilTimeout(requester: FocusRequester): Boolean =
-        withTimeoutOrNull(TOP_FOCUS_RESTORE_TIMEOUT_MILLIS) {
+        withTimeoutOrNull(TOP_FOCUS_RESTORE_TIMEOUT) {
             var focused = false
             while (!focused) {
                 withFrameNanos { }
@@ -371,5 +372,5 @@ internal fun TopBrowser(
 private fun Throwable.uiMessage(): String =
     message ?: localizedMessage ?: toString()
 
-private const val TOP_FOCUS_RESTORE_TIMEOUT_MILLIS = 500L
+private val TOP_FOCUS_RESTORE_TIMEOUT = 500.milliseconds
 private val TvFocusedCardBottomInset = 24.dp

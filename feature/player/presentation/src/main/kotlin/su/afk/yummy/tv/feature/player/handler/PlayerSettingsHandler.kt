@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Coordinates player-specific settings flows and persistence for the active anime/player scope. */
 internal class PlayerSettingsHandler @Inject constructor(
@@ -46,7 +47,7 @@ internal class PlayerSettingsHandler @Inject constructor(
         scope: PlayerResizeSettingsScope,
         settings: PlayerMobileVideoTransformSettings,
     ) {
-        delay(MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS)
+        delay(MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE)
         settingsStore.setPlayerMobileVideoTransformSettings(
             animeId = scope.animeId,
             animeTitle = scope.animeTitle,
@@ -56,6 +57,6 @@ internal class PlayerSettingsHandler @Inject constructor(
     }
 
     private companion object {
-        const val MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE_MS = 250L
+        val MOBILE_VIDEO_TRANSFORM_SAVE_DEBOUNCE = 250.milliseconds
     }
 }

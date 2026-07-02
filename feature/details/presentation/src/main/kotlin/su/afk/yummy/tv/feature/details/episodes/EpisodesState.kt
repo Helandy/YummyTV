@@ -16,15 +16,43 @@ class EpisodesState {
         val downloadStatuses: Map<String, EpisodeDownloadUiState> = emptyMap(),
         val resolvingDownloadKeys: Set<String> = emptySet(),
         val pendingDownloadDubbingSelection: EpisodeDownloadDubbingSelection? = null,
+        val pendingDownloadBalancerSelection: EpisodeDownloadBalancerSelection? = null,
         val pendingDownloadQualitySelection: EpisodeDownloadQualitySelection? = null,
+        val pendingDownloadedEpisodeAction: DownloadedEpisodeAction? = null,
     ) : UiState
 
     data class EpisodeDownloadDubbingSelection(
         val episode: String,
         val options: List<EpisodeDownloadDubbingOption>,
+        val hasAlternativeDubbings: Boolean = false,
+    )
+
+    data class DownloadedEpisodeAction(
+        val downloadId: Long,
+        val episode: String,
+        val downloadedDubbing: String,
+        val playerName: String,
+        val qualityLabel: String,
+        val bytesDownloaded: Long,
+        val videos: List<AnimeVideo>,
+        val hasAlternativeDubbings: Boolean,
     )
 
     data class EpisodeDownloadDubbingOption(
+        val videos: List<AnimeVideo>,
+        val title: String,
+        val subtitle: String?,
+        val status: EpisodeDownloadUiState?,
+        val resolving: Boolean,
+    )
+
+    data class EpisodeDownloadBalancerSelection(
+        val episode: String,
+        val dubbing: String,
+        val options: List<EpisodeDownloadBalancerOption>,
+    )
+
+    data class EpisodeDownloadBalancerOption(
         val video: AnimeVideo,
         val title: String,
         val subtitle: String?,
@@ -46,11 +74,17 @@ class EpisodesState {
     enum class EpisodeDownloadUiStatus {
         Queued,
         Downloading,
+        Paused,
         Downloaded,
         Failed,
     }
 
     data class EpisodeDownloadUiState(
+        val downloadId: Long,
+        val dubbing: String,
+        val playerName: String,
+        val qualityLabel: String,
+        val bytesDownloaded: Long,
         val status: EpisodeDownloadUiStatus,
         val progress: Float,
         val errorMessage: String?,
@@ -70,11 +104,32 @@ class EpisodesState {
         /** Пользователь нажал скачивание серии. */
         data class EpisodeDownloadSelected(val videos: List<AnimeVideo>) : Event
 
+        /** Пользователь нажал галочку у скачанной серии. */
+        data class DownloadedEpisodeSelected(
+            val videos: List<AnimeVideo>,
+            val download: EpisodeDownloadUiState,
+        ) : Event
+
+        /** Пользователь выбрал воспроизведение скачанной серии. */
+        data object PlayDownloadedEpisodeSelected : Event
+
+        /** Пользователь выбрал перекачивание серии с другой озвучкой. */
+        data object RedownloadDubbingSelected : Event
+
+        /** Пользователь закрыл действия со скачанной серией. */
+        data object DownloadedEpisodeActionDismissed : Event
+
         /** Пользователь выбрал озвучку для скачивания. */
-        data class DownloadDubbingSelected(val video: AnimeVideo) : Event
+        data class DownloadDubbingSelected(val videos: List<AnimeVideo>) : Event
 
         /** Пользователь закрыл выбор озвучки для скачивания. */
         data object DownloadDubbingPickerDismissed : Event
+
+        /** Пользователь выбрал балансер для скачивания. */
+        data class DownloadBalancerSelected(val video: AnimeVideo) : Event
+
+        /** Пользователь закрыл выбор балансера для скачивания. */
+        data object DownloadBalancerPickerDismissed : Event
 
         /** Пользователь выбрал качество скачивания. */
         data class DownloadQualitySelected(val option: EpisodeDownloadQualityOption) : Event

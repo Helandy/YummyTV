@@ -25,7 +25,7 @@ interface VideoDownloadDao {
           AND videoId = :videoId
           AND iframeUrl = :iframeUrl
           AND qualityLabel = :qualityLabel
-          AND status IN ('Queued', 'Downloading', 'Downloaded', 'Resolving')
+          AND status != 'Deleted'
         LIMIT 1
         """
     )

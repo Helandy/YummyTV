@@ -16,6 +16,8 @@ dependencies {
 
     implementation(libs.bundles.compose.core)
     implementation(libs.bundles.coil.full)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)

@@ -22,6 +22,7 @@ import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class SearchViewModel @Inject internal constructor(
@@ -40,7 +41,7 @@ class SearchViewModel @Inject internal constructor(
     private var searchJob: Job? = null
 
     private companion object {
-        const val DEBOUNCE_MS = 3_000L
+        val DEBOUNCE = 3.seconds
         const val PAGE_SIZE = 20
     }
 
@@ -152,7 +153,7 @@ class SearchViewModel @Inject internal constructor(
             return
         }
         searchJob = viewModelScope.launch {
-            delay(DEBOUNCE_MS)
+            delay(DEBOUNCE)
             setSearchResults(query.trim(), currentState.filters)
         }
     }

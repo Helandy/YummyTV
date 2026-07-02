@@ -9,7 +9,7 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption
-import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY_MS
+import su.afk.yummy.tv.feature.details.utils.SUBSCRIPTION_REFRESH_DELAY
 import su.afk.yummy.tv.feature.details.utils.matchesCurrentAnime
 import su.afk.yummy.tv.feature.details.utils.subscriptionMatchKeys
 import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
@@ -87,7 +87,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
 
     suspend fun commitSubscriptionChange(videoId: Int, subscribed: Boolean): Boolean {
         val result = runCatching { setVideoSubscription(videoId, subscribed) }
-        if (result.isSuccess) delay(SUBSCRIPTION_REFRESH_DELAY_MS)
+        if (result.isSuccess) delay(SUBSCRIPTION_REFRESH_DELAY)
         return result.isSuccess
     }
 

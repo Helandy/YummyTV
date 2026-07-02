@@ -26,8 +26,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import kotlin.time.Duration.Companion.seconds
 
-private const val HERO_AUTO_SCROLL_INTERVAL_MS = 5_000L
+private val HERO_AUTO_SCROLL_INTERVAL = 5.seconds
 
 @Composable
 internal fun HomeHeroCarousel(
@@ -41,7 +42,7 @@ internal fun HomeHeroCarousel(
     LaunchedEffect(items.size, isUserTouchingCarousel) {
         if (items.size <= 1 || isUserTouchingCarousel) return@LaunchedEffect
         while (true) {
-            delay(HERO_AUTO_SCROLL_INTERVAL_MS)
+            delay(HERO_AUTO_SCROLL_INTERVAL)
             if (!isUserTouchingCarousel && !pagerState.isScrollInProgress) {
                 val nextPage = (pagerState.currentPage + 1) % items.size
                 pagerState.animateScrollToPage(nextPage)

@@ -18,14 +18,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
-import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
-import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
-import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRequest
-import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
-import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatusesUseCase
-import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
@@ -37,11 +30,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamResumeMode
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
-import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
-import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -56,10 +45,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val settingsHandler: PlayerSettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
-    private val resolvePlayerStream: ResolvePlayerStreamUseCase,
-    private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
-    private val enqueueVideoDownload: EnqueueVideoDownloadUseCase,
-    private val observeVideoDownloadStatuses: ObserveVideoDownloadStatusesUseCase,
     private val getVideoDownload: GetVideoDownloadUseCase,
     private val strings: StringProvider,
     private val analytics: PlayerAnalytics,
@@ -86,7 +71,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
         observeActivePlayerResizeSettings(force = true)
         observeActivePlayerMobileVideoTransformSettings(force = true)
-        observeDownloadStatuses(newDest.animeId)
         if (newDest.downloadId > 0L) {
             loadDownloadedDestination(newDest.downloadId)
         } else {
@@ -103,14 +87,12 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var playerMobileVideoTransformSettingsJob: Job? = null
     private var playerMobileVideoTransformSaveJob: Job? = null
     private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
-    private var downloadStatusesJob: Job? = null
 
     init {
         analytics.eventScreenOpened(dest.animeId)
         settingsHandler.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
             .launchIn(viewModelScope)
-        observeDownloadStatuses(dest.animeId)
         if (dest.downloadId > 0L) {
             loadDownloadedDestination(dest.downloadId)
         } else {
@@ -227,18 +209,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
             }
 
-            is PlayerState.Event.EpisodeSelected -> {
-                val selection = normalizedSourceSelection(currentState)
-                applySourceSelection(
-                    currentState.copy(
-                        sourceSelection = selection.copy(episodeIndex = event.index),
-                        resumeFromMs = event.currentPosMs.coerceAtLeast(0L),
-                    ),
-                    resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
-                    refreshSourcesBeforeStream = true,
-                )
-            }
-
             is PlayerState.Event.QualitySelected -> {
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
@@ -325,22 +295,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
 
-            is PlayerState.Event.DownloadEpisodeSelected -> prepareEpisodeDownload(event.episodeIndex)
-
-            is PlayerState.Event.DownloadQualitySelected -> enqueueSelectedDownload(event.option)
-
-            PlayerState.Event.DownloadQualityPickerDismissed -> {
-                setState { copy(downloadQualityCandidate = null) }
-            }
         }
-    }
-
-    private fun observeDownloadStatuses(animeId: Int) {
-        if (animeId <= 0) return
-        downloadStatusesJob?.cancel()
-        downloadStatusesJob = observeVideoDownloadStatuses(animeId)
-            .onEach { statuses -> setState { copy(downloadStatuses = statuses) } }
-            .launchIn(viewModelScope)
     }
 
     private fun loadDownloadedDestination(downloadId: Long) {
@@ -391,97 +346,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                     playerError = null,
                 )
             }
-            observeDownloadStatuses(item.animeId)
-        }
-    }
-
-    private fun prepareEpisodeDownload(episodeIndex: Int) {
-        val state = currentState
-        if (state.isOfflinePlayback) return
-        val episode = activeDubbingEpisodes(state).getOrNull(episodeIndex) ?: return
-        val key = state.downloadStatusKey(episode.id, episode.iframeUrl)
-        val existing = state.downloadStatuses[key]
-        if (existing != null && existing.status.name in ACTIVE_DOWNLOAD_STATUS_NAMES) return
-
-        viewModelScope.launch {
-            setState { copy(resolvingDownloadKeys = resolvingDownloadKeys + key) }
-            try {
-                val result = resolvePlayerStream(
-                    PlayerStreamRequest(
-                        iframeUrl = episode.iframeUrl,
-                        autoQualityLabel = strings.get(R.string.player_quality_auto),
-                    )
-                )
-                when (result) {
-                    is PlayerStreamResolveResult.Stream -> {
-                        val options = prepareDownloadQualities(result.url, result.qualities)
-                        setState {
-                            copy(
-                                resolvingDownloadKeys = resolvingDownloadKeys - key,
-                                downloadQualityCandidate = PlayerEpisodeDownloadCandidate(
-                                    episodeIndex = episodeIndex,
-                                    episode = episode.number,
-                                    videoId = episode.id,
-                                    playerId = episode.playerId,
-                                    iframeUrl = episode.iframeUrl,
-                                    screenshotUrl = episode.screenshotUrl,
-                                    options = options,
-                                    headers = result.headers,
-                                )
-                            )
-                        }
-                    }
-
-                    is PlayerStreamResolveResult.KodikBlocked -> {
-                        setState { copy(resolvingDownloadKeys = resolvingDownloadKeys - key) }
-                        setEffect(
-                            PlayerState.Effect.ShowMessage(
-                                result.message ?: strings.get(R.string.player_kodik_blocked)
-                            )
-                        )
-                    }
-
-                    PlayerStreamResolveResult.Failed,
-                    PlayerStreamResolveResult.Unsupported -> {
-                        setState { copy(resolvingDownloadKeys = resolvingDownloadKeys - key) }
-                        setEffect(PlayerState.Effect.ShowMessage(strings.get(R.string.player_download_resolve_error)))
-                    }
-                }
-            } catch (throwable: Throwable) {
-                setState { copy(resolvingDownloadKeys = resolvingDownloadKeys - key) }
-                setEffect(
-                    PlayerState.Effect.ShowMessage(
-                        throwable.localizedMessage
-                            ?: strings.get(R.string.player_download_resolve_error)
-                    )
-                )
-            }
-        }
-    }
-
-    private fun enqueueSelectedDownload(option: su.afk.yummy.tv.domain.videodownload.model.VideoDownloadQualityOption) {
-        val candidate = currentState.downloadQualityCandidate ?: return
-        val state = currentState
-        val request = VideoDownloadRequest(
-            animeId = state.animeId,
-            animeTitle = state.animeTitle,
-            posterUrl = state.posterUrl,
-            episode = candidate.episode,
-            videoId = candidate.videoId,
-            playerName = activeBalancerName(state),
-            playerId = candidate.playerId,
-            dubbing = activeDubbingName(state),
-            iframeUrl = candidate.iframeUrl,
-            screenshotUrl = candidate.screenshotUrl,
-            quality = option,
-            headers = candidate.headers,
-        )
-        viewModelScope.launch {
-            runCatching { enqueueVideoDownload(request) }
-                .onFailure {
-                    setEffect(PlayerState.Effect.ShowMessage(strings.get(R.string.player_download_enqueue_error)))
-                }
-            setState { copy(downloadQualityCandidate = null) }
         }
     }
 
@@ -764,10 +628,4 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun PlayerState.State.downloadStatusKey(videoId: Int, iframeUrl: String): String =
-        listOf(animeId.toString(), videoId.toString(), iframeUrl).joinToString("|")
-
-    private companion object {
-        val ACTIVE_DOWNLOAD_STATUS_NAMES = setOf("Resolving", "Queued", "Downloading", "Downloaded")
-    }
 }

@@ -1,0 +1,4 @@
+<resources>
+    <string name="video_download_quality_auto">Auto</string>
+    <string name="video_download_refresh_error">Could not refresh download link</string>
+</resources>

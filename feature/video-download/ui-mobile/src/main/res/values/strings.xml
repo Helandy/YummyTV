@@ -2,6 +2,16 @@
 <resources>
     <string name="video_download_mobile_title">Downloaded episodes</string>
     <string name="video_download_empty">No downloaded episodes yet</string>
-    <string name="video_download_item_episode_dubbing">Episode %1$s • %2$s</string>
+    <string name="video_download_item_episode_title">Episode %1$s</string>
+    <string name="video_download_item_dubbing">%1$s</string>
     <string name="video_download_item_quality_balancer">%1$s • %2$s</string>
+    <string name="video_download_item_disk_size">On disk: %1$s</string>
+    <string name="video_download_item_progress">Downloading %1$d%%</string>
+    <string name="video_download_item_paused">Paused at %1$d%%</string>
+    <string name="video_download_item_error_unknown">Download error</string>
+    <string name="video_download_open_details">Open details</string>
+    <string name="video_download_pause">Pause download</string>
+    <string name="video_download_resume">Resume download</string>
+    <string name="video_download_restart">Restart download</string>
+    <string name="video_download_delete">Delete download</string>
 </resources>

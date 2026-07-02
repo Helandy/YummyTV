@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 internal class TvIntegration @Inject constructor(
@@ -62,7 +63,7 @@ internal class TvIntegration @Inject constructor(
         }
 
         scope.launch {
-            delay(5_000)
+            delay(5.seconds)
             runCatching { getHomeFeed() }.onSuccess { feed ->
                 val newItems = feed.sections
                     .firstOrNull { it.title.contains("нов", ignoreCase = true) }

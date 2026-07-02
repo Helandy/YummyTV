@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -33,24 +36,29 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.view.BalancerDialog
+import su.afk.yummy.tv.feature.details.episodes.utils.blocksNewDownload
+import su.afk.yummy.tv.feature.details.episodes.utils.isDownloadBusy
 import su.afk.yummy.tv.feature.details.episodes.utils.mobileWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.toMobileEpisodeGroups
+import su.afk.yummy.tv.feature.details.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.episodes.view.EpisodeMobileCard
 import su.afk.yummy.tv.feature.details.mobile.R
+
+private val DownloadResolvingColor = Color(0xFFFFC107)
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun EpisodesMobileScreen(
-
     state: EpisodesState.State,
     effect: Flow<EpisodesState.Effect>,
     onEvent: (EpisodesState.Event) -> Unit,
-
-    ) {
+) {
     val context = LocalContext.current
+    val notificationPermissionGate = rememberNotificationPermissionGate()
     LaunchedEffect(effect, context) {
         effect.collect { event ->
             when (event) {
@@ -96,10 +104,10 @@ fun EpisodesMobileScreen(
                     }
                     val downloadStatus = downloadKeys
                         .mapNotNull { state.downloadStatuses[it] }
-                        .firstOrNull {
-                            it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                                    it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
-                        }
+                        .firstOrNull { it.isDownloadBusy() }
+                        ?: downloadKeys
+                            .mapNotNull { state.downloadStatuses[it] }
+                            .firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Paused }
                         ?: downloadKeys
                             .mapNotNull { state.downloadStatuses[it] }
                             .firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded }
@@ -107,17 +115,30 @@ fun EpisodesMobileScreen(
                             .mapNotNull { state.downloadStatuses[it] }
                             .firstOrNull { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed }
                     val downloadResolving = downloadKeys.any { it in state.resolvingDownloadKeys }
+                    val downloadAwaitingQualitySelection = state.pendingDownloadQualitySelection
+                        ?.let { selection -> group.videos.any { it.id == selection.videoId } }
+                        ?: false
                     EpisodeMobileCard(
                         video = group.video,
                         watchStatus = group.videos.mobileWatchStatus(state.watchProgress),
                         kodikIframeUrl = group.kodikIframeUrl,
                         downloadStatus = downloadStatus,
                         downloadResolving = downloadResolving,
+                        downloadAwaitingQualitySelection = downloadAwaitingQualitySelection,
                         onInfoClick = {
                             onEvent(EpisodesState.Event.EpisodeDubbingsSelected(group.episode))
                         },
                         onDownloadClick = {
-                            onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))
+                            if (downloadStatus?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded) {
+                                onEvent(
+                                    EpisodesState.Event.DownloadedEpisodeSelected(
+                                        videos = group.videos,
+                                        download = downloadStatus,
+                                    )
+                                )
+                            } else {
+                                onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))
+                            }
                         },
                         onClick = { onEvent(EpisodesState.Event.VideoSelected(group.video)) },
                     )
@@ -142,10 +163,33 @@ fun EpisodesMobileScreen(
         )
     }
 
+    state.pendingDownloadedEpisodeAction?.let { action ->
+        EpisodeDownloadedActionSheet(
+            action = action,
+            onPlay = { onEvent(EpisodesState.Event.PlayDownloadedEpisodeSelected) },
+            onRedownloadDubbing = {
+                onEvent(EpisodesState.Event.RedownloadDubbingSelected)
+            },
+            onDismiss = { onEvent(EpisodesState.Event.DownloadedEpisodeActionDismissed) },
+        )
+    }
+
+    state.pendingDownloadBalancerSelection?.let { selection ->
+        EpisodeDownloadBalancerSheet(
+            selection = selection,
+            onSelected = { onEvent(EpisodesState.Event.DownloadBalancerSelected(it)) },
+            onDismiss = { onEvent(EpisodesState.Event.DownloadBalancerPickerDismissed) },
+        )
+    }
+
     state.pendingDownloadQualitySelection?.let { selection ->
         EpisodeDownloadQualitySheet(
             selection = selection,
-            onSelected = { onEvent(EpisodesState.Event.DownloadQualitySelected(it)) },
+            onSelected = { option ->
+                notificationPermissionGate {
+                    onEvent(EpisodesState.Event.DownloadQualitySelected(option))
+                }
+            },
             onDismiss = { onEvent(EpisodesState.Event.DownloadQualityPickerDismissed) },
         )
     }
@@ -155,7 +199,7 @@ fun EpisodesMobileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun EpisodeDownloadDubbingSheet(
     selection: EpisodesState.EpisodeDownloadDubbingSelection,
-    onSelected: (AnimeVideo) -> Unit,
+    onSelected: (List<AnimeVideo>) -> Unit,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -169,47 +213,130 @@ private fun EpisodeDownloadDubbingSheet(
             Text(
                 text = stringResource(
                     R.string.details_mobile_download_dubbing_title,
-                    selection.episode
+                    selection.episode,
                 ),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             if (selection.options.isEmpty()) {
                 Text(
-                    text = stringResource(R.string.details_mobile_download_dubbing_empty),
+                    text = stringResource(
+                        if (selection.hasAlternativeDubbings) {
+                            R.string.details_mobile_download_other_dubbing_empty
+                        } else {
+                            R.string.details_mobile_download_dubbing_empty
+                        }
+                    ),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             } else {
-                selection.options.forEach { option ->
-                    val busy = option.resolving ||
-                            option.status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                            option.status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
-                    TextButton(
-                        enabled = !busy && option.status?.status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
-                        onClick = { onSelected(option.video) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(selection.options, key = { it.title }) { option ->
+                        val busy = option.resolving || option.status.isDownloadBusy()
+                        TextButton(
+                            enabled = !option.resolving && !option.status.blocksNewDownload(),
+                            onClick = { onSelected(option.videos) },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(text = option.title, modifier = Modifier.fillMaxWidth())
-                                option.subtitle?.let { subtitle ->
-                                    Text(
-                                        text = subtitle,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = option.title, modifier = Modifier.fillMaxWidth())
+                                    option.subtitle?.let { subtitle ->
+                                        Text(
+                                            text = subtitle,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
+                                    }
                                 }
+                                EpisodeDownloadStatusIcon(
+                                    status = option.status,
+                                    resolving = option.resolving,
+                                )
                             }
-                            EpisodeDownloadStatusIcon(
-                                status = option.status,
-                                resolving = option.resolving,
-                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun EpisodeDownloadBalancerSheet(
+    selection: EpisodesState.EpisodeDownloadBalancerSelection,
+    onSelected: (AnimeVideo) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.details_mobile_download_balancer_title,
+                    selection.episode,
+                    selection.dubbing,
+                ),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            if (selection.options.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.details_mobile_download_balancer_empty),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(
+                        selection.options,
+                        key = { "${it.video.id}|${it.video.iframeUrl}" },
+                    ) { option ->
+                        val busy = option.resolving || option.status.isDownloadBusy()
+                        TextButton(
+                            enabled = !option.resolving && !option.status.blocksNewDownload(),
+                            onClick = { onSelected(option.video) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = option.title, modifier = Modifier.fillMaxWidth())
+                                    option.subtitle?.let { subtitle ->
+                                        Text(
+                                            text = subtitle,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
+                                    }
+                                }
+                                EpisodeDownloadStatusIcon(
+                                    status = option.status,
+                                    resolving = option.resolving,
+                                )
+                            }
                         }
                     }
                 }
@@ -223,11 +350,14 @@ private fun EpisodeDownloadStatusIcon(
     status: EpisodesState.EpisodeDownloadUiState?,
     resolving: Boolean,
 ) {
-    val busy = resolving ||
-            status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-            status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
     when {
-        busy -> CircularProgressIndicator(
+        resolving -> Icon(
+            imageVector = Icons.Filled.HourglassEmpty,
+            contentDescription = null,
+            tint = DownloadResolvingColor,
+        )
+
+        status.isDownloadBusy() -> CircularProgressIndicator(
             progress = { status?.progress ?: 0f },
             strokeWidth = 2.dp,
             modifier = Modifier.size(22.dp),
@@ -263,15 +393,26 @@ private fun EpisodeDownloadQualitySheet(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
-            selection.options.forEach { option ->
-                TextButton(
-                    onClick = { onSelected(option) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = option.label,
+            Text(
+                text = stringResource(R.string.details_mobile_download_quality_prompt),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                items(selection.options, key = { "${it.label}|${it.url}" }) { option ->
+                    TextButton(
+                        onClick = { onSelected(option) },
                         modifier = Modifier.fillMaxWidth(),
-                    )
+                    ) {
+                        Text(
+                            text = option.label,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
         }

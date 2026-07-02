@@ -14,8 +14,6 @@ import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.data.player.utils.CHROME_UA
-import su.afk.yummy.tv.data.player.utils.withBrowserUserAgent
 import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -35,6 +33,7 @@ internal data class AllohaResult(
     val url: String,
     val headers: Map<String, String>,
     val qualities: LinkedHashMap<String, String>? = null,
+    val qualityHeaders: Map<String, Map<String, String>> = emptyMap(),
 )
 
 /**
@@ -65,16 +64,33 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         request: PlayerStreamRequest,
         context: Context,
     ): PlayerStreamResolveResult =
-        extractStream(request.iframeUrl, context)?.toStream() ?: PlayerStreamResolveResult.Failed
+        extractStream(
+            iframeUrl = request.iframeUrl,
+            context = context,
+            preferredQualityLabel = cleanQualityLabel(request.autoQualityLabel)
+                ?.takeIf { qualityNumber(it) != null },
+        )?.toStream() ?: PlayerStreamResolveResult.Failed
 
-    private suspend fun extractStream(iframeUrl: String, context: Context): AllohaResult? {
+    private suspend fun extractStream(
+        iframeUrl: String,
+        context: Context,
+        preferredQualityLabel: String?,
+    ): AllohaResult? {
         val fullUrl = normalizeUrl(iframeUrl)
         return withContext(Dispatchers.Main) {
-            extractViaWebView(fullUrl, context)
+            extractViaWebView(
+                iframeUrl = fullUrl,
+                context = context,
+                preferredQualityLabel = preferredQualityLabel,
+            )
         }
     }
 
-    private suspend fun extractViaWebView(iframeUrl: String, context: Context): AllohaResult? =
+    private suspend fun extractViaWebView(
+        iframeUrl: String,
+        context: Context,
+        preferredQualityLabel: String?,
+    ): AllohaResult? =
         suspendCancellableCoroutine { cont ->
             var webView: WebView? = null
             var delivered = false
@@ -100,15 +116,24 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
 
             fun resultFromCapturedStreams(): AllohaResult? {
                 val qualityMap = capturedStreams.toQualityMap()
-                val stream = qualityMap.values.lastOrNull()?.let { url ->
+                val preferredStream = preferredQualityLabel?.let(capturedStreams::get)
+                val stream = preferredStream ?: qualityMap.values.lastOrNull()?.let { url ->
                     capturedStreams.values.firstOrNull { it.url == url }
                 } ?: fallbackStream
 
                 return stream?.let {
+                    val resolvedQualityMap = qualityMap.takeIf { qualities -> qualities.size > 1 }
                     AllohaResult(
                         url = it.url,
                         headers = it.headers,
-                        qualities = qualityMap.takeIf { qualities -> qualities.size > 1 },
+                        qualities = resolvedQualityMap,
+                        qualityHeaders = resolvedQualityMap
+                            ?.keys
+                            ?.mapNotNull { label ->
+                                capturedStreams[label]?.headers?.let { headers -> label to headers }
+                            }
+                            ?.toMap()
+                            .orEmpty(),
                     )
                 }
             }
@@ -121,7 +146,10 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             }
 
             fun captureStream(url: String, headers: Map<String, String>) {
-                val stream = CapturedStream(url = url, headers = headers.withBrowserUserAgent())
+                val stream = CapturedStream(
+                    url = url,
+                    headers = headers.withAllohaStreamHeaders(iframeUrl),
+                )
                 fallbackStream = stream
 
                 val label = qualityLabelFromUrl(url)
@@ -163,7 +191,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             fun runQualityProbe(view: WebView) {
                 if (delivered || qualityProbeAttempts >= 8) return
                 qualityProbeAttempts += 1
-                view.evaluateJavascript(qualityProbeScript()) { result ->
+                view.evaluateJavascript(qualityProbeScript(preferredQualityLabel)) { result ->
                     if (!delivered && result.contains("no-player") && qualityProbeAttempts < 8) {
                         handler.postDelayed({ runQualityProbe(view) }, 500L)
                     }
@@ -177,7 +205,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                     @Suppress("DEPRECATION")
                     allowFileAccess = false
                     mediaPlaybackRequiresUserGesture = false
-                    userAgentString = CHROME_UA
+                    userAgentString = ALLOHA_USER_AGENT
                 }
 
                 webViewClient = object : WebViewClient() {
@@ -187,8 +215,9 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                     ): WebResourceResponse? {
                         val url = request.url.toString()
                         if (isStreamUrl(url)) {
+                            val headers = request.requestHeaders.withAllohaStreamHeaders(iframeUrl)
                             handler.post {
-                                captureStream(url, request.requestHeaders)
+                                captureStream(url, headers)
                             }
                         }
                         return null
@@ -250,6 +279,23 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         return !url.contains("ima") && !url.contains("doubleclick") && !url.contains("ads")
     }
 
+    private fun Map<String, String>.withAllohaStreamHeaders(iframeUrl: String): Map<String, String> {
+        val hasReferer = keys.any { it.equals(REFERER_HEADER, ignoreCase = true) }
+        val hasOrigin = keys.any { it.equals(ORIGIN_HEADER, ignoreCase = true) }
+        val downloadSafeHeaders = filterKeys { key ->
+            !key.equals(USER_AGENT_HEADER, ignoreCase = true) &&
+                    !key.equals(ACCESS_CONTROL_REQUEST_HEADERS_HEADER, ignoreCase = true) &&
+                    !key.equals(ACCESS_CONTROL_REQUEST_METHOD_HEADER, ignoreCase = true) &&
+                    !key.startsWith(SEC_FETCH_HEADER_PREFIX, ignoreCase = true)
+        }
+        return buildMap {
+            putAll(downloadSafeHeaders)
+            if (!hasReferer) put(REFERER_HEADER, iframeUrl)
+            if (!hasOrigin) put(ORIGIN_HEADER, ALLOHA_ORIGIN)
+            put(USER_AGENT_HEADER, ALLOHA_USER_AGENT)
+        }
+    }
+
     private fun wrapperHtml(iframeUrl: String): String {
         val escaped = iframeUrl.replace("&", "&amp;").replace("\"", "&quot;")
         return """<!DOCTYPE html><html><head>
@@ -273,6 +319,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             url = url,
             headers = headers,
             qualities = qualities,
+            qualityHeaders = qualityHeaders,
         )
 
     private fun LinkedHashMap<String, CapturedStream>.toQualityMap(): LinkedHashMap<String, String> {
@@ -317,6 +364,19 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         return qualityNumber(cleaned)?.let { "${it}p" } ?: cleaned
     }
 
+    private companion object {
+        const val USER_AGENT_HEADER = "User-Agent"
+        const val REFERER_HEADER = "Referer"
+        const val ORIGIN_HEADER = "Origin"
+        const val ACCESS_CONTROL_REQUEST_HEADERS_HEADER = "Access-Control-Request-Headers"
+        const val ACCESS_CONTROL_REQUEST_METHOD_HEADER = "Access-Control-Request-Method"
+        const val SEC_FETCH_HEADER_PREFIX = "Sec-Fetch-"
+        const val ALLOHA_ORIGIN = "https://alloha.yani.tv"
+        const val ALLOHA_USER_AGENT =
+            "Mozilla/5.0 (Linux; Android 15; Pixel 8 Pro) AppleWebKit/537.36 " +
+                    "(KHTML, like Gecko) Chrome/125 Mobile Safari/537.36"
+    }
+
     /**
      * JavaScript probe executed inside the wrapper WebView.
      *
@@ -326,8 +386,11 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
      * subtitles, and styling controls. Each selected quality triggers a new HLS request that is
      * captured by the WebView client.
      */
-    private fun qualityProbeScript(): String = """
+    private fun qualityProbeScript(preferredQualityLabel: String?): String {
+        val preferredQuality = preferredQualityLabel?.let(::qualityNumber)?.toString() ?: "null"
+        return """
         (function(){
+            var targetQuality = $preferredQuality;
             function findPlayer(win){
                 var names = ["player", "Player", "playerjs", "pl"];
                 for (var i = 0; i < names.length; i++) {
@@ -477,6 +540,14 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             for (var i = 0; i < labels.length; i++) {
                 if (String(labels[i] || "").indexOf("<<<") !== 0) playable.push({ index: i, label: labels[i] });
             }
+            if (targetQuality) {
+                playable = playable.filter(function(item) {
+                    return parseInt(item.label, 10) === targetQuality;
+                });
+                if (!playable.length) {
+                    playable.push({ index: 0, label: String(targetQuality) });
+                }
+            }
 
             function playCurrent() {
                 try {
@@ -540,4 +611,5 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             return JSON.stringify(labels);
         })();
     """.trimIndent()
+    }
 }

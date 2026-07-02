@@ -31,7 +31,6 @@ android {
             applicationIdSuffix = ".debug"
             resValue("string", "search_suggest_authority", "$baseApplicationId.debug.search")
             isMinifyEnabled = false
-            isShrinkResources = false
         }
 
         release {

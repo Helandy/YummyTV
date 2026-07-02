@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -29,7 +30,9 @@ import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeMobileWatchStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.blocksNewDownload
 import su.afk.yummy.tv.feature.details.episodes.utils.formatDuration
+import su.afk.yummy.tv.feature.details.episodes.utils.isDownloadBusy
 import su.afk.yummy.tv.feature.details.episodes.utils.timingLabel
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.view.DetailsMediaCard
@@ -37,6 +40,7 @@ import kotlin.math.roundToInt
 
 private val InProgressColor = Color(0xFF4CAF50)
 private val DownloadErrorColor = Color(0xFFE53935)
+private val DownloadResolvingColor = Color(0xFFFFC107)
 
 @Composable
 internal fun EpisodeMobileCard(
@@ -45,6 +49,7 @@ internal fun EpisodeMobileCard(
     kodikIframeUrl: String?,
     downloadStatus: EpisodesState.EpisodeDownloadUiState?,
     downloadResolving: Boolean,
+    downloadAwaitingQualitySelection: Boolean,
     onInfoClick: () -> Unit,
     onDownloadClick: () -> Unit,
     onClick: () -> Unit,
@@ -55,13 +60,13 @@ internal fun EpisodeMobileCard(
     val downloadStatusText = downloadStatusText(
         status = downloadStatus,
         resolving = downloadResolving,
+        awaitingQualitySelection = downloadAwaitingQualitySelection,
     )
-    val downloadStatusColor =
-        if (downloadStatus?.status == EpisodesState.EpisodeDownloadUiStatus.Failed) {
-            DownloadErrorColor
-        } else {
-            MaterialTheme.colorScheme.primary
-        }
+    val downloadStatusColor = when {
+        downloadResolving || downloadAwaitingQualitySelection -> DownloadResolvingColor
+        downloadStatus?.status == EpisodesState.EpisodeDownloadUiStatus.Failed -> DownloadErrorColor
+        else -> MaterialTheme.colorScheme.primary
+    }
     DetailsMediaCard(
         title = stringResource(R.string.details_mobile_episode, video.episode),
         subtitle = video.durationSeconds?.formatDuration(),
@@ -90,6 +95,7 @@ internal fun EpisodeMobileCard(
                 EpisodeDownloadButton(
                     status = downloadStatus,
                     resolving = downloadResolving,
+                    awaitingQualitySelection = downloadAwaitingQualitySelection,
                     onClick = onDownloadClick,
                 )
             }
@@ -102,21 +108,36 @@ internal fun EpisodeMobileCard(
 private fun EpisodeDownloadButton(
     status: EpisodesState.EpisodeDownloadUiState?,
     resolving: Boolean,
+    awaitingQualitySelection: Boolean,
     onClick: () -> Unit,
 ) {
-    val busy = resolving ||
-            status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-            status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
+    val waitingForUser = resolving || awaitingQualitySelection
     Box(
         modifier = Modifier.size(48.dp),
         contentAlignment = Alignment.Center,
     ) {
         IconButton(
-            enabled = !busy && status?.status != EpisodesState.EpisodeDownloadUiStatus.Downloaded,
+            enabled = !waitingForUser && (
+                    status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ||
+                            !status.blocksNewDownload()
+                    ),
             onClick = onClick,
             modifier = Modifier.fillMaxSize(),
         ) {
             when {
+                waitingForUser ->
+                    Icon(
+                        imageVector = Icons.Filled.HourglassEmpty,
+                        contentDescription = stringResource(
+                            if (resolving) {
+                                R.string.details_mobile_episode_download_resolving_quality
+                            } else {
+                                R.string.details_mobile_download_quality_prompt
+                            }
+                        ),
+                        tint = DownloadResolvingColor,
+                    )
+
                 status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
                     Icon(
                         imageVector = Icons.Filled.Done,
@@ -137,7 +158,7 @@ private fun EpisodeDownloadButton(
             }
         }
 
-        if (busy) {
+        if (status.isDownloadBusy()) {
             LinearProgressIndicator(
                 progress = { status?.progress ?: 0f },
                 color = MaterialTheme.colorScheme.primary,
@@ -155,14 +176,22 @@ private fun EpisodeDownloadButton(
 private fun downloadStatusText(
     status: EpisodesState.EpisodeDownloadUiState?,
     resolving: Boolean,
+    awaitingQualitySelection: Boolean,
 ): String? {
     val uiStatus = status?.status
     return when {
-        resolving ||
-                uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+        resolving -> stringResource(R.string.details_mobile_episode_download_resolving_quality)
+        awaitingQualitySelection -> stringResource(R.string.details_mobile_download_quality_prompt)
+
+        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued ||
                 uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloading -> {
-            val percent = ((status?.progress ?: 0f).coerceIn(0f, 1f) * 100).roundToInt()
+            val percent = (status.progress.coerceIn(0f, 1f) * 100).roundToInt()
             stringResource(R.string.details_mobile_episode_download_progress, percent)
+        }
+
+        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Paused -> {
+            val percent = (status.progress.coerceIn(0f, 1f) * 100).roundToInt()
+            stringResource(R.string.details_mobile_episode_download_paused, percent)
         }
 
         uiStatus == EpisodesState.EpisodeDownloadUiStatus.Failed -> {

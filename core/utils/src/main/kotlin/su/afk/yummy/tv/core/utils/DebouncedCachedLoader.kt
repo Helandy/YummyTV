@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlin.time.Duration.Companion.milliseconds
 
 class DebouncedCachedLoader<K, V : Any>(
     private val loadValue: suspend (K) -> V?,
@@ -29,7 +30,7 @@ class DebouncedCachedLoader<K, V : Any>(
         if (cache.containsKey(key)) return
 
         focusedLoadJob = scope.launch {
-            delay(debounceMs)
+            delay(debounceMs.milliseconds)
             runCatching { loadValue(key) }.onSuccess { value ->
                 if (value == null) return@onSuccess
                 cache[key] = value

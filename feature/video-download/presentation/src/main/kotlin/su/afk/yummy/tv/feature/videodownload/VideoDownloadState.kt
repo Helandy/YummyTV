@@ -13,7 +13,11 @@ class VideoDownloadState {
     sealed interface Event : UiEvent {
         data object BackSelected : Event
         data class ItemSelected(val id: Long) : Event
+        data class DetailsSelected(val animeId: Int) : Event
         data class DeleteSelected(val id: Long) : Event
+        data class PauseSelected(val id: Long) : Event
+        data class ResumeSelected(val id: Long) : Event
+        data class RestartSelected(val id: Long) : Event
     }
 
     sealed interface Effect : UiEffect

@@ -18,8 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration.Companion.seconds
 
-internal const val PLAYER_INLINE_TOAST_DURATION_MS = 2_000L
+internal val PLAYER_INLINE_TOAST_DURATION = 2.seconds
 
 @Composable
 internal fun PlayerInlineToast(

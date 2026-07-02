@@ -19,8 +19,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
-private const val TvLazyGridFocusRestoreTimeoutMillis = 500L
+private val TvLazyGridFocusRestoreTimeout = 500.milliseconds
 private const val TvLazyGridFocusRestoreInitialFrameWait = 2
 
 @Stable
@@ -142,7 +143,7 @@ private suspend fun <Key : Any> restoreTvLazyGridKeyFocus(
 ): Boolean {
     val itemFocusRequester = itemFocusRequesters[itemKey] ?: return false
 
-    return withTimeoutOrNull(TvLazyGridFocusRestoreTimeoutMillis) {
+    return withTimeoutOrNull(TvLazyGridFocusRestoreTimeout) {
         repeat(TvLazyGridFocusRestoreInitialFrameWait) {
             withFrameNanos { }
         }
@@ -173,7 +174,7 @@ private suspend fun <Key : Any> restoreTvLazyListKeyFocus(
 ): Boolean {
     val itemFocusRequester = itemFocusRequesters[itemKey] ?: return false
 
-    return withTimeoutOrNull(TvLazyGridFocusRestoreTimeoutMillis) {
+    return withTimeoutOrNull(TvLazyGridFocusRestoreTimeout) {
         repeat(TvLazyGridFocusRestoreInitialFrameWait) {
             withFrameNanos { }
         }
@@ -211,7 +212,7 @@ private suspend fun requestFocusForFrames(
 private suspend fun requestFocusUntilTimeout(
     requester: FocusRequester,
 ): Boolean =
-    withTimeoutOrNull(TvLazyGridFocusRestoreTimeoutMillis) {
+    withTimeoutOrNull(TvLazyGridFocusRestoreTimeout) {
         var focused = false
         while (!focused) {
             withFrameNanos { }

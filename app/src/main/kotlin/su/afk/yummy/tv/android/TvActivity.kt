@@ -2,6 +2,7 @@ package su.afk.yummy.tv.android
 
 import android.content.Intent
 import android.media.tv.TvContract
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,6 +45,7 @@ class TvActivity : ComponentActivity() {
         tvIntegration.start()
         lifecycleScope.launch {
             tvIntegration.browsableChannelRequest.collect { channelId ->
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return@collect
                 runCatching {
                     requestChannelBrowsable.launch(
                         Intent(TvContract.ACTION_REQUEST_CHANNEL_BROWSABLE)

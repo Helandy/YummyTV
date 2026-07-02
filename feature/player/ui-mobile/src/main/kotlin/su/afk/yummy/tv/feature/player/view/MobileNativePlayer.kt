@@ -5,11 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -62,7 +58,7 @@ import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.segments
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
-import su.afk.yummy.tv.feature.player.mobile.R as MobileR
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -190,7 +186,7 @@ internal fun MobileNativePlayer(
     fun scheduleOverlayHide() {
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
-            delay(4_000)
+            delay(4.seconds)
             if (wantsPlay && settingsMode == null && !isSeeking) {
                 overlayVisible = false
             }
@@ -330,7 +326,7 @@ internal fun MobileNativePlayer(
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
         stepSeekToastJob = coroutineScope.launch {
-            delay(MOBILE_PLAYER_SEEK_TOAST_DURATION_MS)
+            delay(MOBILE_PLAYER_SEEK_TOAST_DURATION)
             stepSeekToastText = null
         }
     }
@@ -513,7 +509,7 @@ internal fun MobileNativePlayer(
                     }
                 }
             }
-            delay(1_000)
+            delay(1.seconds)
         }
     }
 
@@ -703,52 +699,7 @@ internal fun MobileNativePlayer(
                         )
                     )
                 },
-                animeId = state.animeId,
-                episodes = ui.activeEpisodes,
-                selectedEpisodeIndex = state.sourceSelection.episodeIndex,
-                downloadStatuses = state.downloadStatuses,
-                resolvingDownloadKeys = state.resolvingDownloadKeys,
-                onEpisodeSelected = { index ->
-                    onEvent(PlayerState.Event.EpisodeSelected(index, player.currentPosition))
-                },
-                onEpisodeDownloadSelected = { index ->
-                    onEvent(PlayerState.Event.DownloadEpisodeSelected(index))
-                },
                 onDismiss = { settingsMode = null },
-            )
-        }
-
-        val candidate = state.downloadQualityCandidate
-        if (candidate != null && !isInPictureInPictureMode) {
-            AlertDialog(
-                onDismissRequest = {
-                    onEvent(PlayerState.Event.DownloadQualityPickerDismissed)
-                },
-                title = { Text(stringResource(MobileR.string.player_mobile_download_quality_title)) },
-                text = {
-                    androidx.compose.foundation.layout.Column {
-                        candidate.options.forEach { option ->
-                            TextButton(
-                                onClick = {
-                                    onEvent(PlayerState.Event.DownloadQualitySelected(option))
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(option.label)
-                            }
-                        }
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            onEvent(PlayerState.Event.DownloadQualityPickerDismissed)
-                        }
-                    ) {
-                        Text(stringResource(MobileR.string.player_mobile_done))
-                    }
-                },
             )
         }
     }

@@ -80,6 +80,8 @@ import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -183,7 +185,7 @@ internal fun ExoPlayerView(
     fun scheduleHide() {
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
-            delay(4_000)
+            delay(4.seconds)
             if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel && !showNextEpisodePrompt && !showRateTitlePrompt) {
                 controllerVisible = false
             }
@@ -286,7 +288,7 @@ internal fun ExoPlayerView(
         stepSeekToastIcon = direction.toastIcon
         stepSeekToastJob?.cancel()
         stepSeekToastJob = coroutineScope.launch {
-            delay(PLAYER_INLINE_TOAST_DURATION_MS)
+            delay(PLAYER_INLINE_TOAST_DURATION)
             stepSeekToastText = null
         }
     }
@@ -352,7 +354,7 @@ internal fun ExoPlayerView(
         skipSnackbarText = message
         skipSnackbarJob?.cancel()
         skipSnackbarJob = coroutineScope.launch {
-            delay(3_000)
+            delay(3.seconds)
             if (skipSnackbarText == message) skipSnackbarText = null
         }
         val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
@@ -487,7 +489,7 @@ internal fun ExoPlayerView(
             if (episodeKey.isNotBlank() && duration > 0 && now - lastSaveTime > 10_000L) {
                 saveProgressIfReady()
             }
-            delay(500)
+            delay(500.milliseconds)
         }
     }
 
@@ -594,7 +596,7 @@ internal fun ExoPlayerView(
                 skipFocusRequester.requestFocus()
             } catch (_: Exception) {
             }
-            delay(10_000)
+            delay(10.seconds)
             if (highlightedSkipKey == skip.key) highlightedSkipKey = null
         }
     }

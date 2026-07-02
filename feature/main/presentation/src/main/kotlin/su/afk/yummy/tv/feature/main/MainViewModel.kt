@@ -31,11 +31,12 @@ import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.feature.main.presentation.R
-import su.afk.yummy.tv.feature.main.utils.NOTIFICATION_REFRESH_INTERVAL_MS
+import su.afk.yummy.tv.feature.main.utils.NOTIFICATION_REFRESH_INTERVAL
 import su.afk.yummy.tv.feature.main.utils.firstOrZero
 import su.afk.yummy.tv.feature.main.utils.isNewer
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -141,7 +142,7 @@ class MainViewModel @Inject constructor(
             while (true) {
                 runCatching { getNotificationCounts().sumOf { it.count } }
                     .onSuccess { count -> settingsStore.setYaniUnreadNotificationsCount(count) }
-                delay(NOTIFICATION_REFRESH_INTERVAL_MS)
+                delay(NOTIFICATION_REFRESH_INTERVAL)
             }
         }
     }
@@ -158,7 +159,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val update = runCatching {
                 val isCurrentVersionSupported = versionSupportChecker.isCurrentVersionSupported()
-                val release = withTimeoutOrNull(GITHUB_UPDATE_TIMEOUT_MS) {
+                val release = withTimeoutOrNull(GITHUB_UPDATE_TIMEOUT) {
                     updateChecker.getLatestRelease()
                 } ?: return@runCatching null
                 val remoteVersion = release.tagName.trimStart('v')
@@ -202,4 +203,4 @@ private fun YaniApplicationTokenState.analyticsValue(): String =
     }
 
 private const val EVENT_SCREEN_OPENED = "main_screen"
-private const val GITHUB_UPDATE_TIMEOUT_MS = 5_000L
+private val GITHUB_UPDATE_TIMEOUT = 5.seconds

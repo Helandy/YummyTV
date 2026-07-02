@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:error"))
     implementation(project(":core:navigation"))
+    implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:video-download:domain"))
 

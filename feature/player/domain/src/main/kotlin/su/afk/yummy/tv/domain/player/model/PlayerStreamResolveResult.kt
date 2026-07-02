@@ -5,6 +5,7 @@ sealed interface PlayerStreamResolveResult {
         val url: String,
         val headers: Map<String, String> = emptyMap(),
         val qualities: LinkedHashMap<String, String>? = null,
+        val qualityHeaders: Map<String, Map<String, String>> = emptyMap(),
     ) : PlayerStreamResolveResult
 
     data class KodikBlocked(

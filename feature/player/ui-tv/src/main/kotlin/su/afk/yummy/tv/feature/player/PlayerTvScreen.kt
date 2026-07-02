@@ -34,9 +34,10 @@ import su.afk.yummy.tv.feature.player.view.KodikBlockedOverlay
 import su.afk.yummy.tv.feature.player.view.StreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.StreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.ExoPlayerView
-import su.afk.yummy.tv.feature.player.view.player.PLAYER_INLINE_TOAST_DURATION_MS
+import su.afk.yummy.tv.feature.player.view.player.PLAYER_INLINE_TOAST_DURATION
 import su.afk.yummy.tv.feature.player.view.player.PlayerInlineToast
 import su.afk.yummy.tv.feature.player.view.player.PlayerSelectionPanel
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun PlayerTvScreen(
@@ -82,11 +83,11 @@ fun PlayerTvScreen(
             backToastText = pressBackAgainText
             backToastJob?.cancel()
             backToastJob = coroutineScope.launch {
-                delay(PLAYER_INLINE_TOAST_DURATION_MS)
+                delay(PLAYER_INLINE_TOAST_DURATION)
                 backToastText = null
             }
             coroutineScope.launch {
-                delay(3_000)
+                delay(3.seconds)
                 backPressedOnce = false
             }
         }
