@@ -84,6 +84,7 @@
     <string name="details_rating_not_set">You have not rated this yet</string>
     <string name="details_rating_empty">No Yani ratings yet</string>
     <string name="details_rating_votes_short">%1$d user ratings</string>
+    <string name="details_rating_percent">%1$d%%</string>
     <string name="details_list_stats">Watching %1$d · Planned %2$d · Completed %3$d</string>
     <string name="details_collections_button">Collections</string>
     <string name="details_collections_title">Collections with this title</string>

@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.details.rating.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -33,8 +37,25 @@ internal fun RatingAction(
     icon: (@Composable () -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
-    val background = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-    val color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val background = when {
+        focused && selected -> MaterialTheme.colorScheme.primary
+        focused -> MaterialTheme.colorScheme.primaryContainer
+        selected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    }
+    val color = when {
+        focused && selected -> MaterialTheme.colorScheme.onPrimary
+        focused -> MaterialTheme.colorScheme.onPrimaryContainer
+        selected -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val focusedBorderColor = if (selected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
     Row(
         modifier = modifier
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
@@ -45,10 +66,17 @@ internal fun RatingAction(
                         onClick()
                         true
                     }
+
                     else -> false
                 }
             }
-            .tvFocusableClick(onClick = onClick, shape = shape)
+            .tvFocusableClick(
+                onClick = onClick,
+                shape = shape,
+                interactionSource = interactionSource,
+                focusedScale = 1.08f,
+                focusedBorderColor = focusedBorderColor,
+            )
             .background(background, shape)
             .padding(horizontal = if (compact) 8.dp else 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,

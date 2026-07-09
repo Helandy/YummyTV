@@ -19,10 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.feature.details.R
+import java.text.NumberFormat
+import kotlin.math.roundToInt
 
 @Composable
 internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
     val total = distribution.sumOf { it.count }
+    val integerFormat = NumberFormat.getIntegerInstance()
     if (total <= 0) {
         Text(
             text = stringResource(R.string.details_rating_empty),
@@ -39,35 +42,78 @@ internal fun RatingDistribution(distribution: List<AnimeRatingBucket>) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        distribution.sortedByDescending { it.rating }.forEach { bucket ->
-            val fraction = bucket.count.toFloat() / total.toFloat()
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = bucket.rating.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.width(24.dp),
-                )
-                Box(
-                    modifier = Modifier
-                        .width(360.dp)
-                        .height(10.dp)
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f), RoundedCornerShape(5.dp)),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(28.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            distribution.sortedByDescending { it.rating }.chunked(5).forEach { column ->
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(fraction.coerceIn(0f, 1f))
-                            .height(10.dp)
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(5.dp)),
-                    )
+                    column.forEach { bucket ->
+                        RatingDistributionRow(
+                            bucket = bucket,
+                            total = total,
+                            count = integerFormat.format(bucket.count),
+                        )
+                    }
                 }
-                Text(
-                    text = bucket.count.toString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         }
+    }
+}
+
+@Composable
+private fun RatingDistributionRow(
+    bucket: AnimeRatingBucket,
+    total: Int,
+    count: String,
+) {
+    val fraction = (bucket.count.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = bucket.rating.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.width(24.dp),
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(10.dp)
+                .background(
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f),
+                    RoundedCornerShape(5.dp),
+                ),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction)
+                    .height(10.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(5.dp)),
+            )
+        }
+        Text(
+            text = count,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(52.dp),
+        )
+        Text(
+            text = stringResource(
+                R.string.details_rating_percent,
+                (fraction * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(42.dp),
+        )
     }
 }
