@@ -67,6 +67,11 @@ internal fun globalDubbingNames(state: PlayerState.State): List<String> =
     state.sourceGraph.balancers
         .flatMap { balancer -> balancer.dubbings.map { it.name } }
         .distinct()
+        .sortedWith(
+            compareByDescending<String> { dubbingName ->
+                globalDubbingViews(state, dubbingName)
+            }.thenBy { it }
+        )
 
 internal fun globalDubbingEpisodeNumbers(
     state: PlayerState.State,
