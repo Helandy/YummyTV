@@ -36,7 +36,6 @@ internal class DefaultMobilePlayerPlaybackConfig @Inject constructor(
                 return if (key != null) {
                     CacheDataSource.Factory()
                         .setCache(cache)
-                        .setCacheKeyFactory { key }
                         .setFlags(CacheDataSource.FLAG_BLOCK_ON_CACHE)
                         .createDataSource()
                 } else {

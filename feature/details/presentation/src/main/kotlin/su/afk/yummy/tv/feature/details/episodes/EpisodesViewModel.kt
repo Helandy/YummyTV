@@ -189,6 +189,14 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 )
             }
 
+            EpisodesState.Event.DeleteDownloadedEpisodeSelected -> {
+                val action = currentState.pendingDownloadedEpisodeAction ?: return
+                setState { copy(pendingDownloadedEpisodeAction = null) }
+                viewModelScope.launch {
+                    cancelOrDeleteVideoDownload(action.downloadId)
+                }
+            }
+
             EpisodesState.Event.DownloadedEpisodeActionDismissed -> {
                 setState { copy(pendingDownloadedEpisodeAction = null) }
             }

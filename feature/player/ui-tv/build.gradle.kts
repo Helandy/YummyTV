@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:player:api"))
+    implementation(project(":feature:player:domain"))
     implementation(project(":feature:player:presentation"))
     implementation(project(":feature:player:ui-common"))
 

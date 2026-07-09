@@ -17,11 +17,15 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.notification.VideoDownloadNotificationService
+import su.afk.yummy.tv.data.videodownload.worker.utils.ALLOHA_HLS_REQUEST_INTERVAL_MS
+import su.afk.yummy.tv.data.videodownload.worker.utils.PacedHlsDataSourceFactory
 import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.USER_AGENT_HEADER
 import su.afk.yummy.tv.data.videodownload.worker.utils.isAllohaDownload
@@ -35,12 +39,14 @@ import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.throttleLabel
 import su.afk.yummy.tv.data.videodownload.worker.utils.userAgent
 import su.afk.yummy.tv.data.videodownload.worker.utils.withDownloadRequestHeaders
+import su.afk.yummy.tv.domain.player.model.ALLOHA_STREAM_REFRESH_INTERVAL_MS
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import su.afk.yummy.tv.domain.videodownload.usecase.RefreshVideoDownloadStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.UpdateVideoDownloadPreparedStreamUseCase
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
@@ -65,7 +71,12 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             errorMessage = null,
         )
         if (item.shouldRefreshBeforeDownload(runAttemptCount)) {
-            when (val result = refreshDownloadStream(id = id, item = item, reason = "preflight")) {
+            val reason = if (item.progress > 0f && runAttemptCount == 0) {
+                DownloadRestartReason.UserResume
+            } else {
+                DownloadRestartReason.Preflight
+            }
+            when (val result = refreshDownloadStream(id = id, item = item, reason = reason)) {
                 is DownloadStreamRefresh.Success -> item = result.item
                 is DownloadStreamRefresh.Failure -> {
                     val failedDetails = "preflightRefreshFailed=${result.message}; " +
@@ -100,7 +111,39 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         while (true) {
             val streamKind = item.streamUrl.streamKind()
             try {
-                downloadItem(id = id, item = item, retriedAfterForbidden = retriedAfterForbidden)
+                val outcome = downloadItem(
+                    id = id,
+                    item = item,
+                    retriedAfterForbidden = retriedAfterForbidden,
+                )
+                if (outcome == DownloadAttemptOutcome.ScheduledRefresh) {
+                    logDownloadInfo {
+                        "Rotating active Alloha stream id=$id after scheduled interval"
+                    }
+                    when (
+                        val refreshResult = refreshDownloadStream(
+                            id = id,
+                            item = item,
+                            reason = DownloadRestartReason.ScheduledRefresh,
+                        )
+                    ) {
+                        is DownloadStreamRefresh.Success -> {
+                            item = refreshResult.item
+                            continue
+                        }
+
+                        is DownloadStreamRefresh.Failure -> {
+                            val retryDetails = "scheduledRefreshFailed=${refreshResult.message}; " +
+                                    "workRetry=${runAttemptCount.nextRetryAttempt()}"
+                            repository.updateStatus(
+                                id = id,
+                                status = VideoDownloadStatus.Queued,
+                                errorMessage = retryDetails,
+                            )
+                            return Result.retry()
+                        }
+                    }
+                }
                 repository.updateStatus(
                     id = id,
                     status = VideoDownloadStatus.Downloaded,
@@ -126,7 +169,13 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                         "Download id=$id got 403 on adaptive stream request; refreshing stream and retrying. " +
                                 "details=$details"
                     }
-                    when (val refreshResult = refreshDownloadStream(id, item, reason = "403")) {
+                    when (
+                        val refreshResult = refreshDownloadStream(
+                            id,
+                            item,
+                            reason = DownloadRestartReason.Forbidden,
+                        )
+                    ) {
                         is DownloadStreamRefresh.Success -> {
                             item = refreshResult.item
                             continue
@@ -203,21 +252,21 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                             val refreshResult = refreshDownloadStream(
                                 id = id,
                                 item = item,
-                                reason = "transient",
+                                reason = DownloadRestartReason.TransientFailure,
                             )
                         ) {
                             is DownloadStreamRefresh.Success -> {
                                 val currentHost = item.streamUrl.downloadHost()
                                 val refreshedHost = refreshResult.item.streamUrl.downloadHost()
-                                if (
-                                    (refreshResult.item.streamUrl == item.streamUrl ||
-                                            refreshedHost == currentHost && refreshedHost != null)
+                                if (refreshResult.item.streamUrl == item.streamUrl &&
+                                    runAttemptCount < MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
                                 ) {
-                                    val retryDetails = "$details; refreshedSameHost=true; " +
-                                            "workRetry=${runAttemptCount.nextRetryAttempt()}"
+                                    val retryDetails = "$details; refreshedSameUrl=true; " +
+                                            "workRetry=${runAttemptCount.nextRetryAttempt()}/" +
+                                            MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
                                     logDownloadWarning(throwable) {
                                         "Download id=$id will retry because refreshed Alloha stream " +
-                                                "still points to the same transiently unreachable host. " +
+                                                "still has the same transiently unreachable URL. " +
                                                 "details=$retryDetails"
                                     }
                                     repository.updateStatus(
@@ -226,6 +275,12 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                                         errorMessage = retryDetails,
                                     )
                                     return Result.retry()
+                                }
+                                if (refreshedHost == currentHost && refreshedHost != null) {
+                                    logDownloadInfo {
+                                        "Download id=$id received a new signed Alloha URL on the " +
+                                                "same CDN host; retrying it"
+                                    }
                                 }
                                 item = refreshResult.item
                                 delay(TRANSIENT_RETRY_DELAY_MS)
@@ -269,7 +324,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     private suspend fun refreshDownloadStream(
         id: Long,
         item: VideoDownloadItem,
-        reason: String,
+        reason: DownloadRestartReason,
     ): DownloadStreamRefresh {
         return when (
             val refreshResult = refreshVideoDownloadStream(
@@ -279,10 +334,15 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         ) {
             is VideoDownloadStreamRefreshResult.Success -> {
                 val stream = refreshResult.stream
+                if (item.streamUrl.streamKind().isAdaptive && item.isAllohaDownload()) {
+                    // The adaptive manifest uses the stable custom key while its signed segment
+                    // URLs change. Remove only the manifest entry so the next downloader reads the
+                    // fresh playlist and still reuses already cached segments.
+                    runCatching { cacheProvider.cache.removeResource(item.cacheKey) }
+                }
                 updateVideoDownloadPreparedStream(id, stream)
                 val latestItem = repository.getDownload(id) ?: item
                 val refreshedItem = latestItem.copy(
-                    qualityLabel = stream.qualityLabel,
                     streamUrl = stream.url,
                     headers = stream.headers,
                 )
@@ -302,13 +362,14 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         id: Long,
         item: VideoDownloadItem,
         retriedAfterForbidden: Boolean,
-    ) {
+    ): DownloadAttemptOutcome = coroutineScope {
         val streamKind = item.streamUrl.streamKind()
+        val isAlloha = item.isAllohaDownload()
         logDownloadInfo {
             "Starting download id=$id animeId=${item.animeId} videoId=${item.videoId} " +
                     "player=${item.playerName} quality=${item.qualityLabel} " +
                     "kind=$streamKind throttle=${streamKind.throttleLabel()} " +
-                    "segmentPace=${streamKind.segmentPaceLabel()} retryUsed=$retriedAfterForbidden " +
+                    "segmentPace=${streamKind.segmentPaceLabel(isAlloha)} retryUsed=$retriedAfterForbidden " +
                     "url=${item.streamUrl.safeDownloadUrlForLog()}"
         }
         withContext(Dispatchers.IO) {
@@ -323,9 +384,14 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     downloadHeaders.filterKeys { !it.equals(USER_AGENT_HEADER, ignoreCase = true) }
                 if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
             }
+            val upstreamFactory = if (isAlloha && streamKind == StreamKind.Hls) {
+                PacedHlsDataSourceFactory(httpUpstream, ALLOHA_HLS_REQUEST_INTERVAL_MS)
+            } else {
+                httpUpstream
+            }
             val cacheDataSource = CacheDataSource.Factory()
                 .setCache(cacheProvider.cache)
-                .setUpstreamDataSourceFactory(httpUpstream)
+                .setUpstreamDataSourceFactory(upstreamFactory)
             val mediaItem = MediaItem.Builder()
                 .setUri(item.streamUrl)
                 .setCustomCacheKey(item.cacheKey)
@@ -337,64 +403,85 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             var lastProgress = -1
             var lastLoggedProgress = -1
             val downloader = createDownloader(mediaItem, cacheDataSource)
+            val scheduledRefresh = AtomicBoolean(false)
+            val refreshTimer = if (item.isAllohaDownload() && streamKind.isAdaptive) {
+                launch {
+                    delay(ALLOHA_STREAM_REFRESH_INTERVAL_MS)
+                    scheduledRefresh.set(true)
+                    downloader.cancel()
+                }
+            } else {
+                null
+            }
             logDownloadDebug {
                 "Prepared downloader id=$id kind=$streamKind cacheKeyHash=${item.cacheKey.hashCode()} " +
                         "headers=${downloadHeaders.safeHeaderNames()} retryUsed=$retriedAfterForbidden"
             }
-            downloader.download { contentLength, bytesDownloaded, percentDownloaded ->
-                val total = contentLength.takeIf { it > 0L }
-                val reportedProgress = if (percentDownloaded >= 0f) {
-                    (percentDownloaded / 100f).coerceIn(0f, 1f)
-                } else if (total != null) {
-                    (bytesDownloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                } else {
-                    0f
-                }
-                if (reportedProgress > progressFloor) {
-                    progressFloor = reportedProgress
-                }
-                if (bytesDownloaded > bytesFloor) {
-                    bytesFloor = bytesDownloaded
-                }
-                if (total != null) {
-                    totalSnapshot = total
-                }
-                val progress = progressFloor
-                val storedBytesDownloaded = bytesFloor
-                val storedTotalBytes = totalSnapshot
-                val progressPercent = (progress * 100).roundToInt()
-                if (progressPercent != lastProgress) {
-                    lastProgress = progressPercent
-                    setForegroundAsync(
-                        notificationService.createForegroundInfo(
-                            item = item,
-                            progressPercent = progressPercent,
+            try {
+                downloader.download { contentLength, bytesDownloaded, percentDownloaded ->
+                    val total = contentLength.takeIf { it > 0L }
+                    val reportedProgress = if (percentDownloaded >= 0f) {
+                        (percentDownloaded / 100f).coerceIn(0f, 1f)
+                    } else if (total != null) {
+                        (bytesDownloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                    } else {
+                        0f
+                    }
+                    if (reportedProgress > progressFloor) {
+                        progressFloor = reportedProgress
+                    }
+                    if (bytesDownloaded > bytesFloor) {
+                        bytesFloor = bytesDownloaded
+                    }
+                    if (total != null) {
+                        totalSnapshot = total
+                    }
+                    val progress = progressFloor
+                    val storedBytesDownloaded = bytesFloor
+                    val storedTotalBytes = totalSnapshot
+                    val progressPercent = (progress * 100).roundToInt()
+                    if (progressPercent != lastProgress) {
+                        lastProgress = progressPercent
+                        setForegroundAsync(
+                            notificationService.createForegroundInfo(
+                                item = item,
+                                progressPercent = progressPercent,
+                            )
                         )
-                    )
-                    setProgressAsync(
-                        androidx.work.workDataOf(
-                            KEY_PROGRESS to progressPercent,
+                        setProgressAsync(
+                            androidx.work.workDataOf(
+                                KEY_PROGRESS to progressPercent,
+                            )
                         )
-                    )
-                    runBlocking {
-                        repository.updateStatus(
-                            id = id,
-                            status = VideoDownloadStatus.Downloading,
-                            progress = progress,
-                            bytesDownloaded = storedBytesDownloaded,
-                            totalBytes = storedTotalBytes,
-                            errorMessage = null,
-                        )
+                        runBlocking {
+                            repository.updateStatus(
+                                id = id,
+                                status = VideoDownloadStatus.Downloading,
+                                progress = progress,
+                                bytesDownloaded = storedBytesDownloaded,
+                                totalBytes = storedTotalBytes,
+                                errorMessage = null,
+                            )
+                        }
+                    }
+                    if (progressPercent / PROGRESS_LOG_STEP > lastLoggedProgress / PROGRESS_LOG_STEP) {
+                        lastLoggedProgress = progressPercent
+                        logDownloadDebug {
+                            "Progress id=$id progress=$progressPercent% " +
+                                    "bytes=$storedBytesDownloaded total=${storedTotalBytes ?: "unknown"} " +
+                                    "retryUsed=$retriedAfterForbidden"
+                        }
                     }
                 }
-                if (progressPercent / PROGRESS_LOG_STEP > lastLoggedProgress / PROGRESS_LOG_STEP) {
-                    lastLoggedProgress = progressPercent
-                    logDownloadDebug {
-                        "Progress id=$id progress=$progressPercent% " +
-                                "bytes=$storedBytesDownloaded total=${storedTotalBytes ?: "unknown"} " +
-                                "retryUsed=$retriedAfterForbidden"
-                    }
-                }
+            } catch (throwable: Throwable) {
+                if (!scheduledRefresh.get()) throw throwable
+            } finally {
+                refreshTimer?.cancel()
+            }
+            if (scheduledRefresh.get()) {
+                DownloadAttemptOutcome.ScheduledRefresh
+            } else {
+                DownloadAttemptOutcome.Completed
             }
         }
     }
@@ -422,6 +509,19 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     private sealed interface DownloadStreamRefresh {
         data class Success(val item: VideoDownloadItem) : DownloadStreamRefresh
         data class Failure(val message: String) : DownloadStreamRefresh
+    }
+
+    private enum class DownloadAttemptOutcome {
+        Completed,
+        ScheduledRefresh,
+    }
+
+    private enum class DownloadRestartReason {
+        Preflight,
+        ScheduledRefresh,
+        Forbidden,
+        TransientFailure,
+        UserResume,
     }
 
     companion object {

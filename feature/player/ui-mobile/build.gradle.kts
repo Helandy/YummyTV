@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:utils"))
     implementation(project(":feature:player:api"))
+    implementation(project(":feature:player:domain"))
     implementation(project(":feature:player:presentation"))
     implementation(project(":feature:player:ui-common"))
     implementation(project(":feature:video-download:data"))

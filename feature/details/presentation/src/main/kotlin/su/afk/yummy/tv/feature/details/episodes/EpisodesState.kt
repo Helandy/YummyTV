@@ -116,6 +116,9 @@ class EpisodesState {
         /** Пользователь выбрал перекачивание серии с другой озвучкой. */
         data object RedownloadDubbingSelected : Event
 
+        /** Пользователь удалил скачанную серию из панели действий. */
+        data object DeleteDownloadedEpisodeSelected : Event
+
         /** Пользователь закрыл действия со скачанной серией. */
         data object DownloadedEpisodeActionDismissed : Event
 

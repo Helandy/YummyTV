@@ -194,6 +194,9 @@ private fun downloadStatusText(
             stringResource(R.string.details_mobile_episode_download_paused, percent)
         }
 
+        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
+            stringResource(R.string.details_mobile_episode_downloaded_action)
+
         uiStatus == EpisodesState.EpisodeDownloadUiStatus.Failed -> {
             val message = status.errorMessage
             if (message.isNullOrBlank()) {

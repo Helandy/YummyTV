@@ -130,9 +130,17 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         )
     }
 
-    /** Очищает временные поля потока прямо перед resolve активного iframe URL. */
-    fun preparingStreamResolve(state: PlayerState.State): PlayerState.State =
-        state.copy(
+    /** Подготавливает состояние перед resolve активного iframe URL. */
+    fun preparingStreamResolve(
+        state: PlayerState.State,
+        preserveCurrentStream: Boolean = false,
+    ): PlayerState.State =
+        if (preserveCurrentStream) {
+            state.copy(
+                playerError = null,
+                kodikBlockedError = null,
+            )
+        } else state.copy(
             streamUrl = null,
             streamHeaders = emptyMap(),
             streamQualityMap = null,

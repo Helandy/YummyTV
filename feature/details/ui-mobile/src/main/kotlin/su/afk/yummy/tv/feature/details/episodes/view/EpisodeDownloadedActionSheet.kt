@@ -11,6 +11,10 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,8 +28,11 @@ internal fun EpisodeDownloadedActionSheet(
     action: EpisodesState.DownloadedEpisodeAction,
     onPlay: () -> Unit,
     onRedownloadDubbing: () -> Unit,
+    onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var showDeleteConfirmation by rememberSaveable(action.downloadId) { mutableStateOf(false) }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -87,7 +94,28 @@ internal fun EpisodeDownloadedActionSheet(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
+            TextButton(
+                onClick = { showDeleteConfirmation = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.details_mobile_delete_downloaded_episode),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
+    }
+
+    if (showDeleteConfirmation) {
+        EpisodeDownloadDeleteConfirmationDialog(
+            episode = action.episode,
+            onConfirm = {
+                showDeleteConfirmation = false
+                onDelete()
+            },
+            onDismiss = { showDeleteConfirmation = false },
+        )
     }
 }
 

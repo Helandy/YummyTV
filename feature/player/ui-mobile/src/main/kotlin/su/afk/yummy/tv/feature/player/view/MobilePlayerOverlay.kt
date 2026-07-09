@@ -72,13 +72,8 @@ internal fun MobilePlayerOverlay(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MobilePlayerActionButton(
-                icon = Icons.AutoMirrored.Filled.VolumeUp,
-                onClick = onTrackSettings,
-            )
-            Spacer(Modifier.weight(1f))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MobilePlayerActionButton(
@@ -87,9 +82,24 @@ internal fun MobilePlayerOverlay(
                     onClick = onPrevEpisode,
                 )
                 MobilePlayerActionButton(
-                    icon = if (wantsPlay) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    primary = true,
-                    onClick = onPlayPause,
+                    icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    onClick = onTrackSettings,
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            MobilePlayerActionButton(
+                icon = if (wantsPlay) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                primary = true,
+                onClick = onPlayPause,
+            )
+            Spacer(Modifier.weight(1f))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MobilePlayerActionButton(
+                    icon = Icons.Filled.Tune,
+                    onClick = onPlaybackSettings,
                 )
                 MobilePlayerActionButton(
                     icon = Icons.Filled.SkipNext,
@@ -97,11 +107,6 @@ internal fun MobilePlayerOverlay(
                     onClick = onNextEpisode,
                 )
             }
-            Spacer(Modifier.weight(1f))
-            MobilePlayerActionButton(
-                icon = Icons.Filled.Tune,
-                onClick = onPlaybackSettings,
-            )
         }
     }
 }

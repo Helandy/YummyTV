@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VideoDownloadDao {
-    @Query("SELECT * FROM video_downloads WHERE status != 'Deleted' ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM video_downloads ORDER BY updatedAt DESC")
     fun observeDownloads(): Flow<List<VideoDownloadEntry>>
 
-    @Query("SELECT * FROM video_downloads WHERE animeId = :animeId AND status != 'Deleted'")
+    @Query("SELECT * FROM video_downloads WHERE animeId = :animeId ORDER BY updatedAt DESC")
     fun observeDownloadsForAnime(animeId: Int): Flow<List<VideoDownloadEntry>>
 
     @Query("SELECT * FROM video_downloads WHERE id = :id LIMIT 1")
@@ -21,11 +21,18 @@ interface VideoDownloadDao {
     @Query(
         """
         SELECT * FROM video_downloads
+        WHERE status IN ('Resolving', 'Queued', 'Downloading')
+        """
+    )
+    suspend fun getUnfinishedDownloads(): List<VideoDownloadEntry>
+
+    @Query(
+        """
+        SELECT * FROM video_downloads
         WHERE animeId = :animeId
           AND videoId = :videoId
           AND iframeUrl = :iframeUrl
           AND qualityLabel = :qualityLabel
-          AND status != 'Deleted'
         LIMIT 1
         """
     )
@@ -35,6 +42,49 @@ interface VideoDownloadDao {
         iframeUrl: String,
         qualityLabel: String,
     ): VideoDownloadEntry?
+
+    @Query(
+        """
+        SELECT * FROM video_downloads
+        WHERE animeId = :animeId
+          AND episode = :episode
+        """
+    )
+    suspend fun getEpisodeDownloads(
+        animeId: Int,
+        episode: String,
+    ): List<VideoDownloadEntry>
+
+    @Query(
+        """
+        UPDATE video_downloads
+        SET status = 'Deleted', progress = 0, errorMessage = NULL, updatedAt = :updatedAt
+        WHERE animeId = :animeId
+          AND episode = :episode
+        """
+    )
+    suspend fun markEpisodeDeleted(
+        animeId: Int,
+        episode: String,
+        updatedAt: Long,
+    )
+
+    @Query(
+        """
+        UPDATE video_downloads
+        SET status = 'Deleted', progress = 0, errorMessage = NULL, updatedAt = :updatedAt
+        WHERE animeId = :animeId
+          AND episode = :episode
+          AND status = 'Failed'
+          AND id != :keepId
+        """
+    )
+    suspend fun markOtherFailedEpisodeDownloadsDeleted(
+        animeId: Int,
+        episode: String,
+        keepId: Long,
+        updatedAt: Long,
+    )
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: VideoDownloadEntry): Long

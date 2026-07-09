@@ -170,6 +170,7 @@ fun EpisodesMobileScreen(
             onRedownloadDubbing = {
                 onEvent(EpisodesState.Event.RedownloadDubbingSelected)
             },
+            onDelete = { onEvent(EpisodesState.Event.DeleteDownloadedEpisodeSelected) },
             onDismiss = { onEvent(EpisodesState.Event.DownloadedEpisodeActionDismissed) },
         )
     }

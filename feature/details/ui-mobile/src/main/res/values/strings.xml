@@ -54,6 +54,11 @@
     <string name="details_mobile_downloaded_episode_disk_size">On disk: %1$s</string>
     <string name="details_mobile_redownload_dubbing">Redownload dubbing</string>
     <string name="details_mobile_download_other_dubbing_empty">No other dubbings available</string>
+    <string name="details_mobile_delete_downloaded_episode">Delete downloaded episode</string>
+    <string name="details_mobile_delete_downloaded_episode_title">Delete episode %1$s?</string>
+    <string name="details_mobile_delete_downloaded_episode_message">The local episode file will be removed from this device.</string>
+    <string name="details_mobile_delete_confirm">Delete</string>
+    <string name="details_mobile_delete_cancel">Cancel</string>
     <string name="details_mobile_episode_download_restart_action">Restart download</string>
     <string name="details_mobile_episode_download_resolving_quality">Getting available qualities...</string>
     <string name="details_mobile_episode_download_progress">Downloading %1$d%%</string>

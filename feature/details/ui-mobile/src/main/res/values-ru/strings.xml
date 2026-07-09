@@ -54,6 +54,11 @@
     <string name="details_mobile_downloaded_episode_disk_size">На диске: %1$s</string>
     <string name="details_mobile_redownload_dubbing">Перекачать озвучку</string>
     <string name="details_mobile_download_other_dubbing_empty">Других озвучек нет</string>
+    <string name="details_mobile_delete_downloaded_episode">Удалить скачанную серию</string>
+    <string name="details_mobile_delete_downloaded_episode_title">Удалить серию %1$s?</string>
+    <string name="details_mobile_delete_downloaded_episode_message">Локальный файл серии будет удалён с устройства.</string>
+    <string name="details_mobile_delete_confirm">Удалить</string>
+    <string name="details_mobile_delete_cancel">Отмена</string>
     <string name="details_mobile_episode_download_restart_action">Перезапустить скачивание</string>
     <string name="details_mobile_episode_download_resolving_quality">Получаем доступные качества...</string>
     <string name="details_mobile_episode_download_progress">Идет загрузка %1$d%%</string>
