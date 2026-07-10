@@ -5,6 +5,7 @@ import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl as domainIsAllohaPlayerUr
 import su.afk.yummy.tv.domain.player.isCvhPlayerUrl as domainIsCvhPlayerUrl
 import su.afk.yummy.tv.domain.player.isKodikPlayerUrl as domainIsKodikPlayerUrl
 import su.afk.yummy.tv.domain.player.isRutubePlayerUrl as domainIsRutubePlayerUrl
+import su.afk.yummy.tv.domain.player.isSibnetPlayerUrl as domainIsSibnetPlayerUrl
 import su.afk.yummy.tv.domain.player.isSupportedPlayerUrl as domainIsSupportedPlayerUrl
 import su.afk.yummy.tv.domain.player.isVkPlayerUrl as domainIsVkPlayerUrl
 import su.afk.yummy.tv.domain.player.isZedfilmPlayerUrl as domainIsZedfilmPlayerUrl
@@ -27,6 +28,9 @@ fun String.isVkPlayerUrl(): Boolean =
 
 fun String.isRutubePlayerUrl(): Boolean =
     domainIsRutubePlayerUrl()
+
+fun String.isSibnetPlayerUrl(): Boolean =
+    domainIsSibnetPlayerUrl()
 
 fun String.isZedfilmPlayerUrl(): Boolean =
     domainIsZedfilmPlayerUrl()

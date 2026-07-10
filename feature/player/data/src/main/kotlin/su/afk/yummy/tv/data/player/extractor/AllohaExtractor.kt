@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.http.SslError
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceError
@@ -14,13 +14,11 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import java.io.ByteArrayInputStream
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -54,9 +52,7 @@ internal data class AllohaResult(
  * [shouldInterceptRequest][WebViewClient.shouldInterceptRequest] capture the resulting stream URL
  * plus headers for each quality.
  */
-internal class AllohaExtractor @Inject constructor(
-    private val httpClient: PlayerHttpClient,
-) : PlayerStreamExtractor {
+internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
 
     private val TIMEOUT_MS = 25_000L
     private val QUALITY_SWITCH_DELAY_MS = 1_500L
@@ -82,11 +78,11 @@ internal class AllohaExtractor @Inject constructor(
         context: Context,
         preferredQualityLabel: String?,
     ): AllohaResult? {
-        // A new page URL and a clean Alloha origin force the embedded player to mint a new
-        // authorization session. Reloading the same iframe URL otherwise reuses the old signed
-        // session: the UI appears to refresh successfully, but its segments still become
-        // `session_blocked` at the original session expiry.
-        val fullUrl = normalizeUrl(iframeUrl).withSessionNonce()
+        // Each extraction owns a new WebView and clears the page storage in the wrapper. Keep the
+        // server-provided iframe URL byte-for-byte otherwise: Alloha can bind its signed stream to
+        // that query, so appending an arbitrary cache-busting parameter makes a browser-playable
+        // stream fail with X-VD=token_decrypt.
+        val fullUrl = normalizeUrl(iframeUrl)
         return withContext(Dispatchers.Main) {
             extractViaWebView(
                 iframeUrl = fullUrl,
@@ -100,14 +96,16 @@ internal class AllohaExtractor @Inject constructor(
         iframeUrl: String,
         context: Context,
         preferredQualityLabel: String?,
-    ): AllohaResult? =
-        suspendCancellableCoroutine { cont ->
-            val webViewUserAgent = WebSettings.getDefaultUserAgent(context)
+    ): AllohaResult? {
+        clearAllohaSessionCookies()
+        return suspendCancellableCoroutine { cont ->
+            val webViewUserAgent = WebSettings.getDefaultUserAgent(context).asBrowserUserAgent()
             var webView: WebView? = null
             var delivered = false
             var qualityProbeAttempts = 0
             var pendingQualityLabel: String? = null
             val capturedStreams = LinkedHashMap<String, CapturedStream>()
+            val deniedStreamUrls = mutableSetOf<String>()
             var fallbackStream: CapturedStream? = null
             val handler = Handler(Looper.getMainLooper())
             var settleRunnable: Runnable? = null
@@ -133,18 +131,23 @@ internal class AllohaExtractor @Inject constructor(
                 } ?: fallbackStream
 
                 return stream?.let {
-                    val resolvedQualityMap = qualityMap.takeIf { qualities -> qualities.size > 1 }
+                    // Alloha's master request is only an implementation fallback, not a quality
+                    // the user can meaningfully select. Keep even a single numeric option and use
+                    // an explicit empty map when no numeric qualities were discovered so the UI
+                    // does not synthesize an "Auto" item from the master URL.
+                    val resolvedQualityMap = qualityMap
                     AllohaResult(
                         url = it.url,
-                        headers = it.headers,
+                        headers = it.headers.withWebViewCookies(it.url),
                         qualities = resolvedQualityMap,
                         qualityHeaders = resolvedQualityMap
-                            ?.keys
-                            ?.mapNotNull { label ->
-                                capturedStreams[label]?.headers?.let { headers -> label to headers }
+                            .keys
+                            .mapNotNull { label ->
+                                capturedStreams[label]?.let { captured ->
+                                    label to captured.headers.withWebViewCookies(captured.url)
+                                }
                             }
-                            ?.toMap()
-                            .orEmpty(),
+                            .toMap(),
                     )
                 }
             }
@@ -157,6 +160,7 @@ internal class AllohaExtractor @Inject constructor(
             }
 
             fun captureStream(url: String, headers: Map<String, String>) {
+                if (url in deniedStreamUrls) return
                 val stream = CapturedStream(
                     url = url,
                     headers = headers.withAllohaStreamHeaders(
@@ -216,6 +220,7 @@ internal class AllohaExtractor @Inject constructor(
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
+                    userAgentString = webViewUserAgent
                     @Suppress("DEPRECATION")
                     allowFileAccess = false
                     mediaPlaybackRequiresUserGesture = false
@@ -232,41 +237,15 @@ internal class AllohaExtractor @Inject constructor(
                                 iframeUrl = iframeUrl,
                                 userAgent = webViewUserAgent,
                             )
-                            val response = runBlocking {
-                                runCatching { httpClient.getText(url, headers) }.getOrNull()
+                            handler.post {
+                                captureStream(url, headers)
                             }
-                            if (response == null) {
-                                logExtractorFailure(
-                                    extractor = "Alloha",
-                                    url = url,
-                                    reason = "manifest validation request failed",
-                                )
-                                // A validation request can fail transiently while the signed URL is
-                                // still playable by Media3. Keep the captured candidate and let the
-                                // player-level recovery replace it immediately if it is rejected.
-                                handler.post {
-                                    captureStream(url, headers)
-                                }
-                                return null
-                            }
-                            if (response.isSuccess && response.body.contains(HLS_PLAYLIST_MARKER)) {
-                                val validatedHeaders = headers.withResponseCookies(response)
-                                handler.post {
-                                    captureStream(url, validatedHeaders)
-                                }
-                            } else {
-                                val denial = response.headerValue(ALLOHA_DENIAL_HEADER)
-                                    ?.takeIf { it.isNotBlank() }
-                                    ?.let { "; $ALLOHA_DENIAL_HEADER=$it" }
-                                    .orEmpty()
-                                logExtractorFailure(
-                                    extractor = "Alloha",
-                                    url = url,
-                                    reason = "manifest validation returned HTTP " +
-                                            "${response.statusCode}$denial",
-                                )
-                            }
-                            return response.toWebResourceResponse()
+
+                            // Do not validate or replace this request here. Alloha signs it for the
+                            // browser session, and issuing a second Ktor request can invalidate or
+                            // reject the otherwise playable manifest with X-VD=token_decrypt. A null
+                            // response lets WebView perform the exact request produced by the page.
+                            return null
                         }
                         return null
                     }
@@ -296,6 +275,11 @@ internal class AllohaExtractor @Inject constructor(
                     ) {
                         val url = request.url.toString()
                         if (!isStreamUrl(url)) return
+                        handler.post {
+                            deniedStreamUrls += url
+                            capturedStreams.entries.removeAll { (_, stream) -> stream.url == url }
+                            if (fallbackStream?.url == url) fallbackStream = null
+                        }
                         val denial = errorResponse.responseHeaders
                             ?.entries
                             ?.firstOrNull { it.key.equals(ALLOHA_DENIAL_HEADER, ignoreCase = true) }
@@ -341,6 +325,7 @@ internal class AllohaExtractor @Inject constructor(
                 deliver(null)
             }
         }
+    }
 
     private fun isStreamUrl(url: String): Boolean {
         if (!url.contains(".m3u8")) return false
@@ -367,10 +352,12 @@ internal class AllohaExtractor @Inject constructor(
         }
     }
 
-    private fun Map<String, String>.withResponseCookies(
-        response: PlayerHttpResponse,
-    ): Map<String, String> {
-        val responseCookies = response.setCookieHeader.takeIf { it.isNotBlank() } ?: return this
+    private fun Map<String, String>.withWebViewCookies(url: String): Map<String, String> {
+        val responseCookies = CookieManager.getInstance()
+            .getCookie(url)
+            .orEmpty()
+            .takeIf { it.isNotBlank() }
+            ?: return this
         val existingCookies = entries
             .firstOrNull { it.key.equals(COOKIE_HEADER, ignoreCase = true) }
             ?.value
@@ -382,32 +369,30 @@ internal class AllohaExtractor @Inject constructor(
                 (COOKIE_HEADER to mergedCookies)
     }
 
-    private fun PlayerHttpResponse.toWebResourceResponse(): WebResourceResponse {
-        val contentType = headerValue(CONTENT_TYPE_HEADER).orEmpty()
-        val mimeType = contentType.substringBefore(';').ifBlank { HLS_MIME_TYPE }
-        val encoding = contentType
-            .substringAfter("charset=", DEFAULT_RESPONSE_ENCODING)
-            .substringBefore(';')
-            .trim()
-            .ifBlank { DEFAULT_RESPONSE_ENCODING }
-        val responseHeaders = headers
-            .filterKeys { it.isNotBlank() }
-            .mapValues { (_, values) -> values.joinToString(", ") }
-        return WebResourceResponse(
-            mimeType,
-            encoding,
-            statusCode,
-            if (isSuccess) HTTP_OK_REASON else HTTP_ERROR_REASON,
-            responseHeaders,
-            ByteArrayInputStream(bodyBytes),
-        )
+    private suspend fun clearAllohaSessionCookies() {
+        val cookieManager = CookieManager.getInstance()
+        val cookieNames = cookieManager.getCookie(ALLOHA_ORIGIN)
+            .orEmpty()
+            .split(';')
+            .mapNotNull { cookie -> cookie.substringBefore('=').trim().takeIf(String::isNotEmpty) }
+            .distinct()
+        cookieNames.forEach { name ->
+            cookieManager.setCookie(
+                ALLOHA_ORIGIN,
+                "$name=; Max-Age=0; Path=/; Secure",
+            )
+            cookieManager.setCookie(
+                ALLOHA_ORIGIN,
+                "$name=; Max-Age=0; Domain=.yani.tv; Path=/; Secure",
+            )
+        }
+        suspendCancellableCoroutine { continuation ->
+            cookieManager.removeSessionCookies {
+                cookieManager.flush()
+                if (continuation.isActive) continuation.resume(Unit)
+            }
+        }
     }
-
-    private fun PlayerHttpResponse.headerValue(name: String): String? =
-        headers.entries
-            .firstOrNull { it.key.equals(name, ignoreCase = true) }
-            ?.value
-            ?.firstOrNull()
 
     private fun wrapperHtml(iframeUrl: String): String {
         val escaped = iframeUrl.replace("&", "&amp;").replace("\"", "&quot;")
@@ -422,16 +407,15 @@ internal class AllohaExtractor @Inject constructor(
             </body></html>"""
     }
 
-    private fun String.withSessionNonce(): String {
-        val separator = if (contains('?')) '&' else '?'
-        return "$this${separator}yummy_session=${SystemClock.elapsedRealtimeNanos()}"
-    }
-
     private fun normalizeUrl(url: String) = when {
         url.startsWith("//") -> "https:$url"
         url.startsWith("http") -> url
         else -> "https://$url"
     }
+
+    private fun String.asBrowserUserAgent(): String =
+        replace(Regex(""";\s*wv\b"""), "")
+            .replace(" Version/4.0", "")
 
     private data class CapturedStream(val url: String, val headers: Map<String, String>)
 
@@ -444,19 +428,21 @@ internal class AllohaExtractor @Inject constructor(
         )
 
     private fun LinkedHashMap<String, CapturedStream>.toQualityMap(): LinkedHashMap<String, String> {
-        val sortedEntries = entries.sortedWith { first, second ->
-            val firstQuality = qualityNumber(first.key)
-            val secondQuality = qualityNumber(second.key)
-            when {
-                firstQuality != null && secondQuality != null -> firstQuality.compareTo(
-                    secondQuality
-                )
+        val sortedEntries = entries
+            .filter { (label, _) -> qualityNumber(label) != null }
+            .sortedWith { first, second ->
+                val firstQuality = qualityNumber(first.key)
+                val secondQuality = qualityNumber(second.key)
+                when {
+                    firstQuality != null && secondQuality != null -> firstQuality.compareTo(
+                        secondQuality
+                    )
 
-                firstQuality == null && secondQuality != null -> -1
-                firstQuality != null && secondQuality == null -> 1
-                else -> 0
+                    firstQuality == null && secondQuality != null -> -1
+                    firstQuality != null && secondQuality == null -> 1
+                    else -> 0
+                }
             }
-        }
         return sortedEntries.associateTo(LinkedHashMap()) { it.key to it.value.url }
     }
 
@@ -493,13 +479,7 @@ internal class AllohaExtractor @Inject constructor(
         const val ACCESS_CONTROL_REQUEST_METHOD_HEADER = "Access-Control-Request-Method"
         const val ALLOHA_ORIGIN = "https://alloha.yani.tv"
         const val COOKIE_HEADER = "Cookie"
-        const val CONTENT_TYPE_HEADER = "Content-Type"
         const val ALLOHA_DENIAL_HEADER = "X-VD"
-        const val HLS_PLAYLIST_MARKER = "#EXTM3U"
-        const val HLS_MIME_TYPE = "application/vnd.apple.mpegurl"
-        const val DEFAULT_RESPONSE_ENCODING = "UTF-8"
-        const val HTTP_OK_REASON = "OK"
-        const val HTTP_ERROR_REASON = "HTTP error"
     }
 
     /**

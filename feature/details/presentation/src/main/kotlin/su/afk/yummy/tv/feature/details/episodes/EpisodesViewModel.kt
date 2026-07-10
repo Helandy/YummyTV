@@ -45,6 +45,7 @@ import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
@@ -421,11 +422,28 @@ class EpisodesViewModel @AssistedInject internal constructor(
         result: PlayerStreamResolveResult.Stream,
     ) {
         val key = video.downloadStatusKey()
+        val isAlloha = video.player.isAllohaPlayerUrl() || video.iframeUrl.isAllohaPlayerUrl()
         val options = prepareDownloadQualities(
             streamUrl = result.url,
             qualityMap = result.qualities,
             qualityHeaders = result.qualityHeaders,
+            numericQualitiesOnly = isAlloha,
         )
+        if (options.isEmpty()) {
+            pendingDownloadCandidate = null
+            setState {
+                copy(
+                    resolvingDownloadKeys = resolvingDownloadKeys - key,
+                    pendingDownloadQualitySelection = null,
+                )
+            }
+            setEffect(
+                EpisodesState.Effect.ShowToast(
+                    stringProvider.get(R.string.details_download_resolve_error)
+                )
+            )
+            return
+        }
         pendingDownloadCandidate = DownloadCandidate(
             video = video,
             options = options,
@@ -465,19 +483,18 @@ class EpisodesViewModel @AssistedInject internal constructor(
         )
         val replacementDownloadId = pendingReplacementDownloadId
         viewModelScope.launch {
-            runCatching { enqueueVideoDownload(request) }
-                .onSuccess {
-                    replacementDownloadId?.let { downloadId ->
-                        runCatching { cancelOrDeleteVideoDownload(downloadId) }
-                            .onFailure {
-                                setEffect(
-                                    EpisodesState.Effect.ShowToast(
-                                        stringProvider.get(R.string.details_download_replace_delete_error)
-                                    )
-                                )
-                            }
+            replacementDownloadId?.let { downloadId ->
+                runCatching { cancelOrDeleteVideoDownload(downloadId) }
+                    .onFailure {
+                        setEffect(
+                            EpisodesState.Effect.ShowToast(
+                                stringProvider.get(R.string.details_download_replace_delete_error)
+                            )
+                        )
+                        return@launch
                     }
-                }
+            }
+            runCatching { enqueueVideoDownload(request) }
                 .onFailure {
                     setEffect(EpisodesState.Effect.ShowToast(stringProvider.get(R.string.details_download_enqueue_error)))
                 }

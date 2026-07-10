@@ -105,6 +105,7 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
             streamUrl = url,
             qualityMap = qualities,
             qualityHeaders = qualityHeaders,
+            numericQualitiesOnly = item.isAllohaDownload(),
         )
         val requestedQualityNumber = item.qualityLabel.videoQualityNumber()
         val preferredQuality = availableQualities.firstOrNull { quality ->
@@ -113,7 +114,7 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
             availableQualities.firstOrNull { quality ->
                 quality.label.videoQualityNumber() == requested
             }
-        }
+        } ?: availableQualities.lastOrNull().takeIf { item.isAllohaDownload() }
         val fallbackHeaders = if (item.isAllohaDownload()) item.headers else emptyMap()
 
         val stream = if (preferredQuality != null) {

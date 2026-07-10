@@ -49,7 +49,7 @@ import su.afk.yummy.tv.feature.player.mobile.R as UiR
 internal fun MobilePlayerSettingsSheet(
     mode: MobilePlayerSettingsMode,
     qualities: List<String>,
-    selectedQuality: String,
+    selectedQuality: String?,
     onQualitySelected: (String) -> Unit,
     speeds: List<Float>,
     selectedSpeed: Float,
@@ -94,16 +94,18 @@ internal fun MobilePlayerSettingsSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        MobilePlayerSettingsSection(
-                            title = stringResource(UiR.string.player_mobile_quality),
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            qualities.forEach { quality ->
-                                MobilePlayerSelectionRow(
-                                    label = quality,
-                                    selected = quality == selectedQuality,
-                                    onClick = { onQualitySelected(quality) },
-                                )
+                        if (qualities.isNotEmpty()) {
+                            MobilePlayerSettingsSection(
+                                title = stringResource(UiR.string.player_mobile_quality),
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                qualities.forEach { quality ->
+                                    MobilePlayerSelectionRow(
+                                        label = quality,
+                                        selected = quality == selectedQuality,
+                                        onClick = { onQualitySelected(quality) },
+                                    )
+                                }
                             }
                         }
                         MobilePlayerSettingsSection(

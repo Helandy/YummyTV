@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
+import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
@@ -82,9 +83,10 @@ internal fun MobileNativePlayer(
         )
     }
     val qualities = remember(streamUrl, state.streamQualityMap) {
-        state.streamQualityMap?.takeIf { it.isNotEmpty() } ?: deriveQualityUrls(streamUrl)
+        state.streamQualityMap ?: deriveQualityUrls(streamUrl)
     }
-    val selectedQuality = state.selectedQuality?.takeIf { it in qualities } ?: qualities.keys.last()
+    val selectedQuality = state.selectedQuality?.takeIf { it in qualities }
+        ?: qualities.keys.lastOrNull()
     val selectedSpeed = state.selectedSpeed
     val currentPosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
     val duration = state.playbackDurationMs
@@ -103,7 +105,7 @@ internal fun MobileNativePlayer(
     var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
     val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
-    val currentUrl = qualities[selectedQuality] ?: streamUrl
+    val currentUrl = selectedQuality?.let(qualities::get) ?: streamUrl
     val playbackConfigKey = remember(currentUrl, state.streamHeaders) {
         buildString {
             append(currentUrl)
@@ -248,6 +250,8 @@ internal fun MobileNativePlayer(
         playbackConfig.updateStream(
             headers = state.streamHeaders,
             offlineCacheKey = state.offlineCacheKey.takeIf { state.isOfflinePlayback },
+            useRotatingHlsCacheKeys = state.isOfflinePlayback &&
+                    ui.activeIframeUrl.isAllohaPlayerUrl(),
         )
         if (currentMediaUri != currentUrl || configuredPlaybackKey != playbackConfigKey) {
             val resumePosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs

@@ -19,6 +19,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStore
 import su.afk.yummy.tv.data.videodownload.R
+import su.afk.yummy.tv.data.videodownload.cache.RotatingHlsCacheKeyFactory
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.notification.VideoDownloadNotificationService
 import su.afk.yummy.tv.data.videodownload.worker.VideoDownloadWorker
@@ -38,6 +39,7 @@ class DefaultVideoDownloadRepository @Inject constructor(
     private val notificationService: VideoDownloadNotificationService,
 ) : VideoDownloadRepository {
     private val orphanReconciliationMutex = Mutex()
+    private val enqueueMutex = Mutex()
 
     override fun observeDownloads(): Flow<List<VideoDownloadItem>> =
         store.dao.observeDownloads()
@@ -58,12 +60,13 @@ class DefaultVideoDownloadRepository @Inject constructor(
     override suspend fun getDownload(id: Long): VideoDownloadItem? =
         store.dao.getById(id)?.toDomain()
 
-    override suspend fun enqueue(request: VideoDownloadRequest): VideoDownloadItem {
-        val duplicate = store.dao.findActiveDuplicate(
+    override suspend fun enqueue(request: VideoDownloadRequest): VideoDownloadItem =
+        enqueueMutex.withLock { enqueueLocked(request) }
+
+    private suspend fun enqueueLocked(request: VideoDownloadRequest): VideoDownloadItem {
+        val duplicate = store.dao.findEpisodeDownload(
             animeId = request.animeId,
-            videoId = request.videoId,
-            iframeUrl = request.iframeUrl,
-            qualityLabel = request.quality.label,
+            episode = request.episode,
         )
         val now = System.currentTimeMillis()
         if (duplicate != null) {
@@ -122,6 +125,10 @@ class DefaultVideoDownloadRepository @Inject constructor(
         }
         episodeDownloads.map { it.cacheKey }.distinct().forEach { cacheKey ->
             runCatching { cacheProvider.cache.removeResource(cacheKey) }
+            val rotatingSegmentPrefix = RotatingHlsCacheKeyFactory.resourcePrefix(cacheKey)
+            cacheProvider.cache.keys
+                .filter { key -> key.startsWith(rotatingSegmentPrefix) }
+                .forEach { key -> runCatching { cacheProvider.cache.removeResource(key) } }
         }
         store.dao.markEpisodeDeleted(
             animeId = entry.animeId,
@@ -135,22 +142,7 @@ class DefaultVideoDownloadRepository @Inject constructor(
         val workManager = WorkManager.getInstance(context)
         workManager.cancelUniqueWork(uniqueWorkName(id))
         val entry = store.dao.getById(id) ?: return
-        val requestedQualityLabel = stream?.qualityLabel ?: entry.qualityLabel
-        val qualityLabel = if (requestedQualityLabel == entry.qualityLabel) {
-            entry.qualityLabel
-        } else {
-            val conflictingEntry = store.dao.findActiveDuplicate(
-                animeId = entry.animeId,
-                videoId = entry.videoId,
-                iframeUrl = entry.iframeUrl,
-                qualityLabel = requestedQualityLabel,
-            )
-            if (conflictingEntry != null && conflictingEntry.id != id) {
-                entry.qualityLabel
-            } else {
-                requestedQualityLabel
-            }
-        }
+        val qualityLabel = stream?.qualityLabel ?: entry.qualityLabel
         store.dao.update(
             entry.copy(
                 qualityLabel = qualityLabel,

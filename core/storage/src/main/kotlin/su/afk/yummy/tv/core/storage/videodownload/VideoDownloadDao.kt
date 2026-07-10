@@ -30,17 +30,13 @@ interface VideoDownloadDao {
         """
         SELECT * FROM video_downloads
         WHERE animeId = :animeId
-          AND videoId = :videoId
-          AND iframeUrl = :iframeUrl
-          AND qualityLabel = :qualityLabel
+          AND episode = :episode
         LIMIT 1
         """
     )
-    suspend fun findActiveDuplicate(
+    suspend fun findEpisodeDownload(
         animeId: Int,
-        videoId: Int,
-        iframeUrl: String,
-        qualityLabel: String,
+        episode: String,
     ): VideoDownloadEntry?
 
     @Query(

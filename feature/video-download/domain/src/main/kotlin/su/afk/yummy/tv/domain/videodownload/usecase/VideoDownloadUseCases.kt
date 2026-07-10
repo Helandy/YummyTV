@@ -29,9 +29,14 @@ class PrepareVideoDownloadQualityOptionsUseCase @Inject constructor() {
         streamUrl: String,
         qualityMap: LinkedHashMap<String, String>?,
         qualityHeaders: Map<String, Map<String, String>> = emptyMap(),
+        numericQualitiesOnly: Boolean = false,
     ): List<VideoDownloadQualityOption> {
         val mapped = qualityMap
-            ?.filter { (label, url) -> label.isNotBlank() && url.isNotBlank() }
+            ?.filter { (label, url) ->
+                label.isNotBlank() &&
+                        url.isNotBlank() &&
+                        (!numericQualitiesOnly || label.hasVideoQualityNumber())
+            }
             ?.map { (label, url) ->
                 VideoDownloadQualityOption(
                     label = label,
@@ -41,8 +46,16 @@ class PrepareVideoDownloadQualityOptionsUseCase @Inject constructor() {
             }
             .orEmpty()
         return mapped.ifEmpty {
+            if (numericQualitiesOnly) return emptyList()
             listOf(VideoDownloadQualityOption(label = "Auto", url = streamUrl))
         }
+    }
+
+    private fun String.hasVideoQualityNumber(): Boolean =
+        VIDEO_QUALITY_REGEX.containsMatchIn(this)
+
+    private companion object {
+        val VIDEO_QUALITY_REGEX = Regex("""\d{3,4}p?""", RegexOption.IGNORE_CASE)
     }
 }
 

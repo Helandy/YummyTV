@@ -1669,6 +1669,35 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_31_32 = object : Migration(31, 32) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP INDEX IF EXISTS index_video_downloads_duplicate_key")
+            db.execSQL(
+                """
+                DELETE FROM video_downloads
+                WHERE id NOT IN (
+                    SELECT kept.id
+                    FROM video_downloads AS kept
+                    WHERE kept.id = (
+                        SELECT candidate.id
+                        FROM video_downloads AS candidate
+                        WHERE candidate.animeId = kept.animeId
+                          AND candidate.episode = kept.episode
+                        ORDER BY candidate.updatedAt DESC, candidate.id DESC
+                        LIMIT 1
+                    )
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS index_video_downloads_duplicate_key
+                ON video_downloads(animeId, episode)
+                """.trimIndent()
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1698,6 +1727,7 @@ object StorageModule {
                 MIGRATION_28_29,
                 MIGRATION_29_30,
                 MIGRATION_30_31,
+                MIGRATION_31_32,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

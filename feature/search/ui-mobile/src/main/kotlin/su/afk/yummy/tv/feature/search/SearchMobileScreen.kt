@@ -15,8 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -52,6 +56,11 @@ fun SearchMobileScreen(
         ?.uiMessage()
     val gridState = rememberLazyGridState()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val queryFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        queryFocusRequester.requestFocus()
+    }
 
     BaseScreen(
         isScroll = false,
@@ -85,7 +94,9 @@ fun SearchMobileScreen(
                 OutlinedTextField(
                     value = state.query,
                     onValueChange = { onEvent(SearchState.Event.QueryChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(queryFocusRequester),
                     label = { Text(stringResource(R.string.search_mobile_query)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

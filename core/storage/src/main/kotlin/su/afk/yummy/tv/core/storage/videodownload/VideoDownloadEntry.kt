@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
     tableName = "video_downloads",
     indices = [
         Index(
-            value = ["animeId", "videoId", "iframeUrl", "qualityLabel"],
+            value = ["animeId", "episode"],
             name = "index_video_downloads_duplicate_key",
             unique = true,
         ),

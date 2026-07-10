@@ -130,10 +130,11 @@ internal fun ExoPlayerView(
 ) {
     val context = LocalContext.current
     val qualities = remember(streamUrl, qualityOverrides) {
-        qualityOverrides?.takeIf { it.isNotEmpty() } ?: deriveQualityUrls(streamUrl)
+        qualityOverrides ?: deriveQualityUrls(streamUrl)
     }
     val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
-    val activeQuality = selectedQuality?.takeIf { it in qualities } ?: qualities.keys.last()
+    val activeQuality = selectedQuality?.takeIf { it in qualities }
+        ?: qualities.keys.lastOrNull()
     val activeSpeed = selectedSpeed.coerceAtLeast(0.1f)
     var seekOnSwitch by remember(streamUrl) { mutableLongStateOf(resumeFromMs) }
     var lastSaveTime by remember { mutableLongStateOf(0L) }
@@ -201,8 +202,9 @@ internal fun ExoPlayerView(
         }
     }
 
-    val currentUrl =
-        remember(streamUrl, activeQuality, qualities) { qualities[activeQuality] ?: streamUrl }
+    val currentUrl = remember(streamUrl, activeQuality, qualities) {
+        activeQuality?.let(qualities::get) ?: streamUrl
+    }
 
     val exoPlayer = remember(currentUrl, streamHeaders, episodeKey) {
         val trackSelector = DefaultTrackSelector(context).apply {
@@ -749,7 +751,7 @@ internal fun ExoPlayerView(
                         currentBalancerIndex = currentBalancerIndex,
                         playerName = playerName,
                         dubbing = dubbing,
-                        currentQualityLabel = activeQuality,
+                        currentQualityLabel = activeQuality.orEmpty(),
                         qualityFocusRequester = qualityButtonFocusRequester,
                         dubbingFocusRequester = dubbingButtonFocusRequester,
                         balancerFocusRequester = balancerButtonFocusRequester,
