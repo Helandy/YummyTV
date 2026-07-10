@@ -14,11 +14,13 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import java.io.ByteArrayInputStream
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -52,7 +54,9 @@ internal data class AllohaResult(
  * [shouldInterceptRequest][WebViewClient.shouldInterceptRequest] capture the resulting stream URL
  * plus headers for each quality.
  */
-internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
+internal class AllohaExtractor @Inject constructor(
+    private val httpClient: PlayerHttpClient,
+) : PlayerStreamExtractor {
 
     private val TIMEOUT_MS = 25_000L
     private val QUALITY_SWITCH_DELAY_MS = 1_500L
@@ -237,15 +241,33 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                                 iframeUrl = iframeUrl,
                                 userAgent = webViewUserAgent,
                             )
-                            handler.post {
-                                captureStream(url, headers)
+                            val response = runBlocking {
+                                runCatching { httpClient.getText(url, headers) }.getOrNull()
                             }
-
-                            // Do not validate or replace this request here. Alloha signs it for the
-                            // browser session, and issuing a second Ktor request can invalidate or
-                            // reject the otherwise playable manifest with X-VD=token_decrypt. A null
-                            // response lets WebView perform the exact request produced by the page.
-                            return null
+                            if (response == null) {
+                                logExtractorFailure(
+                                    extractor = "Alloha",
+                                    url = url,
+                                    reason = "manifest request failed",
+                                )
+                                return null
+                            }
+                            if (response.isSuccess && response.body.contains(HLS_PLAYLIST_MARKER)) {
+                                handler.post {
+                                    captureStream(url, headers.withResponseCookies(response))
+                                }
+                            } else {
+                                val denial = response.headerValue(ALLOHA_DENIAL_HEADER)
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { "; $ALLOHA_DENIAL_HEADER=$it" }
+                                    .orEmpty()
+                                logExtractorFailure(
+                                    extractor = "Alloha",
+                                    url = url,
+                                    reason = "manifest request returned HTTP ${response.statusCode}$denial",
+                                )
+                            }
+                            return response.toWebResourceResponse()
                         }
                         return null
                     }
@@ -369,6 +391,48 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                 (COOKIE_HEADER to mergedCookies)
     }
 
+    private fun Map<String, String>.withResponseCookies(
+        response: PlayerHttpResponse,
+    ): Map<String, String> {
+        val responseCookies = response.setCookieHeader.takeIf { it.isNotBlank() } ?: return this
+        val existingCookies = entries
+            .firstOrNull { it.key.equals(COOKIE_HEADER, ignoreCase = true) }
+            ?.value
+            .orEmpty()
+        val mergedCookies = listOf(existingCookies, responseCookies)
+            .filter { it.isNotBlank() }
+            .joinToString("; ")
+        return filterKeys { !it.equals(COOKIE_HEADER, ignoreCase = true) } +
+                (COOKIE_HEADER to mergedCookies)
+    }
+
+    private fun PlayerHttpResponse.toWebResourceResponse(): WebResourceResponse {
+        val contentType = headerValue(CONTENT_TYPE_HEADER).orEmpty()
+        val mimeType = contentType.substringBefore(';').ifBlank { HLS_MIME_TYPE }
+        val encoding = contentType
+            .substringAfter("charset=", DEFAULT_RESPONSE_ENCODING)
+            .substringBefore(';')
+            .trim()
+            .ifBlank { DEFAULT_RESPONSE_ENCODING }
+        val responseHeaders = headers
+            .filterKeys { it.isNotBlank() }
+            .mapValues { (_, values) -> values.joinToString(", ") }
+        return WebResourceResponse(
+            mimeType,
+            encoding,
+            statusCode,
+            if (isSuccess) HTTP_OK_REASON else HTTP_ERROR_REASON,
+            responseHeaders,
+            ByteArrayInputStream(bodyBytes),
+        )
+    }
+
+    private fun PlayerHttpResponse.headerValue(name: String): String? =
+        headers.entries
+            .firstOrNull { it.key.equals(name, ignoreCase = true) }
+            ?.value
+            ?.firstOrNull()
+
     private suspend fun clearAllohaSessionCookies() {
         val cookieManager = CookieManager.getInstance()
         val cookieNames = cookieManager.getCookie(ALLOHA_ORIGIN)
@@ -479,7 +543,13 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         const val ACCESS_CONTROL_REQUEST_METHOD_HEADER = "Access-Control-Request-Method"
         const val ALLOHA_ORIGIN = "https://alloha.yani.tv"
         const val COOKIE_HEADER = "Cookie"
+        const val CONTENT_TYPE_HEADER = "Content-Type"
         const val ALLOHA_DENIAL_HEADER = "X-VD"
+        const val HLS_PLAYLIST_MARKER = "#EXTM3U"
+        const val HLS_MIME_TYPE = "application/vnd.apple.mpegurl"
+        const val DEFAULT_RESPONSE_ENCODING = "UTF-8"
+        const val HTTP_OK_REASON = "OK"
+        const val HTTP_ERROR_REASON = "HTTP error"
     }
 
     /**
