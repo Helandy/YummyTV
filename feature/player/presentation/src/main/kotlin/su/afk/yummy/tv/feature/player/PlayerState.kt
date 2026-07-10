@@ -133,8 +133,6 @@ class PlayerState {
         data object RetryStream : Event
 
         /** Мобильный плеер запросил фоновое обновление подписанного Alloha-потока. */
-        data object RefreshAllohaStream : Event
-
         /** Пользователь перешёл к оценке текущего тайтла. */
         data object RateTitle : Event
 

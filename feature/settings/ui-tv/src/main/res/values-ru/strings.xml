@@ -63,7 +63,7 @@
     <string name="settings_library_continue_watching_card_size_standard">Стандартные</string>
     <string name="settings_library_continue_watching_card_size_standard_hint">Сбалансированная ширина для библиотеки</string>
     <string name="settings_library_continue_watching_card_size_large">Крупные</string>
-    <string name="settings_library_continue_watching_card_size_large_hint">Текущий просторный размер карточек библиотеки</string>
+    <string name="settings_library_continue_watching_card_size_large_hint">Крупные просторные карточки библиотеки</string>
     <string name="settings_poster_quality_low">Низкое</string>
     <string name="settings_poster_quality_low_hint">~15 КБ · WebP</string>
     <string name="settings_poster_quality_standard">Стандартное</string>
@@ -86,6 +86,7 @@
     <string name="settings_preferred_player_vk_hint">VK</string>
     <string name="settings_preferred_player_rutube">Rutube</string>
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
+    <string name="settings_preferred_player_title">Предпочитаемый плеер</string>
     <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
     <string name="settings_preferred_video_quality_best">Лучшее доступное</string>
     <string name="settings_preferred_video_quality_best_hint">Использовать максимальное качество потока</string>

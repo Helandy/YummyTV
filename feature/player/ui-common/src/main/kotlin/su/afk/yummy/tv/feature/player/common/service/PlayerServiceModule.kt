@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.service
+package su.afk.yummy.tv.feature.player.common.service
 
 import dagger.Binds
 import dagger.Module
@@ -8,11 +8,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal interface MobilePlayerServiceModule {
-
+interface PlayerServiceModule {
     @Binds
     @Singleton
-    fun bindMobilePlayerPlaybackConfig(
-        config: DefaultMobilePlayerPlaybackConfig,
-    ): MobilePlayerPlaybackConfig
+    fun bindPlayerPlaybackConfig(config: DefaultPlayerPlaybackConfig): PlayerPlaybackConfig
 }

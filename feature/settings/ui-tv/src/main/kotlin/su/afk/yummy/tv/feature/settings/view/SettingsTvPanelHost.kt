@@ -292,6 +292,9 @@ internal fun SettingsTvPanelHost(
                             },
                         )
                         SettingsDivider()
+                        SettingsSectionTitle(
+                            text = stringResource(R.string.settings_preferred_player_title),
+                        )
                         PreferredPlayer.entries.forEachIndexed { index, player ->
                             QualityRow(
                                 label = player.label(),

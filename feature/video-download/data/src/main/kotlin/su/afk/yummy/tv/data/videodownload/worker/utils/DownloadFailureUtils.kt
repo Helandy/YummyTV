@@ -12,7 +12,11 @@ internal fun Throwable.isForbiddenHttpResponse(): Boolean =
 
 @OptIn(UnstableApi::class)
 internal fun Throwable.isTransientDownloadFailure(): Boolean {
+    if (findDownloadFailureCause<SocketTimeoutException>() != null) return true
     val httpError = findDownloadFailureCause<HttpDataSource.HttpDataSourceException>()
         ?: return false
-    return httpError.cause is SocketTimeoutException
+    val responseCode = (httpError as? HttpDataSource.InvalidResponseCodeException)?.responseCode
+    return responseCode in TRANSIENT_HTTP_RESPONSE_CODES
 }
+
+private val TRANSIENT_HTTP_RESPONSE_CODES = setOf(408, 429, 500, 502, 503, 504)

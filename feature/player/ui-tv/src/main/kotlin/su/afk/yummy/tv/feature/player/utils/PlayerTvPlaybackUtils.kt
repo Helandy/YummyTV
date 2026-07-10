@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.feature.player.PlayerSkipType
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.common.StepSeekDirection
 import su.afk.yummy.tv.feature.player.model.ActiveSkip
@@ -89,4 +90,10 @@ internal fun currentSkip(
         },
     ).firstOrNull { skip ->
         skip.key !in dismissedKeys && positionMs in skip.segment.startMs..skip.segment.endMs
+    }
+
+internal fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
+    when (this) {
+        ActiveSkipType.Opening -> PlayerSkipType.Opening
+        ActiveSkipType.Ending -> PlayerSkipType.Ending
     }

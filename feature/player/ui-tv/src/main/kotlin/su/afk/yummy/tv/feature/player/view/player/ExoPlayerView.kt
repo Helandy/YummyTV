@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import android.content.Intent
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
@@ -32,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -46,29 +46,37 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
-import su.afk.yummy.tv.feature.player.PlayerSkipType
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
-import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
-import su.afk.yummy.tv.feature.player.common.PlayerMediaItemFactory
+import su.afk.yummy.tv.feature.player.common.PLAYER_END_PROMPT_COUNTDOWN_SECONDS
+import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
+import su.afk.yummy.tv.feature.player.common.analyticsType
+import su.afk.yummy.tv.feature.player.common.calculateBufferedProgress
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
-import su.afk.yummy.tv.feature.player.model.ActiveSkipType
+import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.service.PlayerAudioTrackPolicy
+import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemConfig
+import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
+import su.afk.yummy.tv.feature.player.common.service.PlayerMediaSessionService
+import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
+import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.SeekDirection
+import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
+import su.afk.yummy.tv.feature.player.model.TvProgressSource
+import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
+import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.applyTvResizeMode
 import su.afk.yummy.tv.feature.player.utils.buildTvProgressSnapshot
@@ -77,6 +85,7 @@ import su.afk.yummy.tv.feature.player.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.utils.formatTime
 import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.utils.toPlayerSkipType
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
@@ -89,6 +98,8 @@ internal fun ExoPlayerView(
     streamUrl: String,
     episodeKey: String = "",
     resumeFromMs: Long = 0L,
+    isOfflinePlayback: Boolean = false,
+    offlineCacheKey: String? = null,
     onSaveProgress: (PlayerProgressSnapshot) -> Unit = {},
     onPlayerEvent: (PlayerState.Event) -> Unit = {},
     animeTitle: String = "",
@@ -148,14 +159,9 @@ internal fun ExoPlayerView(
     var bufferedProgress by remember(streamUrl, episodeKey) { mutableFloatStateOf(0f) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
     var controllerVisible by remember { mutableStateOf(true) }
-    var showQualityPanel by remember { mutableStateOf(false) }
-    var showDubbingPanel by remember { mutableStateOf(false) }
-    var showBalancerPanel by remember { mutableStateOf(false) }
-    var showSpeedPanel by remember { mutableStateOf(false) }
-    var showResizePanel by remember { mutableStateOf(false) }
-    var showNextEpisodePrompt by remember { mutableStateOf(false) }
-    var nextEpisodeCountdownSeconds by remember(episodeKey, streamUrl) {
-        mutableStateOf<Int?>(null)
+    val panels = rememberTvPlayerPanelsState()
+    var nextEpisodePromptState by remember(episodeKey, streamUrl) {
+        mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
     }
     var showRateTitlePrompt by remember { mutableStateOf(false) }
     var completionReported by remember(episodeKey, streamUrl) { mutableStateOf(false) }
@@ -164,21 +170,7 @@ internal fun ExoPlayerView(
     val dismissedSkipKeys = remember(streamUrl) { mutableStateListOf<String>() }
     val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
 
-    val playFocusRequester = remember { FocusRequester() }
-    val qualityButtonFocusRequester = remember { FocusRequester() }
-    val dubbingButtonFocusRequester = remember { FocusRequester() }
-    val balancerButtonFocusRequester = remember { FocusRequester() }
-    val speedButtonFocusRequester = remember { FocusRequester() }
-    val resizeButtonFocusRequester = remember { FocusRequester() }
-    val overlayFocusRequester = remember { FocusRequester() }
-    val selectedQualityFocusRequester = remember { FocusRequester() }
-    val selectedDubbingFocusRequester = remember { FocusRequester() }
-    val selectedBalancerFocusRequester = remember { FocusRequester() }
-    val selectedSpeedFocusRequester = remember { FocusRequester() }
-    val selectedResizeFocusRequester = remember { FocusRequester() }
-    val skipFocusRequester = remember { FocusRequester() }
-    val nextEpisodeFocusRequester = remember { FocusRequester() }
-    val rateTitleFocusRequester = remember { FocusRequester() }
+    val focus = rememberTvPlayerFocusRequesters()
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var skipSnackbarJob by remember { mutableStateOf<Job?>(null) }
@@ -191,7 +183,7 @@ internal fun ExoPlayerView(
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
             delay(4.seconds)
-            if (!showDubbingPanel && !showQualityPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel && !showNextEpisodePrompt && !showRateTitlePrompt) {
+            if (!panels.isAnyOpen && !nextEpisodePromptState.isVisible && !showRateTitlePrompt) {
                 controllerVisible = false
             }
         }
@@ -200,7 +192,7 @@ internal fun ExoPlayerView(
     fun onInteraction() {
         controllerVisible = true
         when {
-            showDubbingPanel || showQualityPanel || showBalancerPanel || showSpeedPanel || showResizePanel || showNextEpisodePrompt || showRateTitlePrompt -> hideJob?.cancel()
+            panels.isAnyOpen || nextEpisodePromptState.isVisible || showRateTitlePrompt -> hideJob?.cancel()
             wantsPlay -> scheduleHide()
             else -> hideJob?.cancel()
         }
@@ -210,22 +202,59 @@ internal fun ExoPlayerView(
         activeQuality?.let(qualities::get) ?: streamUrl
     }
 
-    val exoPlayer = remember(currentUrl, streamHeaders, episodeKey) {
-        val trackSelector = DefaultTrackSelector(context).apply {
-            setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
+    val exoPlayer = rememberPlayerMediaController()
+    val playbackConfig = rememberPlayerPlaybackConfig()
+    val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
+    val playbackKey = remember(currentUrl, streamHeaders, offlineCacheKey) {
+        buildString {
+            append(currentUrl).append('|').append(offlineCacheKey.orEmpty())
+            streamHeaders.entries.sortedBy { it.key.lowercase() }
+                .forEach { (key, value) -> append('|').append(key).append('=').append(value) }
         }
-        val dataSourceFactory = PlayerDataSourceFactory.create(streamHeaders)
-        ExoPlayer.Builder(context)
-            .setTrackSelector(trackSelector)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-            .setLoadControl(PlayerLoadControlFactory.create())
-            .setHandleAudioBecomingNoisy(true)
-            .build()
-            .apply {
-                setMediaItem(PlayerMediaItemFactory.mediaItemFor(currentUrl))
-                seekTo(seekOnSwitch)
-                prepare()
-            }
+    }
+    val mediaItemKey =
+        remember(playbackKey, animeTitle, episode, dubbing, playerName, screenshotUrl, duration) {
+            "$playbackKey|$animeTitle|$episode|$dubbing|$playerName|$screenshotUrl|$duration"
+        }
+
+    LaunchedEffect(exoPlayer, playbackKey, mediaItemKey, episodeKey) {
+        val player = exoPlayer ?: return@LaunchedEffect
+        mediaItemUpdater.update(
+            player = player,
+            playbackConfig = playbackConfig,
+            config = PlayerMediaItemConfig(
+                playbackKey = playbackKey,
+                mediaItemKey = mediaItemKey,
+                url = currentUrl,
+                title = animeTitle,
+                artist = listOf(dubbing, playerName).filter(String::isNotBlank).joinToString(" • "),
+                subtitle = episode.takeIf(String::isNotBlank),
+                description = playerName.takeIf(String::isNotBlank),
+                artworkUrl = screenshotUrl.takeIf(String::isNotBlank),
+                durationMs = duration,
+                headers = streamHeaders,
+                offlineCacheKey = offlineCacheKey,
+                isOfflinePlayback = isOfflinePlayback,
+                useRotatingHlsCacheKeys = isOfflinePlayback && episodeKey.isAllohaPlayerUrl(),
+                audioTrackPolicy = if (episodeKey.isAllohaPlayerUrl()) {
+                    PlayerAudioTrackPolicy.FirstAudioGroup
+                } else {
+                    PlayerAudioTrackPolicy.Default
+                },
+                playbackPositionMs = seekOnSwitch,
+                resumeFromMs = resumeFromMs,
+            ),
+        )
+        player.playWhenReady = wantsPlay
+    }
+
+    if (exoPlayer == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        )
+        return
     }
     val progressSource = remember(
         exoPlayer,
@@ -288,8 +317,7 @@ internal fun ExoPlayerView(
 
     fun stepSeek(direction: SeekDirection) {
         if (direction == SeekDirection.Backward) {
-            showNextEpisodePrompt = false
-            nextEpisodeCountdownSeconds = null
+            nextEpisodePromptState = PlayerEndPromptState.Hidden
         }
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
@@ -305,11 +333,13 @@ internal fun ExoPlayerView(
 
     fun closePanels(returnFocusTarget: PanelReturnFocusTarget? = null) {
         if (returnFocusTarget != null) pendingPanelReturnFocusTarget = returnFocusTarget
-        showQualityPanel = false
-        showDubbingPanel = false
-        showBalancerPanel = false
-        showSpeedPanel = false
-        showResizePanel = false
+        panels.close()
+    }
+
+    fun togglePanel(panel: TvPlayerPanel, returnFocusTarget: PanelReturnFocusTarget) {
+        val opened = panels.toggle(panel)
+        if (!opened) pendingPanelReturnFocusTarget = returnFocusTarget
+        if (opened) hideJob?.cancel() else onInteraction()
     }
 
     fun exitPanelDown(returnFocusTarget: PanelReturnFocusTarget) {
@@ -318,14 +348,7 @@ internal fun ExoPlayerView(
     }
 
     fun requestControlFocus(target: PlayerControlFocusTarget): Boolean {
-        val requester = when (target) {
-            PlayerControlFocusTarget.Quality -> qualityButtonFocusRequester
-            PlayerControlFocusTarget.Dubbing -> dubbingButtonFocusRequester
-            PlayerControlFocusTarget.Balancer -> balancerButtonFocusRequester
-            PlayerControlFocusTarget.Resize -> resizeButtonFocusRequester
-            PlayerControlFocusTarget.Speed -> speedButtonFocusRequester
-        }
-        return runCatching { requester.requestFocus() }.isSuccess
+        return runCatching { focus.control(target).requestFocus() }.isSuccess
     }
 
     fun requestPanelReturnFocus(): Boolean {
@@ -337,8 +360,7 @@ internal fun ExoPlayerView(
 
     fun playNextEpisode() {
         saveProgressIfReady()
-        showNextEpisodePrompt = false
-        nextEpisodeCountdownSeconds = null
+        nextEpisodePromptState = PlayerEndPromptState.Hidden
         showRateTitlePrompt = false
         closePanels()
         onNextEpisode(PlayerNextEpisodeSource.EndPrompt)
@@ -387,7 +409,9 @@ internal fun ExoPlayerView(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    nextEpisodeCountdownSeconds = null
+                    if (nextEpisodePromptState is PlayerEndPromptState.WithCountdown) {
+                        nextEpisodePromptState = PlayerEndPromptState.WithoutCountdown
+                    }
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
                     notifyPlaybackPositionChanged(position, dur)
@@ -397,6 +421,7 @@ internal fun ExoPlayerView(
                     )
                     exoPlayer.pause()
                 }
+
                 Lifecycle.Event.ON_RESUME -> if (wantsPlay) exoPlayer.play()
                 else -> Unit
             }
@@ -433,12 +458,13 @@ internal fun ExoPlayerView(
                         )
                     }
                     if (hasNextEpisode) {
-                        nextEpisodeCountdownSeconds = if (autoPlayNextEpisode) {
-                            NEXT_EPISODE_COUNTDOWN_SECONDS
+                        nextEpisodePromptState = if (autoPlayNextEpisode) {
+                            PlayerEndPromptState.WithCountdown(
+                                PLAYER_END_PROMPT_COUNTDOWN_SECONDS,
+                            )
                         } else {
-                            null
+                            PlayerEndPromptState.WithoutCountdown
                         }
-                        showNextEpisodePrompt = true
                         controllerVisible = true
                         closePanels()
                         hideJob?.cancel()
@@ -477,7 +503,11 @@ internal fun ExoPlayerView(
                 positionMs = position,
                 durationMs = dur,
             )
-            exoPlayer.release()
+            runCatching {
+                exoPlayer.pause()
+                exoPlayer.clearMediaItems()
+                context.stopService(Intent(context, PlayerMediaSessionService::class.java))
+            }
         }
     }
 
@@ -512,28 +542,24 @@ internal fun ExoPlayerView(
 
     LaunchedEffect(
         controllerVisible,
-        showQualityPanel,
-        showDubbingPanel,
-        showBalancerPanel,
-        showSpeedPanel,
-        showResizePanel,
-        showNextEpisodePrompt,
+        panels.activePanel,
+        nextEpisodePromptState.isVisible,
         showRateTitlePrompt,
         restoreControlFocusTarget,
     ) {
-        if (showNextEpisodePrompt) {
+        if (nextEpisodePromptState.isVisible) {
             withFrameNanos { }
             try {
-                nextEpisodeFocusRequester.requestFocus()
+                focus.nextEpisode.requestFocus()
             } catch (_: Exception) {
             }
         } else if (showRateTitlePrompt) {
             withFrameNanos { }
             try {
-                rateTitleFocusRequester.requestFocus()
+                focus.rateTitle.requestFocus()
             } catch (_: Exception) {
             }
-        } else if (controllerVisible && !showQualityPanel && !showDubbingPanel && !showBalancerPanel && !showSpeedPanel && !showResizePanel) {
+        } else if (controllerVisible && !panels.isAnyOpen) {
             withFrameNanos { }
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->
                 requestControlFocus(target).also { restored ->
@@ -542,60 +568,60 @@ internal fun ExoPlayerView(
             } ?: false
             if (!restoredExternalTarget && !requestPanelReturnFocus()) {
                 try {
-                    playFocusRequester.requestFocus()
+                    focus.play.requestFocus()
                 } catch (_: Exception) {
                 }
             }
         } else if (!controllerVisible) {
             withFrameNanos { }
             try {
-                overlayFocusRequester.requestFocus()
+                focus.overlay.requestFocus()
             } catch (_: Exception) {
             }
         }
     }
 
-    LaunchedEffect(showQualityPanel) {
-        if (showQualityPanel) {
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Quality)) {
+        if (panels.isOpen(TvPlayerPanel.Quality)) {
             withFrameNanos { }
             try {
-                selectedQualityFocusRequester.requestFocus()
+                focus.selectedQuality.requestFocus()
             } catch (_: Exception) {
             }
         }
     }
-    LaunchedEffect(showDubbingPanel) {
-        if (showDubbingPanel) {
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Dubbing)) {
+        if (panels.isOpen(TvPlayerPanel.Dubbing)) {
             withFrameNanos { }
             try {
-                selectedDubbingFocusRequester.requestFocus()
+                focus.selectedDubbing.requestFocus()
             } catch (_: Exception) {
             }
         }
     }
-    LaunchedEffect(showBalancerPanel) {
-        if (showBalancerPanel) {
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Balancer)) {
+        if (panels.isOpen(TvPlayerPanel.Balancer)) {
             withFrameNanos { }
             try {
-                selectedBalancerFocusRequester.requestFocus()
+                focus.selectedBalancer.requestFocus()
             } catch (_: Exception) {
             }
         }
     }
-    LaunchedEffect(showSpeedPanel) {
-        if (showSpeedPanel) {
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Speed)) {
+        if (panels.isOpen(TvPlayerPanel.Speed)) {
             withFrameNanos { }
             try {
-                selectedSpeedFocusRequester.requestFocus()
+                focus.selectedSpeed.requestFocus()
             } catch (_: Exception) {
             }
         }
     }
-    LaunchedEffect(showResizePanel) {
-        if (showResizePanel) {
+    LaunchedEffect(panels.isOpen(TvPlayerPanel.Resize)) {
+        if (panels.isOpen(TvPlayerPanel.Resize)) {
             withFrameNanos { }
             try {
-                selectedResizeFocusRequester.requestFocus()
+                focus.selectedResize.requestFocus()
             } catch (_: Exception) {
             }
         }
@@ -610,7 +636,7 @@ internal fun ExoPlayerView(
             hideJob?.cancel()
             withFrameNanos { }
             try {
-                skipFocusRequester.requestFocus()
+                focus.skip.requestFocus()
             } catch (_: Exception) {
             }
             delay(10.seconds)
@@ -620,41 +646,35 @@ internal fun ExoPlayerView(
 
     val displayTime = if (isSeeking) (seekProgress * duration).toLong() else currentPosition
 
-    LaunchedEffect(showNextEpisodePrompt, episodeKey) {
-        if (!showNextEpisodePrompt || nextEpisodeCountdownSeconds == null) {
-            return@LaunchedEffect
-        }
-        while (showNextEpisodePrompt && nextEpisodeCountdownSeconds != null) {
+    LaunchedEffect(nextEpisodePromptState, episodeKey) {
+        val countdown = nextEpisodePromptState as? PlayerEndPromptState.WithCountdown
+            ?: return@LaunchedEffect
+        if (countdown.seconds <= 0) {
+            withFrameNanos { }
+            playNextEpisode()
+        } else {
             delay(1.seconds)
-            val remaining = nextEpisodeCountdownSeconds ?: break
-            nextEpisodeCountdownSeconds = (remaining - 1).coerceAtLeast(0)
-            if (nextEpisodeCountdownSeconds == 0) {
-                withFrameNanos { }
-                playNextEpisode()
-            }
+            nextEpisodePromptState = PlayerEndPromptState.WithCountdown(
+                countdown.seconds - 1,
+            )
         }
     }
 
     BackHandler(
-        enabled = showQualityPanel ||
-                showDubbingPanel ||
-                showBalancerPanel ||
-                showSpeedPanel ||
-                showResizePanel ||
-                showNextEpisodePrompt ||
+        enabled = panels.isAnyOpen ||
+                nextEpisodePromptState.isVisible ||
                 showRateTitlePrompt,
     ) {
-        showNextEpisodePrompt = false
-        nextEpisodeCountdownSeconds = null
+        nextEpisodePromptState = PlayerEndPromptState.Hidden
         showRateTitlePrompt = false
         closePanels(
-            returnFocusTarget = when {
-                showQualityPanel -> PanelReturnFocusTarget.Quality
-                showDubbingPanel -> PanelReturnFocusTarget.Dubbing
-                showBalancerPanel -> PanelReturnFocusTarget.Balancer
-                showSpeedPanel -> PanelReturnFocusTarget.Speed
-                showResizePanel -> PanelReturnFocusTarget.Resize
-                else -> null
+            returnFocusTarget = when (panels.activePanel) {
+                TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
+                TvPlayerPanel.Dubbing -> PanelReturnFocusTarget.Dubbing
+                TvPlayerPanel.Balancer -> PanelReturnFocusTarget.Balancer
+                TvPlayerPanel.Speed -> PanelReturnFocusTarget.Speed
+                TvPlayerPanel.Resize -> PanelReturnFocusTarget.Resize
+                null -> null
             }
         )
     }
@@ -686,7 +706,7 @@ internal fun ExoPlayerView(
 
         if (!controllerVisible) {
             PlayerHiddenKeyOverlay(
-                focusRequester = overlayFocusRequester,
+                focusRequester = focus.overlay,
                 onSeekBackward = { stepSeek(SeekDirection.Backward) },
                 onSeekForward = { stepSeek(SeekDirection.Forward) },
                 onInteraction = ::onInteraction,
@@ -741,7 +761,7 @@ internal fun ExoPlayerView(
                             ControlButton(
                                 onClick = { skipActiveSegment() },
                                 onFocused = ::onInteraction,
-                                focusRequester = skipFocusRequester,
+                                focusRequester = focus.skip,
                                 primary = highlightedSkipKey == activeSkip.key,
                             ) { color ->
                                 Text(
@@ -760,7 +780,7 @@ internal fun ExoPlayerView(
                         seekProgress = seekProgress,
                         bufferedProgress = bufferedProgress,
                         currentPosition = currentPosition,
-                        playFocusRequester = playFocusRequester,
+                        playFocusRequester = focus.play,
                         onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
                         onSeekChange = { v -> isSeeking = true; seekProgress = v },
                         onSeekFinished = {
@@ -783,65 +803,30 @@ internal fun ExoPlayerView(
                         playerName = playerName,
                         dubbing = dubbing,
                         currentQualityLabel = activeQuality.orEmpty(),
-                        qualityFocusRequester = qualityButtonFocusRequester,
-                        dubbingFocusRequester = dubbingButtonFocusRequester,
-                        balancerFocusRequester = balancerButtonFocusRequester,
-                        speedFocusRequester = speedButtonFocusRequester,
+                        qualityFocusRequester = focus.quality,
+                        dubbingFocusRequester = focus.dubbing,
+                        balancerFocusRequester = focus.balancer,
+                        speedFocusRequester = focus.speed,
                         onInteraction = ::onInteraction,
                         onPrevEpisode = onPrevEpisode,
                         onNextEpisode = { onNextEpisode(PlayerNextEpisodeSource.Controls) },
                         onRateTitle = ::rateTitle,
                         onToggleQuality = {
-                            showQualityPanel = !showQualityPanel
-                            showDubbingPanel = false
-                            showBalancerPanel = false
-                            showSpeedPanel = false
-                            showResizePanel = false
-                            if (!showQualityPanel) pendingPanelReturnFocusTarget =
-                                PanelReturnFocusTarget.Quality
-                            if (showQualityPanel) hideJob?.cancel() else onInteraction()
+                            togglePanel(TvPlayerPanel.Quality, PanelReturnFocusTarget.Quality)
                         },
                         onToggleDubbing = {
-                            showDubbingPanel = !showDubbingPanel
-                            showQualityPanel = false
-                            showBalancerPanel = false
-                            showSpeedPanel = false
-                            showResizePanel = false
-                            if (!showDubbingPanel) pendingPanelReturnFocusTarget =
-                                PanelReturnFocusTarget.Dubbing
-                            if (showDubbingPanel) hideJob?.cancel() else onInteraction()
+                            togglePanel(TvPlayerPanel.Dubbing, PanelReturnFocusTarget.Dubbing)
                         },
                         onToggleBalancer = {
-                            showBalancerPanel = !showBalancerPanel
-                            showDubbingPanel = false
-                            showQualityPanel = false
-                            showSpeedPanel = false
-                            showResizePanel = false
-                            if (!showBalancerPanel) pendingPanelReturnFocusTarget =
-                                PanelReturnFocusTarget.Balancer
-                            if (showBalancerPanel) hideJob?.cancel() else onInteraction()
+                            togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer)
                         },
-                        resizeFocusRequester = resizeButtonFocusRequester,
+                        resizeFocusRequester = focus.resize,
                         onToggleResize = {
-                            showResizePanel = !showResizePanel
-                            showBalancerPanel = false
-                            showDubbingPanel = false
-                            showQualityPanel = false
-                            showSpeedPanel = false
-                            if (!showResizePanel) pendingPanelReturnFocusTarget =
-                                PanelReturnFocusTarget.Resize
-                            if (showResizePanel) hideJob?.cancel() else onInteraction()
+                            togglePanel(TvPlayerPanel.Resize, PanelReturnFocusTarget.Resize)
                         },
                         currentSpeedLabel = activeSpeed.speedLabel(),
                         onToggleSpeed = {
-                            showSpeedPanel = !showSpeedPanel
-                            showBalancerPanel = false
-                            showDubbingPanel = false
-                            showQualityPanel = false
-                            showResizePanel = false
-                            if (!showSpeedPanel) pendingPanelReturnFocusTarget =
-                                PanelReturnFocusTarget.Speed
-                            if (showSpeedPanel) hideJob?.cancel() else onInteraction()
+                            togglePanel(TvPlayerPanel.Speed, PanelReturnFocusTarget.Speed)
                         },
                     )
                 }
@@ -849,11 +834,11 @@ internal fun ExoPlayerView(
         }
 
         PlayerSelectionPanel(
-            visible = showQualityPanel,
+            visible = panels.isOpen(TvPlayerPanel.Quality),
             title = stringResource(R.string.player_quality_title),
             items = qualities.keys.toList(),
             selectedIndex = qualities.keys.indexOf(activeQuality),
-            selectedFocusRequester = selectedQualityFocusRequester,
+            selectedFocusRequester = focus.selectedQuality,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),
@@ -873,11 +858,11 @@ internal fun ExoPlayerView(
         )
 
         PlayerSelectionPanel(
-            visible = showDubbingPanel,
+            visible = panels.isOpen(TvPlayerPanel.Dubbing),
             title = stringResource(R.string.player_dubbing_title),
             items = allDubbingNames,
             selectedIndex = currentDubbingIndex,
-            selectedFocusRequester = selectedDubbingFocusRequester,
+            selectedFocusRequester = focus.selectedDubbing,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 48.dp, bottom = 72.dp),
@@ -900,11 +885,11 @@ internal fun ExoPlayerView(
         )
 
         PlayerSelectionPanel(
-            visible = showSpeedPanel,
+            visible = panels.isOpen(TvPlayerPanel.Speed),
             title = stringResource(R.string.player_speed_title),
             items = speeds.map { it.speedLabel() },
             selectedIndex = speeds.indexOf(activeSpeed).coerceAtLeast(0),
-            selectedFocusRequester = selectedSpeedFocusRequester,
+            selectedFocusRequester = focus.selectedSpeed,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),
@@ -919,12 +904,12 @@ internal fun ExoPlayerView(
         )
 
         PlayerResizeSettingsPanel(
-            visible = showResizePanel,
+            visible = panels.isOpen(TvPlayerPanel.Resize),
             resizeModes = resizeModes,
             selectedResizeMode = resizeMode,
             zoomLevels = zoomLevels,
             selectedZoomLevel = zoomLevel,
-            selectedResizeFocusRequester = selectedResizeFocusRequester,
+            selectedResizeFocusRequester = focus.selectedResize,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),
@@ -942,11 +927,11 @@ internal fun ExoPlayerView(
         )
 
         PlayerSelectionPanel(
-            visible = showBalancerPanel,
+            visible = panels.isOpen(TvPlayerPanel.Balancer),
             title = stringResource(R.string.player_balancer_title),
             items = allBalancerNames.map { it.removePrefix(stringResource(R.string.player_name_prefix)) },
             selectedIndex = currentBalancerIndex,
-            selectedFocusRequester = selectedBalancerFocusRequester,
+            selectedFocusRequester = focus.selectedBalancer,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 48.dp, bottom = 72.dp),
@@ -967,17 +952,21 @@ internal fun ExoPlayerView(
         )
 
         PlayerEndPrompt(
-            visible = showNextEpisodePrompt && hasNextEpisode,
-            title = nextEpisodeCountdownSeconds?.let { seconds ->
-                stringResource(R.string.player_next_episode_prompt_countdown, seconds)
-            } ?: stringResource(R.string.player_next_episode_prompt),
+            visible = nextEpisodePromptState.isVisible && hasNextEpisode,
+            title = when (val prompt = nextEpisodePromptState) {
+                is PlayerEndPromptState.WithCountdown -> stringResource(
+                    R.string.player_next_episode_prompt_countdown,
+                    prompt.seconds,
+                )
+
+                else -> stringResource(R.string.player_next_episode_prompt)
+            },
             primaryLabel = stringResource(R.string.player_watch_next),
             stayLabel = stringResource(R.string.player_stay),
-            primaryFocusRequester = nextEpisodeFocusRequester,
+            primaryFocusRequester = focus.nextEpisode,
             onPrimary = ::playNextEpisode,
             onStay = {
-                showNextEpisodePrompt = false
-                nextEpisodeCountdownSeconds = null
+                nextEpisodePromptState = PlayerEndPromptState.Hidden
                 onInteraction()
             },
             onInteraction = ::onInteraction,
@@ -989,7 +978,7 @@ internal fun ExoPlayerView(
             title = stringResource(R.string.player_rate_title_prompt),
             primaryLabel = stringResource(R.string.player_rate_title),
             stayLabel = stringResource(R.string.player_stay),
-            primaryFocusRequester = rateTitleFocusRequester,
+            primaryFocusRequester = focus.rateTitle,
             onPrimary = ::rateTitle,
             onStay = {
                 showRateTitlePrompt = false
@@ -1008,34 +997,3 @@ internal fun ExoPlayerView(
         )
     }
 }
-
-private const val NEXT_EPISODE_COUNTDOWN_SECONDS = 10
-
-private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
-    when (this) {
-        ActiveSkipType.Opening -> PlayerSkipType.Opening
-        ActiveSkipType.Ending -> PlayerSkipType.Ending
-    }
-
-private fun PlaybackException.analyticsType(): String =
-    this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
-
-private fun calculateBufferedProgress(
-    bufferedPosition: Long,
-    currentPosition: Long,
-    duration: Long,
-): Float {
-    if (duration <= 0L) return 0f
-    val playedProgress = currentPosition.toFloat() / duration
-    val loadedProgress = bufferedPosition.coerceAtLeast(0L).toFloat() / duration
-    return loadedProgress.coerceIn(playedProgress.coerceIn(0f, 1f), 1f)
-}
-
-private data class TvProgressSource(
-    val episodeUrl: String,
-    val episode: String,
-    val videoId: Int,
-    val playerName: String,
-    val dubbing: String,
-    val screenshotUrl: String,
-)

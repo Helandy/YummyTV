@@ -10,3 +10,10 @@ class ResolvePlayerStreamUseCase @Inject constructor(private val repository: Pla
     suspend operator fun invoke(request: PlayerStreamRequest): PlayerStreamResolveResult =
         repository.resolve(request)
 }
+
+class OpenAllohaStreamSessionUseCase @Inject constructor(
+    private val repository: PlayerStreamRepository,
+) {
+    suspend operator fun invoke(request: PlayerStreamRequest) =
+        repository.openAllohaSession(request)
+}

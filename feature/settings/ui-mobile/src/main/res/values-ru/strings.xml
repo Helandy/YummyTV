@@ -68,7 +68,7 @@
     <string name="settings_library_continue_watching_card_size_standard">Стандартные</string>
     <string name="settings_library_continue_watching_card_size_standard_hint">Сбалансированная ширина для библиотеки</string>
     <string name="settings_library_continue_watching_card_size_large">Крупные</string>
-    <string name="settings_library_continue_watching_card_size_large_hint">Текущие карточки библиотеки на всю ширину</string>
+    <string name="settings_library_continue_watching_card_size_large_hint">Крупные карточки библиотеки на всю ширину</string>
     <string name="settings_poster_quality_low">Низкое</string>
     <string name="settings_poster_quality_low_hint">~15 КБ · WebP</string>
     <string name="settings_poster_quality_standard">Стандартное</string>

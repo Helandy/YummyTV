@@ -20,10 +20,5 @@ internal fun String.streamKind(): StreamKind {
 
 internal fun StreamKind.throttleLabel(): String = "off"
 
-internal fun StreamKind.segmentPaceLabel(isAlloha: Boolean): String =
-    if (this == StreamKind.Hls && isAlloha) "${ALLOHA_HLS_REQUEST_INTERVAL_MS}ms" else "off"
-
-internal const val ALLOHA_HLS_REQUEST_INTERVAL_MS = 4_000L
-
 private fun String.cleanStreamUrl(): String =
     substringBefore('?').substringBefore('#')

@@ -63,7 +63,7 @@
     <string name="settings_library_continue_watching_card_size_standard">Standard</string>
     <string name="settings_library_continue_watching_card_size_standard_hint">Balanced width for the library</string>
     <string name="settings_library_continue_watching_card_size_large">Large</string>
-    <string name="settings_library_continue_watching_card_size_large_hint">Current spacious library card size</string>
+    <string name="settings_library_continue_watching_card_size_large_hint">Large spacious library cards</string>
     <string name="settings_poster_quality_low">Low</string>
     <string name="settings_poster_quality_low_hint">~15 KB · WebP</string>
     <string name="settings_poster_quality_standard">Standard</string>
@@ -86,6 +86,7 @@
     <string name="settings_preferred_player_vk_hint">VK</string>
     <string name="settings_preferred_player_rutube">Rutube</string>
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
+    <string name="settings_preferred_player_title">Preferred player</string>
     <string name="settings_preferred_video_quality_title">Preferred video quality</string>
     <string name="settings_preferred_video_quality_best">Best available</string>
     <string name="settings_preferred_video_quality_best_hint">Use the highest stream quality</string>

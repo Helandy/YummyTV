@@ -18,13 +18,21 @@ import su.afk.yummy.tv.data.player.extractor.VkExtractor
 import su.afk.yummy.tv.data.player.extractor.ZedfilmExtractor
 import su.afk.yummy.tv.data.player.repository.DefaultPlayerSourceRepository
 import su.afk.yummy.tv.data.player.repository.DefaultPlayerStreamRepository
+import su.afk.yummy.tv.data.player.session.DefaultAllohaPlaybackSessionManager
 import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
+import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object PlayerDataModule {
+    @Provides
+    @Singleton
+    internal fun provideAllohaPlaybackSessionManager(
+        manager: DefaultAllohaPlaybackSessionManager,
+    ): AllohaPlaybackSessionManager = manager
+
 
     @Provides
     @Singleton

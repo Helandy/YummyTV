@@ -126,6 +126,7 @@ dependencies {
     implementation(project(":feature:video-download:ui-mobile"))
 
     implementation(libs.bundles.coil.full)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.androidx.tvprovider)
     implementation(libs.hilt.work)

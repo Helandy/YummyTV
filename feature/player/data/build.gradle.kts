@@ -14,4 +14,5 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
 }

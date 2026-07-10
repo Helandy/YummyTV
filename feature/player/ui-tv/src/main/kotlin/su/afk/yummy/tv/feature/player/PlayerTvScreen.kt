@@ -27,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.domain.player.model.ALLOHA_STREAM_REFRESH_INTERVAL_MS
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.rememberPlayerScreenUiState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -60,21 +59,6 @@ fun PlayerTvScreen(
     var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
     val canChangePlayer = uiState.availableBalancerNames.size > 1
-
-    LaunchedEffect(
-        state.isOfflinePlayback,
-        state.streamUrl,
-        uiState.activeBalancerName,
-    ) {
-        if (
-            !state.isOfflinePlayback &&
-            state.streamUrl != null &&
-            uiState.activeBalancerName.contains("alloha", ignoreCase = true)
-        ) {
-            delay(ALLOHA_STREAM_REFRESH_INTERVAL_MS)
-            onEvent(PlayerState.Event.RefreshAllohaStream)
-        }
-    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -175,6 +159,8 @@ fun PlayerTvScreen(
                 qualityOverrides = state.streamQualityMap,
                 episodeKey = uiState.activeIframeUrl,
                 resumeFromMs = state.resumeFromMs,
+                isOfflinePlayback = state.isOfflinePlayback,
+                offlineCacheKey = state.offlineCacheKey,
                 onSaveProgress = { snapshot -> onEvent(PlayerState.Event.SaveProgress(snapshot)) },
                 onPlayerEvent = onEvent,
                 animeTitle = state.animeTitle,

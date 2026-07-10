@@ -30,9 +30,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.domain.player.model.ALLOHA_STREAM_REFRESH_INTERVAL_MS
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
@@ -83,20 +81,6 @@ fun PlayerMobileScreen(
         )
     }
     val canChangePlayer = uiState.balancerNames.size > 1
-    LaunchedEffect(
-        state.isOfflinePlayback,
-        state.streamUrl,
-        uiState.activeBalancerName,
-    ) {
-        if (
-            !state.isOfflinePlayback &&
-            state.streamUrl != null &&
-            uiState.activeBalancerName.contains("alloha", ignoreCase = true)
-        ) {
-            delay(ALLOHA_STREAM_REFRESH_INTERVAL_MS)
-            onEvent(PlayerState.Event.RefreshAllohaStream)
-        }
-    }
     val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
         ?: state.resumeFromMs.takeIf { it > 0L }
         ?: 0L

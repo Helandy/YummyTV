@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.handler
 
 import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
@@ -210,6 +211,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     ),
                     consumedDestinationResume =
                         destinationResumeMs != null && pendingResume == destinationResumeMs,
+                    allohaSession = result.allohaSession,
                 )
             }
 
@@ -292,6 +294,7 @@ internal sealed interface PlayerStreamLoadResult {
     data class State(
         val state: PlayerState.State,
         val consumedDestinationResume: Boolean,
+        val allohaSession: AllohaStreamSession? = null,
     ) : PlayerStreamLoadResult
 
     /** Получение потока один раз упало, вызывающая сторона должна обновить источники и повторить. */

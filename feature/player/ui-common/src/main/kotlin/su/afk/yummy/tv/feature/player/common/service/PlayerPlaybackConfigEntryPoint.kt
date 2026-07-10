@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.service
+package su.afk.yummy.tv.feature.player.common.service
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -10,17 +10,15 @@ import dagger.hilt.components.SingletonComponent
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
-internal interface MobilePlayerPlaybackConfigEntryPoint {
-    fun mobilePlayerPlaybackConfig(): MobilePlayerPlaybackConfig
+interface PlayerPlaybackConfigEntryPoint {
+    fun playerPlaybackConfig(): PlayerPlaybackConfig
 }
 
 @Composable
-internal fun rememberMobilePlayerPlaybackConfig(): MobilePlayerPlaybackConfig {
+fun rememberPlayerPlaybackConfig(): PlayerPlaybackConfig {
     val context = LocalContext.current.applicationContext
     return remember(context) {
-        EntryPointAccessors.fromApplication(
-            context,
-            MobilePlayerPlaybackConfigEntryPoint::class.java,
-        ).mobilePlayerPlaybackConfig()
+        EntryPointAccessors.fromApplication(context, PlayerPlaybackConfigEntryPoint::class.java)
+            .playerPlaybackConfig()
     }
 }

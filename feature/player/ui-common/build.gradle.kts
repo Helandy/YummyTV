@@ -1,5 +1,6 @@
 plugins {
-    id("yummytv.android.library")
+    id("yummytv.android.library.compose")
+    id("yummytv.android.hilt")
 }
 
 android {
@@ -7,5 +8,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.media3.exoplayer)
+    implementation(project(":feature:player:domain"))
+    implementation(project(":feature:video-download:data"))
+    implementation(libs.bundles.media3.player)
+    implementation(libs.bundles.compose.screen)
+    implementation(libs.androidx.core.ktx)
 }

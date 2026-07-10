@@ -4,8 +4,11 @@ import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
+import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -18,18 +21,22 @@ internal class PlayerStreamHandler @Inject constructor(
     private val watchProgressStore: WatchProgressStore,
     private val settingsStore: SettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
+    private val openAllohaStreamSession: OpenAllohaStreamSessionUseCase,
     private val strings: StringProvider,
 ) {
     suspend fun resolve(
         state: PlayerState.State,
         pendingResumeMs: Long?,
     ): PlayerStreamResult {
-        return when (val result = resolvePlayerStream(
-            PlayerStreamRequest(
-                iframeUrl = activeIframeUrl(state),
-                autoQualityLabel = strings.get(R.string.player_quality_auto),
-            )
-        )) {
+        val request = PlayerStreamRequest(
+            iframeUrl = activeIframeUrl(state),
+            autoQualityLabel = strings.get(R.string.player_quality_auto),
+        )
+        val session = if (request.iframeUrl.isAllohaPlayerUrl()) {
+            openAllohaStreamSession(request)
+        } else null
+        val resolved = session?.initialStream ?: resolvePlayerStream(request)
+        return when (val result = resolved) {
             is PlayerStreamResolveResult.Stream -> {
                 val resume = pendingResumeMs
                     ?: loadResumePosition(state.animeId, activeEpisode(state))
@@ -41,23 +48,30 @@ internal class PlayerStreamHandler @Inject constructor(
                     selectedQuality = selectedQuality(result.qualities),
                     resumeFromMs = resume,
                     consumedPendingResume = pendingResumeMs != null,
+                    allohaSession = session,
                 )
             }
 
-            is PlayerStreamResolveResult.KodikBlocked ->
+            is PlayerStreamResolveResult.KodikBlocked -> {
+                session?.close()
                 PlayerStreamResult.KodikBlocked(message = result.toMessage())
+            }
 
-            PlayerStreamResolveResult.Failed ->
+            PlayerStreamResolveResult.Failed -> {
+                session?.close()
                 PlayerStreamResult.PlayerError(
                     message = strings.get(R.string.player_stream_error),
                     reason = PlayerStreamResult.REASON_FAILED,
                 )
+            }
 
-            PlayerStreamResolveResult.Unsupported ->
+            PlayerStreamResolveResult.Unsupported -> {
+                session?.close()
                 PlayerStreamResult.PlayerError(
                     message = strings.get(R.string.player_unsupported),
                     reason = PlayerStreamResult.REASON_UNSUPPORTED,
                 )
+            }
         }
     }
 
@@ -113,6 +127,7 @@ internal sealed interface PlayerStreamResult {
         val selectedQuality: String?,
         val resumeFromMs: Long,
         val consumedPendingResume: Boolean,
+        val allohaSession: AllohaStreamSession?,
     ) : PlayerStreamResult
 
     data class KodikBlocked(val message: String) : PlayerStreamResult

@@ -13,6 +13,8 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.HiltAndroidApp
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -92,6 +94,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
     private fun setupCoilImageLoader() {
         val cacheBytes = settingsStore.currentPreviewCacheSize.megabytes.toLong() * 1024L * 1024L
         SingletonImageLoader.setSafe {
+            val imageHttpClient = HttpClient(OkHttp)
             ImageLoader.Builder(it)
                 .crossfade(true)
                 .memoryCache {
@@ -105,7 +108,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
                         .maxSizeBytes(cacheBytes)
                         .build()
                 }
-                .components { add(KtorNetworkFetcherFactory()) }
+                .components {
+                    add(KtorNetworkFetcherFactory(httpClient = imageHttpClient))
+                }
                 .build()
         }
     }

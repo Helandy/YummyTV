@@ -19,6 +19,8 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
+import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
@@ -50,6 +52,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val getVideoDownload: GetVideoDownloadUseCase,
     private val strings: StringProvider,
     private val analytics: PlayerAnalytics,
+    private val allohaSessionManager: AllohaPlaybackSessionManager,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -63,9 +66,12 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var allohaRefreshRetryJob: Job? = null
     private var isRecoveringAllohaPlayback = false
     private var allohaPlaybackRecoveryRetryCount = 0
+    private var activeAllohaSession: AllohaStreamSession? = null
+    private var allohaSessionRefreshJob: Job? = null
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
+        closeAllohaSession()
         isRecoveringAllohaPlayback = false
         allohaPlaybackRecoveryRetryCount = 0
         allohaRefreshRetryJob?.cancel()
@@ -117,7 +123,11 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     override fun onEvent(event: PlayerState.Event) {
         when (event) {
-            PlayerState.Event.Back -> saveCurrentProgressThenNavigate { nav.back() }
+            PlayerState.Event.Back -> saveCurrentProgressThenNavigate {
+                closeAllohaSession()
+                nav.back()
+            }
+
             PlayerState.Event.OpenDetails -> {
                 analytics.eventOpenDetails(currentState.animeId)
                 val animeId = currentState.animeId
@@ -134,15 +144,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 if (currentState.isOfflinePlayback) {
                     loadDownloadedDestination(activeDest.downloadId)
                 } else {
+                    closeAllohaSession()
                     isRecoveringAllohaPlayback = currentState.isAllohaSource()
                     allohaPlaybackRecoveryRetryCount = 0
-                    refreshSourceGraphThenLoadStream()
-                }
-            }
-
-            PlayerState.Event.RefreshAllohaStream -> {
-                if (!currentState.isOfflinePlayback && currentState.isAllohaSource()) {
-                    loadStream(preserveCurrentStreamOnFailure = true)
+                    loadStream(refreshSourcesOnFailure = true)
                 }
             }
 
@@ -167,14 +172,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                     isRecoveringAllohaPlayback = true
                     allohaPlaybackRecoveryRetryCount = 0
                     allohaRefreshRetryJob?.cancel()
-                    setState {
-                        copy(
-                            streamUrl = null,
-                            playerError = null,
-                            kodikBlockedError = null,
-                        )
-                    }
-                    refreshSourceGraphThenLoadStream()
+                    loadStream(
+                        refreshSourcesOnFailure = false,
+                        preserveCurrentStreamOnFailure = true,
+                    )
                 } else {
                     setState {
                         copy(
@@ -186,6 +187,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             PlayerState.Event.PrevEpisode -> {
+                closeAllohaSession()
                 analytics.eventPrevEpisode(currentState.animeId)
                 applySourceSelection(
                     sourceSelectionHandler.previousEpisode(currentState),
@@ -195,6 +197,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.NextEpisode -> {
+                closeAllohaSession()
                 analytics.eventNextEpisode(currentState, event.source)
                 val nextState = sourceSelectionHandler.nextEpisode(currentState)
                 applySourceSelection(
@@ -216,6 +219,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.DubbingSelected -> {
+                closeAllohaSession()
                 analytics.eventDubbingSelected(
                     state = currentState,
                     index = event.index,
@@ -232,6 +236,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.BalancerSelected -> {
+                closeAllohaSession()
                 analytics.eventBalancerSelected(
                     state = currentState,
                     index = event.index,
@@ -250,6 +255,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.QualitySelected -> {
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
+                activeAllohaSession?.selectQuality(event.quality)
                 setState {
                     copy(
                         selectedQuality = event.quality,
@@ -337,6 +343,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private fun loadDownloadedDestination(downloadId: Long) {
+        closeAllohaSession()
         viewModelScope.launch {
             val item = getVideoDownload(downloadId)
             if (item == null || item.status.name != "Downloaded") {
@@ -676,6 +683,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                         )
                         return@launch
                     }
+                    if (!resolveFailed) {
+                        activateAllohaSession(result.allohaSession)
+                    }
                     if (
                         isRecoveringAllohaPlayback &&
                         !currentState.isOfflinePlayback &&
@@ -739,11 +749,48 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    private fun activateAllohaSession(session: AllohaStreamSession?) {
+        if (activeAllohaSession === session) return
+        closeAllohaSession()
+        activeAllohaSession = session?.let(allohaSessionManager::activate) ?: return
+        allohaSessionRefreshJob = viewModelScope.launch {
+            while (true) {
+                val expiresAt = session.expiresAtMs()
+                if (expiresAt == null) {
+                    delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
+                    continue
+                }
+                delay(
+                    (expiresAt - System.currentTimeMillis() - ALLOHA_SESSION_REFRESH_LEAD_MS).coerceAtLeast(
+                        0L
+                    )
+                )
+                if (activeAllohaSession === session && session.expiresAtMs() == expiresAt) {
+                    session.refresh()
+                }
+            }
+        }
+    }
+
+    private fun closeAllohaSession(immediately: Boolean = true) {
+        allohaSessionRefreshJob?.cancel()
+        allohaSessionRefreshJob = null
+        activeAllohaSession?.let { allohaSessionManager.release(it, immediately) }
+        activeAllohaSession = null
+    }
+
+    override fun onCleared() {
+        closeAllohaSession(immediately = false)
+        super.onCleared()
+    }
+
     private companion object {
         private const val ALLOHA_PLAYER_NAME = "alloha"
         private const val ALLOHA_SCHEDULED_REFRESH_RETRY_DELAY_MS = 5_000L
         private const val ALLOHA_PLAYBACK_RECOVERY_RETRY_DELAY_MS = 15_000L
         private const val MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES = 3
+        private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
+        private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
     }
 
 }
