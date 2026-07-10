@@ -14,6 +14,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     private val settingsStore: SettingsStore,
 ) {
     val autoSkipOpeningsEndings: Flow<Boolean> = settingsStore.autoSkipOpeningsEndings
+    val autoPlayNextEpisode: Flow<Boolean> = settingsStore.autoPlayNextEpisode
 
     fun observeResizeSettings(scope: PlayerResizeSettingsScope): Flow<PlayerResizeSettings> =
         settingsStore.playerResizeSettings(

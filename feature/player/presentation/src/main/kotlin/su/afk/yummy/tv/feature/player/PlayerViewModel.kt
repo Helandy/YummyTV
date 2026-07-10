@@ -74,7 +74,8 @@ class PlayerViewModel @AssistedInject internal constructor(
         setState {
             destinationStateMapper.toState(
                 newDest,
-                autoSkipOpeningsEndings = autoSkipOpeningsEndings
+                autoSkipOpeningsEndings = autoSkipOpeningsEndings,
+                autoPlayNextEpisode = autoPlayNextEpisode,
             )
         }
         observeActivePlayerResizeSettings(force = true)
@@ -100,6 +101,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         analytics.eventScreenOpened(dest.animeId)
         settingsHandler.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
+            .launchIn(viewModelScope)
+        settingsHandler.autoPlayNextEpisode
+            .onEach { enabled -> setState { copy(autoPlayNextEpisode = enabled) } }
             .launchIn(viewModelScope)
         if (dest.downloadId > 0L) {
             loadDownloadedDestination(dest.downloadId)

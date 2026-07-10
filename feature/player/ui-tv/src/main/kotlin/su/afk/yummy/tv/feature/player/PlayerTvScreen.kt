@@ -185,6 +185,7 @@ fun PlayerTvScreen(
                 screenshotUrl = uiState.activeScreenshotUrl,
                 hasPrevEpisode = uiState.hasPrevEpisode,
                 hasNextEpisode = uiState.hasNextEpisode,
+                autoPlayNextEpisode = state.autoPlayNextEpisode,
                 canRateTitleOnEnd = uiState.canRateTitleOnEnd,
                 onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
                 onNextEpisode = { source -> onEvent(PlayerState.Event.NextEpisode(source)) },

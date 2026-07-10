@@ -7,6 +7,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
     fun toState(
         dest: PlayerDestination,
         autoSkipOpeningsEndings: Boolean = false,
+        autoPlayNextEpisode: Boolean = false,
     ): PlayerState.State {
         val sourceGraph = dest.toSingleEpisodeSourceGraph()
         val selection = sourceGraph.selection.normalizedFor(sourceGraph)
@@ -18,6 +19,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
             sourceSelection = selection,
             resumeFromMs = dest.resumeFromMs.coerceAtLeast(0L),
             autoSkipOpeningsEndings = autoSkipOpeningsEndings,
+            autoPlayNextEpisode = autoPlayNextEpisode,
         )
     }
 

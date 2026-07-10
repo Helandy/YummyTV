@@ -32,6 +32,7 @@ class SettingsState {
         val watchNextEnabled: Boolean = true,
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
+        val autoPlayNextEpisode: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val yaniApplicationToken: String = "",
@@ -75,6 +76,9 @@ class SettingsState {
 
         /** Пользователь переключил автопропуск опенингов и эндингов. */
         data object AutoSkipOpeningsEndingsToggled : Event
+
+        /** Пользователь переключил автовоспроизведение следующей серии. */
+        data object AutoPlayNextEpisodeToggled : Event
 
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event

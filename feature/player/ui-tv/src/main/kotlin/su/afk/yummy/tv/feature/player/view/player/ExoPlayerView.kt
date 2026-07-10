@@ -127,6 +127,7 @@ internal fun ExoPlayerView(
     onZoomLevelSelected: (PlayerZoomLevel) -> Unit = {},
     skips: PlayerSkips = PlayerSkips.Empty,
     autoSkipOpeningsEndings: Boolean = false,
+    autoPlayNextEpisode: Boolean = false,
 ) {
     val context = LocalContext.current
     val qualities = remember(streamUrl, qualityOverrides) {
@@ -153,6 +154,9 @@ internal fun ExoPlayerView(
     var showSpeedPanel by remember { mutableStateOf(false) }
     var showResizePanel by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var nextEpisodeCountdownSeconds by remember(episodeKey, streamUrl) {
+        mutableStateOf<Int?>(null)
+    }
     var showRateTitlePrompt by remember { mutableStateOf(false) }
     var completionReported by remember(episodeKey, streamUrl) { mutableStateOf(false) }
     var highlightedSkipKey by remember { mutableStateOf<String?>(null) }
@@ -283,6 +287,10 @@ internal fun ExoPlayerView(
     }
 
     fun stepSeek(direction: SeekDirection) {
+        if (direction == SeekDirection.Backward) {
+            showNextEpisodePrompt = false
+            nextEpisodeCountdownSeconds = null
+        }
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
         seekTo(exoPlayer.currentPosition + offset)
@@ -330,6 +338,7 @@ internal fun ExoPlayerView(
     fun playNextEpisode() {
         saveProgressIfReady()
         showNextEpisodePrompt = false
+        nextEpisodeCountdownSeconds = null
         showRateTitlePrompt = false
         closePanels()
         onNextEpisode(PlayerNextEpisodeSource.EndPrompt)
@@ -378,6 +387,7 @@ internal fun ExoPlayerView(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
+                    nextEpisodeCountdownSeconds = null
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
                     notifyPlaybackPositionChanged(position, dur)
@@ -423,6 +433,11 @@ internal fun ExoPlayerView(
                         )
                     }
                     if (hasNextEpisode) {
+                        nextEpisodeCountdownSeconds = if (autoPlayNextEpisode) {
+                            NEXT_EPISODE_COUNTDOWN_SECONDS
+                        } else {
+                            null
+                        }
                         showNextEpisodePrompt = true
                         controllerVisible = true
                         closePanels()
@@ -605,6 +620,21 @@ internal fun ExoPlayerView(
 
     val displayTime = if (isSeeking) (seekProgress * duration).toLong() else currentPosition
 
+    LaunchedEffect(showNextEpisodePrompt, episodeKey) {
+        if (!showNextEpisodePrompt || nextEpisodeCountdownSeconds == null) {
+            return@LaunchedEffect
+        }
+        while (showNextEpisodePrompt && nextEpisodeCountdownSeconds != null) {
+            delay(1.seconds)
+            val remaining = nextEpisodeCountdownSeconds ?: break
+            nextEpisodeCountdownSeconds = (remaining - 1).coerceAtLeast(0)
+            if (nextEpisodeCountdownSeconds == 0) {
+                withFrameNanos { }
+                playNextEpisode()
+            }
+        }
+    }
+
     BackHandler(
         enabled = showQualityPanel ||
                 showDubbingPanel ||
@@ -615,6 +645,7 @@ internal fun ExoPlayerView(
                 showRateTitlePrompt,
     ) {
         showNextEpisodePrompt = false
+        nextEpisodeCountdownSeconds = null
         showRateTitlePrompt = false
         closePanels(
             returnFocusTarget = when {
@@ -937,13 +968,16 @@ internal fun ExoPlayerView(
 
         PlayerEndPrompt(
             visible = showNextEpisodePrompt && hasNextEpisode,
-            title = stringResource(R.string.player_next_episode_prompt),
+            title = nextEpisodeCountdownSeconds?.let { seconds ->
+                stringResource(R.string.player_next_episode_prompt_countdown, seconds)
+            } ?: stringResource(R.string.player_next_episode_prompt),
             primaryLabel = stringResource(R.string.player_watch_next),
             stayLabel = stringResource(R.string.player_stay),
             primaryFocusRequester = nextEpisodeFocusRequester,
             onPrimary = ::playNextEpisode,
             onStay = {
                 showNextEpisodePrompt = false
+                nextEpisodeCountdownSeconds = null
                 onInteraction()
             },
             onInteraction = ::onInteraction,
@@ -974,6 +1008,8 @@ internal fun ExoPlayerView(
         )
     }
 }
+
+private const val NEXT_EPISODE_COUNTDOWN_SECONDS = 10
 
 private fun ActiveSkipType.toPlayerSkipType(): PlayerSkipType =
     when (this) {

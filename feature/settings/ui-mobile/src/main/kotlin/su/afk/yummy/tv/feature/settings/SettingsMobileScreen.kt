@@ -123,6 +123,16 @@ fun SettingsMobileScreen(
                         onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
                     )
                     SettingsMobileToggleRow(
+                        label = stringResource(R.string.settings_auto_play_next_episode_label),
+                        hint = if (state.autoPlayNextEpisode) {
+                            stringResource(R.string.settings_auto_play_next_episode_enabled)
+                        } else {
+                            stringResource(R.string.settings_disabled)
+                        },
+                        enabled = state.autoPlayNextEpisode,
+                        onClick = { onEvent(SettingsState.Event.AutoPlayNextEpisodeToggled) },
+                    )
+                    SettingsMobileToggleRow(
                         label = stringResource(R.string.settings_suggest_next_episode_on_watched_label),
                         hint = if (state.suggestNextEpisodeOnWatched) {
                             stringResource(R.string.settings_suggest_next_episode_on_watched_enabled)

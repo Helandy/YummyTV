@@ -44,6 +44,7 @@
     <string name="player_opening_skipped">Опенинг пропущен %1$s - %2$s</string>
     <string name="player_ending_skipped">Эндинг пропущен %1$s - %2$s</string>
     <string name="player_next_episode_prompt">Следующая серия?</string>
+    <string name="player_next_episode_prompt_countdown">Следующая серия? %1$d</string>
     <string name="player_rate_title_prompt">Оценить сериал?</string>
     <string name="player_rate_title">Оценить</string>
     <string name="player_watch_next">Смотреть</string>

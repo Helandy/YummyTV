@@ -138,6 +138,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил автовоспроизведение следующей серии. */
+    fun eventAutoPlayNextEpisodeToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /**
      * Пользователь включил или выключил предложение следующей серии после завершения текущей.
      *
@@ -235,6 +243,8 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_refresh_continue_watching_progress_on_launch_toggled"
         const val EVENT_SUGGEST_NEXT_EPISODE_ON_WATCHED_TOGGLED =
             "settings_suggest_next_episode_on_watched_toggled"
+        const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
+            "settings_auto_play_next_episode_toggled"
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
     }
 }

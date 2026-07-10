@@ -49,6 +49,7 @@ class PlayerState {
         val playbackPositionMs: Long = 0L,
         val playbackDurationMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
+        val autoPlayNextEpisode: Boolean = false,
         val mobileVideoScale: Float = 1f,
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,

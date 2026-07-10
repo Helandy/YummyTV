@@ -101,6 +101,8 @@
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_suggest_next_episode_on_watched_label">Next episode</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
+    <string name="settings_auto_play_next_episode_label">Autoplay next episode</string>
+    <string name="settings_auto_play_next_episode_enabled">Start the next episode after a 10-second countdown</string>
     <string name="settings_refresh_continue_watching_progress_label">Latest continue progress</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
     <string name="settings_cache_size_min">Minimum</string>

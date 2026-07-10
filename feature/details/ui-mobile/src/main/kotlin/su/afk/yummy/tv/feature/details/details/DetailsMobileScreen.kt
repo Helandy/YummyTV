@@ -3,14 +3,19 @@ package su.afk.yummy.tv.feature.details.details
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,35 +47,35 @@ fun DetailsMobileScreen(
     val error = state.error.takeIf { details == null }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    BaseScreen(
-        isScroll = false,
-        customTopBar = if (details == null) {
-            {
+    if (details == null) {
+        BaseScreen(
+            isScroll = false,
+            customTopBar = {
                 MobileTopBar(
                     title = stringResource(R.string.details_mobile_title),
                     onBack = { onEvent(DetailsState.Event.BackSelected) },
                 )
-            }
-        } else {
-            null
-        },
-        isLoading = state.isLoading && details == null,
-        error = error?.let { ErrorItem(title = it, message = it) },
-        onRetry = { onEvent(DetailsState.Event.RetrySelected) },
-        isEmpty = details == null,
-        emptyContent = { MobileMessage(title = emptyText) },
-        errorContent = error?.let { message ->
-            { _, retry ->
-                MobileMessage(
-                    title = message,
-                    actionLabel = stringResource(R.string.details_mobile_retry),
-                    onAction = retry,
-                )
-            }
-        },
-    ) {
-        Box(Modifier.fillMaxSize()) {
-            if (details != null) {
+            },
+            isLoading = state.isLoading,
+            error = error?.let { ErrorItem(title = it, message = it) },
+            onRetry = { onEvent(DetailsState.Event.RetrySelected) },
+            isEmpty = true,
+            emptyContent = { MobileMessage(title = emptyText) },
+            errorContent = error?.let { message ->
+                { _, retry ->
+                    MobileMessage(
+                        title = message,
+                        actionLabel = stringResource(R.string.details_mobile_retry),
+                        onAction = retry,
+                    )
+                }
+            },
+        ) {}
+    } else {
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+        ) {
+            Box(Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -137,23 +142,22 @@ fun DetailsMobileScreen(
                         }
                     }
                 }
-            }
-
-            DetailsPickerSheets(
-                state = state,
-                onLibraryListSelected = { onEvent(DetailsState.Event.LibraryListSelected(it)) },
-                onLibraryDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
-                onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled(it)) },
-                onSubscriptionsDismiss = { onEvent(DetailsState.Event.SubscriptionsDismissed) },
-                onBalancerConfirmed = { onEvent(DetailsState.Event.BalancerConfirmed(it)) },
-                onBalancerDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
-            )
-
-            if (state.showPosterFullscreen && details != null) {
-                PosterDialog(
-                    details = details,
-                    onDismiss = { onEvent(DetailsState.Event.PosterDismissed) },
+                DetailsPickerSheets(
+                    state = state,
+                    onLibraryListSelected = { onEvent(DetailsState.Event.LibraryListSelected(it)) },
+                    onLibraryDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
+                    onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled(it)) },
+                    onSubscriptionsDismiss = { onEvent(DetailsState.Event.SubscriptionsDismissed) },
+                    onBalancerConfirmed = { onEvent(DetailsState.Event.BalancerConfirmed(it)) },
+                    onBalancerDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
                 )
+
+                if (state.showPosterFullscreen) {
+                    PosterDialog(
+                        details = details,
+                        onDismiss = { onEvent(DetailsState.Event.PosterDismissed) },
+                    )
+                }
             }
         }
     }

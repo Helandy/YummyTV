@@ -29,6 +29,7 @@ data class SettingsSnapshot(
     val watchNextEnabled: Boolean,
     val previewCacheSize: PreviewCacheSize,
     val autoSkipOpeningsEndings: Boolean,
+    val autoPlayNextEpisode: Boolean,
     val suggestNextEpisodeOnWatched: Boolean,
     val refreshContinueWatchingProgressOnLaunch: Boolean,
     val yaniApplicationToken: String,
@@ -63,6 +64,7 @@ class SettingsStore(private val context: Context) {
     private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    private val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
     private val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
     private val refreshContinueWatchingProgressOnLaunchKey =
@@ -131,6 +133,10 @@ class SettingsStore(private val context: Context) {
 
     val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[autoSkipOpeningsEndingsKey] ?: false
+    }
+
+    val autoPlayNextEpisode: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[autoPlayNextEpisodeKey] ?: false
     }
 
     val suggestNextEpisodeOnWatched: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -250,6 +256,7 @@ class SettingsStore(private val context: Context) {
                     ?: PreviewCacheSize.MB_100
             },
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
+            autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
             refreshContinueWatchingProgressOnLaunch =
                 prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
@@ -327,6 +334,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
+    }
+
+    suspend fun setAutoPlayNextEpisode(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[autoPlayNextEpisodeKey] = enabled }
     }
 
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) {

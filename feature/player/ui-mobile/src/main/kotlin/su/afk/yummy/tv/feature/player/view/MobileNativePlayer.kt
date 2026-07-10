@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -97,6 +98,9 @@ internal fun MobileNativePlayer(
     var resumeAfterLifecyclePause by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var showNextEpisodePrompt by remember { mutableStateOf(false) }
+    var nextEpisodeCountdownSeconds by remember(ui.activeIframeUrl, streamUrl) {
+        mutableStateOf<Int?>(null)
+    }
     var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
@@ -202,8 +206,6 @@ internal fun MobileNativePlayer(
 
     fun toggleOverlay() {
         if (showNextEpisodePrompt) {
-            showNextEpisodePrompt = false
-            showOverlay()
             return
         }
         if (overlayVisible) {
@@ -322,7 +324,10 @@ internal fun MobileNativePlayer(
     }
 
     fun stepSeek(direction: MobileSeekDirection) {
-        showNextEpisodePrompt = false
+        if (direction == MobileSeekDirection.Backward) {
+            showNextEpisodePrompt = false
+            nextEpisodeCountdownSeconds = null
+        }
         val now = System.currentTimeMillis()
         val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
         seekToPosition(player.currentPosition + offset)
@@ -379,6 +384,11 @@ internal fun MobileNativePlayer(
                         )
                     }
                     if (ui.hasNextEpisode && !isInPictureInPictureMode) {
+                        nextEpisodeCountdownSeconds = if (state.autoPlayNextEpisode) {
+                            NEXT_EPISODE_COUNTDOWN_SECONDS
+                        } else {
+                            null
+                        }
                         showNextEpisodePrompt = true
                         overlayVisible = false
                         settingsMode = null
@@ -425,6 +435,7 @@ internal fun MobileNativePlayer(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
+                    nextEpisodeCountdownSeconds = null
                     val keepPlayingInPip = pipSession.shouldKeepPlayingOnPause()
                     resumeAfterLifecyclePause = wantsPlay && !keepPlayingInPip
                     val position = player.currentPosition.coerceAtLeast(0)
@@ -448,6 +459,7 @@ internal fun MobileNativePlayer(
         if (isInPictureInPictureMode) {
             overlayVisible = false
             showNextEpisodePrompt = false
+            nextEpisodeCountdownSeconds = null
             transformGestureActive = false
             settingsMode = null
             stepSeekToastText = null
@@ -463,11 +475,30 @@ internal fun MobileNativePlayer(
 
     LaunchedEffect(ui.activeIframeUrl) {
         showNextEpisodePrompt = false
+        nextEpisodeCountdownSeconds = null
         settingsMode = null
+    }
+
+    LaunchedEffect(showNextEpisodePrompt, ui.activeIframeUrl) {
+        if (!showNextEpisodePrompt || nextEpisodeCountdownSeconds == null) {
+            return@LaunchedEffect
+        }
+        while (showNextEpisodePrompt && nextEpisodeCountdownSeconds != null) {
+            delay(1.seconds)
+            val remaining = nextEpisodeCountdownSeconds ?: break
+            nextEpisodeCountdownSeconds = (remaining - 1).coerceAtLeast(0)
+            if (nextEpisodeCountdownSeconds == 0) {
+                withFrameNanos { }
+                showNextEpisodePrompt = false
+                nextEpisodeCountdownSeconds = null
+                onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
+            }
+        }
     }
 
     BackHandler(enabled = showNextEpisodePrompt && !isInPictureInPictureMode) {
         showNextEpisodePrompt = false
+        nextEpisodeCountdownSeconds = null
         showOverlay()
     }
 
@@ -649,15 +680,19 @@ internal fun MobileNativePlayer(
 
         if (showNextEpisodePrompt && ui.hasNextEpisode && !isInPictureInPictureMode) {
             MobilePlayerEndPrompt(
-                title = stringResource(R.string.player_next_episode_prompt),
+                title = nextEpisodeCountdownSeconds?.let { seconds ->
+                    stringResource(R.string.player_next_episode_prompt_countdown, seconds)
+                } ?: stringResource(R.string.player_next_episode_prompt),
                 primaryLabel = stringResource(R.string.player_watch_next),
                 stayLabel = stringResource(R.string.player_stay),
                 onPrimary = {
                     showNextEpisodePrompt = false
+                    nextEpisodeCountdownSeconds = null
                     onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
                 },
                 onStay = {
                     showNextEpisodePrompt = false
+                    nextEpisodeCountdownSeconds = null
                     showOverlay()
                 },
                 modifier = Modifier.align(Alignment.Center),
@@ -708,6 +743,8 @@ internal fun MobileNativePlayer(
         }
     }
 }
+
+private const val NEXT_EPISODE_COUNTDOWN_SECONDS = 10
 
 private fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
