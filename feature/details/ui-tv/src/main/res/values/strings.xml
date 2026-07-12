@@ -17,6 +17,7 @@
     <string name="details_player_prefix">Player </string>
     <string name="details_loading_episodes">Loading episodes...</string>
     <string name="details_episodes">Episodes</string>
+    <string name="details_episodes_empty">No episodes yet</string>
     <string name="details_episodes_count_title">Episodes %1$d</string>
     <string name="details_frames">Frames</string>
     <string name="details_similar_empty">No similar anime found</string>

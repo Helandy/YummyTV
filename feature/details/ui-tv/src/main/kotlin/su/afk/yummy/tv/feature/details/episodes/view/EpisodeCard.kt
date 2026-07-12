@@ -29,10 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
@@ -91,7 +89,6 @@ internal fun EpisodeCard(
                     Text(
                         text = video.episode,
                         style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
                         color = Color.White.copy(alpha = 0.15f),
                         modifier = Modifier.align(Alignment.Center),
                     )
@@ -164,7 +161,6 @@ internal fun EpisodeCard(
                         Text(
                             text = stringResource(R.string.details_episode_number, video.episode),
                             style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -173,7 +169,7 @@ internal fun EpisodeCard(
                         video.durationSeconds?.let {
                             Text(
                                 text = it.formatDuration(),
-                                fontSize = 11.sp,
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f),
                             )
                         }

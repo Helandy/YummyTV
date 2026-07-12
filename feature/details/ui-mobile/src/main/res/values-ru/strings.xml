@@ -14,6 +14,7 @@
     <string name="details_mobile_sections">Разделы</string>
     <string name="details_mobile_description">Описание</string>
     <string name="details_mobile_episodes">Серии</string>
+    <string name="details_mobile_episodes_empty">Серий пока нет</string>
     <string name="details_mobile_subscriptions">Подписки</string>
     <string name="details_mobile_full_details">Детали</string>
     <string name="details_mobile_trailers">Трейлеры</string>

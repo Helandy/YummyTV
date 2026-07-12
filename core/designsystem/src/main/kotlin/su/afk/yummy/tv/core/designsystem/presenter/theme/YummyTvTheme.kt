@@ -1,9 +1,11 @@
 package su.afk.yummy.tv.core.designsystem.presenter.theme
 
+import android.content.res.Configuration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 
 private data class YummyTvPalette(
@@ -96,9 +98,11 @@ fun YummyTvTheme(
     appTheme: AppTheme = AppTheme.WARM_AMBER,
     content: @Composable () -> Unit,
 ) {
+    val isTelevision = LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+            Configuration.UI_MODE_TYPE_TELEVISION
     MaterialTheme(
         colorScheme = appTheme.palette.toColorScheme(),
-        typography = YummyTvTypography,
+        typography = if (isTelevision) YummyTvTypography else YummyMobileTypography,
         content = content,
     )
 }

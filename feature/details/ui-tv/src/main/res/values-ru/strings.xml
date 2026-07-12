@@ -17,6 +17,7 @@
     <string name="details_player_prefix">Плеер </string>
     <string name="details_loading_episodes">Загружаем серии...</string>
     <string name="details_episodes">Серии</string>
+    <string name="details_episodes_empty">Серий пока нет</string>
     <string name="details_episodes_count_title">Серии %1$d</string>
     <string name="details_frames">Кадры</string>
     <string name="details_similar_empty">Похожее аниме не найдено</string>

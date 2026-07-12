@@ -14,6 +14,7 @@
     <string name="details_mobile_sections">Sections</string>
     <string name="details_mobile_description">Description</string>
     <string name="details_mobile_episodes">Episodes</string>
+    <string name="details_mobile_episodes_empty">No episodes yet</string>
     <string name="details_mobile_subscriptions">Subscriptions</string>
     <string name="details_mobile_full_details">Details</string>
     <string name="details_mobile_trailers">Trailers</string>

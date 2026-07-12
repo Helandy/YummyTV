@@ -71,7 +71,7 @@
     <string name="settings_poster_quality_standard">Стандартное</string>
     <string name="settings_poster_quality_standard_hint">~30 КБ · WebP</string>
     <string name="settings_poster_quality_mega">Мega</string>
-    <string name="settings_poster_quality_mega_hint">~50 КБ · AVIF (может не поддерживаться)</string>
+    <string name="settings_poster_quality_mega_hint">~50 КБ · AVIF</string>
     <string name="settings_poster_quality_high">Высокое</string>
     <string name="settings_poster_quality_high_hint">~250 КБ · JPEG</string>
     <string name="settings_preferred_player_none">Не выбрано</string>

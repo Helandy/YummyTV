@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,6 +86,8 @@ fun EpisodesMobileScreen(
             isLoading = state.videosState is VideosUiState.Loading,
             error = null,
             empty = state.videosState is VideosUiState.Empty,
+            emptyText = stringResource(R.string.details_mobile_episodes_empty),
+            emptyIcon = Icons.Filled.PlayArrow,
         ) {
             LazyColumn(
                 modifier = Modifier.navigationBarsPadding(),

@@ -76,7 +76,7 @@
     <string name="settings_poster_quality_standard">Standard</string>
     <string name="settings_poster_quality_standard_hint">~30 KB · WebP</string>
     <string name="settings_poster_quality_mega">Mega</string>
-    <string name="settings_poster_quality_mega_hint">~50 KB · AVIF (may not be supported)</string>
+    <string name="settings_poster_quality_mega_hint">~50 KB · AVIF</string>
     <string name="settings_poster_quality_high">High</string>
     <string name="settings_poster_quality_high_hint">~250 KB · JPEG</string>
     <string name="settings_preferred_player_none">Not selected</string>
