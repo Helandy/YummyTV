@@ -40,6 +40,7 @@ internal fun List<SearchItem>.toSearchPageCache(
                 title = item.title,
                 posterUrl = item.posterUrl,
                 rating = item.rating,
+                year = item.year,
             )
         },
     )
@@ -54,6 +55,7 @@ internal fun SearchPageCache.toSearchPage(): SearchPage =
                     title = it.title,
                     posterUrl = it.posterUrl,
                     rating = it.rating,
+                    year = it.year,
                 )
             },
         nextOffset = entry.offset + entry.responseSize,

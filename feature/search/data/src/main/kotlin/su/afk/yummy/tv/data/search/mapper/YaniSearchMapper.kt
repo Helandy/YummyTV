@@ -16,6 +16,7 @@ internal fun YaniSearchItemDto.toSearchItem(): SearchItem? {
         title = title,
         posterUrl = poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
         rating = rating?.average,
+        year = year,
     )
 }
 

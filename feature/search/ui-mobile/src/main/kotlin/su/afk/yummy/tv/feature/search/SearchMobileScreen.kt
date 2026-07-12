@@ -1,11 +1,14 @@
 package su.afk.yummy.tv.feature.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -23,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -137,6 +141,18 @@ fun SearchMobileScreen(
                     )
                 }
             }
+            if (hasActiveSearch && refreshState !is LoadState.Loading) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        text = stringResource(
+                            R.string.search_mobile_results_count,
+                            results.itemCount
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             val error = (appendState as? LoadState.Error)?.error?.uiMessage()
             if (error != null && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -152,6 +168,24 @@ fun SearchMobileScreen(
                         title = item.title,
                         posterUrl = item.posterUrl,
                         rating = item.rating,
+                        posterOverlay = {
+                            item.year?.let { year ->
+                                Text(
+                                    text = year.toString(),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.inverseSurface,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.inverseOnSurface,
+                                            RoundedCornerShape(4.dp),
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                                )
+                            }
+                        },
                         onClick = { onEvent(SearchState.Event.ItemSelected(item.id)) },
                     )
                 }

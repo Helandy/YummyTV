@@ -14,6 +14,7 @@ data class YaniSearchItemDto(
     val title: String = "",
     val poster: YaniSearchPosterDto? = null,
     val rating: YaniSearchRatingDto? = null,
+    val year: Int? = null,
 )
 
 @Serializable

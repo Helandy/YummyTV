@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -186,6 +187,15 @@ internal fun SearchResultsPane(
             isRandomAnimeLoading = isRandomAnimeLoading,
             onRandomAnimeSelected = onRandomAnimeSelected,
         )
+
+        if (hasActiveSearch && refreshState !is LoadState.Loading) {
+            Text(
+                text = stringResource(R.string.search_results_count, itemCount),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 48.dp, vertical = 8.dp),
+            )
+        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {

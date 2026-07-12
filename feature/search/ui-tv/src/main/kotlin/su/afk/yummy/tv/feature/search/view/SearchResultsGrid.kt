@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -22,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
@@ -124,13 +129,29 @@ internal fun SearchResultsGrid(
                                     }
                                 }
                             },
-                        posterOverlay = item.rating?.let { rating ->
-                            {
+                        posterOverlay = {
+                            item.rating?.let { rating ->
                                 RatingBadge(
                                     rating = rating,
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(4.dp),
+                                )
+                            }
+                            item.year?.let { year ->
+                                Text(
+                                    text = year.toString(),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                            RoundedCornerShape(4.dp),
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
                                 )
                             }
                         },
