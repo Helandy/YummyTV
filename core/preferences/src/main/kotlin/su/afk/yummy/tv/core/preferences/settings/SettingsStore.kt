@@ -23,6 +23,7 @@ data class SettingsSnapshot(
     val appTheme: AppTheme,
     val posterQuality: PosterQuality,
     val posterCardSize: PosterCardSize,
+    val showTopTitleYear: Boolean,
     val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
     val preferredPlayer: PreferredPlayer,
     val preferredVideoQuality: PreferredVideoQuality,
@@ -57,6 +58,7 @@ class SettingsStore(private val context: Context) {
 
     private val posterQualityKey = stringPreferencesKey("poster_quality")
     private val posterCardSizeKey = stringPreferencesKey("poster_card_size")
+    private val showTopTitleYearKey = booleanPreferencesKey("show_top_title_year")
     private val libraryContinueWatchingCardSizeKey =
         stringPreferencesKey("library_continue_watching_card_size")
     private val preferredPlayerKey = stringPreferencesKey("preferred_player")
@@ -101,6 +103,10 @@ class SettingsStore(private val context: Context) {
         prefs[posterCardSizeKey]?.let { name ->
             runCatching { PosterCardSize.valueOf(name) }.getOrNull()
         } ?: PosterCardSize.STANDARD
+    }
+
+    val showTopTitleYear: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[showTopTitleYearKey] ?: false
     }
 
     val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize> =
@@ -239,6 +245,7 @@ class SettingsStore(private val context: Context) {
             posterCardSize = prefs[posterCardSizeKey]?.let { name ->
                 runCatching { PosterCardSize.valueOf(name) }.getOrNull()
             } ?: PosterCardSize.STANDARD,
+            showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
             libraryContinueWatchingCardSize =
                 prefs[libraryContinueWatchingCardSizeKey]?.let { name ->
                     runCatching { LibraryContinueWatchingCardSize.valueOf(name) }.getOrNull()
@@ -307,6 +314,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPosterCardSize(size: PosterCardSize) {
         context.dataStore.edit { prefs -> prefs[posterCardSizeKey] = size.name }
+    }
+
+    suspend fun setShowTopTitleYear(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[showTopTitleYearKey] = enabled }
     }
 
     suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize) {

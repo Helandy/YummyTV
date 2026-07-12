@@ -79,6 +79,7 @@ fun TopMobileScreen(
                 TopMobileGrid(
                     pagingItems = items,
                     isActive = pageType == state.selectedType,
+                    showTitleYear = state.showTitleYear,
                     onAnimeSelected = { id -> onEvent(TopState.Event.AnimeSelected(id)) },
                     onRetry = {
                         onEvent(TopState.Event.RetrySelected)

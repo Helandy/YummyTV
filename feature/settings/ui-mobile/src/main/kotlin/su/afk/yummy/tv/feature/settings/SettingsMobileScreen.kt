@@ -95,6 +95,16 @@ fun SettingsMobileScreen(
                         hint = state.posterQuality.hint(),
                         onClick = { activePicker = SettingsMobilePicker.POSTER_QUALITY },
                     )
+                    SettingsMobileToggleRow(
+                        label = stringResource(R.string.settings_show_top_title_year),
+                        hint = if (state.showTopTitleYear) {
+                            stringResource(R.string.settings_show_top_title_year_enabled)
+                        } else {
+                            stringResource(R.string.settings_disabled)
+                        },
+                        enabled = state.showTopTitleYear,
+                        onClick = { onEvent(SettingsState.Event.ShowTopTitleYearToggled) },
+                    )
                 }
             }
 

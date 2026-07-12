@@ -26,6 +26,7 @@ fun TopTvScreen(
         pagingItems = items,
         selectedType = state.selectedType,
         isActiveDestination = isActiveDestination,
+        showTitleYear = state.showTitleYear,
         onItemSelected = onItemSelected,
         onTypeSelected = onTypeSelected,
         onRetry = {

@@ -5,4 +5,5 @@ data class AnimeTopItem(
     val title: String,
     val posterUrl: String?,
     val rating: Double?,
+    val year: Int?,
 )

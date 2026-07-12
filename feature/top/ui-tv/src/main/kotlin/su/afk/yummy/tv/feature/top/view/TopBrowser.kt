@@ -64,6 +64,7 @@ internal fun TopBrowser(
     pagingItems: LazyPagingItems<AnimeTopItem>,
     selectedType: AnimeTopType,
     isActiveDestination: Boolean,
+    showTitleYear: Boolean,
     onItemSelected: (AnimeTopItem) -> Unit,
     onTypeSelected: (AnimeTopType) -> Unit,
     onRetry: () -> Unit,
@@ -336,6 +337,7 @@ internal fun TopBrowser(
                                 TopAnimeCard(
                                     item = item,
                                     rank = index + 1,
+                                    showTitleYear = showTitleYear,
                                     onClick = stableOnClick,
                                     onFocused = stableOnFocused,
                                     modifier = Modifier

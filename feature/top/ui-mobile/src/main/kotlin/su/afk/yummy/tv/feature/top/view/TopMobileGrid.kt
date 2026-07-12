@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ import su.afk.yummy.tv.feature.top.mobile.R
 internal fun TopMobileGrid(
     pagingItems: LazyPagingItems<AnimeTopItem>,
     isActive: Boolean,
+    showTitleYear: Boolean,
     onAnimeSelected: (Int) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -102,6 +104,24 @@ internal fun TopMobileGrid(
                                 .align(Alignment.TopStart)
                                 .padding(4.dp),
                         )
+                        if (showTitleYear) {
+                            item.year?.let { year ->
+                                Text(
+                                    text = year.toString(),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.inverseSurface,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.inverseOnSurface,
+                                            RoundedCornerShape(4.dp),
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                                )
+                            }
+                        }
                     },
                     onClick = { onAnimeSelected(item.id) },
                 )

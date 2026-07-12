@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.top.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 internal fun TopAnimeCard(
     item: AnimeTopItem,
     rank: Int,
+    showTitleYear: Boolean,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -49,6 +51,24 @@ internal fun TopAnimeCard(
                     .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                     .padding(horizontal = 5.dp, vertical = 2.dp),
             )
+            if (showTitleYear) {
+                item.year?.let { year ->
+                    Text(
+                        text = year.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
+                }
+            }
         },
     )
 }

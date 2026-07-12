@@ -13,6 +13,7 @@ class TopState {
     data class State(
         val selectedType: AnimeTopType = AnimeTopType.TV,
         val items: Flow<PagingData<AnimeTopItem>> = flowOf(PagingData.empty()),
+        val showTitleYear: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на экране топа аниме. */

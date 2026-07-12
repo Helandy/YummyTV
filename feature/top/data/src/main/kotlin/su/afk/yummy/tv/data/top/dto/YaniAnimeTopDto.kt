@@ -14,6 +14,7 @@ data class YaniAnimeTopItemDto(
     val title: String = "",
     val poster: YaniAnimeTopPosterDto? = null,
     val rating: YaniAnimeTopRatingDto? = null,
+    val year: Int? = null,
 )
 
 @Serializable

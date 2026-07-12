@@ -12,6 +12,8 @@
     <string name="settings_mobile_theme">Theme</string>
     <string name="settings_mobile_poster_size">Poster size</string>
     <string name="settings_mobile_poster_quality">Poster quality</string>
+    <string name="settings_show_top_title_year">Show title year in Top</string>
+    <string name="settings_show_top_title_year_enabled">Year is shown on Top title cards</string>
     <string name="settings_mobile_default_player">Default player</string>
     <string name="settings_preferred_video_quality_title">Preferred video quality</string>
     <string name="settings_preferred_video_quality_best">Best available</string>

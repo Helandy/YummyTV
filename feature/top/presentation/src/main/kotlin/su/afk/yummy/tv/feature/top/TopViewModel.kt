@@ -5,10 +5,13 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.OffsetPage
 import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
@@ -25,6 +28,7 @@ class TopViewModel @Inject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeTop: GetAnimeTopUseCase,
+    settingsStore: SettingsStore,
     private val analytics: TopAnalytics,
 ) : BaseViewModelNew<TopState.State, TopState.Event, TopState.Effect>(savedStateHandle) {
 
@@ -36,6 +40,9 @@ class TopViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
+        settingsStore.showTopTitleYear
+            .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: TopState.Event) {

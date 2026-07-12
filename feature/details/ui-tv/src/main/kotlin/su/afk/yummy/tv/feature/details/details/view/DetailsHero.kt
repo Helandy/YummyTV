@@ -209,25 +209,34 @@ private fun HeroRatingRow(details: AnimeDetails) {
     val ratings = buildList {
         details.rating.kinopoisk?.let {
             add(
-                stringResource(
-                    R.string.details_kinopoisk_rating,
-                    it.formatRating()
+                ExternalRatingLabel(
+                    label = stringResource(
+                        R.string.details_kinopoisk_rating,
+                        it.formatRating(),
+                    ),
+                    rating = it,
                 )
             )
         }
         details.rating.shikimori?.let {
             add(
-                stringResource(
-                    R.string.details_shikimori_rating,
-                    it.formatRating()
+                ExternalRatingLabel(
+                    label = stringResource(
+                        R.string.details_shikimori_rating,
+                        it.formatRating(),
+                    ),
+                    rating = it,
                 )
             )
         }
         details.rating.myAnimeList?.let {
             add(
-                stringResource(
-                    R.string.details_mal_rating,
-                    it.formatRating()
+                ExternalRatingLabel(
+                    label = stringResource(
+                        R.string.details_mal_rating,
+                        it.formatRating(),
+                    ),
+                    rating = it,
                 )
             )
         }
@@ -241,19 +250,24 @@ private fun HeroRatingRow(details: AnimeDetails) {
         yaniRating?.let { rating ->
             YaniRatingLabel(rating)
         }
-        ratings.forEach { label ->
-            RatingLabel(label)
+        ratings.forEach { rating ->
+            RatingLabel(rating)
         }
     }
 }
 
+private data class ExternalRatingLabel(
+    val label: String,
+    val rating: Double,
+)
+
 @Composable
-private fun RatingLabel(label: String) {
+private fun RatingLabel(rating: ExternalRatingLabel) {
     Text(
-        text = label,
+        text = rating.label,
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
+        color = rating.rating.toRatingColor(),
     )
 }
 
