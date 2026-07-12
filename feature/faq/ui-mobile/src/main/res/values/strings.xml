@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="faq_title">FAQ</string>
-    <string name="faq_who_am_i_title">Who am I?</string>
+    <string name="faq_who_am_i_title">Who is the developer?</string>
     <string name="faq_who_am_i_answer">I am the independent developer behind YummyTV. I work on the app in my free time because I want to make watching anime more convenient and enjoyable.</string>
     <string name="faq_why_this_app_title">Why is the app like this?</string>
     <string name="faq_why_this_app_answer">YummyTV reflects my idea of a convenient anime streaming app. It evolves gradually: I try ideas, see how they work in real use, and improve them over time.</string>
-    <string name="faq_why_not_all_cases_title">Why can’t I cover every case?</string>
-    <string name="faq_why_not_all_cases_answer">A single developer has limited time and access to devices. I cannot test every Android version, device model, video source, network, and user scenario in advance.</string>
+    <string name="faq_why_not_all_cases_title">Why can’t I anticipate every case?</string>
+    <string name="faq_why_not_all_cases_answer">My time and access to devices are extremely limited, so I cannot test every Android version, device model, video source, network, and user scenario in advance. I also do not earn any money from this work and develop the app entirely in my free time.</string>
     <string name="faq_why_errors_title">Why do errors happen?</string>
-    <string name="faq_why_errors_answer">The app depends on more than its own code. External APIs, players, source availability, network restrictions, and device-specific behavior can all change or occasionally work differently than expected.</string>
+    <string name="faq_why_errors_answer">The app depends on more than its own code. External APIs, players, source availability, network restrictions, and device-specific behavior can all change or occasionally work differently than expected. Sometimes I may also have simply overlooked a feature or scenario.</string>
+    <string name="faq_missing_site_feature_title">I’m missing a website feature, such as ABC</string>
+    <string name="faq_missing_site_feature_answer">The app was originally created around my own needs on a TV, where many website features were simply unnecessary. I later added a mobile version, where almost all website functionality could technically be recreated, but I do not want to add features without a real need. If something is missing for you, please let me know — I will consider your use case and try to add the feature.</string>
+    <string name="faq_unsupported_player_title">Why isn’t player XYZ supported?</string>
+    <string name="faq_unsupported_player_answer">Most likely, I simply have not had time to get to it yet. If a player does not work or is not supported, please tell me the title, episode, and player name. I will try to investigate and add support for it.</string>
+    <string name="faq_not_official_title">Why is this an unofficial app?</string>
+    <string name="faq_not_official_answer">I am not affiliated with the website’s owners and develop YummyTV independently, so the app is not official. In the future, though, it would be great to establish a partnership and perhaps become official one day.</string>
     <string name="faq_why_feedback_title">Why is feedback important?</string>
     <string name="faq_why_feedback_answer">Your messages help me discover scenarios and errors that I cannot reproduce myself. The more precise the report, the easier it is to understand the cause and prioritize improvements that really matter.</string>
     <string name="faq_feedback_button">Questions, ideas, and suggestions</string>
