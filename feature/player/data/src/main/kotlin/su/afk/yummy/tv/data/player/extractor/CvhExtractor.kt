@@ -34,7 +34,6 @@ internal class CvhExtractor @Inject constructor(
     ): PlayerStreamResolveResult =
         extractQualities(
             iframeUrl = request.iframeUrl,
-            autoQualityLabel = request.autoQualityLabel,
         )?.let { qualities ->
             PlayerStreamResolveResult.Stream(
                 url = qualities.values.last(),
@@ -45,7 +44,6 @@ internal class CvhExtractor @Inject constructor(
 
     private suspend fun extractQualities(
         iframeUrl: String,
-        autoQualityLabel: String
     ): LinkedHashMap<String, String>? = withContext(Dispatchers.IO) {
         try {
             val fullUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
@@ -93,9 +91,10 @@ internal class CvhExtractor @Inject constructor(
                 return@withContext null
             }
 
-            // Auto HLS first so keys.last() = best available MP4 (used as default quality)
+            // No Auto/HLS entry: CdnVideoHub's HLS manifests embed raw CDN-IP segment
+            // URLs that aren't rewritten to failoverHost, which breaks HLS downloads.
+            // MP4 qualities only; keys.last() = best available (used as default quality).
             val qualities = LinkedHashMap<String, String>()
-            qualities.putCvhQuality(autoQualityLabel, sources.optString("hlsUrl"), failoverHost)
             qualities.putCvhQuality("240p", sources.optString("mpegLowestUrl"), failoverHost)
             qualities.putCvhQuality("360p", sources.optString("mpegLowUrl"), failoverHost)
             qualities.putCvhQuality("480p", sources.optString("mpegMediumUrl"), failoverHost)

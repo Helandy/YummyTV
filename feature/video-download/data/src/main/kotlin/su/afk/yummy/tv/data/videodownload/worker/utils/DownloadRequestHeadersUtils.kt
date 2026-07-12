@@ -10,11 +10,18 @@ internal fun Map<String, String>.userAgent(): String? =
     entries.firstOrNull { (key, _) -> key.equals(USER_AGENT_HEADER, ignoreCase = true) }?.value
 
 internal fun Map<String, String>.withDownloadRequestHeaders(iframeUrl: String): Map<String, String> {
-    val referer = iframeUrl.normalizedHttpUrl()
-    val origin = if (referer.isAllohaFrameUrl()) ALLOHA_ORIGIN else referer.httpOriginOrNull()
     val hasReferer = keys.any { it.equals(REFERER_HEADER, ignoreCase = true) }
     val hasOrigin = keys.any { it.equals(ORIGIN_HEADER, ignoreCase = true) }
     val hasUserAgent = keys.any { it.equals(USER_AGENT_HEADER, ignoreCase = true) }
+    // CVH's CDN (okcdn.ru) rejects requests carrying a foreign Referer/Origin with a 400;
+    // its own live playback already works with no Referer/Origin, only User-Agent.
+    val skipRefererOrigin = iframeUrl.isCvhFrameUrl()
+    val referer = if (skipRefererOrigin) "" else iframeUrl.normalizedHttpUrl()
+    val origin = when {
+        skipRefererOrigin -> null
+        referer.isAllohaFrameUrl() -> ALLOHA_ORIGIN
+        else -> referer.httpOriginOrNull()
+    }
     return buildMap {
         putAll(this@withDownloadRequestHeaders)
         if (!hasReferer && referer.isNotBlank()) {
@@ -34,6 +41,9 @@ internal fun Map<String, String>.safeHeaderNames(): List<String> =
 
 private fun String.isAllohaFrameUrl(): Boolean =
     contains("alloha", ignoreCase = true)
+
+private fun String.isCvhFrameUrl(): Boolean =
+    contains("iframecvh", ignoreCase = true) || equals("cvh", ignoreCase = true)
 
 private const val REFERER_HEADER = "Referer"
 private const val ORIGIN_HEADER = "Origin"
