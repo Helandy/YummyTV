@@ -13,6 +13,11 @@ sealed interface PlayerStreamResolveResult {
         val statusCode: Int? = null,
     ) : PlayerStreamResolveResult
 
+    /** The source resolved successfully but reports this specific dubbing/episode has no stream. */
+    data class Unavailable(
+        val message: String? = null,
+    ) : PlayerStreamResolveResult
+
     data object Failed : PlayerStreamResolveResult
     data object Unsupported : PlayerStreamResolveResult
 }

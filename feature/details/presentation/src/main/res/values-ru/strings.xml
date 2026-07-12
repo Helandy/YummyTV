@@ -5,6 +5,7 @@
     <string name="details_quality_auto">авто</string>
     <string name="details_download_resolving_quality">Получаем доступные качества...</string>
     <string name="details_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
+    <string name="details_download_dubbing_unavailable">Извините, указанная озвучка недоступна. Попробуйте выбрать другую озвучку.</string>
     <string name="details_download_enqueue_error">Не удалось поставить скачивание в очередь</string>
     <string name="details_download_replace_delete_error">Новая загрузка добавлена, но предыдущую не удалось удалить</string>
 </resources>

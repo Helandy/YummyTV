@@ -333,6 +333,32 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
+     * В списке балансеров на экране деталей показан неподдерживаемый плеер.
+     *
+     * Параметры: anime_id, episode, player.
+     */
+    fun eventDetailsUnsupportedPlayerShown(animeId: Int, episode: String, playerName: String) {
+        eventWithAnime(
+            eventName = EVENT_DETAILS_UNSUPPORTED_PLAYER_SHOWN,
+            animeId = animeId,
+            params = unsupportedPlayerParams(episode, playerName),
+        )
+    }
+
+    /**
+     * В списке балансеров на экране эпизодов показан неподдерживаемый плеер.
+     *
+     * Параметры: anime_id, episode, player.
+     */
+    fun eventEpisodesUnsupportedPlayerShown(animeId: Int, episode: String, playerName: String) {
+        eventWithAnime(
+            eventName = EVENT_EPISODES_UNSUPPORTED_PLAYER_SHOWN,
+            animeId = animeId,
+            params = unsupportedPlayerParams(episode, playerName),
+        )
+    }
+
+    /**
      * Пользователь повторил загрузку полного описания.
      *
      * Параметры: anime_id.
@@ -472,6 +498,14 @@ internal class DetailsAnalytics @Inject constructor(
         PARAM_EPISODE to video.episode,
     )
 
+    private fun unsupportedPlayerParams(
+        episode: String,
+        playerName: String,
+    ): Map<String, String> = analyticsParamsOf(
+        PARAM_EPISODE to episode,
+        PARAM_PLAYER to playerName,
+    )
+
     private fun Throwable.analyticsType(): String =
         this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
 
@@ -505,6 +539,8 @@ internal class DetailsAnalytics @Inject constructor(
 
         const val EVENT_DETAILS_BALANCER_CONFIRMED = "details_balancer_confirmed"
 
+        const val EVENT_DETAILS_UNSUPPORTED_PLAYER_SHOWN = "details_unsupported_player_shown"
+
         const val EVENT_DETAILS_LIBRARY_LIST_SELECTED = "details_library_list_selected"
 
         const val EVENT_DETAILS_POSTER_CLICKED = "details_poster_clicked"
@@ -537,6 +573,9 @@ internal class DetailsAnalytics @Inject constructor(
         const val EVENT_EPISODES_VIDEO_SELECTED = "details_episodes_video_selected"
 
         const val EVENT_EPISODES_BALANCER_CONFIRMED = "details_episodes_balancer_confirmed"
+
+        const val EVENT_EPISODES_UNSUPPORTED_PLAYER_SHOWN =
+            "details_episodes_unsupported_player_shown"
 
         const val EVENT_FULL_SCREEN_OPENED = "details_full_screen"
 

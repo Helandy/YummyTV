@@ -40,12 +40,24 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         request: PlayerStreamRequest,
         context: Context,
     ): PlayerStreamResolveResult = withContext(Dispatchers.Main) {
-        val session =
-            openSession(request, context) ?: return@withContext PlayerStreamResolveResult.Failed
-        try {
-            (session as? LiveAllohaStreamSession)?.directStream ?: session.initialStream
-        } finally {
-            session.close()
+        when (
+            val result = openSessionViaWebView(
+                iframeUrl = request.iframeUrl,
+                preferredQualityLabel = request.autoQualityLabel,
+                fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
+                context = context,
+            )
+        ) {
+            is AllohaOpenResult.Unavailable -> PlayerStreamResolveResult.Unavailable(result.message)
+            AllohaOpenResult.Failed -> PlayerStreamResolveResult.Failed
+            is AllohaOpenResult.Ready -> {
+                val session = result.session
+                try {
+                    (session as? LiveAllohaStreamSession)?.directStream ?: session.initialStream
+                } finally {
+                    session.close()
+                }
+            }
         }
     }
 
@@ -53,12 +65,20 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         request: PlayerStreamRequest,
         context: Context,
     ): AllohaStreamSession? = withContext(Dispatchers.Main) {
-        openSessionViaWebView(
-            iframeUrl = request.iframeUrl,
-            preferredQualityLabel = request.autoQualityLabel,
-            fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
-            context = context,
-        )
+        (
+                openSessionViaWebView(
+                    iframeUrl = request.iframeUrl,
+                    preferredQualityLabel = request.autoQualityLabel,
+                    fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
+                    context = context,
+                ) as? AllohaOpenResult.Ready
+                )?.session
+    }
+
+    private sealed interface AllohaOpenResult {
+        data class Ready(val session: AllohaStreamSession) : AllohaOpenResult
+        data class Unavailable(val message: String?) : AllohaOpenResult
+        data object Failed : AllohaOpenResult
     }
 
     @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -67,7 +87,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         preferredQualityLabel: String?,
         fallbackTtlSeconds: Int?,
         context: Context,
-    ): AllohaStreamSession? = suspendCancellableCoroutine { continuation ->
+    ): AllohaOpenResult = suspendCancellableCoroutine { continuation ->
         val handler = Handler(Looper.getMainLooper())
         var delivered = false
         var streamReady = false
@@ -80,7 +100,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                 liveSession.startProxy()
                 delivered = true
                 handler.removeCallbacks(timeout)
-                if (continuation.isActive) continuation.resume(liveSession)
+                if (continuation.isActive) continuation.resume(AllohaOpenResult.Ready(liveSession))
             }
         }
 
@@ -90,15 +110,15 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             delivered = true
             handler.removeCallbacks(timeout)
             handler.removeCallbacks(masterWaitTimeout)
-            if (continuation.isActive) continuation.resume(liveSession)
+            if (continuation.isActive) continuation.resume(AllohaOpenResult.Ready(liveSession))
         }
 
-        fun fail() {
+        fun fail(reason: AllohaOpenResult = AllohaOpenResult.Failed) {
             if (delivered) return
             delivered = true
             handler.removeCallbacksAndMessages(null)
             liveSession.close()
-            if (continuation.isActive) continuation.resume(null)
+            if (continuation.isActive) continuation.resume(reason)
         }
 
         timeout = Runnable {
@@ -137,7 +157,13 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                                 iframeUrl,
                                 it.message ?: "invalid response"
                             )
-                            fail()
+                            if (it is AllohaSourceUnavailableException) {
+                                // it.message is an internal debug reason (already logged above),
+                                // not user-facing text - the presentation layer supplies that.
+                                fail(AllohaOpenResult.Unavailable(message = null))
+                            } else {
+                                fail()
+                            }
                         }
                     }
                 }
@@ -172,6 +198,18 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             @JavascriptInterface
             fun onStreamHeaders(headersJson: String) {
                 liveSession.updateHeaders(parseHeaders(headersJson))
+            }
+
+            @JavascriptInterface
+            fun onDubbingUnavailable() {
+                handler.post {
+                    logExtractorFailure(
+                        "Alloha",
+                        iframeUrl,
+                        "site rendered a dubbing-unavailable message",
+                    )
+                    fail(AllohaOpenResult.Unavailable(message = null))
+                }
             }
 
             @JavascriptInterface
@@ -225,7 +263,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         }.filterValues(String::isNotBlank)
 
         val sources = JSONObject(responseJson).optJSONArray("hlsSource")
-            ?: error("hlsSource is missing")
+            ?: throw AllohaSourceUnavailableException("hlsSource is missing")
         Log.i(
             LOG_TAG,
             "bnsi hlsSources=${sources.length()} qualities=" +
@@ -247,7 +285,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                     ?.let { qualities.putIfAbsent(label.normalizeQualityLabel(), it) }
             }
         }
-        check(qualities.isNotEmpty()) { "no HLS qualities found" }
+        if (qualities.isEmpty()) throw AllohaSourceUnavailableException("no HLS qualities found")
         val sorted = qualities.entries
             .sortedBy { it.key.filter(Char::isDigit).toIntOrNull() ?: 0 }
             .associateTo(linkedMapOf()) { it.toPair() }
@@ -384,8 +422,20 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             w.WebSocket.OPEN = OrigWS.OPEN;
             w.WebSocket.CLOSING = OrigWS.CLOSING;
             w.WebSocket.CLOSED = OrigWS.CLOSED;
+            var errorReported = false;
+            var unavailablePattern = /озвучка\s*недоступна/i;
             setInterval(function() {
               if(done) return;
+              if(!errorReported) {
+                try {
+                  var text = w.document.body ? w.document.body.textContent : '';
+                  if(text && unavailablePattern.test(text)) {
+                    errorReported = true;
+                    AndroidBridge.onDubbingUnavailable();
+                    return;
+                  }
+                } catch(e) {}
+              }
               var button = w.document.querySelector('.allplay__play-btn'); if(button) button.click();
               var video = w.document.querySelector('video');
               if(video) { video.muted = true; if(video.paused) video.play().catch(function(){}); }

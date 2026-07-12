@@ -23,6 +23,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
@@ -68,6 +69,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var allohaPlaybackRecoveryRetryCount = 0
     private var activeAllohaSession: AllohaStreamSession? = null
     private var allohaSessionRefreshJob: Job? = null
+    private var streamLoadingHintJob: Job? = null
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
@@ -177,10 +179,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                         preserveCurrentStreamOnFailure = true,
                     )
                 } else {
+                    streamLoadingHintJob?.cancel()
                     setState {
                         copy(
                             streamUrl = null,
                             playerError = sourceStreamHandler.playbackErrorMessage(event.message),
+                            showChangePlayerHint = false,
                         )
                     }
                 }
@@ -344,6 +348,7 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     private fun loadDownloadedDestination(downloadId: Long) {
         closeAllohaSession()
+        streamLoadingHintJob?.cancel()
         viewModelScope.launch {
             val item = getVideoDownload(downloadId)
             if (item == null || item.status.name != "Downloaded") {
@@ -641,6 +646,12 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
         extractionJob?.cancel()
         extractionJob = viewModelScope.launch {
+            val wasAlreadyResolving = currentState.streamUrl == null &&
+                    currentState.playerError == null &&
+                    currentState.kodikBlockedError == null
+            if (!wasAlreadyResolving) {
+                startChangePlayerHintTimer()
+            }
             val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
             val stateResumeMs = currentState.playbackPositionMs
                 .takeIf { canPreserveCurrent && it > 0L }
@@ -707,6 +718,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     if (result.consumedDestinationResume) {
                         pendingDestinationResumeMs = null
                     }
+                    streamLoadingHintJob?.cancel()
                     setState {
                         copy(
                             streamUrl = result.state.streamUrl,
@@ -716,9 +728,23 @@ class PlayerViewModel @AssistedInject internal constructor(
                             kodikBlockedError = result.state.kodikBlockedError,
                             resumeFromMs = result.state.resumeFromMs,
                             dubbingResumeMs = result.state.dubbingResumeMs,
+                            showChangePlayerHint = false,
                         )
                     }
                 }
+            }
+        }
+    }
+
+    /** Показывает подсказку "сменить плеер" в UI, если поток не резолвится дольше [CHANGE_PLAYER_HINT_DELAY_MS]. */
+    private fun startChangePlayerHintTimer() {
+        streamLoadingHintJob?.cancel()
+        setState { copy(showChangePlayerHint = false) }
+        val destination = activeDest
+        streamLoadingHintJob = viewModelScope.launch {
+            delay(CHANGE_PLAYER_HINT_DELAY_MS)
+            if (destination == activeDest) {
+                setState { copy(showChangePlayerHint = true) }
             }
         }
     }
@@ -781,6 +807,7 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     override fun onCleared() {
         closeAllohaSession(immediately = false)
+        streamLoadingHintJob?.cancel()
         super.onCleared()
     }
 
@@ -791,6 +818,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         private const val MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES = 3
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
+        private const val CHANGE_PLAYER_HINT_DELAY_MS = 15_000L
     }
 
 }

@@ -40,6 +40,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadStatuses
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.details.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
@@ -47,6 +48,7 @@ import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHa
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
 class EpisodesViewModel @AssistedInject internal constructor(
@@ -56,6 +58,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
+    private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
@@ -232,6 +235,9 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
             EpisodesState.Event.BalancerPickerDismissed ->
                 setState { copy(pendingBalancerSelection = null) }
+
+            EpisodesState.Event.OpenDownloadsScreenSelected ->
+                nav.navigate(videoDownloadNavigator.getVideoDownloadDest())
         }
     }
 
@@ -399,6 +405,16 @@ class EpisodesViewModel @AssistedInject internal constructor(
                         )
                     }
 
+                    is PlayerStreamResolveResult.Unavailable -> {
+                        setState { copy(resolvingDownloadKeys = resolvingDownloadKeys - key) }
+                        setEffect(
+                            EpisodesState.Effect.ShowToast(
+                                result.message
+                                    ?: stringProvider.get(R.string.details_download_dubbing_unavailable)
+                            )
+                        )
+                    }
+
                     PlayerStreamResolveResult.Failed,
                     PlayerStreamResolveResult.Unsupported -> {
                         setState { copy(resolvingDownloadKeys = resolvingDownloadKeys - key) }
@@ -512,10 +528,23 @@ class EpisodesViewModel @AssistedInject internal constructor(
             preferredPlayer = preferredPlayerState.value,
         )) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
-            is DetailsPlayerSelection.ShowPicker -> setState {
-                copy(pendingBalancerSelection = selection.picker)
+            is DetailsPlayerSelection.ShowPicker -> {
+                reportUnsupportedPlayers(selection.picker)
+                setState { copy(pendingBalancerSelection = selection.picker) }
             }
         }
+    }
+
+    private fun reportUnsupportedPlayers(picker: BalancerPickerState) {
+        picker.options
+            .filter { !it.isSupported }
+            .forEach { option ->
+                analytics.eventEpisodesUnsupportedPlayerShown(
+                    animeId = animeId,
+                    episode = picker.episodeNumber,
+                    playerName = option.playerName,
+                )
+            }
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {

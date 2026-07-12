@@ -11,12 +11,21 @@ import androidx.media3.datasource.cache.CacheKeyFactory
  * Playlists deliberately retain their Media3 URL/custom keys so every rotation reads the fresh
  * signed segment list. Media files use a per-download namespace plus their stable file name; cache
  * ranges still distinguish byte-range based segments within the same resource.
+ *
+ * [manifestUri], when supplied, is the exact URI [androidx.media3.exoplayer.offline.HlsDownloader]
+ * uses for the top-level manifest fetch. Unlike playback's `HlsMediaSource`, the downloader does not
+ * apply `MediaItem.customCacheKey` to that request, so without this override the manifest would be
+ * cached under its raw (ephemeral, proxy-local) URI and never match the [downloadCacheKey] offline
+ * playback looks it up by.
  */
 @OptIn(UnstableApi::class)
 class RotatingHlsCacheKeyFactory(
     private val downloadCacheKey: String,
+    private val manifestUri: String? = null,
 ) : CacheKeyFactory {
     override fun buildCacheKey(dataSpec: DataSpec): String {
+        if (manifestUri != null && dataSpec.uri.toString() == manifestUri) return downloadCacheKey
+
         val defaultKey = CacheKeyFactory.DEFAULT.buildCacheKey(dataSpec)
         if (dataSpec.key != null) return defaultKey
 

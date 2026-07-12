@@ -564,10 +564,23 @@ class DetailsViewModel @AssistedInject internal constructor(
             preferredPlayer = preferredPlayerState.value,
         )) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
-            is DetailsPlayerSelection.ShowPicker -> setState {
-                copy(pendingBalancerSelection = selection.picker)
+            is DetailsPlayerSelection.ShowPicker -> {
+                reportUnsupportedPlayers(selection.picker)
+                setState { copy(pendingBalancerSelection = selection.picker) }
             }
         }
+    }
+
+    private fun reportUnsupportedPlayers(picker: BalancerPickerState) {
+        picker.options
+            .filter { !it.isSupported }
+            .forEach { option ->
+                analytics.eventDetailsUnsupportedPlayerShown(
+                    animeId = animeId,
+                    episode = picker.episodeNumber,
+                    playerName = option.playerName,
+                )
+            }
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {

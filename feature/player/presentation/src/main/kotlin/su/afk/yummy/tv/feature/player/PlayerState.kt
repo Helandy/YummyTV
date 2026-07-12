@@ -55,6 +55,7 @@ class PlayerState {
         val mobileVideoOffsetY: Float = 0f,
         val isOfflinePlayback: Boolean = false,
         val offlineCacheKey: String? = null,
+        val showChangePlayerHint: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия и события воспроизведения на экране плеера. */

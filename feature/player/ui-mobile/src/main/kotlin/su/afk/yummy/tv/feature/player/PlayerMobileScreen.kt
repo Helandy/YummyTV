@@ -6,9 +6,11 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -37,6 +39,7 @@ import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.MobileNativePlayer
 import su.afk.yummy.tv.feature.player.view.MobilePlayerBalancerSheet
+import su.afk.yummy.tv.feature.player.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.view.PlayerMessage
 
 @OptIn(UnstableApi::class)
@@ -48,6 +51,7 @@ fun PlayerMobileScreen(
 
     ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
+    var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     LaunchedEffect(effect, context) {
@@ -64,6 +68,8 @@ fun PlayerMobileScreen(
     BackHandler {
         if (showErrorBalancerSheet) {
             showErrorBalancerSheet = false
+        } else if (showErrorDubbingSheet) {
+            showErrorDubbingSheet = false
         } else {
             onEvent(PlayerState.Event.Back)
         }
@@ -81,6 +87,7 @@ fun PlayerMobileScreen(
         )
     }
     val canChangePlayer = uiState.balancerNames.size > 1
+    val canChangeDubbing = uiState.dubbingNames.size > 1
     val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
         ?: state.resumeFromMs.takeIf { it > 0L }
         ?: 0L
@@ -103,6 +110,16 @@ fun PlayerMobileScreen(
                 },
                 onSecondaryAction = if (canChangePlayer) {
                     { showErrorBalancerSheet = true }
+                } else {
+                    null
+                },
+                tertiaryActionLabel = if (canChangeDubbing) {
+                    stringResource(R.string.player_change_dubbing)
+                } else {
+                    null
+                },
+                onTertiaryAction = if (canChangeDubbing) {
+                    { showErrorDubbingSheet = true }
                 } else {
                     null
                 },
@@ -131,16 +148,26 @@ fun PlayerMobileScreen(
                     .background(Color.Black),
                 contentAlignment = Alignment.Center,
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                    Text(stringResource(R.string.player_loading_stream), color = Color.White)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                        Text(stringResource(R.string.player_loading_stream), color = Color.White)
+                    }
+                    if (state.showChangePlayerHint && canChangePlayer) {
+                        OutlinedButton(onClick = { showErrorBalancerSheet = true }) {
+                            Text(stringResource(R.string.player_change_player))
+                        }
+                    }
                 }
             }
         }
-        if (showErrorBalancerSheet && state.playerError != null && canChangePlayer) {
+        if (showErrorBalancerSheet && canChangePlayer) {
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
                 selectedIndex = uiState.currentBalancerIndex,
@@ -157,6 +184,17 @@ fun PlayerMobileScreen(
                     )
                 },
                 onDismiss = { showErrorBalancerSheet = false },
+            )
+        }
+        if (showErrorDubbingSheet && canChangeDubbing) {
+            MobilePlayerDubbingSheet(
+                dubbingNames = uiState.dubbingNames,
+                selectedIndex = uiState.currentDubbingIndex,
+                onDubbingSelected = { index ->
+                    showErrorDubbingSheet = false
+                    onEvent(PlayerState.Event.DubbingSelected(index, errorResumePositionMs))
+                },
+                onDismiss = { showErrorDubbingSheet = false },
             )
         }
     }

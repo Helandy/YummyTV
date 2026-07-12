@@ -48,6 +48,7 @@
     <string name="details_mobile_episode_dubbings_action">Episode info</string>
     <string name="details_mobile_episode_download_action">Download episode</string>
     <string name="details_mobile_episode_downloaded_action">Episode downloaded</string>
+    <string name="details_mobile_episode_open_downloads_action">Open downloads</string>
     <string name="details_mobile_downloaded_episode_actions_title">Episode %1$s</string>
     <string name="details_mobile_play_downloaded_episode">Play from cache</string>
     <string name="details_mobile_downloaded_episode_player_quality">%1$s • %2$s</string>

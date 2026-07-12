@@ -2,10 +2,17 @@ package su.afk.yummy.tv.feature.details.episodes.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -15,9 +22,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
 import java.util.Locale
@@ -28,6 +40,7 @@ internal fun EpisodeDownloadedActionSheet(
     action: EpisodesState.DownloadedEpisodeAction,
     onPlay: () -> Unit,
     onRedownloadDubbing: () -> Unit,
+    onOpenDownloads: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -73,19 +86,23 @@ internal fun EpisodeDownloadedActionSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f),
                 )
             }
-            TextButton(onClick = onPlay, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(R.string.details_mobile_play_downloaded_episode),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+            EpisodeSheetActionButton(
+                text = stringResource(R.string.details_mobile_play_downloaded_episode),
+                icon = Icons.Filled.PlayArrow,
+                onClick = onPlay,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            EpisodeSheetActionButton(
+                text = stringResource(R.string.details_mobile_episode_open_downloads_action),
+                icon = Icons.Filled.Storage,
+                onClick = onOpenDownloads,
+            )
             if (action.hasAlternativeDubbings) {
-                TextButton(onClick = onRedownloadDubbing, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.details_mobile_redownload_dubbing),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+                EpisodeSheetActionButton(
+                    text = stringResource(R.string.details_mobile_redownload_dubbing),
+                    icon = Icons.Filled.Refresh,
+                    onClick = onRedownloadDubbing,
+                )
             } else {
                 Text(
                     text = stringResource(R.string.details_mobile_download_other_dubbing_empty),
@@ -94,16 +111,12 @@ internal fun EpisodeDownloadedActionSheet(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
-            TextButton(
+            EpisodeSheetActionButton(
+                text = stringResource(R.string.details_mobile_delete_downloaded_episode),
+                icon = Icons.Filled.DeleteOutline,
                 onClick = { showDeleteConfirmation = true },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(R.string.details_mobile_delete_downloaded_episode),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+                color = MaterialTheme.colorScheme.error,
+            )
         }
     }
 
@@ -116,6 +129,31 @@ internal fun EpisodeDownloadedActionSheet(
             },
             onDismiss = { showDeleteConfirmation = false },
         )
+    }
+}
+
+@Composable
+private fun EpisodeSheetActionButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, contentDescription = null, tint = color)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.1.sp,
+                color = color,
+            )
+        }
     }
 }
 

@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":feature:library:domain"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:player:domain"))
+    implementation(project(":feature:video-download:api"))
     implementation(project(":feature:video-download:domain"))
 
     implementation(libs.bundles.compose.presentation)

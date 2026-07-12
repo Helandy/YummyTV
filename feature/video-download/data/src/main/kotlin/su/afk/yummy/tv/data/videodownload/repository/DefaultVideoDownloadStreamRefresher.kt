@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.repository
 
+import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
 import su.afk.yummy.tv.domain.player.model.PlayerSourceEpisode
 import su.afk.yummy.tv.domain.player.model.PlayerSourceGraph
 import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
@@ -14,10 +15,11 @@ import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefres
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import javax.inject.Inject
 
-class DefaultVideoDownloadStreamRefresher @Inject constructor(
+class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val getPlayerSourceGraph: GetPlayerSourceGraphUseCase,
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
+    private val strategyResolver: DownloadPlayerStrategyResolver,
 ) : VideoDownloadStreamRefresher {
 
     override suspend fun refresh(
@@ -43,6 +45,10 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
 
                 is PlayerStreamResolveResult.KodikBlocked -> VideoDownloadStreamRefreshResult.Failure(
                     result.message ?: REFRESH_ERROR_MESSAGE,
+                )
+
+                is PlayerStreamResolveResult.Unavailable -> VideoDownloadStreamRefreshResult.Failure(
+                    result.message ?: DUBBING_UNAVAILABLE_MESSAGE,
                 )
 
                 PlayerStreamResolveResult.Failed -> VideoDownloadStreamRefreshResult.Failure(
@@ -101,11 +107,12 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
             return VideoDownloadStreamRefreshResult.Failure(BLANK_REFRESH_MESSAGE)
         }
 
+        val strategy = strategyResolver.resolve(item)
         val availableQualities = prepareDownloadQualities(
             streamUrl = url,
             qualityMap = qualities,
             qualityHeaders = qualityHeaders,
-            numericQualitiesOnly = item.isAllohaDownload(),
+            numericQualitiesOnly = strategy.numericQualitiesOnly,
         )
         val requestedQualityNumber = item.qualityLabel.videoQualityNumber()
         val preferredQuality = availableQualities.firstOrNull { quality ->
@@ -114,8 +121,8 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
             availableQualities.firstOrNull { quality ->
                 quality.label.videoQualityNumber() == requested
             }
-        } ?: availableQualities.lastOrNull().takeIf { item.isAllohaDownload() }
-        val fallbackHeaders = if (item.isAllohaDownload()) item.headers else emptyMap()
+        } ?: availableQualities.lastOrNull().takeIf { strategy.allowsQualityFallbackToHighest }
+        val fallbackHeaders = if (strategy.reusesHeadersOnRefresh) item.headers else emptyMap()
 
         val stream = if (preferredQuality != null) {
             val refreshedHeaders = preferredQuality.headers
@@ -164,22 +171,19 @@ class DefaultVideoDownloadStreamRefresher @Inject constructor(
                 !equals(RANGE_HEADER, ignoreCase = true) &&
                 !startsWith(SEC_FETCH_HEADER_PREFIX, ignoreCase = true)
 
-    private fun VideoDownloadItem.isAllohaDownload(): Boolean =
-        iframeUrl.contains(ALLOHA_MATCHER, ignoreCase = true) ||
-                playerName.contains(ALLOHA_MATCHER, ignoreCase = true)
-
     private companion object {
         const val DEFAULT_AUTO_QUALITY_LABEL = "Auto"
         const val REFRESH_ERROR_MESSAGE = "Could not refresh download link"
         const val UNSUPPORTED_REFRESH_MESSAGE =
             "Download link refresh is unsupported for this player"
+        const val DUBBING_UNAVAILABLE_MESSAGE =
+            "Sorry, the selected dubbing is unavailable. Try another one."
         const val BLANK_REFRESH_MESSAGE = "Resolved download link is empty"
         const val ACCESS_CONTROL_REQUEST_HEADERS_HEADER = "Access-Control-Request-Headers"
         const val ACCESS_CONTROL_REQUEST_METHOD_HEADER = "Access-Control-Request-Method"
         const val HOST_HEADER = "Host"
         const val RANGE_HEADER = "Range"
         const val SEC_FETCH_HEADER_PREFIX = "Sec-Fetch-"
-        const val ALLOHA_MATCHER = "alloha"
         val VIDEO_QUALITY_REGEX = Regex("""\d{3,4}p?""", RegexOption.IGNORE_CASE)
     }
 }

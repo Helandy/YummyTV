@@ -57,8 +57,11 @@ fun PlayerTvScreen(
     var backToastJob by remember { mutableStateOf<Job?>(null) }
     var pendingControlFocusTarget by rememberSaveable { mutableStateOf<PlayerControlFocusTarget?>(null) }
     var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
+    var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
+    val selectedErrorDubbingFocusRequester = remember { FocusRequester() }
     val canChangePlayer = uiState.availableBalancerNames.size > 1
+    val canChangeDubbing = uiState.dubbingOptions.names.size > 1
 
     DisposableEffect(Unit) {
         onDispose {
@@ -73,9 +76,18 @@ fun PlayerTvScreen(
         }
     }
 
+    LaunchedEffect(showErrorDubbingPanel, canChangeDubbing) {
+        if (showErrorDubbingPanel && canChangeDubbing) {
+            withFrameNanos { }
+            runCatching { selectedErrorDubbingFocusRequester.requestFocus() }
+        }
+    }
+
     BackHandler {
         if (showErrorBalancerPanel) {
             showErrorBalancerPanel = false
+        } else if (showErrorDubbingPanel) {
+            showErrorDubbingPanel = false
         } else if (backPressedOnce) {
             onEvent(PlayerState.Event.Back)
         } else {
@@ -127,30 +139,11 @@ fun PlayerTvScreen(
                     } else {
                         null
                     },
-                )
-                PlayerSelectionPanel(
-                    visible = showErrorBalancerPanel && canChangePlayer,
-                    title = stringResource(R.string.player_balancer_title),
-                    items = uiState.availableBalancerNames.map { it.removePrefix(playerNamePrefix) },
-                    selectedIndex = uiState.currentBalancerIndex,
-                    selectedFocusRequester = selectedErrorBalancerFocusRequester,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 48.dp, bottom = 72.dp),
-                    itemMeta = { stringResource(R.string.player_balancer_meta) },
-                    onItemSelected = { index ->
-                        val balancerIndex =
-                            uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
-                        showErrorBalancerPanel = false
-                        pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
-                        onEvent(
-                            PlayerState.Event.BalancerSelected(
-                                balancerIndex,
-                                errorResumePositionMs
-                            )
-                        )
+                    onChangeDubbing = if (canChangeDubbing) {
+                        { showErrorDubbingPanel = true }
+                    } else {
+                        null
                     },
-                    onExitDown = { showErrorBalancerPanel = false },
                 )
             }
             streamUrl != null -> ExoPlayerView(
@@ -212,8 +205,54 @@ fun PlayerTvScreen(
                 skips = uiState.activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
             )
-            else -> StreamLoadingView()
+            else -> StreamLoadingView(
+                onChangePlayer = if (state.showChangePlayerHint && canChangePlayer) {
+                    { showErrorBalancerPanel = true }
+                } else {
+                    null
+                },
+            )
         }
+        PlayerSelectionPanel(
+            visible = showErrorBalancerPanel && canChangePlayer,
+            title = stringResource(R.string.player_balancer_title),
+            items = uiState.availableBalancerNames.map { it.removePrefix(playerNamePrefix) },
+            selectedIndex = uiState.currentBalancerIndex,
+            selectedFocusRequester = selectedErrorBalancerFocusRequester,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 48.dp, bottom = 72.dp),
+            itemMeta = { stringResource(R.string.player_balancer_meta) },
+            onItemSelected = { index ->
+                val balancerIndex =
+                    uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
+                showErrorBalancerPanel = false
+                pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
+                onEvent(
+                    PlayerState.Event.BalancerSelected(
+                        balancerIndex,
+                        errorResumePositionMs
+                    )
+                )
+            },
+            onExitDown = { showErrorBalancerPanel = false },
+        )
+        PlayerSelectionPanel(
+            visible = showErrorDubbingPanel && canChangeDubbing,
+            title = stringResource(R.string.player_dubbing_title),
+            items = uiState.dubbingOptions.names,
+            selectedIndex = uiState.currentDubbingIndex,
+            selectedFocusRequester = selectedErrorDubbingFocusRequester,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
+            onItemSelected = { index ->
+                showErrorDubbingPanel = false
+                pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
+                onEvent(PlayerState.Event.DubbingSelected(index, errorResumePositionMs))
+            },
+            onExitDown = { showErrorDubbingPanel = false },
+        )
         PlayerInlineToast(
             text = backToastText,
             icon = Icons.Filled.Home,

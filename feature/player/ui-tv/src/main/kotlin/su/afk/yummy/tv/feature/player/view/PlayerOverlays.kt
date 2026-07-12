@@ -26,29 +26,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
-internal fun StreamLoadingView() {
+internal fun StreamLoadingView(onChangePlayer: (() -> Unit)? = null) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(
-                color = Color.White,
-                modifier = Modifier.size(20.dp),
-                strokeWidth = 2.dp,
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = stringResource(R.string.player_loading_stream),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White,
-            )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = stringResource(R.string.player_loading_stream),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White,
+                )
+            }
+            if (onChangePlayer != null) {
+                OverlayButton(
+                    text = stringResource(R.string.player_change_player),
+                    onClick = onChangePlayer,
+                    primary = false,
+                )
+            }
         }
     }
 }
@@ -84,6 +97,7 @@ internal fun StreamErrorOverlay(
     message: String,
     onRetry: (() -> Unit)?,
     onChangePlayer: (() -> Unit)? = null,
+    onChangeDubbing: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -99,8 +113,9 @@ internal fun StreamErrorOverlay(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White,
+            textAlign = TextAlign.Center,
         )
-        if (onRetry != null || onChangePlayer != null) {
+        if (onRetry != null || onChangePlayer != null || onChangeDubbing != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (onRetry != null) {
                     OverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
@@ -109,6 +124,13 @@ internal fun StreamErrorOverlay(
                     OverlayButton(
                         text = stringResource(R.string.player_change_player),
                         onClick = onChangePlayer,
+                        primary = false,
+                    )
+                }
+                if (onChangeDubbing != null) {
+                    OverlayButton(
+                        text = stringResource(R.string.player_change_dubbing),
+                        onClick = onChangeDubbing,
                         primary = false,
                     )
                 }

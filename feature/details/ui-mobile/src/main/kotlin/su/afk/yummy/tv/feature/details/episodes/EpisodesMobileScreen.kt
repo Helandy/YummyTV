@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -140,6 +140,9 @@ fun EpisodesMobileScreen(
                                 onEvent(EpisodesState.Event.EpisodeDownloadSelected(group.videos))
                             }
                         },
+                        onOpenDownloadsClick = {
+                            onEvent(EpisodesState.Event.OpenDownloadsScreenSelected)
+                        },
                         onClick = { onEvent(EpisodesState.Event.VideoSelected(group.video)) },
                     )
                 }
@@ -170,6 +173,7 @@ fun EpisodesMobileScreen(
             onRedownloadDubbing = {
                 onEvent(EpisodesState.Event.RedownloadDubbingSelected)
             },
+            onOpenDownloads = { onEvent(EpisodesState.Event.OpenDownloadsScreenSelected) },
             onDelete = { onEvent(EpisodesState.Event.DeleteDownloadedEpisodeSelected) },
             onDismiss = { onEvent(EpisodesState.Event.DownloadedEpisodeActionDismissed) },
         )
@@ -365,7 +369,7 @@ private fun EpisodeDownloadStatusIcon(
         )
 
         status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
-            Icon(Icons.Filled.Done, contentDescription = null)
+            Icon(Icons.Filled.Storage, contentDescription = null)
 
         status?.status == EpisodesState.EpisodeDownloadUiStatus.Failed ->
             Icon(Icons.Filled.ErrorOutline, contentDescription = null)

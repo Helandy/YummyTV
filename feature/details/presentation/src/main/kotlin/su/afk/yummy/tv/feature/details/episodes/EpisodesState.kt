@@ -143,6 +143,9 @@ class EpisodesState {
         /** Пользователь закрыл выбор балансера. */
         data object BalancerPickerDismissed : Event
 
+        /** Пользователь нажал иконку хранилища у скачиваемой серии, чтобы перейти в загрузки. */
+        data object OpenDownloadsScreenSelected : Event
+
         /** Пользователь подтвердил видео для запуска после выбора балансера. */
         data class BalancerConfirmed(val video: AnimeVideo) : Event
     }

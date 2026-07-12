@@ -95,11 +95,17 @@ internal class AksorExtractor @Inject constructor(
                 .trim()
                 .takeIf { it.isNotEmpty() && !it.equals("null", ignoreCase = true) }
             if (streamUrl != null) {
-                map[qualityLabel(key)] = streamUrl
+                map[qualityLabel(key)] = streamUrl.sanitizeStreamUrl()
             }
         }
         return map
     }
+
+    // Aksor's CDN paths can contain literal spaces (e.g. dubbing folder names like
+    // "JAM CLUB"). Browsers auto-encode these, but Android's HTTP stack sends them
+    // as-is, which some CDN edges reject with a 404 - so encode them ourselves.
+    private fun String.sanitizeStreamUrl(): String =
+        if (contains(' ')) replace(" ", "%20") else this
 
     private fun qualityLabel(key: String): String = when (key) {
         "q2k" -> "2K"
@@ -114,7 +120,7 @@ internal class AksorExtractor @Inject constructor(
 
     private suspend fun fetchFallbackStreamUrl(playerUrl: String, hash: String): String? {
         val html = fetchText(playerUrl, referer = "https://yani.tv/", accept = "text/html")
-        extractMetaVideoUrl(html)?.let { return it }
+        extractMetaVideoUrl(html)?.let { return it.sanitizeStreamUrl() }
 
         val scriptUrls = Regex("""<script[^>]+src=["']([^"']+)["']""")
             .findAll(html)

@@ -57,6 +57,14 @@ internal class PlayerStreamHandler @Inject constructor(
                 PlayerStreamResult.KodikBlocked(message = result.toMessage())
             }
 
+            is PlayerStreamResolveResult.Unavailable -> {
+                session?.close()
+                PlayerStreamResult.PlayerError(
+                    message = result.message ?: strings.get(R.string.player_dubbing_unavailable),
+                    reason = PlayerStreamResult.REASON_UNAVAILABLE,
+                )
+            }
+
             PlayerStreamResolveResult.Failed -> {
                 session?.close()
                 PlayerStreamResult.PlayerError(
@@ -141,5 +149,6 @@ internal sealed interface PlayerStreamResult {
         const val REASON_FAILED = "failed"
         const val REASON_KODIK_BLOCKED = "kodik_blocked"
         const val REASON_UNSUPPORTED = "unsupported"
+        const val REASON_UNAVAILABLE = "unavailable"
     }
 }

@@ -5,6 +5,7 @@
     <string name="details_quality_auto">auto</string>
     <string name="details_download_resolving_quality">Getting available qualities...</string>
     <string name="details_download_resolve_error">Could not prepare this episode for download</string>
+    <string name="details_download_dubbing_unavailable">Sorry, the selected dubbing is unavailable. Try another one.</string>
     <string name="details_download_enqueue_error">Could not queue download</string>
     <string name="details_download_replace_delete_error">The new download was added, but the previous one could not be removed</string>
 </resources>

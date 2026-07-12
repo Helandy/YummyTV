@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,9 +30,9 @@ import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeMobileWatchStatus
-import su.afk.yummy.tv.feature.details.episodes.utils.blocksNewDownload
 import su.afk.yummy.tv.feature.details.episodes.utils.formatDuration
 import su.afk.yummy.tv.feature.details.episodes.utils.isDownloadBusy
+import su.afk.yummy.tv.feature.details.episodes.utils.isPaused
 import su.afk.yummy.tv.feature.details.episodes.utils.timingLabel
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.view.DetailsMediaCard
@@ -52,6 +52,7 @@ internal fun EpisodeMobileCard(
     downloadAwaitingQualitySelection: Boolean,
     onInfoClick: () -> Unit,
     onDownloadClick: () -> Unit,
+    onOpenDownloadsClick: () -> Unit,
     onClick: () -> Unit,
 ) {
     val thumbnailUrl by produceState<String?>(null, kodikIframeUrl) {
@@ -97,6 +98,7 @@ internal fun EpisodeMobileCard(
                     resolving = downloadResolving,
                     awaitingQualitySelection = downloadAwaitingQualitySelection,
                     onClick = onDownloadClick,
+                    onOpenDownloadsClick = onOpenDownloadsClick,
                 )
             }
         },
@@ -110,18 +112,17 @@ private fun EpisodeDownloadButton(
     resolving: Boolean,
     awaitingQualitySelection: Boolean,
     onClick: () -> Unit,
+    onOpenDownloadsClick: () -> Unit,
 ) {
     val waitingForUser = resolving || awaitingQualitySelection
+    val inProgress = status.isDownloadBusy() || status.isPaused()
     Box(
         modifier = Modifier.size(48.dp),
         contentAlignment = Alignment.Center,
     ) {
         IconButton(
-            enabled = !waitingForUser && (
-                    status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ||
-                            !status.blocksNewDownload()
-                    ),
-            onClick = onClick,
+            enabled = !waitingForUser,
+            onClick = if (inProgress) onOpenDownloadsClick else onClick,
             modifier = Modifier.fillMaxSize(),
         ) {
             when {
@@ -138,9 +139,15 @@ private fun EpisodeDownloadButton(
                         tint = DownloadResolvingColor,
                     )
 
+                inProgress ->
+                    Icon(
+                        imageVector = Icons.Filled.Storage,
+                        contentDescription = stringResource(R.string.details_mobile_episode_open_downloads_action),
+                    )
+
                 status?.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded ->
                     Icon(
-                        imageVector = Icons.Filled.Done,
+                        imageVector = Icons.Filled.Storage,
                         contentDescription = stringResource(R.string.details_mobile_episode_downloaded_action),
                     )
 

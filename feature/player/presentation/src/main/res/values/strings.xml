@@ -14,9 +14,11 @@
     <string name="player_quoted_message">"%1$s"</string>
     <string name="player_retry">Retry</string>
     <string name="player_change_player">Change player</string>
+    <string name="player_change_dubbing">Change dubbing</string>
     <string name="player_stream_error">Could not load stream</string>
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>
+    <string name="player_dubbing_unavailable">Sorry, the selected dubbing is unavailable. Try another one.</string>
     <string name="player_download_missing">Downloaded episode is missing from local cache</string>
     <string name="player_download_resolve_error">Could not prepare this episode for download</string>
     <string name="player_download_enqueue_error">Could not queue download</string>
