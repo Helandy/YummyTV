@@ -1,44 +1,29 @@
 package su.afk.yummy.tv.feature.player.utils
 
-import android.view.Gravity
-import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.res.stringResource
-import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
 import su.afk.yummy.tv.feature.player.presentation.R
-import androidx.media3.ui.R as Media3R
 
-internal fun PlayerView.applyTvResizeMode(
+internal fun tvPlayerContentScale(
     resizeMode: PlayerResizeMode,
     zoomLevel: PlayerZoomLevel,
-) {
-    this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-    clipChildren = true
-    clipToPadding = true
-
-    val contentFrame = findViewById<AspectRatioFrameLayout>(Media3R.id.exo_content_frame) ?: return
-    val params = contentFrame.layoutParams as? FrameLayout.LayoutParams ?: return
-
-    var needsLayout = false
-    if (params.gravity != Gravity.CENTER) {
-        params.gravity = Gravity.CENTER
-        contentFrame.layoutParams = params
-        needsLayout = true
-    }
-
-    val targetScale = if (resizeMode == PlayerResizeMode.ZOOM) {
+): ContentScale {
+    val zoom = if (resizeMode == PlayerResizeMode.ZOOM) {
         1f + zoomLevel.percent / 100f
     } else {
         1f
     }
-    if (contentFrame.translationX != 0f) contentFrame.translationX = 0f
-    if (contentFrame.translationY != 0f) contentFrame.translationY = 0f
-    if (contentFrame.scaleX != targetScale) contentFrame.scaleX = targetScale
-    if (contentFrame.scaleY != targetScale) contentFrame.scaleY = targetScale
-    if (needsLayout) contentFrame.requestLayout()
+    return object : ContentScale {
+        override fun computeScaleFactor(srcSize: Size, dstSize: Size): ScaleFactor {
+            val fit = ContentScale.Fit.computeScaleFactor(srcSize, dstSize)
+            return ScaleFactor(fit.scaleX * zoom, fit.scaleY * zoom)
+        }
+    }
 }
 
 @Composable

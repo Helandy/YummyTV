@@ -14,6 +14,7 @@ import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.home.IHomeNavigator
 import su.afk.yummy.tv.feature.library.ILibraryNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -60,6 +61,11 @@ object UniversalNavigationModule {
     @Singleton
     fun provideDetailsNavigator(): IDetailsNavigator =
         su.afk.yummy.tv.feature.details.navigator.DetailsNavigator()
+
+    @Provides
+    @Singleton
+    fun provideFaqNavigator(): IFaqNavigator =
+        su.afk.yummy.tv.feature.faq.navigator.FaqNavigator()
 
     @Provides
     @Singleton
@@ -124,6 +130,12 @@ object UniversalNavigationModule {
     @MobileUi
     fun provideMobileDetailsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.details.mobile.navigator.DetailsNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobileFaqNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.faq.mobile.navigator.FaqNavRegistrar()
 
     @Provides
     @IntoSet

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,14 +20,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -34,7 +38,8 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.ContentFrame
+import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,7 +67,6 @@ import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipCallbacks
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_PIP_SEEK_STEP_MS
-import su.afk.yummy.tv.feature.player.utils.applyMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.isAtMobilePlayerEnd
@@ -81,6 +85,7 @@ internal fun MobileNativePlayer(
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    val hostView = LocalView.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
@@ -112,6 +117,7 @@ internal fun MobileNativePlayer(
     var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
+    var isBuffering by remember(streamUrl, ui.activeIframeUrl) { mutableStateOf(false) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
     var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
@@ -133,7 +139,6 @@ internal fun MobileNativePlayer(
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
-    val playerViewHolder = remember { arrayOfNulls<PlayerView>(1) }
     var liveVideoTransform by remember { mutableStateOf(videoTransform) }
     var transformGestureActive by remember { mutableStateOf(false) }
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
@@ -192,8 +197,13 @@ internal fun MobileNativePlayer(
         MobilePlayerPipController.registerSession(pipSession)
         onDispose {
             MobilePlayerPipController.unregisterSession(pipSession)
-            playerViewHolder[0] = null
         }
+    }
+
+    DisposableEffect(hostView) {
+        val wasKeepingScreenOn = hostView.keepScreenOn
+        hostView.keepScreenOn = true
+        onDispose { hostView.keepScreenOn = wasKeepingScreenOn }
     }
 
     fun scheduleOverlayHide() {
@@ -233,7 +243,6 @@ internal fun MobileNativePlayer(
             zoomChange = zoomChange,
         )
         liveVideoTransform = transform
-        playerViewHolder[0]?.applyMobileVideoTransform(transform.scale, transform.offset)
         onVideoTransformChanged(transform)
     }
 
@@ -377,6 +386,7 @@ internal fun MobileNativePlayer(
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 wantsPlay = playWhenReady
+                isBuffering = playWhenReady && player.playbackState == Player.STATE_BUFFERING
                 pipSession.setPlaying(playWhenReady, activity)
                 if (playWhenReady) scheduleOverlayHide() else hideJob?.cancel()
             }
@@ -398,6 +408,7 @@ internal fun MobileNativePlayer(
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                isBuffering = playbackState == Player.STATE_BUFFERING && player.playWhenReady
                 if (playbackState == Player.STATE_ENDED) {
                     val position = player.currentPosition.coerceAtLeast(0L)
                     val dur = player.duration.takeIf { it > 0 } ?: duration
@@ -406,6 +417,7 @@ internal fun MobileNativePlayer(
             }
         }
         player.addListener(listener)
+        isBuffering = player.playbackState == Player.STATE_BUFFERING && player.playWhenReady
         pipSession.setPlaying(player.playWhenReady, activity)
         pipSession.setCallbacks(
             MobilePlayerPipCallbacks(
@@ -570,28 +582,40 @@ internal fun MobileNativePlayer(
             .background(Color.Black)
             .onSizeChanged { playerSize = it },
     ) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { viewContext ->
-                PlayerView(viewContext).apply {
-                    playerViewHolder[0] = this
-                    this.player = player
-                    useController = false
-                    keepScreenOn = true
-                    clipChildren = true
-                    clipToPadding = true
-                    setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
-                    setShowNextButton(false)
-                    setShowPreviousButton(false)
-                    applyMobileVideoTransform(liveVideoTransform.scale, liveVideoTransform.offset)
-                }
-            },
-            update = {
-                playerViewHolder[0] = it
-                it.player = player
-                it.applyMobileVideoTransform(liveVideoTransform.scale, liveVideoTransform.offset)
-            },
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clipToBounds(),
+        ) {
+            ContentFrame(
+                player = player,
+                surfaceType = SURFACE_TYPE_TEXTURE_VIEW,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = liveVideoTransform.scale
+                        scaleY = liveVideoTransform.scale
+                        translationX = liveVideoTransform.offset.x
+                        translationY = liveVideoTransform.offset.y
+                    },
+                shutter = {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                    )
+                },
+            )
+        }
+
+        if (isBuffering) {
+            CircularProgressIndicator(
+                color = Color.White,
+                strokeWidth = 2.dp,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
 
         MobilePlayerGestureLayer(
             enabled = !isInPictureInPictureMode,

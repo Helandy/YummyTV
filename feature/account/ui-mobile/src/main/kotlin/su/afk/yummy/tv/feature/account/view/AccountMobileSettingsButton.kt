@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +22,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.mobile.R
+
+@Composable
+internal fun AccountMobileFaqButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountMobileNavigationButton(
+        title = stringResource(R.string.account_faq),
+        icon = Icons.Default.Info,
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
 
 @Composable
 internal fun AccountMobileSettingsButton(

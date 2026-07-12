@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:update"))
     implementation(project(":feature:account:api"))
+    implementation(project(":feature:faq:api"))
     implementation(project(":feature:home:ui-mobile"))
     implementation(project(":feature:library:ui-mobile"))
     implementation(project(":feature:main:api"))

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="faq_title">FAQ</string>
+    <string name="faq_who_am_i_title">Кто я</string>
+    <string name="faq_who_am_i_answer">Я — самостоятельный разработчик YummyTV. Я развиваю приложение в свободное время, потому что мне хочется сделать просмотр аниме удобнее и приятнее.</string>
+    <string name="faq_why_this_app_title">Почему приложение именно такое</string>
+    <string name="faq_why_this_app_answer">YummyTV отражает моё представление об удобном приложении для просмотра аниме. Оно развивается постепенно: я пробую идеи, смотрю, как они работают в реальном использовании, и дорабатываю их.</string>
+    <string name="faq_why_not_all_cases_title">Почему я не могу покрыть все кейсы</string>
+    <string name="faq_why_not_all_cases_answer">У одного разработчика ограничены время и набор устройств. Я не могу заранее проверить все версии Android, модели устройств, источники видео, сети и пользовательские сценарии.</string>
+    <string name="faq_why_errors_title">Почему бывают ошибки</string>
+    <string name="faq_why_errors_answer">Работа приложения зависит не только от его кода, но и от внешних API, плееров, доступности источников, сетевых ограничений и особенностей конкретных устройств. Любая из этих частей иногда может измениться или работать не так, как ожидалось.</string>
+    <string name="faq_why_feedback_title">Почему важна обратная связь</string>
+    <string name="faq_why_feedback_answer">Ваши сообщения помогают мне узнавать о сценариях и ошибках, которые я не могу воспроизвести сам. Чем точнее описание проблемы, тем проще понять её причину и выбрать действительно важные улучшения.</string>
+    <string name="faq_feedback_button">Вопросы, идеи и предложения</string>
+    <string name="faq_expand">Развернуть ответ</string>
+    <string name="faq_collapse">Свернуть ответ</string>
+    <string name="faq_open_repository">Открыть GitHub</string>
+    <string name="faq_repository_url" translatable="false">https://github.com/Helandy/YummyTV</string>
+</resources>

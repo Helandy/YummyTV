@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="account_faq">FAQ</string>
     <string name="account_mobile_title">Account</string>
     <string name="account_signed_out">Sign in to sync library, ratings, and subscriptions</string>
     <string name="account_unknown_user">Unknown user</string>

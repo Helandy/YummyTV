@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.update.nav.UpdateDestination
+import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.main.api.IMainGraph
 import su.afk.yummy.tv.feature.main.mobile.R
 import su.afk.yummy.tv.feature.main.model.MobileMenuItem
@@ -47,6 +48,7 @@ import kotlin.time.Duration.Companion.seconds
 @Singleton
 class MobileMainGraph @Inject internal constructor(
     private val navManager: NavigationManager,
+    private val faqNavigator: IFaqNavigator,
     private val settingsNavigator: ISettingsNavigator,
     private val searchNavigator: ISearchNavigator,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
@@ -86,6 +88,7 @@ class MobileMainGraph @Inject internal constructor(
                                 navManager.navigate(destination)
                             }
                         }
+
                         is MainState.Effect.ShowToast -> {
                             toastMessage = eff.message
                             toastJob?.cancel()
@@ -134,6 +137,9 @@ class MobileMainGraph @Inject internal constructor(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
                     LocalMobileMainActions provides MobileMainActions(
+                        onFaqClick = {
+                            navManager.navigate(faqNavigator.getFaqDest())
+                        },
                         onSettingsClick = {
                             navManager.navigate(settingsNavigator.getSettingsDest())
                         },

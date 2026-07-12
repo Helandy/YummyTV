@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="account_faq">FAQ</string>
     <string name="account_mobile_title">Аккаунт</string>
     <string name="account_signed_out">Войдите, чтобы синхронизировать библиотеку, оценки и подписки</string>
     <string name="account_unknown_user">Неизвестный пользователь</string>

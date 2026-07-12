@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="faq_title">FAQ</string>
+    <string name="faq_who_am_i_title">Who am I?</string>
+    <string name="faq_who_am_i_answer">I am the independent developer behind YummyTV. I work on the app in my free time because I want to make watching anime more convenient and enjoyable.</string>
+    <string name="faq_why_this_app_title">Why is the app like this?</string>
+    <string name="faq_why_this_app_answer">YummyTV reflects my idea of a convenient anime streaming app. It evolves gradually: I try ideas, see how they work in real use, and improve them over time.</string>
+    <string name="faq_why_not_all_cases_title">Why can’t I cover every case?</string>
+    <string name="faq_why_not_all_cases_answer">A single developer has limited time and access to devices. I cannot test every Android version, device model, video source, network, and user scenario in advance.</string>
+    <string name="faq_why_errors_title">Why do errors happen?</string>
+    <string name="faq_why_errors_answer">The app depends on more than its own code. External APIs, players, source availability, network restrictions, and device-specific behavior can all change or occasionally work differently than expected.</string>
+    <string name="faq_why_feedback_title">Why is feedback important?</string>
+    <string name="faq_why_feedback_answer">Your messages help me discover scenarios and errors that I cannot reproduce myself. The more precise the report, the easier it is to understand the cause and prioritize improvements that really matter.</string>
+    <string name="faq_feedback_button">Questions, ideas, and suggestions</string>
+    <string name="faq_expand">Expand answer</string>
+    <string name="faq_collapse">Collapse answer</string>
+    <string name="faq_open_repository">Open GitHub</string>
+    <string name="faq_repository_url" translatable="false">https://github.com/Helandy/YummyTV</string>
+</resources>

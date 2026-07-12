@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.player.view.player
 
 import android.content.Intent
-import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,16 +37,17 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.ContentFrame
+import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,7 +79,6 @@ import su.afk.yummy.tv.feature.player.model.TvProgressSource
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.applyTvResizeMode
 import su.afk.yummy.tv.feature.player.utils.buildTvProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.currentSkip
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
@@ -88,6 +88,7 @@ import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.utils.toPlayerSkipType
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
+import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -141,6 +142,7 @@ internal fun ExoPlayerView(
     autoPlayNextEpisode: Boolean = false,
 ) {
     val context = LocalContext.current
+    val hostView = LocalView.current
     val qualities = remember(streamUrl, qualityOverrides) {
         qualityOverrides ?: deriveQualityUrls(streamUrl)
     }
@@ -157,6 +159,7 @@ internal fun ExoPlayerView(
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, episodeKey) { mutableFloatStateOf(0f) }
+    var isBuffering by remember(streamUrl, episodeKey) { mutableStateOf(false) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
     var controllerVisible by remember { mutableStateOf(true) }
     val panels = rememberTvPlayerPanelsState()
@@ -255,6 +258,12 @@ internal fun ExoPlayerView(
                 .background(Color.Black)
         )
         return
+    }
+
+    DisposableEffect(hostView) {
+        val wasKeepingScreenOn = hostView.keepScreenOn
+        hostView.keepScreenOn = true
+        onDispose { hostView.keepScreenOn = wasKeepingScreenOn }
     }
     val progressSource = remember(
         exoPlayer,
@@ -435,10 +444,12 @@ internal fun ExoPlayerView(
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(pwr: Boolean, reason: Int) {
                 wantsPlay = pwr
+                isBuffering = pwr && exoPlayer.playbackState == Player.STATE_BUFFERING
                 if (pwr) scheduleHide() else hideJob?.cancel()
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                isBuffering = playbackState == Player.STATE_BUFFERING && exoPlayer.playWhenReady
                 if (playbackState == Player.STATE_ENDED) {
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
@@ -490,6 +501,7 @@ internal fun ExoPlayerView(
             }
         }
         exoPlayer.addListener(listener)
+        isBuffering = exoPlayer.playbackState == Player.STATE_BUFFERING && exoPlayer.playWhenReady
         if (wantsPlay) scheduleHide() else hideJob?.cancel()
         onDispose {
             hideJob?.cancel()
@@ -683,26 +695,29 @@ internal fun ExoPlayerView(
     val zoomLevels = PlayerZoomLevel.entries.toList()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    useController = false
-                    keepScreenOn = true
-                    isFocusable = false
-                    isFocusableInTouchMode = false
-                    descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-                    setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
-                    applyTvResizeMode(resizeMode, zoomLevel)
-                }
-            },
-            update = { pv ->
-                if (pv.player !== exoPlayer) pv.player = exoPlayer
-                pv.applyTvResizeMode(resizeMode, zoomLevel)
+        ContentFrame(
+            player = exoPlayer,
+            surfaceType = SURFACE_TYPE_SURFACE_VIEW,
+            contentScale = tvPlayerContentScale(resizeMode, zoomLevel),
+            shutter = {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                )
             },
             modifier = Modifier
                 .fillMaxSize()
                 .focusProperties { canFocus = false },
         )
+
+        if (isBuffering) {
+            CircularProgressIndicator(
+                color = Color.White,
+                strokeWidth = 2.dp,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
 
         if (!controllerVisible) {
             PlayerHiddenKeyOverlay(

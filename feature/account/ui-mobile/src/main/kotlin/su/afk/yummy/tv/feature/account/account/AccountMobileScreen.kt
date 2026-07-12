@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefault
 import su.afk.yummy.tv.feature.account.account.mobile.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
+import su.afk.yummy.tv.feature.account.view.AccountMobileFaqButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoginCard
@@ -58,6 +59,9 @@ fun AccountMobileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 if (mainActions != null) {
+                    item(key = "faq") {
+                        AccountMobileFaqButton(onClick = mainActions.onFaqClick)
+                    }
                     item(key = "settings") {
                         AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
                     }
@@ -88,6 +92,9 @@ fun AccountMobileScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 if (mainActions != null) {
+                    item(key = "faq") {
+                        AccountMobileFaqButton(onClick = mainActions.onFaqClick)
+                    }
                     item(key = "settings") {
                         AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
                     }
