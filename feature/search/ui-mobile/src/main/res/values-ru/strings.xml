@@ -6,6 +6,7 @@
     <string name="search_mobile_filters">Фильтры</string>
     <string name="search_mobile_submit">Найти</string>
     <string name="search_mobile_submit_with_filters">Найти · фильтров: %1$d</string>
+    <string name="search_mobile_random_anime">Случайное аниме</string>
     <string name="search_mobile_loading">Загрузка...</string>
     <string name="search_mobile_load_more">Показать ещё</string>
     <string name="search_mobile_filters_apply">Применить</string>

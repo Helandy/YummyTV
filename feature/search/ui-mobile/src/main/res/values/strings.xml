@@ -6,6 +6,7 @@
     <string name="search_mobile_filters">Filters</string>
     <string name="search_mobile_submit">Search</string>
     <string name="search_mobile_submit_with_filters">Search · filters: %1$d</string>
+    <string name="search_mobile_random_anime">Random anime</string>
     <string name="search_mobile_loading">Loading...</string>
     <string name="search_mobile_load_more">Show more</string>
     <string name="search_mobile_filters_apply">Apply</string>

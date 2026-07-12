@@ -5,6 +5,7 @@
     <string name="search_retry">Retry</string>
     <string name="search_filters">Filters</string>
     <string name="search_filters_with_count">Filters (%1$d)</string>
+    <string name="search_random_anime">Random anime</string>
     <string name="search_filters_apply">Apply</string>
     <string name="search_filters_reset">Reset</string>
     <string name="search_filters_close">Close</string>

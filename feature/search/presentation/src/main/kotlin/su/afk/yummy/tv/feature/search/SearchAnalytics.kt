@@ -46,6 +46,25 @@ internal class SearchAnalytics @Inject constructor(
         tracker.track(EVENT_RETRY)
     }
 
+    fun eventRandomAnimeRequested() {
+        tracker.track(EVENT_RANDOM_ANIME_REQUESTED)
+    }
+
+    fun eventRandomAnimeOpened(animeId: Int) {
+        tracker.track(
+            EVENT_RANDOM_ANIME_OPENED,
+            analyticsParamsOf(PARAM_ANIME_ID to animeId),
+        )
+    }
+
+    fun eventRandomAnimeLoadError(error: Throwable) {
+        tracker.reportError(
+            groupIdentifier = EVENT_RANDOM_ANIME_LOAD_ERROR,
+            message = "Random anime load failed: ${error.analyticsType()}",
+            throwable = error,
+        )
+    }
+
     /**
      * Результаты поиска не загрузились.
      */
@@ -148,6 +167,9 @@ internal class SearchAnalytics @Inject constructor(
         const val EVENT_FILTERS_CLOSED = "search_filters_closed"
         const val EVENT_RETRY = "search_retry"
         const val EVENT_LOAD_ERROR = "search_load_error"
+        const val EVENT_RANDOM_ANIME_REQUESTED = "search_random_anime_requested"
+        const val EVENT_RANDOM_ANIME_OPENED = "search_random_anime_opened"
+        const val EVENT_RANDOM_ANIME_LOAD_ERROR = "search_random_anime_load_error"
         const val EVENT_SEARCH_SUBMIT = "search_submit"
         const val EVENT_SEARCH_FILTERS_APPLY = "search_filters_apply"
     }

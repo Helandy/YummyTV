@@ -13,6 +13,8 @@
     <string name="faq_missing_site_feature_answer">The app was originally created around my own needs on a TV, where many website features were simply unnecessary. I later added a mobile version, where almost all website functionality could technically be recreated, but I do not want to add features without a real need. If something is missing for you, please let me know — I will consider your use case and try to add the feature.</string>
     <string name="faq_unsupported_player_title">Why isn’t player XYZ supported?</string>
     <string name="faq_unsupported_player_answer">Most likely, I simply have not had time to get to it yet. If a player does not work or is not supported, please tell me the title, episode, and player name. I will try to investigate and add support for it.</string>
+    <string name="faq_external_player_title">Why can’t I use an external player?</string>
+    <string name="faq_external_player_answer">Many streaming providers do not expose a simple direct video link. Playback may require specific request headers, cookies, temporary tokens, and an active session. Obtaining and passing all of this correctly is difficult even inside the app, while an external player usually has no knowledge of these requirements and therefore cannot play the video.</string>
     <string name="faq_not_official_title">Why is this an unofficial app?</string>
     <string name="faq_not_official_answer">I am not affiliated with the website’s owners and develop YummyTV independently, so the app is not official. In the future, though, it would be great to establish a partnership and perhaps become official one day.</string>
     <string name="faq_why_feedback_title">Why is feedback important?</string>

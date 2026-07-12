@@ -39,10 +39,13 @@ internal fun SearchTvHeaderRow(
     filters: SearchFilters,
     searchFieldFocusRequester: FocusRequester,
     filterButtonFocusRequester: FocusRequester,
+    randomButtonFocusRequester: FocusRequester,
     mainMenuFocusRequester: FocusRequester?,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
     onOpenFilters: () -> Unit,
+    isRandomAnimeLoading: Boolean,
+    onRandomAnimeSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -116,7 +119,17 @@ internal fun SearchTvHeaderRow(
             onClick = onOpenFilters,
             modifier = Modifier
                 .focusRequester(filterButtonFocusRequester)
-                .focusProperties { left = searchFieldFocusRequester },
+                .focusProperties {
+                    left = searchFieldFocusRequester
+                    right = randomButtonFocusRequester
+                },
+        )
+        RandomAnimeButton(
+            isLoading = isRandomAnimeLoading,
+            onClick = onRandomAnimeSelected,
+            modifier = Modifier
+                .focusRequester(randomButtonFocusRequester)
+                .focusProperties { left = filterButtonFocusRequester },
         )
     }
 }

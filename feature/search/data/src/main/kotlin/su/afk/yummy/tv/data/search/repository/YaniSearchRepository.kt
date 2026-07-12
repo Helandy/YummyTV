@@ -42,6 +42,10 @@ class YaniSearchRepository(
     private val searchStorage: SearchStorageStore,
     private val settingsStore: SettingsStore,
 ) : SearchRepository {
+    override suspend fun getRandomAnime(): SearchItem? = withContext(Dispatchers.IO) {
+        api.getRandomAnime().firstNotNullOfOrNull { it.toSearchItem() }
+    }
+
     override suspend fun search(
         query: String,
         filters: SearchFilters,

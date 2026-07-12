@@ -1,11 +1,14 @@
 package su.afk.yummy.tv.feature.search.view
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.search.R
+
+internal val SearchTvHeaderButtonHeight = 44.dp
 
 @Composable
 internal fun FilterButton(
@@ -22,6 +25,8 @@ internal fun FilterButton(
         label = label,
         selected = activeCount > 0,
         onClick = onClick,
-        modifier = modifier.widthIn(min = 148.dp),
+        modifier = modifier
+            .height(SearchTvHeaderButtonHeight)
+            .widthIn(min = 148.dp),
     )
 }

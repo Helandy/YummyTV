@@ -15,29 +15,43 @@ fun SearchTvScreen(
     onEvent: (SearchState.Event) -> Unit,
 ) {
     val results = state.results.collectAsLazyPagingItems()
-    val onQueryChanged = remember(onEvent) { { q: String -> onEvent(SearchState.Event.QueryChanged(q)) } }
+    val onQueryChanged =
+        remember(onEvent) { { q: String -> onEvent(SearchState.Event.QueryChanged(q)) } }
     val onSearchSubmitted = remember(onEvent) { { onEvent(SearchState.Event.SearchSubmitted) } }
+    val onRandomAnimeSelected =
+        remember(onEvent) { { onEvent(SearchState.Event.RandomAnimeSelected) } }
     val onRetry = remember(onEvent, results) {
         {
             onEvent(SearchState.Event.RetrySelected)
             results.retry()
         }
     }
-    val onItemSelected = remember(onEvent) { { item: SearchItem -> onEvent(SearchState.Event.ItemSelected(item.id)) } }
+    val onItemSelected =
+        remember(onEvent) { { item: SearchItem -> onEvent(SearchState.Event.ItemSelected(item.id)) } }
     val onOpenFilters = remember(onEvent) { { onEvent(SearchState.Event.OpenFilters) } }
     val onCloseFilters = remember(onEvent) { { onEvent(SearchState.Event.CloseFilters) } }
     val onApplyFilters = remember(onEvent) { { onEvent(SearchState.Event.ApplyFilters) } }
     val onResetFilters = remember(onEvent) { { onEvent(SearchState.Event.ResetFilters) } }
-    val onGenreToggled = remember(onEvent) { { id: String -> onEvent(SearchState.Event.GenreToggled(id)) } }
-    val onExcludedGenreToggled = remember(onEvent) { { id: String -> onEvent(SearchState.Event.ExcludedGenreToggled(id)) } }
-    val onTypeToggled = remember(onEvent) { { id: String -> onEvent(SearchState.Event.TypeToggled(id)) } }
-    val onStatusToggled = remember(onEvent) { { id: String -> onEvent(SearchState.Event.StatusToggled(id)) } }
-    val onSeasonToggled = remember(onEvent) { { id: String -> onEvent(SearchState.Event.SeasonToggled(id)) } }
-    val onAgeRatingToggled = remember(onEvent) { { value: Int -> onEvent(SearchState.Event.AgeRatingToggled(value)) } }
-    val onFromYearChanged = remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.FromYearChanged(year)) } }
-    val onToYearChanged = remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.ToYearChanged(year)) } }
-    val onSortSelected = remember(onEvent) { { sort: SearchSort -> onEvent(SearchState.Event.SortSelected(sort)) } }
-    val onSortDirectionToggled = remember(onEvent) { { onEvent(SearchState.Event.SortDirectionToggled) } }
+    val onGenreToggled =
+        remember(onEvent) { { id: String -> onEvent(SearchState.Event.GenreToggled(id)) } }
+    val onExcludedGenreToggled =
+        remember(onEvent) { { id: String -> onEvent(SearchState.Event.ExcludedGenreToggled(id)) } }
+    val onTypeToggled =
+        remember(onEvent) { { id: String -> onEvent(SearchState.Event.TypeToggled(id)) } }
+    val onStatusToggled =
+        remember(onEvent) { { id: String -> onEvent(SearchState.Event.StatusToggled(id)) } }
+    val onSeasonToggled =
+        remember(onEvent) { { id: String -> onEvent(SearchState.Event.SeasonToggled(id)) } }
+    val onAgeRatingToggled =
+        remember(onEvent) { { value: Int -> onEvent(SearchState.Event.AgeRatingToggled(value)) } }
+    val onFromYearChanged =
+        remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.FromYearChanged(year)) } }
+    val onToYearChanged =
+        remember(onEvent) { { year: Int? -> onEvent(SearchState.Event.ToYearChanged(year)) } }
+    val onSortSelected =
+        remember(onEvent) { { sort: SearchSort -> onEvent(SearchState.Event.SortSelected(sort)) } }
+    val onSortDirectionToggled =
+        remember(onEvent) { { onEvent(SearchState.Event.SortDirectionToggled) } }
 
     SearchResultsPane(
         query = state.query,
@@ -48,8 +62,10 @@ fun SearchTvScreen(
         filterOptions = state.filterOptions,
         isFilterPanelOpen = state.isFilterPanelOpen,
         isLoadingFilterOptions = state.isLoadingFilterOptions,
+        isRandomAnimeLoading = state.isRandomAnimeLoading,
         onQueryChanged = onQueryChanged,
         onSearchSubmitted = onSearchSubmitted,
+        onRandomAnimeSelected = onRandomAnimeSelected,
         onRetry = onRetry,
         onItemSelected = onItemSelected,
         onOpenFilters = onOpenFilters,

@@ -50,8 +50,10 @@ internal fun SearchResultsPane(
     filterOptions: SearchFilterOptions,
     isFilterPanelOpen: Boolean,
     isLoadingFilterOptions: Boolean,
+    isRandomAnimeLoading: Boolean,
     onQueryChanged: (String) -> Unit,
     onSearchSubmitted: () -> Unit,
+    onRandomAnimeSelected: () -> Unit,
     onRetry: () -> Unit,
     onItemSelected: (SearchItem) -> Unit,
     onOpenFilters: () -> Unit,
@@ -83,6 +85,7 @@ internal fun SearchResultsPane(
     val gridFocusRequester = remember { FocusRequester() }
     val searchFieldFocusRequester = remember { FocusRequester() }
     val filterButtonFocusRequester = remember { FocusRequester() }
+    val randomButtonFocusRequester = remember { FocusRequester() }
     val retryFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
@@ -175,10 +178,13 @@ internal fun SearchResultsPane(
             filters = filters,
             searchFieldFocusRequester = searchFieldFocusRequester,
             filterButtonFocusRequester = filterButtonFocusRequester,
+            randomButtonFocusRequester = randomButtonFocusRequester,
             mainMenuFocusRequester = mainMenuFocusRequester,
             onQueryChanged = onQueryChanged,
             onSearchSubmitted = onSearchSubmitted,
             onOpenFilters = onOpenFilters,
+            isRandomAnimeLoading = isRandomAnimeLoading,
+            onRandomAnimeSelected = onRandomAnimeSelected,
         )
 
         Box(modifier = Modifier.fillMaxSize()) {

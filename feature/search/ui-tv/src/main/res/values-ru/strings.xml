@@ -5,6 +5,7 @@
     <string name="search_retry">Повторить</string>
     <string name="search_filters">Фильтры</string>
     <string name="search_filters_with_count">Фильтры (%1$d)</string>
+    <string name="search_random_anime">Случайное аниме</string>
     <string name="search_filters_apply">Применить</string>
     <string name="search_filters_reset">Сбросить</string>
     <string name="search_filters_close">Закрыть</string>

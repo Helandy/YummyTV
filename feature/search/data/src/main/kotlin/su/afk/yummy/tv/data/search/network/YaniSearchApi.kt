@@ -33,6 +33,13 @@ class YaniSearchApi(
             parameter("offset", offset)
         }.body<YaniSearchResponseDto>().response
 
+    suspend fun getRandomAnime(): List<YaniSearchItemDto> =
+        clientProvider.get().get("$YANI_BASE_URL/anime") {
+            parameter("sort", "random")
+            parameter("limit", 1)
+            parameter("offset", 0)
+        }.body<YaniSearchResponseDto>().response
+
     suspend fun getGenres(): YaniSearchGenresDto =
         clientProvider.get().get("$YANI_BASE_URL/anime/genres")
             .body<YaniSearchGenresResponseDto>()

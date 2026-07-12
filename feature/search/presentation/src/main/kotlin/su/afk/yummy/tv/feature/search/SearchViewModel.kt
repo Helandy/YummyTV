@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.core.utils.OffsetPage
 import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.usecase.GetRandomAnimeUseCase
 import su.afk.yummy.tv.domain.search.usecase.GetSearchFilterOptionsUseCase
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -32,6 +34,7 @@ class SearchViewModel @Inject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val getSearchFilterOptions: GetSearchFilterOptionsUseCase,
+    private val getRandomAnime: GetRandomAnimeUseCase,
     private val search: SearchUseCase,
     private val analytics: SearchAnalytics,
 ) : BaseViewModelNew<SearchState.State, SearchState.Event, SearchState.Effect>(savedStateHandle) {
@@ -69,6 +72,7 @@ class SearchViewModel @Inject internal constructor(
             SearchState.Event.SearchSubmitted -> onSearchSubmitted()
             SearchState.Event.RetrySelected -> analytics.eventRetry()
             SearchState.Event.BackSelected -> nav.back()
+            SearchState.Event.RandomAnimeSelected -> openRandomAnime()
             SearchState.Event.OpenFilters -> {
                 analytics.eventFiltersOpened()
                 setState { copy(isFilterPanelOpen = true, draftFilters = filters) }
@@ -119,6 +123,31 @@ class SearchViewModel @Inject internal constructor(
             is SearchState.Event.SortSelected -> updateDraft { copy(sort = event.sort) }
             SearchState.Event.SortDirectionToggled -> updateDraft { copy(sortForward = !sortForward) }
         }
+    }
+
+    private fun openRandomAnime() {
+        if (currentState.isRandomAnimeLoading) return
+        analytics.eventRandomAnimeRequested()
+        viewModelScope.launch {
+            setState { copy(isRandomAnimeLoading = true) }
+            try {
+                val anime = getRandomAnime()
+                    ?: error("Random anime response is empty")
+                analytics.eventRandomAnimeOpened(anime.id)
+                nav.navigate(detailsNavigator.getDetailsDest(anime.id))
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                analytics.eventRandomAnimeLoadError(error)
+                throw error
+            } finally {
+                setState { copy(isRandomAnimeLoading = false) }
+            }
+        }
+    }
+
+    override fun onRetry() {
+        openRandomAnime()
     }
 
     private fun onExternalSearchSubmitted(query: String) {

@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.mobile.R
+import su.afk.yummy.tv.feature.search.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.search.view.SearchMobileFilterButton
 import su.afk.yummy.tv.feature.search.view.SearchMobileFilterSheet
 
@@ -85,6 +86,13 @@ fun SearchMobileScreen(
                 )
             }
         },
+        floatingActionButtonEnd = {
+            RandomAnimeFloatingButton(
+                isLoading = state.isRandomAnimeLoading,
+                onClick = { onEvent(SearchState.Event.RandomAnimeSelected) },
+            )
+        },
+        floatingActionButtonBottomPadding = 8.dp,
     ) {
         MobilePosterGrid(
             contentPadding = PaddingValues(0.dp),

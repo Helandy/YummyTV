@@ -21,5 +21,6 @@ dependencies {
 
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
 }

@@ -22,6 +22,7 @@ class SearchState {
         val filterOptions: SearchFilterOptions = SearchFilterOptions(),
         val isFilterPanelOpen: Boolean = false,
         val isLoadingFilterOptions: Boolean = false,
+        val isRandomAnimeLoading: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на экране поиска. */
@@ -43,6 +44,9 @@ class SearchState {
 
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
+
+        /** Пользователь запросил случайное аниме из всего каталога. */
+        data object RandomAnimeSelected : Event
 
         /** Пользователь открыл панель фильтров. */
         data object OpenFilters : Event
