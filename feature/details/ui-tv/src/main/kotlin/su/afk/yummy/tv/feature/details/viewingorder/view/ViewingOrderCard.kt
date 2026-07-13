@@ -17,7 +17,6 @@ internal fun ViewingOrderCard(
     onFocused: () -> Unit = {},
 ) {
     val meta = listOfNotNull(
-        item.year?.toString(),
         item.type,
         item.episodesCount?.let { stringResource(R.string.details_episodes_count_short, it) },
     ).joinToString(" · ")
@@ -29,6 +28,7 @@ internal fun ViewingOrderCard(
         modifier = modifier,
         index = index,
         rating = item.rating,
+        year = item.year,
         relation = item.relation,
         meta = meta,
         onFocused = onFocused,

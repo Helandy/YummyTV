@@ -80,6 +80,22 @@ internal fun ViewingOrderMobileCard(
                         .padding(4.dp),
                 )
             }
+            item.year?.let { year ->
+                Text(
+                    text = year.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.inverseSurface,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .background(
+                            MaterialTheme.colorScheme.inverseOnSurface,
+                            RoundedCornerShape(4.dp),
+                        )
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                )
+            }
         }
         Column(
             modifier = Modifier.padding(10.dp),
@@ -120,7 +136,6 @@ internal fun ViewingOrderMobileCard(
 
 @Composable
 private fun AnimeViewingOrderItem.mobileMeta(): String = listOfNotNull(
-    year?.toString(),
     type,
     episodesCount?.let { stringResource(R.string.details_mobile_episodes_count_short, it) },
 ).joinToString(" · ")

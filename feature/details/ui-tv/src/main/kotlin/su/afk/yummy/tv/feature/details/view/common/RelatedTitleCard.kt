@@ -41,6 +41,7 @@ internal fun RelatedTitleCard(
     modifier: Modifier = Modifier,
     index: Int? = null,
     rating: Double? = null,
+    year: Int? = null,
     relation: String? = null,
     meta: String? = null,
     onFocused: () -> Unit = {},
@@ -106,6 +107,22 @@ internal fun RelatedTitleCard(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(10.dp),
+                    )
+                }
+                year?.let { value ->
+                    Text(
+                        text = value.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(10.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
                     )
                 }
             }
