@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,14 +66,11 @@ internal fun SimilarTab(
         )
 
         when (state) {
-            SimilarUiState.Loading -> Box(
+            SimilarUiState.Loading -> SimilarLoadingState(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
+            )
 
             SimilarUiState.Empty -> Box(
                 modifier = Modifier
@@ -147,12 +143,13 @@ internal fun SimilarTab(
                         ) { index, item ->
                             val posterUrl = item.poster?.run { big ?: medium ?: fullsize ?: small }
                             val meta =
-                                listOfNotNull(item.year?.toString(), item.type).joinToString(" · ")
+                                listOfNotNull(item.type).joinToString(" · ")
                             RelatedTitleCard(
                                 title = item.title,
                                 posterUrl = posterUrl,
                                 onClick = { onAnimeSelected(item.animeId) },
                                 rating = item.rating,
+                                year = item.year,
                                 meta = meta,
                                 onFocused = { rememberFocusedItem(index) },
                                 modifier = Modifier
