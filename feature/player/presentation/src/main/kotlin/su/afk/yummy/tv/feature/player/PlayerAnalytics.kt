@@ -208,6 +208,8 @@ internal class PlayerAnalytics @Inject constructor(
         errorCode: String?,
         errorType: String?,
     ) {
+        // Ошибки сети — ожидаемый транзиентный кейс, не засоряем крэш-репортинг.
+        if (errorCode in IGNORED_ERROR_CODES) return
         val source = state.analyticsSource()
         val errorMessage = message.analyticsMessage()
         tracker.reportError(
@@ -400,6 +402,11 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_TO_MS = "to_ms"
         private const val PARAM_VIDEO_ID = "video_id"
         private const val MAX_ERROR_MESSAGE_LENGTH = 180
+
+        private val IGNORED_ERROR_CODES = setOf(
+            "ERROR_CODE_IO_NETWORK_CONNECTION_FAILED",
+            "ERROR_CODE_IO_BAD_HTTP_STATUS",
+        )
 
         const val EVENT_BALANCER_SELECTED = "player_balancer_selected"
         const val EVENT_DETAILS_SELECTED = "player_details_selected"
