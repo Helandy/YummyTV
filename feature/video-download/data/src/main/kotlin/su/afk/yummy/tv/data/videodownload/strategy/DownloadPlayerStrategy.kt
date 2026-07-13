@@ -35,8 +35,14 @@ internal interface DownloadPlayerStrategy {
     val reusesHeadersOnRefresh: Boolean
 
     /**
-     * Aggregate download throughput cap in bytes/sec, or null for unlimited. Used to keep a source
-     * whose CDN rate-limits bulk pulls (Alloha) below the threshold that triggers session blocks.
+     * Aggregate download throughput cap in bytes/sec, or null for unlimited. Applied to every
+     * download regardless of player: Alloha's CDN blocks a session once bulk pulls outrun real-time
+     * playback, and a modest ceiling keeps every source polite instead of fetching at full line
+     * speed. Individual strategies may override.
      */
-    val downloadBytesPerSecond: Long? get() = null
+    val downloadBytesPerSecond: Long? get() = DEFAULT_DOWNLOAD_BYTES_PER_SECOND
+
+    companion object {
+        const val DEFAULT_DOWNLOAD_BYTES_PER_SECOND = 3L * 1024 * 1024
+    }
 }

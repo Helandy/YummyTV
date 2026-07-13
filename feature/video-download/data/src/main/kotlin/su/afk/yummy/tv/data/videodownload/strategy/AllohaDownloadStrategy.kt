@@ -57,15 +57,10 @@ internal class AllohaDownloadStrategy @Inject constructor(
     override val numericQualitiesOnly: Boolean = true
     override val allowsQualityFallbackToHighest: Boolean = true
     override val reusesHeadersOnRefresh: Boolean = true
-
-    // Alloha's CDN blocks the session (403 session_blocked) once segment pulls outrun real-time
-    // playback. A downloader otherwise fetches at full line speed and trips it within seconds, so
-    // cap the aggregate throughput just above playback bitrate.
-    override val downloadBytesPerSecond: Long = ALLOHA_DOWNLOAD_BYTES_PER_SECOND
+    // Throughput cap inherited from DownloadPlayerStrategy.DEFAULT_DOWNLOAD_BYTES_PER_SECOND.
 
     private companion object {
         const val ALLOHA_DOWNLOAD_FALLBACK_SESSION_TTL_SECONDS = 55
         const val ALLOHA_ORIGIN = "https://alloha.yani.tv"
-        const val ALLOHA_DOWNLOAD_BYTES_PER_SECOND = 2L * 1024 * 1024
     }
 }
