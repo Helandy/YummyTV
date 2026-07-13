@@ -7,12 +7,14 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
+import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
 
 class EpisodesState {
     data class State(
         val videosState: VideosUiState = VideosUiState.Loading,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,
+        val pendingEpisodeDubbingSelection: EpisodeDubbingSelection? = null,
         val downloadStatuses: Map<String, EpisodeDownloadUiState> = emptyMap(),
         val resolvingDownloadKeys: Set<String> = emptySet(),
         val pendingDownloadDubbingSelection: EpisodeDownloadDubbingSelection? = null,
@@ -20,6 +22,16 @@ class EpisodesState {
         val pendingDownloadQualitySelection: EpisodeDownloadQualitySelection? = null,
         val pendingDownloadedEpisodeAction: DownloadedEpisodeAction? = null,
     ) : UiState
+
+    data class EpisodeDubbingSelection(
+        val episode: String,
+        val options: List<EpisodeDubbingOption>,
+    )
+
+    data class EpisodeDubbingOption(
+        val video: AnimeVideo,
+        val item: EpisodeDubbingsState.DubbingItem,
+    )
 
     data class EpisodeDownloadDubbingSelection(
         val episode: String,
@@ -97,6 +109,18 @@ class EpisodesState {
 
         /** Пользователь открыл озвучки для указанного эпизода. */
         data class EpisodeDubbingsSelected(val episode: String) : Event
+
+        /** Пользователь выбрал серию на ТВ. */
+        data class TvEpisodeSelected(val video: AnimeVideo) : Event
+
+        /** Пользователь подтвердил балансер на ТВ. */
+        data class TvBalancerConfirmed(val video: AnimeVideo) : Event
+
+        /** Пользователь выбрал озвучку в ТВ-диалоге. */
+        data class EpisodeDubbingSelected(val video: AnimeVideo) : Event
+
+        /** Пользователь закрыл ТВ-диалог выбора озвучки. */
+        data object EpisodeDubbingPickerDismissed : Event
 
         /** Пользователь выбрал видео для просмотра. */
         data class VideoSelected(val video: AnimeVideo) : Event

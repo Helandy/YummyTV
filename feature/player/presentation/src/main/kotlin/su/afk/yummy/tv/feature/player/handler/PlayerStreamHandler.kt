@@ -27,10 +27,14 @@ internal class PlayerStreamHandler @Inject constructor(
     suspend fun resolve(
         state: PlayerState.State,
         pendingResumeMs: Long?,
+        reuseAllohaPlaybackSession: Boolean = true,
+        selectedQualityOverride: String? = null,
     ): PlayerStreamResult {
         val request = PlayerStreamRequest(
             iframeUrl = activeIframeUrl(state),
             autoQualityLabel = strings.get(R.string.player_quality_auto),
+            sessionFallbackTtlSeconds = ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS,
+            reusePlaybackSession = reuseAllohaPlaybackSession,
         )
         val session = if (request.iframeUrl.isAllohaPlayerUrl()) {
             openAllohaStreamSession(request)
@@ -41,11 +45,15 @@ internal class PlayerStreamHandler @Inject constructor(
                 val resume = pendingResumeMs
                     ?: loadResumePosition(state.animeId, activeEpisode(state))
                     ?: 0L
+                val selectedQuality = selectedQualityOverride
+                    ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
+                    ?: selectedQuality(result.qualities)
+                if (selectedQuality != null) session?.selectQuality(selectedQuality)
                 PlayerStreamResult.Stream(
                     url = result.url,
                     headers = result.headers,
                     qualities = result.qualities,
-                    selectedQuality = selectedQuality(result.qualities),
+                    selectedQuality = selectedQuality,
                     resumeFromMs = resume,
                     consumedPendingResume = pendingResumeMs != null,
                     allohaSession = session,
@@ -124,6 +132,10 @@ internal class PlayerStreamHandler @Inject constructor(
         message
             ?: statusCode?.let { strings.get(R.string.player_server_error, it) }
             ?: strings.get(R.string.player_kodik_blocked)
+
+    private companion object {
+        const val ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS = 120
+    }
 }
 
 /** Result of resolving the currently selected player source. */

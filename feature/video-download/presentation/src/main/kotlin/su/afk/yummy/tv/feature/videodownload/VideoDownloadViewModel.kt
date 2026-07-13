@@ -7,21 +7,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
-import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
-import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
 import su.afk.yummy.tv.domain.videodownload.usecase.CancelOrDeleteVideoDownloadUseCase
-import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PauseVideoDownloadUseCase
-import su.afk.yummy.tv.domain.videodownload.usecase.RefreshVideoDownloadStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.RestartVideoDownloadUseCase
-import su.afk.yummy.tv.domain.videodownload.usecase.UpdateVideoDownloadStatusUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
-import su.afk.yummy.tv.feature.videodownload.presentation.R
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,19 +27,17 @@ class VideoDownloadViewModel @Inject constructor(
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
     private val pauseVideoDownload: PauseVideoDownloadUseCase,
     private val restartVideoDownload: RestartVideoDownloadUseCase,
-    private val getVideoDownload: GetVideoDownloadUseCase,
-    private val updateVideoDownloadStatus: UpdateVideoDownloadStatusUseCase,
-    private val refreshVideoDownloadStream: RefreshVideoDownloadStreamUseCase,
     private val playerNavigator: IPlayerNavigator,
     private val detailsNavigator: IDetailsNavigator,
-    private val strings: StringProvider,
 ) : BaseViewModelNew<VideoDownloadState.State, VideoDownloadState.Event, VideoDownloadState.Effect>(
     savedStateHandle
 ) {
 
     init {
         observeVideoDownloads()
-            .onEach { items -> setState { copy(items = items) } }
+            .onEach { items ->
+                setState { copy(items = items) }
+            }
             .launchIn(viewModelScope)
     }
 
@@ -66,10 +57,21 @@ class VideoDownloadViewModel @Inject constructor(
             }
 
             is VideoDownloadState.Event.DeleteSelected -> {
-                viewModelScope.launch {
-                    cancelOrDeleteVideoDownload(event.id)
+                setState {
+                    copy(pendingDeleteItem = items.firstOrNull { it.id == event.id })
                 }
             }
+
+            VideoDownloadState.Event.DeleteConfirmed -> {
+                val downloadId = currentState.pendingDeleteItem?.id ?: return
+                setState { copy(pendingDeleteItem = null) }
+                viewModelScope.launch {
+                    cancelOrDeleteVideoDownload(downloadId)
+                }
+            }
+
+            VideoDownloadState.Event.DeleteDismissed ->
+                setState { copy(pendingDeleteItem = null) }
 
             is VideoDownloadState.Event.PauseSelected -> {
                 viewModelScope.launch {
@@ -92,43 +94,6 @@ class VideoDownloadViewModel @Inject constructor(
     }
 
     private suspend fun restartDownload(id: Long) {
-        val item = getVideoDownload(id) ?: return
-        updateVideoDownloadStatus(
-            id = id,
-            status = VideoDownloadStatus.Resolving,
-            errorMessage = null,
-        )
-
-        val refreshResult = runCatching {
-            refreshVideoDownloadStream(
-                item = item,
-                autoQualityLabel = strings.get(R.string.video_download_quality_auto),
-            )
-        }
-            .getOrElse { throwable ->
-                updateVideoDownloadStatus(
-                    id = id,
-                    status = VideoDownloadStatus.Failed,
-                    errorMessage = throwable.localizedMessage
-                        ?: strings.get(R.string.video_download_refresh_error),
-                )
-                return
-            }
-
-        when (refreshResult) {
-            is VideoDownloadStreamRefreshResult.Success -> {
-                restartVideoDownload(id, refreshResult.stream)
-            }
-
-            is VideoDownloadStreamRefreshResult.Failure -> {
-                updateVideoDownloadStatus(
-                    id = id,
-                    status = VideoDownloadStatus.Failed,
-                    errorMessage = refreshResult.message.ifBlank {
-                        strings.get(R.string.video_download_refresh_error)
-                    },
-                )
-            }
-        }
+        restartVideoDownload(id)
     }
 }

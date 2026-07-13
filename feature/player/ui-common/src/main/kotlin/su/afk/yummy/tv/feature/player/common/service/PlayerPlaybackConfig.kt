@@ -12,6 +12,7 @@ interface PlayerPlaybackConfig {
     fun updateStream(
         headers: Map<String, String>,
         offlineCacheKey: String?,
+        offlineManifestUri: String?,
         useRotatingHlsCacheKeys: Boolean,
         audioTrackPolicy: PlayerAudioTrackPolicy,
         isOfflinePlayback: Boolean,
@@ -26,6 +27,12 @@ data class PlayerTrackSelectionConfig(
     val isOfflinePlayback: Boolean = false,
 )
 
+private data class OfflineCacheConfig(
+    val cacheKey: String,
+    val manifestUri: String?,
+    val useRotatingHlsCacheKeys: Boolean,
+)
+
 @Singleton
 class DefaultPlayerPlaybackConfig @Inject constructor(
     private val cacheProvider: VideoDownloadCacheProvider,
@@ -34,10 +41,7 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
     private var headers: Map<String, String> = emptyMap()
 
     @Volatile
-    private var offlineCacheKey: String? = null
-
-    @Volatile
-    private var rotatingKeys: Boolean = false
+    private var offlineCacheConfig: OfflineCacheConfig? = null
 
     @Volatile
     private var trackSelection = PlayerTrackSelectionConfig()
@@ -45,24 +49,39 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
     override fun updateStream(
         headers: Map<String, String>,
         offlineCacheKey: String?,
+        offlineManifestUri: String?,
         useRotatingHlsCacheKeys: Boolean,
         audioTrackPolicy: PlayerAudioTrackPolicy,
         isOfflinePlayback: Boolean,
     ) {
         this.headers = headers.toMap()
-        this.offlineCacheKey = offlineCacheKey
-        rotatingKeys = useRotatingHlsCacheKeys
+        offlineCacheConfig = offlineCacheKey?.let { cacheKey ->
+            OfflineCacheConfig(
+                cacheKey = cacheKey,
+                manifestUri = offlineManifestUri?.takeIf(String::isNotBlank),
+                useRotatingHlsCacheKeys = useRotatingHlsCacheKeys,
+            )
+        }
         trackSelection = PlayerTrackSelectionConfig(audioTrackPolicy, isOfflinePlayback)
     }
 
     override fun trackSelectionConfig(): PlayerTrackSelectionConfig = trackSelection
 
     override fun dataSourceFactory(): DataSource.Factory = DataSource.Factory {
-        val key = offlineCacheKey
-        if (key != null) {
+        val offline = offlineCacheConfig
+        if (offline != null) {
             CacheDataSource.Factory()
                 .setCache(cacheProvider.cache)
-                .apply { if (rotatingKeys) setCacheKeyFactory(RotatingHlsCacheKeyFactory(key)) }
+                .apply {
+                    if (offline.useRotatingHlsCacheKeys) {
+                        setCacheKeyFactory(
+                            RotatingHlsCacheKeyFactory(
+                                downloadCacheKey = offline.cacheKey,
+                                manifestUri = offline.manifestUri,
+                            )
+                        )
+                    }
+                }
                 .setFlags(CacheDataSource.FLAG_BLOCK_ON_CACHE)
                 .createDataSource()
         } else {

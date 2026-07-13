@@ -51,20 +51,21 @@ internal class AllohaDownloadStrategy @Inject constructor(
     ): Map<String, String> =
         headers.withDownloadRequestHeaders(iframeUrl, originOverride = ALLOHA_ORIGIN)
 
-    override fun shouldRefreshBeforeStart(item: VideoDownloadItem, runAttemptCount: Int): Boolean =
-        item.streamUrl.streamKind().isAdaptive &&
-                (item.progress > 0f || runAttemptCount > 0 || item.errorMessage != null)
-
     override fun manifestKeyToEvictOnRefresh(item: VideoDownloadItem): String? =
         item.cacheKey.takeIf { item.streamUrl.streamKind().isAdaptive }
 
-    override val retriesViaLiveSession: Boolean = true
     override val numericQualitiesOnly: Boolean = true
     override val allowsQualityFallbackToHighest: Boolean = true
     override val reusesHeadersOnRefresh: Boolean = true
 
+    // Alloha's CDN blocks the session (403 session_blocked) once segment pulls outrun real-time
+    // playback. A downloader otherwise fetches at full line speed and trips it within seconds, so
+    // cap the aggregate throughput just above playback bitrate.
+    override val downloadBytesPerSecond: Long = ALLOHA_DOWNLOAD_BYTES_PER_SECOND
+
     private companion object {
         const val ALLOHA_DOWNLOAD_FALLBACK_SESSION_TTL_SECONDS = 55
         const val ALLOHA_ORIGIN = "https://alloha.yani.tv"
+        const val ALLOHA_DOWNLOAD_BYTES_PER_SECOND = 2L * 1024 * 1024
     }
 }

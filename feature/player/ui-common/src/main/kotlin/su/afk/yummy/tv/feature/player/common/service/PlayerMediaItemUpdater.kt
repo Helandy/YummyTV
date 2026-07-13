@@ -49,6 +49,7 @@ class PlayerMediaItemUpdater {
         playbackConfig.updateStream(
             headers = config.headers,
             offlineCacheKey = config.offlineCacheKey.takeIf { config.isOfflinePlayback },
+            offlineManifestUri = config.url.takeIf { config.isOfflinePlayback },
             useRotatingHlsCacheKeys = config.useRotatingHlsCacheKeys,
             audioTrackPolicy = config.audioTrackPolicy,
             isOfflinePlayback = config.isOfflinePlayback,

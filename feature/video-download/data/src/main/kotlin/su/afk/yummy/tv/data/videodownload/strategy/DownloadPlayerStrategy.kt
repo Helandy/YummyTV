@@ -27,16 +27,16 @@ internal interface DownloadPlayerStrategy {
 
     fun decorateHeaders(headers: Map<String, String>, iframeUrl: String): Map<String, String>
 
-    /** Whether a stale/resumed/retried download should proactively refresh its stream before starting. */
-    fun shouldRefreshBeforeStart(item: VideoDownloadItem, runAttemptCount: Int): Boolean
-
     /** Cache resource key to evict on refresh so a fresh manifest is fetched while segments stay cached. */
     fun manifestKeyToEvictOnRefresh(item: VideoDownloadItem): String?
-
-    /** Whether forbidden/transient failures should be retried by reopening the live session. */
-    val retriesViaLiveSession: Boolean
 
     val numericQualitiesOnly: Boolean
     val allowsQualityFallbackToHighest: Boolean
     val reusesHeadersOnRefresh: Boolean
+
+    /**
+     * Aggregate download throughput cap in bytes/sec, or null for unlimited. Used to keep a source
+     * whose CDN rate-limits bulk pulls (Alloha) below the threshold that triggers session blocks.
+     */
+    val downloadBytesPerSecond: Long? get() = null
 }

@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.details.episodes.utils
 
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.utils.bestKodikDubbing
+import su.afk.yummy.tv.domain.anime.utils.isKodikSource
+import su.afk.yummy.tv.domain.anime.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.model.MobileEpisodeGroup
-import su.afk.yummy.tv.feature.details.utils.bestKodikDubbing
-import su.afk.yummy.tv.feature.details.utils.isKodikSource
-import su.afk.yummy.tv.feature.details.utils.kodikThumbnailIframeUrl
 
 internal fun List<AnimeVideo>.toMobileEpisodeGroups(): List<MobileEpisodeGroup> {
     val bestKodikDubbing = bestKodikDubbing()

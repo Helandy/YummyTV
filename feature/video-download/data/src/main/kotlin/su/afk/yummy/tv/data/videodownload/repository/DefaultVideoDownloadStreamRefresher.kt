@@ -1,12 +1,11 @@
 package su.afk.yummy.tv.data.videodownload.repository
 
+import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
-import su.afk.yummy.tv.domain.player.model.PlayerSourceEpisode
-import su.afk.yummy.tv.domain.player.model.PlayerSourceGraph
-import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
+import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
+import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRestartStream
@@ -17,7 +16,7 @@ import javax.inject.Inject
 
 class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
-    private val getPlayerSourceGraph: GetPlayerSourceGraphUseCase,
+    private val playerSourceRepository: PlayerSourceRepository,
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
     private val strategyResolver: DownloadPlayerStrategyResolver,
 ) : VideoDownloadStreamRefresher {
@@ -31,15 +30,22 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
             .takeIf { it.hasVideoQualityNumber() }
             ?: normalizedAutoLabel
         return runCatching {
-            val iframeUrl = item.freshIframeUrl()
+            val source = item.refreshSource()
+            val refreshedItem = item.copy(
+                videoId = source.episode.id,
+                playerName = source.playerName,
+                playerId = source.episode.playerId,
+                dubbing = source.dubbing,
+                iframeUrl = source.episode.iframeUrl,
+            )
             when (val result = resolvePlayerStream(
                 PlayerStreamRequest(
-                    iframeUrl = iframeUrl,
+                    iframeUrl = refreshedItem.iframeUrl,
                     autoQualityLabel = resolveQualityLabel,
                 )
             )) {
                 is PlayerStreamResolveResult.Stream -> result.toRefreshResult(
-                    item = item,
+                    item = refreshedItem,
                     autoQualityLabel = normalizedAutoLabel,
                 )
 
@@ -60,34 +66,37 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                 )
             }
         }.getOrElse { throwable ->
+            if (throwable is CancellationException) throw throwable
             VideoDownloadStreamRefreshResult.Failure(
-                throwable.localizedMessage ?: REFRESH_ERROR_MESSAGE,
+                throwable.message.takeIf { message ->
+                    message == DUBBING_UNAVAILABLE_MESSAGE
+                } ?: REFRESH_ERROR_MESSAGE,
             )
         }
     }
 
-    private suspend fun VideoDownloadItem.freshIframeUrl(): String =
-        runCatching {
-            getPlayerSourceGraph(
-                request = PlayerSourceRequest(
-                    animeId = animeId,
-                    iframeUrl = iframeUrl,
-                    animeTitle = animeTitle,
-                    episode = episode,
-                    playerName = playerName,
-                    dubbing = dubbing,
-                    selectedVideoId = videoId,
-                    selectedPlayerId = playerId,
-                    selectedScreenshotUrl = screenshotUrl,
-                ),
-                forceRefreshVideos = true,
-            ).selectedEpisode()?.iframeUrl?.takeIf { it.isNotBlank() }
-        }.getOrNull() ?: iframeUrl
-
-    private fun PlayerSourceGraph.selectedEpisode(): PlayerSourceEpisode? {
-        val balancer = balancers.getOrNull(selection.balancerIndex)
-        val dubbing = balancer?.dubbings?.getOrNull(selection.dubbingIndex)
-        return dubbing?.episodes?.getOrNull(selection.episodeIndex)
+    private suspend fun VideoDownloadItem.refreshSource(): RefreshedDownloadSource {
+        val videos = playerSourceRepository.getSources(
+            animeId = animeId,
+            forceRefreshVideos = true,
+        ).videos
+        val candidates = videos.filter { candidate ->
+            candidate.episode == episode &&
+                    candidate.player == playerName &&
+                    candidate.dubbing == dubbing &&
+                    candidate.iframeUrl.isNotBlank()
+        }
+        val refreshedEpisode = candidates.firstOrNull { it.id == videoId }
+            ?: playerId?.let { previousPlayerId ->
+                candidates.firstOrNull { it.playerId == previousPlayerId }
+            }
+            ?: candidates.firstOrNull()
+            ?: error(DUBBING_UNAVAILABLE_MESSAGE)
+        return RefreshedDownloadSource(
+            playerName = refreshedEpisode.player,
+            dubbing = refreshedEpisode.dubbing,
+            episode = refreshedEpisode,
+        )
     }
 
     private fun String.hasVideoQualityNumber(): Boolean =
@@ -129,6 +138,11 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                 .ifEmpty { headers }
                 .withReusableFallbackHeaders(fallbackHeaders)
             VideoDownloadRestartStream(
+                videoId = item.videoId,
+                playerName = item.playerName,
+                playerId = item.playerId,
+                dubbing = item.dubbing,
+                iframeUrl = item.iframeUrl,
                 qualityLabel = preferredQuality.label,
                 url = preferredQuality.url,
                 headers = refreshedHeaders,
@@ -136,6 +150,11 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
         } else {
             val refreshedHeaders = headers.withReusableFallbackHeaders(fallbackHeaders)
             VideoDownloadRestartStream(
+                videoId = item.videoId,
+                playerName = item.playerName,
+                playerId = item.playerId,
+                dubbing = item.dubbing,
+                iframeUrl = item.iframeUrl,
                 qualityLabel = item.qualityLabel.takeIf { requestedQualityNumber != null }
                     ?: autoQualityLabel,
                 url = url,
@@ -186,4 +205,10 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
         const val SEC_FETCH_HEADER_PREFIX = "Sec-Fetch-"
         val VIDEO_QUALITY_REGEX = Regex("""\d{3,4}p?""", RegexOption.IGNORE_CASE)
     }
+
+    private data class RefreshedDownloadSource(
+        val playerName: String,
+        val dubbing: String,
+        val episode: PlayerSourceVideo,
+    )
 }

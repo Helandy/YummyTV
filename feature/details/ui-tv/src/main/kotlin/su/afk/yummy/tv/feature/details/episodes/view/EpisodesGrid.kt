@@ -35,11 +35,11 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.domain.anime.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.utils.isAlloha
-import su.afk.yummy.tv.feature.details.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 
 @Composable

@@ -13,16 +13,12 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
-import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 
 @HiltViewModel(assistedFactory = EpisodeDubbingsViewModel.Factory::class)
 class EpisodeDubbingsViewModel @AssistedInject internal constructor(
@@ -83,32 +79,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
         runCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 loadedVideos = videos
-                val videosByDubbing = videos
-                    .asSequence()
-                    .mapNotNull { video ->
-                        video.dubbing.trim().takeIf { it.isNotBlank() }?.let { it to video }
-                    }
-                    .groupBy(keySelector = { it.first }, valueTransform = { it.second })
-                val dubbings = videos
-                    .asSequence()
-                    .filter { it.episode == episode }
-                    .map { it.dubbing.trim() }
-                    .filter { it.isNotBlank() }
-                    .distinct()
-                    .map { dubbing ->
-                        val dubbingVideos = videosByDubbing[dubbing].orEmpty()
-                        EpisodeDubbingsState.DubbingItem(
-                            name = dubbing,
-                            views = dubbingVideos.dubbingViews(),
-                            episodeCount = dubbingVideos.dubbingEpisodeCount(),
-                            supportedBalancers = dubbingVideos.supportedBalancersLabel(),
-                        )
-                    }
-                    .sortedWith(
-                        compareByDescending<EpisodeDubbingsState.DubbingItem> { it.views }
-                            .thenBy { it.name }
-                    )
-                    .toList()
+                val dubbings = videos.episodeDubbingItems(episode)
                 setState { copy(isLoading = false, dubbings = dubbings) }
             },
             onFailure = { e -> setState { copy(isLoading = false, error = e.message) } },
@@ -117,7 +88,8 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
 
     private fun openDubbing(dubbingName: String) {
         viewModelScope.launch {
-            val video = loadedVideos.selectLaunchVideo(
+            val video = loadedVideos.selectEpisodeDubbingLaunchVideo(
+                episode = episode,
                 dubbingName = dubbingName,
                 preferredPlayer = settingsStore.preferredPlayer.first(),
             ) ?: return@launch
@@ -134,55 +106,4 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun List<AnimeVideo>.selectLaunchVideo(
-        dubbingName: String,
-        preferredPlayer: PreferredPlayer,
-    ): AnimeVideo? {
-        val candidates = filter {
-            it.episode == episode && it.dubbing.trim() == dubbingName
-        }
-        val supported = candidates.filter { it.iframeUrl.isSupportedPlayerUrl() }
-        return supported.firstOrNull { it.iframeUrl.matchesPreferredPlayer(preferredPlayer) }
-            ?: supported.minWithOrNull(
-                compareBy<AnimeVideo> {
-                    minOf(
-                        it.player.playerDisplayOrderPriority(),
-                        it.iframeUrl.playerDisplayOrderPriority(),
-                    )
-                }.thenBy { it.player }
-            )
-            ?: candidates.firstOrNull()
-    }
-
-    private fun List<AnimeVideo>.dubbingViews(): Int =
-        groupBy { it.player }
-            .values
-            .maxOfOrNull { videos -> videos.sumOf { it.views ?: 0 } }
-            ?: 0
-
-    private fun List<AnimeVideo>.dubbingEpisodeCount(): Int =
-        map { it.episode }.distinct().size
-
-    private fun List<AnimeVideo>.supportedBalancersLabel(): String =
-        asSequence()
-            .filter { it.iframeUrl.isSupportedPlayerUrl() }
-            .distinctBy { it.player }
-            .sortedWith(
-                compareBy<AnimeVideo> {
-                    minOf(
-                        it.player.playerDisplayOrderPriority(),
-                        it.iframeUrl.playerDisplayOrderPriority(),
-                    )
-                }.thenBy { it.player }
-            )
-            .map { it.player.withoutPlayerPrefix() }
-            .joinToString(" • ")
-
-    private fun String.withoutPlayerPrefix(): String =
-        removePrefix(RU_PLAYER_PREFIX).removePrefix(EN_PLAYER_PREFIX)
-
-    private companion object {
-        const val RU_PLAYER_PREFIX = "Плеер "
-        const val EN_PLAYER_PREFIX = "Player "
-    }
 }

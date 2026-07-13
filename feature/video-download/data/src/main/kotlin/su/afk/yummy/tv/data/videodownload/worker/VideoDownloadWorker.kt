@@ -44,6 +44,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResu
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import su.afk.yummy.tv.domain.videodownload.usecase.RefreshVideoDownloadStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.UpdateVideoDownloadPreparedStreamUseCase
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -64,14 +65,17 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         val id = inputData.getLong(KEY_DOWNLOAD_ID, 0L).takeIf { it > 0L }
             ?: return Result.failure()
         var item = repository.getDownload(id) ?: return Result.failure()
-        val strategy = strategyResolver.resolve(item)
+        var strategy = strategyResolver.resolve(item)
         setForeground(notificationService.createForegroundInfo(item))
-        repository.updateStatus(
-            id = id,
-            status = VideoDownloadStatus.Downloading,
-            errorMessage = null,
-        )
-        if (strategy.shouldRefreshBeforeStart(item, runAttemptCount)) {
+        val refreshBeforeStart = shouldRefreshBeforeStart(item)
+        if (!refreshBeforeStart) {
+            repository.updateStatus(
+                id = id,
+                status = VideoDownloadStatus.Downloading,
+                errorMessage = null,
+            )
+        }
+        if (refreshBeforeStart) {
             val reason = if (item.progress > 0f && runAttemptCount == 0) {
                 DownloadRestartReason.UserResume
             } else {
@@ -85,40 +89,24 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     reason = reason
                 )
             ) {
-                is DownloadStreamRefresh.Success -> item = result.item
-                is DownloadStreamRefresh.Failure -> {
-                    val failedDetails = "preflightRefreshFailed=${result.message}; " +
-                            "workRetry=${runAttemptCount.nextRetryAttempt()}/$MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES"
-                    if (runAttemptCount < MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES) {
-                        logDownloadWarning {
-                            "Download id=$id will retry because fresh ${strategy.playerLabel} stream is not ready. " +
-                                    "details=$failedDetails"
-                        }
-                        repository.updateStatus(
-                            id = id,
-                            status = VideoDownloadStatus.Queued,
-                            errorMessage = failedDetails,
-                        )
-                        return Result.retry()
-                    }
-                    logDownloadWarning {
-                        "Failed download id=$id details=$failedDetails"
-                    }
-                    repository.updateStatus(
-                        id = id,
-                        status = VideoDownloadStatus.Failed,
-                        errorMessage = failedDetails,
-                    )
-                    analytics.reportFailed(item, failedDetails)
-                    return Result.failure()
+                is DownloadStreamRefresh.Success -> {
+                    item = result.item
+                    strategy = strategyResolver.resolve(item)
                 }
+
+                is DownloadStreamRefresh.Failure -> return finishAfterRefreshFailure(
+                    id = id,
+                    item = item,
+                    strategy = strategy,
+                    reason = reason,
+                    message = result.message,
+                )
             }
         }
 
         var retriedAfterForbidden = false
         var transientRetryCount = 0
         while (true) {
-            val streamKind = item.streamUrl.streamKind()
             try {
                 downloadItem(
                     id = id,
@@ -143,85 +131,48 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                 }
                 val details = throwable.downloadFailureDetails()
                 if (
-                    streamKind.isAdaptive &&
-                    strategy.retriesViaLiveSession &&
                     !retriedAfterForbidden &&
                     throwable.isForbiddenHttpResponse()
                 ) {
                     retriedAfterForbidden = true
                     logDownloadWarning(throwable) {
-                        "Download id=$id got 403 from live ${strategy.playerLabel} session; reopening session once. " +
-                                "details=$details"
-                    }
-                    delay(TRANSIENT_RETRY_DELAY_MS)
-                    continue
-                }
-                if (
-                    streamKind.isAdaptive &&
-                    !retriedAfterForbidden &&
-                    throwable.isForbiddenHttpResponse()
-                ) {
-                    retriedAfterForbidden = true
-                    logDownloadWarning(throwable) {
-                        "Download id=$id got 403 on adaptive stream request; refreshing stream and retrying. " +
+                        "Download id=$id got 403 from ${strategy.playerLabel}; " +
+                                "refreshing iframe and stream before retry. " +
                                 "details=$details"
                     }
                     when (
                         val refreshResult = refreshDownloadStream(
-                            id,
-                            item,
+                            id = id,
+                            item = item,
                             strategy = strategy,
                             reason = DownloadRestartReason.Forbidden,
                         )
                     ) {
                         is DownloadStreamRefresh.Success -> {
                             item = refreshResult.item
+                            strategy = strategyResolver.resolve(item)
+                            delay(TRANSIENT_RETRY_DELAY_MS)
                             continue
                         }
 
-                        is DownloadStreamRefresh.Failure -> {
-                            val failedDetails =
-                                "$details; refreshFailed=${refreshResult.message}; retryUsed=true"
-                            if (
-                                strategy.retriesViaLiveSession &&
-                                runAttemptCount < MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
-                            ) {
-                                val retryDetails = "$failedDetails; " +
-                                        "workRetry=${runAttemptCount.nextRetryAttempt()}/$MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES"
-                                logDownloadWarning(throwable) {
-                                    "Download id=$id will retry after expired ${strategy.playerLabel} stream. " +
-                                            "details=$retryDetails"
-                                }
-                                repository.updateStatus(
-                                    id = id,
-                                    status = VideoDownloadStatus.Queued,
-                                    errorMessage = retryDetails,
-                                )
-                                return Result.retry()
-                            }
-                            logDownloadWarning(throwable) {
-                                "Failed download id=$id details=$failedDetails"
-                            }
-                            repository.updateStatus(
-                                id = id,
-                                status = VideoDownloadStatus.Failed,
-                                errorMessage = failedDetails,
-                            )
-                            analytics.reportFailed(item, failedDetails, throwable)
-                            return Result.failure()
-                        }
+                        is DownloadStreamRefresh.Failure -> return finishAfterRefreshFailure(
+                            id = id,
+                            item = item,
+                            strategy = strategy,
+                            reason = DownloadRestartReason.Forbidden,
+                            message = "$details; ${refreshResult.message}",
+                            throwable = throwable,
+                        )
                     }
                 }
 
                 if (
-                    streamKind.isAdaptive &&
                     retriedAfterForbidden &&
-                    strategy.retriesViaLiveSession &&
                     throwable.isForbiddenHttpResponse() &&
-                    runAttemptCount < MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
+                    runAttemptCount < MAX_STREAM_REFRESH_WORK_RETRIES
                 ) {
                     val retryDetails = "$details; retryUsed=true; " +
-                            "workRetry=${runAttemptCount.nextRetryAttempt()}/$MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES"
+                            "workRetry=${runAttemptCount.nextRetryAttempt()}/$MAX_STREAM_REFRESH_WORK_RETRIES"
                     logDownloadWarning(throwable) {
                         "Download id=$id will retry because refreshed ${strategy.playerLabel} stream is still forbidden. " +
                                 "details=$retryDetails"
@@ -235,40 +186,51 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                 }
 
                 if (
-                    streamKind.isAdaptive &&
                     transientRetryCount < MAX_TRANSIENT_DOWNLOAD_RETRIES &&
                     throwable.isTransientDownloadFailure()
                 ) {
                     transientRetryCount += 1
-                    if (strategy.retriesViaLiveSession) {
-                        logDownloadWarning(throwable) {
-                            "Download id=$id got transient ${strategy.playerLabel} adaptive failure; " +
-                                    "reopening live session before retry. " +
-                                    "attempt=$transientRetryCount/$MAX_TRANSIENT_DOWNLOAD_RETRIES " +
-                                    "details=$details"
-                        }
-                    } else {
-                        logDownloadWarning(throwable) {
-                            "Download id=$id got transient adaptive failure; retrying same stream. " +
-                                    "attempt=$transientRetryCount/$MAX_TRANSIENT_DOWNLOAD_RETRIES " +
-                                    "details=$details"
-                        }
+                    logDownloadWarning(throwable) {
+                        "Download id=$id got transient ${strategy.playerLabel} failure; " +
+                                "refreshing iframe and stream before retry. " +
+                                "attempt=$transientRetryCount/$MAX_TRANSIENT_DOWNLOAD_RETRIES " +
+                                "details=$details"
                     }
-                    delay(TRANSIENT_RETRY_DELAY_MS)
-                    continue
+                    when (
+                        val refreshResult = refreshDownloadStream(
+                            id = id,
+                            item = item,
+                            strategy = strategy,
+                            reason = DownloadRestartReason.TransientFailure,
+                        )
+                    ) {
+                        is DownloadStreamRefresh.Success -> {
+                            item = refreshResult.item
+                            strategy = strategyResolver.resolve(item)
+                            delay(TRANSIENT_RETRY_DELAY_MS)
+                            continue
+                        }
+
+                        is DownloadStreamRefresh.Failure -> return finishAfterRefreshFailure(
+                            id = id,
+                            item = item,
+                            strategy = strategy,
+                            reason = DownloadRestartReason.TransientFailure,
+                            message = "$details; ${refreshResult.message}",
+                            throwable = throwable,
+                        )
+                    }
                 }
 
                 if (
-                    streamKind.isAdaptive &&
-                    strategy.retriesViaLiveSession &&
                     throwable.isTransientDownloadFailure() &&
-                    runAttemptCount < MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
+                    runAttemptCount < MAX_STREAM_REFRESH_WORK_RETRIES
                 ) {
-                    val retryDetails = "$details; liveSessionRetries=$transientRetryCount; " +
+                    val retryDetails = "$details; localRetries=$transientRetryCount; " +
                             "workRetry=${runAttemptCount.nextRetryAttempt()}/" +
-                            MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES
+                            MAX_STREAM_REFRESH_WORK_RETRIES
                     logDownloadWarning(throwable) {
-                        "Download id=$id exhausted local ${strategy.playerLabel} sessions; scheduling worker retry. " +
+                        "Download id=$id exhausted local ${strategy.playerLabel} retries; scheduling worker retry. " +
                                 "details=$retryDetails"
                     }
                     repository.updateStatus(
@@ -294,12 +256,62 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         }
     }
 
+    private fun shouldRefreshBeforeStart(item: VideoDownloadItem): Boolean =
+        inputData.getBoolean(KEY_FORCE_STREAM_REFRESH, false) ||
+                item.progress > 0f ||
+                runAttemptCount > 0 ||
+                item.errorMessage != null
+
+    private suspend fun finishAfterRefreshFailure(
+        id: Long,
+        item: VideoDownloadItem,
+        strategy: DownloadPlayerStrategy,
+        reason: DownloadRestartReason,
+        message: String,
+        throwable: Throwable? = null,
+    ): Result {
+        val failedDetails = "refreshReason=$reason; refreshFailed=$message; " +
+                "workRetry=${runAttemptCount.nextRetryAttempt()}/$MAX_STREAM_REFRESH_WORK_RETRIES"
+        if (runAttemptCount < MAX_STREAM_REFRESH_WORK_RETRIES) {
+            logDownloadWarning(throwable) {
+                "Download id=$id will retry because fresh ${strategy.playerLabel} source is not ready. " +
+                        "details=$failedDetails"
+            }
+            repository.updateStatus(
+                id = id,
+                status = VideoDownloadStatus.Queued,
+                errorMessage = failedDetails,
+            )
+            return Result.retry()
+        }
+        logDownloadWarning(throwable) {
+            "Failed download id=$id details=$failedDetails"
+        }
+        repository.updateStatus(
+            id = id,
+            status = VideoDownloadStatus.Failed,
+            errorMessage = failedDetails,
+        )
+        analytics.reportFailed(item, failedDetails, throwable)
+        return Result.failure()
+    }
+
     private suspend fun refreshDownloadStream(
         id: Long,
         item: VideoDownloadItem,
         strategy: DownloadPlayerStrategy,
         reason: DownloadRestartReason,
     ): DownloadStreamRefresh {
+        repository.updateStatus(
+            id = id,
+            status = VideoDownloadStatus.Resolving,
+            errorMessage = null,
+        )
+        logDownloadInfo {
+            "Refreshing download source id=$id reason=$reason " +
+                    "workAttempt=${runAttemptCount + 1} player=${strategy.playerLabel} " +
+                    "iframe=${item.iframeUrl.shortFingerprint()}"
+        }
         return when (
             val refreshResult = refreshVideoDownloadStream(
                 item = item,
@@ -315,14 +327,27 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     runCatching { cacheProvider.cache.removeResource(manifestKey) }
                 }
                 updateVideoDownloadPreparedStream(id, stream)
-                val latestItem = repository.getDownload(id) ?: item
-                val refreshedItem = latestItem.copy(
+                repository.updateStatus(
+                    id = id,
+                    status = VideoDownloadStatus.Downloading,
+                    errorMessage = null,
+                )
+                val refreshedItem = repository.getDownload(id) ?: item.copy(
+                    videoId = stream.videoId,
+                    playerName = stream.playerName,
+                    playerId = stream.playerId,
+                    dubbing = stream.dubbing,
+                    iframeUrl = stream.iframeUrl,
+                    qualityLabel = stream.qualityLabel,
                     streamUrl = stream.url,
                     headers = stream.headers,
                 )
+                val previousIframeFingerprint = item.iframeUrl.shortFingerprint()
+                val refreshedIframeFingerprint = stream.iframeUrl.shortFingerprint()
                 logDownloadInfo {
-                    "Refreshed download stream id=$id reason=$reason quality=${stream.qualityLabel} " +
-                            "url=${stream.url.safeDownloadUrlForLog()}"
+                    "Refreshed download source id=$id reason=$reason player=${stream.playerName} " +
+                            "quality=${stream.qualityLabel} iframe=$previousIframeFingerprint->$refreshedIframeFingerprint " +
+                            "changed=${previousIframeFingerprint != refreshedIframeFingerprint}"
                 }
                 DownloadStreamRefresh.Success(refreshedItem)
             }
@@ -367,7 +392,8 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             "Starting download id=$id animeId=${item.animeId} videoId=${item.videoId} " +
                     "player=${item.playerName} quality=${item.qualityLabel} " +
                     "kind=$streamKind throttle=${streamKind.throttleLabel()} " +
-                    "segmentPace=off retryUsed=$retriedAfterForbidden " +
+                    "rateLimit=${strategy.downloadBytesPerSecond?.let { "${it / (1024 * 1024)}MB/s" } ?: "off"} " +
+                    "retryUsed=$retriedAfterForbidden " +
                     "url=${item.streamUrl.safeDownloadUrlForLog()}"
         }
         try {
@@ -409,10 +435,13 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                             )
                         }
                     }
+                val throttledUpstream = strategy.downloadBytesPerSecond
+                    ?.let { RateLimitedDataSource.Factory(httpUpstream, it) }
+                    ?: httpUpstream
                 val downloadUrl = liveSession?.initialStream?.url ?: item.streamUrl
                 val cacheDataSource = CacheDataSource.Factory()
                     .setCache(cacheProvider.cache)
-                    .setUpstreamDataSourceFactory(httpUpstream)
+                    .setUpstreamDataSourceFactory(throttledUpstream)
                     .apply {
                         strategy.cacheKeyFactory(item.cacheKey, downloadUrl, streamKind)
                             ?.let(::setCacheKeyFactory)
@@ -515,6 +544,12 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             .substringBefore('/')
             .takeIf { it.isNotBlank() && it != this }
 
+    private fun String.shortFingerprint(): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(toByteArray())
+            .take(FINGERPRINT_BYTES)
+            .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
+
     private sealed interface DownloadStreamRefresh {
         data class Success(val item: VideoDownloadItem) : DownloadStreamRefresh
         data class Failure(val message: String) : DownloadStreamRefresh
@@ -530,13 +565,15 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     companion object {
         const val KEY_DOWNLOAD_ID = "download_id"
         const val KEY_PROGRESS = "progress"
+        const val KEY_FORCE_STREAM_REFRESH = "force_stream_refresh"
         private const val DEFAULT_AUTO_QUALITY_LABEL = "Auto"
         private const val ADAPTIVE_HTTP_TIMEOUT_MS = 30_000
-        private const val MAX_ALLOHA_STREAM_REFRESH_WORK_RETRIES = 3
+        private const val MAX_STREAM_REFRESH_WORK_RETRIES = 3
         private const val MAX_TRANSIENT_DOWNLOAD_RETRIES = 3
         private const val TRANSIENT_RETRY_DELAY_MS = 3_000L
         private const val PROGRESS_LOG_STEP = 10
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
+        private const val FINGERPRINT_BYTES = 4
     }
 }

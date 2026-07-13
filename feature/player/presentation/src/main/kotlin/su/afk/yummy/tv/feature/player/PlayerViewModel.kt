@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -64,9 +65,11 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var activeDest: PlayerDestination = dest
     private var pendingDestinationResumeMs: Long? = dest.resumeFromMs.takeIf { it > 0L }
     private var sourceGraphJob: Job? = null
-    private var allohaRefreshRetryJob: Job? = null
+    private var allohaPlaybackRecoveryJob: Job? = null
     private var isRecoveringAllohaPlayback = false
     private var allohaPlaybackRecoveryRetryCount = 0
+    private var allohaPlaybackRecoveryQuality: String? = null
+    private var allohaPlaybackRecoveryPositionMs = 0L
     private var activeAllohaSession: AllohaStreamSession? = null
     private var allohaSessionRefreshJob: Job? = null
     private var streamLoadingHintJob: Job? = null
@@ -76,7 +79,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         closeAllohaSession()
         isRecoveringAllohaPlayback = false
         allohaPlaybackRecoveryRetryCount = 0
-        allohaRefreshRetryJob?.cancel()
+        allohaPlaybackRecoveryQuality = null
+        allohaPlaybackRecoveryPositionMs = 0L
+        allohaPlaybackRecoveryJob?.cancel()
         activeDest = newDest
         pendingDestinationResumeMs = newDest.resumeFromMs.takeIf { it > 0L }
         setState {
@@ -142,13 +147,20 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             PlayerState.Event.RetryStream -> {
                 analytics.eventRetryStream(currentState.animeId)
-                setState { copy(retryKey = retryKey + 1) }
                 if (currentState.isOfflinePlayback) {
+                    setState { copy(retryKey = retryKey + 1) }
                     loadDownloadedDestination(activeDest.downloadId)
+                } else if (currentState.isAllohaSource()) {
+                    startAllohaPlaybackRecovery(
+                        positionMs = currentState.playbackPositionMs
+                            .takeIf { it > 0L }
+                            ?: currentState.resumeFromMs,
+                        selectedQuality = currentState.selectedQuality,
+                        initialDelayMs = 0L,
+                    )
                 } else {
+                    setState { copy(retryKey = retryKey + 1) }
                     closeAllohaSession()
-                    isRecoveringAllohaPlayback = currentState.isAllohaSource()
-                    allohaPlaybackRecoveryRetryCount = 0
                     loadStream(refreshSourcesOnFailure = true)
                 }
             }
@@ -171,12 +183,18 @@ class PlayerViewModel @AssistedInject internal constructor(
                     errorType = event.errorType,
                 )
                 if (!currentState.isOfflinePlayback && currentState.isAllohaSource()) {
-                    isRecoveringAllohaPlayback = true
-                    allohaPlaybackRecoveryRetryCount = 0
-                    allohaRefreshRetryJob?.cancel()
-                    loadStream(
-                        refreshSourcesOnFailure = false,
-                        preserveCurrentStreamOnFailure = true,
+                    if (isRecoveringAllohaPlayback) {
+                        Log.w(
+                            LOG_TAG,
+                            "Ignoring duplicate Alloha playback error during fresh-session recovery " +
+                                    "positionMs=${event.positionMs.coerceAtLeast(0L)}",
+                        )
+                        return
+                    }
+                    startAllohaPlaybackRecovery(
+                        positionMs = event.positionMs,
+                        selectedQuality = currentState.selectedQuality,
+                        initialDelayMs = ALLOHA_PLAYBACK_RECOVERY_DELAY_MS,
                     )
                 } else {
                     streamLoadingHintJob?.cancel()
@@ -187,6 +205,22 @@ class PlayerViewModel @AssistedInject internal constructor(
                             showChangePlayerHint = false,
                         )
                     }
+                }
+            }
+
+            PlayerState.Event.PlaybackReady -> {
+                if (
+                    currentState.isAllohaPlaybackRecovering &&
+                    !isRecoveringAllohaPlayback &&
+                    !currentState.isOfflinePlayback &&
+                    currentState.isAllohaSource()
+                ) {
+                    Log.i(
+                        LOG_TAG,
+                        "Background Alloha playback recovery ready " +
+                                "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
+                    )
+                    setState { copy(isAllohaPlaybackRecovering = false) }
                 }
             }
 
@@ -259,6 +293,9 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.QualitySelected -> {
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
+                if (isRecoveringAllohaPlayback) {
+                    allohaPlaybackRecoveryQuality = event.quality
+                }
                 activeAllohaSession?.selectQuality(event.quality)
                 setState {
                     copy(
@@ -314,6 +351,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                 if (!isActivePlaybackSource(event.episodeUrl)) return
                 val position = event.positionMs.coerceAtLeast(0L)
                 val duration = event.durationMs.coerceAtLeast(0L)
+                if (isRecoveringAllohaPlayback && position > 0L) {
+                    allohaPlaybackRecoveryPositionMs = position
+                }
                 setState {
                     copy(
                         resumeFromMs = position,
@@ -463,7 +503,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (state == null) return
         isRecoveringAllohaPlayback = false
         allohaPlaybackRecoveryRetryCount = 0
-        allohaRefreshRetryJob?.cancel()
+        allohaPlaybackRecoveryQuality = null
+        allohaPlaybackRecoveryPositionMs = 0L
+        allohaPlaybackRecoveryJob?.cancel()
         setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode) }
         if (sourceScopeChanged) {
             observeActivePlayerResizeSettings()
@@ -639,29 +681,32 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun loadStream(
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
         refreshSourcesOnFailure: Boolean = true,
-        preserveCurrentStreamOnFailure: Boolean = false,
+        forceFreshAllohaSession: Boolean = false,
+        selectedQualityOverride: String? = null,
     ) {
         if (resumeMode == PlayerStreamResumeMode.SelectedSourceOnly) {
             pendingDestinationResumeMs = null
         }
         extractionJob?.cancel()
         extractionJob = viewModelScope.launch {
+            val preserveStreamDuringAllohaRecovery =
+                isRecoveringAllohaPlayback && currentState.streamUrl != null
             val wasAlreadyResolving = currentState.streamUrl == null &&
                     currentState.playerError == null &&
                     currentState.kodikBlockedError == null
-            if (!wasAlreadyResolving) {
+            if (!wasAlreadyResolving && !preserveStreamDuringAllohaRecovery) {
                 startChangePlayerHintTimer()
             }
             val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
-            val stateResumeMs = currentState.playbackPositionMs
-                .takeIf { canPreserveCurrent && it > 0L }
+            val stateResumeMs = allohaPlaybackRecoveryPositionMs
+                .takeIf { canPreserveCurrent && isRecoveringAllohaPlayback && it > 0L }
+                ?: currentState.playbackPositionMs.takeIf { canPreserveCurrent && it > 0L }
                 ?: currentState.resumeFromMs.takeIf { canPreserveCurrent && it > 0L }
             val destinationResumeMs = pendingDestinationResumeMs.takeIf { canPreserveCurrent }
-            val streamUrlBeforeResolve = currentState.streamUrl
             setState {
                 sourceStreamHandler.preparingStreamResolve(
                     state = this,
-                    preserveCurrentStream = preserveCurrentStreamOnFailure,
+                    preserveCurrentStream = preserveStreamDuringAllohaRecovery,
                 )
             }
             val s = currentState
@@ -674,6 +719,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 destinationResumeMs = destinationResumeMs,
                 resumeMode = resumeMode,
                 refreshSourcesOnFailure = refreshSourcesOnFailure,
+                reuseAllohaPlaybackSession = !forceFreshAllohaSession,
+                selectedQualityOverride = selectedQualityOverride,
             )) {
                 is PlayerStreamLoadResult.RefreshSources -> {
                     refreshSourceGraphThenLoadStream(result.resumeMode)
@@ -682,20 +729,15 @@ class PlayerViewModel @AssistedInject internal constructor(
                 is PlayerStreamLoadResult.State -> {
                     val resolveFailed = result.state.playerError != null ||
                             result.state.kodikBlockedError != null
-                    if (
-                        preserveCurrentStreamOnFailure &&
-                        streamUrlBeforeResolve != null &&
-                        resolveFailed
-                    ) {
-                        scheduleAllohaRefreshRetry(
-                            expectedStreamUrl = streamUrlBeforeResolve,
-                            preserveCurrentStream = true,
-                            delayMs = ALLOHA_SCHEDULED_REFRESH_RETRY_DELAY_MS,
-                        )
-                        return@launch
-                    }
+                    val completedAllohaPlaybackRecovery =
+                        isRecoveringAllohaPlayback &&
+                                !currentState.isOfflinePlayback &&
+                                currentState.isAllohaSource()
                     if (!resolveFailed) {
                         activateAllohaSession(result.allohaSession)
+                        result.state.selectedQuality?.let { quality ->
+                            activeAllohaSession?.selectQuality(quality)
+                        }
                     }
                     if (
                         isRecoveringAllohaPlayback &&
@@ -704,30 +746,52 @@ class PlayerViewModel @AssistedInject internal constructor(
                         resolveFailed &&
                         allohaPlaybackRecoveryRetryCount < MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES
                     ) {
-                        allohaPlaybackRecoveryRetryCount += 1
-                        scheduleAllohaRefreshRetry(
-                            expectedStreamUrl = null,
-                            preserveCurrentStream = false,
-                            delayMs = ALLOHA_PLAYBACK_RECOVERY_RETRY_DELAY_MS,
-                        )
+                        scheduleFreshAllohaPlaybackAttempt(ALLOHA_PLAYBACK_RECOVERY_DELAY_MS)
                         return@launch
                     }
+                    val completedRecoveryAttempts = allohaPlaybackRecoveryRetryCount
                     isRecoveringAllohaPlayback = false
                     allohaPlaybackRecoveryRetryCount = 0
-                    allohaRefreshRetryJob?.cancel()
+                    allohaPlaybackRecoveryQuality = null
+                    allohaPlaybackRecoveryPositionMs = 0L
+                    allohaPlaybackRecoveryJob?.cancel()
                     if (result.consumedDestinationResume) {
                         pendingDestinationResumeMs = null
                     }
                     streamLoadingHintJob?.cancel()
+                    if (completedAllohaPlaybackRecovery) {
+                        if (resolveFailed) {
+                            Log.w(
+                                LOG_TAG,
+                                "Background Alloha playback recovery failed " +
+                                        "attempts=$completedRecoveryAttempts",
+                            )
+                        } else {
+                            Log.i(
+                                LOG_TAG,
+                                "Background Alloha playback recovery stream resolved " +
+                                        "attempts=$completedRecoveryAttempts " +
+                                        "positionMs=${result.state.resumeFromMs.coerceAtLeast(0L)}",
+                            )
+                        }
+                    }
                     setState {
                         copy(
                             streamUrl = result.state.streamUrl,
                             streamHeaders = result.state.streamHeaders,
                             streamQualityMap = result.state.streamQualityMap,
+                            selectedQuality = result.state.selectedQuality,
                             playerError = result.state.playerError,
                             kodikBlockedError = result.state.kodikBlockedError,
                             resumeFromMs = result.state.resumeFromMs,
                             dubbingResumeMs = result.state.dubbingResumeMs,
+                            retryKey = if (completedAllohaPlaybackRecovery && !resolveFailed) {
+                                retryKey + 1
+                            } else {
+                                retryKey
+                            },
+                            isAllohaPlaybackRecovering =
+                                completedAllohaPlaybackRecovery && !resolveFailed,
                             showChangePlayerHint = false,
                         )
                     }
@@ -749,28 +813,64 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun scheduleAllohaRefreshRetry(
-        expectedStreamUrl: String?,
-        preserveCurrentStream: Boolean,
-        delayMs: Long,
+    private fun startAllohaPlaybackRecovery(
+        positionMs: Long,
+        selectedQuality: String?,
+        initialDelayMs: Long,
     ) {
-        allohaRefreshRetryJob?.cancel()
+        extractionJob?.cancel()
+        allohaPlaybackRecoveryJob?.cancel()
+        closeAllohaSession()
+        isRecoveringAllohaPlayback = true
+        allohaPlaybackRecoveryRetryCount = 0
+        allohaPlaybackRecoveryQuality = selectedQuality
+        val resumePosition = positionMs.coerceAtLeast(0L)
+        allohaPlaybackRecoveryPositionMs = resumePosition
+        streamLoadingHintJob?.cancel()
+        setState {
+            copy(
+                playerError = null,
+                kodikBlockedError = null,
+                resumeFromMs = resumePosition,
+                playbackPositionMs = resumePosition,
+                isAllohaPlaybackRecovering = true,
+                showChangePlayerHint = false,
+            )
+        }
+        Log.i(
+            LOG_TAG,
+            "Starting fresh Alloha playback recovery positionMs=$resumePosition " +
+                    "quality=${selectedQuality ?: "auto"}",
+        )
+        scheduleFreshAllohaPlaybackAttempt(initialDelayMs)
+    }
+
+    private fun scheduleFreshAllohaPlaybackAttempt(delayMs: Long) {
+        if (allohaPlaybackRecoveryRetryCount >= MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES) return
+        allohaPlaybackRecoveryJob?.cancel()
         val destination = activeDest
         val iframeUrl = activeIframeUrl(currentState)
-        allohaRefreshRetryJob = viewModelScope.launch {
+        val attempt = ++allohaPlaybackRecoveryRetryCount
+        allohaPlaybackRecoveryJob = viewModelScope.launch {
             delay(delayMs)
             if (
                 destination == activeDest &&
-                currentState.streamUrl == expectedStreamUrl &&
                 activeIframeUrl(currentState) == iframeUrl &&
                 !currentState.isOfflinePlayback &&
-                currentState.isAllohaSource()
+                currentState.isAllohaSource() &&
+                isRecoveringAllohaPlayback
             ) {
-                if (preserveCurrentStream) {
-                    loadStream(preserveCurrentStreamOnFailure = true)
-                } else {
-                    refreshSourceGraphThenLoadStream()
-                }
+                closeAllohaSession()
+                Log.i(
+                    LOG_TAG,
+                    "Opening fresh Alloha playback session attempt=$attempt/$MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES " +
+                            "positionMs=$allohaPlaybackRecoveryPositionMs",
+                )
+                loadStream(
+                    refreshSourcesOnFailure = false,
+                    forceFreshAllohaSession = true,
+                    selectedQualityOverride = allohaPlaybackRecoveryQuality,
+                )
             }
         }
     }
@@ -806,6 +906,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     override fun onCleared() {
+        allohaPlaybackRecoveryJob?.cancel()
         closeAllohaSession(immediately = false)
         streamLoadingHintJob?.cancel()
         super.onCleared()
@@ -813,8 +914,8 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     private companion object {
         private const val ALLOHA_PLAYER_NAME = "alloha"
-        private const val ALLOHA_SCHEDULED_REFRESH_RETRY_DELAY_MS = 5_000L
-        private const val ALLOHA_PLAYBACK_RECOVERY_RETRY_DELAY_MS = 15_000L
+        private const val LOG_TAG = "PlayerViewModel"
+        private const val ALLOHA_PLAYBACK_RECOVERY_DELAY_MS = 1_000L
         private const val MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES = 3
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L

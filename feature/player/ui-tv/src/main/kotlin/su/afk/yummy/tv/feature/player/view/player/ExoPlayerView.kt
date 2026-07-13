@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player.view.player
 
 import android.content.Intent
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -63,8 +64,10 @@ import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.analyticsType
 import su.afk.yummy.tv.feature.player.common.calculateBufferedProgress
+import su.afk.yummy.tv.feature.player.common.diagnosticCauseChain
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.service.PlayerAudioTrackPolicy
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemConfig
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
@@ -98,6 +101,8 @@ import kotlin.time.Duration.Companion.seconds
 internal fun ExoPlayerView(
     streamUrl: String,
     episodeKey: String = "",
+    retryKey: Int = 0,
+    isPlaybackRecovering: Boolean = false,
     resumeFromMs: Long = 0L,
     isOfflinePlayback: Boolean = false,
     offlineCacheKey: String? = null,
@@ -150,7 +155,7 @@ internal fun ExoPlayerView(
     val activeQuality = selectedQuality?.takeIf { it in qualities }
         ?: qualities.keys.lastOrNull()
     val activeSpeed = selectedSpeed.coerceAtLeast(0.1f)
-    var seekOnSwitch by remember(streamUrl) { mutableLongStateOf(resumeFromMs) }
+    var seekOnSwitch by remember(streamUrl, retryKey) { mutableLongStateOf(resumeFromMs) }
     var lastSaveTime by remember { mutableLongStateOf(0L) }
     var lastPositionNotifyTime by remember { mutableLongStateOf(0L) }
     var wantsPlay by remember { mutableStateOf(true) }
@@ -159,7 +164,6 @@ internal fun ExoPlayerView(
     var isSeeking by remember { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, episodeKey) { mutableFloatStateOf(0f) }
-    var isBuffering by remember(streamUrl, episodeKey) { mutableStateOf(false) }
     var lastSeekTime by remember { mutableLongStateOf(0L) }
     var controllerVisible by remember { mutableStateOf(true) }
     val panels = rememberTvPlayerPanelsState()
@@ -206,11 +210,13 @@ internal fun ExoPlayerView(
     }
 
     val exoPlayer = rememberPlayerMediaController()
+    val isBuffering = rememberPlayerBufferingState(exoPlayer)
     val playbackConfig = rememberPlayerPlaybackConfig()
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
-    val playbackKey = remember(currentUrl, streamHeaders, offlineCacheKey) {
+    val playbackKey = remember(currentUrl, streamHeaders, offlineCacheKey, retryKey) {
         buildString {
-            append(currentUrl).append('|').append(offlineCacheKey.orEmpty())
+            append(currentUrl).append('|').append(offlineCacheKey.orEmpty()).append('|')
+                .append(retryKey)
             streamHeaders.entries.sortedBy { it.key.lowercase() }
                 .forEach { (key, value) -> append('|').append(key).append('=').append(value) }
         }
@@ -444,12 +450,13 @@ internal fun ExoPlayerView(
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(pwr: Boolean, reason: Int) {
                 wantsPlay = pwr
-                isBuffering = pwr && exoPlayer.playbackState == Player.STATE_BUFFERING
                 if (pwr) scheduleHide() else hideJob?.cancel()
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
-                isBuffering = playbackState == Player.STATE_BUFFERING && exoPlayer.playWhenReady
+                if (playbackState == Player.STATE_READY) {
+                    onPlayerEvent(PlayerState.Event.PlaybackReady)
+                }
                 if (playbackState == Player.STATE_ENDED) {
                     val position = exoPlayer.currentPosition.coerceAtLeast(0L)
                     val dur = exoPlayer.duration.takeIf { it > 0 } ?: duration
@@ -489,6 +496,12 @@ internal fun ExoPlayerView(
             }
 
             override fun onPlayerError(error: PlaybackException) {
+                val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                Log.e(
+                    PLAYBACK_LOG_TAG,
+                    "TV playback error positionMs=$position code=${error.errorCodeName} " +
+                            "causes=${error.diagnosticCauseChain()}",
+                )
                 onPlaybackError(
                     PlayerState.Event.PlaybackError(
                         message = error.localizedMessage
@@ -496,12 +509,12 @@ internal fun ExoPlayerView(
                             ?: error.errorCodeName,
                         errorCode = error.errorCodeName.takeIf { it.isNotBlank() },
                         errorType = error.analyticsType(),
+                        positionMs = position,
                     )
                 )
             }
         }
         exoPlayer.addListener(listener)
-        isBuffering = exoPlayer.playbackState == Player.STATE_BUFFERING && exoPlayer.playWhenReady
         if (wantsPlay) scheduleHide() else hideJob?.cancel()
         onDispose {
             hideJob?.cancel()
@@ -699,6 +712,7 @@ internal fun ExoPlayerView(
             player = exoPlayer,
             surfaceType = SURFACE_TYPE_SURFACE_VIEW,
             contentScale = tvPlayerContentScale(resizeMode, zoomLevel),
+            keepContentOnReset = isPlaybackRecovering,
             shutter = {
                 Box(
                     Modifier
@@ -711,7 +725,7 @@ internal fun ExoPlayerView(
                 .focusProperties { canFocus = false },
         )
 
-        if (isBuffering) {
+        if (isBuffering || isPlaybackRecovering) {
             CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 2.dp,
@@ -1012,3 +1026,5 @@ internal fun ExoPlayerView(
         )
     }
 }
+
+private const val PLAYBACK_LOG_TAG = "PlayerPlayback"

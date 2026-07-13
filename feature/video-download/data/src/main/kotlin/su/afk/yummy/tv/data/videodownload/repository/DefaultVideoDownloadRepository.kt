@@ -78,10 +78,18 @@ class DefaultVideoDownloadRepository @Inject constructor(
                 store.dao.update(
                     request.toEntry(now).copy(
                         id = duplicate.id,
+                        cacheKey = duplicate.cacheKey,
+                        progress = duplicate.progress,
+                        bytesDownloaded = duplicate.bytesDownloaded,
+                        totalBytes = duplicate.totalBytes,
                         createdAt = duplicate.createdAt,
                     )
                 )
-                scheduleWorker(duplicate.id, ExistingWorkPolicy.REPLACE)
+                scheduleWorker(
+                    id = duplicate.id,
+                    policy = ExistingWorkPolicy.REPLACE,
+                    forceStreamRefresh = true,
+                )
                 return store.dao.getById(duplicate.id)?.toDomain()
                     ?: error("Restarted video download is missing: ${duplicate.id}")
             }
@@ -145,6 +153,11 @@ class DefaultVideoDownloadRepository @Inject constructor(
         val qualityLabel = stream?.qualityLabel ?: entry.qualityLabel
         store.dao.update(
             entry.copy(
+                videoId = stream?.videoId ?: entry.videoId,
+                playerName = stream?.playerName ?: entry.playerName,
+                playerId = if (stream != null) stream.playerId else entry.playerId,
+                dubbing = stream?.dubbing ?: entry.dubbing,
+                iframeUrl = stream?.iframeUrl ?: entry.iframeUrl,
                 qualityLabel = qualityLabel,
                 streamUrl = stream?.url ?: entry.streamUrl,
                 headersJson = stream?.headers?.toVideoDownloadHeadersJson() ?: entry.headersJson,
@@ -154,13 +167,23 @@ class DefaultVideoDownloadRepository @Inject constructor(
             )
         )
         notificationService.cancel(id)
-        scheduleWorker(id, ExistingWorkPolicy.REPLACE)
+        scheduleWorker(
+            id = id,
+            policy = ExistingWorkPolicy.REPLACE,
+            forceStreamRefresh = true,
+        )
     }
 
     override suspend fun updatePreparedStream(id: Long, stream: VideoDownloadRestartStream) {
         val entry = store.dao.getById(id) ?: return
         store.dao.update(
             entry.copy(
+                videoId = stream.videoId,
+                playerName = stream.playerName,
+                playerId = stream.playerId,
+                dubbing = stream.dubbing,
+                iframeUrl = stream.iframeUrl,
+                qualityLabel = stream.qualityLabel,
                 streamUrl = stream.url,
                 headersJson = stream.headers.toVideoDownloadHeadersJson(),
                 errorMessage = null,
@@ -201,9 +224,15 @@ class DefaultVideoDownloadRepository @Inject constructor(
     private fun scheduleWorker(
         id: Long,
         policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
+        forceStreamRefresh: Boolean = false,
     ) {
         val request = OneTimeWorkRequestBuilder<VideoDownloadWorker>()
-            .setInputData(workDataOf(VideoDownloadWorker.KEY_DOWNLOAD_ID to id))
+            .setInputData(
+                workDataOf(
+                    VideoDownloadWorker.KEY_DOWNLOAD_ID to id,
+                    VideoDownloadWorker.KEY_FORCE_STREAM_REFRESH to forceStreamRefresh,
+                )
+            )
             .setBackoffCriteria(
                 BackoffPolicy.LINEAR,
                 DOWNLOAD_RETRY_BACKOFF_MS,

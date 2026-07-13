@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.view
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -51,8 +52,10 @@ import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
 import su.afk.yummy.tv.feature.player.common.analyticsType
 import su.afk.yummy.tv.feature.player.common.calculateBufferedProgress
+import su.afk.yummy.tv.feature.player.common.diagnosticCauseChain
 import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
 import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.service.PlayerAudioTrackPolicy
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemConfig
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
@@ -117,16 +120,15 @@ internal fun MobileNativePlayer(
     var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
-    var isBuffering by remember(streamUrl, ui.activeIframeUrl) { mutableStateOf(false) }
     var playerSize by remember { mutableStateOf(IntSize.Zero) }
     var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
     var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
     val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
     val currentUrl = selectedQuality?.let(qualities::get) ?: streamUrl
-    val playbackConfigKey = remember(currentUrl, state.streamHeaders) {
+    val playbackConfigKey = remember(currentUrl, state.streamHeaders, state.retryKey) {
         buildString {
-            append(currentUrl)
+            append(currentUrl).append('|').append(state.retryKey)
             state.streamHeaders.entries
                 .sortedBy { it.key.lowercase() }
                 .forEach { (key, value) ->
@@ -247,6 +249,7 @@ internal fun MobileNativePlayer(
     }
 
     val player = mediaController
+    val isBuffering = rememberPlayerBufferingState(player)
     val progressSource = remember(player, ui) { ui }
 
     LaunchedEffect(player, playbackConfigKey, mediaItemKey, ui.activeIframeUrl) {
@@ -386,12 +389,17 @@ internal fun MobileNativePlayer(
         val listener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 wantsPlay = playWhenReady
-                isBuffering = playWhenReady && player.playbackState == Player.STATE_BUFFERING
                 pipSession.setPlaying(playWhenReady, activity)
                 if (playWhenReady) scheduleOverlayHide() else hideJob?.cancel()
             }
 
             override fun onPlayerError(error: PlaybackException) {
+                val position = player.currentPosition.coerceAtLeast(0L)
+                Log.e(
+                    PLAYBACK_LOG_TAG,
+                    "Mobile playback error positionMs=$position code=${error.errorCodeName} " +
+                            "causes=${error.diagnosticCauseChain()}",
+                )
                 onEvent(
                     PlayerState.Event.PlaybackError(
                         message = error.localizedMessage
@@ -399,6 +407,7 @@ internal fun MobileNativePlayer(
                             ?: error.errorCodeName,
                         errorCode = error.errorCodeName.takeIf { it.isNotBlank() },
                         errorType = error.analyticsType(),
+                        positionMs = position,
                     )
                 )
             }
@@ -408,7 +417,9 @@ internal fun MobileNativePlayer(
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
-                isBuffering = playbackState == Player.STATE_BUFFERING && player.playWhenReady
+                if (playbackState == Player.STATE_READY) {
+                    onEvent(PlayerState.Event.PlaybackReady)
+                }
                 if (playbackState == Player.STATE_ENDED) {
                     val position = player.currentPosition.coerceAtLeast(0L)
                     val dur = player.duration.takeIf { it > 0 } ?: duration
@@ -417,7 +428,6 @@ internal fun MobileNativePlayer(
             }
         }
         player.addListener(listener)
-        isBuffering = player.playbackState == Player.STATE_BUFFERING && player.playWhenReady
         pipSession.setPlaying(player.playWhenReady, activity)
         pipSession.setCallbacks(
             MobilePlayerPipCallbacks(
@@ -591,6 +601,7 @@ internal fun MobileNativePlayer(
                 player = player,
                 surfaceType = SURFACE_TYPE_TEXTURE_VIEW,
                 contentScale = ContentScale.Fit,
+                keepContentOnReset = state.isAllohaPlaybackRecovering,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
@@ -609,7 +620,7 @@ internal fun MobileNativePlayer(
             )
         }
 
-        if (isBuffering) {
+        if (isBuffering || state.isAllohaPlaybackRecovering) {
             CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 2.dp,
@@ -775,3 +786,5 @@ internal fun MobileNativePlayer(
         }
     }
 }
+
+private const val PLAYBACK_LOG_TAG = "PlayerPlayback"

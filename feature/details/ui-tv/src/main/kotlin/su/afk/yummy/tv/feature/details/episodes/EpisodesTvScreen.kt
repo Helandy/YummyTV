@@ -17,6 +17,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.feature.details.episodes.view.EpisodeDubbingPickerOverlay
 import su.afk.yummy.tv.feature.details.episodes.view.EpisodesSection
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 
@@ -32,15 +33,22 @@ fun EpisodesTvScreen(
         restoreEpisodesFocusRequest += 1
     }
     val balancerPicker = state.pendingBalancerSelection
+    val dubbingPicker = state.pendingEpisodeDubbingSelection
+    fun dismissDubbingPicker() {
+        onEvent(EpisodesState.Event.EpisodeDubbingPickerDismissed)
+        restoreEpisodesFocusRequest += 1
+    }
     fun handleBack() {
-        if (balancerPicker != null) {
+        if (dubbingPicker != null) {
+            dismissDubbingPicker()
+        } else if (balancerPicker != null) {
             dismissBalancerPicker()
         } else {
             onEvent(EpisodesState.Event.BackSelected)
         }
     }
 
-    BackHandler(enabled = balancerPicker == null) {
+    BackHandler(enabled = balancerPicker == null && dubbingPicker == null) {
         handleBack()
     }
 
@@ -64,7 +72,7 @@ fun EpisodesTvScreen(
             state = state.videosState,
             watchProgress = state.watchProgress,
             restoreFocusRequest = restoreEpisodesFocusRequest,
-            onVideoSelected = { video -> onEvent(EpisodesState.Event.VideoSelected(video)) },
+            onVideoSelected = { video -> onEvent(EpisodesState.Event.TvEpisodeSelected(video)) },
         )
 
         BackHandler(enabled = balancerPicker != null) {
@@ -73,8 +81,19 @@ fun EpisodesTvScreen(
         if (balancerPicker != null) {
             BalancerPickerOverlay(
                 picker = balancerPicker,
-                onConfirmed = { option -> onEvent(EpisodesState.Event.BalancerConfirmed(option.video)) },
+                onConfirmed = { option ->
+                    onEvent(EpisodesState.Event.TvBalancerConfirmed(option.video))
+                },
                 onDismiss = ::dismissBalancerPicker,
+            )
+        }
+        if (dubbingPicker != null) {
+            EpisodeDubbingPickerOverlay(
+                selection = dubbingPicker,
+                onSelected = { option ->
+                    onEvent(EpisodesState.Event.EpisodeDubbingSelected(option.video))
+                },
+                onDismiss = ::dismissDubbingPicker,
             )
         }
     }

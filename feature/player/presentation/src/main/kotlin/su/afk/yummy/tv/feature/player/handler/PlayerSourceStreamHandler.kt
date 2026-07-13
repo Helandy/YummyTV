@@ -128,6 +128,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             resumeFromMs = if (preservePlaybackPosition) state.resumeFromMs else 0L,
             playbackPositionMs = if (preservePlaybackPosition) state.playbackPositionMs else 0L,
             playbackDurationMs = if (preservePlaybackPosition) state.playbackDurationMs else 0L,
+            isAllohaPlaybackRecovering = false,
         )
     }
 
@@ -165,9 +166,16 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         destinationResumeMs: Long?,
         resumeMode: PlayerStreamResumeMode,
         refreshSourcesOnFailure: Boolean,
+        reuseAllohaPlaybackSession: Boolean = true,
+        selectedQualityOverride: String? = null,
     ): PlayerStreamLoadResult {
         val result = try {
-            streamHandler.resolve(state, pendingResume)
+            streamHandler.resolve(
+                state = state,
+                pendingResumeMs = pendingResume,
+                reuseAllohaPlaybackSession = reuseAllohaPlaybackSession,
+                selectedQualityOverride = selectedQualityOverride,
+            )
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Throwable) {

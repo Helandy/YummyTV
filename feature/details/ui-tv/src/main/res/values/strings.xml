@@ -19,6 +19,9 @@
     <string name="details_episodes">Episodes</string>
     <string name="details_episodes_empty">No episodes yet</string>
     <string name="details_episodes_count_title">Episodes %1$d</string>
+    <string name="details_episode_dubbings_title">Episode %1$s · Dubbing</string>
+    <string name="details_count_thousands">%1$sK</string>
+    <string name="details_count_millions">%1$sM</string>
     <string name="details_frames">Frames</string>
     <string name="details_similar_empty">No similar anime found</string>
     <string name="details_similar_users">From users</string>

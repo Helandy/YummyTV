@@ -3,4 +3,10 @@
     <string name="back">Back</string>
     <string name="retry">Retry</string>
     <string name="empty_screen">Nothing here yet</string>
+    <string name="notification_permission_explanation">To see download progress, allow notifications.</string>
+    <string name="notification_permission_decline">No, I don’t care</string>
+    <string name="notification_permission_enable">Yes, let’s enable them</string>
+    <string name="notification_permission_settings_reminder">You can enable notifications in Settings later.</string>
+    <string name="notification_permission_changed_mind">I changed my mind, enable them now</string>
+    <string name="notification_permission_ok">OK</string>
 </resources>

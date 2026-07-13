@@ -55,6 +55,7 @@ class PlayerState {
         val mobileVideoOffsetY: Float = 0f,
         val isOfflinePlayback: Boolean = false,
         val offlineCacheKey: String? = null,
+        val isAllohaPlaybackRecovering: Boolean = false,
         val showChangePlayerHint: Boolean = false,
     ) : UiState
 
@@ -128,7 +129,11 @@ class PlayerState {
             val message: String,
             val errorCode: String? = null,
             val errorType: String? = null,
+            val positionMs: Long = 0L,
         ) : Event
+
+        /** Новый media item подготовлен после фонового восстановления воспроизведения. */
+        data object PlaybackReady : Event
 
         /** Пользователь запросил повторное получение потока. */
         data object RetryStream : Event

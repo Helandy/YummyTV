@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.VideosUiState
@@ -201,6 +202,8 @@ fun EpisodesMobileScreen(
             onDismiss = { onEvent(EpisodesState.Event.DownloadQualityPickerDismissed) },
         )
     }
+
+    NotificationPermissionGateHost(state = notificationPermissionGate)
 }
 
 @Composable

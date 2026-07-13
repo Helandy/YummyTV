@@ -151,6 +151,8 @@ fun PlayerTvScreen(
                 streamHeaders = state.streamHeaders,
                 qualityOverrides = state.streamQualityMap,
                 episodeKey = uiState.activeIframeUrl,
+                retryKey = state.retryKey,
+                isPlaybackRecovering = state.isAllohaPlaybackRecovering,
                 resumeFromMs = state.resumeFromMs,
                 isOfflinePlayback = state.isOfflinePlayback,
                 offlineCacheKey = state.offlineCacheKey,

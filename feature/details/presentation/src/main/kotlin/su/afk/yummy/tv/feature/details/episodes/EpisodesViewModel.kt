@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
@@ -27,6 +28,7 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
+import su.afk.yummy.tv.domain.anime.utils.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
@@ -45,6 +47,7 @@ import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.feature.details.episodes.dubbings.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
@@ -141,6 +144,19 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 nav.navigate(detailsNavigator.getEpisodeDubbingsDest(animeId, event.episode))
             }
 
+            is EpisodesState.Event.TvEpisodeSelected -> {
+                analytics.eventEpisodesVideoSelected(animeId, event.video.id)
+                showTvBalancerPicker(event.video)
+            }
+
+            is EpisodesState.Event.EpisodeDubbingSelected -> {
+                setState { copy(pendingEpisodeDubbingSelection = null) }
+                navigateToPlayer(event.video)
+            }
+
+            EpisodesState.Event.EpisodeDubbingPickerDismissed ->
+                setState { copy(pendingEpisodeDubbingSelection = null) }
+
             is EpisodesState.Event.VideoSelected -> {
                 analytics.eventEpisodesVideoSelected(animeId, event.video.id)
                 showBalancerPicker(event.video)
@@ -150,6 +166,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 analytics.eventEpisodesBalancerConfirmed(animeId, event.video)
                 setState { copy(pendingBalancerSelection = null) }
                 navigateToPlayer(event.video)
+            }
+
+            is EpisodesState.Event.TvBalancerConfirmed -> {
+                analytics.eventEpisodesBalancerConfirmed(animeId, event.video)
+                setState { copy(pendingBalancerSelection = null) }
+                showEpisodeDubbingPicker(event.video)
             }
 
             is EpisodesState.Event.EpisodeDownloadSelected -> {
@@ -483,22 +505,31 @@ class EpisodesViewModel @AssistedInject internal constructor(
             candidate.options.firstOrNull { it.label == option.label && it.url == option.url }
                 ?: return
         val video = candidate.video
-        val request = VideoDownloadRequest(
-            animeId = animeId,
-            animeTitle = animeTitle,
-            posterUrl = posterUrl,
-            episode = video.episode,
-            videoId = video.id,
-            playerName = video.player,
-            playerId = video.playerId,
-            dubbing = video.dubbing,
-            iframeUrl = video.iframeUrl,
-            screenshotUrl = screenshotsByEpisode[video.episode].orEmpty(),
-            quality = quality,
-            headers = quality.headers.ifEmpty { candidate.headers },
-        )
+        val episodeVideos = (currentState.videosState as? VideosUiState.Content)
+            ?.videos
+            .orEmpty()
+            .filter { it.episode == video.episode }
         val replacementDownloadId = pendingReplacementDownloadId
         viewModelScope.launch {
+            val screenshotUrl = episodeVideos.kodikThumbnailIframeUrl()
+                ?.let { iframeUrl ->
+                    runCatching { KodikThumbnailExtractor.extract(iframeUrl) }.getOrNull()
+                }
+                .orEmpty()
+            val request = VideoDownloadRequest(
+                animeId = animeId,
+                animeTitle = animeTitle,
+                posterUrl = posterUrl,
+                episode = video.episode,
+                videoId = video.id,
+                playerName = video.player,
+                playerId = video.playerId,
+                dubbing = video.dubbing,
+                iframeUrl = video.iframeUrl,
+                screenshotUrl = screenshotUrl,
+                quality = quality,
+                headers = quality.headers.ifEmpty { candidate.headers },
+            )
             replacementDownloadId?.let { downloadId ->
                 runCatching { cancelOrDeleteVideoDownload(downloadId) }
                     .onFailure {
@@ -532,6 +563,44 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 reportUnsupportedPlayers(selection.picker)
                 setState { copy(pendingBalancerSelection = selection.picker) }
             }
+        }
+    }
+
+    private fun showTvBalancerPicker(video: AnimeVideo) {
+        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        when (val selection = playerNavigationHandler.selectPlayer(
+            video = video,
+            allVideos = allVideos,
+            preferredPlayer = preferredPlayerState.value,
+        )) {
+            is DetailsPlayerSelection.Navigate -> showEpisodeDubbingPicker(selection.video)
+            is DetailsPlayerSelection.ShowPicker -> {
+                reportUnsupportedPlayers(selection.picker)
+                setState { copy(pendingBalancerSelection = selection.picker) }
+            }
+        }
+    }
+
+    private fun showEpisodeDubbingPicker(balancerVideo: AnimeVideo) {
+        val episode = balancerVideo.episode
+        val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
+        val balancerVideos = allVideos.filter { it.player == balancerVideo.player }
+        val options = balancerVideos.episodeDubbingItems(episode).mapNotNull { item ->
+            balancerVideos.firstOrNull {
+                it.episode == episode && it.dubbing.trim() == item.name
+            }?.let { video -> EpisodesState.EpisodeDubbingOption(video = video, item = item) }
+        }
+        if (options.isEmpty()) {
+            navigateToPlayer(balancerVideo)
+            return
+        }
+        setState {
+            copy(
+                pendingEpisodeDubbingSelection = EpisodesState.EpisodeDubbingSelection(
+                    episode = episode,
+                    options = options,
+                )
+            )
         }
     }
 

@@ -3,4 +3,10 @@
     <string name="back">Назад</string>
     <string name="retry">Повторить</string>
     <string name="empty_screen">Пока ничего нет</string>
+    <string name="notification_permission_explanation">Чтобы видеть прогресс загрузки, нужно разрешить отображение уведомлений.</string>
+    <string name="notification_permission_decline">Нет, мне всё равно</string>
+    <string name="notification_permission_enable">Да, давай включим</string>
+    <string name="notification_permission_settings_reminder">Ну если что, вы можете включить уведомления в настройках позже.</string>
+    <string name="notification_permission_changed_mind">Я передумал, давай сейчас включим</string>
+    <string name="notification_permission_ok">Ок</string>
 </resources>

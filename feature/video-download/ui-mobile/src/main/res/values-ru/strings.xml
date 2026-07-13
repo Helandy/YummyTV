@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="video_download_mobile_title">Скачанные серии</string>
+    <string name="video_download_total_disk_size">%1$s</string>
     <string name="video_download_empty">Скачанных серий пока нет</string>
-    <string name="video_download_item_episode_title">Серия %1$s</string>
     <string name="video_download_item_dubbing">%1$s</string>
     <string name="video_download_item_quality_balancer">%1$s • %2$s</string>
     <string name="video_download_item_disk_size">На диске: %1$s</string>
@@ -14,4 +14,8 @@
     <string name="video_download_resume">Продолжить скачивание</string>
     <string name="video_download_restart">Перезапустить скачивание</string>
     <string name="video_download_delete">Удалить скачивание</string>
+    <string name="video_download_delete_confirm_title">Удалить серию %1$s?</string>
+    <string name="video_download_delete_confirm_message">Скачанная серия тайтла «%1$s» будет удалена с устройства.</string>
+    <string name="video_download_delete_confirm">Удалить</string>
+    <string name="video_download_delete_cancel">Отмена</string>
 </resources>
