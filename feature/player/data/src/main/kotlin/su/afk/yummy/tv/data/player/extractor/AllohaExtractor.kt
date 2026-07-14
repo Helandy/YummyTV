@@ -25,6 +25,7 @@ import java.security.MessageDigest
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -34,6 +35,9 @@ import kotlin.random.Random
 /** Extracts Alloha's signed HLS session by observing the iframe's own network stack. */
 internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
     private val extractorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    // Idle WebViews kept warm for reuse - see acquireWebView()/releaseWebView() below.
+    private val idleWebViews = ConcurrentLinkedQueue<WebView>()
 
     override fun supports(url: String): Boolean = url.isAllohaPlayerUrl()
 
@@ -269,16 +273,8 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         val parsedUrl = URL(iframeUrl)
         val baseUrl = "${parsedUrl.protocol}://${parsedUrl.host.lowercase(Locale.ROOT)}/"
         val html = wrapperHtml(iframeUrl)
-        val webView = WebView(context).apply webView@{
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.mediaPlaybackRequiresUserGesture = false
-            settings.userAgentString = userAgent
-            CookieManager.getInstance().apply {
-                setAcceptCookie(true)
-                setAcceptThirdPartyCookies(this@webView, true)
-            }
-            webViewClient = WebViewClient()
+        val webView = acquireWebView(context, userAgent).apply {
+            removeJavascriptInterface(BRIDGE_NAME)
             addJavascriptInterface(bridge, BRIDGE_NAME)
 
             // The WebView is never attached to a window (extraction is headless, and for downloads
@@ -290,12 +286,16 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             resumeTimers()
             loadDataWithBaseURL(baseUrl, html, "text/html", "UTF-8", null)
         }
-        liveSession.attach(webView) {
-            // A WebView reload rotates signed session data, but the browser fingerprint must stay
-            // stable for the lifetime of this Alloha session.
-            webView.settings.userAgentString = userAgent
-            webView.loadDataWithBaseURL(baseUrl, html, "text/html", "UTF-8", null)
-        }
+        liveSession.attach(
+            webView = webView,
+            refresh = {
+                // A WebView reload rotates signed session data, but the browser fingerprint must
+                // stay stable for the lifetime of this Alloha session.
+                webView.settings.userAgentString = userAgent
+                webView.loadDataWithBaseURL(baseUrl, html, "text/html", "UTF-8", null)
+            },
+            release = ::releaseWebView,
+        )
 
         continuation.invokeOnCancellation { handler.post { liveSession.close() } }
     }
@@ -361,6 +361,38 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             qualities = sorted,
             qualityHeaders = sorted.keys.associateWith { headersWithCookie },
         )
+    }
+
+    // Booting a fresh WebView (and its underlying Chromium renderer) is the single most expensive
+    // step in opening an Alloha session - a cold start that retries 2-3x (each retry tearing down
+    // and recreating the WebView from scratch) pays that cost every time. The reference
+    // implementation avoids this by keeping one WebView alive for the whole activity lifetime.
+    // We use a small pool (capped at MAX_IDLE_WEB_VIEWS) instead of a single shared instance so a
+    // second concurrent caller (e.g. a background download running while an episode is playing)
+    // can't collide with an in-use WebView - it simply gets its own fresh instance, which it
+    // destroys again on release instead of returning it to an already-full pool.
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun acquireWebView(context: Context, userAgent: String): WebView {
+        val webView = idleWebViews.poll() ?: WebView(context).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.mediaPlaybackRequiresUserGesture = false
+            webViewClient = WebViewClient()
+        }
+        webView.settings.userAgentString = userAgent
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
+        }
+        return webView
+    }
+
+    private fun releaseWebView(webView: WebView) {
+        if (idleWebViews.size >= MAX_IDLE_WEB_VIEWS) {
+            webView.destroy()
+        } else {
+            idleWebViews.offer(webView)
+        }
     }
 
     private fun wrapperHtml(iframeUrl: String): String = """
@@ -641,6 +673,11 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         const val MASTER_WAIT_TIMEOUT_MS = 6_000L
         const val HOST_CHANGE_CONFIG_WAIT_MS = 10_000L
 
+        // How many idle WebViews acquireWebView()/releaseWebView() keep warm for reuse. 1 covers
+        // the common case (sequential recovery retries / episode switches); extra concurrent
+        // callers get their own instance and destroy it on release rather than growing the pool.
+        const val MAX_IDLE_WEB_VIEWS = 1
+
         fun safeFingerprint(value: String?): String {
             if (value.isNullOrBlank()) return "none"
             return MessageDigest.getInstance("SHA-256")
@@ -662,6 +699,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
         private val view = AtomicReference<WebView?>(null)
         private val stream = AtomicReference<PlayerStreamResolveResult.Stream?>(null)
         private val refreshAction = AtomicReference<(() -> Unit)?>(null)
+        private val releaseAction = AtomicReference<((WebView) -> Unit)?>(null)
         private val qualityMasters = ConcurrentHashMap<String, String>()
         private val selectedQuality = AtomicReference<String?>(null)
         private val proxy = AtomicReference<AllohaStreamProxy?>(null)
@@ -696,9 +734,10 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                 .sortedBy { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
                 .associateTo(linkedMapOf()) { it to checkNotNull(proxy.get()).qualityUrl(it) }
 
-        fun attach(webView: WebView, refresh: () -> Unit) {
+        fun attach(webView: WebView, refresh: () -> Unit, release: (WebView) -> Unit) {
             view.set(webView)
             refreshAction.set(refresh)
+            releaseAction.set(release)
         }
 
         fun initialize(value: PlayerStreamResolveResult.Stream) {
@@ -798,10 +837,15 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             handler.post {
                 proxy.getAndSet(null)?.close()
                 refreshAction.set(null)
+                val release = releaseAction.getAndSet(null)
                 view.getAndSet(null)?.let {
                     it.removeJavascriptInterface(BRIDGE_NAME)
                     it.stopLoading()
-                    it.destroy()
+                    // Unload the iframe/player so nothing keeps decoding/playing in the background
+                    // while this WebView sits idle in the pool, without destroying the instance
+                    // itself - see acquireWebView()/releaseWebView().
+                    it.loadUrl("about:blank")
+                    if (release != null) release(it) else it.destroy()
                 }
             }
         }

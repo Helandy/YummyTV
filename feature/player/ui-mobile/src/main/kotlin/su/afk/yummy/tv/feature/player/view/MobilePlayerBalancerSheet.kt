@@ -37,6 +37,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 @Composable
 internal fun MobilePlayerBalancerSheet(
     balancerNames: List<String>,
+    balancerAvailability: List<Boolean>,
     selectedIndex: Int,
     metaLabel: String? = null,
     onBalancerSelected: (Int) -> Unit,
@@ -61,10 +62,16 @@ internal fun MobilePlayerBalancerSheet(
                 )
             }
             itemsIndexed(balancerNames, key = { index, name -> "$index-$name" }) { index, name ->
+                val enabled = balancerAvailability.getOrElse(index) { true }
                 MobilePlayerBalancerRow(
                     label = name.removePrefix(playerNamePrefix),
-                    metaLabel = metaLabel,
+                    metaLabel = if (enabled) {
+                        metaLabel
+                    } else {
+                        stringResource(R.string.player_episode_unavailable)
+                    },
                     selected = index == selectedIndex,
+                    enabled = enabled,
                     onClick = { onBalancerSelected(index) },
                 )
             }
@@ -77,6 +84,7 @@ private fun MobilePlayerBalancerRow(
     label: String,
     metaLabel: String?,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(10.dp)
@@ -89,7 +97,7 @@ private fun MobilePlayerBalancerRow(
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
-    }
+    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
 
     Row(
         modifier = Modifier
@@ -97,6 +105,7 @@ private fun MobilePlayerBalancerRow(
             .clip(shape)
             .background(background)
             .clickable(
+                enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,

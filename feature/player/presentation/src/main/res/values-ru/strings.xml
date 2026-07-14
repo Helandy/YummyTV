@@ -33,6 +33,7 @@
     <string name="player_quality_meta">Поток видео</string>
     <string name="player_dubbing_meta">Дорожка озвучки</string>
     <string name="player_balancer_meta">Балансер воспроизведения</string>
+    <string name="player_episode_unavailable">Нет этой серии</string>
     <string name="player_speed_meta">Темп воспроизведения</string>
     <string name="player_resize_fit">Оригинальный размер</string>
     <string name="player_resize_zoom">Зум</string>

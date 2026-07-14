@@ -125,9 +125,11 @@ internal fun ExoPlayerView(
     allDubbingEpisodeCounts: List<Int> = emptyList(),
     allDubbingViews: List<Int> = emptyList(),
     allDubbingSourceNames: List<String> = emptyList(),
+    allDubbingAvailability: List<Boolean> = emptyList(),
     currentDubbingIndex: Int = 0,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
     allBalancerNames: List<String> = emptyList(),
+    allBalancerAvailability: List<Boolean> = emptyList(),
     currentBalancerIndex: Int = 0,
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit = { _, _ -> },
     restoreControlFocusTarget: PlayerControlFocusTarget? = null,
@@ -892,6 +894,8 @@ internal fun ExoPlayerView(
             items = allDubbingNames,
             selectedIndex = currentDubbingIndex,
             selectedFocusRequester = focus.selectedDubbing,
+            enabledItems = allDubbingAvailability,
+            disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 48.dp, bottom = 72.dp),
@@ -961,6 +965,8 @@ internal fun ExoPlayerView(
             items = allBalancerNames.map { it.removePrefix(stringResource(R.string.player_name_prefix)) },
             selectedIndex = currentBalancerIndex,
             selectedFocusRequester = focus.selectedBalancer,
+            enabledItems = allBalancerAvailability,
+            disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 48.dp, bottom = 72.dp),

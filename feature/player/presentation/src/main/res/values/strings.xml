@@ -33,6 +33,7 @@
     <string name="player_quality_meta">Video stream</string>
     <string name="player_dubbing_meta">Dubbing track</string>
     <string name="player_balancer_meta">Playback balancer</string>
+    <string name="player_episode_unavailable">This episode is unavailable</string>
     <string name="player_speed_meta">Playback speed</string>
     <string name="player_resize_fit">Original size</string>
     <string name="player_resize_zoom">Zoom</string>

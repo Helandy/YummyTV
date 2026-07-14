@@ -20,6 +20,7 @@ internal data class PlayerScreenUiState(
     val currentDubbingIndex: Int,
     val availableBalancerIndices: List<Int>,
     val availableBalancerNames: List<String>,
+    val balancerAvailability: List<Boolean>,
     val currentBalancerIndex: Int,
 )
 
@@ -28,6 +29,7 @@ internal data class DubbingOptionsUi(
     val episodeCounts: List<Int>,
     val views: List<Int>,
     val sourceNames: List<String>,
+    val availability: List<Boolean>,
 )
 
 @Composable
@@ -54,10 +56,12 @@ internal fun rememberPlayerScreenUiState(
             episodeCounts = playback.dubbingEpisodeCounts,
             views = playback.dubbingViews,
             sourceNames = playback.dubbingSourceNames,
+            availability = playback.dubbingAvailability,
         ),
         currentDubbingIndex = playback.currentDubbingIndex,
         availableBalancerIndices = playback.availableBalancerIndices,
         availableBalancerNames = playback.balancerNames,
+        balancerAvailability = playback.balancerAvailability,
         currentBalancerIndex = playback.currentBalancerIndex,
     )
 }

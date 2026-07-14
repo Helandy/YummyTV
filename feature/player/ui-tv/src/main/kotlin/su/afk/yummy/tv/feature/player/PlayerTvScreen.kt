@@ -197,12 +197,14 @@ fun PlayerTvScreen(
                 allDubbingEpisodeCounts = uiState.dubbingOptions.episodeCounts,
                 allDubbingViews = uiState.dubbingOptions.views,
                 allDubbingSourceNames = uiState.dubbingOptions.sourceNames,
+                allDubbingAvailability = uiState.dubbingOptions.availability,
                 currentDubbingIndex = uiState.currentDubbingIndex,
                 onDubbingSelected = { newIdx, currentPosMs ->
                     pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
                     onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
                 },
                 allBalancerNames = uiState.availableBalancerNames,
+                allBalancerAvailability = uiState.balancerAvailability,
                 currentBalancerIndex = uiState.currentBalancerIndex,
                 onBalancerSelected = { newIdx, currentPosMs ->
                     val balancerIndex = uiState.availableBalancerIndices.getOrElse(newIdx) {
@@ -241,6 +243,8 @@ fun PlayerTvScreen(
             items = uiState.availableBalancerNames.map { it.removePrefix(playerNamePrefix) },
             selectedIndex = uiState.currentBalancerIndex,
             selectedFocusRequester = selectedErrorBalancerFocusRequester,
+            enabledItems = uiState.balancerAvailability,
+            disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 48.dp, bottom = 72.dp),
@@ -265,6 +269,8 @@ fun PlayerTvScreen(
             items = uiState.dubbingOptions.names,
             selectedIndex = uiState.currentDubbingIndex,
             selectedFocusRequester = selectedErrorDubbingFocusRequester,
+            enabledItems = uiState.dubbingOptions.availability,
+            disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),

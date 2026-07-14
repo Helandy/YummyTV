@@ -743,9 +743,15 @@ class PlayerViewModel @AssistedInject internal constructor(
                         isRecoveringAllohaPlayback &&
                         !currentState.isOfflinePlayback &&
                         currentState.isAllohaSource() &&
-                        resolveFailed &&
-                        allohaPlaybackRecoveryRetryCount < MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES
+                        resolveFailed
                     ) {
+                        // No retry cap here, matching the reference implementation: a warm, pooled
+                        // WebView (see AllohaExtractor) makes each fresh-session attempt cheap
+                        // enough that retrying indefinitely is fine for transient CDN/token
+                        // rejections. A source that's permanently unavailable (not just
+                        // temporarily rejected) will keep retrying too - there's currently no way
+                        // to distinguish the two failure kinds here - so the user still needs to
+                        // navigate away or switch dubbing/balancer manually in that case.
                         scheduleFreshAllohaPlaybackAttempt(ALLOHA_PLAYBACK_RECOVERY_DELAY_MS)
                         return@launch
                     }
@@ -846,7 +852,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private fun scheduleFreshAllohaPlaybackAttempt(delayMs: Long) {
-        if (allohaPlaybackRecoveryRetryCount >= MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES) return
         allohaPlaybackRecoveryJob?.cancel()
         val destination = activeDest
         val iframeUrl = activeIframeUrl(currentState)
@@ -863,7 +868,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 closeAllohaSession()
                 Log.i(
                     LOG_TAG,
-                    "Opening fresh Alloha playback session attempt=$attempt/$MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES " +
+                    "Opening fresh Alloha playback session attempt=$attempt " +
                             "positionMs=$allohaPlaybackRecoveryPositionMs",
                 )
                 loadStream(
@@ -916,7 +921,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         private const val ALLOHA_PLAYER_NAME = "alloha"
         private const val LOG_TAG = "PlayerViewModel"
         private const val ALLOHA_PLAYBACK_RECOVERY_DELAY_MS = 1_000L
-        private const val MAX_ALLOHA_PLAYBACK_RECOVERY_RETRIES = 3
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
         private const val CHANGE_PLAYER_HINT_DELAY_MS = 15_000L

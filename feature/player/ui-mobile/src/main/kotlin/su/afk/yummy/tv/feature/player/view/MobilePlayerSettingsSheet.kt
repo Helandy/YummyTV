@@ -39,10 +39,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.mobile.R as UiR
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerTrackSettingsTab
+import su.afk.yummy.tv.feature.player.presentation.R as PresentationR
 import su.afk.yummy.tv.feature.player.utils.formatCompactCount
-import su.afk.yummy.tv.feature.player.mobile.R as UiR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,9 +59,11 @@ internal fun MobilePlayerSettingsSheet(
     dubbingEpisodeCounts: List<Int>,
     dubbingViews: List<Int>,
     dubbingSourceNames: List<String>,
+    dubbingAvailability: List<Boolean>,
     selectedDubbingIndex: Int,
     onDubbingSelected: (Int) -> Unit,
     balancerNames: List<String>,
+    balancerAvailability: List<Boolean>,
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -137,16 +140,26 @@ internal fun MobilePlayerSettingsSheet(
                     MobilePlayerTrackSettingsTab.Dubbing -> item {
                         MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_dubbing)) {
                             dubbingNames.forEachIndexed { index, name ->
+                                val enabled = dubbingAvailability.getOrElse(index) { true }
                                 MobilePlayerSelectionRow(
                                     label = name,
                                     selected = index == selectedDubbingIndex,
+                                    enabled = enabled,
                                     metaContent = { contentColor ->
-                                        MobilePlayerDubbingMeta(
-                                            views = dubbingViews.getOrElse(index) { 0 },
-                                            episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
-                                            sourceNames = dubbingSourceNames.getOrElse(index) { "" },
-                                            contentColor = contentColor,
-                                        )
+                                        if (enabled) {
+                                            MobilePlayerDubbingMeta(
+                                                views = dubbingViews.getOrElse(index) { 0 },
+                                                episodeCount = dubbingEpisodeCounts.getOrElse(index) { 0 },
+                                                sourceNames = dubbingSourceNames.getOrElse(index) { "" },
+                                                contentColor = contentColor,
+                                            )
+                                        } else {
+                                            Text(
+                                                text = stringResource(PresentationR.string.player_episode_unavailable),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = contentColor.copy(alpha = 0.68f),
+                                            )
+                                        }
                                     },
                                     onClick = { onDubbingSelected(index) },
                                 )
@@ -157,9 +170,20 @@ internal fun MobilePlayerSettingsSheet(
                     MobilePlayerTrackSettingsTab.Player -> item {
                         MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_player)) {
                             balancerNames.forEachIndexed { index, name ->
+                                val enabled = balancerAvailability.getOrElse(index) { true }
                                 MobilePlayerSelectionRow(
                                     label = name,
                                     selected = index == selectedBalancerIndex,
+                                    enabled = enabled,
+                                    metaContent = { contentColor ->
+                                        if (!enabled) {
+                                            Text(
+                                                text = stringResource(PresentationR.string.player_episode_unavailable),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = contentColor.copy(alpha = 0.68f),
+                                            )
+                                        }
+                                    },
                                     onClick = { onBalancerSelected(index) },
                                 )
                             }
@@ -195,6 +219,7 @@ private fun MobilePlayerSettingsSection(
 private fun MobilePlayerSelectionRow(
     label: String,
     selected: Boolean,
+    enabled: Boolean = true,
     metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
@@ -209,7 +234,7 @@ private fun MobilePlayerSelectionRow(
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
-    }
+    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
 
     Row(
         modifier = Modifier
@@ -217,6 +242,7 @@ private fun MobilePlayerSelectionRow(
             .clip(shape)
             .background(background)
             .clickable(
+                enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,

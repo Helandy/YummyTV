@@ -17,9 +17,11 @@ internal data class MobilePlayerUiState(
     val dubbingEpisodeCounts: List<Int>,
     val dubbingViews: List<Int>,
     val dubbingSourceNames: List<String>,
+    val dubbingAvailability: List<Boolean>,
     val currentDubbingIndex: Int,
     val balancerNames: List<String>,
     val availableBalancerIndices: List<Int>,
+    val balancerAvailability: List<Boolean>,
     val currentBalancerIndex: Int,
 ) {
     companion object {
@@ -42,9 +44,11 @@ internal data class MobilePlayerUiState(
                 dubbingEpisodeCounts = playback.dubbingEpisodeCounts,
                 dubbingViews = playback.dubbingViews,
                 dubbingSourceNames = playback.dubbingSourceNames,
+                dubbingAvailability = playback.dubbingAvailability,
                 currentDubbingIndex = playback.currentDubbingIndex,
                 balancerNames = playback.balancerNames,
                 availableBalancerIndices = playback.availableBalancerIndices,
+                balancerAvailability = playback.balancerAvailability,
                 currentBalancerIndex = playback.currentBalancerIndex,
             )
         }

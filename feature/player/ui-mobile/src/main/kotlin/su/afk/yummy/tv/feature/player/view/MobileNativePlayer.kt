@@ -760,6 +760,7 @@ internal fun MobileNativePlayer(
                 dubbingEpisodeCounts = ui.dubbingEpisodeCounts,
                 dubbingViews = ui.dubbingViews,
                 dubbingSourceNames = ui.dubbingSourceNames,
+                dubbingAvailability = ui.dubbingAvailability,
                 selectedDubbingIndex = ui.currentDubbingIndex,
                 onDubbingSelected = {
                     onEvent(
@@ -770,6 +771,7 @@ internal fun MobileNativePlayer(
                     )
                 },
                 balancerNames = ui.balancerNames,
+                balancerAvailability = ui.balancerAvailability,
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
                     val balancerIndex =

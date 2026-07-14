@@ -68,13 +68,15 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         val balancer = state.sourceGraph.balancers.getOrNull(index) ?: return null
         val newDubbingNames = balancer.dubbings.map { it.name }
         val currentDubbingName = activeDubbingName(state)
-        val newDubbingIdx = newDubbingNames.indexOf(currentDubbingName).takeIf { it >= 0 } ?: 0
+        val newDubbingIdx = newDubbingNames.indexOf(currentDubbingName).takeIf { it >= 0 }
+            ?: return null
         val currentEpNum = activeEpisode(state)
         val newEpNums = balancer.dubbings.getOrNull(newDubbingIdx)
             ?.episodes
             ?.map { it.number }
             .orEmpty()
-        val newEpisodeIdx = newEpNums.indexOf(currentEpNum).takeIf { it >= 0 } ?: 0
+        val newEpisodeIdx = newEpNums.indexOf(currentEpNum).takeIf { it >= 0 }
+            ?: return null
 
         return state.copy(
             dubbingResumeMs = (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L),

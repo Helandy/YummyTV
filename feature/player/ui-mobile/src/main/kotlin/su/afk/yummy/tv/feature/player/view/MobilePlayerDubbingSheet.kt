@@ -37,6 +37,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 @Composable
 internal fun MobilePlayerDubbingSheet(
     dubbingNames: List<String>,
+    dubbingAvailability: List<Boolean>,
     selectedIndex: Int,
     onDubbingSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -58,9 +59,11 @@ internal fun MobilePlayerDubbingSheet(
                 )
             }
             itemsIndexed(dubbingNames, key = { index, name -> "$index-$name" }) { index, name ->
+                val enabled = dubbingAvailability.getOrElse(index) { true }
                 MobilePlayerDubbingRow(
                     label = name,
                     selected = index == selectedIndex,
+                    enabled = enabled,
                     onClick = { onDubbingSelected(index) },
                 )
             }
@@ -72,6 +75,7 @@ internal fun MobilePlayerDubbingSheet(
 private fun MobilePlayerDubbingRow(
     label: String,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(10.dp)
@@ -84,7 +88,7 @@ private fun MobilePlayerDubbingRow(
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
-    }
+    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
 
     Row(
         modifier = Modifier
@@ -92,6 +96,7 @@ private fun MobilePlayerDubbingRow(
             .clip(shape)
             .background(background)
             .clickable(
+                enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
@@ -100,7 +105,10 @@ private fun MobilePlayerDubbingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
@@ -109,6 +117,13 @@ private fun MobilePlayerDubbingRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (!enabled) {
+                Text(
+                    text = stringResource(R.string.player_episode_unavailable),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor.copy(alpha = 0.68f),
+                )
+            }
         }
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)

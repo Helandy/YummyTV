@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -52,6 +53,8 @@ internal fun PlayerSelectionPanel(
     selectedIndex: Int,
     selectedFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
+    enabledItems: List<Boolean> = emptyList(),
+    disabledItemMeta: String? = null,
     itemMeta: @Composable (index: Int) -> String? = { null },
     itemMetaContent: @Composable (index: Int, contentColor: Color) -> Unit = { index, contentColor ->
         val meta = itemMeta(index)
@@ -107,14 +110,31 @@ internal fun PlayerSelectionPanel(
                     .weight(1f, fill = false),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                val lastEnabledIndex = items.indices.lastOrNull { index ->
+                    enabledItems.getOrElse(index) { true }
+                }
                 itemsIndexed(items, key = { index, label -> "$index-$label" }) { idx, label ->
                     val selected = idx == selectedIndex
+                    val enabled = enabledItems.getOrElse(idx) { true }
                     PlayerSelectionItem(
                         label = label,
-                        metaContent = { contentColor -> itemMetaContent(idx, contentColor) },
+                        metaContent = { contentColor ->
+                            if (!enabled && !disabledItemMeta.isNullOrBlank()) {
+                                Text(
+                                    text = disabledItemMeta,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = contentColor.copy(alpha = 0.62f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            } else {
+                                itemMetaContent(idx, contentColor)
+                            }
+                        },
                         selected = selected,
+                        enabled = enabled,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
-                        onExitDown = if (idx == items.lastIndex) onExitDown else null,
+                        onExitDown = if (idx == lastEnabledIndex) onExitDown else null,
                         onClick = { onItemSelected(idx) },
                     )
                 }
@@ -128,6 +148,7 @@ private fun PlayerSelectionItem(
     label: String,
     metaContent: @Composable (contentColor: Color) -> Unit,
     selected: Boolean,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
     onExitDown: (() -> Unit)?,
     onClick: () -> Unit,
@@ -138,10 +159,12 @@ private fun PlayerSelectionItem(
     val background = when {
         focused -> Color.White
         selected -> Color.White.copy(alpha = 0.86f)
+        !enabled -> Color.White.copy(alpha = 0.05f)
         else -> Color.White.copy(alpha = 0.10f)
     }
     val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
-    val contentColor = if (focused || selected) Color.Black else Color.White
+    val contentColor = (if (focused || selected) Color.Black else Color.White)
+        .let { if (enabled) it else it.copy(alpha = 0.42f) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,6 +173,7 @@ private fun PlayerSelectionItem(
         Row(
             modifier = modifier
                 .fillMaxWidth()
+                .focusProperties { canFocus = enabled }
                 .onPreviewKeyEvent { event ->
                     if (
                         event.type == KeyEventType.KeyDown &&
@@ -166,6 +190,7 @@ private fun PlayerSelectionItem(
                 .background(background)
                 .border(2.dp, borderColor, shape)
                 .clickable(
+                    enabled = enabled,
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = onClick,

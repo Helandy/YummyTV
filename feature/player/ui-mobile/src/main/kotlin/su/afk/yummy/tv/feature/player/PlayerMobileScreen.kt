@@ -180,6 +180,7 @@ fun PlayerMobileScreen(
         if (showErrorBalancerSheet && canChangePlayer) {
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
+                balancerAvailability = uiState.balancerAvailability,
                 selectedIndex = uiState.currentBalancerIndex,
                 metaLabel = stringResource(R.string.player_balancer_meta),
                 onBalancerSelected = { index ->
@@ -199,6 +200,7 @@ fun PlayerMobileScreen(
         if (showErrorDubbingSheet && canChangeDubbing) {
             MobilePlayerDubbingSheet(
                 dubbingNames = uiState.dubbingNames,
+                dubbingAvailability = uiState.dubbingAvailability,
                 selectedIndex = uiState.currentDubbingIndex,
                 onDubbingSelected = { index ->
                     showErrorDubbingSheet = false

@@ -112,6 +112,31 @@ internal fun availableBalancerIndices(
         index.takeIf { balancer.dubbings.any { dubbing -> dubbing.name == dubbingName } }
     }
 
+internal fun isBalancerAvailableForEpisode(
+    state: PlayerState.State,
+    balancerIndex: Int,
+    dubbingName: String,
+    episodeNumber: String,
+): Boolean = state.sourceGraph.balancers
+    .getOrNull(balancerIndex)
+    ?.dubbings
+    ?.firstOrNull { it.name == dubbingName }
+    ?.episodes
+    ?.any { it.number == episodeNumber }
+    ?: false
+
+internal fun isDubbingAvailableForEpisode(
+    state: PlayerState.State,
+    dubbingName: String,
+    episodeNumber: String,
+): Boolean = state.sourceGraph.balancers.any { balancer ->
+    balancer.dubbings
+        .firstOrNull { it.name == dubbingName }
+        ?.episodes
+        ?.any { it.number == episodeNumber }
+        ?: false
+}
+
 internal fun resolveDubbingSource(
     state: PlayerState.State,
     dubbingName: String,
@@ -124,7 +149,7 @@ internal fun resolveDubbingSource(
             val episodeIndex = dubbing.episodes
                 .indexOfFirst { it.number == episodeNumber }
                 .takeIf { it >= 0 }
-                ?: 0
+                ?: return@mapIndexedNotNull null
             DubbingSource(
                 balancerIndex = balancerIndex,
                 dubbingIndex = dubbingIndex,
