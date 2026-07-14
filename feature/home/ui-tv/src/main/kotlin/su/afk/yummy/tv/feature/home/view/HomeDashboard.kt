@@ -66,7 +66,11 @@ internal fun HomeDashboard(
         feed.sections.getOrNull(index)?.let { "section_${it.type.name}" } ?: "section_$index"
 
     var columnHasFocus by remember { mutableStateOf(false) }
-    var lastFocusedLazyIndex by rememberSaveable { mutableStateOf(if (hasContinueWatching) 0 else if (hasHero) heroLazyIdx else 0) }
+
+    // Ряд запоминается по стабильному ключу, а не по индексу LazyColumn: состав рядов
+    // динамический ("Продолжить просмотр" может появиться/исчезнуть между уходом и
+    // возвратом), и сохранённый индекс указывал бы уже на другой ряд.
+    var lastFocusedRowKey by rememberSaveable { mutableStateOf<String?>(null) }
     var lastFocusedSectionItemKeys by rememberSaveable {
         mutableStateOf<Map<String, String>>(
             emptyMap()
@@ -105,9 +109,26 @@ internal fun HomeDashboard(
         )
     }
 
+    fun lazyIndexForRowKey(key: String?): Int = when (key) {
+        null -> -1
+        ROW_CONTINUE_WATCHING -> if (hasContinueWatching) 0 else -1
+        ROW_HERO -> if (hasHero) heroLazyIdx else -1
+        else -> feed.sections.indices
+            .firstOrNull { sectionKey(it) == key }
+            ?.let { sectionsBaseLazyIdx + it }
+            ?: -1
+    }
+
+    fun rowKeyForLazyIndex(index: Int): String? = when {
+        hasContinueWatching && index == 0 -> ROW_CONTINUE_WATCHING
+        hasHero && index == heroLazyIdx -> ROW_HERO
+        index in sectionsBaseLazyIdx until totalLazyItems -> sectionKey(index - sectionsBaseLazyIdx)
+        else -> null
+    }
+
     fun focusedLazyIndex(): Int {
-        val savedIndex = lastFocusedLazyIndex.coerceIn(0, (totalLazyItems - 1).coerceAtLeast(0))
-        return if (totalLazyItems <= 0) 0 else savedIndex
+        val index = lazyIndexForRowKey(lastFocusedRowKey)
+        return if (index in 0 until totalLazyItems) index else 0
     }
 
     fun previousRowFocusRequester(index: Int): FocusRequester? =
@@ -165,9 +186,17 @@ internal fun HomeDashboard(
             if (hasContinueWatching) {
                 item(key = "continue_watching") {
                     CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                        var rowHadFocus by remember { mutableStateOf(false) }
                         Box(
                             modifier = Modifier.onFocusChanged { state ->
-                                if (state.hasFocus) lastFocusedLazyIndex = 0
+                                val hadFocus = rowHadFocus
+                                rowHadFocus = state.hasFocus
+                                if (state.hasFocus) {
+                                    lastFocusedLazyIndex = 0
+                                    if (!hadFocus) {
+                                        scope.launch { lazyColumnState.scrollToItem(0) }
+                                    }
+                                }
                             },
                         ) {
                             ContinueWatchingSection(
@@ -254,10 +283,20 @@ internal fun HomeDashboard(
                 CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
                     val lazyIdx = sectionsBaseLazyIdx + index
                     val rowKey = sectionKey(index)
+                    var rowHadFocus by remember { mutableStateOf(false) }
                     Box(
                         modifier = Modifier.onFocusChanged { state ->
+                            val hadFocus = rowHadFocus
+                            rowHadFocus = state.hasFocus
                             if (state.hasFocus) {
                                 lastFocusedLazyIndex = lazyIdx
+                                // Авто-подскролл колонки отключён (HomeColumnNoAutoBringIntoViewSpec),
+                                // поэтому при получении фокуса рядом выравниваем колонку вручную —
+                                // фокус может прийти в обход requestRowFocus (focusProperties.up,
+                                // focus search при восстановлении после возврата в Home).
+                                if (!hadFocus) {
+                                    scope.launch { lazyColumnState.scrollToItem(lazyIdx) }
+                                }
                             }
                         },
                     ) {
