@@ -9,14 +9,41 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.viewingorder.view.ViewingOrderMobileCard
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ViewingOrderMobileScreenDefaultPreview() = ScreenPreviewTheme {
+    ViewingOrderMobileScreen(ViewingOrderState.State(isLoading = false), emptyFlow()) {}
+}
+
+@Composable
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun ViewingOrderMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    ViewingOrderMobileScreen(ViewingOrderState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun ViewingOrderMobileScreenErrorPreview() = ScreenPreviewTheme {
+    ViewingOrderMobileScreen(
+        ViewingOrderState.State(
+            isLoading = false,
+            error = "Не удалось загрузить порядок просмотра"
+        ), emptyFlow()
+    ) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +53,7 @@ fun ViewingOrderMobileScreen(
     effect: Flow<ViewingOrderState.Effect>,
     onEvent: (ViewingOrderState.Event) -> Unit,
 
-) {
+    ) {
     BaseScreen(
         isScroll = false,
         customTopBar = {

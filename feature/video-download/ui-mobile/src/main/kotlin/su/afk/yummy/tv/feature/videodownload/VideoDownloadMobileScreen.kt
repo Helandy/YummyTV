@@ -14,16 +14,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.rememberNotificationPermissionGate
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.videodownload.mobile.R
 import su.afk.yummy.tv.feature.videodownload.utils.formatDiskSize
 import su.afk.yummy.tv.feature.videodownload.view.VideoDownloadDeleteConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.view.VideoDownloadMobileCard
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun VideoDownloadMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        VideoDownloadMobileScreen(VideoDownloadState.State(), emptyFlow()) {}
+    }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

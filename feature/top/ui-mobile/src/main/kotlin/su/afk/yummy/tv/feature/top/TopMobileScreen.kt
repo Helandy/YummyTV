@@ -10,17 +10,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.feature.top.view.TopMobileGrid
 import su.afk.yummy.tv.feature.top.view.TopMobileTypeTabs
 
 private val topMobileTypes: List<AnimeTopType>
     get() = AnimeTopType.entries
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TopMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        TopMobileScreen(TopState.State(), emptyFlow()) {}
+    }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

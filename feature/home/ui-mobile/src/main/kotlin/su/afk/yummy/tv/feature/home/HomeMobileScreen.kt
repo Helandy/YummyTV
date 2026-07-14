@@ -14,15 +14,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
@@ -33,6 +36,35 @@ import su.afk.yummy.tv.feature.home.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun HomeMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        HomeMobileScreen(
+            HomeState.State(isLoading = false, isContinueWatchingLoaded = true),
+            emptyFlow()
+        ) {}
+    }
+
+@Composable
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun HomeMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    HomeMobileScreen(HomeState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun HomeMobileScreenErrorPreview() = ScreenPreviewTheme {
+    HomeMobileScreen(
+        HomeState.State(
+            isLoading = false,
+            isContinueWatchingLoaded = true,
+            error = "Не удалось загрузить главную"
+        ), emptyFlow()
+    ) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

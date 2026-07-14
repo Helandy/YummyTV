@@ -22,11 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.rememberPlayerScreenUiState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -38,6 +41,17 @@ import su.afk.yummy.tv.feature.player.view.player.PLAYER_INLINE_TOAST_DURATION
 import su.afk.yummy.tv.feature.player.view.player.PlayerInlineToast
 import su.afk.yummy.tv.feature.player.view.player.PlayerSelectionPanel
 import kotlin.time.Duration.Companion.seconds
+
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun PlayerTvScreenDefaultPreview() = ScreenPreviewTheme {
+    PlayerTvScreen(PlayerState.State(), emptyFlow()) {}
+}
 
 @Composable
 fun PlayerTvScreen(
@@ -55,7 +69,11 @@ fun PlayerTvScreen(
     var backPressedOnce by remember { mutableStateOf(false) }
     var backToastText by remember { mutableStateOf<String?>(null) }
     var backToastJob by remember { mutableStateOf<Job?>(null) }
-    var pendingControlFocusTarget by rememberSaveable { mutableStateOf<PlayerControlFocusTarget?>(null) }
+    var pendingControlFocusTarget by rememberSaveable {
+        mutableStateOf<PlayerControlFocusTarget?>(
+            null
+        )
+    }
     var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
@@ -146,6 +164,7 @@ fun PlayerTvScreen(
                     },
                 )
             }
+
             streamUrl != null -> ExoPlayerView(
                 streamUrl = streamUrl,
                 streamHeaders = state.streamHeaders,
@@ -207,6 +226,7 @@ fun PlayerTvScreen(
                 skips = uiState.activeSkips,
                 autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
             )
+
             else -> StreamLoadingView(
                 onChangePlayer = if (state.showChangePlayerHint && canChangePlayer) {
                     { showErrorBalancerPanel = true }

@@ -9,16 +9,44 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.mobile.R
 import su.afk.yummy.tv.feature.collection.view.CollectionMobileHeader
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CollectionMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        CollectionMobileScreen(CollectionState.State(isLoading = false), emptyFlow()) {}
+    }
+
+@Composable
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun CollectionMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    CollectionMobileScreen(CollectionState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun CollectionMobileScreenErrorPreview() = ScreenPreviewTheme {
+    CollectionMobileScreen(
+        CollectionState.State(
+            isLoading = false,
+            error = "Не удалось загрузить коллекцию"
+        ), emptyFlow()
+    ) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

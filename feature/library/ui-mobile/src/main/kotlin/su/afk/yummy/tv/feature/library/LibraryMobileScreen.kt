@@ -20,13 +20,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.model.PendingLibraryMobileRemoval
 import su.afk.yummy.tv.feature.library.utils.libraryMobileTabs
@@ -37,6 +40,14 @@ import su.afk.yummy.tv.feature.library.view.LibraryMobilePage
 import su.afk.yummy.tv.feature.library.view.LibraryMobileRemoveConfirmDialog
 import su.afk.yummy.tv.feature.library.view.LibraryMobileTabs
 
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun LibraryMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        LibraryMobileScreen(LibraryState.State(), emptyFlow()) {}
+    }
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun LibraryMobileScreen(
@@ -45,7 +56,7 @@ fun LibraryMobileScreen(
     effect: Flow<LibraryState.Effect>,
     onEvent: (LibraryState.Event) -> Unit,
 
-) {
+    ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnEvent by rememberUpdatedState(onEvent)
@@ -69,6 +80,7 @@ fun LibraryMobileScreen(
                 LibraryState.Effect.ItemRemoved -> {
                     Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
                 }
+
                 is LibraryState.Effect.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }

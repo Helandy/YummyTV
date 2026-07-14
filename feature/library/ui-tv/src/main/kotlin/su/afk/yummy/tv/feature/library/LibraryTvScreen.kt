@@ -22,13 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
@@ -36,6 +39,17 @@ import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
 import su.afk.yummy.tv.feature.library.view.LibraryRemoteErrorBanner
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
+
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun LibraryTvScreenDefaultPreview() = ScreenPreviewTheme {
+    LibraryTvScreen(LibraryState.State(), emptyFlow()) {}
+}
 
 @Composable
 fun LibraryTvScreen(
@@ -93,6 +107,7 @@ fun LibraryTvScreen(
                 LibraryState.Effect.ItemRemoved -> {
                     Toast.makeText(context, itemRemovedText, Toast.LENGTH_SHORT).show()
                 }
+
                 is LibraryState.Effect.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }

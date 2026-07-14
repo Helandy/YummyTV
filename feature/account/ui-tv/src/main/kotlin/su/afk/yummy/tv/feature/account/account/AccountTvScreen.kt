@@ -26,15 +26,29 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
 import su.afk.yummy.tv.feature.account.view.LoginPanel
+
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun AccountTvScreenDefaultPreview() = ScreenPreviewTheme {
+    AccountTvScreen(AccountState.State(), emptyFlow()) {}
+}
 
 @Composable
 fun AccountTvScreen(

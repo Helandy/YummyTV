@@ -13,13 +13,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.feature.faq.mobile.R
 import su.afk.yummy.tv.feature.faq.view.FaqExpandableItem
 import su.afk.yummy.tv.feature.faq.view.FaqFeedbackButton
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun FaqMobileScreenDefaultPreview() =
+    ScreenPreviewTheme { FaqMobileScreen {} }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

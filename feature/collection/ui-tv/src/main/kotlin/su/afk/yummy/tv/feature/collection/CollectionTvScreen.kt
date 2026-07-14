@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.collection
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,12 +15,54 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.view.CollectionGridPane
 
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
 @Composable
+private fun CollectionTvScreenDefaultPreview() = ScreenPreviewTheme {
+    CollectionTvScreen(CollectionState.State(isLoading = false), emptyFlow()) {}
+}
+
+@Composable
+@Preview(
+    name = "Loading",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+private fun CollectionTvScreenLoadingPreview() = ScreenPreviewTheme {
+    CollectionTvScreen(CollectionState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(
+    name = "Error",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun CollectionTvScreenErrorPreview() = ScreenPreviewTheme {
+    CollectionTvScreen(
+        CollectionState.State(
+            isLoading = false,
+            error = "Не удалось загрузить коллекцию"
+        ), emptyFlow()
+    ) {}
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun CollectionTvScreen(
     state: CollectionState.State,
     effect: Flow<CollectionState.Effect>,

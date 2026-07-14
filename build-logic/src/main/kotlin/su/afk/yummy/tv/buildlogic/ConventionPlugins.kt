@@ -28,6 +28,9 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("yummytv.android.library")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        dependencies.add("implementation", libs.findLibrary("compose-uiToolingPreview").get())
+        dependencies.add("debugImplementation", libs.findLibrary("compose-uiTooling").get())
+        Unit
     }
 }
 

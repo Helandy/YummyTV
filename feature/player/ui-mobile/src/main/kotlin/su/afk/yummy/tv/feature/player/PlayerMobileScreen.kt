@@ -27,12 +27,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
@@ -43,6 +46,13 @@ import su.afk.yummy.tv.feature.player.view.MobilePlayerDubbingSheet
 import su.afk.yummy.tv.feature.player.view.PlayerMessage
 
 @OptIn(UnstableApi::class)
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun PlayerMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        PlayerMobileScreen(PlayerState.State(), emptyFlow()) {}
+    }
+
 @Composable
 fun PlayerMobileScreen(
     state: PlayerState.State,

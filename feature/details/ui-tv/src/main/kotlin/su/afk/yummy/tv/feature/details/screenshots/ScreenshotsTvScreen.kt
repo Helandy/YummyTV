@@ -18,15 +18,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
+
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun ScreenshotsTvScreenDefaultPreview() = ScreenPreviewTheme {
+    ScreenshotsTvScreen(ScreenshotsState.State(isLoading = false), emptyFlow()) {}
+}
 
 @Composable
 fun ScreenshotsTvScreen(
@@ -35,7 +49,7 @@ fun ScreenshotsTvScreen(
     effect: Flow<ScreenshotsState.Effect>,
     onEvent: (ScreenshotsState.Event) -> Unit,
 
-) {
+    ) {
     BackHandler { onEvent(ScreenshotsState.Event.BackSelected) }
 
     Box(
@@ -48,12 +62,14 @@ fun ScreenshotsTvScreen(
                 modifier = Modifier.align(Alignment.Center),
                 color = MaterialTheme.colorScheme.primary,
             )
+
             state.screenshots.isEmpty() -> Text(
                 text = stringResource(R.string.details_screenshots_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Center),
             )
+
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 284.dp),

@@ -7,13 +7,24 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.view.SettingsMobileDetailsButtonOrder
 import su.afk.yummy.tv.feature.settings.view.SettingsMobileSection
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun SettingsDetailsButtonOrderMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        SettingsDetailsButtonOrderMobileScreen(SettingsState.State(), emptyFlow()) {}
+    }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

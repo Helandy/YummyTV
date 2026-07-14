@@ -16,10 +16,24 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.episodes.view.EpisodeDubbingPickerOverlay
 import su.afk.yummy.tv.feature.details.episodes.view.EpisodesSection
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
+
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun EpisodesTvScreenDefaultPreview() = ScreenPreviewTheme {
+    EpisodesTvScreen(EpisodesState.State(), emptyFlow()) {}
+}
 
 @Composable
 fun EpisodesTvScreen(
@@ -32,12 +46,14 @@ fun EpisodesTvScreen(
         onEvent(EpisodesState.Event.BalancerPickerDismissed)
         restoreEpisodesFocusRequest += 1
     }
+
     val balancerPicker = state.pendingBalancerSelection
     val dubbingPicker = state.pendingEpisodeDubbingSelection
     fun dismissDubbingPicker() {
         onEvent(EpisodesState.Event.EpisodeDubbingPickerDismissed)
         restoreEpisodesFocusRequest += 1
     }
+
     fun handleBack() {
         if (dubbingPicker != null) {
             dismissDubbingPicker()

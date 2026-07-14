@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -46,9 +47,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
@@ -65,6 +68,30 @@ import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.view.toMobileListFilterUi
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun UserProfileMobileScreenDefaultPreview() =
+    ScreenPreviewTheme {
+        UserProfileMobileScreen(UserProfileState.State(isOverviewLoading = false), emptyFlow()) {}
+    }
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun UserProfileMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    UserProfileMobileScreen(UserProfileState.State(isOverviewLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun UserProfileMobileScreenErrorPreview() = ScreenPreviewTheme {
+    UserProfileMobileScreen(
+        UserProfileState.State(isOverviewLoading = false, overviewError = true),
+        emptyFlow()
+    ) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

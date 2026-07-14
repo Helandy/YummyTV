@@ -1,23 +1,70 @@
 package su.afk.yummy.tv.feature.home
 
 import android.widget.Toast
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
 
+@Preview(
+    name = "Default",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
 @Composable
+private fun HomeTvScreenDefaultPreview() = ScreenPreviewTheme {
+    HomeTvScreen(
+        HomeState.State(isLoading = false, isContinueWatchingLoaded = true),
+        emptyFlow()
+    ) {}
+}
+
+@Composable
+@Preview(
+    name = "Loading",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+private fun HomeTvScreenLoadingPreview() = ScreenPreviewTheme {
+    HomeTvScreen(HomeState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(
+    name = "Error",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true
+)
+@Composable
+private fun HomeTvScreenErrorPreview() = ScreenPreviewTheme {
+    HomeTvScreen(
+        HomeState.State(
+            isLoading = false,
+            isContinueWatchingLoaded = true,
+            error = "Не удалось загрузить главную"
+        ), emptyFlow()
+    ) {}
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun HomeTvScreen(
     state: HomeState.State,
     effect: Flow<HomeState.Effect>,

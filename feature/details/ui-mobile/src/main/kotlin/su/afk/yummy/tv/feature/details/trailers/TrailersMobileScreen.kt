@@ -7,13 +7,23 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.trailers.view.TrailerMobileCard
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TrailersMobileScreenDefaultPreview() = ScreenPreviewTheme {
+    TrailersMobileScreen(TrailersState.State(isLoading = false), emptyFlow()) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,7 +33,7 @@ fun TrailersMobileScreen(
     effect: Flow<TrailersState.Effect>,
     onEvent: (TrailersState.Event) -> Unit,
 
-) {
+    ) {
     BaseScreen(
         isScroll = false,
         customTopBar = {
@@ -33,7 +43,11 @@ fun TrailersMobileScreen(
             )
         },
     ) {
-        MobileStateContent(isLoading = state.isLoading, error = null, empty = state.trailers.isEmpty()) {
+        MobileStateContent(
+            isLoading = state.isLoading,
+            error = null,
+            empty = state.trailers.isEmpty()
+        ) {
             LazyColumn(
                 contentPadding = PaddingValues(
                     start = 16.dp,

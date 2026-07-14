@@ -21,12 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.details.details.view.DetailsDescriptionSection
 import su.afk.yummy.tv.feature.details.details.view.DetailsMobileHero
@@ -34,6 +37,30 @@ import su.afk.yummy.tv.feature.details.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.details.view.DetailsSecondaryActions
 import su.afk.yummy.tv.feature.details.details.view.PosterDialog
 import su.afk.yummy.tv.feature.details.mobile.R
+
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun DetailsMobileScreenDefaultPreview() = ScreenPreviewTheme {
+    DetailsMobileScreen(DetailsState.State(isLoading = false), emptyFlow()) {}
+}
+
+@Composable
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun DetailsMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    DetailsMobileScreen(DetailsState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun DetailsMobileScreenErrorPreview() = ScreenPreviewTheme {
+    DetailsMobileScreen(
+        DetailsState.State(
+            isLoading = false,
+            error = "Не удалось загрузить детали"
+        ), emptyFlow()
+    ) {}
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

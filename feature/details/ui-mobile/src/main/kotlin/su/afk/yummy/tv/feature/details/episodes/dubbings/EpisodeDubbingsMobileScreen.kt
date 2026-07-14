@@ -23,13 +23,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.episodes.dubbings.view.EpisodeDubbingMobileRow
 import su.afk.yummy.tv.feature.details.mobile.R
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
+private fun EpisodeDubbingsMobileScreenDefaultPreview() = ScreenPreviewTheme {
+    EpisodeDubbingsMobileScreen(EpisodeDubbingsState.State(isLoading = false), emptyFlow()) {}
+}
+
+@Composable
+@Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+private fun EpisodeDubbingsMobileScreenLoadingPreview() = ScreenPreviewTheme {
+    EpisodeDubbingsMobileScreen(EpisodeDubbingsState.State(isLoading = true), emptyFlow()) {}
+}
+
+@Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Composable
+private fun EpisodeDubbingsMobileScreenErrorPreview() = ScreenPreviewTheme {
+    EpisodeDubbingsMobileScreen(
+        EpisodeDubbingsState.State(
+            isLoading = false,
+            error = "Не удалось загрузить озвучки"
+        ), emptyFlow()
+    ) {}
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun EpisodeDubbingsMobileScreen(
     state: EpisodeDubbingsState.State,
     effect: Flow<EpisodeDubbingsState.Effect>,
