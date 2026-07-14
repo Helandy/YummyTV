@@ -397,6 +397,22 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
             put('sec-fetch-dest', 'empty'); put('sec-fetch-mode', 'cors'); put('sec-fetch-site', 'cross-site');
 
             var lastMasterUrl = null;
+            // Hand the proxy the correctly-signed master.m3u8 the player itself requests, even when
+            // the browser blocks that request. The player fetches master with custom headers
+            // (accepts-controls/authorizations) -> CORS preflight the CDN never answers -> the
+            // request is blocked and 'load'/'ok' never fire, so only the requested URL is available.
+            // Our server-side proxy isn't subject to CORS, so this up-to-date URL streams fine,
+            // unlike the stale bnsi URL that the CDN 403s with token_decrypt.
+            function isCdnMaster(url) {
+              return !!url && url.indexOf('http') === 0 && url.indexOf('master.m3u8') !== -1;
+            }
+            function reportMaster(url) {
+              if(!done || !url) return;
+              if(!isCdnMaster(url)) return;
+              if(url === lastMasterUrl) return;
+              lastMasterUrl = url;
+              AndroidBridge.onM3u8Refreshed(url, JSON.stringify(headers));
+            }
             var primaryHost = null, fallbackHost = null, fallbackMasterUrl = null;
             function extractCdnHosts() {
               if(primaryHost || !bnsi) return;
@@ -427,16 +443,44 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                   extractCdnHosts();
                   ready();
                 }
-                if(done && url.indexOf('master.m3u8') !== -1 && url !== lastMasterUrl) {
-                  lastMasterUrl = url;
-                  AndroidBridge.onM3u8Refreshed(url, JSON.stringify(headers));
-                }
+                reportMaster(url);
+              });
+              // Fallback capture: loadend fires on success and on failure. The send() hook below is
+              // the primary capture point (and blocks CDN-master requests); this only covers any
+              // request that reaches loadend without having passed through our send() override.
+              this.addEventListener('loadend', function() {
+                reportMaster(this.__allohaUrl || this.responseURL || '');
               });
               return open.apply(this, arguments);
             };
             var setHeader = w.XMLHttpRequest.prototype.setRequestHeader;
             w.XMLHttpRequest.prototype.setRequestHeader = function(k,v) {
               put(k,v); ready(); return setHeader.apply(this, arguments);
+            };
+            // The CDN token baked into the master path is single-use: whoever GETs it first wins,
+            // the loser gets 403 token_decrypt. The player's own master XHR is native and already
+            // in flight from this same JS tick, so it always beats our JSBridge->OkHttp proxy and
+            // burns the token before the proxy can use it (its response is CORS-blocked from JS
+            // anyway, so the player gains nothing from it). We therefore CAPTURE the master URL +
+            // headers here but never let the request reach the network, leaving the token fresh for
+            // the proxy - the sole consumer. A blocked XHR is failed asynchronously so the player's
+            // error path still runs. Non-master XHRs (bnsi, config, etc.) pass through untouched.
+            var xhrSend = w.XMLHttpRequest.prototype.send;
+            w.XMLHttpRequest.prototype.send = function() {
+              var u = this.__allohaUrl || '';
+              if(isCdnMaster(u)) {
+                reportMaster(u);
+                var self = this;
+                setTimeout(function() {
+                  try {
+                    self.dispatchEvent(new Event('error'));
+                    self.dispatchEvent(new Event('loadend'));
+                  } catch(e) {}
+                }, 0);
+                return;
+              }
+              reportMaster(u);
+              return xhrSend.apply(this, arguments);
             };
             var fetch = w.fetch;
             w.fetch = function(input,init) {
@@ -448,6 +492,12 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                 }
                 ready();
                 extractCdnHosts();
+                reportMaster(url);
+                if(isCdnMaster(url)) {
+                  // Same single-use-token reason as the XHR send() hook: capture but never fetch,
+                  // so the token stays fresh for the proxy. Reject so the player's error path runs.
+                  return Promise.reject(new TypeError('alloha: master fetch withheld to preserve CDN token'));
+                }
                 if(url && (url.indexOf('.m3u8') !== -1 || url.indexOf('.ts') !== -1 || url.indexOf('.m4s') !== -1) &&
                     primaryHost && fallbackHost && url.indexOf(primaryHost) !== -1) {
                   var fallbackUrl = url.indexOf('master.m3u8') !== -1 && fallbackMasterUrl
@@ -456,10 +506,7 @@ internal class AllohaExtractor @Inject constructor() : PlayerStreamExtractor {
                     if(response.status !== 403 && response.status !== 500 && response.status !== 503) return response;
                     AndroidBridge.onLog('Browser CDN fallback after status=' + response.status);
                     return fetch.call(w, fallbackUrl, init).then(function(fallbackResponse) {
-                      if(fallbackResponse.ok && fallbackUrl.indexOf('master.m3u8') !== -1 && fallbackUrl !== lastMasterUrl) {
-                        lastMasterUrl = fallbackUrl;
-                        AndroidBridge.onM3u8Refreshed(fallbackUrl, JSON.stringify(headers));
-                      }
+                      if(fallbackResponse.ok) reportMaster(fallbackUrl);
                       return fallbackResponse;
                     });
                   });

@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 internal data class AllohaStreamState(
     val headers: Map<String, String>,
@@ -57,6 +58,7 @@ internal class AllohaStreamProxy(
 
     private val lastSeenGeneration = AtomicLong(-1L)
     private val rejectedSessionGeneration = AtomicLong(-1L)
+    private val lastRejectionMarker = AtomicReference<String?>(null)
 
     @Volatile
     private var connectionPool = buildConnectionPool()
@@ -311,11 +313,14 @@ internal class AllohaStreamProxy(
         val initialState = streamStateProvider()
         noteActiveState(initialState)
         if (rejectedSessionGeneration.get() >= initialState.generation) {
-            scheduleBackgroundSessionRefresh(initialState.generation)
+            if (lastRejectionMarker.get() != TOKEN_DECRYPT_MARKER) {
+                scheduleBackgroundSessionRefresh(initialState.generation)
+            }
             return null
         }
 
         var rejectedGeneration = -1L
+        var rejectedMarker: String? = null
 
         fun execute(
             target: String,
@@ -332,8 +337,12 @@ internal class AllohaStreamProxy(
                 }
                 .firstOrNull(String::isNotBlank)
             val request = Request.Builder().url(target).apply {
+                // Forward the headers the iframe player sent, except the ones in
+                // BLOCKED_FORWARD_HEADERS (transport headers + per-request nonces like borth). The
+                // CDN's token decryption keys off the stable anti-bot headers accepts-controls and
+                // authorizations; those must always be forwarded.
                 currentHeaders.forEach { (name, value) ->
-                    if (name.lowercase() in FORWARDED_HEADERS) {
+                    if (name.lowercase() !in BLOCKED_FORWARD_HEADERS) {
                         header(name, value)
                     }
                 }
@@ -357,6 +366,7 @@ internal class AllohaStreamProxy(
                             val xVd = response.header("X-VD").orEmpty()
                             if (xVd in SESSION_REJECTION_MARKERS) {
                                 rejectedGeneration = maxOf(rejectedGeneration, state.generation)
+                                rejectedMarker = xVd
                             }
                             Log.w(
                                 LOG_TAG,
@@ -397,7 +407,7 @@ internal class AllohaStreamProxy(
             val retryRequest = request.newBuilder().header("Connection", "close").build()
             val retryResult = perform(retryRequest, connectionCloseRetry = true)
             if (retryResult == null && statusCode == 403 && rejectedGeneration >= state.generation) {
-                markSessionRejected(state)
+                markSessionRejected(state, rejectedMarker)
             }
             return retryResult
         }
@@ -422,17 +432,27 @@ internal class AllohaStreamProxy(
 
         // Do not hold Media3's localhost segment request while WebView establishes a new session.
         // All concurrent failures share this one background refresh and receive an immediate
-        // 188-byte audio fallback or 503 from serveSegment().
-        scheduleBackgroundSessionRefresh(initialGeneration)
+        // 188-byte audio fallback or 503 from serveSegment(). Skip the refresh entirely when the CDN
+        // rejected with token_decrypt: refresh() reloads the SAME WebView instance, and logs show
+        // that always gets routed back to the identical accepts-controls edge_hash it just failed
+        // with - so the retry is a guaranteed-useless ~2-4s stall. Failing fast here lets the caller
+        // escalate straight to a genuinely fresh WebView/extractor, which does get a new edge.
+        if (lastRejectionMarker.get() != TOKEN_DECRYPT_MARKER) {
+            scheduleBackgroundSessionRefresh(initialGeneration)
+        }
         return null
     }
 
-    private fun markSessionRejected(state: AllohaStreamState) {
+    private fun markSessionRejected(state: AllohaStreamState, marker: String?) {
         while (true) {
             val previous = rejectedSessionGeneration.get()
             if (state.generation <= previous) return
             if (rejectedSessionGeneration.compareAndSet(previous, state.generation)) {
-                Log.w(LOG_TAG, "Session generation confirmed rejected ${state.safeSummary()}")
+                lastRejectionMarker.set(marker)
+                Log.w(
+                    LOG_TAG,
+                    "Session generation confirmed rejected marker=$marker ${state.safeSummary()}"
+                )
                 return
             }
         }
@@ -629,19 +649,28 @@ internal class AllohaStreamProxy(
         const val PREFETCH_COUNT = 2
         const val MIN_SEGMENT_BYTES_HINT = 1000
         val SUCCESS_CODES = setOf(200, 206)
-        val FORWARDED_HEADERS = setOf(
-            "accept",
-            "accept-language",
-            "authorizations",
-            "accepts-controls",
-            "origin",
-            "referer",
-            "sec-fetch-dest",
-            "sec-fetch-mode",
-            "sec-fetch-site",
-            "user-agent",
+
+        // Transport / hop-by-hop headers OkHttp must own itself, plus a few per-request headers that
+        // must NOT be replayed. The CDN's token decryption keys off the stable anti-bot headers
+        // (accepts-controls = rotating edge_hash, authorizations = per-movie token). "borth" is a
+        // per-request nonce the player computes for its OWN fetch; replaying a stale/consumed borth
+        // makes the CDN intermittently answer 403 xVd=token_decrypt (works only when it happens to
+        // still be valid). The reference parser omits borth/x-requested-with/content-type entirely
+        // and streams reliably, so we mirror that. "cookie" is applied separately from CookieManager.
+        val BLOCKED_FORWARD_HEADERS = setOf(
+            "host",
+            "connection",
+            "content-length",
+            "transfer-encoding",
+            "accept-encoding",
+            "cookie",
+            "borth",
+            "x-requested-with",
+            "content-type",
         )
-        val SESSION_REJECTION_MARKERS = setOf("session_blocked", "token_decrypt", "client_blocked")
+        const val TOKEN_DECRYPT_MARKER = "token_decrypt"
+        val SESSION_REJECTION_MARKERS =
+            setOf("session_blocked", TOKEN_DECRYPT_MARKER, "client_blocked")
         val EMPTY_TS_PACKET = ByteArray(188).also {
             it[0] = 0x47
             it[1] = 0x1F.toByte()
