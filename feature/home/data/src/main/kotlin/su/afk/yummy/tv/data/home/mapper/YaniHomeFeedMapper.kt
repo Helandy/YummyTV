@@ -59,6 +59,7 @@ private fun List<YaniVideoDto>.toNewVideosSection(
                 description = rep.description,
                 poster = rep.poster?.toHomePoster(),
                 rating = null,
+                year = null,
                 action = HomeFeedItemAction.OpenSeries(id),
             )
         }
@@ -81,6 +82,7 @@ private fun YaniAnimeDto.toSeriesItem(): HomeFeedItem? {
         description = description,
         poster = poster?.toHomePoster(),
         rating = rating?.average?.takeIf { it > 0.0 },
+        year = year?.takeIf { it > 0 },
         action = HomeFeedItemAction.OpenSeries(id),
     )
 }
@@ -95,6 +97,7 @@ private fun YaniCollectionDto.toCollectionItem(): HomeFeedItem? {
         description = description,
         poster = posterPreviews.firstOrNull()?.toHomePoster(),
         rating = null,
+        year = null,
         action = HomeFeedItemAction.OpenCollection(id),
     )
 }

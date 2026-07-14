@@ -6,5 +6,6 @@ data class HomeFeedItem(
     val description: String,
     val poster: HomePoster?,
     val rating: Double?,
+    val year: Int?,
     val action: HomeFeedItemAction,
 )

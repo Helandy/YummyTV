@@ -42,6 +42,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 @Composable
 internal fun HomeFeedCard(
     item: HomeFeedItem,
+    showYear: Boolean,
     onClick: () -> Unit,
     onFocused: (displayId: Int, animeId: Int?) -> Unit,
     modifier: Modifier = Modifier,
@@ -120,6 +121,25 @@ internal fun HomeFeedCard(
                             .align(Alignment.TopEnd)
                             .padding(4.dp),
                     )
+                }
+
+                if (showYear) {
+                    item.year?.let { year ->
+                        Text(
+                            text = year.toString(),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(4.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                    RoundedCornerShape(4.dp),
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp),
+                        )
+                    }
                 }
             }
 

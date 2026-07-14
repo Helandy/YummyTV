@@ -40,6 +40,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentF
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -263,6 +264,7 @@ internal fun HomeDashboard(
                         HomeSection(
                             title = section.title,
                             items = section.items,
+                            showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                             onItemSelected = onItemSelected,
                             rowFocusRequester = sectionFocusRequesters[index],
                             rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,

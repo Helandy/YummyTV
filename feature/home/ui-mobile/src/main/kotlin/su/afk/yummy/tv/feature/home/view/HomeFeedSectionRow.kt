@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileSectionHeader
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.utils.showMobileCardMetadata
 
 @Composable
@@ -38,6 +39,7 @@ internal fun HomeFeedSectionRow(
                 HomeItemCard(
                     item = item,
                     showMetadata = showCardMetadata,
+                    showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                     onClick = { onItemSelected(item) },
                 )
             }

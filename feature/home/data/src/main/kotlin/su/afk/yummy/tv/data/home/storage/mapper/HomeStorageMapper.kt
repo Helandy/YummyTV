@@ -158,6 +158,7 @@ private fun List<HomeFeedItem>.toHomeFeedItemEntries(
             posterFullsizeUrl = item.poster?.fullsize,
             posterMegaUrl = item.poster?.mega,
             rating = item.rating,
+            year = item.year,
             actionType = item.action.storageType,
             actionId = item.action.storageId,
         )
@@ -182,6 +183,7 @@ private fun List<HomeContinueWatchingItem>.toContinueWatchingEntries(
             posterFullsizeUrl = item.poster?.fullsize,
             posterMegaUrl = item.poster?.mega,
             rating = null,
+            year = null,
             actionType = if (item.videoId > 0) HOME_FEED_ACTION_VIDEO else HOME_FEED_ACTION_SERIES,
             actionId = item.videoId.takeIf { it > 0 } ?: item.animeId,
             episode = item.episode,
@@ -208,6 +210,7 @@ private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
             mega = posterMegaUrl,
         ),
         rating = rating?.takeIf { it > 0.0 },
+        year = year?.takeIf { it > 0 },
         action = when (actionType) {
             HOME_FEED_ACTION_COLLECTION -> HomeFeedItemAction.OpenCollection(actionId)
             HOME_FEED_ACTION_VIDEO -> HomeFeedItemAction.OpenVideo(actionId)

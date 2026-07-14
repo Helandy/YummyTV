@@ -40,6 +40,7 @@ data class HomeFeedItemEntry(
     val posterFullsizeUrl: String? = null,
     val posterMegaUrl: String? = null,
     val rating: Double? = null,
+    val year: Int? = null,
     val actionType: String,
     val actionId: Int,
     val episode: String = "",

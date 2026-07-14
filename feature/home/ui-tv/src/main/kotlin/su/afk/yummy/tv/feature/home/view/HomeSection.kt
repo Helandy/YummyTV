@@ -42,6 +42,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 internal fun HomeSection(
     title: String,
     items: List<HomeFeedItem>,
+    showYear: Boolean,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     rowFocusRequester: FocusRequester? = null,
     rowIsFocused: Boolean = false,
@@ -202,6 +203,7 @@ internal fun HomeSection(
                 HomeFeedCard(
                     modifier = Modifier.focusRequester(focusRequesterForItem(index)),
                     item = item,
+                    showYear = showYear,
                     onClick = {
                         rememberFocusedItem(index)
                         onItemSelected(rowKey, item)
