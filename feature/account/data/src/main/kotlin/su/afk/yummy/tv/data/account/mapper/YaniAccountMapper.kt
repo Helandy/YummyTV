@@ -289,15 +289,18 @@ internal fun YaniNotificationDto.toNotification(): ProfileNotification =
 internal fun YaniNotificationCountDto.toNotificationCount(): NotificationCount =
     NotificationCount(type = type, count = count)
 
+private val HTML_TAG_REGEX = Regex("<[^>]+>")
+private val WHITESPACE_REGEX = Regex("\\s+")
+
 private fun String.toPlainText(): String =
-    replace(Regex("<[^>]+>"), " ")
+    replace(HTML_TAG_REGEX, " ")
         .replace("&nbsp;", " ")
         .replace("&amp;", "&")
         .replace("&quot;", "\"")
         .replace("&#39;", "'")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
-        .replace(Regex("\\s+"), " ")
+        .replace(WHITESPACE_REGEX, " ")
         .trim()
 
 private fun String.toCatalogItemSlug(): String? {

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.library.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.data.library.storage.mapper.toLibraryEntry
@@ -14,7 +15,9 @@ class DefaultLibraryRepository(
     private val store: LibraryStore,
 ) : LibraryRepository {
     override fun observeAll(): Flow<List<LibraryItem>> =
-        store.observeAll().map { entries -> entries.map { it.toLibraryItem() } }
+        store.observeAll()
+            .map { entries -> entries.map { it.toLibraryItem() } }
+            .distinctUntilChanged()
 
     override suspend fun getAll(): List<LibraryItem> =
         store.getAll().map { it.toLibraryItem() }

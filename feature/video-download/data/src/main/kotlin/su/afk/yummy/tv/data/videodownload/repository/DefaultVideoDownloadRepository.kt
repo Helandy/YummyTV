@@ -12,6 +12,7 @@ import androidx.work.await
 import androidx.work.workDataOf
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -47,6 +48,7 @@ class DefaultVideoDownloadRepository @Inject constructor(
             .map { entries ->
                 entries.map { it.toDomain() }.visibleAfterLatestEpisodeDeletion()
             }
+            .distinctUntilChanged()
 
     override fun observeStatuses(animeId: Int): Flow<Map<String, VideoDownloadItem>> =
         store.dao.observeDownloadsForAnime(animeId)
@@ -56,6 +58,7 @@ class DefaultVideoDownloadRepository @Inject constructor(
                     .visibleAfterLatestEpisodeDeletion()
                     .associateBy { it.statusKey }
             }
+            .distinctUntilChanged()
 
     override suspend fun getDownload(id: Long): VideoDownloadItem? =
         store.dao.getById(id)?.toDomain()

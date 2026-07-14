@@ -146,12 +146,15 @@ private fun subscriptionGroupKey(playerId: Int?, player: String, dubbing: String
 private fun String.normalizedSubscriptionPart(): String =
     trim().lowercase()
 
+private val SUBSCRIPTION_HTML_TAG_REGEX = Regex("<[^>]+>")
+private val SUBSCRIPTION_HTML_ENTITY_REGEX = Regex("&[a-z0-9#]+;")
+
 private fun String.relaxedSubscriptionPart(): String =
     trim()
         .lowercase()
         .replace('ё', 'е')
-        .replace(Regex("<[^>]+>"), "")
-        .replace(Regex("&[a-z0-9#]+;"), "")
+        .replace(SUBSCRIPTION_HTML_TAG_REGEX, "")
+        .replace(SUBSCRIPTION_HTML_ENTITY_REGEX, "")
         .filter { it.isLetterOrDigit() }
 
 private fun String.matchesRelaxed(other: String): Boolean =

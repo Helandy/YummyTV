@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.details.repository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -145,6 +146,7 @@ class YaniAnimeRepository(
     override fun observeWatchProgress(animeId: Int): Flow<List<AnimeWatchProgress>> =
         watchProgressStore.observeByAnimeId(animeId)
             .map { entries -> entries.map { it.toAnimeWatchProgress() } }
+            .distinctUntilChanged()
 
     private suspend fun fetchDetailsFromNetwork(
         animeId: Int,
