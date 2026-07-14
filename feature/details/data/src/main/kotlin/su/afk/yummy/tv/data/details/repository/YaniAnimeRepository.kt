@@ -155,16 +155,20 @@ class YaniAnimeRepository(
         val dto = api.getAnimeDetails(animeId)
         val details = dto.toAnimeDetails()
         val cachedAt = System.currentTimeMillis()
-        if (dto.response.animeId != null) {
-            animeStorage.saveDetails(
-                details.toAnimeDetailsCache(
-                    language = languageCode,
-                    cachedAt = cachedAt,
-                )
+        // Если удалось сохранить в кэш — возвращаем результат через тот же cache->domain
+        // маппер, что и при чтении из кэша, чтобы свежая загрузка не расходилась с ним.
+        val result = if (dto.response.animeId != null) {
+            val cache = details.toAnimeDetailsCache(
+                language = languageCode,
+                cachedAt = cachedAt,
             )
+            animeStorage.saveDetails(cache)
+            cache.toStoredAnimeDetails()
+        } else {
+            details
         }
         saveUserRatingFromDetails(dto, animeId, cachedAt)
-        return details
+        return result
     }
 
     private suspend fun saveUserRatingFromDetails(
@@ -190,14 +194,13 @@ class YaniAnimeRepository(
     ): List<AnimeVideo> {
         val dto = api.getAnimeVideos(animeId)
         val videos = dto.response.map { it.toAnimeVideo() }
-        animeStorage.saveVideos(
-            videos.toAnimeVideosCache(
-                animeId = animeId,
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = videos.toAnimeVideosCache(
+            animeId = animeId,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return videos
+        animeStorage.saveVideos(cache)
+        return cache.toStoredAnimeVideos()
     }
 
     private suspend fun fetchRecommendationsFromNetwork(
@@ -208,15 +211,14 @@ class YaniAnimeRepository(
         val recommendations = api.getAnimeRecommendations(animeId, fromAi)
             .response
             .mapNotNull { it.toAnimeRecommendation() }
-        animeStorage.saveRecommendations(
-            recommendations.toAnimeRecommendationsCache(
-                animeId = animeId,
-                language = languageCode,
-                fromAi = fromAi,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = recommendations.toAnimeRecommendationsCache(
+            animeId = animeId,
+            language = languageCode,
+            fromAi = fromAi,
+            cachedAt = System.currentTimeMillis(),
         )
-        return recommendations
+        animeStorage.saveRecommendations(cache)
+        return cache.toStoredAnimeRecommendations()
     }
 
     private suspend fun fetchTrailersFromNetwork(
@@ -226,13 +228,12 @@ class YaniAnimeRepository(
         val trailers = api.getAnimeTrailers(animeId)
             .response
             .map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
-        animeStorage.saveTrailers(
-            trailers.toAnimeTrailersCache(
-                animeId = animeId,
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = trailers.toAnimeTrailersCache(
+            animeId = animeId,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return trailers
+        animeStorage.saveTrailers(cache)
+        return cache.toStoredAnimeTrailers()
     }
 }

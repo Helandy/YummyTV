@@ -43,13 +43,12 @@ class YaniUserProfileRepository(
         languageCode: String,
     ): UserProfileSummary {
         val summary = api.getUserProfile(userId).response.toProfileSummary()
-        accountStorage.saveUserProfileSummary(
-            summary.toUserProfileSummaryCache(
-                userId = userId,
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = summary.toUserProfileSummaryCache(
+            userId = userId,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return summary
+        accountStorage.saveUserProfileSummary(cache)
+        return cache.toUserProfileSummary()
     }
 }

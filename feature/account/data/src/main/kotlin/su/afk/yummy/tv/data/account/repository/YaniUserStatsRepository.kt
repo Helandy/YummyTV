@@ -60,14 +60,13 @@ class YaniUserStatsRepository(
                 types = types.await(),
             ).toUserStats()
 
-            accountStorage.saveUserStats(
-                stats.toUserStatsCache(
-                    userId = userId,
-                    language = languageCode,
-                    cachedAt = System.currentTimeMillis(),
-                )
+            val cache = stats.toUserStatsCache(
+                userId = userId,
+                language = languageCode,
+                cachedAt = System.currentTimeMillis(),
             )
-            stats
+            accountStorage.saveUserStats(cache)
+            cache.toStoredUserStats()
         }
 }
 

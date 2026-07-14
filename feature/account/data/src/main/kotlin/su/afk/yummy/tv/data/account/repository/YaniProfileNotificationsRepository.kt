@@ -142,17 +142,18 @@ class YaniProfileNotificationsRepository(
         val notifications =
             api.getNotifications(limit = limit, offset = offset).map { it.toNotification() }
         val cachedAt = System.currentTimeMillis()
+        val cache = notifications.toNotificationsPageCache(
+            userId = userId,
+            language = languageCode,
+            limit = limit,
+            offset = offset,
+            cachedAt = cachedAt,
+        )
         accountStorage.saveNotifications(
-            notifications.toNotificationsPageCache(
-                userId = userId,
-                language = languageCode,
-                limit = limit,
-                offset = offset,
-                cachedAt = cachedAt,
-            ),
+            cache,
             prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
         )
-        return notifications
+        return cache.toNotifications()
     }
 
     private suspend fun fetchNotificationAnime(slug: String): AccountNotificationAnimeEntry {

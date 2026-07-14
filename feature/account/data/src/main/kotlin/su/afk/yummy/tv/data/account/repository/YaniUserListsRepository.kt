@@ -128,15 +128,14 @@ class YaniUserListsRepository(
         languageCode: String,
     ): List<UserAnimeListItem> {
         val items = api.getUserList(userId, listId).mapNotNull { it.toUserListItem() }
-        accountStorage.saveUserList(
-            items.toUserListCache(
-                userId = userId,
-                listId = listId,
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = items.toUserListCache(
+            userId = userId,
+            listId = listId,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return items
+        accountStorage.saveUserList(cache)
+        return cache.toUserListItems()
     }
 
     private suspend fun fetchAnimeListState(userId: Int, animeId: Int): UserAnimeListItem {

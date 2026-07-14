@@ -42,11 +42,10 @@ class YaniAccountRepository(
         }
         if (token.isBlank()) error("Empty access token")
         val profileDto = api.getProfile(token)
-        val profile = profileDto.toAccount()
-        saveProfile(profile)
-        settingsStore.setYaniAccount(profile.id, profile.nickname, profile.avatarUrl)
+        val savedProfile = saveProfile(profileDto.toAccount())
+        settingsStore.setYaniAccount(savedProfile.id, savedProfile.nickname, savedProfile.avatarUrl)
         yaniAuthPreferences.setRefreshToken(token)
-        profile
+        savedProfile
     }
 
     override suspend fun refreshToken(): YaniAccount? = withContext(Dispatchers.IO) {
@@ -54,7 +53,7 @@ class YaniAccountRepository(
         if (token.isBlank()) return@withContext getCachedProfileOrNull()
         val profile = runCatching {
             val profileDto = api.getProfile(token)
-            profileDto.toAccount().also { saveProfile(it) }
+            saveProfile(profileDto.toAccount())
         }.getOrElse {
             getCachedProfileOrNull()
         }
@@ -95,9 +94,7 @@ class YaniAccountRepository(
             }
 
             try {
-                api.getProfile()
-                    .toAccount()
-                    .also { saveProfile(it) }
+                saveProfile(api.getProfile().toAccount())
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -121,15 +118,19 @@ class YaniAccountRepository(
     private suspend fun saveProfile(
         profile: YaniAccount,
         cachedAt: Long = System.currentTimeMillis()
-    ) {
-        if (profile.id <= 0) return
-        accountStorage.saveProfile(profile.toProfileEntry(ACCOUNT_PROFILE_KEY_CURRENT, cachedAt))
+    ): YaniAccount {
+        if (profile.id <= 0) return profile
+        val entry = profile.toProfileEntry(ACCOUNT_PROFILE_KEY_CURRENT, cachedAt)
+        accountStorage.saveProfile(entry)
         accountStorage.saveProfile(
             profile.toProfileEntry(
                 accountProfileUserKey(profile.id),
                 cachedAt
             )
         )
+        // Возвращаем через тот же cache->domain маппер, что и при чтении из кэша, чтобы
+        // свежая загрузка не расходилась с последующим чтением.
+        return entry.toStoredAccount()
     }
 
     private suspend fun getCachedProfileOrNull(): YaniAccount? {

@@ -40,19 +40,17 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                api.getUserFriends(userId, limit, offset)
+                val friends = api.getUserFriends(userId, limit, offset)
                     .mapNotNull { it.toUserFriend() }
-                    .also { friends ->
-                        accountStorage.saveUserFriends(
-                            friends.toUserFriendsPageCache(
-                                userId = userId,
-                                language = languageCode,
-                                limit = limit,
-                                offset = offset,
-                                cachedAt = System.currentTimeMillis(),
-                            )
-                        )
-                    }
+                val cache = friends.toUserFriendsPageCache(
+                    userId = userId,
+                    language = languageCode,
+                    limit = limit,
+                    offset = offset,
+                    cachedAt = System.currentTimeMillis(),
+                )
+                accountStorage.saveUserFriends(cache)
+                cache.toUserFriends()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -70,19 +68,17 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                api.getUserReviews(userId, limit, offset)
+                val reviews = api.getUserReviews(userId, limit, offset)
                     .mapNotNull { it.toUserReviewSummary() }
-                    .also { reviews ->
-                        accountStorage.saveUserReviews(
-                            reviews.toUserReviewsPageCache(
-                                userId = userId,
-                                language = languageCode,
-                                limit = limit,
-                                offset = offset,
-                                cachedAt = System.currentTimeMillis(),
-                            )
-                        )
-                    }
+                val cache = reviews.toUserReviewsPageCache(
+                    userId = userId,
+                    language = languageCode,
+                    limit = limit,
+                    offset = offset,
+                    cachedAt = System.currentTimeMillis(),
+                )
+                accountStorage.saveUserReviews(cache)
+                cache.toUserReviews()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -100,19 +96,17 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                api.getUserPosts(userId, limit, offset)
+                val posts = api.getUserPosts(userId, limit, offset)
                     .mapNotNull { it.toUserPostSummary() }
-                    .also { posts ->
-                        accountStorage.saveUserPosts(
-                            posts.toUserPostsPageCache(
-                                userId = userId,
-                                language = languageCode,
-                                limit = limit,
-                                offset = offset,
-                                cachedAt = System.currentTimeMillis(),
-                            )
-                        )
-                    }
+                val cache = posts.toUserPostsPageCache(
+                    userId = userId,
+                    language = languageCode,
+                    limit = limit,
+                    offset = offset,
+                    cachedAt = System.currentTimeMillis(),
+                )
+                accountStorage.saveUserPosts(cache)
+                cache.toUserPosts()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -135,19 +129,19 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                api.getUserCollections(userId, limit, offset)
+                val collections = api.getUserCollections(userId, limit, offset)
                     .mapNotNull { it.toCollectionSummary() }
-                    .also { collections ->
-                        val cachedAt = System.currentTimeMillis()
-                        accountStorage.saveCollections(
-                            collections.toCollectionsPageCache(
-                                pageKey = pageKey,
-                                language = languageCode,
-                                cachedAt = cachedAt,
-                            ),
-                            prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
-                        )
-                    }
+                val cachedAt = System.currentTimeMillis()
+                val cache = collections.toCollectionsPageCache(
+                    pageKey = pageKey,
+                    language = languageCode,
+                    cachedAt = cachedAt,
+                )
+                accountStorage.saveCollections(
+                    cache,
+                    prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
+                )
+                cache.toCollectionSummaries()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {

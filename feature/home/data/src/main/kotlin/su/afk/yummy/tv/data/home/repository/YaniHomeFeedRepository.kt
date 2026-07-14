@@ -107,18 +107,20 @@ class YaniHomeFeedRepository(
         val dto = api.getFeed()
         AppLogger.i(TAG) { "Feed dto ${dto.summaryForLog()}" }
         val remoteFeed = dto.toHomeFeed(stringProvider)
-        val feed = remoteFeed.withLocalContinueWatching(displayWatchEntries)
+        val cache = remoteFeed.toHomeFeedCache(
+            language = languageCode,
+            watchSignature = watchSignature,
+            cachedAt = System.currentTimeMillis(),
+        )
+        homeFeedStore.saveFeed(cache)
+        // Возвращаем результат через тот же cache->domain маппер, что и при чтении из кэша,
+        // чтобы свежая загрузка и повторное чтение всегда давали одинаковый HomeFeed.
+        val feed =
+            cache.toStoredHomeFeed(stringProvider).withLocalContinueWatching(displayWatchEntries)
         AppLogger.i(TAG) {
             "Feed mapped ${feed.summaryForLog()} " +
                     "continueSamples=${feed.continueWatchingItems.summaryForLog()}"
         }
-        homeFeedStore.saveFeed(
-            remoteFeed.toHomeFeedCache(
-                language = languageCode,
-                watchSignature = watchSignature,
-                cachedAt = System.currentTimeMillis(),
-            )
-        )
         return feed
     }
 

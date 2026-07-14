@@ -107,13 +107,12 @@ class YaniAnimeExtrasRepository(
 
     private suspend fun fetchRatingSummary(animeId: Int): AnimeRatingSummary {
         val buckets = api.getRatingBuckets(animeId).map { AnimeRatingBucket(it.rating, it.count) }
-        accountStorage.saveRatingBuckets(
-            buckets.toRatingBucketsCache(
-                animeId = animeId,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = buckets.toRatingBucketsCache(
+            animeId = animeId,
+            cachedAt = System.currentTimeMillis(),
         )
-        return AnimeRatingSummary(distribution = buckets, userRating = null)
+        accountStorage.saveRatingBuckets(cache)
+        return cache.toRatingSummary()
     }
 
     private suspend fun fetchUserRating(userId: Int, animeId: Int): Int? {
@@ -122,14 +121,13 @@ class YaniAnimeExtrasRepository(
             ?.rating
             ?.toInt()
             ?.takeIf { it in 1..10 }
-        accountStorage.saveUserRating(
-            rating.toUserRatingEntry(
-                userId = userId,
-                animeId = animeId,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val entry = rating.toUserRatingEntry(
+            userId = userId,
+            animeId = animeId,
+            cachedAt = System.currentTimeMillis(),
         )
-        return rating
+        accountStorage.saveUserRating(entry)
+        return entry.toUserRating()
     }
 
     private suspend fun getCollectionsPage(
@@ -143,17 +141,18 @@ class YaniAnimeExtrasRepository(
         }
 
         return try {
-            fetch().also { collections ->
-                val cachedAt = System.currentTimeMillis()
-                accountStorage.saveCollections(
-                    collections.toCollectionsPageCache(
-                        pageKey = pageKey,
-                        language = languageCode,
-                        cachedAt = cachedAt,
-                    ),
-                    prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
-                )
-            }
+            val collections = fetch()
+            val cachedAt = System.currentTimeMillis()
+            val cache = collections.toCollectionsPageCache(
+                pageKey = pageKey,
+                language = languageCode,
+                cachedAt = cachedAt,
+            )
+            accountStorage.saveCollections(
+                cache,
+                prunePagesCachedBefore = cachedAt - ACCOUNT_PAGE_CACHE_RETENTION_MS,
+            )
+            cache.toCollectionSummaries()
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {

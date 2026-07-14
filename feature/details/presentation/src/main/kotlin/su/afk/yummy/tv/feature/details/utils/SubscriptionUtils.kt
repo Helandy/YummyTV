@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.utils.removeHtmlEntities
+import su.afk.yummy.tv.core.utils.stripHtmlTags
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
@@ -146,15 +148,12 @@ private fun subscriptionGroupKey(playerId: Int?, player: String, dubbing: String
 private fun String.normalizedSubscriptionPart(): String =
     trim().lowercase()
 
-private val SUBSCRIPTION_HTML_TAG_REGEX = Regex("<[^>]+>")
-private val SUBSCRIPTION_HTML_ENTITY_REGEX = Regex("&[a-z0-9#]+;")
-
 private fun String.relaxedSubscriptionPart(): String =
     trim()
         .lowercase()
         .replace('ё', 'е')
-        .replace(SUBSCRIPTION_HTML_TAG_REGEX, "")
-        .replace(SUBSCRIPTION_HTML_ENTITY_REGEX, "")
+        .stripHtmlTags()
+        .removeHtmlEntities()
         .filter { it.isLetterOrDigit() }
 
 private fun String.matchesRelaxed(other: String): Boolean =

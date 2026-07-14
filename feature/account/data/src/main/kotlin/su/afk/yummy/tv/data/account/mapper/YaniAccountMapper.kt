@@ -4,6 +4,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
+import su.afk.yummy.tv.core.utils.htmlToPlainText
 import su.afk.yummy.tv.data.account.dto.YaniAccountPosterDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationCountDto
@@ -289,19 +290,7 @@ internal fun YaniNotificationDto.toNotification(): ProfileNotification =
 internal fun YaniNotificationCountDto.toNotificationCount(): NotificationCount =
     NotificationCount(type = type, count = count)
 
-private val HTML_TAG_REGEX = Regex("<[^>]+>")
-private val WHITESPACE_REGEX = Regex("\\s+")
-
-private fun String.toPlainText(): String =
-    replace(HTML_TAG_REGEX, " ")
-        .replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace(WHITESPACE_REGEX, " ")
-        .trim()
+private fun String.toPlainText(): String = htmlToPlainText()
 
 private fun String.toCatalogItemSlug(): String? {
     val slug = substringAfter(CATALOG_ITEM_PATH, missingDelimiterValue = "")

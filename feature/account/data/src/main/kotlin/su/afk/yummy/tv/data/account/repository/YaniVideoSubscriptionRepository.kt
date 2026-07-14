@@ -58,13 +58,12 @@ class YaniVideoSubscriptionRepository(
         languageCode: String,
     ): List<VideoSubscription> {
         val subscriptions = api.getSubscriptions(userId).mapNotNull { it.toVideoSubscription() }
-        accountStorage.saveVideoSubscriptions(
-            subscriptions.toVideoSubscriptionsCache(
-                userId = userId,
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = subscriptions.toVideoSubscriptionsCache(
+            userId = userId,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return subscriptions
+        accountStorage.saveVideoSubscriptions(cache)
+        return cache.toVideoSubscriptions()
     }
 }
