@@ -82,6 +82,14 @@ interface VideoDownloadDao {
         updatedAt: Long,
     )
 
+    @Query(
+        """
+        SELECT DISTINCT cacheKey FROM video_downloads
+        WHERE status != 'Deleted'
+        """
+    )
+    suspend fun getActiveCacheKeys(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: VideoDownloadEntry): Long
 

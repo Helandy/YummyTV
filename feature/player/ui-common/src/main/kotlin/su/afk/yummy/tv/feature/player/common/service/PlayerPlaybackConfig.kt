@@ -36,6 +36,7 @@ private data class OfflineCacheConfig(
 @Singleton
 class DefaultPlayerPlaybackConfig @Inject constructor(
     private val cacheProvider: VideoDownloadCacheProvider,
+    private val streamingCacheProvider: PlayerStreamingCacheProvider,
 ) : PlayerPlaybackConfig {
     @Volatile
     private var headers: Map<String, String> = emptyMap()
@@ -86,7 +87,7 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
                 .createDataSource()
         } else {
             CacheDataSource.Factory()
-                .setCache(cacheProvider.cache)
+                .setCache(streamingCacheProvider.cache)
                 .setUpstreamDataSourceFactory(PlayerDataSourceFactory.create(headers))
                 .createDataSource()
         }

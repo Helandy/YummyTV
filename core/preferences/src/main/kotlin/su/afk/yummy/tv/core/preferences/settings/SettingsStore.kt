@@ -87,6 +87,8 @@ class SettingsStore(private val context: Context) {
     private val supportPromptDismissedKey = booleanPreferencesKey("support_prompt_dismissed")
     private val supportPromptFirstInstallTimeMsKey =
         longPreferencesKey("support_prompt_first_install_time_ms")
+    private val legacyStreamingCachePrunedKey =
+        booleanPreferencesKey("legacy_streaming_cache_pruned")
 
     @Volatile private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
 
@@ -494,6 +496,20 @@ class SettingsStore(private val context: Context) {
             prefs[lastStartedVersionCodeKey] = versionCode
         }
         return isFreshVersion
+    }
+
+    /**
+     * Returns `true` exactly once: the first time this is called after the streaming/download
+     * cache split, so callers can prune the now-unbounded-legacy entries a single time. Every
+     * later call returns `false`.
+     */
+    suspend fun consumeLegacyStreamingCachePruneFlag(): Boolean {
+        var shouldPrune = false
+        context.dataStore.edit { prefs ->
+            shouldPrune = prefs[legacyStreamingCachePrunedKey] != true
+            prefs[legacyStreamingCachePrunedKey] = true
+        }
+        return shouldPrune
     }
 
     private fun String?.toDetailsButtonOrder(): List<DetailsButtonAction> {
