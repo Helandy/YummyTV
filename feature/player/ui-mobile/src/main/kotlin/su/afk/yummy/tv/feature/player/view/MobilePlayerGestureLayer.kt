@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.view
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,6 +13,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
+import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import kotlin.math.sqrt
 
 @Composable
@@ -22,6 +24,11 @@ internal fun MobilePlayerGestureLayer(
     onTransformStart: () -> Unit,
     onTransform: (centroid: Offset, pan: Offset, zoomChange: Float) -> Unit,
     onTransformEnd: () -> Unit,
+    onVerticalDragStart: (zone: MobileVerticalGestureZone) -> Unit,
+    onVerticalDrag: (zone: MobileVerticalGestureZone, deltaFraction: Float) -> Unit,
+    onVerticalDragEnd: (zone: MobileVerticalGestureZone) -> Unit,
+    onLongPressStart: () -> Unit,
+    onLongPressEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnTap by rememberUpdatedState(onTap)
@@ -29,6 +36,11 @@ internal fun MobilePlayerGestureLayer(
     val currentOnTransformStart by rememberUpdatedState(onTransformStart)
     val currentOnTransform by rememberUpdatedState(onTransform)
     val currentOnTransformEnd by rememberUpdatedState(onTransformEnd)
+    val currentOnVerticalDragStart by rememberUpdatedState(onVerticalDragStart)
+    val currentOnVerticalDrag by rememberUpdatedState(onVerticalDrag)
+    val currentOnVerticalDragEnd by rememberUpdatedState(onVerticalDragEnd)
+    val currentOnLongPressStart by rememberUpdatedState(onLongPressStart)
+    val currentOnLongPressEnd by rememberUpdatedState(onLongPressEnd)
 
     Box(
         modifier = modifier
@@ -87,6 +99,43 @@ internal fun MobilePlayerGestureLayer(
                             MobileSeekDirection.Forward
                         }
                         currentOnDoubleTap(direction)
+                    },
+                    onLongPress = { currentOnLongPressStart() },
+                    onPress = {
+                        try {
+                            tryAwaitRelease()
+                        } finally {
+                            currentOnLongPressEnd()
+                        }
+                    },
+                )
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+
+                var zone: MobileVerticalGestureZone? = null
+                detectVerticalDragGestures(
+                    onDragStart = { offset ->
+                        zone = if (offset.x < size.width / 2f) {
+                            MobileVerticalGestureZone.Brightness
+                        } else {
+                            MobileVerticalGestureZone.Volume
+                        }
+                        zone?.let(currentOnVerticalDragStart)
+                    },
+                    onVerticalDrag = { _, dragAmount ->
+                        val activeZone = zone ?: return@detectVerticalDragGestures
+                        if (size.height > 0) {
+                            currentOnVerticalDrag(activeZone, -dragAmount / size.height)
+                        }
+                    },
+                    onDragEnd = {
+                        zone?.let(currentOnVerticalDragEnd)
+                        zone = null
+                    },
+                    onDragCancel = {
+                        zone?.let(currentOnVerticalDragEnd)
+                        zone = null
                     },
                 )
             },

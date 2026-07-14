@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.player.view
 
+import android.content.Context
+import android.media.AudioManager
 import android.util.Log
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -65,17 +68,23 @@ import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
 import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
+import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipCallbacks
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_MIN_BRIGHTNESS
 import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_PIP_SEEK_STEP_MS
 import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
+import su.afk.yummy.tv.feature.player.utils.gestureIcon
 import su.afk.yummy.tv.feature.player.utils.isAtMobilePlayerEnd
+import su.afk.yummy.tv.feature.player.utils.readSystemBrightnessFraction
 import su.afk.yummy.tv.feature.player.utils.segments
+import su.afk.yummy.tv.feature.player.utils.toGesturePercentText
 import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
 import su.afk.yummy.tv.feature.player.utils.toastIcon
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
@@ -143,6 +152,18 @@ internal fun MobileNativePlayer(
     var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
     var liveVideoTransform by remember { mutableStateOf(videoTransform) }
     var transformGestureActive by remember { mutableStateOf(false) }
+    var isSpeedBoosted by remember { mutableStateOf(false) }
+    var brightnessGestureActive by remember { mutableStateOf(false) }
+    var brightnessLevel by remember { mutableFloatStateOf(0.5f) }
+    var volumeGestureActive by remember { mutableStateOf(false) }
+    var volumeLevel by remember { mutableFloatStateOf(0.5f) }
+    val audioManager = remember(context) {
+        context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    }
+    val maxVolume = remember(audioManager) {
+        audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC)?.takeIf { it > 0 } ?: 1
+    }
+    val effectiveSpeed = if (isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
@@ -208,6 +229,18 @@ internal fun MobileNativePlayer(
         onDispose { hostView.keepScreenOn = wasKeepingScreenOn }
     }
 
+    DisposableEffect(activity) {
+        val originalBrightness = activity?.window?.attributes?.screenBrightness
+        onDispose {
+            activity?.window?.let { window ->
+                window.attributes = window.attributes.apply {
+                    screenBrightness = originalBrightness
+                        ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                }
+            }
+        }
+    }
+
     fun scheduleOverlayHide() {
         hideJob?.cancel()
         hideJob = coroutineScope.launch {
@@ -232,6 +265,56 @@ internal fun MobileNativePlayer(
             overlayVisible = false
         } else {
             showOverlay()
+        }
+    }
+
+    fun startVerticalGesture(zone: MobileVerticalGestureZone) {
+        hideJob?.cancel()
+        when (zone) {
+            MobileVerticalGestureZone.Brightness -> {
+                brightnessLevel = activity?.window?.attributes?.screenBrightness
+                    ?.takeIf { it in 0f..1f }
+                    ?: readSystemBrightnessFraction(context)
+                brightnessGestureActive = true
+            }
+
+            MobileVerticalGestureZone.Volume -> {
+                volumeLevel = audioManager
+                    ?.getStreamVolume(AudioManager.STREAM_MUSIC)
+                    ?.div(maxVolume.toFloat())
+                    ?: 0f
+                volumeGestureActive = true
+            }
+        }
+    }
+
+    fun applyVerticalGesture(zone: MobileVerticalGestureZone, deltaFraction: Float) {
+        when (zone) {
+            MobileVerticalGestureZone.Brightness -> {
+                brightnessLevel = (brightnessLevel + deltaFraction)
+                    .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
+                activity?.window?.let { window ->
+                    window.attributes = window.attributes.apply {
+                        screenBrightness = brightnessLevel
+                    }
+                }
+            }
+
+            MobileVerticalGestureZone.Volume -> {
+                volumeLevel = (volumeLevel + deltaFraction).coerceIn(0f, 1f)
+                audioManager?.setStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    (volumeLevel * maxVolume).roundToInt(),
+                    0,
+                )
+            }
+        }
+    }
+
+    fun endVerticalGesture(zone: MobileVerticalGestureZone) {
+        when (zone) {
+            MobileVerticalGestureZone.Brightness -> brightnessGestureActive = false
+            MobileVerticalGestureZone.Volume -> volumeGestureActive = false
         }
     }
 
@@ -492,6 +575,9 @@ internal fun MobileNativePlayer(
             overlayVisible = false
             nextEpisodePromptState = PlayerEndPromptState.Hidden
             transformGestureActive = false
+            isSpeedBoosted = false
+            brightnessGestureActive = false
+            volumeGestureActive = false
             settingsMode = null
             stepSeekToastText = null
             hideJob?.cancel()
@@ -535,8 +621,8 @@ internal fun MobileNativePlayer(
         }
     }
 
-    LaunchedEffect(player, selectedSpeed, wantsPlay) {
-        player.setPlaybackSpeed(selectedSpeed)
+    LaunchedEffect(player, effectiveSpeed, wantsPlay) {
+        player.setPlaybackSpeed(effectiveSpeed)
         player.playWhenReady = wantsPlay
         pipSession.setPlaying(wantsPlay, activity)
     }
@@ -640,6 +726,16 @@ internal fun MobileNativePlayer(
             onTransformEnd = {
                 transformGestureActive = false
             },
+            onVerticalDragStart = ::startVerticalGesture,
+            onVerticalDrag = ::applyVerticalGesture,
+            onVerticalDragEnd = ::endVerticalGesture,
+            onLongPressStart = {
+                isSpeedBoosted = true
+                hideJob?.cancel()
+            },
+            onLongPressEnd = {
+                isSpeedBoosted = false
+            },
         )
 
         MobilePlayerTopBar(
@@ -718,6 +814,31 @@ internal fun MobileNativePlayer(
                 .padding(top = 28.dp),
         )
 
+        MobilePlayerGestureIndicator(
+            visible = brightnessGestureActive && !isInPictureInPictureMode,
+            icon = MobileVerticalGestureZone.Brightness.gestureIcon,
+            percentText = brightnessLevel.toGesturePercentText(),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 32.dp),
+        )
+
+        MobilePlayerGestureIndicator(
+            visible = volumeGestureActive && !isInPictureInPictureMode,
+            icon = MobileVerticalGestureZone.Volume.gestureIcon,
+            percentText = volumeLevel.toGesturePercentText(),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 32.dp),
+        )
+
+        MobilePlayerSpeedBoostIndicator(
+            visible = isSpeedBoosted && !isInPictureInPictureMode,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 28.dp),
+        )
+
         if (nextEpisodePromptState.isVisible && ui.hasNextEpisode && !isInPictureInPictureMode) {
             MobilePlayerEndPrompt(
                 title = when (val prompt = nextEpisodePromptState) {
@@ -790,3 +911,4 @@ internal fun MobileNativePlayer(
 }
 
 private const val PLAYBACK_LOG_TAG = "PlayerPlayback"
+private const val MOBILE_PLAYER_SPEED_BOOST = 2f
