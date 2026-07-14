@@ -38,6 +38,7 @@ internal fun CollectionDetail.toCollectionDetailCache(
                 title = item.title,
                 posterUrl = item.posterUrl,
                 rating = item.rating,
+                year = item.year,
             )
         },
     )
@@ -60,6 +61,7 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
                     title = it.title,
                     posterUrl = it.posterUrl,
                     rating = it.rating,
+                    year = it.year,
                 )
             },
     )

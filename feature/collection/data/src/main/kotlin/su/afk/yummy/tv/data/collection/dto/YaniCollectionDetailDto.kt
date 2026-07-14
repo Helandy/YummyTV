@@ -53,6 +53,7 @@ data class YaniCollectionAnimeDto(
     val title: String = "",
     val poster: YaniCollectionPosterDto? = null,
     val rating: YaniCollectionRatingDto? = null,
+    val year: Int? = null,
 )
 
 @Serializable

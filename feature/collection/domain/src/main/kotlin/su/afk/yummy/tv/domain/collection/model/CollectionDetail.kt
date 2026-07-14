@@ -17,4 +17,5 @@ data class CollectionAnimeItem(
     val title: String,
     val posterUrl: String?,
     val rating: Double?,
+    val year: Int?,
 )

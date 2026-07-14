@@ -8,10 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvTitleCard
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 
@@ -30,16 +29,27 @@ internal fun CollectionAnimeCard(
         modifier = modifier,
         posterOverlay = {
             item.rating?.let { rating ->
-                Text(
-                    text = "%.1f".format(rating),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                RatingBadge(
+                    rating = rating,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        .padding(4.dp),
+                )
+            }
+            item.year?.let { year ->
+                Text(
+                    text = year.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
                         .padding(4.dp)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 5.dp, vertical = 2.dp),
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                            RoundedCornerShape(4.dp),
+                        )
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
                 )
             }
         },

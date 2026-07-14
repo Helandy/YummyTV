@@ -1710,6 +1710,12 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_34_35 = object : Migration(34, 35) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE collection_anime_items ADD COLUMN year INTEGER")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1742,6 +1748,7 @@ object StorageModule {
                 MIGRATION_31_32,
                 MIGRATION_32_33,
                 MIGRATION_33_34,
+                MIGRATION_34_35,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

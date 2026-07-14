@@ -50,6 +50,7 @@ private fun YaniCollectionAnimeDto.toDomain(): CollectionAnimeItem? {
         title = title,
         posterUrl = poster?.toUrl(),
         rating = rating?.average,
+        year = year?.takeIf { it > 0 },
     )
 }
 

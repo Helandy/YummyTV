@@ -41,6 +41,7 @@ data class CollectionAnimeItemEntry(
     val title: String,
     val posterUrl: String? = null,
     val rating: Double? = null,
+    val year: Int? = null,
 )
 
 @Entity(
