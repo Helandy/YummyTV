@@ -10,13 +10,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.model.PendingContentFocusRequest
 import su.afk.yummy.tv.feature.main.model.RegisteredContentFocusRequester
 import su.afk.yummy.tv.feature.main.utils.isContentFocusKeyFor
 import su.afk.yummy.tv.feature.main.utils.requestFocusOnFrameBoundary
 
-private const val FOCUS_RESTORE_ATTEMPTS = 3
+private const val TAG = "TvMainFocus"
 
 internal class TvMainFocusController(
     initialShowMainMenu: Boolean,
@@ -194,17 +195,16 @@ internal fun TvMainFocusEffects(
         if (!showMainMenu || !focusController.restoreContentFocusAfterMenuShown) return@LaunchedEffect
         val restoreRequester = currentPreferredContentFocusRequester
             ?: focusController.contentFocusRequester
-        var restored = false
-        var attempt = 0
-        while (!restored && attempt < FOCUS_RESTORE_ATTEMPTS) {
-            restored = requestFocusOnFrameBoundary(restoreRequester)
-            if (!restored) {
-                withFrameNanos { }
-            }
-            attempt += 1
-        }
-        if (restored) {
+        // Одна попытка с ожиданием по кадрам: если requester ещё не приаттачен,
+        // флаг restore остаётся взведённым, и эффект перезапустится детерминированно —
+        // по регистрации preferred requester'а (смена ключа currentPreferredContentFocusRequester).
+        if (requestFocusOnFrameBoundary(restoreRequester)) {
             focusController.onContentFocusRestoredAfterMenuShown()
+        } else {
+            AppLogger.w(TAG) {
+                "Восстановление фокуса контента не удалось: root=$selectedRoot, " +
+                        "key=$contentFocusKey, preferred=${currentPreferredContentFocusRequester != null}"
+            }
         }
     }
 
@@ -222,17 +222,13 @@ internal fun TvMainFocusEffects(
             ?: focusController.contentFocusRequester
         withFrameNanos { }
         withFrameNanos { }
-        var restored = false
-        var attempt = 0
-        while (!restored && attempt < FOCUS_RESTORE_ATTEMPTS) {
-            restored = requestFocusOnFrameBoundary(restoreRequester)
-            if (!restored) {
-                withFrameNanos { }
-            }
-            attempt += 1
-        }
-        if (restored) {
+        if (requestFocusOnFrameBoundary(restoreRequester)) {
             focusController.clearPendingContentFocusRequest(request.token)
+        } else {
+            AppLogger.w(TAG) {
+                "Запрошенный фокус контента не удался: root=$selectedRoot, " +
+                        "key=$contentFocusKey, preferred=${currentPreferredContentFocusRequester != null}"
+            }
         }
     }
 }

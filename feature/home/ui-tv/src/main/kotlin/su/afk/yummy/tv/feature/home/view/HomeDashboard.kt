@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -146,13 +147,18 @@ internal fun HomeDashboard(
     fun requestRowFocus(index: Int) {
         if (totalLazyItems <= 0 || index !in 0 until totalLazyItems) return
         val target = index.coerceIn(0, totalLazyItems - 1)
-        lastFocusedLazyIndex = target
+        lastFocusedRowKey = rowKeyForLazyIndex(target)
         scope.launch {
             lazyColumnState.scrollToItem(target)
             snapshotFlow {
                 lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
             }.first { it }
             runCatching { focusRequesterForLazyIndex(target).requestFocus() }
+                .onFailure { error ->
+                    AppLogger.w(TAG, error) {
+                        "requestRowFocus: не удалось сфокусировать ряд ${rowKeyForLazyIndex(target)} (index=$target)"
+                    }
+                }
         }
     }
 
@@ -184,7 +190,7 @@ internal fun HomeDashboard(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             if (hasContinueWatching) {
-                item(key = "continue_watching") {
+                item(key = ROW_CONTINUE_WATCHING) {
                     CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
                         var rowHadFocus by remember { mutableStateOf(false) }
                         Box(
@@ -192,7 +198,7 @@ internal fun HomeDashboard(
                                 val hadFocus = rowHadFocus
                                 rowHadFocus = state.hasFocus
                                 if (state.hasFocus) {
-                                    lastFocusedLazyIndex = 0
+                                    lastFocusedRowKey = ROW_CONTINUE_WATCHING
                                     if (!hadFocus) {
                                         scope.launch { lazyColumnState.scrollToItem(0) }
                                     }
@@ -216,7 +222,7 @@ internal fun HomeDashboard(
             }
 
             if (hasHero) {
-                item(key = "hero_carousel") {
+                item(key = ROW_HERO) {
                     CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
                         var heroRowHasFocus by remember { mutableStateOf(false) }
                         var heroEnterScrollJob by remember { mutableStateOf<Job?>(null) }
@@ -237,7 +243,7 @@ internal fun HomeDashboard(
                                 val hadFocus = heroRowHasFocus
                                 heroRowHasFocus = state.hasFocus
                                 if (state.hasFocus) {
-                                    lastFocusedLazyIndex = heroLazyIdx
+                                    lastFocusedRowKey = ROW_HERO
                                     if (!hadFocus) {
                                         scrollHeroToTopWhileFocused()
                                     }
@@ -251,11 +257,11 @@ internal fun HomeDashboard(
                                 onItemSelected = onItemSelected,
                                 sectionKey = SECTION_HERO,
                                 rowFocusRequester = heroFocusRequester,
-                                rowIsFocused = columnHasFocus && lastFocusedLazyIndex == heroLazyIdx,
+                                rowIsFocused = columnHasFocus && lastFocusedRowKey == ROW_HERO,
                                 upFocusRequester = previousRowFocusRequester(heroLazyIdx),
                                 downFocusRequester = nextRowFocusRequester(heroLazyIdx),
                                 onCarouselFocused = {
-                                    lastFocusedLazyIndex = heroLazyIdx
+                                    lastFocusedRowKey = ROW_HERO
                                 },
                                 onCarouselFocusSettled = {
                                     scrollHeroToTopWhileFocused()
@@ -289,7 +295,7 @@ internal fun HomeDashboard(
                             val hadFocus = rowHadFocus
                             rowHadFocus = state.hasFocus
                             if (state.hasFocus) {
-                                lastFocusedLazyIndex = lazyIdx
+                                lastFocusedRowKey = rowKey
                                 // Авто-подскролл колонки отключён (HomeColumnNoAutoBringIntoViewSpec),
                                 // поэтому при получении фокуса рядом выравниваем колонку вручную —
                                 // фокус может прийти в обход requestRowFocus (focusProperties.up,
@@ -306,7 +312,7 @@ internal fun HomeDashboard(
                             showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                             onItemSelected = onItemSelected,
                             rowFocusRequester = sectionFocusRequesters[index],
-                            rowIsFocused = columnHasFocus && lastFocusedLazyIndex == lazyIdx,
+                            rowIsFocused = columnHasFocus && lastFocusedRowKey == rowKey,
                             rowKey = rowKey,
                             restoreItemKey = lastFocusedSectionItemKeys[rowKey],
                             onFocusedItemKeyChanged = { itemKey ->
@@ -357,3 +363,6 @@ private object HomeColumnNoAutoBringIntoViewSpec : BringIntoViewSpec {
 }
 
 private const val SECTION_HERO = "__hero"
+private const val ROW_CONTINUE_WATCHING = "continue_watching"
+private const val ROW_HERO = "hero_carousel"
+private const val TAG = "TvHomeFocus"
