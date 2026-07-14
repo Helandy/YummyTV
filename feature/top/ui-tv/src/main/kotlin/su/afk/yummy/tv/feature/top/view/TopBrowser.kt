@@ -324,6 +324,7 @@ internal fun TopBrowser(
                             items(
                                 count = itemCount,
                                 key = pagingItems.itemKey { it.id },
+                                contentType = { "item" },
                             ) { index ->
                                 val item = pagingItems[index] ?: return@items
                                 val stableOnClick = remember(item, index) {
@@ -359,7 +360,10 @@ internal fun TopBrowser(
                             }
 
                             if (appendState is LoadState.Loading) {
-                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                item(
+                                    span = { GridItemSpan(maxLineSpan) },
+                                    contentType = { "footer" },
+                                ) {
                                     TvLoadingFooter()
                                 }
                             }

@@ -134,7 +134,7 @@ internal fun EpisodesGrid(
         horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
         verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(span = { GridItemSpan(maxLineSpan) }, contentType = { "header" }) {
             Text(
                 text = stringResource(R.string.details_episodes_count_title, episodeGroups.size),
                 style = MaterialTheme.typography.headlineSmall,
@@ -145,7 +145,11 @@ internal fun EpisodesGrid(
             )
         }
 
-        itemsIndexed(episodeGroups, key = { _, entry -> entry.key }) { index, (_, groupVideos) ->
+        itemsIndexed(
+            episodeGroups,
+            key = { _, entry -> entry.key },
+            contentType = { _, _ -> "item" },
+        ) { index, (_, groupVideos) ->
             val representative = groupVideos.firstOrNull { it.dubbing == bestDubbing }
                 ?: groupVideos.first()
             EpisodeCard(

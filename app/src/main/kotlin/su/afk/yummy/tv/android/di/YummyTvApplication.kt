@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.android.di
 
+import android.app.ActivityManager
 import android.app.Application
 import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
@@ -89,6 +90,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
         File(cacheDir, UPDATE_APK_FILE_NAME).delete()
     }
 
+    private fun isLowRamDevice(): Boolean =
+        (getSystemService(ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
+
     private fun setupAnalytics() {
         analyticsInitializer.initialize(this, BuildConfig.APPMETRICA_API_KEY)
     }
@@ -100,13 +104,15 @@ class YummyTvApplication : Application(), Configuration.Provider {
     @OptIn(ExperimentalCoilApi::class)
     private fun setupCoilImageLoader() {
         val cacheBytes = settingsStore.currentPreviewCacheSize.megabytes.toLong() * 1024L * 1024L
+        val memoryCachePercent =
+            if (isLowRamDevice()) LOW_RAM_MEMORY_CACHE_PERCENT else MEMORY_CACHE_PERCENT
         SingletonImageLoader.setSafe {
             val imageHttpClient = HttpClient(OkHttp)
             ImageLoader.Builder(it)
                 .crossfade(true)
                 .memoryCache {
                     MemoryCache.Builder()
-                        .maxSizePercent(applicationContext, 0.20)
+                        .maxSizePercent(applicationContext, memoryCachePercent)
                         .build()
                 }
                 .diskCache {
@@ -125,5 +131,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
     private companion object {
         const val UPDATE_APK_FILE_NAME = "update.apk"
         private const val IMAGE_CACHE_DIR_NAME = "image_cache"
+        private const val MEMORY_CACHE_PERCENT = 0.15
+        private const val LOW_RAM_MEMORY_CACHE_PERCENT = 0.10
     }
 }

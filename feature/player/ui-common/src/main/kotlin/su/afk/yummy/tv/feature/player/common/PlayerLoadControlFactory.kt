@@ -7,15 +7,18 @@ import androidx.media3.exoplayer.LoadControl
 @UnstableApi
 object PlayerLoadControlFactory {
     // Увеличиваем только оперативный буфер ExoPlayer: это не дисковый кэш и не офлайн-загрузка.
-    fun create(): LoadControl =
+    // На low-RAM устройствах держим меньший запас данных, чтобы не отъедать заметную долю памяти.
+    fun create(isLowRamDevice: Boolean): LoadControl =
         DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                MIN_BUFFER_MS,
-                MAX_BUFFER_MS,
+                if (isLowRamDevice) MIN_BUFFER_MS_LOW_RAM else MIN_BUFFER_MS,
+                if (isLowRamDevice) MAX_BUFFER_MS_LOW_RAM else MAX_BUFFER_MS,
                 BUFFER_FOR_PLAYBACK_MS,
                 BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
             )
-            .setTargetBufferBytes(TARGET_BUFFER_BYTES)
+            .setTargetBufferBytes(
+                if (isLowRamDevice) TARGET_BUFFER_BYTES_LOW_RAM else TARGET_BUFFER_BYTES
+            )
             .setPrioritizeTimeOverSizeThresholds(PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS)
             .build()
 
@@ -27,6 +30,11 @@ object PlayerLoadControlFactory {
 
     // Ограничиваем целевой размер буфера, чтобы слабые TV-устройства не забирали слишком много памяти.
     private const val TARGET_BUFFER_BYTES = 64 * 1024 * 1024
+
+    // Профиль для ActivityManager.isLowRamDevice(): меньше буфер по времени и по памяти.
+    private const val MIN_BUFFER_MS_LOW_RAM = 10_000
+    private const val MAX_BUFFER_MS_LOW_RAM = 30_000
+    private const val TARGET_BUFFER_BYTES_LOW_RAM = 24 * 1024 * 1024
 
     // Не заставляем плеер любой ценой добирать время буфера, если уже достигнут лимит по памяти.
     private const val PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS = false

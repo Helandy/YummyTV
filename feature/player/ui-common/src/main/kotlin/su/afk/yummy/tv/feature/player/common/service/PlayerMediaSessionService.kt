@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.player.common.service
 
+import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.util.Log
@@ -35,13 +36,18 @@ class PlayerMediaSessionService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        val isLowRamDevice = isLowRamDevice()
         val trackSelector = DefaultTrackSelector(this).apply {
-            setParameters(buildUponParameters().setForceHighestSupportedBitrate(true))
+            // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
+            // принудительного максимума: меньше нагрузка на декодер и на буфер по памяти.
+            setParameters(
+                buildUponParameters().setForceHighestSupportedBitrate(!isLowRamDevice)
+            )
         }
         val exoPlayer = ExoPlayer.Builder(this)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(DefaultMediaSourceFactory(playbackConfig.dataSourceFactory()))
-            .setLoadControl(PlayerLoadControlFactory.create())
+            .setLoadControl(PlayerLoadControlFactory.create(isLowRamDevice))
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addListener(object : Player.Listener {
@@ -100,10 +106,9 @@ class PlayerMediaSessionService : MediaSessionService() {
         mediaSession
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val current = player ?: return
-        if (!current.playWhenReady || current.mediaItemCount == 0 || current.playbackState == Player.STATE_ENDED) {
-            stopSelf()
-        }
+        // Видео-плеер не поддерживает воспроизведение звука в фоне без экрана: если пользователь
+        // смахнул приложение из Recents, держать ExoPlayer (буфер + стриминг-кэш) в памяти незачем.
+        stopSelf()
     }
 
     override fun onDestroy() {
@@ -113,6 +118,9 @@ class PlayerMediaSessionService : MediaSessionService() {
         player = null
         super.onDestroy()
     }
+
+    private fun isLowRamDevice(): Boolean =
+        (getSystemService(ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
 
     private fun createSessionActivityPendingIntent(): PendingIntent {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
