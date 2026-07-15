@@ -172,7 +172,19 @@ class HomeViewModel @Inject internal constructor(
 
     private fun load() {
         viewModelScope.launch {
-            setState { copy(isLoading = true, error = null) }
+            val cachedFeed = if (currentState.feed == null) {
+                runSuspendCatching { getCachedHomeFeed() }.getOrNull()
+            } else {
+                null
+            }
+            if (cachedFeed != null) {
+                setState { copy(error = null) }
+                applyFeed(cachedFeed, isLoading = false)
+            } else if (currentState.feed == null) {
+                setState { copy(isLoading = true, error = null) }
+            } else {
+                setState { copy(error = null) }
+            }
             runSuspendCatching { getHomeFeed() }.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
@@ -180,7 +192,11 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = e.message ?: stringProvider.get(R.string.home_load_error)
+                            error = if (feed == null) {
+                                e.message ?: stringProvider.get(R.string.home_load_error)
+                            } else {
+                                error
+                            },
                         )
                     }
                 },

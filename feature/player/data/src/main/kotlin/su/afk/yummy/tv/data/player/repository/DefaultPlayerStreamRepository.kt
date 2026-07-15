@@ -18,11 +18,33 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
     private val allohaSessionManager: AllohaPlaybackSessionManager,
 ) : PlayerStreamRepository {
 
+    private val resolveCache = object : LinkedHashMap<String, CachedStream>(
+        RESOLVE_CACHE_MAX_ENTRIES,
+        0.75f,
+        true,
+    ) {
+        override fun removeEldestEntry(
+            eldest: MutableMap.MutableEntry<String, CachedStream>,
+        ): Boolean = size > RESOLVE_CACHE_MAX_ENTRIES
+    }
+
     override suspend fun resolve(request: PlayerStreamRequest): PlayerStreamResolveResult {
         val url = request.iframeUrl
-        return extractors.firstOrNull { it.supports(url) }
-            ?.extract(request, context)
-            ?: PlayerStreamResolveResult.Unsupported
+        val extractor = extractors.firstOrNull { it.supports(url) }
+            ?: return PlayerStreamResolveResult.Unsupported
+        // Alloha-стримы живут внутри playback-сессии (прокси, ротация подписанных
+        // манифестов), их кэшировать по URL нельзя — сессией управляет
+        // AllohaPlaybackSessionManager.
+        if (extractor is AllohaExtractor) return extractor.extract(request, context)
+
+        val cacheKey = "$url|${request.autoQualityLabel}"
+        cachedStream(cacheKey)?.let { return it }
+
+        val result = extractor.extract(request, context)
+        if (result is PlayerStreamResolveResult.Stream) {
+            rememberStream(cacheKey, result)
+        }
+        return result
     }
 
     override suspend fun openAllohaSession(request: PlayerStreamRequest): AllohaStreamSession? =
@@ -33,4 +55,33 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
         } else {
             allohaExtractor.openSession(request, context)
         }
+
+    private fun cachedStream(key: String): PlayerStreamResolveResult.Stream? =
+        synchronized(resolveCache) {
+            val cached = resolveCache[key] ?: return null
+            if (System.currentTimeMillis() - cached.resolvedAt > RESOLVE_CACHE_TTL_MS) {
+                resolveCache.remove(key)
+                null
+            } else {
+                cached.stream
+            }
+        }
+
+    private fun rememberStream(key: String, stream: PlayerStreamResolveResult.Stream) {
+        synchronized(resolveCache) {
+            resolveCache[key] = CachedStream(stream, System.currentTimeMillis())
+        }
+    }
+
+    private data class CachedStream(
+        val stream: PlayerStreamResolveResult.Stream,
+        val resolvedAt: Long,
+    )
+
+    private companion object {
+        // Ссылки на стримы подписанные и протухают, поэтому TTL короткий: достаточно,
+        // чтобы не репарсить iframe при смене качества или повторном входе в плеер.
+        const val RESOLVE_CACHE_TTL_MS = 3 * 60 * 1000L
+        const val RESOLVE_CACHE_MAX_ENTRIES = 8
+    }
 }

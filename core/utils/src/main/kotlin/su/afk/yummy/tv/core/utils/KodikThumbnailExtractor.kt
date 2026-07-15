@@ -4,14 +4,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.concurrent.ConcurrentHashMap
 
 object KodikThumbnailExtractor {
 
-    private val cache = ConcurrentHashMap<String, String>()
+    private const val CACHE_MAX_ENTRIES = 200
+
+    private val cache = object : LinkedHashMap<String, String>(CACHE_MAX_ENTRIES, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>): Boolean =
+            size > CACHE_MAX_ENTRIES
+    }
 
     suspend fun extract(iframeUrl: String): String? {
-        cache[iframeUrl]?.let { return it.ifEmpty { null } }
+        synchronized(cache) { cache[iframeUrl] }?.let { return it.ifEmpty { null } }
         return withContext(Dispatchers.IO) {
             val result = try {
                 val html = fetchHtml(normalizeUrl(iframeUrl))
@@ -19,7 +23,7 @@ object KodikThumbnailExtractor {
             } catch (_: Exception) {
                 null
             }
-            cache[iframeUrl] = result ?: ""
+            synchronized(cache) { cache[iframeUrl] = result ?: "" }
             result
         }
     }
@@ -46,7 +50,10 @@ object KodikThumbnailExtractor {
         conn.readTimeout = 10_000
         conn.instanceFollowRedirects = true
         conn.setRequestProperty("Referer", "https://yani.tv/")
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        conn.setRequestProperty(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         conn.setRequestProperty("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
         return conn.inputStream.bufferedReader().readText()
     }

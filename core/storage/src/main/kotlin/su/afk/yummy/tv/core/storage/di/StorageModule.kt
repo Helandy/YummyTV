@@ -1723,6 +1723,12 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_36_37 = object : Migration(36, 37) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS remote_continue_watching")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1757,6 +1763,7 @@ object StorageModule {
                 MIGRATION_33_34,
                 MIGRATION_34_35,
                 MIGRATION_35_36,
+                MIGRATION_36_37,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.network
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -9,6 +10,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +67,17 @@ fun buildYaniHttpClient(
             connectTimeoutMillis = 20_000
             requestTimeoutMillis = 40_000
             socketTimeoutMillis = 40_000
+        }
+        // Ретраим только GET: мутации могут быть неидемпотентны.
+        install(HttpRequestRetry) {
+            maxRetries = 2
+            retryIf { request, response ->
+                request.method == HttpMethod.Get && response.status.value in 500..599
+            }
+            retryOnExceptionIf { request, cause ->
+                request.method == HttpMethod.Get && cause !is kotlinx.coroutines.CancellationException
+            }
+            delayMillis { retry -> 500L * retry }
         }
         install(ContentNegotiation) {
             json(
