@@ -3,8 +3,13 @@ package su.afk.yummy.tv.core.storage.watchprogress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore.Companion.isWatchedProgressEntry
 
 class WatchProgressStore(private val dao: WatchProgressDao) {
+
+    private val writeMutex = Mutex()
 
     companion object {
         const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
@@ -73,7 +78,8 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
 
     fun observeAll(): Flow<List<WatchProgressEntry>> = dao.observeAll()
 
-    fun observeByAnimeId(animeId: Int): Flow<List<WatchProgressEntry>> = dao.observeByAnimeId(animeId)
+    fun observeByAnimeId(animeId: Int): Flow<List<WatchProgressEntry>> =
+        dao.observeByAnimeId(animeId)
 
     fun observeContinueWatching(): Flow<List<WatchProgressEntry>> =
         combine(
@@ -125,6 +131,14 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                 .filter(WatchProgressStore::isWatchedProgressEntry)
         }
 
+    /**
+     * Сохраняет фактическую позицию просмотра серии.
+     *
+     * Позиции меньше минимального порога не создают отдельный прогресс, но уже созданная цель
+     * продолжения `0:00` сохраняется до тех пор, пока просмотр не станет значимым. Запись
+     * синхронизирована с [saveContinueTarget], чтобы параллельные события плеера не перетирали
+     * более актуальное состояние серии.
+     */
     suspend fun save(
         animeId: Int,
         episode: String,
@@ -138,7 +152,7 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         playerName: String = "",
         dubbing: String = "",
         screenshotUrl: String = "",
-    ) {
+    ) = writeMutex.withLock {
         val existing = dao.get(animeId, episode)
         if (positionMs < MIN_CONTINUE_WATCHING_POSITION_MS) {
             if (existing != null && isContinueTargetEntry(existing)) {
@@ -155,10 +169,10 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                         updatedAt = updatedAt,
                     )
                 )
-                return
+                return@withLock
             }
             dao.delete(animeId, episode)
-            return
+            return@withLock
         }
         dao.deleteSuppression(animeId)
         dao.save(
@@ -179,6 +193,14 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         )
     }
 
+    /**
+     * Делает серию следующей целью Continue Watching.
+     *
+     * Если у серии есть недосмотренный прогресс, сохраняет его позицию и обновляет только
+     * источник, метаданные и время активности — плеер продолжит с сохранённого места. Если серия
+     * уже досмотрена по общему правилу [isWatchedProgressEntry], либо прогресса ещё нет, записывает
+     * новую цель `0:00`.
+     */
     suspend fun saveContinueTarget(
         animeId: Int,
         episode: String,
@@ -192,23 +214,41 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
         screenshotUrl: String = "",
     ) {
         if (animeId <= 0 || episode.isBlank() || episodeUrl.isBlank()) return
-        dao.deleteSuppression(animeId)
-        dao.save(
-            WatchProgressEntry(
-                animeId = animeId,
-                episode = episode,
-                videoId = videoId,
-                episodeUrl = episodeUrl,
-                positionMs = 0L,
-                durationMs = 0L,
-                updatedAt = updatedAt,
-                animeTitle = animeTitle,
-                posterUrl = posterUrl,
-                playerName = playerName,
-                dubbing = dubbing,
-                screenshotUrl = screenshotUrl,
+        writeMutex.withLock {
+            val existing = dao.get(animeId, episode)
+            dao.deleteSuppression(animeId)
+            dao.save(
+                if (existing != null && !isContinueTargetEntry(existing) &&
+                    !isWatchedProgressEntry(existing)
+                ) {
+                    existing.copy(
+                        videoId = videoId.takeIf { it > 0 } ?: existing.videoId,
+                        episodeUrl = episodeUrl.ifBlank { existing.episodeUrl },
+                        updatedAt = updatedAt,
+                        animeTitle = animeTitle.ifBlank { existing.animeTitle },
+                        posterUrl = posterUrl.ifBlank { existing.posterUrl },
+                        playerName = playerName.ifBlank { existing.playerName },
+                        dubbing = dubbing.ifBlank { existing.dubbing },
+                        screenshotUrl = screenshotUrl.ifBlank { existing.screenshotUrl },
+                    )
+                } else {
+                    WatchProgressEntry(
+                        animeId = animeId,
+                        episode = episode,
+                        videoId = videoId.takeIf { it > 0 } ?: existing?.videoId ?: 0,
+                        episodeUrl = episodeUrl.ifBlank { existing?.episodeUrl.orEmpty() },
+                        positionMs = 0L,
+                        durationMs = 0L,
+                        updatedAt = updatedAt,
+                        animeTitle = animeTitle.ifBlank { existing?.animeTitle.orEmpty() },
+                        posterUrl = posterUrl.ifBlank { existing?.posterUrl.orEmpty() },
+                        playerName = playerName.ifBlank { existing?.playerName.orEmpty() },
+                        dubbing = dubbing.ifBlank { existing?.dubbing.orEmpty() },
+                        screenshotUrl = screenshotUrl.ifBlank { existing?.screenshotUrl.orEmpty() },
+                    )
+                }
             )
-        )
+        }
     }
 
     suspend fun delete(animeId: Int, episode: String) = dao.delete(animeId, episode)
