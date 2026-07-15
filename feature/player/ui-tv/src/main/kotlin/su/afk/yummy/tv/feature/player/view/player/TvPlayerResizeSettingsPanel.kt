@@ -51,7 +51,7 @@ import su.afk.yummy.tv.feature.player.utils.tvResizeMeta
 import su.afk.yummy.tv.feature.player.utils.tvZoomLevelLabel
 
 @Composable
-internal fun PlayerResizeSettingsPanel(
+internal fun TvPlayerResizeSettingsPanel(
     visible: Boolean,
     resizeModes: List<PlayerResizeMode>,
     selectedResizeMode: PlayerResizeMode,

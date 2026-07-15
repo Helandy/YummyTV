@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
-internal fun PlayerEpisodeRow(
+internal fun TvPlayerEpisodeRow(
     hasPrevEpisode: Boolean,
     hasNextEpisode: Boolean,
     canRateTitle: Boolean,
@@ -55,7 +55,7 @@ internal fun PlayerEpisodeRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (hasPrevEpisode) {
-            ControlButton(onClick = onPrevEpisode, onFocused = onInteraction) { color ->
+            TvControlButton(onClick = onPrevEpisode, onFocused = onInteraction) { color ->
                 Text(stringResource(R.string.player_previous_episode), style = MaterialTheme.typography.labelLarge, color = color)
             }
         }
@@ -64,7 +64,7 @@ internal fun PlayerEpisodeRow(
             val label = allDubbingNames
                 .getOrElse(currentDubbingIndex) { dubbing }
                 .withoutDubbingTitlePrefix(stringResource(R.string.player_dubbing_title))
-            ControlButton(
+            TvControlButton(
                 onClick = onToggleDubbing,
                 onFocused = onInteraction,
                 focusRequester = dubbingFocusRequester,
@@ -83,7 +83,7 @@ internal fun PlayerEpisodeRow(
         if (allBalancerNames.size > 1) {
             val label = allBalancerNames.getOrElse(currentBalancerIndex) { playerName }
                 .removePrefix(stringResource(R.string.player_name_prefix))
-            ControlButton(
+            TvControlButton(
                 onClick = onToggleBalancer,
                 onFocused = onInteraction,
                 focusRequester = balancerFocusRequester,
@@ -100,7 +100,7 @@ internal fun PlayerEpisodeRow(
             Spacer(Modifier.width(8.dp))
         }
         if (qualityCount > 0) {
-            ControlButton(
+            TvControlButton(
                 onClick = onToggleQuality,
                 onFocused = onInteraction,
                 focusRequester = qualityFocusRequester,
@@ -116,7 +116,7 @@ internal fun PlayerEpisodeRow(
             }
             Spacer(Modifier.width(8.dp))
         }
-        ControlButton(
+        TvControlButton(
             onClick = onToggleResize,
             onFocused = onInteraction,
             focusRequester = resizeFocusRequester,
@@ -131,7 +131,7 @@ internal fun PlayerEpisodeRow(
             )
         }
         Spacer(Modifier.width(8.dp))
-        ControlButton(
+        TvControlButton(
             onClick = onToggleSpeed,
             onFocused = onInteraction,
             focusRequester = speedFocusRequester,
@@ -149,11 +149,11 @@ internal fun PlayerEpisodeRow(
             Spacer(Modifier.width(8.dp))
         }
         if (hasNextEpisode) {
-            ControlButton(onClick = onNextEpisode, onFocused = onInteraction) { color ->
+            TvControlButton(onClick = onNextEpisode, onFocused = onInteraction) { color ->
                 Text(stringResource(R.string.player_next_episode), style = MaterialTheme.typography.labelLarge, color = color)
             }
         } else if (canRateTitle) {
-            ControlButton(onClick = onRateTitle, onFocused = onInteraction) { color ->
+            TvControlButton(onClick = onRateTitle, onFocused = onInteraction) { color ->
                 Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
             }
         }

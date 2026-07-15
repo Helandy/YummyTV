@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun PlayerEndPrompt(
+internal fun TvPlayerEndPrompt(
     visible: Boolean,
     title: String,
     primaryLabel: String,
@@ -41,7 +41,7 @@ internal fun PlayerEndPrompt(
                 color = Color.White,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                ControlButton(
+                TvControlButton(
                     onClick = onPrimary,
                     onFocused = onInteraction,
                     focusRequester = primaryFocusRequester,
@@ -53,7 +53,7 @@ internal fun PlayerEndPrompt(
                         color = color,
                     )
                 }
-                ControlButton(
+                TvControlButton(
                     onClick = onStay,
                     onFocused = onInteraction,
                     modifier = Modifier.width(120.dp),

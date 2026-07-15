@@ -86,7 +86,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        ControlButton(
+                        TvControlButton(
                             onClick = onSkipActiveSegment,
                             onFocused = onInteraction,
                             focusRequester = focus.skip,
@@ -100,7 +100,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                         }
                     }
                 }
-                PlayerProgressRow(
+                TvPlayerProgressRow(
                     wantsPlay = wantsPlay,
                     displayTime = progress.displayTimeMs,
                     duration = progress.duration,
@@ -122,7 +122,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     },
                     onInteraction = onInteraction,
                 )
-                PlayerEpisodeRow(
+                TvPlayerEpisodeRow(
                     hasPrevEpisode = playback.hasPrevEpisode,
                     hasNextEpisode = playback.hasNextEpisode,
                     canRateTitle = playback.canRateTitleOnEnd && !playback.hasNextEpisode,

@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun ControlButton(
+internal fun TvControlButton(
     onClick: () -> Unit,
     onFocused: () -> Unit = {},
     focusRequester: FocusRequester? = null,

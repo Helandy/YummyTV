@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
-internal fun PlayerInfoBar(
+internal fun TvPlayerInfoBar(
     visible: Boolean,
     animeTitle: String,
     episode: String,
@@ -74,7 +74,7 @@ internal fun PlayerInfoBar(
 }
 
 @Composable
-internal fun PlayerNameBadge(
+internal fun TvPlayerNameBadge(
     visible: Boolean,
     playerName: String,
     modifier: Modifier = Modifier,

@@ -31,7 +31,10 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
-internal fun StreamLoadingView(onChangePlayer: (() -> Unit)? = null) {
+internal fun TvStreamLoadingView(
+    onChangePlayer: (() -> Unit)? = null,
+    onChangeDubbing: (() -> Unit)? = null,
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -55,19 +58,30 @@ internal fun StreamLoadingView(onChangePlayer: (() -> Unit)? = null) {
                     color = Color.White,
                 )
             }
-            if (onChangePlayer != null) {
-                OverlayButton(
-                    text = stringResource(R.string.player_change_player),
-                    onClick = onChangePlayer,
-                    primary = false,
-                )
+            if (onChangePlayer != null || onChangeDubbing != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (onChangePlayer != null) {
+                        TvOverlayButton(
+                            text = stringResource(R.string.player_change_player),
+                            onClick = onChangePlayer,
+                            primary = false,
+                        )
+                    }
+                    if (onChangeDubbing != null) {
+                        TvOverlayButton(
+                            text = stringResource(R.string.player_change_dubbing),
+                            onClick = onChangeDubbing,
+                            primary = false,
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-internal fun KodikBlockedOverlay(
+internal fun TvKodikBlockedOverlay(
     message: String,
     modifier: Modifier = Modifier,
 ) {
@@ -93,7 +107,7 @@ internal fun KodikBlockedOverlay(
 }
 
 @Composable
-internal fun StreamErrorOverlay(
+internal fun TvStreamErrorOverlay(
     message: String,
     onRetry: (() -> Unit)?,
     onChangePlayer: (() -> Unit)? = null,
@@ -118,17 +132,17 @@ internal fun StreamErrorOverlay(
         if (onRetry != null || onChangePlayer != null || onChangeDubbing != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (onRetry != null) {
-                    OverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
+                    TvOverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
                 }
                 if (onChangePlayer != null) {
-                    OverlayButton(
+                    TvOverlayButton(
                         text = stringResource(R.string.player_change_player),
                         onClick = onChangePlayer,
                         primary = false,
                     )
                 }
                 if (onChangeDubbing != null) {
-                    OverlayButton(
+                    TvOverlayButton(
                         text = stringResource(R.string.player_change_dubbing),
                         onClick = onChangeDubbing,
                         primary = false,
@@ -140,7 +154,7 @@ internal fun StreamErrorOverlay(
 }
 
 @Composable
-internal fun OverlayButton(
+internal fun TvOverlayButton(
     text: String,
     onClick: () -> Unit,
     primary: Boolean = true,

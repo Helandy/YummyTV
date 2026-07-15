@@ -20,10 +20,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.seconds
 
-internal val PLAYER_INLINE_TOAST_DURATION = 2.seconds
+internal val TV_PLAYER_INLINE_TOAST_DURATION = 2.seconds
 
 @Composable
-internal fun PlayerInlineToast(
+internal fun TvPlayerInlineToast(
     text: String?,
     icon: ImageVector,
     modifier: Modifier = Modifier,

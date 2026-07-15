@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun PlayerMessage(
+internal fun MobilePlayerMessage(
     title: String?,
     onBack: () -> Unit,
     actionLabel: String? = null,

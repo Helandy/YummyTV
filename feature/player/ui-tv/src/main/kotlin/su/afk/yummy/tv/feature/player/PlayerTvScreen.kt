@@ -33,13 +33,13 @@ import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.view.KodikBlockedOverlay
-import su.afk.yummy.tv.feature.player.view.StreamErrorOverlay
-import su.afk.yummy.tv.feature.player.view.StreamLoadingView
-import su.afk.yummy.tv.feature.player.view.player.ExoPlayerView
-import su.afk.yummy.tv.feature.player.view.player.PLAYER_INLINE_TOAST_DURATION
-import su.afk.yummy.tv.feature.player.view.player.PlayerInlineToast
-import su.afk.yummy.tv.feature.player.view.player.PlayerSelectionPanel
+import su.afk.yummy.tv.feature.player.view.TvKodikBlockedOverlay
+import su.afk.yummy.tv.feature.player.view.TvStreamErrorOverlay
+import su.afk.yummy.tv.feature.player.view.TvStreamLoadingView
+import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_INLINE_TOAST_DURATION
+import su.afk.yummy.tv.feature.player.view.player.TvExoPlayerView
+import su.afk.yummy.tv.feature.player.view.player.TvPlayerInlineToast
+import su.afk.yummy.tv.feature.player.view.player.TvPlayerSelectionPanel
 import kotlin.time.Duration.Companion.seconds
 
 @Preview(
@@ -113,7 +113,7 @@ fun PlayerTvScreen(
             backToastText = pressBackAgainText
             backToastJob?.cancel()
             backToastJob = coroutineScope.launch {
-                delay(PLAYER_INLINE_TOAST_DURATION)
+                delay(TV_PLAYER_INLINE_TOAST_DURATION)
                 backToastText = null
             }
             coroutineScope.launch {
@@ -137,7 +137,7 @@ fun PlayerTvScreen(
                     .fillMaxSize()
                     .background(Color.Black),
             ) {
-                KodikBlockedOverlay(
+                TvKodikBlockedOverlay(
                     message = kodikBlockedError,
                     modifier = Modifier.align(Alignment.Center),
                 )
@@ -148,7 +148,7 @@ fun PlayerTvScreen(
                     .fillMaxSize()
                     .background(Color.Black),
             ) {
-                StreamErrorOverlay(
+                TvStreamErrorOverlay(
                     message = playerError,
                     modifier = Modifier.align(Alignment.Center),
                     onRetry = { onEvent(PlayerState.Event.RetryStream) },
@@ -165,7 +165,7 @@ fun PlayerTvScreen(
                 )
             }
 
-            streamUrl != null -> ExoPlayerView(
+            streamUrl != null -> TvExoPlayerView(
                 state = state,
                 playback = uiState,
                 streamUrl = streamUrl,
@@ -185,15 +185,20 @@ fun PlayerTvScreen(
                 onPlayerEvent = onEvent,
             )
 
-            else -> StreamLoadingView(
+            else -> TvStreamLoadingView(
                 onChangePlayer = if (state.showChangePlayerHint && canChangePlayer) {
                     { showErrorBalancerPanel = true }
                 } else {
                     null
                 },
+                onChangeDubbing = if (state.showChangePlayerHint && canChangeDubbing) {
+                    { showErrorDubbingPanel = true }
+                } else {
+                    null
+                },
             )
         }
-        PlayerSelectionPanel(
+        TvPlayerSelectionPanel(
             visible = showErrorBalancerPanel && canChangePlayer,
             title = stringResource(R.string.player_balancer_title),
             items = uiState.balancerNames.map { it.removePrefix(playerNamePrefix) },
@@ -219,7 +224,7 @@ fun PlayerTvScreen(
             },
             onExitDown = { showErrorBalancerPanel = false },
         )
-        PlayerSelectionPanel(
+        TvPlayerSelectionPanel(
             visible = showErrorDubbingPanel && canChangeDubbing,
             title = stringResource(R.string.player_dubbing_title),
             items = uiState.dubbingNames,
@@ -237,7 +242,7 @@ fun PlayerTvScreen(
             },
             onExitDown = { showErrorDubbingPanel = false },
         )
-        PlayerInlineToast(
+        TvPlayerInlineToast(
             text = backToastText,
             icon = Icons.Filled.Home,
             modifier = Modifier

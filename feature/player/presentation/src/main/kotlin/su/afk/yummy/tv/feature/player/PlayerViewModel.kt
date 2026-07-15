@@ -923,7 +923,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         private const val ALLOHA_PLAYBACK_RECOVERY_DELAY_MS = 1_000L
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
-        private const val CHANGE_PLAYER_HINT_DELAY_MS = 15_000L
+        private const val CHANGE_PLAYER_HINT_DELAY_MS = 10_000L
     }
 
 }

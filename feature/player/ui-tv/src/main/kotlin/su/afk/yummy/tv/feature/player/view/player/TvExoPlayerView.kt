@@ -64,7 +64,7 @@ import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 
 @OptIn(UnstableApi::class)
 @Composable
-internal fun ExoPlayerView(
+internal fun TvExoPlayerView(
     state: PlayerState.State,
     playback: PlayerPlaybackUiState,
     streamUrl: String,
@@ -95,7 +95,7 @@ internal fun ExoPlayerView(
     val skipUi = rememberTvPlayerSkipUiState(streamUrl)
     val stepSeekToast = rememberPlayerStepSeekToastState(
         streamUrl = streamUrl,
-        toastDuration = PLAYER_INLINE_TOAST_DURATION,
+        toastDuration = TV_PLAYER_INLINE_TOAST_DURATION,
     )
     val focus = rememberTvPlayerFocusRequesters()
     val autoHide = rememberPlayerAutoHideController(
@@ -358,7 +358,7 @@ internal fun ExoPlayerView(
         )
 
         if (!controllerVisible) {
-            PlayerHiddenKeyOverlay(
+            TvPlayerHiddenKeyOverlay(
                 focusRequester = focus.overlay,
                 onSeekBackward = { seekController.stepSeek(StepSeekDirection.Backward) },
                 onSeekForward = { seekController.stepSeek(StepSeekDirection.Forward) },
@@ -366,7 +366,7 @@ internal fun ExoPlayerView(
             )
         }
 
-        PlayerInfoBar(
+        TvPlayerInfoBar(
             visible = controllerVisible,
             animeTitle = state.animeTitle,
             episode = playback.activeEpisode,
@@ -374,7 +374,7 @@ internal fun ExoPlayerView(
             modifier = Modifier.align(Alignment.TopStart),
         )
 
-        PlayerNameBadge(
+        TvPlayerNameBadge(
             visible = controllerVisible,
             playerName = playback.activeBalancerName,
             modifier = Modifier.align(Alignment.TopEnd),
@@ -472,7 +472,7 @@ internal fun ExoPlayerView(
             onExitPanelDown = ::exitPanelDown,
         )
 
-        PlayerSkipSnackbar(
+        TvPlayerSkipSnackbar(
             text = skipUi.snackbarText,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -488,7 +488,7 @@ internal fun ExoPlayerView(
             onInteraction = ::onInteraction,
         )
 
-        PlayerInlineToast(
+        TvPlayerInlineToast(
             text = stepSeekToast.text,
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier

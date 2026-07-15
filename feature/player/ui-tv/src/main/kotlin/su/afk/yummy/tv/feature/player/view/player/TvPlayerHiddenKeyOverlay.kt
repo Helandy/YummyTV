@@ -14,7 +14,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 
 @Composable
-internal fun PlayerHiddenKeyOverlay(
+internal fun TvPlayerHiddenKeyOverlay(
     focusRequester: FocusRequester,
     onSeekBackward: () -> Unit,
     onSeekForward: () -> Unit,

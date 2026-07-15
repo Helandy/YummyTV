@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.utils.formatTime
 
 @Composable
-internal fun PlayerProgressRow(
+internal fun TvPlayerProgressRow(
     wantsPlay: Boolean,
     displayTime: Long,
     duration: Long,
@@ -59,7 +59,7 @@ internal fun PlayerProgressRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        ControlButton(
+        TvControlButton(
             onClick = { onPlayPause(); onInteraction() },
             onFocused = onInteraction,
             focusRequester = playFocusRequester,

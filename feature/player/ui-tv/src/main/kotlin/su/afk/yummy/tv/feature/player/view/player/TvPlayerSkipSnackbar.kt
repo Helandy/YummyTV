@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun PlayerSkipSnackbar(
+internal fun TvPlayerSkipSnackbar(
     text: String?,
     modifier: Modifier = Modifier,
 ) {

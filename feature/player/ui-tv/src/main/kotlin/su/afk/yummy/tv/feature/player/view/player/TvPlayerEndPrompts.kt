@@ -21,7 +21,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
     onRateTitle: () -> Unit,
     onInteraction: () -> Unit,
 ) {
-    PlayerEndPrompt(
+    TvPlayerEndPrompt(
         visible = prompts.nextEpisodePrompt.isVisible && hasNextEpisode,
         title = when (val prompt = prompts.nextEpisodePrompt) {
             is PlayerEndPromptState.WithCountdown -> stringResource(
@@ -43,7 +43,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
         modifier = Modifier.align(Alignment.Center),
     )
 
-    PlayerEndPrompt(
+    TvPlayerEndPrompt(
         visible = prompts.showRateTitlePrompt,
         title = stringResource(R.string.player_rate_title_prompt),
         primaryLabel = stringResource(R.string.player_rate_title),

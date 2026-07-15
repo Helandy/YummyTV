@@ -43,7 +43,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.MobileNativePlayer
 import su.afk.yummy.tv.feature.player.view.MobilePlayerBalancerSheet
 import su.afk.yummy.tv.feature.player.view.MobilePlayerDubbingSheet
-import su.afk.yummy.tv.feature.player.view.PlayerMessage
+import su.afk.yummy.tv.feature.player.view.MobilePlayerMessage
 
 @OptIn(UnstableApi::class)
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -99,12 +99,12 @@ fun PlayerMobileScreen(
     val streamUrl = state.streamUrl
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            state.kodikBlockedError != null -> PlayerMessage(
+            state.kodikBlockedError != null -> MobilePlayerMessage(
                 title = state.kodikBlockedError,
                 onBack = { onEvent(PlayerState.Event.Back) },
             )
 
-            state.playerError != null -> PlayerMessage(
+            state.playerError != null -> MobilePlayerMessage(
                 title = state.playerError,
                 actionLabel = stringResource(R.string.player_retry),
                 onAction = { onEvent(PlayerState.Event.RetryStream) },
@@ -164,9 +164,18 @@ fun PlayerMobileScreen(
                         CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                         Text(stringResource(R.string.player_loading_stream), color = Color.White)
                     }
-                    if (state.showChangePlayerHint && canChangePlayer) {
-                        OutlinedButton(onClick = { showErrorBalancerSheet = true }) {
-                            Text(stringResource(R.string.player_change_player))
+                    if (state.showChangePlayerHint && (canChangePlayer || canChangeDubbing)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            if (canChangePlayer) {
+                                OutlinedButton(onClick = { showErrorBalancerSheet = true }) {
+                                    Text(stringResource(R.string.player_change_player))
+                                }
+                            }
+                            if (canChangeDubbing) {
+                                OutlinedButton(onClick = { showErrorDubbingSheet = true }) {
+                                    Text(stringResource(R.string.player_change_dubbing))
+                                }
+                            }
                         }
                     }
                 }

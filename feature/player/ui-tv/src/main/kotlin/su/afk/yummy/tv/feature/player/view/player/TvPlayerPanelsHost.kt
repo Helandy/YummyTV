@@ -41,7 +41,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
     val resizeModes = PlayerResizeMode.entries.toList()
     val zoomLevels = PlayerZoomLevel.entries.toList()
 
-    PlayerSelectionPanel(
+    TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Quality),
         title = stringResource(R.string.player_quality_title),
         items = qualities,
@@ -55,7 +55,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Quality) },
     )
 
-    PlayerSelectionPanel(
+    TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Dubbing),
         title = stringResource(R.string.player_dubbing_title),
         items = playback.dubbingNames,
@@ -69,7 +69,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         itemMetaContent = { idx, contentColor ->
             val views = playback.dubbingViews.getOrElse(idx) { 0 }
             val episodeCount = playback.dubbingEpisodeCounts.getOrElse(idx) { 0 }
-            DubbingMetaRow(
+            TvDubbingMetaRow(
                 views = views.formatCompactCount(),
                 episodeCount = episodeCount,
                 sourceNames = playback.dubbingSourceNames.getOrElse(idx) { "" },
@@ -80,7 +80,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Dubbing) },
     )
 
-    PlayerSelectionPanel(
+    TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Speed),
         title = stringResource(R.string.player_speed_title),
         items = speeds.map { it.speedLabel() },
@@ -94,7 +94,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Speed) },
     )
 
-    PlayerResizeSettingsPanel(
+    TvPlayerResizeSettingsPanel(
         visible = panels.isOpen(TvPlayerPanel.Resize),
         resizeModes = resizeModes,
         selectedResizeMode = resizeMode,
@@ -109,7 +109,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Resize) },
     )
 
-    PlayerSelectionPanel(
+    TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Balancer),
         title = stringResource(R.string.player_balancer_title),
         items = playback.balancerNames.map {
