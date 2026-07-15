@@ -59,6 +59,7 @@ import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.core.storage.library.LibraryDao
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibrarySyncStateEntry
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupDao
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleDao
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleItemEntry
@@ -164,4 +165,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun accountStorageDao(): AccountStorageDao
     abstract fun commentsStorageDao(): CommentsStorageDao
     abstract fun videoDownloadDao(): VideoDownloadDao
+    abstract fun storageCleanupDao(): StorageCleanupDao
 }

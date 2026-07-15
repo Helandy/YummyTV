@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.storage.comments.CommentsStorageStore
 import su.afk.yummy.tv.core.storage.db.AppDatabase
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
@@ -1819,6 +1820,11 @@ object StorageModule {
     @Singleton
     fun provideVideoDownloadStore(db: AppDatabase): VideoDownloadStore =
         VideoDownloadStore(db.videoDownloadDao())
+
+    @Provides
+    @Singleton
+    fun provideStorageCleanupStore(db: AppDatabase): StorageCleanupStore =
+        StorageCleanupStore(db.storageCleanupDao())
 
     private fun SupportSQLiteDatabase.hasColumn(tableName: String, columnName: String): Boolean {
         query("PRAGMA table_info($tableName)").use { cursor ->

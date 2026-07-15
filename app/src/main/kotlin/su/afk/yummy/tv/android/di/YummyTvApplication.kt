@@ -25,6 +25,7 @@ import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.analytics.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleInitializer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupStore
 import su.afk.yummy.tv.data.videodownload.cache.LegacyStreamingCachePruner
 import java.io.File
 import javax.inject.Inject
@@ -49,6 +50,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var legacyStreamingCachePruner: LegacyStreamingCachePruner
+
+    @Inject
+    lateinit var storageCleanupStore: StorageCleanupStore
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -83,6 +87,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
             if (settingsStore.consumeLegacyStreamingCachePruneFlag()) {
                 runCatching { legacyStreamingCachePruner.pruneOrphanedEntries() }
             }
+            runCatching { storageCleanupStore.purgeStaleCaches() }
         }
     }
 
