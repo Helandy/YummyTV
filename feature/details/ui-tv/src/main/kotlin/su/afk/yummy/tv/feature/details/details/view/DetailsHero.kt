@@ -1,8 +1,11 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -25,17 +28,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,11 +93,36 @@ internal fun DetailsHero(
 
     var titleFocused by remember { mutableStateOf(false) }
 
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appeared = true }
+    val infoAlpha by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = tween(durationMillis = HERO_APPEAR_MILLIS),
+        label = "heroInfoAlpha",
+    )
+    val infoShift by animateFloatAsState(
+        targetValue = if (appeared) 0f else 1f,
+        animationSpec = tween(durationMillis = HERO_APPEAR_MILLIS),
+        label = "heroInfoShift",
+    )
+    val posterAlpha by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = HERO_APPEAR_MILLIS,
+            delayMillis = HERO_POSTER_APPEAR_DELAY_MILLIS,
+        ),
+        label = "heroPosterAlpha",
+    )
+    val density = LocalDensity.current
+    val infoShiftPx = with(density) { HERO_APPEAR_SHIFT.toPx() }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
+        HeroBackdrop(details)
+
         val isCompactHeight = maxHeight < 560.dp
         val horizontalPadding = 20.dp
         val verticalPadding = when {
@@ -111,7 +144,12 @@ internal fun DetailsHero(
             verticalAlignment = Alignment.Top,
         ) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .graphicsLayer {
+                        alpha = infoAlpha
+                        translationY = infoShift * infoShiftPx
+                    },
                 verticalArrangement = Arrangement.spacedBy(columnSpacing),
             ) {
                 MarqueeTitleText(
@@ -176,7 +214,9 @@ internal fun DetailsHero(
             }
 
             Column(
-                modifier = Modifier.width(posterWidth),
+                modifier = Modifier
+                    .width(posterWidth)
+                    .graphicsLayer { alpha = posterAlpha },
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 HeroRatingRow(details)
@@ -201,6 +241,45 @@ internal fun DetailsHero(
         }
     }
 }
+
+/**
+ * Blurred screenshot (or poster as a fallback) behind the hero content,
+ * dimmed by a scrim so the text stays readable. On devices without
+ * RenderEffect support (API < 31) blur is a no-op — the scrim alone keeps contrast.
+ */
+@Composable
+private fun HeroBackdrop(details: AnimeDetails) {
+    val backdropUrl = details.screenshots.firstOrNull()?.run { full ?: small }
+        ?: details.poster?.run { big ?: medium ?: small }
+        ?: return
+    val surface = MaterialTheme.colorScheme.surface
+    AsyncImage(
+        model = backdropUrl,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        alpha = 0.38f,
+        modifier = Modifier
+            .fillMaxSize()
+            .blur(HERO_BACKDROP_BLUR),
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        surface.copy(alpha = 0.55f),
+                        surface.copy(alpha = 0.85f),
+                    ),
+                ),
+            ),
+    )
+}
+
+private val HERO_BACKDROP_BLUR = 26.dp
+private val HERO_APPEAR_SHIFT = 18.dp
+private const val HERO_APPEAR_MILLIS = 380
+private const val HERO_POSTER_APPEAR_DELAY_MILLIS = 100
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

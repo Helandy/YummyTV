@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.view.common
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.presenter.components.TvOverlayAppear
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.BalancerOption
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
@@ -88,44 +91,49 @@ internal fun BalancerPickerOverlay(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .width(440.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xF21B1B1F))
-                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
-                    .focusGroup()
-                    .onPreviewKeyEvent { event ->
-                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                        when (event.key) {
-                            Key.Back, Key.Escape -> {
-                                onDismiss()
-                                true
-                            }
+            TvOverlayAppear {
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .width(440.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xF21B1B1F))
+                        .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                        .focusGroup()
+                        .onPreviewKeyEvent { event ->
+                            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                            when (event.key) {
+                                Key.Back, Key.Escape -> {
+                                    onDismiss()
+                                    true
+                                }
 
-                            Key.DirectionUp -> focusedOptionIndex == firstSupportedIdx
-                            Key.DirectionDown -> focusedOptionIndex == lastSupportedIdx
-                            else -> false
+                                Key.DirectionUp -> focusedOptionIndex == firstSupportedIdx
+                                Key.DirectionDown -> focusedOptionIndex == lastSupportedIdx
+                                else -> false
+                            }
                         }
-                    }
-                    .padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.details_balancer_title, picker.episodeNumber),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color.White.copy(alpha = 0.70f),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                )
-                picker.options.forEachIndexed { idx, option ->
-                    BalancerOptionItem(
-                        label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
-                        focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
-                        isSupported = option.isSupported,
-                        onFocused = { focusedOptionIndex = idx },
-                        onClick = { onConfirmed(option) },
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.details_balancer_title,
+                            picker.episodeNumber
+                        ),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White.copy(alpha = 0.70f),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
+                    picker.options.forEachIndexed { idx, option ->
+                        BalancerOptionItem(
+                            label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
+                            focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
+                            isSupported = option.isSupported,
+                            onFocused = { focusedOptionIndex = idx },
+                            onClick = { onConfirmed(option) },
+                        )
+                    }
                 }
             }
         }
@@ -144,7 +152,11 @@ private fun BalancerOptionItem(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
     if (isSupported) {
-        val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.10f)
+        val bgColor by animateColorAsState(
+            targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
+            animationSpec = tween(durationMillis = 150),
+            label = "balancerItemBg",
+        )
         val textColor = if (focused) Color.Black else Color.White
         Row(
             modifier = Modifier

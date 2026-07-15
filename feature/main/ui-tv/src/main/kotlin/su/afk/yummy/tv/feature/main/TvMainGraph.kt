@@ -1,5 +1,11 @@
 package su.afk.yummy.tv.feature.main
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -126,6 +132,21 @@ class TvMainGraph @Inject constructor(
                             navManager = navManager,
                             registrars = commonRegistrars + tvRegistrars,
                             modifier = Modifier.fillMaxSize(),
+                            transitionSpec = {
+                                fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) +
+                                        scaleIn(
+                                            initialScale = TV_NAV_TRANSITION_SCALE,
+                                            animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
+                                        ) togetherWith fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+                            },
+                            popTransitionSpec = {
+                                fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
+                                        fadeOut(tween(TV_NAV_TRANSITION_MILLIS)) +
+                                        scaleOut(
+                                            targetScale = TV_NAV_TRANSITION_SCALE,
+                                            animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
+                                        )
+                            },
                         )
                     }
                 }
@@ -135,3 +156,5 @@ class TvMainGraph @Inject constructor(
 }
 
 private val GLOBAL_TOAST_DURATION = 3.seconds
+private const val TV_NAV_TRANSITION_MILLIS = 280
+private const val TV_NAV_TRANSITION_SCALE = 1.05f

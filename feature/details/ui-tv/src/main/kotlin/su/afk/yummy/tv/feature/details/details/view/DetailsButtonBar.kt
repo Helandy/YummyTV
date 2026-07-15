@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -414,11 +416,16 @@ private fun DetailsActionButton(
     verticalPadding: Dp = 8.dp,
     focusedScale: Float = 1.04f,
 ) {
+    val animatedAlpha by animateFloatAsState(
+        targetValue = alpha,
+        animationSpec = tween(durationMillis = 200),
+        label = "detailsButtonAlpha",
+    )
     ActionButton(
         label = button.label,
         icon = button.icon,
         style = button.style,
-        alpha = alpha,
+        alpha = animatedAlpha,
         showLabel = showLabel,
         iconSize = iconSize,
         verticalPadding = verticalPadding,

@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.details.details.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.presenter.components.TvOverlayAppear
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.utils.label
@@ -89,43 +92,45 @@ internal fun LibraryListPickerOverlay(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .width(440.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xF21B1B1F))
-                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
-                    .focusGroup()
-                    .onPreviewKeyEvent { event ->
-                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                        when (event.key) {
-                            Key.Back, Key.Escape -> {
-                                onDismiss()
-                                true
-                            }
+            TvOverlayAppear {
+                Column(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .width(440.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xF21B1B1F))
+                        .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                        .focusGroup()
+                        .onPreviewKeyEvent { event ->
+                            if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                            when (event.key) {
+                                Key.Back, Key.Escape -> {
+                                    onDismiss()
+                                    true
+                                }
 
-                            Key.DirectionUp -> focusedOptionIndex == 0
-                            Key.DirectionDown -> focusedOptionIndex == options.lastIndex
-                            else -> false
+                                Key.DirectionUp -> focusedOptionIndex == 0
+                                Key.DirectionDown -> focusedOptionIndex == options.lastIndex
+                                else -> false
+                            }
                         }
-                    }
-                    .padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.details_library_picker_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color.White.copy(alpha = 0.70f),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                )
-                options.forEachIndexed { index, list ->
-                    LibraryListOptionItem(
-                        label = list.label(),
-                        focusRequester = if (index == 0) firstFocusRequester else null,
-                        onFocused = { focusedOptionIndex = index },
-                        onClick = { onConfirmed(list) },
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.details_library_picker_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White.copy(alpha = 0.70f),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
+                    options.forEachIndexed { index, list ->
+                        LibraryListOptionItem(
+                            label = list.label(),
+                            focusRequester = if (index == 0) firstFocusRequester else null,
+                            onFocused = { focusedOptionIndex = index },
+                            onClick = { onConfirmed(list) },
+                        )
+                    }
                 }
             }
         }
@@ -142,7 +147,11 @@ private fun LibraryListOptionItem(
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(12.dp)
-    val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.10f)
+    val bgColor by animateColorAsState(
+        targetValue = if (focused) Color.White else Color.White.copy(alpha = 0.10f),
+        animationSpec = tween(durationMillis = 150),
+        label = "libraryListItemBg",
+    )
     val textColor = if (focused) Color.Black else Color.White
     Row(
         modifier = Modifier

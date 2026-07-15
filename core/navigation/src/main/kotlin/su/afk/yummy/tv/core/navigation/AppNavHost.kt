@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,7 +18,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.defaultPopTransitionSpec
+import androidx.navigation3.ui.defaultTransitionSpec
 import su.afk.yummy.tv.core.navigation.root.RootTab
 
 @Composable
@@ -24,6 +29,10 @@ fun AppNavHost(
     navManager: NavigationManager,
     registrars: Set<@JvmSuppressWildcards NavRegistrar>,
     modifier: Modifier = Modifier,
+    transitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+        defaultTransitionSpec(),
+    popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+        defaultPopTransitionSpec(),
 ) {
     var savedCurrentRoot by rememberSaveable { mutableStateOf(navManager.currentRoot) }
 
@@ -90,6 +99,8 @@ fun AppNavHost(
     NavDisplay(
         entries = entriesToShow,
         sceneStrategies = listOf(BottomOverlaySceneStrategy()),
+        transitionSpec = transitionSpec,
+        popTransitionSpec = popTransitionSpec,
         onBack = { navManager.back() },
         modifier = modifier,
     )

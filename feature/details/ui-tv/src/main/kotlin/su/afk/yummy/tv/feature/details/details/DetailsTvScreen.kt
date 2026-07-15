@@ -1,6 +1,13 @@
 package su.afk.yummy.tv.feature.details.details
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -101,43 +108,56 @@ fun DetailsTvScreen(
 
     val error = state.error
     val details = state.details
+    val screenState = when {
+        details != null -> DetailsScreenState.Content
+        error != null -> DetailsScreenState.Error
+        else -> DetailsScreenState.Loading
+    }
     Box(modifier = Modifier.fillMaxSize()) {
-        when {
-            state.isLoading && details == null -> TvLoadingScreen()
-            error != null && details == null -> DetailsError(
-                message = error,
-                onRetry = { onEvent(DetailsState.Event.RetrySelected) },
-            )
+        Crossfade(
+            targetState = screenState,
+            animationSpec = tween(durationMillis = 260),
+            label = "detailsScreenState",
+        ) { target ->
+            when (target) {
+                DetailsScreenState.Loading -> TvLoadingScreen()
+                DetailsScreenState.Error -> DetailsError(
+                    message = error.orEmpty(),
+                    onRetry = { onEvent(DetailsState.Event.RetrySelected) },
+                )
 
-            details != null -> DetailsBody(
-                details = details,
-                videosState = state.videosState,
-                isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
-                watchProgress = state.watchProgress,
-                isInLibrary = state.isInLibrary,
-                isFavorite = state.isFavorite,
-                libraryList = state.libraryList,
-                canSubscribe = state.isSignedIn,
-                detailsButtonOrder = state.detailsButtonOrder,
-                restoreButtonFocusRequest = restoreButtonFocusRequest,
-                onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
-                onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
-                onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
-                onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
-                onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
-                onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
-                onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
-                onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
-                onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
-                onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
-                onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
-                onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
-            )
-
-            else -> TvLoadingScreen()
+                DetailsScreenState.Content -> if (details != null) DetailsBody(
+                    details = details,
+                    videosState = state.videosState,
+                    isWatchLoading = state.isWatchLaunchPending || state.videosState is VideosUiState.Loading,
+                    watchProgress = state.watchProgress,
+                    isInLibrary = state.isInLibrary,
+                    isFavorite = state.isFavorite,
+                    libraryList = state.libraryList,
+                    canSubscribe = state.isSignedIn,
+                    detailsButtonOrder = state.detailsButtonOrder,
+                    restoreButtonFocusRequest = restoreButtonFocusRequest,
+                    onWatchSelected = { onEvent(DetailsState.Event.WatchSelected) },
+                    onLibraryToggle = { onEvent(DetailsState.Event.LibraryToggled) },
+                    onFavoriteToggle = { onEvent(DetailsState.Event.FavoriteToggled) },
+                    onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsSelected) },
+                    onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
+                    onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
+                    onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
+                    onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
+                    onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
+                    onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
+                    onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
+                    onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                )
+            }
         }
 
-        if (state.showPosterFullscreen && details != null) {
+        AnimatedVisibility(
+            visible = state.showPosterFullscreen && details != null,
+            enter = fadeIn(tween(220)) + scaleIn(initialScale = 0.94f, animationSpec = tween(220)),
+            exit = fadeOut(tween(180)) + scaleOut(targetScale = 0.94f, animationSpec = tween(180)),
+        ) {
             val closeFocusRequester = remember { FocusRequester() }
             LaunchedEffect(Unit) { closeFocusRequester.requestFocus() }
 
@@ -148,8 +168,8 @@ fun DetailsTvScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 AsyncImage(
-                    model = details.poster?.run { fullsize ?: big ?: medium ?: small },
-                    contentDescription = details.title,
+                    model = details?.poster?.run { fullsize ?: big ?: medium ?: small },
+                    contentDescription = details?.title,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -217,3 +237,5 @@ fun DetailsTvScreen(
         }
     }
 }
+
+private enum class DetailsScreenState { Loading, Error, Content }

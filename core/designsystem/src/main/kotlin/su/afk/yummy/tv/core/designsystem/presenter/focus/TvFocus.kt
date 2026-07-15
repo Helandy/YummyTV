@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.core.designsystem.presenter.focus
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -30,8 +35,19 @@ fun Modifier.tvFocusableClick(
     focusedBorderColor: Color = MaterialTheme.colorScheme.primary,
 ): Modifier {
     val focused by interactionSource.collectIsFocusedAsState()
-    val scale = if (focused) focusedScale else 1f
-    val borderColor = if (focused) focusedBorderColor else Color.Transparent
+    val scale by animateFloatAsState(
+        targetValue = if (focused) focusedScale else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
+        label = "tvFocusScale",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (focused) focusedBorderColor else Color.Transparent,
+        animationSpec = tween(durationMillis = TV_FOCUS_BORDER_ANIMATION_MILLIS),
+        label = "tvFocusBorder",
+    )
 
     return this
         .graphicsLayer {
@@ -55,15 +71,26 @@ fun TvFocusOverlay(
     focused: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    if (focused) {
+    val borderColor by animateColorAsState(
+        targetValue = if (focused) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        animationSpec = tween(durationMillis = TV_FOCUS_BORDER_ANIMATION_MILLIS),
+        label = "tvFocusOverlayBorder",
+    )
+    if (borderColor.alpha > 0f) {
         Box(
             modifier = modifier
                 .fillMaxSize()
                 .border(
                     width = 3.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = borderColor,
                     shape = RoundedCornerShape(8.dp),
                 ),
         )
     }
 }
+
+private const val TV_FOCUS_BORDER_ANIMATION_MILLIS = 180
