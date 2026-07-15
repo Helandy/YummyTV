@@ -29,6 +29,9 @@ internal class TvPlayerFocusRequesters {
             PlayerControlFocusTarget.Resize -> resize
             PlayerControlFocusTarget.Speed -> speed
         }
+
+    fun requestControl(target: PlayerControlFocusTarget): Boolean =
+        runCatching { control(target).requestFocus() }.isSuccess
 }
 
 @Composable

@@ -1,21 +1,24 @@
-package su.afk.yummy.tv.feature.player.utils
+package su.afk.yummy.tv.feature.player.common
 
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 
-internal fun buildTvProgressSnapshot(
-    episodeKey: String,
-    episode: String,
-    videoId: Int,
-    playerName: String,
-    dubbing: String,
-    screenshotUrl: String,
+data class PlayerProgressSource(
+    val episodeUrl: String,
+    val episode: String,
+    val videoId: Int,
+    val playerName: String,
+    val dubbing: String,
+    val screenshotUrl: String,
+)
+
+fun PlayerProgressSource.buildProgressSnapshot(
     positionMs: Long,
     durationMs: Long,
 ): PlayerProgressSnapshot? {
-    if (episodeKey.isBlank() || durationMs <= 0) return null
+    if (episodeUrl.isBlank() || durationMs <= 0) return null
     return PlayerProgressSnapshot(
         episode = episode,
-        episodeUrl = episodeKey,
+        episodeUrl = episodeUrl,
         videoId = videoId,
         playerName = playerName,
         dubbing = dubbing,

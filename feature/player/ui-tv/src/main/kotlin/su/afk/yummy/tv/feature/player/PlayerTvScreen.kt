@@ -30,8 +30,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
-import su.afk.yummy.tv.feature.player.model.rememberPlayerScreenUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.KodikBlockedOverlay
 import su.afk.yummy.tv.feature.player.view.StreamErrorOverlay
@@ -61,7 +61,7 @@ fun PlayerTvScreen(
 ) {
     val pressBackAgainText = stringResource(R.string.player_press_back_again)
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
-    val uiState = rememberPlayerScreenUiState(
+    val uiState = rememberPlayerPlaybackUiState(
         state = state,
         playerNamePrefix = playerNamePrefix,
     )
@@ -78,8 +78,8 @@ fun PlayerTvScreen(
     var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
     val selectedErrorDubbingFocusRequester = remember { FocusRequester() }
-    val canChangePlayer = uiState.availableBalancerNames.size > 1
-    val canChangeDubbing = uiState.dubbingOptions.names.size > 1
+    val canChangePlayer = uiState.balancerNames.size > 1
+    val canChangeDubbing = uiState.dubbingNames.size > 1
 
     DisposableEffect(Unit) {
         onDispose {
@@ -166,46 +166,15 @@ fun PlayerTvScreen(
             }
 
             streamUrl != null -> ExoPlayerView(
+                state = state,
+                playback = uiState,
                 streamUrl = streamUrl,
-                streamHeaders = state.streamHeaders,
-                qualityOverrides = state.streamQualityMap,
-                episodeKey = uiState.activeIframeUrl,
-                retryKey = state.retryKey,
-                isPlaybackRecovering = state.isAllohaPlaybackRecovering,
-                resumeFromMs = state.resumeFromMs,
-                isOfflinePlayback = state.isOfflinePlayback,
-                offlineCacheKey = state.offlineCacheKey,
-                onSaveProgress = { snapshot -> onEvent(PlayerState.Event.SaveProgress(snapshot)) },
-                onPlayerEvent = onEvent,
-                animeTitle = state.animeTitle,
-                episode = uiState.activeEpisode,
-                videoId = uiState.activeVideoId,
-                playerName = uiState.activeBalancerName,
-                dubbing = uiState.activeDubbing,
-                screenshotUrl = uiState.activeScreenshotUrl,
-                hasPrevEpisode = uiState.hasPrevEpisode,
-                hasNextEpisode = uiState.hasNextEpisode,
-                autoPlayNextEpisode = state.autoPlayNextEpisode,
-                canRateTitleOnEnd = uiState.canRateTitleOnEnd,
-                onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
-                onNextEpisode = { source -> onEvent(PlayerState.Event.NextEpisode(source)) },
-                onRateTitle = { onEvent(PlayerState.Event.RateTitle) },
-                onPlaybackError = { error ->
-                    onEvent(error)
-                },
-                allDubbingNames = uiState.dubbingOptions.names,
-                allDubbingEpisodeCounts = uiState.dubbingOptions.episodeCounts,
-                allDubbingViews = uiState.dubbingOptions.views,
-                allDubbingSourceNames = uiState.dubbingOptions.sourceNames,
-                allDubbingAvailability = uiState.dubbingOptions.availability,
-                currentDubbingIndex = uiState.currentDubbingIndex,
+                restoreControlFocusTarget = pendingControlFocusTarget,
+                onControlFocusRestored = { pendingControlFocusTarget = null },
                 onDubbingSelected = { newIdx, currentPosMs ->
                     pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
                     onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
                 },
-                allBalancerNames = uiState.availableBalancerNames,
-                allBalancerAvailability = uiState.balancerAvailability,
-                currentBalancerIndex = uiState.currentBalancerIndex,
                 onBalancerSelected = { newIdx, currentPosMs ->
                     val balancerIndex = uiState.availableBalancerIndices.getOrElse(newIdx) {
                         state.sourceSelection.balancerIndex
@@ -213,20 +182,7 @@ fun PlayerTvScreen(
                     pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
                     onEvent(PlayerState.Event.BalancerSelected(balancerIndex, currentPosMs))
                 },
-                restoreControlFocusTarget = pendingControlFocusTarget,
-                onControlFocusRestored = { pendingControlFocusTarget = null },
-                selectedQuality = state.selectedQuality,
-                onQualitySelected = { quality, currentPosMs ->
-                    onEvent(PlayerState.Event.QualitySelected(quality, currentPosMs))
-                },
-                selectedSpeed = state.selectedSpeed,
-                onSpeedSelected = { speed -> onEvent(PlayerState.Event.SpeedSelected(speed)) },
-                resizeMode = state.resizeMode,
-                onResizeModeSelected = { mode -> onEvent(PlayerState.Event.ResizeModeSelected(mode)) },
-                zoomLevel = state.zoomLevel,
-                onZoomLevelSelected = { level -> onEvent(PlayerState.Event.ZoomLevelSelected(level)) },
-                skips = uiState.activeSkips,
-                autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+                onPlayerEvent = onEvent,
             )
 
             else -> StreamLoadingView(
@@ -240,7 +196,7 @@ fun PlayerTvScreen(
         PlayerSelectionPanel(
             visible = showErrorBalancerPanel && canChangePlayer,
             title = stringResource(R.string.player_balancer_title),
-            items = uiState.availableBalancerNames.map { it.removePrefix(playerNamePrefix) },
+            items = uiState.balancerNames.map { it.removePrefix(playerNamePrefix) },
             selectedIndex = uiState.currentBalancerIndex,
             selectedFocusRequester = selectedErrorBalancerFocusRequester,
             enabledItems = uiState.balancerAvailability,
@@ -266,10 +222,10 @@ fun PlayerTvScreen(
         PlayerSelectionPanel(
             visible = showErrorDubbingPanel && canChangeDubbing,
             title = stringResource(R.string.player_dubbing_title),
-            items = uiState.dubbingOptions.names,
+            items = uiState.dubbingNames,
             selectedIndex = uiState.currentDubbingIndex,
             selectedFocusRequester = selectedErrorDubbingFocusRequester,
-            enabledItems = uiState.dubbingOptions.availability,
+            enabledItems = uiState.dubbingAvailability,
             disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomEnd)

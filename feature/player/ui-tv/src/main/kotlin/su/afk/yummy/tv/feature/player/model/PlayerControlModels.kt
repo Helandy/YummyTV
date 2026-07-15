@@ -4,11 +4,6 @@ import androidx.annotation.StringRes
 import su.afk.yummy.tv.feature.player.PlayerSkipSegment
 import su.afk.yummy.tv.feature.player.presentation.R
 
-internal enum class SeekDirection(val sign: Int) {
-    Backward(-1),
-    Forward(1),
-}
-
 internal enum class PanelReturnFocusTarget {
     Quality,
     Dubbing,

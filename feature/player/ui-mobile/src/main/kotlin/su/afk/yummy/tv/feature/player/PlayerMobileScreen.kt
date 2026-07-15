@@ -36,7 +36,7 @@ import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -90,12 +90,7 @@ fun PlayerMobileScreen(
         offset = Offset(state.mobileVideoOffsetX, state.mobileVideoOffsetY),
     )
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
-    val uiState = remember(state, playerNamePrefix) {
-        MobilePlayerUiState.from(
-            state = state,
-            playerNamePrefix = playerNamePrefix,
-        )
-    }
+    val uiState = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val canChangePlayer = uiState.balancerNames.size > 1
     val canChangeDubbing = uiState.dubbingNames.size > 1
     val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }

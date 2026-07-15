@@ -2,7 +2,7 @@
 # Android / Build
 android-compileSdk = "37"
 android-minSdk = "24"
-agp = "9.2.1"
+agp = "9.3.0"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin

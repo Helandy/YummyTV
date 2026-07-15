@@ -18,6 +18,8 @@ internal class TvPlayerPanelsState {
     var activePanel by mutableStateOf<TvPlayerPanel?>(null)
         private set
 
+    var pendingReturnFocusTarget by mutableStateOf<PanelReturnFocusTarget?>(null)
+
     val isAnyOpen: Boolean
         get() = activePanel != null
 
@@ -28,7 +30,8 @@ internal class TvPlayerPanelsState {
         return activePanel == panel
     }
 
-    fun close() {
+    fun close(returnFocusTarget: PanelReturnFocusTarget? = null) {
+        if (returnFocusTarget != null) pendingReturnFocusTarget = returnFocusTarget
         activePanel = null
     }
 }

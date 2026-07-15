@@ -1,6 +1,18 @@
 package su.afk.yummy.tv.feature.player.common
 
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+
+data class PlayerPositionSnapshot(
+    val positionMs: Long,
+    val durationMs: Long,
+)
+
+fun Player.positionSnapshot(fallbackDurationMs: Long): PlayerPositionSnapshot =
+    PlayerPositionSnapshot(
+        positionMs = currentPosition.coerceAtLeast(0L),
+        durationMs = duration.takeIf { it > 0 } ?: fallbackDurationMs,
+    )
 
 fun PlaybackException.analyticsType(): String =
     this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"

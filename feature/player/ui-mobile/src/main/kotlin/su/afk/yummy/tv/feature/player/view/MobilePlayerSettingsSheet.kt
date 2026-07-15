@@ -39,11 +39,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.R as UiR
+import su.afk.yummy.tv.feature.player.common.formatCompactCount
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.model.MobilePlayerTrackSettingsTab
+import su.afk.yummy.tv.feature.player.mobile.R as UiR
 import su.afk.yummy.tv.feature.player.presentation.R as PresentationR
-import su.afk.yummy.tv.feature.player.utils.formatCompactCount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

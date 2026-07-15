@@ -1,16 +1,11 @@
 package su.afk.yummy.tv.feature.player.view
 
-import android.content.Context
-import android.media.AudioManager
-import android.util.Log
-import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,73 +14,54 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PLAYER_END_PROMPT_COUNTDOWN_SECONDS
+import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
+import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
-import su.afk.yummy.tv.feature.player.common.StepSeekAccumulator
-import su.afk.yummy.tv.feature.player.common.analyticsType
-import su.afk.yummy.tv.feature.player.common.calculateBufferedProgress
-import su.afk.yummy.tv.feature.player.common.diagnosticCauseChain
-import su.afk.yummy.tv.feature.player.common.formatSignedSeconds
+import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
+import su.afk.yummy.tv.feature.player.common.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
-import su.afk.yummy.tv.feature.player.common.service.PlayerAudioTrackPolicy
-import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemConfig
+import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
+import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
+import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
-import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
-import su.afk.yummy.tv.feature.player.model.MobilePlayerUiState
-import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
-import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipCallbacks
+import su.afk.yummy.tv.feature.player.model.rememberMobilePlayerGestureController
+import su.afk.yummy.tv.feature.player.model.rememberMobilePlayerOverlayController
+import su.afk.yummy.tv.feature.player.model.rememberMobilePlayerSeekController
 import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_MIN_BRIGHTNESS
-import su.afk.yummy.tv.feature.player.utils.MOBILE_PLAYER_PIP_SEEK_STEP_MS
-import su.afk.yummy.tv.feature.player.utils.buildProgressSnapshot
-import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
+import su.afk.yummy.tv.feature.player.utils.buildMobileMediaItemKey
+import su.afk.yummy.tv.feature.player.utils.buildMobilePlayerMediaItemConfig
+import su.afk.yummy.tv.feature.player.utils.buildMobilePlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.utils.gestureIcon
-import su.afk.yummy.tv.feature.player.utils.isAtMobilePlayerEnd
-import su.afk.yummy.tv.feature.player.utils.readSystemBrightnessFraction
-import su.afk.yummy.tv.feature.player.utils.segments
+import su.afk.yummy.tv.feature.player.utils.mobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.utils.toGesturePercentText
-import su.afk.yummy.tv.feature.player.utils.toStepSeekDirection
-import su.afk.yummy.tv.feature.player.utils.toastIcon
-import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -97,18 +73,12 @@ internal fun MobileNativePlayer(
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    val hostView = LocalView.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
     val pipSession = remember { MobilePlayerPipController.createSession() }
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
-    val ui = remember(state, playerNamePrefix) {
-        MobilePlayerUiState.from(
-            state = state,
-            playerNamePrefix = playerNamePrefix,
-        )
-    }
+    val ui = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val qualities = remember(streamUrl, state.streamQualityMap) {
         state.streamQualityMap ?: deriveQualityUrls(streamUrl)
     }
@@ -117,94 +87,58 @@ internal fun MobileNativePlayer(
     val selectedSpeed = state.selectedSpeed
     val currentPosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
     val duration = state.playbackDurationMs
-    var lastSaveTime by remember { mutableStateOf(0L) }
     var settingsMode by remember { mutableStateOf<MobilePlayerSettingsMode?>(null) }
-    var overlayVisible by remember { mutableStateOf(true) }
     var wantsPlay by remember { mutableStateOf(true) }
-    var resumeAfterLifecyclePause by remember { mutableStateOf(false) }
+    val resumeAfterLifecyclePause = remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var nextEpisodePromptState by remember(ui.activeIframeUrl, streamUrl) {
         mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
     }
-    var completionReported by remember(ui.activeIframeUrl, streamUrl) { mutableStateOf(false) }
     var seekProgress by remember { mutableFloatStateOf(0f) }
     var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
-    var playerSize by remember { mutableStateOf(IntSize.Zero) }
-    var stepSeekToastText by remember(streamUrl) { mutableStateOf<String?>(null) }
-    var stepSeekToastIcon by remember { mutableStateOf(MobileSeekDirection.Forward.toastIcon) }
     val skippedSegments = remember(streamUrl) { mutableStateListOf<String>() }
-    val stepSeekAccumulator = remember(streamUrl) { StepSeekAccumulator() }
     val currentUrl = selectedQuality?.let(qualities::get) ?: streamUrl
     val playbackConfigKey = remember(currentUrl, state.streamHeaders, state.retryKey) {
-        buildString {
-            append(currentUrl).append('|').append(state.retryKey)
-            state.streamHeaders.entries
-                .sortedBy { it.key.lowercase() }
-                .forEach { (key, value) ->
-                    append('|').append(key).append('=').append(value)
-                }
-        }
+        buildMobilePlayerPlaybackKey(state = state, url = currentUrl)
     }
     val mediaController = rememberPlayerMediaController()
     val playbackConfig = rememberPlayerPlaybackConfig()
-    val coroutineScope = rememberCoroutineScope()
-    var hideJob by remember { mutableStateOf<Job?>(null) }
-    var stepSeekToastJob by remember { mutableStateOf<Job?>(null) }
-    var liveVideoTransform by remember { mutableStateOf(videoTransform) }
-    var transformGestureActive by remember { mutableStateOf(false) }
-    var isSpeedBoosted by remember { mutableStateOf(false) }
-    var brightnessGestureActive by remember { mutableStateOf(false) }
-    var brightnessLevel by remember { mutableFloatStateOf(0.5f) }
-    var volumeGestureActive by remember { mutableStateOf(false) }
-    var volumeLevel by remember { mutableFloatStateOf(0.5f) }
-    val audioManager = remember(context) {
-        context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-    }
-    val maxVolume = remember(audioManager) {
-        audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC)?.takeIf { it > 0 } ?: 1
-    }
-    val effectiveSpeed = if (isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
+    val stepSeekToast = rememberPlayerStepSeekToastState(
+        streamUrl = streamUrl,
+        toastDuration = MOBILE_PLAYER_SEEK_TOAST_DURATION,
+    )
+    val overlay = rememberMobilePlayerOverlayController(
+        canHide = { wantsPlay && settingsMode == null && !isSeeking },
+        wantsPlay = { wantsPlay },
+        isPromptVisible = { nextEpisodePromptState.isVisible },
+    )
+    val gestures = rememberMobilePlayerGestureController(
+        activity = activity,
+        initialTransform = videoTransform,
+        onGestureStart = { overlay.cancelHide() },
+        onVideoTransformChanged = onVideoTransformChanged,
+    )
+    val effectiveSpeed = if (gestures.isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
     }
-    val notificationSubtitle = ui.activeEpisode.takeIf { it.isNotBlank() }?.let {
-        stringResource(R.string.player_notification_episode, it)
-    }
-    val notificationDescription = when {
-        ui.activeBalancerName.isNotBlank() && ui.activeDubbing.isNotBlank() ->
-            stringResource(
-                R.string.player_notification_details,
-                ui.activeDubbing,
-                ui.activeBalancerName,
-            )
-
-        else -> ui.activeBalancerName.ifBlank { ui.activeDubbing }.takeIf { it.isNotBlank() }
-    }
-    val notificationContentText = listOfNotNull(
-        notificationSubtitle,
-        ui.activeDubbing.takeIf { it.isNotBlank() },
-        ui.activeBalancerName.takeIf { it.isNotBlank() },
-    ).joinToString(separator = " • ")
+    val notificationMeta = mobilePlayerNotificationMeta(ui)
     var notificationArtworkUrl by remember { mutableStateOf<String?>(null) }
     val mediaItemKey = remember(
         playbackConfigKey,
         state.animeTitle,
-        notificationSubtitle,
-        notificationDescription,
-        notificationContentText,
+        notificationMeta,
         notificationArtworkUrl,
         state.playbackDurationMs,
     ) {
-        buildString {
-            append(playbackConfigKey)
-            append('|').append(state.animeTitle)
-            append('|').append(notificationSubtitle.orEmpty())
-            append('|').append(notificationDescription.orEmpty())
-            append('|').append(notificationContentText)
-            append('|').append(notificationArtworkUrl.orEmpty())
-            append('|').append(state.playbackDurationMs.coerceAtLeast(0L))
-        }
+        buildMobileMediaItemKey(
+            playbackKey = playbackConfigKey,
+            animeTitle = state.animeTitle,
+            meta = notificationMeta,
+            artworkUrl = notificationArtworkUrl,
+            durationMs = state.playbackDurationMs,
+        )
     }
 
     LaunchedEffect(ui.activeScreenshotUrl, ui.activeIframeUrl, state.posterUrl) {
@@ -223,371 +157,118 @@ internal fun MobileNativePlayer(
         }
     }
 
-    DisposableEffect(hostView) {
-        val wasKeepingScreenOn = hostView.keepScreenOn
-        hostView.keepScreenOn = true
-        onDispose { hostView.keepScreenOn = wasKeepingScreenOn }
-    }
-
-    DisposableEffect(activity) {
-        val originalBrightness = activity?.window?.attributes?.screenBrightness
-        onDispose {
-            activity?.window?.let { window ->
-                window.attributes = window.attributes.apply {
-                    screenBrightness = originalBrightness
-                        ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-                }
-            }
-        }
-    }
-
-    fun scheduleOverlayHide() {
-        hideJob?.cancel()
-        hideJob = coroutineScope.launch {
-            delay(4.seconds)
-            if (wantsPlay && settingsMode == null && !isSeeking) {
-                overlayVisible = false
-            }
-        }
-    }
-
-    fun showOverlay() {
-        overlayVisible = true
-        if (wantsPlay) scheduleOverlayHide() else hideJob?.cancel()
-    }
-
-    fun toggleOverlay() {
-        if (nextEpisodePromptState.isVisible) {
-            return
-        }
-        if (overlayVisible) {
-            hideJob?.cancel()
-            overlayVisible = false
-        } else {
-            showOverlay()
-        }
-    }
-
-    fun startVerticalGesture(zone: MobileVerticalGestureZone) {
-        hideJob?.cancel()
-        when (zone) {
-            MobileVerticalGestureZone.Brightness -> {
-                brightnessLevel = activity?.window?.attributes?.screenBrightness
-                    ?.takeIf { it in 0f..1f }
-                    ?: readSystemBrightnessFraction(context)
-                brightnessGestureActive = true
-            }
-
-            MobileVerticalGestureZone.Volume -> {
-                volumeLevel = audioManager
-                    ?.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    ?.div(maxVolume.toFloat())
-                    ?: 0f
-                volumeGestureActive = true
-            }
-        }
-    }
-
-    fun applyVerticalGesture(zone: MobileVerticalGestureZone, deltaFraction: Float) {
-        when (zone) {
-            MobileVerticalGestureZone.Brightness -> {
-                brightnessLevel = (brightnessLevel + deltaFraction)
-                    .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
-                activity?.window?.let { window ->
-                    window.attributes = window.attributes.apply {
-                        screenBrightness = brightnessLevel
-                    }
-                }
-            }
-
-            MobileVerticalGestureZone.Volume -> {
-                volumeLevel = (volumeLevel + deltaFraction).coerceIn(0f, 1f)
-                audioManager?.setStreamVolume(
-                    AudioManager.STREAM_MUSIC,
-                    (volumeLevel * maxVolume).roundToInt(),
-                    0,
-                )
-            }
-        }
-    }
-
-    fun endVerticalGesture(zone: MobileVerticalGestureZone) {
-        when (zone) {
-            MobileVerticalGestureZone.Brightness -> brightnessGestureActive = false
-            MobileVerticalGestureZone.Volume -> volumeGestureActive = false
-        }
-    }
-
-    fun applyVideoTransform(centroid: Offset, pan: Offset, zoomChange: Float) {
-        val transform = calculateMobileVideoTransform(
-            currentScale = liveVideoTransform.scale,
-            currentOffset = liveVideoTransform.offset,
-            playerSize = playerSize,
-            centroid = centroid,
-            pan = pan,
-            zoomChange = zoomChange,
-        )
-        liveVideoTransform = transform
-        onVideoTransformChanged(transform)
-    }
+    PlayerKeepScreenOnEffect()
 
     val player = mediaController
     val isBuffering = rememberPlayerBufferingState(player)
-    val progressSource = remember(player, ui) { ui }
 
     LaunchedEffect(player, playbackConfigKey, mediaItemKey, ui.activeIframeUrl) {
         val activePlayer = player ?: return@LaunchedEffect
         mediaItemUpdater.update(
             player = activePlayer,
             playbackConfig = playbackConfig,
-            config = PlayerMediaItemConfig(
+            config = buildMobilePlayerMediaItemConfig(
                 playbackKey = playbackConfigKey,
                 mediaItemKey = mediaItemKey,
                 url = currentUrl,
-                title = state.animeTitle,
-                artist = notificationContentText,
-                subtitle = notificationSubtitle,
-                description = notificationDescription,
+                episodeUrl = ui.activeIframeUrl,
+                state = state,
+                meta = notificationMeta,
                 artworkUrl = notificationArtworkUrl,
-                durationMs = state.playbackDurationMs,
-                headers = state.streamHeaders,
-                offlineCacheKey = state.offlineCacheKey,
-                isOfflinePlayback = state.isOfflinePlayback,
-                useRotatingHlsCacheKeys = state.isOfflinePlayback &&
-                        ui.activeIframeUrl.isAllohaPlayerUrl(),
-                audioTrackPolicy = if (ui.activeIframeUrl.isAllohaPlayerUrl()) {
-                    PlayerAudioTrackPolicy.FirstAudioGroup
-                } else {
-                    PlayerAudioTrackPolicy.Default
-                },
-                playbackPositionMs = state.playbackPositionMs,
-                resumeFromMs = state.resumeFromMs,
             ),
         )
         activePlayer.playWhenReady = wantsPlay
     }
 
     if (player == null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-        )
+        PlayerBlackBackdrop()
         return
     }
 
-    fun saveProgress(positionMs: Long = currentPosition, durationMs: Long = duration) {
-        val snapshot = progressSource.buildProgressSnapshot(
-            positionMs = positionMs,
-            durationMs = durationMs,
-        ) ?: return
-        onEvent(
-            PlayerState.Event.SaveProgress(
-                snapshot = snapshot,
-            )
-        )
-        lastSaveTime = System.currentTimeMillis()
-    }
-
-    fun notifyPlaybackPositionChanged(positionMs: Long, durationMs: Long) {
-        onEvent(
-            PlayerState.Event.PlaybackPositionChanged(
-                positionMs = positionMs,
-                durationMs = durationMs,
-                episodeUrl = progressSource.activeIframeUrl,
-            )
+    val progressSource = remember(player, ui) {
+        PlayerProgressSource(
+            episodeUrl = ui.activeIframeUrl,
+            episode = ui.activeEpisode,
+            videoId = ui.activeVideoId,
+            playerName = ui.activeBalancerName,
+            dubbing = ui.activeDubbing,
+            screenshotUrl = ui.activeScreenshotUrl,
         )
     }
+    val reporter = rememberPlayerProgressReporter(
+        source = { progressSource },
+        onEvent = onEvent,
+    )
+    val completionTracker = rememberPlayerCompletionTracker(
+        contentKey = ui.activeIframeUrl,
+        streamUrl = streamUrl,
+        reporter = reporter,
+        onEvent = onEvent,
+    )
 
     fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
-        notifyPlaybackPositionChanged(positionMs, durationMs)
-        saveProgress(
-            positionMs = positionMs,
-            durationMs = durationMs,
-        )
-        if (!completionReported) {
-            completionReported = true
-            onEvent(
-                PlayerState.Event.EpisodeCompleted(
-                    positionMs = positionMs,
-                    durationMs = durationMs,
-                    episodeUrl = progressSource.activeIframeUrl,
-                )
-            )
-        }
+        completionTracker.onEpisodeEnd(positionMs, durationMs)
         if (
             ui.hasNextEpisode &&
             !isInPictureInPictureMode &&
             !nextEpisodePromptState.isVisible
         ) {
-            nextEpisodePromptState = if (state.autoPlayNextEpisode) {
-                PlayerEndPromptState.WithCountdown(
-                    PLAYER_END_PROMPT_COUNTDOWN_SECONDS,
-                )
-            } else {
-                PlayerEndPromptState.WithoutCountdown
-            }
-            overlayVisible = false
+            nextEpisodePromptState = playerEndPromptFor(state.autoPlayNextEpisode)
+            overlay.visible = false
             settingsMode = null
-            hideJob?.cancel()
+            overlay.cancelHide()
         }
     }
 
-    fun seekToPosition(positionMs: Long) {
-        val playerDuration = player.duration.takeIf { it > 0 } ?: duration
-        val clamped = if (playerDuration > 0) {
-            positionMs.coerceIn(0L, playerDuration)
-        } else {
-            positionMs.coerceAtLeast(0L)
-        }
-        player.seekTo(clamped)
-        if (
-            playerDuration > 0L &&
-            isAtMobilePlayerEnd(clamped, playerDuration)
-        ) {
-            handleEpisodeEnd(clamped, playerDuration)
-        } else {
-            notifyPlaybackPositionChanged(clamped, playerDuration.coerceAtLeast(0L))
-            saveProgress(clamped, playerDuration)
-        }
-    }
+    val seekController = rememberMobilePlayerSeekController(
+        player = player,
+        fallbackDurationMs = { duration },
+        reporter = reporter,
+        stepSeekToast = stepSeekToast,
+        onEpisodeEnd = ::handleEpisodeEnd,
+        onBackwardStep = { nextEpisodePromptState = PlayerEndPromptState.Hidden },
+    )
 
-    fun stepSeek(direction: MobileSeekDirection) {
-        if (direction == MobileSeekDirection.Backward) {
-            nextEpisodePromptState = PlayerEndPromptState.Hidden
-        }
-        val now = System.currentTimeMillis()
-        val offset = stepSeekAccumulator.next(direction.toStepSeekDirection(), now)
-        seekToPosition(player.currentPosition + offset)
-        stepSeekToastText = stepSeekAccumulator.totalOffsetMs.formatSignedSeconds()
-        stepSeekToastIcon = direction.toastIcon
-        stepSeekToastJob?.cancel()
-        stepSeekToastJob = coroutineScope.launch {
-            delay(MOBILE_PLAYER_SEEK_TOAST_DURATION)
-            stepSeekToastText = null
-        }
-    }
+    MobilePlayerListenerEffect(
+        player = player,
+        activity = activity,
+        pipSession = pipSession,
+        reporter = reporter,
+        overlay = overlay,
+        stepSeekToast = stepSeekToast,
+        seekController = seekController,
+        fallbackDurationMs = { duration },
+        wantsPlay = { wantsPlay },
+        onWantsPlayChanged = { wantsPlay = it },
+        onEpisodeEnd = ::handleEpisodeEnd,
+        onEvent = onEvent,
+    )
 
-    DisposableEffect(player) {
-        val listener = object : Player.Listener {
-            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                wantsPlay = playWhenReady
-                pipSession.setPlaying(playWhenReady, activity)
-                if (playWhenReady) scheduleOverlayHide() else hideJob?.cancel()
-            }
-
-            override fun onPlayerError(error: PlaybackException) {
-                val position = player.currentPosition.coerceAtLeast(0L)
-                Log.e(
-                    PLAYBACK_LOG_TAG,
-                    "Mobile playback error positionMs=$position code=${error.errorCodeName} " +
-                            "causes=${error.diagnosticCauseChain()}",
-                )
-                onEvent(
-                    PlayerState.Event.PlaybackError(
-                        message = error.localizedMessage
-                            ?: error.message
-                            ?: error.errorCodeName,
-                        errorCode = error.errorCodeName.takeIf { it.isNotBlank() },
-                        errorType = error.analyticsType(),
-                        positionMs = position,
-                    )
-                )
-            }
-
-            override fun onVideoSizeChanged(videoSize: VideoSize) {
-                pipSession.setAspectRatio(videoSize.width, videoSize.height)
-            }
-
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_READY) {
-                    onEvent(PlayerState.Event.PlaybackReady)
-                }
-                if (playbackState == Player.STATE_ENDED) {
-                    val position = player.currentPosition.coerceAtLeast(0L)
-                    val dur = player.duration.takeIf { it > 0 } ?: duration
-                    handleEpisodeEnd(position, dur)
-                }
-            }
-        }
-        player.addListener(listener)
-        pipSession.setPlaying(player.playWhenReady, activity)
-        pipSession.setCallbacks(
-            MobilePlayerPipCallbacks(
-                onSeekBackward = {
-                    seekToPosition(player.currentPosition - MOBILE_PLAYER_PIP_SEEK_STEP_MS)
-                },
-                onPlayPause = {
-                    if (player.playWhenReady) player.pause() else player.play()
-                },
-                onSeekForward = {
-                    seekToPosition(player.currentPosition + MOBILE_PLAYER_PIP_SEEK_STEP_MS)
-                },
-            )
-        )
-        if (wantsPlay) scheduleOverlayHide()
-        onDispose {
-            hideJob?.cancel()
-            stepSeekToastJob?.cancel()
-            pipSession.setPlaying(false, activity)
-            pipSession.setCallbacks(null)
-            val position = player.currentPosition.coerceAtLeast(0)
-            val dur = player.duration.takeIf { it > 0 } ?: duration
-            notifyPlaybackPositionChanged(position, dur)
-            saveProgress(position, dur)
-            player.removeListener(listener)
-            if (!pipSession.shouldKeepPlayingOnPause()) {
-                player.clearMediaItems()
-                player.stop()
-            }
-        }
-    }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, player) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    if (nextEpisodePromptState is PlayerEndPromptState.WithCountdown) {
-                        nextEpisodePromptState = PlayerEndPromptState.WithoutCountdown
-                    }
-                    val keepPlayingInPip = pipSession.shouldKeepPlayingOnPause()
-                    resumeAfterLifecyclePause = wantsPlay && !keepPlayingInPip
-                    val position = player.currentPosition.coerceAtLeast(0)
-                    val dur = player.duration.takeIf { it > 0 } ?: duration
-                    notifyPlaybackPositionChanged(position, dur)
-                    saveProgress(position, dur)
-                    if (!keepPlayingInPip) {
-                        player.pause()
-                    }
-                }
-
-                Lifecycle.Event.ON_RESUME -> if (resumeAfterLifecyclePause) player.play()
-                else -> Unit
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
+    MobilePlayerLifecycleEffect(
+        player = player,
+        pipSession = pipSession,
+        reporter = reporter,
+        resumeAfterPause = resumeAfterLifecyclePause,
+        fallbackDurationMs = { duration },
+        wantsPlay = { wantsPlay },
+        promptState = { nextEpisodePromptState },
+        onPromptStateChange = { nextEpisodePromptState = it },
+    )
 
     LaunchedEffect(isInPictureInPictureMode) {
         if (isInPictureInPictureMode) {
-            overlayVisible = false
+            overlay.visible = false
             nextEpisodePromptState = PlayerEndPromptState.Hidden
-            transformGestureActive = false
-            isSpeedBoosted = false
-            brightnessGestureActive = false
-            volumeGestureActive = false
+            gestures.resetForPictureInPicture()
             settingsMode = null
-            stepSeekToastText = null
-            hideJob?.cancel()
-            stepSeekToastJob?.cancel()
+            overlay.cancelHide()
+            stepSeekToast.clear()
         }
     }
 
     LaunchedEffect(transformScopeKey) {
-        transformGestureActive = false
-        liveVideoTransform = videoTransform
+        gestures.endTransformGesture()
+        gestures.liveVideoTransform = videoTransform
     }
 
     LaunchedEffect(ui.activeIframeUrl) {
@@ -595,29 +276,24 @@ internal fun MobileNativePlayer(
         settingsMode = null
     }
 
-    LaunchedEffect(nextEpisodePromptState, ui.activeIframeUrl) {
-        val countdown = nextEpisodePromptState as? PlayerEndPromptState.WithCountdown
-            ?: return@LaunchedEffect
-        if (countdown.seconds <= 0) {
-            withFrameNanos { }
+    PlayerEndPromptCountdownEffect(
+        promptState = nextEpisodePromptState,
+        contentKey = ui.activeIframeUrl,
+        onPromptStateChange = { nextEpisodePromptState = it },
+        onFinished = {
             nextEpisodePromptState = PlayerEndPromptState.Hidden
             onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
-        } else {
-            delay(1.seconds)
-            nextEpisodePromptState = PlayerEndPromptState.WithCountdown(
-                countdown.seconds - 1,
-            )
-        }
-    }
+        },
+    )
 
     BackHandler(enabled = nextEpisodePromptState.isVisible && !isInPictureInPictureMode) {
         nextEpisodePromptState = PlayerEndPromptState.Hidden
-        showOverlay()
+        overlay.show()
     }
 
     LaunchedEffect(videoTransform) {
-        if (!transformGestureActive) {
-            liveVideoTransform = videoTransform
+        if (!gestures.transformGestureActive) {
+            gestures.liveVideoTransform = videoTransform
         }
     }
 
@@ -627,39 +303,18 @@ internal fun MobileNativePlayer(
         pipSession.setPlaying(wantsPlay, activity)
     }
 
-    LaunchedEffect(player, ui.activeIframeUrl, state.autoSkipOpeningsEndings) {
-        while (true) {
-            var position = currentPosition
-            var dur = duration
-            if (!isSeeking) {
-                position = player.currentPosition.coerceAtLeast(0)
-                dur = player.duration.takeIf { it > 0 } ?: 0L
-                notifyPlaybackPositionChanged(position, dur)
-            }
-            bufferedProgress = calculateBufferedProgress(
-                bufferedPosition = player.bufferedPosition,
-                currentPosition = position,
-                duration = dur,
-            )
-            val now = System.currentTimeMillis()
-            if (dur > 0 && now - lastSaveTime >= 10_000L) {
-                saveProgress(position, dur)
-            }
-            if (state.autoSkipOpeningsEndings) {
-                ui.activeSkips.segments().forEach { (key, segment) ->
-                    val segmentKey = "${ui.activeIframeUrl}-$key"
-                    if (segmentKey !in skippedSegments &&
-                        position in segment.startMs..segment.endMs
-                    ) {
-                        skippedSegments += segmentKey
-                        player.seekTo(segment.endMs)
-                        notifyPlaybackPositionChanged(segment.endMs, dur)
-                    }
-                }
-            }
-            delay(1.seconds)
-        }
-    }
+    MobilePlayerProgressPollingEffect(
+        player = player,
+        episodeKey = ui.activeIframeUrl,
+        autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+        reporter = reporter,
+        skippedSegments = skippedSegments,
+        isSeeking = { isSeeking },
+        currentPositionMs = { currentPosition },
+        fallbackDurationMs = { duration },
+        activeSkips = { ui.activeSkips },
+        onBufferedProgressChange = { bufferedProgress = it },
+    )
 
     val displayTime = if (isSeeking && duration > 0) {
         (seekProgress * duration).toLong()
@@ -676,7 +331,7 @@ internal fun MobileNativePlayer(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .onSizeChanged { playerSize = it },
+            .onSizeChanged { gestures.playerSize = it },
     ) {
         Box(
             modifier = Modifier
@@ -691,10 +346,10 @@ internal fun MobileNativePlayer(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = liveVideoTransform.scale
-                        scaleY = liveVideoTransform.scale
-                        translationX = liveVideoTransform.offset.x
-                        translationY = liveVideoTransform.offset.y
+                        scaleX = gestures.liveVideoTransform.scale
+                        scaleY = gestures.liveVideoTransform.scale
+                        translationX = gestures.liveVideoTransform.offset.x
+                        translationY = gestures.liveVideoTransform.offset.y
                     },
                 shutter = {
                     Box(
@@ -706,36 +361,23 @@ internal fun MobileNativePlayer(
             )
         }
 
-        if (isBuffering || state.isAllohaPlaybackRecovering) {
-            CircularProgressIndicator(
-                color = Color.White,
-                strokeWidth = 2.dp,
-                modifier = Modifier.align(Alignment.Center),
-            )
-        }
+        PlayerBufferingIndicator(
+            visible = isBuffering || state.isAllohaPlaybackRecovering,
+            modifier = Modifier.align(Alignment.Center),
+        )
 
         MobilePlayerGestureLayer(
             enabled = !isInPictureInPictureMode,
-            onTap = { toggleOverlay() },
-            onDoubleTap = ::stepSeek,
-            onTransformStart = {
-                transformGestureActive = true
-                hideJob?.cancel()
-            },
-            onTransform = ::applyVideoTransform,
-            onTransformEnd = {
-                transformGestureActive = false
-            },
-            onVerticalDragStart = ::startVerticalGesture,
-            onVerticalDrag = ::applyVerticalGesture,
-            onVerticalDragEnd = ::endVerticalGesture,
-            onLongPressStart = {
-                isSpeedBoosted = true
-                hideJob?.cancel()
-            },
-            onLongPressEnd = {
-                isSpeedBoosted = false
-            },
+            onTap = { overlay.toggle() },
+            onDoubleTap = seekController::stepSeek,
+            onTransformStart = gestures::startTransformGesture,
+            onTransform = gestures::applyVideoTransform,
+            onTransformEnd = gestures::endTransformGesture,
+            onVerticalDragStart = gestures::startVerticalGesture,
+            onVerticalDrag = gestures::applyVerticalGesture,
+            onVerticalDragEnd = gestures::endVerticalGesture,
+            onLongPressStart = gestures::startSpeedBoost,
+            onLongPressEnd = gestures::endSpeedBoost,
         )
 
         MobilePlayerTopBar(
@@ -748,12 +390,12 @@ internal fun MobileNativePlayer(
             onPictureInPicture = { activity?.let(pipSession::enter) },
             showDetails = state.animeId > 0,
             showPictureInPicture = supportsPictureInPicture && !isInPictureInPictureMode,
-            visible = overlayVisible && !isInPictureInPictureMode,
+            visible = overlay.visible && !isInPictureInPictureMode,
         )
 
         MobilePlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = overlayVisible && !isInPictureInPictureMode,
+            visible = overlay.visible && !isInPictureInPictureMode,
             wantsPlay = wantsPlay,
             displayTime = displayTime,
             duration = duration,
@@ -763,21 +405,21 @@ internal fun MobileNativePlayer(
             hasNextEpisode = ui.hasNextEpisode,
             onPlayPause = {
                 if (wantsPlay) player.pause() else player.play()
-                showOverlay()
+                overlay.show()
             },
             onSeekChange = { value ->
                 isSeeking = true
                 seekProgress = value
-                overlayVisible = true
-                hideJob?.cancel()
+                overlay.visible = true
+                overlay.cancelHide()
             },
             onSeekFinished = {
                 if (duration > 0) {
                     val newPosition = (seekProgress * duration).toLong().coerceIn(0L, duration)
-                    seekToPosition(newPosition)
+                    seekController.seekTo(newPosition)
                 }
                 isSeeking = false
-                showOverlay()
+                overlay.show()
             },
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = {
@@ -787,53 +429,53 @@ internal fun MobileNativePlayer(
             onTrackSettings = {
                 nextEpisodePromptState = PlayerEndPromptState.Hidden
                 settingsMode = MobilePlayerSettingsMode.Track
-                overlayVisible = true
-                hideJob?.cancel()
+                overlay.visible = true
+                overlay.cancelHide()
             },
             onPlaybackSettings = {
                 nextEpisodePromptState = PlayerEndPromptState.Hidden
                 settingsMode = MobilePlayerSettingsMode.Playback
-                overlayVisible = true
-                hideJob?.cancel()
+                overlay.visible = true
+                overlay.cancelHide()
             },
         )
 
         MobilePlayerSeekToast(
-            text = stepSeekToastText.takeUnless { isInPictureInPictureMode },
-            icon = stepSeekToastIcon,
+            text = stepSeekToast.text.takeUnless { isInPictureInPictureMode },
+            icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = if (overlayVisible && !isInPictureInPictureMode) 128.dp else 36.dp),
+                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
         MobilePlayerZoomIndicator(
-            visible = transformGestureActive && !isInPictureInPictureMode,
-            scale = liveVideoTransform.scale,
+            visible = gestures.transformGestureActive && !isInPictureInPictureMode,
+            scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
         )
 
         MobilePlayerGestureIndicator(
-            visible = brightnessGestureActive && !isInPictureInPictureMode,
+            visible = gestures.brightnessGestureActive && !isInPictureInPictureMode,
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
-            percentText = brightnessLevel.toGesturePercentText(),
+            percentText = gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = 32.dp),
         )
 
         MobilePlayerGestureIndicator(
-            visible = volumeGestureActive && !isInPictureInPictureMode,
+            visible = gestures.volumeGestureActive && !isInPictureInPictureMode,
             icon = MobileVerticalGestureZone.Volume.gestureIcon,
-            percentText = volumeLevel.toGesturePercentText(),
+            percentText = gestures.volumeLevel.toGesturePercentText(),
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 32.dp),
         )
 
         MobilePlayerSpeedBoostIndicator(
-            visible = isSpeedBoosted && !isInPictureInPictureMode,
+            visible = gestures.isSpeedBoosted && !isInPictureInPictureMode,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
@@ -857,7 +499,7 @@ internal fun MobileNativePlayer(
                 },
                 onStay = {
                     nextEpisodePromptState = PlayerEndPromptState.Hidden
-                    showOverlay()
+                    overlay.show()
                 },
                 modifier = Modifier.align(Alignment.Center),
             )
@@ -871,7 +513,7 @@ internal fun MobileNativePlayer(
                 selectedQuality = selectedQuality,
                 onQualitySelected = { quality ->
                     val position = player.currentPosition.coerceAtLeast(0)
-                    saveProgress(position)
+                    reporter.saveProgress(position, duration)
                     onEvent(PlayerState.Event.QualitySelected(quality, position))
                 },
                 speeds = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f),
@@ -910,5 +552,4 @@ internal fun MobileNativePlayer(
     }
 }
 
-private const val PLAYBACK_LOG_TAG = "PlayerPlayback"
 private const val MOBILE_PLAYER_SPEED_BOOST = 2f

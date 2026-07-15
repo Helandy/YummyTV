@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import su.afk.yummy.tv.feature.player.model.MobileSeekDirection
+import su.afk.yummy.tv.feature.player.common.StepSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import kotlin.math.sqrt
 
@@ -20,7 +20,7 @@ import kotlin.math.sqrt
 internal fun MobilePlayerGestureLayer(
     enabled: Boolean,
     onTap: () -> Unit,
-    onDoubleTap: (MobileSeekDirection) -> Unit,
+    onDoubleTap: (StepSeekDirection) -> Unit,
     onTransformStart: () -> Unit,
     onTransform: (centroid: Offset, pan: Offset, zoomChange: Float) -> Unit,
     onTransformEnd: () -> Unit,
@@ -94,9 +94,9 @@ internal fun MobilePlayerGestureLayer(
                     onTap = { currentOnTap() },
                     onDoubleTap = { offset ->
                         val direction = if (offset.x < size.width / 2f) {
-                            MobileSeekDirection.Backward
+                            StepSeekDirection.Backward
                         } else {
-                            MobileSeekDirection.Forward
+                            StepSeekDirection.Forward
                         }
                         currentOnDoubleTap(direction)
                     },
