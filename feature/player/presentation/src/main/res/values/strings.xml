@@ -16,6 +16,7 @@
     <string name="player_change_player">Change player</string>
     <string name="player_change_dubbing">Change dubbing</string>
     <string name="player_stream_error">Could not load stream</string>
+    <string name="player_recovery_hint_title">Playback is taking long to restore</string>
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>
     <string name="player_dubbing_unavailable">Sorry, the selected dubbing is unavailable. Try another one.</string>

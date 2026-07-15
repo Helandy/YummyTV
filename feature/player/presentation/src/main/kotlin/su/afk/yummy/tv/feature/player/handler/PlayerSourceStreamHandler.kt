@@ -258,8 +258,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
     }
 
     /** Форматирует ошибки ExoPlayer, не запуская логику обновления источников. */
-    fun playbackErrorMessage(message: String): String =
-        streamHandler.playbackErrorMessage(message)
+    fun playbackErrorMessage(message: String, errorCode: String? = null): String =
+        streamHandler.playbackErrorMessage(message, errorCode)
 
     /** Собирает domain-запрос источников из текущего выбранного presentation-источника. */
     private fun PlayerState.State.toSourceRequest(): PlayerSourceRequest =

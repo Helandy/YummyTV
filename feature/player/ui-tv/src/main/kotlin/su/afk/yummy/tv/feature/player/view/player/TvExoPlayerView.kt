@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +61,7 @@ import su.afk.yummy.tv.feature.player.utils.formatTime
 import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.toPlayerSkipType
 import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
+import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 
 @OptIn(UnstableApi::class)
@@ -356,6 +358,28 @@ internal fun TvExoPlayerView(
             visible = isBuffering || state.isAllohaPlaybackRecovering,
             modifier = Modifier.align(Alignment.Center),
         )
+
+        val canChangePlayer = playback.balancerNames.size > 1
+        val canChangeDubbing = playback.dubbingNames.size > 1
+        if (state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
+            (canChangePlayer || canChangeDubbing)
+        ) {
+            TvPlayerRecoveryHint(
+                onChangePlayer = if (canChangePlayer) {
+                    { togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer) }
+                } else {
+                    null
+                },
+                onChangeDubbing = if (canChangeDubbing) {
+                    { togglePanel(TvPlayerPanel.Dubbing, PanelReturnFocusTarget.Dubbing) }
+                } else {
+                    null
+                },
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .offset(y = 100.dp),
+            )
+        }
 
         if (!controllerVisible) {
             TvPlayerHiddenKeyOverlay(

@@ -201,7 +201,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                     setState {
                         copy(
                             streamUrl = null,
-                            playerError = sourceStreamHandler.playbackErrorMessage(event.message),
+                            playerError = sourceStreamHandler.playbackErrorMessage(
+                                message = event.message,
+                                errorCode = event.errorCode,
+                            ),
                             showChangePlayerHint = false,
                         )
                     }
@@ -843,6 +846,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                 showChangePlayerHint = false,
             )
         }
+        // Восстановление ретраится без лимита, поэтому если оно затянулось дольше
+        // [ALLOHA_RECOVERY_HINT_DELAY_MS] - предлагаем юзеру сменить плеер/озвучку.
+        streamLoadingHintJob = viewModelScope.launch {
+            delay(ALLOHA_RECOVERY_HINT_DELAY_MS)
+            if (isRecoveringAllohaPlayback) {
+                setState { copy(showChangePlayerHint = true) }
+            }
+        }
         Log.i(
             LOG_TAG,
             "Starting fresh Alloha playback recovery positionMs=$resumePosition " +
@@ -924,6 +935,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
         private const val CHANGE_PLAYER_HINT_DELAY_MS = 10_000L
+        private const val ALLOHA_RECOVERY_HINT_DELAY_MS = 15_000L
     }
 
 }

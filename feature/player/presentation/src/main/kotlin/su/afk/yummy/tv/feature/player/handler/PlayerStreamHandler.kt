@@ -91,13 +91,18 @@ internal class PlayerStreamHandler @Inject constructor(
         }
     }
 
-    fun playbackErrorMessage(message: String): String {
+    fun playbackErrorMessage(message: String, errorCode: String? = null): String {
         val detail = message.trim().takeIf { it.isNotBlank() }
+        val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
         return buildString {
             append(strings.get(R.string.player_stream_error))
             if (detail != null) {
                 append("\n")
                 append(detail)
+            }
+            if (code != null) {
+                append("\n")
+                append(code)
             }
         }
     }

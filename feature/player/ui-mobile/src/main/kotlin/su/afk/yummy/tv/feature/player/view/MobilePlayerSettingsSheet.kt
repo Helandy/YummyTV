@@ -67,9 +67,10 @@ internal fun MobilePlayerSettingsSheet(
     selectedBalancerIndex: Int,
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
+    initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
 ) {
-    var selectedTrackTab by rememberSaveable {
-        mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing)
+    var selectedTrackTab by rememberSaveable(initialTrackTab) {
+        mutableStateOf(initialTrackTab)
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {

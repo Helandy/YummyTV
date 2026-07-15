@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -49,6 +50,7 @@ import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaControll
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.model.MobilePlayerSettingsMode
+import su.afk.yummy.tv.feature.player.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.model.rememberMobilePlayerGestureController
@@ -88,6 +90,7 @@ internal fun MobileNativePlayer(
     val currentPosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
     val duration = state.playbackDurationMs
     var settingsMode by remember { mutableStateOf<MobilePlayerSettingsMode?>(null) }
+    var settingsTrackTab by remember { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
     var wantsPlay by remember { mutableStateOf(true) }
     val resumeAfterLifecyclePause = remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
@@ -428,6 +431,7 @@ internal fun MobileNativePlayer(
             },
             onTrackSettings = {
                 nextEpisodePromptState = PlayerEndPromptState.Hidden
+                settingsTrackTab = MobilePlayerTrackSettingsTab.Dubbing
                 settingsMode = MobilePlayerSettingsMode.Track
                 overlay.visible = true
                 overlay.cancelHide()
@@ -480,6 +484,36 @@ internal fun MobileNativePlayer(
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
         )
+
+        val canChangePlayer = ui.balancerNames.size > 1
+        val canChangeDubbing = ui.dubbingNames.size > 1
+        if (state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
+            (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
+        ) {
+            MobilePlayerRecoveryHint(
+                onChangePlayer = if (canChangePlayer) {
+                    {
+                        settingsTrackTab = MobilePlayerTrackSettingsTab.Player
+                        settingsMode = MobilePlayerSettingsMode.Track
+                        overlay.cancelHide()
+                    }
+                } else {
+                    null
+                },
+                onChangeDubbing = if (canChangeDubbing) {
+                    {
+                        settingsTrackTab = MobilePlayerTrackSettingsTab.Dubbing
+                        settingsMode = MobilePlayerSettingsMode.Track
+                        overlay.cancelHide()
+                    }
+                } else {
+                    null
+                },
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .offset(y = 80.dp),
+            )
+        }
 
         if (nextEpisodePromptState.isVisible && ui.hasNextEpisode && !isInPictureInPictureMode) {
             MobilePlayerEndPrompt(
@@ -547,6 +581,7 @@ internal fun MobileNativePlayer(
                     )
                 },
                 onDismiss = { settingsMode = null },
+                initialTrackTab = settingsTrackTab,
             )
         }
     }

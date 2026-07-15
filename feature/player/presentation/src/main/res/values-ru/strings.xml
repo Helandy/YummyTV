@@ -16,6 +16,7 @@
     <string name="player_change_player">Сменить плеер</string>
     <string name="player_change_dubbing">Сменить озвучку</string>
     <string name="player_stream_error">Не удалось получить поток</string>
+    <string name="player_recovery_hint_title">Не удаётся восстановить воспроизведение</string>
     <string name="player_unsupported">Плеер не поддерживается</string>
     <string name="player_kodik_blocked">Просмотр заблокирован</string>
     <string name="player_dubbing_unavailable">Извините, указанная озвучка недоступна. Попробуйте выбрать другую озвучку.</string>
