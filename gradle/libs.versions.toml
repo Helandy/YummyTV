@@ -6,7 +6,7 @@ agp = "9.3.0"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlin-metadata-jvm = "2.4.0"
 
 # AndroidX
