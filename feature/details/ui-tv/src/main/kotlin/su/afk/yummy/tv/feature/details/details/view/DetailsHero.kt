@@ -243,15 +243,13 @@ internal fun DetailsHero(
 }
 
 /**
- * Blurred screenshot (or poster as a fallback) behind the hero content,
- * dimmed by a scrim so the text stays readable. On devices without
- * RenderEffect support (API < 31) blur is a no-op — the scrim alone keeps contrast.
+ * Blurred, cropped poster behind the hero content, dimmed by a scrim so the
+ * text stays readable. On devices without RenderEffect support (API < 31)
+ * blur is a no-op — the scrim alone keeps contrast.
  */
 @Composable
 private fun HeroBackdrop(details: AnimeDetails) {
-    val backdropUrl = details.screenshots.firstOrNull()?.run { full ?: small }
-        ?: details.poster?.run { big ?: medium ?: small }
-        ?: return
+    val backdropUrl = details.poster?.run { big ?: medium ?: small } ?: return
     val surface = MaterialTheme.colorScheme.surface
     AsyncImage(
         model = backdropUrl,

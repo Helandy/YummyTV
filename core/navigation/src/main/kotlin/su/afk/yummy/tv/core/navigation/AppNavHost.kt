@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.navigation
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
@@ -60,7 +61,19 @@ fun AppNavHost(
     }
 
     val provider = remember(registrars, navManager) {
-        entryProvider<NavKey> {
+        entryProvider<NavKey>(
+            // Стек — синглтон, общий для Mobile и TV UI, поэтому в него может попасть
+            // ключ, зарегистрированный только в другом наборе регистраторов.
+            // Вместо краша "Unknown screen" убираем такой экран со стека.
+            fallback = { unknownKey ->
+                NavEntry(unknownKey) {
+                    LaunchedEffect(unknownKey) {
+                        Log.e("AppNavHost", "Unknown screen $unknownKey, navigating back")
+                        navManager.back()
+                    }
+                }
+            },
+        ) {
             registrars.forEach { it.register(this, navManager) }
         }
     }
