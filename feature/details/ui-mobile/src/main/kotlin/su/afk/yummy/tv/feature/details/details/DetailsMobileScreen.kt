@@ -79,7 +79,7 @@ fun DetailsMobileScreen(
             isScroll = false,
             customTopBar = {
                 MobileTopBar(
-                    title = stringResource(R.string.details_mobile_title),
+                    title = "",
                     onBack = { onEvent(DetailsState.Event.BackSelected) },
                 )
             },

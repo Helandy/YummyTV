@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +57,7 @@ fun FullDetailsMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = state.details?.title ?: stringResource(R.string.details_mobile_description),
+                title = stringResource(R.string.details_mobile_description),
                 onBack = { onEvent(FullDetailsState.Event.BackSelected) },
             )
         },
@@ -77,7 +79,18 @@ fun FullDetailsMobileScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                item { Text(details?.description.orEmpty()) }
+                details?.title?.takeIf { it.isNotBlank() }?.let { title ->
+                    item {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+                details?.description?.takeIf { it.isNotBlank() }?.let { description ->
+                    item { Text(description) }
+                }
                 item {
                     MobileMetaRow(
                         stringResource(R.string.details_mobile_other_titles),
