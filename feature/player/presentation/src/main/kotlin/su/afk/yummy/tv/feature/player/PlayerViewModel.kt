@@ -241,8 +241,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 closeAllohaSession()
                 analytics.eventNextEpisode(currentState, event.source)
                 val nextState = sourceSelectionHandler.nextEpisode(currentState)
+                    ?: sourceSelectionHandler.nextEpisodeInOtherDubbing(currentState)
                 applySourceSelection(
                     nextState,
+                    sourceScopeChanged = true,
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
                     refreshSourcesBeforeStream = true,
                 )

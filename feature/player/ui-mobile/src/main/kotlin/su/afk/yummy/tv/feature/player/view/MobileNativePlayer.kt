@@ -214,11 +214,14 @@ internal fun MobileNativePlayer(
     fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
         completionTracker.onEpisodeEnd(positionMs, durationMs)
         if (
-            ui.hasNextEpisode &&
+            (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
             !isInPictureInPictureMode &&
             !nextEpisodePromptState.isVisible
         ) {
-            nextEpisodePromptState = playerEndPromptFor(state.autoPlayNextEpisode)
+            // Авто-отсчёт только внутри текущей озвучки: смену озвучки
+            // пользователь должен подтвердить явно
+            nextEpisodePromptState =
+                playerEndPromptFor(state.autoPlayNextEpisode && ui.hasNextEpisode)
             overlay.visible = false
             settingsMode = null
             overlay.cancelHide()
@@ -518,7 +521,10 @@ internal fun MobileNativePlayer(
             )
         }
 
-        if (nextEpisodePromptState.isVisible && ui.hasNextEpisode && !isInPictureInPictureMode) {
+        if (nextEpisodePromptState.isVisible &&
+            (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
+            !isInPictureInPictureMode
+        ) {
             MobilePlayerEndPrompt(
                 title = when (val prompt = nextEpisodePromptState) {
                     is PlayerEndPromptState.WithCountdown -> stringResource(
@@ -526,7 +532,17 @@ internal fun MobileNativePlayer(
                         prompt.seconds,
                     )
 
-                    else -> stringResource(R.string.player_next_episode_prompt)
+                    else -> {
+                        val nextEpisodeDubbing = ui.nextEpisodeDubbing
+                        if (!ui.hasNextEpisode && nextEpisodeDubbing != null) {
+                            stringResource(
+                                R.string.player_next_episode_prompt_other_dubbing,
+                                nextEpisodeDubbing,
+                            )
+                        } else {
+                            stringResource(R.string.player_next_episode_prompt)
+                        }
+                    }
                 },
                 primaryLabel = stringResource(R.string.player_watch_next),
                 stayLabel = stringResource(R.string.player_stay),

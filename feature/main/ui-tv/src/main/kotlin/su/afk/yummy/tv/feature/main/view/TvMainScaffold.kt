@@ -46,7 +46,6 @@ fun TvMainScaffold(
     val accountLabel = if (state.isYaniSignedIn) state.yaniNickname else null
     val accountAvatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else ""
     var menuExpanded by remember { mutableStateOf(false) }
-    var suppressMenuAutoExpand by remember { mutableStateOf(false) }
     val menuCanFocus = focusController.menuCanFocus &&
             focusController.previousShowMainMenu &&
             !focusController.restoreContentFocusAfterMenuShown
@@ -57,19 +56,16 @@ fun TvMainScaffold(
         }
     }
 
-    LaunchedEffect(focusController.contentHasFocus) {
-        if (focusController.contentHasFocus) {
-            suppressMenuAutoExpand = false
-        }
-    }
-
+    val pendingContentFocus = focusController.pendingContentFocusRequest != null
+    // pendingContentFocus покрывает окно nav-перехода: пока фокус контента не установлен,
+    // BACK возвращает в меню вместо сворачивания приложения
     BackHandler(
         enabled = showMainMenu &&
                 focusController.previousShowMainMenu &&
                 !menuExpanded &&
-                menuCanFocus &&
-                focusController.contentHasFocus,
+                (pendingContentFocus || (menuCanFocus && focusController.contentHasFocus)),
     ) {
+        focusController.cancelPendingContentFocusRequest()
         val focused = runCatching { selectedRootFocusRequester.requestFocus() }.getOrDefault(false)
         if (focused) {
             menuExpanded = true
@@ -123,7 +119,10 @@ fun TvMainScaffold(
                     unreadNotificationsCount = state.unreadNotificationsCount,
                     expanded = menuExpanded,
                     onExpandedChange = { expanded ->
-                        menuExpanded = expanded && !suppressMenuAutoExpand
+                        // Пока запрос фокуса контента в полёте, меню не должно
+                        // само раскрываться, перехватив временно потерянный фокус
+                        menuExpanded = expanded &&
+                                focusController.pendingContentFocusRequest == null
                     },
                     onEvent = onEvent,
                     rootFocusRequesters = focusController.rootFocusRequesters,
@@ -132,7 +131,6 @@ fun TvMainScaffold(
                     canFocus = menuCanFocus,
                     onMenuNavigationFocusLocked = focusController::updateMenuNavigationFocusLocked,
                     onMoveToContent = { root ->
-                        suppressMenuAutoExpand = true
                         menuExpanded = false
                         focusController.requestContentFocus(root)
                     },

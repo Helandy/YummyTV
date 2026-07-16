@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.model.PendingContentFocusRequest
@@ -18,6 +19,9 @@ import su.afk.yummy.tv.feature.main.utils.isContentFocusKeyFor
 import su.afk.yummy.tv.feature.main.utils.requestFocusOnFrameBoundary
 
 private const val TAG = "TvMainFocus"
+
+/** Дольше nav-перехода (280 мс): фолбэк на пейн — только после ухода старого экрана */
+private const val PENDING_CONTENT_FOCUS_FALLBACK_DELAY_MILLIS = 400L
 
 internal class TvMainFocusController(
     initialShowMainMenu: Boolean,
@@ -133,6 +137,10 @@ internal class TvMainFocusController(
             pendingContentFocusRequest = null
         }
     }
+
+    fun cancelPendingContentFocusRequest() {
+        pendingContentFocusRequest = null
+    }
 }
 
 @Composable
@@ -217,6 +225,14 @@ internal fun TvMainFocusEffects(
         val request = focusController.pendingContentFocusRequest ?: return@LaunchedEffect
         if (request.root != selectedRoot || !contentFocusKey.isContentFocusKeyFor(selectedRoot)) {
             return@LaunchedEffect
+        }
+        if (currentPreferredContentFocusRequester == null) {
+            // Во время nav-перехода старый экран ещё в композиции: фокус через
+            // contentFocusRequester/focusRestorer «успешно» сел бы на уходящий экран
+            // и потерялся бы при его dispose (падая в боковое меню). Ждём регистрацию
+            // preferred requester'а (эффект перезапустится по смене ключа) либо
+            // отдаём фолбэк уже после завершения перехода.
+            delay(PENDING_CONTENT_FOCUS_FALLBACK_DELAY_MILLIS)
         }
         val restoreRequester = currentPreferredContentFocusRequester
             ?: focusController.contentFocusRequester

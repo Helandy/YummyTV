@@ -24,6 +24,7 @@ internal fun TvPlayerFocusEffects(
     panels: TvPlayerPanelsState,
     prompts: TvPlayerPromptsState,
     controllerVisible: Boolean,
+    recoveryHintVisible: Boolean,
     restoreControlFocusTarget: PlayerControlFocusTarget?,
     onControlFocusRestored: () -> Unit,
 ) {
@@ -41,6 +42,7 @@ internal fun TvPlayerFocusEffects(
         panels.activePanel,
         prompts.nextEpisodePrompt.isVisible,
         prompts.showRateTitlePrompt,
+        recoveryHintVisible,
         restoreControlFocusTarget,
     ) {
         if (prompts.nextEpisodePrompt.isVisible) {
@@ -55,6 +57,8 @@ internal fun TvPlayerFocusEffects(
                 focus.rateTitle.requestFocus()
             } catch (_: Exception) {
             }
+        } else if (recoveryHintVisible) {
+            // Хинт восстановления сам запрашивает фокус на свои кнопки — не перехватываем
         } else if (controllerVisible && !panels.isAnyOpen) {
             withFrameNanos { }
             val restoredExternalTarget = restoreControlFocusTarget?.let { target ->

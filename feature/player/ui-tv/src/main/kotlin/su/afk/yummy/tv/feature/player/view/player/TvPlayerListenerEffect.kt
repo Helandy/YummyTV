@@ -38,6 +38,7 @@ internal fun TvPlayerListenerEffect(
     prompts: TvPlayerPromptsState,
     fallbackDurationMs: () -> Long,
     hasNextEpisode: () -> Boolean,
+    nextEpisodeSwitchesDubbing: () -> Boolean,
     canRateTitleOnEnd: () -> Boolean,
     autoPlayNextEpisode: () -> Boolean,
     wantsPlay: () -> Boolean,
@@ -48,6 +49,7 @@ internal fun TvPlayerListenerEffect(
     val context = LocalContext.current
     val currentFallbackDuration by rememberUpdatedState(fallbackDurationMs)
     val currentHasNextEpisode by rememberUpdatedState(hasNextEpisode)
+    val currentNextEpisodeSwitchesDubbing by rememberUpdatedState(nextEpisodeSwitchesDubbing)
     val currentCanRateTitleOnEnd by rememberUpdatedState(canRateTitleOnEnd)
     val currentAutoPlayNextEpisode by rememberUpdatedState(autoPlayNextEpisode)
     val currentWantsPlay by rememberUpdatedState(wantsPlay)
@@ -76,7 +78,11 @@ internal fun TvPlayerListenerEffect(
                         durationMs = snapshot.durationMs,
                     )
                     if (currentHasNextEpisode()) {
-                        prompts.nextEpisodePrompt = playerEndPromptFor(currentAutoPlayNextEpisode())
+                        // При переходе в другую озвучку авто-отсчёт не запускаем:
+                        // озвучку не меняем без явного подтверждения пользователя
+                        prompts.nextEpisodePrompt = playerEndPromptFor(
+                            currentAutoPlayNextEpisode() && !currentNextEpisodeSwitchesDubbing()
+                        )
                         currentOnControllerVisibleChange(true)
                         panels.close()
                         autoHide.cancel()

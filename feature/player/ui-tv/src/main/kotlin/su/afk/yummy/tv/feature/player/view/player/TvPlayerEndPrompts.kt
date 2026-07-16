@@ -17,19 +17,28 @@ internal fun BoxScope.TvPlayerEndPrompts(
     prompts: TvPlayerPromptsState,
     focus: TvPlayerFocusRequesters,
     hasNextEpisode: Boolean,
+    nextEpisodeDubbing: String?,
     onPlayNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
     onInteraction: () -> Unit,
 ) {
     TvPlayerEndPrompt(
-        visible = prompts.nextEpisodePrompt.isVisible && hasNextEpisode,
+        visible = prompts.nextEpisodePrompt.isVisible &&
+                (hasNextEpisode || nextEpisodeDubbing != null),
         title = when (val prompt = prompts.nextEpisodePrompt) {
             is PlayerEndPromptState.WithCountdown -> stringResource(
                 R.string.player_next_episode_prompt_countdown,
                 prompt.seconds,
             )
 
-            else -> stringResource(R.string.player_next_episode_prompt)
+            else -> if (!hasNextEpisode && nextEpisodeDubbing != null) {
+                stringResource(
+                    R.string.player_next_episode_prompt_other_dubbing,
+                    nextEpisodeDubbing,
+                )
+            } else {
+                stringResource(R.string.player_next_episode_prompt)
+            }
         },
         primaryLabel = stringResource(R.string.player_watch_next),
         stayLabel = stringResource(R.string.player_stay),

@@ -101,18 +101,28 @@ internal fun TvExoPlayerView(
         toastDuration = TV_PLAYER_INLINE_TOAST_DURATION,
     )
     val focus = rememberTvPlayerFocusRequesters()
+    val canChangePlayer = playback.balancerNames.size > 1
+    val canChangeDubbing = playback.dubbingNames.size > 1
+    // Пока виден хинт восстановления, оверлей нельзя автоскрывать:
+    // иначе фокус уйдёт на скрытый key-оверлей и кнопки хинта станут недостижимы
+    val recoveryHintVisible = state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
+            (canChangePlayer || canChangeDubbing)
     val autoHide = rememberPlayerAutoHideController(
-        canHide = { !panels.isAnyOpen && !prompts.anyVisible },
+        canHide = { !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible },
         onHide = { controllerVisible = false },
     )
 
     fun onInteraction() {
         controllerVisible = true
         when {
-            panels.isAnyOpen || prompts.anyVisible -> autoHide.cancel()
+            panels.isAnyOpen || prompts.anyVisible || recoveryHintVisible -> autoHide.cancel()
             wantsPlay -> autoHide.schedule()
             else -> autoHide.cancel()
         }
+    }
+
+    LaunchedEffect(recoveryHintVisible) {
+        if (recoveryHintVisible) autoHide.cancel()
     }
 
     val currentUrl = remember(streamUrl, activeQuality, qualities) {
@@ -279,7 +289,10 @@ internal fun TvExoPlayerView(
         panels = panels,
         prompts = prompts,
         fallbackDurationMs = { progress.duration },
-        hasNextEpisode = { playback.hasNextEpisode },
+        hasNextEpisode = { playback.hasNextEpisode || playback.nextEpisodeDubbing != null },
+        nextEpisodeSwitchesDubbing = {
+            !playback.hasNextEpisode && playback.nextEpisodeDubbing != null
+        },
         canRateTitleOnEnd = { playback.canRateTitleOnEnd },
         autoPlayNextEpisode = { state.autoPlayNextEpisode },
         wantsPlay = { wantsPlay },
@@ -305,6 +318,7 @@ internal fun TvExoPlayerView(
         panels = panels,
         prompts = prompts,
         controllerVisible = controllerVisible,
+        recoveryHintVisible = recoveryHintVisible,
         restoreControlFocusTarget = restoreControlFocusTarget,
         onControlFocusRestored = onControlFocusRestored,
     )
@@ -364,11 +378,7 @@ internal fun TvExoPlayerView(
             modifier = Modifier.align(Alignment.Center),
         )
 
-        val canChangePlayer = playback.balancerNames.size > 1
-        val canChangeDubbing = playback.dubbingNames.size > 1
-        if (state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
-            (canChangePlayer || canChangeDubbing)
-        ) {
+        if (recoveryHintVisible) {
             TvPlayerRecoveryHint(
                 onChangePlayer = if (canChangePlayer) {
                     { togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer) }
@@ -512,6 +522,7 @@ internal fun TvExoPlayerView(
             prompts = prompts,
             focus = focus,
             hasNextEpisode = playback.hasNextEpisode,
+            nextEpisodeDubbing = playback.nextEpisodeDubbing,
             onPlayNextEpisode = ::playNextEpisode,
             onRateTitle = ::rateTitle,
             onInteraction = ::onInteraction,

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
+import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
 import javax.inject.Inject
@@ -31,6 +32,18 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             null
         }
     }
+
+    /** Следующая серия в другой озвучке, когда в активной озвучке серии закончились */
+    fun nextEpisodeInOtherDubbing(state: PlayerState.State): PlayerState.State? =
+        nextEpisodeOtherDubbingSource(state)?.let { source ->
+            state.withEpisodeSelection(
+                PlayerSourceSelection(
+                    balancerIndex = source.balancerIndex,
+                    dubbingIndex = source.dubbingIndex,
+                    episodeIndex = source.episodeIndex,
+                )
+            )
+        }
 
     fun selectDubbing(
         state: PlayerState.State,

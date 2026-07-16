@@ -20,6 +20,7 @@ import su.afk.yummy.tv.feature.player.utils.globalDubbingViews
 import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
+import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 
 data class PlayerPlaybackUiState(
@@ -32,6 +33,8 @@ data class PlayerPlaybackUiState(
     val activeSkips: PlayerSkips,
     val hasPrevEpisode: Boolean,
     val hasNextEpisode: Boolean,
+    /** Озвучка, в которой есть серия N+1, когда в активной озвучке серии закончились */
+    val nextEpisodeDubbing: String?,
     val canRateTitleOnEnd: Boolean,
     val dubbingNames: List<String>,
     val dubbingEpisodeCounts: List<Int>,
@@ -87,6 +90,13 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         activeSkips = activeEpisodeSource(this)?.skips ?: PlayerSkips.Empty,
         hasPrevEpisode = selection.episodeIndex > 0,
         hasNextEpisode = selection.episodeIndex < activeEpisodes.lastIndex,
+        nextEpisodeDubbing = if (selection.episodeIndex < activeEpisodes.lastIndex) {
+            null
+        } else {
+            nextEpisodeOtherDubbingSource(this)?.let { source ->
+                sourceGraph.balancers[source.balancerIndex].dubbings[source.dubbingIndex].name
+            }
+        },
         canRateTitleOnEnd = isFinalAvailableEpisode(this, activeEpisode) && animeId > 0,
         dubbingNames = displayedDubbingNames,
         dubbingEpisodeCounts = globalEpisodeNumbers.map { it.distinct().size },

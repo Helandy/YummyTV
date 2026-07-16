@@ -49,6 +49,7 @@
     <string name="player_ending_skipped">Ending skipped %1$s - %2$s</string>
     <string name="player_next_episode_prompt">Next episode?</string>
     <string name="player_next_episode_prompt_countdown">Next episode? %1$d</string>
+    <string name="player_next_episode_prompt_other_dubbing">Continue with the “%1$s” voiceover?</string>
     <string name="player_rate_title_prompt">Rate this title?</string>
     <string name="player_rate_title">Rate</string>
     <string name="player_watch_next">Watch</string>

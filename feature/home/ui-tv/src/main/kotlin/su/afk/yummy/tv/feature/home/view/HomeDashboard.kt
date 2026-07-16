@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
@@ -153,12 +154,22 @@ internal fun HomeDashboard(
             snapshotFlow {
                 lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
             }.first { it }
-            runCatching { focusRequesterForLazyIndex(target).requestFocus() }
-                .onFailure { error ->
-                    AppLogger.w(TAG, error) {
-                        "requestRowFocus: не удалось сфокусировать ряд ${rowKeyForLazyIndex(target)} (index=$target)"
-                    }
+            // FocusRequester ряда прикреплён к карточке внутри вложенного LazyRow,
+            // которая может быть ещё не скомпонована на этом кадре — повторяем по кадрам
+            val requester = focusRequesterForLazyIndex(target)
+            val focused = withTimeoutOrNull(ROW_FOCUS_TIMEOUT_MILLIS) {
+                var ok = false
+                while (!ok) {
+                    ok = runCatching { requester.requestFocus() }.getOrDefault(false)
+                    if (!ok) withFrameNanos { }
                 }
+                true
+            } ?: false
+            if (!focused) {
+                AppLogger.w(TAG) {
+                    "requestRowFocus: не удалось сфокусировать ряд ${rowKeyForLazyIndex(target)} (index=$target)"
+                }
+            }
         }
     }
 
@@ -365,4 +376,5 @@ private object HomeColumnNoAutoBringIntoViewSpec : BringIntoViewSpec {
 private const val SECTION_HERO = "__hero"
 private const val ROW_CONTINUE_WATCHING = "continue_watching"
 private const val ROW_HERO = "hero_carousel"
+private const val ROW_FOCUS_TIMEOUT_MILLIS = 500L
 private const val TAG = "TvHomeFocus"

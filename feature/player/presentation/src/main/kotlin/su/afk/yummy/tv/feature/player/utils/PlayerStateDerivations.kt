@@ -162,6 +162,37 @@ internal fun resolveDubbingSource(
         ?: candidates.firstOrNull()
 }
 
+/**
+ * Источник следующей серии в другой озвучке: когда в активной озвучке серии закончились,
+ * ищем серию N+1 — сначала эту же озвучку на другом балансере, затем другую озвучку
+ * на текущем балансере, затем любую.
+ */
+internal fun nextEpisodeOtherDubbingSource(state: PlayerState.State): DubbingSource? {
+    val nextNumber = activeEpisode(state).toIntOrNull()?.plus(1) ?: return null
+    val selection = normalizedSourceSelection(state)
+    val currentDubbingName = activeDubbingName(state)
+    val candidates = state.sourceGraph.balancers.flatMapIndexed { balancerIndex, balancer ->
+        balancer.dubbings.mapIndexedNotNull { dubbingIndex, dubbing ->
+            val episodeIndex = dubbing.episodes
+                .indexOfFirst { it.number.toIntOrNull() == nextNumber }
+                .takeIf { it >= 0 }
+                ?: return@mapIndexedNotNull null
+            DubbingSource(
+                balancerIndex = balancerIndex,
+                dubbingIndex = dubbingIndex,
+                episodeIndex = episodeIndex,
+            )
+        }
+    }
+
+    fun DubbingSource.dubbingName(): String =
+        state.sourceGraph.balancers[balancerIndex].dubbings[dubbingIndex].name
+
+    return candidates.firstOrNull { it.dubbingName() == currentDubbingName }
+        ?: candidates.firstOrNull { it.balancerIndex == selection.balancerIndex }
+        ?: candidates.firstOrNull()
+}
+
 internal fun isFinalAvailableEpisode(
     state: PlayerState.State,
     activeEpisode: String,
