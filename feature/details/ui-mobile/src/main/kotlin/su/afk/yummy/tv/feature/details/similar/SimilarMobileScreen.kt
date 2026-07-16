@@ -105,6 +105,7 @@ fun SimilarMobileScreen(
                         SimilarUiState.Loading
                     },
                     onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
+                    onRetry = { onEvent(SimilarState.Event.RetrySelected) },
                 )
             }
         }

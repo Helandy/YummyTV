@@ -73,7 +73,10 @@ fun FullDetailsTvScreen(
             )
 
             details != null -> FullDetailsBody(details)
-            else -> TvLoadingScreen()
+            else -> DetailsError(
+                message = error.orEmpty(),
+                onRetry = { onEvent(FullDetailsState.Event.RetrySelected) },
+            )
         }
     }
 }

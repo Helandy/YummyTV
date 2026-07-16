@@ -128,11 +128,13 @@ sealed interface VideosUiState {
     data object NotLoaded : VideosUiState
     data object Loading : VideosUiState
     data object Empty : VideosUiState
+    data class Error(val message: String?) : VideosUiState
     data class Content(val videos: List<AnimeVideo>) : VideosUiState
 }
 
 sealed interface SimilarUiState {
     data object Loading : SimilarUiState
     data object Empty : SimilarUiState
+    data class Error(val message: String?) : SimilarUiState
     data class Content(val items: List<AnimeRecommendation>) : SimilarUiState
 }

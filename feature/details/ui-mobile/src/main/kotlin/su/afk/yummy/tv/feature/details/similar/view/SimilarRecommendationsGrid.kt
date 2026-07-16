@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,11 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.similar.utils.bestUrl
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 private const val SIMILAR_SKELETON_COUNT = 6
 
@@ -34,6 +38,7 @@ internal fun SimilarRecommendationsGrid(
     similarState: SimilarUiState,
     onAnimeSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onRetry: (() -> Unit)? = null,
 ) {
     val transition = rememberInfiniteTransition(label = "similar_mobile_loading")
     val alpha by transition.animateFloat(
@@ -59,7 +64,21 @@ internal fun SimilarRecommendationsGrid(
             }
 
             SimilarUiState.Empty -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(stringResource(R.string.details_mobile_similar_empty))
+                MobileMessage(
+                    title = stringResource(R.string.details_mobile_similar_empty),
+                    fillMaxSize = false,
+                )
+            }
+
+            is SimilarUiState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
+                MobileMessage(
+                    title = similarState.message
+                        ?: stringResource(R.string.details_mobile_similar_empty),
+                    icon = Icons.Filled.Warning,
+                    actionLabel = onRetry?.let { stringResource(CoreR.string.retry) },
+                    onAction = onRetry,
+                    fillMaxSize = false,
+                )
             }
 
             is SimilarUiState.Content -> {

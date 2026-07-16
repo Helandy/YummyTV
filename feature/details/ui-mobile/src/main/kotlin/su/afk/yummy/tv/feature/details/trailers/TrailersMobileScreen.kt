@@ -45,7 +45,8 @@ fun TrailersMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = null,
+            error = state.error,
+            onRetry = { onEvent(TrailersState.Event.RetrySelected) },
             empty = state.trailers.isEmpty()
         ) {
             LazyColumn(

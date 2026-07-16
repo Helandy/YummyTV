@@ -2,14 +2,11 @@ package su.afk.yummy.tv.feature.collection.catalog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,15 +23,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
-import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.feature.collection.R
 import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogGrid
 
@@ -139,9 +135,8 @@ fun CollectionsCatalogTvScreen(
                 retryFocusRequester = retryFocusRequester,
             )
 
-            shouldShowEmpty -> Text(
-                text = stringResource(R.string.collection_catalog_tv_empty),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            shouldShowEmpty -> TvStateMessage(
+                title = stringResource(R.string.collection_catalog_tv_empty),
             )
 
             else -> CollectionsCatalogGrid(
@@ -163,18 +158,13 @@ private fun CollectionsCatalogMessage(
     onRetry: () -> Unit,
     retryFocusRequester: FocusRequester,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(text = message, color = MaterialTheme.colorScheme.error)
-        Spacer(modifier = Modifier.height(12.dp))
-        TvRetryButton(
-            text = stringResource(R.string.retry),
-            modifier = Modifier.focusRequester(retryFocusRequester),
-            onClick = onRetry,
-        )
-    }
+    TvStateMessage(
+        title = message,
+        icon = Icons.Filled.Warning,
+        retryLabel = stringResource(R.string.retry),
+        onRetry = onRetry,
+        retryFocusRequester = retryFocusRequester,
+    )
 }
 
 private fun Throwable.uiMessage(): String =

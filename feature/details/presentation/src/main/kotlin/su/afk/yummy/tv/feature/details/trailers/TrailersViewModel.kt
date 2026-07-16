@@ -39,14 +39,15 @@ class TrailersViewModel @AssistedInject internal constructor(
     override fun onEvent(event: TrailersState.Event) {
         when (event) {
             TrailersState.Event.BackSelected -> nav.back()
+            TrailersState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
     }
 
     private suspend fun load() {
-        setState { copy(isLoading = true) }
+        setState { copy(isLoading = true, error = null) }
         runCatching { getAnimeTrailers(animeId) }.fold(
             onSuccess = { trailers -> setState { copy(isLoading = false, trailers = trailers) } },
-            onFailure = { setState { copy(isLoading = false) } },
+            onFailure = { setState { copy(isLoading = false, error = it.message) } },
         )
     }
 }

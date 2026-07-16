@@ -67,6 +67,8 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
                     copy(selectedIndex = selectedIndex?.let { (it + 1).coerceAtMost(screenshots.lastIndex) })
                 }
             }
+
+            ScreenshotsState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
     }
 

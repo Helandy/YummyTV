@@ -36,6 +36,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
@@ -170,7 +171,10 @@ fun SearchMobileScreen(
             val error = (appendState as? LoadState.Error)?.error?.uiMessage()
             if (error != null && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Text(error, color = MaterialTheme.colorScheme.error)
+                    MobileAppendError(
+                        message = error,
+                        onRetry = { results.retry() },
+                    )
                 }
             }
             items(

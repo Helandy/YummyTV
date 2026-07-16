@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,10 +22,10 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.mobile.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.R
-import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.view.AccountMobileFaqButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
@@ -35,6 +36,7 @@ import su.afk.yummy.tv.feature.account.view.AccountMobileNotificationsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSettingsButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileTabs
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -152,7 +154,13 @@ fun AccountMobileScreen(
                 if (state.hubError != null) {
                     item(key = "hub_error") {
                         state.hubError.accountErrorMessage()?.let { error ->
-                            AccountMobileEmptyText(text = error)
+                            MobileMessage(
+                                title = error,
+                                icon = Icons.Filled.Warning,
+                                actionLabel = stringResource(CoreR.string.retry),
+                                onAction = { onEvent(AccountState.Event.RefreshHubSelected) },
+                                fillMaxSize = false,
+                            )
                         }
                     }
                 }

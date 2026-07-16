@@ -59,6 +59,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
         when (event) {
             EpisodeDubbingsState.Event.BackSelected -> nav.back()
             is EpisodeDubbingsState.Event.DubbingSelected -> openDubbing(event.name)
+            EpisodeDubbingsState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
     }
 

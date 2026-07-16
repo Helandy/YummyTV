@@ -24,6 +24,9 @@ class SimilarState {
 
         /** Пользователь переключил источник рекомендаций. */
         data object SourceToggled : Event
+
+        /** Пользователь запросил повторную загрузку рекомендаций. */
+        data object RetrySelected : Event
     }
 
     sealed interface Effect : UiEffect

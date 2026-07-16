@@ -95,7 +95,8 @@ fun EpisodesMobileScreen(
         }
         MobileStateContent(
             isLoading = state.videosState is VideosUiState.Loading,
-            error = null,
+            error = (state.videosState as? VideosUiState.Error)?.message,
+            onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
             empty = state.videosState is VideosUiState.Empty,
             emptyText = stringResource(R.string.details_mobile_episodes_empty),
             emptyIcon = Icons.Filled.PlayArrow,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -25,14 +27,19 @@ fun StateMessage(
     title: String,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Filled.Info,
+    iconSize: Dp = 48.dp,
     description: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    /** Когда false — блок занимает только ширину (для LazyColumn item / bottom sheet). */
+    fillMaxSize: Boolean = true,
+    /** Кастомная кнопка действия — рендерится вместо встроенной Button (например, TvRetryButton). */
+    action: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp, vertical = 40.dp),
+            .then(if (fillMaxSize) Modifier.fillMaxSize() else Modifier.fillMaxWidth())
+            .padding(horizontal = 32.dp, vertical = if (fillMaxSize) 40.dp else 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -40,7 +47,7 @@ fun StateMessage(
             icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary.copy(alpha = .72f),
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(iconSize)
         )
         Spacer(Modifier.height(18.dp))
         Text(title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
@@ -53,13 +60,20 @@ fun StateMessage(
                 textAlign = TextAlign.Center
             )
         }
-        if (actionLabel != null && onAction != null) {
-            Spacer(Modifier.height(20.dp))
-            Button(onClick = onAction) {
-                Text(
-                    actionLabel,
-                    style = MaterialTheme.typography.labelLarge
-                )
+        when {
+            action != null -> {
+                Spacer(Modifier.height(20.dp))
+                action()
+            }
+
+            actionLabel != null && onAction != null -> {
+                Spacer(Modifier.height(20.dp))
+                Button(onClick = onAction) {
+                    Text(
+                        actionLabel,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
         }
     }

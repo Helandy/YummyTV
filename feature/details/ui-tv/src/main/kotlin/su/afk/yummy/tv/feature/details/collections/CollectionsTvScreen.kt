@@ -4,10 +4,10 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsGrid
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsMessage
@@ -96,18 +98,16 @@ fun CollectionsTvScreen(
             .background(MaterialTheme.colorScheme.background),
     ) {
         when {
-            state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            state.isLoading -> TvLoadingScreen()
             error != null -> CollectionsMessage(
                 text = error,
                 onRetry = { onEvent(CollectionsState.Event.RetrySelected) },
                 modifier = Modifier.align(Alignment.Center),
             )
 
-            state.collections.isEmpty() -> Text(
-                text = stringResource(R.string.details_collections_empty),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.align(Alignment.Center),
+            state.collections.isEmpty() -> TvStateMessage(
+                title = stringResource(R.string.details_collections_empty),
+                icon = Icons.Outlined.Collections,
             )
 
             else -> CollectionsGrid(

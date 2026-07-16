@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,6 +29,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
@@ -150,10 +152,13 @@ internal fun StatsTab(
             )
         }
         item {
-            ErrorText((state.error ?: state.hubError).accountErrorMessage())
+            AccountHubError(
+                error = (state.error ?: state.hubError).accountErrorMessage(),
+                onRetry = { onEvent(AccountState.Event.RefreshHubSelected) },
+            )
         }
         if (state.isStatsLoading && stats == null && profileSummary == null) {
-            item { EmptyText(stringResource(R.string.account_loading)) }
+            item { TvLoadingScreen(modifier = Modifier.height(360.dp)) }
             return@LazyColumn
         }
         if (stats == null && profileSummary == null) {

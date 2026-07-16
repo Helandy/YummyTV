@@ -49,7 +49,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
-import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
@@ -230,10 +230,9 @@ private fun CommentsList(
     ) {
         (appendState as? LoadState.Error)?.error?.uiMessage()?.let { error ->
             item(key = "soft_error") {
-                MobileMessage(
-                    title = error,
-                    actionLabel = stringResource(R.string.comments_retry),
-                    onAction = { onEvent(CommentsState.Event.RetrySelected) },
+                MobileAppendError(
+                    message = error,
+                    onRetry = { onEvent(CommentsState.Event.RetrySelected) },
                 )
             }
         }

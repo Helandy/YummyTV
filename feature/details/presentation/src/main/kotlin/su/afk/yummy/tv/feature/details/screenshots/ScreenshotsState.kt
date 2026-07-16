@@ -30,6 +30,9 @@ class ScreenshotsState {
 
         /** Пользователь перешёл к следующему скриншоту. */
         data object NextSelected : Event
+
+        /** Пользователь запросил повторную загрузку скриншотов. */
+        data object RetrySelected : Event
     }
 
     sealed interface Effect : UiEffect

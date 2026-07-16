@@ -20,6 +20,9 @@ class ViewingOrderState {
 
         /** Пользователь выбрал аниме с указанным идентификатором. */
         data class AnimeSelected(val animeId: Int) : Event
+
+        /** Пользователь запросил повторную загрузку порядка просмотра. */
+        data object RetrySelected : Event
     }
 
     sealed interface Effect : UiEffect

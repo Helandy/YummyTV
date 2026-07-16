@@ -43,6 +43,7 @@ fun SimilarTvScreen(
             onToggle = { onEvent(SimilarState.Event.SourceToggled) },
             onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
             modifier = Modifier.fillMaxSize(),
+            onRetry = { onEvent(SimilarState.Event.RetrySelected) },
         )
     }
 }

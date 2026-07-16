@@ -6,16 +6,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
+import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.trailers.view.TrailerTab
 
 @Preview(
@@ -42,13 +47,21 @@ fun TrailersTvScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colorScheme.primary,
+        when {
+            state.isLoading -> TvLoadingScreen()
+
+            state.error != null -> TvStateMessage(
+                title = state.error.orEmpty(),
+                icon = Icons.Filled.Warning,
+                onRetry = { onEvent(TrailersState.Event.RetrySelected) },
             )
-        } else {
-            LazyColumn(
+
+            state.trailers.isEmpty() -> TvStateMessage(
+                title = stringResource(R.string.details_trailer_empty),
+                icon = Icons.Outlined.Movie,
+            )
+
+            else -> LazyColumn(
                 contentPadding = PaddingValues(
                     top = TvScreenPadding.Vertical,
                     bottom = TvScreenPadding.Vertical,

@@ -89,6 +89,7 @@ fun EpisodesTvScreen(
             watchProgress = state.watchProgress,
             restoreFocusRequest = restoreEpisodesFocusRequest,
             onVideoSelected = { video -> onEvent(EpisodesState.Event.TvEpisodeSelected(video)) },
+            onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
         )
 
         BackHandler(enabled = balancerPicker != null) {

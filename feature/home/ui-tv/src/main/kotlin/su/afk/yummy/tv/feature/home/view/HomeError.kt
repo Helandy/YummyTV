@@ -1,20 +1,14 @@
 package su.afk.yummy.tv.feature.home.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.feature.home.R
 
 @Composable
@@ -22,31 +16,14 @@ internal fun HomeError(
     message: String,
     onRetry: () -> Unit,
 ) {
-    Column(
+    TvStateMessage(
+        title = stringResource(R.string.home_error_title),
+        description = message,
+        icon = Icons.Filled.Warning,
+        retryLabel = stringResource(R.string.retry),
+        onRetry = onRetry,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(
-                horizontal = TvScreenPadding.Horizontal,
-                vertical = TvScreenPadding.Vertical,
-            ),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.home_error_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(22.dp))
-        TvRetryButton(
-            text = stringResource(R.string.retry),
-            onClick = onRetry,
-        )
-    }
+            .background(MaterialTheme.colorScheme.background),
+    )
 }

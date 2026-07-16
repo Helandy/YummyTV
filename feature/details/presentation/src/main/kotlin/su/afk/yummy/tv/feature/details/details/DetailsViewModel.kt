@@ -379,7 +379,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     copy(
-                        videosState = VideosUiState.Empty,
+                        videosState = VideosUiState.Error(it.message),
                         watchProgress = DetailsWatchProgressIndex.Empty,
                         isWatchLaunchPending = false,
                         isSubscriptionsLoading = false,
@@ -447,7 +447,8 @@ class DetailsViewModel @AssistedInject internal constructor(
         when (val videosState = currentState.videosState) {
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
             VideosUiState.NotLoaded,
-            VideosUiState.Empty -> {
+            VideosUiState.Empty,
+            is VideosUiState.Error -> {
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
             }
@@ -463,7 +464,8 @@ class DetailsViewModel @AssistedInject internal constructor(
         when (currentState.videosState) {
             is VideosUiState.Content -> viewModelScope.launch { loadSubscriptions() }
             VideosUiState.NotLoaded,
-            VideosUiState.Empty -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
+            VideosUiState.Empty,
+            is VideosUiState.Error -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
 
             VideosUiState.Loading -> setState { copy(isSubscriptionsLoading = true) }
         }

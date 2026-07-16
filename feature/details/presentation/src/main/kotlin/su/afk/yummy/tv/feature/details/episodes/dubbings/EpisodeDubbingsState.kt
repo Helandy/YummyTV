@@ -26,6 +26,9 @@ class EpisodeDubbingsState {
 
         /** Пользователь выбрал озвучку для запуска текущей серии. */
         data class DubbingSelected(val name: String) : Event
+
+        /** Пользователь запросил повторную загрузку озвучек. */
+        data object RetrySelected : Event
     }
 
     sealed interface Effect : UiEffect

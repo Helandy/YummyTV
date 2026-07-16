@@ -45,6 +45,8 @@ class ViewingOrderViewModel @AssistedInject internal constructor(
                 analytics.eventViewingOrderAnimeSelected(animeId, event.animeId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))
             }
+
+            ViewingOrderState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
     }
 

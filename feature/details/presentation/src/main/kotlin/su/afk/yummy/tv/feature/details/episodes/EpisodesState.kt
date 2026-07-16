@@ -107,6 +107,9 @@ class EpisodesState {
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
 
+        /** Пользователь запросил повторную загрузку списка серий. */
+        data object RetryVideosSelected : Event
+
         /** Пользователь открыл озвучки для указанного эпизода. */
         data class EpisodeDubbingsSelected(val episode: String) : Event
 

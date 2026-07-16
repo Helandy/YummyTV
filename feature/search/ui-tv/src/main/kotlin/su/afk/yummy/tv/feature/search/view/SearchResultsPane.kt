@@ -2,11 +2,12 @@ package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,18 +24,17 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
-import su.afk.yummy.tv.core.designsystem.presenter.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
@@ -237,10 +237,9 @@ internal fun SearchResultsPane(
                 )
 
                 itemCount == 0 && hasActiveSearch -> {
-                    Text(
-                        text = stringResource(R.string.search_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    TvStateMessage(
+                        title = stringResource(R.string.search_empty),
+                        icon = Icons.Filled.Search,
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
@@ -279,22 +278,15 @@ private fun SearchErrorMessage(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    TvStateMessage(
+        title = message,
+        icon = Icons.Filled.Warning,
+        retryLabel = stringResource(R.string.search_retry),
+        onRetry = onRetry,
+        retryFocusRequester = retryFocusRequester,
+        fillMaxSize = false,
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error,
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        TvRetryButton(
-            text = stringResource(R.string.search_retry),
-            modifier = Modifier.focusRequester(retryFocusRequester),
-            onClick = onRetry,
-        )
-    }
+    )
 }
 
 private fun SearchFilters.focusStateKey(): String = buildString {

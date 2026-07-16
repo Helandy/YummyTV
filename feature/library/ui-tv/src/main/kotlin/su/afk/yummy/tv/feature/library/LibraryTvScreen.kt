@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
@@ -161,6 +162,14 @@ fun LibraryTvScreen(
                 .weight(1f),
             contentAlignment = Alignment.Center,
         ) {
+            val isInitialLoading = state.isRemoteLoading &&
+                    state.remoteError == null &&
+                    state.items.isEmpty() &&
+                    state.continueWatching.isEmpty()
+            if (isInitialLoading) {
+                TvLoadingScreen()
+                return@Box
+            }
             when (state.selectedTab) {
                 LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
                     entries = state.continueWatching,

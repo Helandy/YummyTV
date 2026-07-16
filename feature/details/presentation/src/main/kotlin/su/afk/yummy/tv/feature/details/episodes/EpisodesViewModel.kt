@@ -139,6 +139,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     override fun onEvent(event: EpisodesState.Event) {
         when (event) {
             EpisodesState.Event.BackSelected -> nav.back()
+            EpisodesState.Event.RetryVideosSelected -> viewModelScope.launch { loadVideos() }
             is EpisodesState.Event.EpisodeDubbingsSelected -> {
                 analytics.eventEpisodesEpisodeDubbingsSelected(animeId)
                 nav.navigate(detailsNavigator.getEpisodeDubbingsDest(animeId, event.episode))
@@ -285,7 +286,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     copy(
-                        videosState = VideosUiState.Empty,
+                        videosState = VideosUiState.Error(it.message),
                         watchProgress = DetailsWatchProgressIndex.Empty
                     )
                 }

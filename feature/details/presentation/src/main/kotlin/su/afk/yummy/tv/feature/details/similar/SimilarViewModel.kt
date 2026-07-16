@@ -48,6 +48,7 @@ class SimilarViewModel @AssistedInject internal constructor(
             }
             is SimilarState.Event.SourceSelected -> selectSource(event.fromAi)
             SimilarState.Event.SourceToggled -> selectSource(!currentState.fromAi)
+            SimilarState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
     }
 
@@ -77,7 +78,11 @@ class SimilarViewModel @AssistedInject internal constructor(
             },
             onFailure = {
                 setState {
-                    if (this.fromAi == fromAi) copy(similarState = SimilarUiState.Empty) else this
+                    if (this.fromAi == fromAi) {
+                        copy(similarState = SimilarUiState.Error(it.message))
+                    } else {
+                        this
+                    }
                 }
             },
         )

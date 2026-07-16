@@ -518,7 +518,10 @@ internal fun NotificationsTab(
                 )
             }
             item {
-                ErrorText((state.error ?: state.hubError).accountErrorMessage())
+                AccountHubError(
+                    error = (state.error ?: state.hubError).accountErrorMessage(),
+                    onRetry = { onEvent(AccountState.Event.RefreshHubSelected) },
+                )
             }
             if (state.isNotificationsLoading && state.notifications.isEmpty()) {
                 item {

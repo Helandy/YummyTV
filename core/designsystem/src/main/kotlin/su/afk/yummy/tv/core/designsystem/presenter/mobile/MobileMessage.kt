@@ -13,12 +13,14 @@ fun MobileMessage(
     icon: ImageVector = Icons.Filled.Info,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    fillMaxSize: Boolean = true,
 ) {
     StateMessage(
         title = title,
         description = description,
         icon = icon,
         actionLabel = actionLabel,
-        onAction = onAction
+        onAction = onAction,
+        fillMaxSize = fillMaxSize,
     )
 }

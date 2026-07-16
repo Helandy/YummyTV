@@ -15,9 +15,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingFooter
+import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
@@ -54,6 +55,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRest
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvAppendErrorFooter
+import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import kotlin.time.Duration.Companion.milliseconds
@@ -109,10 +112,12 @@ internal fun TopBrowser(
     val gridFallbackFocusRequester = focusRequesters.getOrNull(preferredItemIndex)
         ?: selectedTypeFocusRequester
         ?: FocusRequester.Default
-    val preferredContentFocusRequester = if (hasFocusableContent) {
-        gridFocusRequester
-    } else {
-        selectedTypeFocusRequester ?: gridFocusRequester
+    val retryFocusRequester = remember { FocusRequester() }
+    val showRefreshError = refreshError != null && itemCount == 0
+    val preferredContentFocusRequester = when {
+        hasFocusableContent -> gridFocusRequester
+        showRefreshError -> retryFocusRequester
+        else -> selectedTypeFocusRequester ?: gridFocusRequester
     }
     val tabContentFocusRequester = firstItemFocusRequester ?: gridFocusRequester
 
@@ -273,9 +278,14 @@ internal fun TopBrowser(
             contentAlignment = Alignment.Center,
         ) {
             when {
-                isLoading -> CircularProgressIndicator()
+                isLoading -> TvLoadingScreen()
 
-                refreshError != null && itemCount == 0 -> Text(text = refreshError)
+                showRefreshError -> TvStateMessage(
+                    title = refreshError.orEmpty(),
+                    icon = Icons.Filled.Warning,
+                    onRetry = onRetry,
+                    retryFocusRequester = retryFocusRequester,
+                )
 
                 else -> BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val horizontalSpacing = TvCardSpacing.Horizontal
@@ -365,6 +375,18 @@ internal fun TopBrowser(
                                     contentType = { "footer" },
                                 ) {
                                     TvLoadingFooter()
+                                }
+                            }
+
+                            if (appendState is LoadState.Error) {
+                                item(
+                                    span = { GridItemSpan(maxLineSpan) },
+                                    contentType = { "footer" },
+                                ) {
+                                    TvAppendErrorFooter(
+                                        message = appendState.error.uiMessage(),
+                                        onRetry = { pagingItems.retry() },
+                                    )
                                 }
                             }
                         }

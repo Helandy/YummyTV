@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
@@ -77,14 +77,10 @@ internal fun TopMobileGrid(
             }
 
             appendError != null -> item(span = { GridItemSpan(maxLineSpan) }) {
-                Button(onClick = onRetry) {
-                    Text(
-                        stringResource(
-                            R.string.top_mobile_retry_error,
-                            appendError,
-                        ),
-                    )
-                }
+                MobileAppendError(
+                    message = appendError,
+                    onRetry = onRetry,
+                )
             }
         }
 
