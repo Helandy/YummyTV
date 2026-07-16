@@ -21,6 +21,9 @@ import su.afk.yummy.tv.feature.player.utils.calculateMobileVideoTransform
 import su.afk.yummy.tv.feature.player.utils.readSystemBrightnessFraction
 import kotlin.math.roundToInt
 
+/** Шаг изменения яркости/громкости при вертикальном свайпе. */
+private const val VERTICAL_GESTURE_STEP = 0.05f
+
 /**
  * Жесты мобильного плеера: яркость/громкость (вертикальный свайп),
  * pinch-zoom видео и speed-boost по long-press.
@@ -50,6 +53,10 @@ internal class MobilePlayerGestureController(
     var volumeLevel: Float by mutableFloatStateOf(0.5f)
         private set
 
+    // непрерывное значение свайпа; наружу выдаётся квантованное по VERTICAL_GESTURE_STEP
+    private var rawBrightnessLevel = 0.5f
+    private var rawVolumeLevel = 0.5f
+
     fun startTransformGesture() {
         transformGestureActive = true
         onGestureStart()
@@ -72,17 +79,19 @@ internal class MobilePlayerGestureController(
         onGestureStart()
         when (zone) {
             MobileVerticalGestureZone.Brightness -> {
-                brightnessLevel = activity?.window?.attributes?.screenBrightness
+                rawBrightnessLevel = activity?.window?.attributes?.screenBrightness
                     ?.takeIf { it in 0f..1f }
                     ?: readSystemBrightnessFraction(context)
+                brightnessLevel = rawBrightnessLevel
                 brightnessGestureActive = true
             }
 
             MobileVerticalGestureZone.Volume -> {
-                volumeLevel = audioManager
+                rawVolumeLevel = audioManager
                     ?.getStreamVolume(AudioManager.STREAM_MUSIC)
                     ?.div(maxVolume.toFloat())
                     ?: 0f
+                volumeLevel = rawVolumeLevel
                 volumeGestureActive = true
             }
         }
@@ -91,8 +100,12 @@ internal class MobilePlayerGestureController(
     fun applyVerticalGesture(zone: MobileVerticalGestureZone, deltaFraction: Float) {
         when (zone) {
             MobileVerticalGestureZone.Brightness -> {
-                brightnessLevel = (brightnessLevel + deltaFraction)
+                rawBrightnessLevel = (rawBrightnessLevel + deltaFraction)
                     .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
+                val stepped = rawBrightnessLevel.quantizeToGestureStep()
+                    .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
+                if (stepped == brightnessLevel) return
+                brightnessLevel = stepped
                 activity?.window?.let { window ->
                     window.attributes = window.attributes.apply {
                         screenBrightness = brightnessLevel
@@ -101,7 +114,10 @@ internal class MobilePlayerGestureController(
             }
 
             MobileVerticalGestureZone.Volume -> {
-                volumeLevel = (volumeLevel + deltaFraction).coerceIn(0f, 1f)
+                rawVolumeLevel = (rawVolumeLevel + deltaFraction).coerceIn(0f, 1f)
+                val stepped = rawVolumeLevel.quantizeToGestureStep().coerceIn(0f, 1f)
+                if (stepped == volumeLevel) return
+                volumeLevel = stepped
                 audioManager?.setStreamVolume(
                     AudioManager.STREAM_MUSIC,
                     (volumeLevel * maxVolume).roundToInt(),
@@ -110,6 +126,9 @@ internal class MobilePlayerGestureController(
             }
         }
     }
+
+    private fun Float.quantizeToGestureStep(): Float =
+        (this / VERTICAL_GESTURE_STEP).roundToInt() * VERTICAL_GESTURE_STEP
 
     fun endVerticalGesture(zone: MobileVerticalGestureZone) {
         when (zone) {
