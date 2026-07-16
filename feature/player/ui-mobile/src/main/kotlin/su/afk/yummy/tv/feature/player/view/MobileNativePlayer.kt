@@ -111,11 +111,24 @@ internal fun MobileNativePlayer(
         streamUrl = streamUrl,
         toastDuration = MOBILE_PLAYER_SEEK_TOAST_DURATION,
     )
+    val canChangePlayer = ui.balancerNames.size > 1
+    val canChangeDubbing = ui.dubbingNames.size > 1
+    // Пока виден хинт восстановления, оверлей не автоскрываем:
+    // кнопки «Сменить плеер/озвучку» и контролы должны оставаться на экране
+    val recoveryHintVisible = state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
+            (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
     val overlay = rememberMobilePlayerOverlayController(
-        canHide = { wantsPlay && settingsMode == null && !isSeeking },
+        canHide = { wantsPlay && settingsMode == null && !isSeeking && !recoveryHintVisible },
         wantsPlay = { wantsPlay },
         isPromptVisible = { nextEpisodePromptState.isVisible },
     )
+
+    LaunchedEffect(recoveryHintVisible) {
+        if (recoveryHintVisible) {
+            overlay.cancelHide()
+            overlay.visible = true
+        }
+    }
     val gestures = rememberMobilePlayerGestureController(
         activity = activity,
         initialTransform = videoTransform,
@@ -491,11 +504,7 @@ internal fun MobileNativePlayer(
                 .padding(top = 28.dp),
         )
 
-        val canChangePlayer = ui.balancerNames.size > 1
-        val canChangeDubbing = ui.dubbingNames.size > 1
-        if (state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
-            (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
-        ) {
+        if (recoveryHintVisible) {
             MobilePlayerRecoveryHint(
                 onChangePlayer = if (canChangePlayer) {
                     {
