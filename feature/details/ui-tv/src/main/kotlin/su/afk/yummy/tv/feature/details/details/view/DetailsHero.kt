@@ -155,6 +155,7 @@ internal fun DetailsHero(
                 MarqueeTitleText(
                     text = details.title,
                     style = MaterialTheme.typography.displaySmall.copy(
+                        fontSize = 30.sp,
                         color = if (titleFocused) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurface,
                     ),
@@ -179,6 +180,7 @@ internal fun DetailsHero(
                         text = details.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.80f),
+                        minLines = descriptionMaxLines,
                         maxLines = descriptionMaxLines,
                         overflow = TextOverflow.Ellipsis,
                     )

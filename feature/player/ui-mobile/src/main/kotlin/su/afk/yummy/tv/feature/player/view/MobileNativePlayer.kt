@@ -42,6 +42,7 @@ import su.afk.yummy.tv.feature.player.common.isVisible
 import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
+import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
@@ -164,6 +165,7 @@ internal fun MobileNativePlayer(
 
     val player = mediaController
     val isBuffering = rememberPlayerBufferingState(player)
+    val isMediaReady = rememberPlayerMediaReadyState(player, playbackConfigKey)
 
     LaunchedEffect(player, playbackConfigKey, mediaItemKey, ui.activeIframeUrl) {
         val activePlayer = player ?: return@LaunchedEffect
@@ -309,6 +311,7 @@ internal fun MobileNativePlayer(
     MobilePlayerProgressPollingEffect(
         player = player,
         episodeKey = ui.activeIframeUrl,
+        isMediaReady = isMediaReady,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
         reporter = reporter,
         skippedSegments = skippedSegments,

@@ -8,6 +8,7 @@ import androidx.media3.common.MimeTypes
 object PlayerMediaItemFactory {
     fun mediaItemFor(
         url: String,
+        mediaId: String? = null,
         title: String? = null,
         artist: String? = null,
         subtitle: String? = null,
@@ -32,6 +33,7 @@ object PlayerMediaItemFactory {
             .build()
         return MediaItem.Builder()
             .setUri(url)
+            .apply { mediaId.nonBlank()?.let(::setMediaId) }
             .setMediaMetadata(mediaMetadata)
             .setCustomCacheKey(customCacheKey.nonBlank())
             .apply { if (mimeType != null) setMimeType(mimeType) }

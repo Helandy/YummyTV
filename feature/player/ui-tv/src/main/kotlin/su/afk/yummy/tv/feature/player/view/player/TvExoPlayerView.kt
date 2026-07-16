@@ -37,6 +37,7 @@ import su.afk.yummy.tv.feature.player.common.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.rememberPlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
+import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
@@ -126,6 +127,7 @@ internal fun TvExoPlayerView(
         remember(currentUrl, state.streamHeaders, state.offlineCacheKey, state.retryKey) {
             buildTvPlayerPlaybackKey(state = state, url = currentUrl)
         }
+    val isMediaReady = rememberPlayerMediaReadyState(exoPlayer, playbackKey)
     val mediaItemKey = remember(
         playbackKey,
         state.animeTitle,
@@ -229,8 +231,11 @@ internal fun TvExoPlayerView(
         onPlayerEvent(PlayerState.Event.RateTitle)
     }
 
-    val activeSkip =
+    val activeSkip = if (isMediaReady) {
         currentSkip(playback.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
+    } else {
+        null
+    }
 
     fun skipActiveSegment(reportSelection: Boolean = true) {
         val skip = activeSkip ?: return

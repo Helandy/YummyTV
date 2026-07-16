@@ -20,6 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 internal fun MobilePlayerProgressPollingEffect(
     player: Player,
     episodeKey: String,
+    isMediaReady: Boolean,
     autoSkipOpeningsEndings: Boolean,
     reporter: PlayerProgressReporter,
     skippedSegments: MutableList<String>,
@@ -35,7 +36,7 @@ internal fun MobilePlayerProgressPollingEffect(
     val currentActiveSkips by rememberUpdatedState(activeSkips)
     val currentOnBufferedProgressChange by rememberUpdatedState(onBufferedProgressChange)
 
-    LaunchedEffect(player, episodeKey, autoSkipOpeningsEndings) {
+    LaunchedEffect(player, episodeKey, isMediaReady, autoSkipOpeningsEndings) {
         while (true) {
             var position = currentPosition()
             var dur = currentFallbackDuration()
@@ -55,7 +56,7 @@ internal fun MobilePlayerProgressPollingEffect(
             if (dur > 0 && now - reporter.lastSaveTimeMs >= 10_000L) {
                 reporter.saveProgress(position, dur)
             }
-            if (autoSkipOpeningsEndings) {
+            if (isMediaReady && autoSkipOpeningsEndings) {
                 currentActiveSkips().segments().forEach { (key, segment) ->
                     val segmentKey = "$episodeKey-$key"
                     if (segmentKey !in skippedSegments &&

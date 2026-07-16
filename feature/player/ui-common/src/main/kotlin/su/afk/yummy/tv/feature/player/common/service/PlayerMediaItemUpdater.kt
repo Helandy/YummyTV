@@ -38,6 +38,7 @@ class PlayerMediaItemUpdater {
     ) {
         val item = PlayerMediaItemFactory.mediaItemFor(
             url = config.url,
+            mediaId = config.playbackKey,
             title = config.title,
             artist = config.artist,
             subtitle = config.subtitle,
