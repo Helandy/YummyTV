@@ -1,11 +1,8 @@
 package su.afk.yummy.tv.feature.details.details.view
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,8 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -244,18 +241,27 @@ internal fun DetailsButtonBar(
             if (index == 0) firstFocusRequester else FocusRequester()
         }
     }
+    // Отступ, позволяющий отцентрировать сфокусированную строку: сверху ровно на одну
+    // строку меньше (первая строка прижата к верху), снизу — до центра последней.
+    val verticalCenterInset = (height - ButtonRowHeight) / 2
+    val topPadding = (verticalCenterInset - ButtonRowHeight - ButtonRowSpacing).coerceAtLeast(0.dp)
+    val centerScrollOffset = with(LocalDensity.current) { -verticalCenterInset.roundToPx() }
+
+    fun rowScrollOffset(rowIndex: Int): Int = if (rowIndex == 0) 0 else centerScrollOffset
+
     val requestFocusedButton: () -> Unit = {
         val targetIndex = focusedButtonIndex().coerceIn(0, buttons.lastIndex)
         scope.launch {
-            listState.scrollToItem((buttonRows.rowIndexForButton(targetIndex) - 1).coerceAtLeast(0))
+            val targetRow = buttonRows.rowIndexForButton(targetIndex)
+            listState.scrollToItem(targetRow, rowScrollOffset(targetRow))
             focusRequesters.getOrNull(targetIndex)?.requestFocus()
         }
     }
 
-    fun itemAlpha(index: Int): Float = when {
-        currentFocusedIndex == index -> 1f
-        kotlin.math.abs(currentFocusedIndex - index) == 1 -> 0.54f
-        else -> 0.24f
+    fun onRowFocused(rowIndex: Int) {
+        scope.launch {
+            listState.animateScrollToItem(rowIndex, rowScrollOffset(rowIndex))
+        }
     }
 
     LaunchedEffect(buttons.size) {
@@ -289,8 +295,13 @@ internal fun DetailsButtonBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height),
-            contentPadding = PaddingValues(horizontal = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            contentPadding = PaddingValues(
+                start = 2.dp,
+                end = 2.dp,
+                top = topPadding,
+                bottom = verticalCenterInset,
+            ),
+            verticalArrangement = Arrangement.spacedBy(ButtonRowSpacing),
         ) {
             itemsIndexed(
                 items = buttonRows,
@@ -307,17 +318,10 @@ internal fun DetailsButtonBar(
                             DetailsActionButton(
                                 button = row.button,
                                 index = row.index,
-                                alpha = itemAlpha(row.index),
                                 focusRequester = focusRequesters[row.index],
                                 onFocused = {
                                     focusedAction = row.button.action
-                                    scope.launch {
-                                        listState.scrollToItem(
-                                            (rowIndex - 1).coerceAtLeast(
-                                                0
-                                            )
-                                        )
-                                    }
+                                    onRowFocused(rowIndex)
                                 },
                             )
                         }
@@ -335,34 +339,20 @@ internal fun DetailsButtonBar(
                             DetailsActionButton(
                                 button = row.libraryButton,
                                 index = row.libraryIndex,
-                                alpha = itemAlpha(row.libraryIndex),
                                 focusRequester = focusRequesters[row.libraryIndex],
                                 onFocused = {
                                     focusedAction = row.libraryButton.action
-                                    scope.launch {
-                                        listState.scrollToItem(
-                                            (rowIndex - 1).coerceAtLeast(
-                                                0
-                                            )
-                                        )
-                                    }
+                                    onRowFocused(rowIndex)
                                 },
                                 modifier = Modifier.weight(1f),
                             )
                             DetailsActionButton(
                                 button = row.favoriteButton,
                                 index = row.favoriteIndex,
-                                alpha = itemAlpha(row.favoriteIndex),
                                 focusRequester = focusRequesters[row.favoriteIndex],
                                 onFocused = {
                                     focusedAction = row.favoriteButton.action
-                                    scope.launch {
-                                        listState.scrollToItem(
-                                            (rowIndex - 1).coerceAtLeast(
-                                                0
-                                            )
-                                        )
-                                    }
+                                    onRowFocused(rowIndex)
                                 },
                                 showLabel = false,
                                 iconSize = 24.dp,
@@ -376,14 +366,11 @@ internal fun DetailsButtonBar(
             }
         }
 
-        if (currentFocusedIndex > 0) {
-            ButtonFadeOverlay(alignment = Alignment.TopCenter)
-        }
-        if (currentFocusedIndex < buttons.lastIndex) {
-            ButtonFadeOverlay(alignment = Alignment.BottomCenter)
-        }
     }
 }
+
+private val ButtonRowHeight = 40.dp
+private val ButtonRowSpacing = 6.dp
 
 private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
     var index = 0
@@ -407,7 +394,6 @@ private fun List<ButtonRowData>.rowIndexForButton(buttonIndex: Int): Int =
 private fun DetailsActionButton(
     button: ButtonData,
     index: Int,
-    alpha: Float,
     focusRequester: FocusRequester,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -416,16 +402,10 @@ private fun DetailsActionButton(
     verticalPadding: Dp = 8.dp,
     focusedScale: Float = 1.04f,
 ) {
-    val animatedAlpha by animateFloatAsState(
-        targetValue = alpha,
-        animationSpec = tween(durationMillis = 200),
-        label = "detailsButtonAlpha",
-    )
     ActionButton(
         label = button.label,
         icon = button.icon,
         style = button.style,
-        alpha = animatedAlpha,
         showLabel = showLabel,
         iconSize = iconSize,
         verticalPadding = verticalPadding,
@@ -449,7 +429,6 @@ private fun ActionButton(
     label: String,
     icon: ImageVector,
     style: ButtonStyle,
-    alpha: Float,
     showLabel: Boolean = true,
     iconSize: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
@@ -473,7 +452,7 @@ private fun ActionButton(
         modifier = modifier
             .fillMaxWidth()
             .tvFocusableClick(onClick = onClick, shape = shape, focusedScale = focusedScale)
-            .background(bgColor.copy(alpha = bgColor.alpha * alpha), shape)
+            .background(bgColor, shape)
             .padding(horizontal = 20.dp, vertical = verticalPadding),
         contentAlignment = Alignment.Center,
     ) {
@@ -485,7 +464,7 @@ private fun ActionButton(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = textColor.copy(alpha = textColor.alpha * alpha),
+                tint = textColor,
                 modifier = Modifier.size(iconSize),
             )
             if (showLabel) {
@@ -494,7 +473,7 @@ private fun ActionButton(
                     text = label,
                     style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
                     fontWeight = FontWeight.Bold,
-                    color = textColor.copy(alpha = textColor.alpha * alpha),
+                    color = textColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -503,23 +482,3 @@ private fun ActionButton(
     }
 }
 
-@Composable
-private fun BoxScope.ButtonFadeOverlay(alignment: Alignment) {
-    val surface = MaterialTheme.colorScheme.surface
-    val brush = when (alignment) {
-        Alignment.TopCenter -> Brush.verticalGradient(
-            colors = listOf(surface.copy(alpha = 0.88f), surface.copy(alpha = 0f)),
-        )
-
-        else -> Brush.verticalGradient(
-            colors = listOf(surface.copy(alpha = 0f), surface.copy(alpha = 0.88f)),
-        )
-    }
-    Box(
-        modifier = Modifier
-            .align(alignment)
-            .fillMaxWidth()
-            .height(42.dp)
-            .background(brush),
-    )
-}

@@ -40,8 +40,8 @@
     <string name="player_resize_zoom">Zoom</string>
     <string name="player_resize_fit_meta">Show the whole video</string>
     <string name="player_resize_zoom_meta">Enlarge frame</string>
-    <string name="player_zoom_level_title">Zoom amount</string>
-    <string name="player_zoom_level_percent">%1$d%%</string>
+    <string name="player_zoom_level_title">Zoom amount %</string>
+    <string name="player_zoom_level_percent">%1$d</string>
     <string name="player_count_thousands">%1$sK</string>
     <string name="player_count_millions">%1$sM</string>
     <string name="player_skip_segment">Skip</string>
