@@ -50,7 +50,12 @@ fun StateMessage(
             modifier = Modifier.size(iconSize)
         )
         Spacer(Modifier.height(18.dp))
-        Text(title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+        )
         if (!description.isNullOrBlank()) {
             Spacer(Modifier.height(8.dp))
             Text(

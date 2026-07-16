@@ -85,6 +85,7 @@ fun DefaultErrorContent(
             Text(
                 text = errorItem.message,
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             Spacer(Modifier.height(16.dp))
@@ -122,19 +123,39 @@ fun DefaultErrorContent(
                 ) {
                     errorItem.code?.let {
                         Text(
-                            stringResource(
+                            text = stringResource(
                                 R.string.error_http_code,
                                 it.toString()
-                            )
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    errorItem.method?.let { Text(stringResource(R.string.error_method, it)) }
-                    errorItem.url?.let { Text(stringResource(R.string.error_url, it)) }
-                    errorItem.requestId?.let { Text(stringResource(R.string.error_request_id, it)) }
+                    errorItem.method?.let {
+                        Text(
+                            text = stringResource(R.string.error_method, it),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    errorItem.url?.let {
+                        Text(
+                            text = stringResource(R.string.error_url, it),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    errorItem.requestId?.let {
+                        Text(
+                            text = stringResource(R.string.error_request_id, it),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
 
                     errorItem.cause?.takeIf { it.isNotBlank() }?.let {
                         Spacer(Modifier.height(8.dp))
-                        Text(text = it, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
 
                     errorItem.body?.takeIf { it.isNotBlank() }?.let { body ->
@@ -142,6 +163,7 @@ fun DefaultErrorContent(
                         Text(
                             text = stringResource(R.string.error_body, body),
                             style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
 
