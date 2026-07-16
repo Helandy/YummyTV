@@ -1,13 +1,17 @@
 package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,11 +27,13 @@ import su.afk.yummy.tv.feature.search.utils.seasonOptions
 import su.afk.yummy.tv.feature.search.utils.statusOptions
 
 @Composable
-internal fun SearchMobileFilterBody(
+internal fun ColumnScope.SearchMobileFilterBody(
     draftFilters: SearchFilters,
     filterOptions: SearchFilterOptions,
     isLoadingFilterOptions: Boolean,
+    onBack: () -> Unit,
     onReset: () -> Unit,
+    onApply: () -> Unit,
     onOpenGenres: () -> Unit,
     onOpenExcludedGenres: () -> Unit,
     onTypeToggled: (String) -> Unit,
@@ -39,13 +45,13 @@ internal fun SearchMobileFilterBody(
     onSortSelected: (SearchSort) -> Unit,
     onSortDirectionToggled: () -> Unit,
 ) {
-    SheetHeader(title = stringResource(R.string.search_mobile_filters))
-
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = onReset, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.search_mobile_filters_reset))
-        }
-    }
+    SheetHeader(
+        title = stringResource(R.string.search_mobile_filters),
+        onBack = onBack,
+        actionLabel = stringResource(R.string.search_mobile_filters_reset),
+        actionVisible = draftFilters.activeCount > 0,
+        onClose = onReset,
+    )
 
     if (isLoadingFilterOptions) {
         Text(
@@ -58,10 +64,29 @@ internal fun SearchMobileFilterBody(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 560.dp),
+            .weight(1f),
         contentPadding = PaddingValues(bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        item {
+            FilterSection(title = stringResource(R.string.search_mobile_filter_genre_screen_title)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterNavigationRow(
+                        title = stringResource(R.string.search_mobile_filter_genres),
+                        icon = Icons.Filled.Sell,
+                        selectedCount = draftFilters.genres.size,
+                        onClick = onOpenGenres,
+                    )
+                    FilterNavigationRow(
+                        title = stringResource(R.string.search_mobile_filter_exclude_genres),
+                        icon = Icons.Filled.Block,
+                        selectedCount = draftFilters.excludedGenres.size,
+                        onClick = onOpenExcludedGenres,
+                    )
+                }
+            }
+        }
+
         item {
             FilterSection(title = stringResource(R.string.search_mobile_filter_sort)) {
                 ChipFlow {
@@ -72,13 +97,13 @@ internal fun SearchMobileFilterBody(
                             onClick = { onSortSelected(sort) },
                         )
                     }
-                    FilterChip(
+                    FilterDirectionChip(
                         label = if (draftFilters.sortForward) {
                             stringResource(R.string.search_mobile_filter_sort_forward)
                         } else {
                             stringResource(R.string.search_mobile_filter_sort_backward)
                         },
-                        selected = !draftFilters.sortForward,
+                        forward = draftFilters.sortForward,
                         onClick = onSortDirectionToggled,
                     )
                 }
@@ -159,28 +184,21 @@ internal fun SearchMobileFilterBody(
                 }
             }
         }
+    }
 
-        item {
-            FilterSection(title = stringResource(R.string.search_mobile_filter_genre_screen_title)) {
-                ChipFlow {
-                    FilterChip(
-                        label = stringResource(
-                            R.string.search_mobile_filter_open_genres,
-                            draftFilters.genres.size,
-                        ),
-                        selected = draftFilters.genres.isNotEmpty(),
-                        onClick = onOpenGenres,
-                    )
-                    FilterChip(
-                        label = stringResource(
-                            R.string.search_mobile_filter_open_exclude_genres,
-                            draftFilters.excludedGenres.size,
-                        ),
-                        selected = draftFilters.excludedGenres.isNotEmpty(),
-                        onClick = onOpenExcludedGenres,
-                    )
-                }
-            }
-        }
+    Button(
+        onClick = onApply,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            if (draftFilters.activeCount > 0) {
+                stringResource(
+                    R.string.search_mobile_filters_apply_with_count,
+                    draftFilters.activeCount,
+                )
+            } else {
+                stringResource(R.string.search_mobile_filters_apply)
+            },
+        )
     }
 }

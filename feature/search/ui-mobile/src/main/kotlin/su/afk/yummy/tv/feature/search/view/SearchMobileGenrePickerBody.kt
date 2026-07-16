@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.search.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,7 +16,7 @@ import su.afk.yummy.tv.feature.search.mobile.R
 import su.afk.yummy.tv.feature.search.mobile.model.GenrePickerMode
 
 @Composable
-internal fun SearchMobileGenrePickerBody(
+internal fun ColumnScope.SearchMobileGenrePickerBody(
     mode: GenrePickerMode,
     selectedIds: Set<String>,
     filterOptions: SearchFilterOptions,
@@ -28,8 +28,7 @@ internal fun SearchMobileGenrePickerBody(
             GenrePickerMode.INCLUDE -> stringResource(R.string.search_mobile_filter_genres)
             GenrePickerMode.EXCLUDE -> stringResource(R.string.search_mobile_filter_exclude_genres)
         },
-        actionLabel = stringResource(R.string.search_mobile_filters_back),
-        onClose = onBack,
+        onBack = onBack,
     )
     Text(
         text = stringResource(R.string.search_mobile_filter_selected_count, selectedIds.size),
@@ -41,7 +40,7 @@ internal fun SearchMobileGenrePickerBody(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 560.dp),
+            .weight(1f),
         contentPadding = PaddingValues(bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

@@ -18,4 +18,5 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 /app/release/*
+/app/debug/*
 /.claude/*

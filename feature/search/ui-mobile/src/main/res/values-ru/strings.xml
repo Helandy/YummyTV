@@ -11,6 +11,7 @@
     <string name="search_mobile_loading">Загрузка...</string>
     <string name="search_mobile_load_more">Показать ещё</string>
     <string name="search_mobile_filters_apply">Применить</string>
+    <string name="search_mobile_filters_apply_with_count">Применить · %1$d</string>
     <string name="search_mobile_filters_reset">Сбросить</string>
     <string name="search_mobile_filters_close">Закрыть</string>
     <string name="search_mobile_filters_back">Назад</string>

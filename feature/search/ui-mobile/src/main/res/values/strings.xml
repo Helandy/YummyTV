@@ -11,6 +11,7 @@
     <string name="search_mobile_loading">Loading...</string>
     <string name="search_mobile_load_more">Show more</string>
     <string name="search_mobile_filters_apply">Apply</string>
+    <string name="search_mobile_filters_apply_with_count">Apply · %1$d</string>
     <string name="search_mobile_filters_reset">Reset</string>
     <string name="search_mobile_filters_close">Close</string>
     <string name="search_mobile_filters_back">Back</string>

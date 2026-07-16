@@ -1,5 +1,11 @@
 package su.afk.yummy.tv.feature.main.view
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
@@ -34,7 +40,13 @@ internal fun <T> MobileMainScaffold(
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         bottomBar = {
-            if (showBars) {
+            AnimatedVisibility(
+                visible = showBars,
+                enter = slideInVertically(tween(BOTTOM_BAR_ANIMATION_MILLIS)) { it } +
+                        fadeIn(tween(BOTTOM_BAR_ANIMATION_MILLIS)),
+                exit = slideOutVertically(tween(BOTTOM_BAR_ANIMATION_MILLIS)) { it } +
+                        fadeOut(tween(BOTTOM_BAR_ANIMATION_MILLIS)),
+            ) {
                 val surface = MaterialTheme.colorScheme.surface
                 Box(
                     modifier = Modifier
@@ -67,6 +79,8 @@ internal fun <T> MobileMainScaffold(
         }
     }
 }
+
+private const val BOTTOM_BAR_ANIMATION_MILLIS = 220
 
 @Composable
 private fun <T> RowScope.MobileNavigationItem(

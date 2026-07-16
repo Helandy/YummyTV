@@ -1,5 +1,11 @@
 package su.afk.yummy.tv.feature.main
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -159,6 +165,29 @@ class MobileMainGraph @Inject internal constructor(
                             navManager = navManager,
                             registrars = commonRegistrars + mobileRegistrars,
                             modifier = Modifier.fillMaxSize(),
+                            transitionSpec = {
+                                fadeIn(
+                                    tween(
+                                        durationMillis = MOBILE_NAV_FADE_IN_MILLIS,
+                                        delayMillis = MOBILE_NAV_FADE_IN_DELAY_MILLIS,
+                                    ),
+                                ) + scaleIn(
+                                    initialScale = MOBILE_NAV_TRANSITION_SCALE,
+                                    animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
+                                ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS))
+                            },
+                            popTransitionSpec = {
+                                fadeIn(
+                                    tween(
+                                        durationMillis = MOBILE_NAV_FADE_IN_MILLIS,
+                                        delayMillis = MOBILE_NAV_FADE_IN_DELAY_MILLIS,
+                                    ),
+                                ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS)) +
+                                        scaleOut(
+                                            targetScale = MOBILE_NAV_TRANSITION_SCALE,
+                                            animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
+                                        )
+                            },
                         )
                     }
                 }
@@ -168,3 +197,9 @@ class MobileMainGraph @Inject internal constructor(
 }
 
 private val GLOBAL_TOAST_DURATION = 3.seconds
+
+private const val MOBILE_NAV_TRANSITION_MILLIS = 300
+private const val MOBILE_NAV_FADE_IN_MILLIS = 220
+private const val MOBILE_NAV_FADE_IN_DELAY_MILLIS = 60
+private const val MOBILE_NAV_FADE_OUT_MILLIS = 120
+private const val MOBILE_NAV_TRANSITION_SCALE = 0.94f

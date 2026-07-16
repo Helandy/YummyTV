@@ -45,7 +45,7 @@ import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.mobile.R
 import su.afk.yummy.tv.feature.search.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.search.view.SearchMobileFilterButton
-import su.afk.yummy.tv.feature.search.view.SearchMobileFilterSheet
+import su.afk.yummy.tv.feature.search.view.SearchMobileFilterPanel
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -130,7 +130,10 @@ fun SearchMobileScreen(
                     trailingIcon = {
                         SearchMobileFilterButton(
                             activeCount = state.filters.activeCount,
-                            onClick = { onEvent(SearchState.Event.OpenFilters) },
+                            onClick = {
+                                keyboardController?.hide()
+                                onEvent(SearchState.Event.OpenFilters)
+                            },
                         )
                     },
                 )
@@ -218,7 +221,7 @@ fun SearchMobileScreen(
     }
 
     if (state.isFilterPanelOpen) {
-        SearchMobileFilterSheet(
+        SearchMobileFilterPanel(
             draftFilters = state.draftFilters,
             filterOptions = state.filterOptions,
             isLoadingFilterOptions = state.isLoadingFilterOptions,
