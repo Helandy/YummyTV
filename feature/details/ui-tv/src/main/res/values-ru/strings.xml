@@ -33,7 +33,8 @@
     <string name="details_episode_watch_timing">%1$s / %2$s</string>
     <string name="details_aired">Вышло: %1$s</string>
     <string name="details_aired_progress">%1$d из %2$s</string>
-    <string name="details_aired_with_release">%1$s | %2$s.</string>
+    <string name="details_released_episodes">Количество серий: %1$d</string>
+    <string name="details_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_release_in_days">
         <item quantity="one">До выхода серии %1$d день</item>
         <item quantity="few">До выхода серии %1$d дня</item>

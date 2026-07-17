@@ -144,7 +144,7 @@ internal fun DetailsMobileHero(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            details.episodes?.formatAiredProgress()?.let { progress ->
+            details.episodes?.formatAiredProgress(details.status)?.let { progress ->
                 Text(
                     text = progress,
                     style = MaterialTheme.typography.bodyMedium,

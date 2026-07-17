@@ -29,7 +29,11 @@ internal fun Int.formatViews(): String = when {
 }
 
 @Composable
-internal fun AnimeEpisodes.formatAiredProgress(): String? {
+internal fun AnimeEpisodes.formatAiredProgress(status: String? = null): String? {
+    if (status.isReleasedAnimeStatus()) {
+        val episodesCount = count ?: aired ?: return null
+        return stringResource(R.string.details_released_episodes, episodesCount)
+    }
     val airedCount = aired ?: return null
     val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
     val progress = stringResource(

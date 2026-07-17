@@ -33,7 +33,8 @@
     <string name="details_episode_watch_timing">%1$s / %2$s</string>
     <string name="details_aired">Aired: %1$s</string>
     <string name="details_aired_progress">%1$d of %2$s</string>
-    <string name="details_aired_with_release">%1$s | %2$s.</string>
+    <string name="details_released_episodes">Episode count: %1$d</string>
+    <string name="details_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_release_in_days">
         <item quantity="one">Next episode in %1$d day</item>
         <item quantity="other">Next episode in %1$d days</item>

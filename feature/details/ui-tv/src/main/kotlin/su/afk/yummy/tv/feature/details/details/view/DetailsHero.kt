@@ -439,7 +439,7 @@ private fun HeroGenresRow(details: AnimeDetails) {
 
 @Composable
 private fun HeroEpisodesRow(details: AnimeDetails) {
-    val episodeProgress = details.episodes?.formatAiredProgress() ?: return
+    val episodeProgress = details.episodes?.formatAiredProgress(details.status) ?: return
     Text(
         text = episodeProgress,
         fontSize = 13.sp,

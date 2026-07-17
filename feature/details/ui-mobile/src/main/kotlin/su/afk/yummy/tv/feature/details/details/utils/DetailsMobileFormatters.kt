@@ -15,6 +15,7 @@ import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.utils.EpisodeReleaseCountdown
+import su.afk.yummy.tv.feature.details.utils.isReleasedAnimeStatus
 import su.afk.yummy.tv.feature.details.utils.releaseCountdown
 import java.util.Locale
 
@@ -33,7 +34,11 @@ internal fun Int.formatViews(): String = when {
 }
 
 @Composable
-internal fun AnimeEpisodes.formatAiredProgress(): String? {
+internal fun AnimeEpisodes.formatAiredProgress(status: String?): String? {
+    if (status.isReleasedAnimeStatus()) {
+        val episodesCount = count ?: aired ?: return null
+        return stringResource(R.string.details_mobile_released_episodes, episodesCount)
+    }
     val airedCount = aired ?: return null
     val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
     val progress = stringResource(R.string.details_mobile_aired, airedCount, totalCount)
