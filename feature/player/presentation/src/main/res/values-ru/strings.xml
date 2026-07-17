@@ -19,7 +19,7 @@
     <string name="player_recovery_hint_title">Не удаётся восстановить воспроизведение</string>
     <string name="player_unsupported">Плеер не поддерживается</string>
     <string name="player_kodik_blocked">Просмотр заблокирован</string>
-    <string name="player_dubbing_unavailable">Извините, указанная озвучка недоступна. Попробуйте выбрать другую озвучку.</string>
+    <string name="player_dubbing_unavailable">Извините, эта озвучка недоступна в этом плеере. Попробуйте выбрать другую озвучку/плеер.</string>
     <string name="player_download_missing">Скачанная серия отсутствует в локальном кэше</string>
     <string name="player_download_resolve_error">Не удалось подготовить серию к скачиванию</string>
     <string name="player_download_enqueue_error">Не удалось поставить скачивание в очередь</string>
