@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -28,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.details.model.MobilePickerItem
+import su.afk.yummy.tv.feature.details.view.common.formatCompactCount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,14 +93,13 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
     }
     val titleColor = if (item.enabled) colorScheme.onSurface else colorScheme.onSurfaceVariant
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(background)
             .clickable(enabled = item.enabled, onClick = item.onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = item.title,
@@ -104,7 +108,39 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
             fontWeight = if (item.enabled) FontWeight.Medium else FontWeight.Normal,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
         )
+        if (!item.subtitle.isNullOrBlank()) {
+            val subtitleColor =
+                colorScheme.onSurfaceVariant.copy(alpha = if (item.enabled) 1f else 0.6f)
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = item.subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = subtitleColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                val views = item.views
+                if (views != null && views > 0) {
+                    Icon(
+                        imageVector = Icons.Filled.Visibility,
+                        contentDescription = null,
+                        tint = subtitleColor,
+                        modifier = Modifier.size(13.dp),
+                    )
+                    Text(
+                        text = views.formatCompactCount(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = subtitleColor,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
     }
 }

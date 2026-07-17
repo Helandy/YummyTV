@@ -14,6 +14,7 @@
     <string name="details_balancer_title">Episode %1$s · Balancer</string>
     <string name="details_balancer_unsupported_hint">Will be available later</string>
     <string name="details_balancer_open">Open</string>
+    <string name="details_balancer_preferred_unavailable">Your preferred balancer is not available for this dubbing — choose one of these</string>
     <string name="details_player_prefix">Player </string>
     <string name="details_loading_episodes">Loading episodes...</string>
     <string name="details_episodes">Episodes</string>

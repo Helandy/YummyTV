@@ -53,7 +53,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import java.util.Locale
+import su.afk.yummy.tv.feature.details.view.common.formatCompactCount
 
 @Composable
 internal fun EpisodeDubbingPickerOverlay(
@@ -222,21 +222,3 @@ private fun EpisodeDubbingOptionItem(
         }
     }
 }
-
-@Composable
-private fun Int.formatCompactCount(): String = when {
-    this >= 1_000_000 -> stringResource(
-        R.string.details_count_millions,
-        (this / 1_000_000f).formatCompactDecimal(),
-    )
-
-    this >= 1_000 -> stringResource(
-        R.string.details_count_thousands,
-        (this / 1_000f).formatCompactDecimal(),
-    )
-
-    else -> toString()
-}
-
-private fun Float.formatCompactDecimal(): String =
-    if (this % 1f == 0f) toInt().toString() else String.format(Locale.US, "%.1f", this)

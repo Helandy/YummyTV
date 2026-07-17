@@ -20,13 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
-import su.afk.yummy.tv.feature.details.mobile.R
-import java.util.Locale
+import su.afk.yummy.tv.feature.details.view.common.formatCompactCount
 
 @Composable
 internal fun EpisodeDubbingMobileRow(
@@ -109,25 +107,3 @@ private fun EpisodeDubbingMeta(
         )
     }
 }
-
-@Composable
-private fun Int.formatCompactCount(): String = when {
-    this >= 1_000_000 -> stringResource(
-        R.string.details_mobile_count_millions,
-        (this / 1_000_000f).formatCompactDecimal(),
-    )
-
-    this >= 1_000 -> stringResource(
-        R.string.details_mobile_count_thousands,
-        (this / 1_000f).formatCompactDecimal(),
-    )
-
-    else -> toString()
-}
-
-private fun Float.formatCompactDecimal(): String =
-    if (this % 1f == 0f) {
-        toInt().toString()
-    } else {
-        String.format(Locale.US, "%.1f", this)
-    }

@@ -12,19 +12,34 @@ internal fun resolveDetailsPlayerSelection(
     allVideos: List<AnimeVideo>,
     preferredPlayer: PreferredPlayer,
 ): DetailsPlayerSelection {
-    val options = allVideos
-        .filter { it.episode == video.episode }
+    val episodeVideos = allVideos.filter { it.episode == video.episode }
+    // Если целевая озвучка в этом эпизоде есть только на неподдерживаемых балансерах,
+    // пересаживаемся на самую популярную озвучку среди поддерживаемых.
+    val targetVideo = if (
+        episodeVideos.any { it.dubbing == video.dubbing && it.iframeUrl.isSupportedPlayerUrl() }
+    ) {
+        video
+    } else {
+        episodeVideos
+            .filter { it.iframeUrl.isSupportedPlayerUrl() }
+            .groupBy { it.dubbing }
+            .maxByOrNull { (_, dubbingVideos) -> dubbingVideos.sumOf { it.views ?: 0 } }
+            ?.value
+            ?.maxByOrNull { it.views ?: 0 }
+            ?: video
+    }
+
+    val options = episodeVideos
         .groupBy { it.player }
         .entries
         .map { (playerName, playerVideos) ->
-            val supported = playerVideos.first().iframeUrl.isSupportedPlayerUrl()
-            val representative = playerVideos.firstOrNull { it.dubbing == video.dubbing }
+            val representative = playerVideos.firstOrNull { it.dubbing == targetVideo.dubbing }
                 ?: playerVideos.maxByOrNull { it.views ?: 0 }
                 ?: playerVideos.first()
             BalancerOption(
                 playerName = playerName,
                 video = representative,
-                isSupported = supported,
+                isSupported = representative.iframeUrl.isSupportedPlayerUrl(),
             )
         }
         .sortedBy { option ->
@@ -39,13 +54,23 @@ internal fun resolveDetailsPlayerSelection(
         val preferred = supportedOptions.firstOrNull {
             it.video.iframeUrl.matchesPreferredPlayer(preferredPlayer)
         }
-        if (preferred != null) return DetailsPlayerSelection.Navigate(preferred.video)
+        // Открываем напрямую только если у предпочитаемого балансера есть именно целевая
+        // озвучка, иначе показываем пикер вместо тихой подмены озвучки.
+        if (preferred != null && preferred.video.dubbing == targetVideo.dubbing) {
+            return DetailsPlayerSelection.Navigate(preferred.video)
+        }
     }
 
     return if (options.isNotEmpty()) {
-        DetailsPlayerSelection.ShowPicker(BalancerPickerState(video.episode, options))
+        DetailsPlayerSelection.ShowPicker(
+            BalancerPickerState(
+                episodeNumber = video.episode,
+                options = options,
+                preferredPlayerUnavailable = preferredPlayer != PreferredPlayer.NONE,
+            )
+        )
     } else {
-        DetailsPlayerSelection.Navigate(video)
+        DetailsPlayerSelection.Navigate(targetVideo)
     }
 }
 

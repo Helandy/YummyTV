@@ -14,6 +14,7 @@
     <string name="details_balancer_title">Серия %1$s · Балансер</string>
     <string name="details_balancer_unsupported_hint">Будет доступен позже</string>
     <string name="details_balancer_open">Открыть</string>
+    <string name="details_balancer_preferred_unavailable">Предпочитаемого балансера нет у этой озвучки — выберите из доступных</string>
     <string name="details_player_prefix">Плеер </string>
     <string name="details_loading_episodes">Загружаем серии...</string>
     <string name="details_episodes">Серии</string>

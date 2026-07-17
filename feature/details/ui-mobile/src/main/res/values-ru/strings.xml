@@ -40,6 +40,7 @@
     <string name="details_mobile_unsubscribe">Отписаться</string>
     <string name="details_mobile_balancer_title">Серия %1$s · Балансер</string>
     <string name="details_mobile_unsupported_player">%1$s · не поддерживается</string>
+    <string name="details_mobile_balancer_preferred_unavailable">Предпочитаемого балансера нет у этой озвучки — выберите из доступных</string>
     <string name="details_mobile_close">Закрыть</string>
     <string name="details_mobile_cancel">Отмена</string>
     <string name="details_mobile_aired">Вышло: %1$d из %2$s</string>

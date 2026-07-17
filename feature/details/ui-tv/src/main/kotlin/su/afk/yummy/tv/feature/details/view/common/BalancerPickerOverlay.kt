@@ -16,9 +16,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -125,9 +129,19 @@ internal fun BalancerPickerOverlay(
                         color = Color.White.copy(alpha = 0.70f),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
+                    if (picker.preferredPlayerUnavailable) {
+                        Text(
+                            text = stringResource(R.string.details_balancer_preferred_unavailable),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.50f),
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        )
+                    }
                     picker.options.forEachIndexed { idx, option ->
                         BalancerOptionItem(
                             label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
+                            dubbing = option.video.dubbing,
+                            views = option.video.views,
                             focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
                             isSupported = option.isSupported,
                             onFocused = { focusedOptionIndex = idx },
@@ -143,6 +157,8 @@ internal fun BalancerPickerOverlay(
 @Composable
 private fun BalancerOptionItem(
     label: String,
+    dubbing: String,
+    views: Int?,
     focusRequester: FocusRequester?,
     isSupported: Boolean,
     onFocused: () -> Unit,
@@ -174,12 +190,48 @@ private fun BalancerOptionItem(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BalancerOptionTexts(
-                label = label,
-                meta = null,
-                color = textColor,
+            Column(
                 modifier = Modifier.weight(1f),
-            )
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (dubbing.isNotBlank()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = dubbing,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor.copy(alpha = 0.62f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (views != null && views > 0) {
+                            Icon(
+                                imageVector = Icons.Filled.Visibility,
+                                contentDescription = null,
+                                tint = textColor.copy(alpha = 0.62f),
+                                modifier = Modifier.size(13.dp),
+                            )
+                            Text(
+                                text = views.formatCompactCount(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = textColor.copy(alpha = 0.62f),
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+            }
             Text(
                 text = stringResource(R.string.details_balancer_open),
                 style = MaterialTheme.typography.labelSmall,

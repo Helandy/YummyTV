@@ -11,7 +11,11 @@ import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 
 data class BalancerOption(val playerName: String, val video: AnimeVideo, val isSupported: Boolean = true)
-data class BalancerPickerState(val episodeNumber: String, val options: List<BalancerOption>)
+data class BalancerPickerState(
+    val episodeNumber: String,
+    val options: List<BalancerOption>,
+    val preferredPlayerUnavailable: Boolean = false,
+)
 data class SubscriptionOption(
     val key: String,
     val playerId: Int?,

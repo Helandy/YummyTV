@@ -40,6 +40,7 @@
     <string name="details_mobile_unsubscribe">Unsubscribe</string>
     <string name="details_mobile_balancer_title">Episode %1$s · Balancer</string>
     <string name="details_mobile_unsupported_player">%1$s · unsupported</string>
+    <string name="details_mobile_balancer_preferred_unavailable">Your preferred balancer is not available for this dubbing — choose one of these</string>
     <string name="details_mobile_close">Close</string>
     <string name="details_mobile_cancel">Cancel</string>
     <string name="details_mobile_aired">Aired: %1$d of %2$s</string>
