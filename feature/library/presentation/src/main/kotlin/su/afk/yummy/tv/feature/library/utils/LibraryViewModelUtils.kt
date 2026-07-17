@@ -19,5 +19,6 @@ internal fun LibraryTab.userAnimeList(): UserAnimeList? = when (this) {
     LibraryTab.POSTPONED -> UserAnimeList.POSTPONED
     LibraryTab.DROPPED -> UserAnimeList.DROPPED
     LibraryTab.CONTINUE_WATCHING,
+    LibraryTab.HISTORY,
     LibraryTab.FAVORITES -> null
 }

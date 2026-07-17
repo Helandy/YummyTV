@@ -98,7 +98,12 @@ abstract class StorageCleanupDao {
         deleteStaleAccountUserProfileSummaryCaches(minCachedAt)
         deleteOrphanAccountUserProfileWatchTypes()
         deleteOrphanAccountUserProfileWatchHistory()
+
+        deleteStaleDocuments(minCachedAt)
     }
+
+    @Query("DELETE FROM document_cache WHERE cachedAt < :minCachedAt")
+    abstract suspend fun deleteStaleDocuments(minCachedAt: Long)
 
     // region anime details
 

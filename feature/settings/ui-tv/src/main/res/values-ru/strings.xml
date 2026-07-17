@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_tab_posters">Постеры</string>
+    <string name="settings_tab_interface">Интерфейс</string>
     <string name="settings_tab_poster_size">Размер постеров</string>
     <string name="settings_tab_poster_quality">Качество</string>
     <string name="settings_tab_continue_watching">Продолжить</string>
@@ -15,6 +16,15 @@
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">О приложении</string>
     <string name="settings_poster_size_title">Размер постеров на экране</string>
+    <string name="settings_interface_mobile">Мобильный</string>
+    <string name="settings_interface_mobile_hint">Управление с сенсорного экрана</string>
+    <string name="settings_interface_tv">ТВ</string>
+    <string name="settings_interface_tv_hint">Навигация с помощью пульта</string>
+    <string name="settings_interface_confirm_title">Сменить интерфейс?</string>
+    <string name="settings_interface_confirm_message">Переключиться на «%1$s»? Приложение перезапустится, текущий экран закроется.</string>
+    <string name="settings_interface_confirm">Переключить</string>
+    <string name="settings_interface_cancel">Отмена</string>
+    <string name="settings_interface_restart_failed">Интерфейс изменится при следующем запуске приложения</string>
     <string name="settings_poster_quality_title">Качество изображений постеров</string>
     <string name="settings_show_top_title_year">Отображать год у тайтлов в топе</string>
     <string name="settings_show_top_title_year_enabled">Год отображается на карточках тайтлов в топе</string>
@@ -36,6 +46,8 @@
     <string name="settings_details_button_viewing_order">Порядок просмотра</string>
     <string name="settings_details_button_rating">Рейтинг</string>
     <string name="settings_details_button_collections">Коллекции</string>
+    <string name="settings_details_button_reviews">Отзывы</string>
+    <string name="settings_details_button_blogger_videos">Видео блогеров</string>
     <string name="settings_details_button_screenshots">Скриншоты</string>
     <string name="settings_preview_channel_label">Новинки</string>
     <string name="settings_preview_channel_added">Канал добавлен на главный экран</string>

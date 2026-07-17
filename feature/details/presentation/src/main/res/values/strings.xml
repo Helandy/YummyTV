@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_similar_auth_required">Sign in to manage recommendations</string>
+    <string name="details_similar_mutation_error">Could not update recommendations</string>
     <string name="details_load_error">Could not load details</string>
     <string name="details_rating_auth_required">Sign in to rate titles</string>
     <string name="details_quality_auto">auto</string>

@@ -23,11 +23,13 @@ import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.model.CommentSort
+import su.afk.yummy.tv.domain.comments.model.CommentTarget
+import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
-import su.afk.yummy.tv.domain.comments.usecase.AddAnimeCommentUseCase
+import su.afk.yummy.tv.domain.comments.usecase.AddCommentUseCase
 import su.afk.yummy.tv.domain.comments.usecase.DeleteCommentUseCase
-import su.afk.yummy.tv.domain.comments.usecase.GetAnimeCommentsUseCase
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentChildrenUseCase
+import su.afk.yummy.tv.domain.comments.usecase.GetCommentsUseCase
 import su.afk.yummy.tv.domain.comments.usecase.RemoveCommentVoteUseCase
 import su.afk.yummy.tv.domain.comments.usecase.ReportCommentUseCase
 import su.afk.yummy.tv.domain.comments.usecase.UpdateCommentUseCase
@@ -44,7 +46,8 @@ private const val COMMENTS_PAGE_SIZE = 20
 
 @HiltViewModel(assistedFactory = CommentsViewModel.Factory::class)
 class CommentsViewModel @AssistedInject internal constructor(
-    @Assisted private val animeId: Int,
+    @Assisted private val targetType: CommentTargetType,
+    @Assisted private val targetId: Int,
     savedStateHandle: SavedStateHandle,
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
@@ -52,9 +55,9 @@ class CommentsViewModel @AssistedInject internal constructor(
     private val accountNavigator: IAccountNavigator,
     private val settingsStore: SettingsStore,
     private val stringProvider: StringProvider,
-    private val getAnimeComments: GetAnimeCommentsUseCase,
+    private val getComments: GetCommentsUseCase,
     private val getCommentChildren: GetCommentChildrenUseCase,
-    private val addAnimeComment: AddAnimeCommentUseCase,
+    private val addComment: AddCommentUseCase,
     private val updateComment: UpdateCommentUseCase,
     private val deleteComment: DeleteCommentUseCase,
     private val voteComment: VoteCommentUseCase,
@@ -67,8 +70,10 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(animeId: Int): CommentsViewModel
+        fun create(targetType: CommentTargetType, targetId: Int): CommentsViewModel
     }
+
+    private val target = CommentTarget(targetType, targetId)
 
     override fun createInitialState() =
         CommentsState.State(comments = createCommentsFlow(CommentSort.BEST))
@@ -76,7 +81,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     private var visibleComments: Map<Int, CommentUi> = emptyMap()
 
     init {
-        analytics.eventScreenOpened(animeId, currentState.sort)
+        analytics.eventScreenOpened(target, currentState.sort)
         settingsStore.yaniUserId
             .onEach { userId -> setState { copy(currentUserId = userId) } }
             .launchIn(viewModelScope)
@@ -86,18 +91,18 @@ class CommentsViewModel @AssistedInject internal constructor(
         when (event) {
             CommentsState.Event.BackSelected -> nav.back()
             CommentsState.Event.RetrySelected -> {
-                analytics.eventRetrySelected(animeId, currentState.sort)
+                analytics.eventRetrySelected(target, currentState.sort)
                 reloadComments()
             }
 
             CommentsState.Event.RefreshSelected -> {
-                analytics.eventRefreshSelected(animeId, currentState.sort)
+                analytics.eventRefreshSelected(target, currentState.sort)
                 reloadComments(forceRefresh = true)
             }
 
             is CommentsState.Event.SortSelected -> {
                 if (event.sort != currentState.sort) {
-                    analytics.eventSortSelected(animeId, event.sort)
+                    analytics.eventSortSelected(target, event.sort)
                     setState {
                         copy(
                             sort = event.sort,
@@ -123,7 +128,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             is CommentsState.Event.EditSelected -> startEdit(event.commentId)
             is CommentsState.Event.DeleteSelected ->
                 findComment(event.commentId)?.let {
-                    analytics.eventDeleteSelected(animeId, event.commentId)
+                    analytics.eventDeleteSelected(target, event.commentId)
                     setState { copy(pendingDelete = it) }
                 }
 
@@ -132,7 +137,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             is CommentsState.Event.ReportSelected -> {
                 if (!canMutate()) return
                 findComment(event.commentId)?.let {
-                    analytics.eventReportSelected(animeId, event.commentId)
+                    analytics.eventReportSelected(target, event.commentId)
                     setState { copy(pendingReport = it) }
                 }
             }
@@ -148,7 +153,7 @@ class CommentsViewModel @AssistedInject internal constructor(
 
             is CommentsState.Event.AuthorSelected -> {
                 if (event.userId > 0) {
-                    analytics.eventAuthorSelected(animeId, event.userId)
+                    analytics.eventAuthorSelected(target, event.userId)
                     nav.navigate(accountNavigator.getUserProfileDest(event.userId))
                 }
             }
@@ -156,7 +161,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     }
 
     override fun onRetry() {
-        analytics.eventRetrySelected(animeId, currentState.sort)
+        analytics.eventRetrySelected(target, currentState.sort)
         reloadComments()
     }
 
@@ -202,8 +207,9 @@ class CommentsViewModel @AssistedInject internal constructor(
         forceRefresh: Boolean,
     ): OffsetPage<CommentUi> =
         runCatching {
-            getAnimeComments(
-                animeId = animeId,
+            getComments(
+                targetType = targetType,
+                targetId = targetId,
                 limit = limit,
                 skip = skip,
                 sort = sort,
@@ -219,7 +225,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 )
             },
             onFailure = { error ->
-                analytics.eventLoadError(animeId, sort, error)
+                analytics.eventLoadError(target, sort, error)
                 setState {
                     copy(
                         error = error.message ?: stringProvider.get(R.string.comments_load_error),
@@ -240,9 +246,9 @@ class CommentsViewModel @AssistedInject internal constructor(
             setState { copy(isMutating = true) }
             when (val mode = currentState.composerMode) {
                 ComposerMode.New -> runCatching {
-                    addAnimeComment(animeId, CommentDraft(text))
+                    addComment(targetType, targetId, CommentDraft(text))
                 }.onSuccess { created ->
-                    analytics.eventCreated(animeId, created.id)
+                    analytics.eventCreated(target, created.id)
                     setState {
                         copy(
                             isMutating = false,
@@ -259,8 +265,9 @@ class CommentsViewModel @AssistedInject internal constructor(
                 }.onFailure { showMutationError(it) }
 
                 is ComposerMode.Reply -> runCatching {
-                    addAnimeComment(
-                        animeId,
+                    addComment(
+                        targetType,
+                        targetId,
                         CommentDraft(
                             text = text,
                             parentCommentId = mode.parentCommentId,
@@ -268,7 +275,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                         ),
                     )
                 }.onSuccess { created ->
-                    analytics.eventReplyCreated(animeId, created.id)
+                    analytics.eventReplyCreated(target, created.id)
                     resetComposer(isMutating = false)
                     loadChildren(mode.parentCommentId, append = false, forceVisible = true)
                 }.onFailure { showMutationError(it) }
@@ -276,7 +283,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 is ComposerMode.Edit -> runCatching {
                     updateComment(mode.commentId, text)
                 }.onSuccess { updated ->
-                    analytics.eventUpdated(animeId, updated.id)
+                    analytics.eventUpdated(target, updated.id)
                     setState {
                         copy(
                             isMutating = false,
@@ -301,7 +308,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         if (!canMutate()) return
         val comment = findComment(commentId) ?: return
         val parentId = comment.parentId ?: comment.id
-        analytics.eventReplySelected(animeId, commentId)
+        analytics.eventReplySelected(target, commentId)
         setState {
             copy(
                 composerMode = ComposerMode.Reply(
@@ -318,7 +325,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     private fun startEdit(commentId: Int) {
         val comment = findComment(commentId) ?: return
         if (!canEditOrDelete(comment)) return
-        analytics.eventEditSelected(animeId, commentId)
+        analytics.eventEditSelected(target, commentId)
         setState {
             copy(
                 composerMode = ComposerMode.Edit(comment.id),
@@ -335,7 +342,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             runCatching { deleteComment(comment.id) }.fold(
                 onSuccess = { deleted ->
                     if (deleted) {
-                        analytics.eventDeleted(animeId, comment.id)
+                        analytics.eventDeleted(target, comment.id)
                         setState {
                             copy(
                                 isMutating = false,
@@ -368,7 +375,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             runCatching { reportComment(comment.id, reason) }.fold(
                 onSuccess = { reported ->
                     if (reported) {
-                        analytics.eventReported(animeId, comment.id, reason)
+                        analytics.eventReported(target, comment.id, reason)
                         setState { copy(isMutating = false, pendingReport = null) }
                         showToast(R.string.comments_report_sent)
                     } else {
@@ -400,7 +407,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             result.fold(
                 onSuccess = { (voteResult, newVote) ->
                     if (voteResult.success) {
-                        analytics.eventVoteChanged(animeId, commentId, newVote)
+                        analytics.eventVoteChanged(target, commentId, newVote)
                         setState {
                             val updated = visibleCommentTree()
                                 .updateVote(commentId, voteResult, newVote)
@@ -423,16 +430,16 @@ class CommentsViewModel @AssistedInject internal constructor(
     private fun toggleChildren(commentId: Int) {
         val item = findCommentUi(commentId) ?: return
         if (item.childrenVisible) {
-            analytics.eventRepliesHidden(animeId, commentId)
+            analytics.eventRepliesHidden(target, commentId)
             updateCommentOverlay(commentId) { copy(childrenVisible = false) }
             return
         }
         if (item.children.isNotEmpty()) {
-            analytics.eventRepliesShown(animeId, commentId)
+            analytics.eventRepliesShown(target, commentId)
             updateCommentOverlay(commentId) { copy(childrenVisible = true) }
             return
         }
-        analytics.eventRepliesShown(animeId, commentId)
+        analytics.eventRepliesShown(target, commentId)
         loadChildren(commentId, append = false, forceVisible = true)
     }
 
@@ -446,7 +453,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             val skip = if (append) item.children.size else 0
             if (append) {
-                analytics.eventRepliesLoadMoreSelected(animeId, commentId)
+                analytics.eventRepliesLoadMoreSelected(target, commentId)
             }
             setState {
                 val updated = item.copy(
@@ -478,7 +485,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                     }
                 },
                 onFailure = { error ->
-                    analytics.eventRepliesLoadError(animeId, commentId, error)
+                    analytics.eventRepliesLoadError(target, commentId, error)
                     setState {
                         val current = findCommentUi(commentId) ?: item
                         copy(

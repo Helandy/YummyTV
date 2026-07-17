@@ -23,6 +23,7 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodeDubbingsDestinati
 import su.afk.yummy.tv.feature.details.navigator.DetailsEpisodesDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsFullDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsRelationDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSimilarDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSubscriptionsDestination
@@ -30,6 +31,8 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsTrailersDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsViewingOrderDestination
 import su.afk.yummy.tv.feature.details.rating.RatingMobileScreen
 import su.afk.yummy.tv.feature.details.rating.RatingViewModel
+import su.afk.yummy.tv.feature.details.relation.RelationMobileScreen
+import su.afk.yummy.tv.feature.details.relation.RelationViewModel
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsMobileScreen
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsViewModel
 import su.afk.yummy.tv.feature.details.similar.SimilarMobileScreen
@@ -153,6 +156,15 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     CollectionsMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<DetailsRelationDestination> { dest ->
+                val viewModel = hiltViewModel<RelationViewModel, RelationViewModel.Factory>(
+                    key = "mobile-relation-${dest.kind}-${dest.id}-${dest.url}",
+                    creationCallback = { factory -> factory.create(dest.kind, dest.id, dest.url) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    RelationMobileScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
         }

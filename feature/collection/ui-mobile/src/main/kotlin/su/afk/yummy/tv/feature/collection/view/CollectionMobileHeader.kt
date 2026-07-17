@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,7 +30,12 @@ import su.afk.yummy.tv.domain.collection.model.CollectionVote
 internal fun CollectionMobileHeader(
     collection: CollectionDetail,
     isVoteLoading: Boolean,
+    isOwner: Boolean,
+    isMutationLoading: Boolean,
     onVote: (CollectionVote) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onComments: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -51,11 +58,27 @@ internal fun CollectionMobileHeader(
                 lineHeight = 20.sp,
             )
         }
+        if (isOwner) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            ) {
+                Button(onClick = onEdit, enabled = !isMutationLoading) {
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_edit))
+                }
+                OutlinedButton(onClick = onDelete, enabled = !isMutationLoading) {
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_delete))
+                }
+            }
+        }
         CollectionVoteActions(
             collection = collection,
             enabled = !isVoteLoading,
             onVote = onVote,
         )
+        OutlinedButton(onClick = onComments, modifier = Modifier.align(Alignment.End)) {
+            Text(stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_comments))
+        }
     }
 }
 

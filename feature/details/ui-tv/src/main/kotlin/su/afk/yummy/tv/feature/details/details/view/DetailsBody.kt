@@ -38,6 +38,8 @@ internal fun DetailsBody(
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onReviewsSelected: () -> Unit,
+    onBloggerVideosSelected: () -> Unit,
 ) {
     val barFocusRequester = remember { FocusRequester() }
     Box(
@@ -69,6 +71,8 @@ internal fun DetailsBody(
             onScreenshotsSelected = onScreenshotsSelected,
             onRatingScreenSelected = onRatingScreenSelected,
             onCollectionsSelected = onCollectionsSelected,
+            onReviewsSelected = onReviewsSelected,
+            onBloggerVideosSelected = onBloggerVideosSelected,
         )
     }
 }

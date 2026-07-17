@@ -1,0 +1,5 @@
+<resources>
+    <string name="reviews_auth_required">Войдите, чтобы проголосовать</string>
+    <string name="reviews_vote_error">Не удалось сохранить голос</string>
+    <string name="reviews_delete_error">Не удалось удалить отзыв</string>
+</resources>

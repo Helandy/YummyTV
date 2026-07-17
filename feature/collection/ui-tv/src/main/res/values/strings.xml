@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="collection_comments">Comments</string>
     <string name="retry">Retry</string>
     <string name="collection_catalog_tv_title">Collections</string>
     <string name="collection_catalog_tv_empty">No collections yet</string>
+    <string name="collection_edit">Edit</string>
+    <string name="collection_delete">Delete</string>
+    <string name="collection_edit_dialog_title">Edit collection</string>
+    <string name="collection_title_label">Title</string>
+    <string name="collection_description_label">Description</string>
+    <string name="collection_public_label">Public collection</string>
+    <string name="collection_save">Save</string>
+    <string name="collection_cancel">Cancel</string>
+    <string name="collection_delete_dialog_title">Delete collection?</string>
+    <string name="collection_delete_dialog_message">The collection will be permanently deleted.</string>
 </resources>

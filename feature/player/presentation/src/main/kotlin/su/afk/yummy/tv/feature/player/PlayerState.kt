@@ -50,6 +50,9 @@ class PlayerState {
         val playbackDurationMs: Long = 0L,
         val autoSkipOpeningsEndings: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
+        val pictureInPictureEnabled: Boolean = true,
+        val mobileGestureTutorialReady: Boolean = false,
+        val showMobileGestureTutorial: Boolean = false,
         val mobileVideoScale: Float = 1f,
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,
@@ -135,8 +138,14 @@ class PlayerState {
         /** Новый media item подготовлен после фонового восстановления воспроизведения. */
         data object PlaybackReady : Event
 
+        /** Пользователь завершил одноразовое обучение жестам мобильного плеера. */
+        data object MobileGestureTutorialDismissed : Event
+
         /** Пользователь запросил повторное получение потока. */
         data object RetryStream : Event
+
+        /** TV-приложение ушло в фон с открытым экраном плеера. */
+        data object TvAppBackgrounded : Event
 
         /** Мобильный плеер запросил фоновое обновление подписанного Alloha-потока. */
         /** Пользователь перешёл к оценке текущего тайтла. */

@@ -14,8 +14,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +22,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileProgressMediaCard
-import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
+import su.afk.yummy.tv.core.utils.KodikThumbnail
+import su.afk.yummy.tv.core.utils.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.library.mobile.R
@@ -38,22 +37,16 @@ internal fun LibraryMobileContinueWatchingCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val imageUrl by produceState<String?>(
-        null,
-        entry.screenshotUrl,
-        entry.episodeUrl,
-        entry.poster.bestUrl(),
-    ) {
-        value = resolveContinueWatchingImage(
-            screenshotUrl = entry.screenshotUrl,
-            episodeUrl = entry.episodeUrl,
-            posterUrl = entry.poster.bestUrl(),
-        )
-    }
+    val imageModel = resolveContinueWatchingImageModel(
+        screenshotUrl = entry.screenshotUrl,
+        episodeUrl = entry.episodeUrl,
+        posterUrl = entry.poster.bestUrl(),
+        kodikThumbnailModel = ::KodikThumbnail,
+    )
 
     MobileProgressMediaCard(
         title = entry.animeTitle.ifBlank { episodeLabel },
-        imageUrl = imageUrl,
+        imageModel = imageModel,
         subtitle = episodeLabel,
         trailingSubtitle = entry.timingLabel(),
         progress = entry.watchProgress(),

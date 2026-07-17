@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -65,6 +67,7 @@ import su.afk.yummy.tv.feature.player.utils.buildMobilePlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.utils.gestureIcon
 import su.afk.yummy.tv.feature.player.utils.mobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.utils.toGesturePercentText
+import su.afk.yummy.tv.feature.player.view.tutorial.MobilePlayerGestureTutorial
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -79,7 +82,16 @@ internal fun MobileNativePlayer(
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
+    val tutorialBlocksPlayback =
+        !state.mobileGestureTutorialReady || state.showMobileGestureTutorial
+    val tutorialVisible =
+        state.mobileGestureTutorialReady &&
+                state.showMobileGestureTutorial &&
+                !isInPictureInPictureMode
     val pipSession = remember { MobilePlayerPipController.createSession() }
+    SideEffect {
+        pipSession.setEnabled(state.pictureInPictureEnabled && !tutorialBlocksPlayback)
+    }
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val ui = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val qualities = remember(streamUrl, state.streamQualityMap) {
@@ -118,7 +130,13 @@ internal fun MobileNativePlayer(
     val recoveryHintVisible = state.isAllohaPlaybackRecovering && state.showChangePlayerHint &&
             (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
     val overlay = rememberMobilePlayerOverlayController(
-        canHide = { wantsPlay && settingsMode == null && !isSeeking && !recoveryHintVisible },
+        canHide = {
+            wantsPlay &&
+                    settingsMode == null &&
+                    !isSeeking &&
+                    !recoveryHintVisible &&
+                    !tutorialBlocksPlayback
+        },
         wantsPlay = { wantsPlay },
         isPromptVisible = { nextEpisodePromptState.isVisible },
     )
@@ -136,11 +154,13 @@ internal fun MobileNativePlayer(
         onVideoTransformChanged = onVideoTransformChanged,
     )
     val effectiveSpeed = if (gestures.isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
+    val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
     }
     val notificationMeta = mobilePlayerNotificationMeta(ui)
+    val resolveKodikThumbnail = LocalResolveKodikThumbnailUrl.current
     var notificationArtworkUrl by remember { mutableStateOf<String?>(null) }
     val mediaItemKey = remember(
         playbackConfigKey,
@@ -158,12 +178,18 @@ internal fun MobileNativePlayer(
         )
     }
 
-    LaunchedEffect(ui.activeScreenshotUrl, ui.activeIframeUrl, state.posterUrl) {
+    LaunchedEffect(
+        ui.activeScreenshotUrl,
+        ui.activeIframeUrl,
+        state.posterUrl,
+        resolveKodikThumbnail,
+    ) {
         notificationArtworkUrl = state.posterUrl.takeIf { it.isNotBlank() }
         notificationArtworkUrl = resolveContinueWatchingImage(
             screenshotUrl = ui.activeScreenshotUrl,
             episodeUrl = ui.activeIframeUrl,
             posterUrl = state.posterUrl,
+            resolveKodikThumbnail = resolveKodikThumbnail,
         )
     }
 
@@ -195,12 +221,23 @@ internal fun MobileNativePlayer(
                 artworkUrl = notificationArtworkUrl,
             ),
         )
-        activePlayer.playWhenReady = wantsPlay
+        activePlayer.playWhenReady = playbackShouldPlay
     }
 
     if (player == null) {
         PlayerBlackBackdrop()
         return
+    }
+
+    LaunchedEffect(tutorialBlocksPlayback, isInPictureInPictureMode, player) {
+        if (tutorialBlocksPlayback) {
+            player.pause()
+            overlay.visible = false
+            overlay.cancelHide()
+            settingsMode = null
+            nextEpisodePromptState = PlayerEndPromptState.Hidden
+            gestures.resetForPictureInPicture()
+        }
     }
 
     val progressSource = remember(player, ui) {
@@ -259,8 +296,10 @@ internal fun MobileNativePlayer(
         stepSeekToast = stepSeekToast,
         seekController = seekController,
         fallbackDurationMs = { duration },
-        wantsPlay = { wantsPlay },
-        onWantsPlayChanged = { wantsPlay = it },
+        wantsPlay = { playbackShouldPlay },
+        onWantsPlayChanged = {
+            if (!tutorialBlocksPlayback) wantsPlay = it
+        },
         onEpisodeEnd = ::handleEpisodeEnd,
         onEvent = onEvent,
     )
@@ -271,7 +310,7 @@ internal fun MobileNativePlayer(
         reporter = reporter,
         resumeAfterPause = resumeAfterLifecyclePause,
         fallbackDurationMs = { duration },
-        wantsPlay = { wantsPlay },
+        wantsPlay = { playbackShouldPlay },
         promptState = { nextEpisodePromptState },
         onPromptStateChange = { nextEpisodePromptState = it },
     )
@@ -318,10 +357,10 @@ internal fun MobileNativePlayer(
         }
     }
 
-    LaunchedEffect(player, effectiveSpeed, wantsPlay) {
+    LaunchedEffect(player, effectiveSpeed, playbackShouldPlay) {
         player.setPlaybackSpeed(effectiveSpeed)
-        player.playWhenReady = wantsPlay
-        pipSession.setPlaying(wantsPlay, activity)
+        player.playWhenReady = playbackShouldPlay
+        pipSession.setPlaying(playbackShouldPlay, activity)
     }
 
     MobilePlayerProgressPollingEffect(
@@ -389,7 +428,7 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureLayer(
-            enabled = !isInPictureInPictureMode,
+            enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,
             onTap = { overlay.toggle() },
             onDoubleTap = seekController::stepSeek,
             onTransformStart = gestures::startTransformGesture,
@@ -411,13 +450,15 @@ internal fun MobileNativePlayer(
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(pipSession::enter) },
             showDetails = state.animeId > 0,
-            showPictureInPicture = supportsPictureInPicture && !isInPictureInPictureMode,
-            visible = overlay.visible && !isInPictureInPictureMode,
+            showPictureInPicture = state.pictureInPictureEnabled &&
+                    supportsPictureInPicture &&
+                    !isInPictureInPictureMode,
+            visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
         )
 
         MobilePlayerOverlay(
             modifier = Modifier.align(Alignment.BottomCenter),
-            visible = overlay.visible && !isInPictureInPictureMode,
+            visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
             wantsPlay = wantsPlay,
             displayTime = displayTime,
             duration = duration,
@@ -464,7 +505,9 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerSeekToast(
-            text = stepSeekToast.text.takeUnless { isInPictureInPictureMode },
+            text = stepSeekToast.text.takeUnless {
+                isInPictureInPictureMode || tutorialBlocksPlayback
+            },
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -472,7 +515,9 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerZoomIndicator(
-            visible = gestures.transformGestureActive && !isInPictureInPictureMode,
+            visible = gestures.transformGestureActive &&
+                    !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback,
             scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -480,7 +525,9 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureIndicator(
-            visible = gestures.brightnessGestureActive && !isInPictureInPictureMode,
+            visible = gestures.brightnessGestureActive &&
+                    !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
             percentText = gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
@@ -489,7 +536,9 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureIndicator(
-            visible = gestures.volumeGestureActive && !isInPictureInPictureMode,
+            visible = gestures.volumeGestureActive &&
+                    !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Volume.gestureIcon,
             percentText = gestures.volumeLevel.toGesturePercentText(),
             modifier = Modifier
@@ -498,13 +547,15 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerSpeedBoostIndicator(
-            visible = gestures.isSpeedBoosted && !isInPictureInPictureMode,
+            visible = gestures.isSpeedBoosted &&
+                    !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
         )
 
-        if (recoveryHintVisible) {
+        if (recoveryHintVisible && !tutorialBlocksPlayback) {
             MobilePlayerRecoveryHint(
                 onChangePlayer = if (canChangePlayer) {
                     {
@@ -532,7 +583,8 @@ internal fun MobileNativePlayer(
 
         if (nextEpisodePromptState.isVisible &&
             (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
-            !isInPictureInPictureMode
+            !isInPictureInPictureMode &&
+            !tutorialBlocksPlayback
         ) {
             MobilePlayerEndPrompt(
                 title = when (val prompt = nextEpisodePromptState) {
@@ -568,7 +620,11 @@ internal fun MobileNativePlayer(
         }
 
         val activeSettingsMode = settingsMode
-        if (activeSettingsMode != null && !isInPictureInPictureMode) {
+        if (
+            activeSettingsMode != null &&
+            !isInPictureInPictureMode &&
+            !tutorialBlocksPlayback
+        ) {
             MobilePlayerSettingsSheet(
                 mode = activeSettingsMode,
                 qualities = qualities.keys.toList(),
@@ -610,6 +666,14 @@ internal fun MobileNativePlayer(
                 },
                 onDismiss = { settingsMode = null },
                 initialTrackTab = settingsTrackTab,
+            )
+        }
+
+        if (tutorialVisible) {
+            MobilePlayerGestureTutorial(
+                onDismiss = {
+                    onEvent(PlayerState.Event.MobileGestureTutorialDismissed)
+                },
             )
         }
     }

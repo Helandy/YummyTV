@@ -6,11 +6,16 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +66,8 @@ internal fun NotificationsTab(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val contentFocusRequester = remember { FocusRequester() }
     val openingOverlayFocusRequester = remember { FocusRequester() }
+    val markAllReadFocusRequester = remember { FocusRequester() }
+    val deleteAllFocusRequester = remember { FocusRequester() }
     val notificationIds = remember(state.notifications) { state.notifications.map { it.id } }
     val notificationReadStates =
         remember(state.notifications) { state.notifications.map { it.viewed } }
@@ -90,6 +97,7 @@ internal fun NotificationsTab(
     var pendingDeleteSawLoading by rememberSaveable { mutableStateOf(false) }
     var notificationContentHasFocus by remember { mutableStateOf(false) }
     var showOpeningOverlayImmediately by remember { mutableStateOf(false) }
+    var showDeleteAllConfirm by remember { mutableStateOf(false) }
     val showOpeningOverlay = state.isNotificationOpening || showOpeningOverlayImmediately
 
     fun notificationRowFocusRequester(index: Int): FocusRequester =
@@ -505,17 +513,55 @@ internal fun NotificationsTab(
                 AccountHeader(state = state, onEvent = onEvent)
             }
             item {
-                AccountTabs(
-                    selected = state.selectedTab,
-                    onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
-                    selectedTabFocusRequester = selectedTabFocusRequester,
-                    contentFocusRequester = contentFocusRequester,
-                    onContentRequested = ::requestContentFocusFromTabs,
-                    onMarkAllRead = onMarkAllRead,
-                    markAllReadEnabled = markAllReadEnabled,
-                    autoFocusSelected = !notificationContentHasFocus &&
-                            !suppressNotificationFocusUpdates,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AccountTabs(
+                        selected = state.selectedTab,
+                        onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
+                        selectedTabFocusRequester = selectedTabFocusRequester,
+                        contentFocusRequester = contentFocusRequester,
+                        onContentRequested = ::requestContentFocusFromTabs,
+                        autoFocusSelected = !notificationContentHasFocus &&
+                                !suppressNotificationFocusUpdates,
+                    )
+                    if (state.notificationCounts.any { it.count > 0 } || state.notifications.isNotEmpty()) {
+                        NotificationTypeBadges(state.notificationCounts)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            if (onMarkAllRead != null) {
+                                AccountAction(
+                                    label = stringResource(R.string.account_mark_all_read),
+                                    onClick = onMarkAllRead,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .focusRequester(markAllReadFocusRequester)
+                                        .focusProperties {
+                                            if (state.notifications.isNotEmpty()) {
+                                                right = deleteAllFocusRequester
+                                            }
+                                        },
+                                    enabled = markAllReadEnabled,
+                                )
+                            }
+                            if (state.notifications.isNotEmpty()) {
+                                AccountAction(
+                                    label = stringResource(R.string.account_delete_all_notifications),
+                                    onClick = { showDeleteAllConfirm = true },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .focusRequester(deleteAllFocusRequester)
+                                        .focusProperties {
+                                            if (onMarkAllRead != null) {
+                                                left = markAllReadFocusRequester
+                                            }
+                                        },
+                                    enabled = !state.isNotificationsLoading,
+                                )
+                            }
+                        }
+                    }
+                }
             }
             item {
                 AccountHubError(
@@ -746,6 +792,25 @@ internal fun NotificationsTab(
                     .focusable(),
             )
         }
+    }
+
+    if (showDeleteAllConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllConfirm = false },
+            title = { Text(stringResource(R.string.account_delete_all_notifications_title)) },
+            text = { Text(stringResource(R.string.account_delete_all_notifications_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteAllConfirm = false
+                    onEvent(AccountState.Event.AllNotificationsDeleteSelected)
+                }) { Text(stringResource(R.string.account_delete_all_notifications)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllConfirm = false }) {
+                    Text(stringResource(R.string.account_cancel))
+                }
+            },
+        )
     }
 }
 

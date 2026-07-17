@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.settings
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
@@ -21,6 +22,7 @@ enum class DetailsButtonMoveDirection {
 
 class SettingsState {
     data class State(
+        val interfaceMode: AppInterfaceMode = AppInterfaceMode.MOBILE,
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
@@ -34,6 +36,8 @@ class SettingsState {
         val previewCacheSize: PreviewCacheSize = PreviewCacheSize.MB_100,
         val autoSkipOpeningsEndings: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
+        val pictureInPictureEnabled: Boolean = true,
+        val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val yaniApplicationToken: String = "",
@@ -48,6 +52,9 @@ class SettingsState {
 
         /** Пользователь выбрал тему приложения. */
         data class AppThemeSelected(val theme: AppTheme) : Event
+
+        /** Пользователь подтвердил смену типа интерфейса. */
+        data class InterfaceModeSelected(val mode: AppInterfaceMode) : Event
 
         /** Пользователь выбрал качество постеров. */
         data class PosterQualitySelected(val quality: PosterQuality) : Event
@@ -84,6 +91,12 @@ class SettingsState {
         /** Пользователь переключил автовоспроизведение следующей серии. */
         data object AutoPlayNextEpisodeToggled : Event
 
+        /** Пользователь включил или выключил плавающий режим мобильного плеера. */
+        data object PictureInPictureToggled : Event
+
+        /** Пользователь запросил повторный показ обучения жестам мобильного плеера. */
+        data object MobilePlayerGestureTutorialReset : Event
+
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event
 
@@ -112,5 +125,8 @@ class SettingsState {
         data object DetailsButtonOrderReset : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        /** Сохранён новый тип интерфейса, приложение нужно запустить заново. */
+        data object RestartApplication : Effect
+    }
 }

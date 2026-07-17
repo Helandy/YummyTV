@@ -8,11 +8,14 @@ import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
+import su.afk.yummy.tv.core.storage.document.DocumentCacheStore
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.DefaultAccountMutationErrorNotifier
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
 import su.afk.yummy.tv.data.account.repository.YaniProfileNotificationsRepository
+import su.afk.yummy.tv.data.account.repository.YaniProfileSettingsRepository
+import su.afk.yummy.tv.data.account.repository.YaniUserDirectoryRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserListsRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserProfileContentRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserProfileRepository
@@ -23,6 +26,8 @@ import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
+import su.afk.yummy.tv.domain.account.repository.ProfileSettingsRepository
+import su.afk.yummy.tv.domain.account.repository.UserDirectoryRepository
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import su.afk.yummy.tv.domain.account.repository.UserProfileContentRepository
 import su.afk.yummy.tv.domain.account.repository.UserProfileRepository
@@ -52,11 +57,13 @@ object AccountDataModule {
         settingsStore: SettingsStore,
         yaniAuthPreferences: YaniAuthPreferences,
         accountStorage: AccountStorageStore,
+        documentCache: DocumentCacheStore,
     ): AccountRepository = YaniAccountRepository(
         api,
         settingsStore,
         yaniAuthPreferences,
         accountStorage,
+        documentCache,
     )
 
     @Provides
@@ -143,4 +150,22 @@ object AccountDataModule {
             accountStorage,
             settingsStore,
         )
+
+    @Provides
+    @Singleton
+    fun provideUserDirectoryRepository(
+        api: YaniAccountApi,
+        accountStorage: AccountStorageStore,
+        settingsStore: SettingsStore,
+    ): UserDirectoryRepository =
+        YaniUserDirectoryRepository(api, accountStorage, settingsStore)
+
+    @Provides
+    @Singleton
+    fun provideProfileSettingsRepository(
+        api: YaniAccountApi,
+        accountRepository: AccountRepository,
+        yaniAuthPreferences: YaniAuthPreferences,
+    ): ProfileSettingsRepository =
+        YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences)
 }

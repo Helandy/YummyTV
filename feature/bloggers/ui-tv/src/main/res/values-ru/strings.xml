@@ -1,0 +1,29 @@
+<resources>
+    <string name="blogger_video_comments">Комментарии (%1$d)</string>
+    <string name="blogger_details_title">Блогер</string>
+    <string name="blogger_details_loading">Загружаем страницу блогера…</string>
+    <string name="blogger_subscribers">Подписчиков: %1$d</string>
+    <string name="blogger_videos_count">Видео: %1$d</string>
+    <string name="blogger_subscribers_tv">Подписчиков: %1$s</string>
+    <string name="blogger_videos_count_tv">Видео: %1$s</string>
+    <string name="blogger_comments_phone_only">Комментарии доступны только с телефона</string>
+    <string name="blogger_subscribe">Подписаться</string>
+    <string name="blogger_unsubscribe">Отписаться</string>
+    <string name="blogger_videos_section">Видео</string>
+    <string name="blogger_video_loading">Загружаем видео…</string>
+    <string name="blogger_video_watch">Смотреть</string>
+    <string name="blogger_video_spoiler">Содержит спойлеры</string>
+    <string name="blogger_video_views_tv">Просмотров: %1$s</string>
+    <string name="blogger_videos_retry">Повторить</string>
+    <string name="blogger_open_page">Страница блогера</string>
+    <string name="blogger_videos_title">Видео блогеров</string>
+    <string name="blogger_videos_anime_title">Видео блогеров об этом аниме</string>
+    <string name="blogger_videos_loading">Загружаем видео блогеров…</string>
+    <string name="blogger_videos_error">Не удалось загрузить видео блогеров</string>
+    <string name="blogger_videos_empty">Видео блогеров не найдены</string>
+    <string name="blogger_videos_all">Все</string>
+    <string name="blogger_videos_all_bloggers">Все блогеры</string>
+    <string name="blogger_videos_sort_new">Новые</string>
+    <string name="blogger_videos_sort_top">Популярные</string>
+    <string name="blogger_videos_sort_old">Старые</string>
+</resources>

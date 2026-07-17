@@ -16,6 +16,9 @@ class ScheduleState {
 
     /** Пользовательские действия на экране расписания. */
     sealed interface Event : UiEvent {
+        /** Пользователь вернулся на предыдущий экран. */
+        data object BackSelected : Event
+
         /** Пользователь запросил повторную загрузку расписания. */
         data object RetrySelected : Event
 

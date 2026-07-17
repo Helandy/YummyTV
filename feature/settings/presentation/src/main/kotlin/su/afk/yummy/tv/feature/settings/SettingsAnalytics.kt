@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.settings
 
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
@@ -21,6 +22,14 @@ internal class SettingsAnalytics @Inject constructor(
      */
     fun eventScreenOpened() {
         tracker.track(EVENT_SCREEN_OPENED)
+    }
+
+    /** Пользователь изменил тип интерфейса приложения. */
+    fun eventInterfaceModeSelected(mode: AppInterfaceMode) {
+        tracker.track(
+            EVENT_INTERFACE_MODE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to mode.name.lowercase()),
+        )
     }
 
     /**
@@ -146,6 +155,19 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил плавающий режим мобильного плеера. */
+    fun eventPictureInPictureToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_PICTURE_IN_PICTURE_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /** Пользователь включил повторный показ обучения жестам мобильного плеера. */
+    fun eventMobilePlayerGestureTutorialReset() {
+        tracker.track(EVENT_MOBILE_PLAYER_GESTURE_TUTORIAL_RESET)
+    }
+
     /** Пользователь включил или выключил отображение года у тайтлов в топе. */
     fun eventShowTopTitleYearToggled(enabled: Boolean) {
         tracker.track(
@@ -234,6 +256,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
         const val EVENT_DETAILS_BUTTON_ORDER_MOVED = "settings_details_button_order_moved"
         const val EVENT_DETAILS_BUTTON_ORDER_RESET = "settings_details_button_order_reset"
+        const val EVENT_INTERFACE_MODE_SELECTED = "settings_interface_mode_selected"
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_SHOW_TOP_TITLE_YEAR_TOGGLED =
             "settings_show_top_title_year_toggled"
@@ -255,6 +278,10 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_suggest_next_episode_on_watched_toggled"
         const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
             "settings_auto_play_next_episode_toggled"
+        const val EVENT_PICTURE_IN_PICTURE_TOGGLED =
+            "settings_picture_in_picture_toggled"
+        const val EVENT_MOBILE_PLAYER_GESTURE_TUTORIAL_RESET =
+            "settings_mobile_player_gesture_tutorial_reset"
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
     }
 }

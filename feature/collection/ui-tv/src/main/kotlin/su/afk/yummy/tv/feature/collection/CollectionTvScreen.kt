@@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentF
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.view.CollectionGridPane
+import su.afk.yummy.tv.feature.collection.view.TvCollectionEditDialog
+import su.afk.yummy.tv.feature.collection.view.TvDeleteCollectionDialog
 
 @Preview(
     name = "Default",
@@ -97,7 +99,26 @@ fun CollectionTvScreen(
             )
         }
     }
-    val handleBack = remember(onEvent) { { onEvent(CollectionState.Event.BackSelected) } }
+    val handleBack = remember(
+        onEvent,
+        state.isEditDialogVisible,
+        state.isDeleteDialogVisible,
+        state.isUpdating,
+        state.isDeleting,
+    ) {
+        {
+            when {
+                state.isEditDialogVisible && !state.isUpdating ->
+                    onEvent(CollectionState.Event.EditDismissed)
+
+                state.isDeleteDialogVisible && !state.isDeleting ->
+                    onEvent(CollectionState.Event.DeleteDismissed)
+
+                !state.isEditDialogVisible && !state.isDeleteDialogVisible ->
+                    onEvent(CollectionState.Event.BackSelected)
+            }
+        }
+    }
 
     BackHandler { handleBack() }
 
@@ -115,16 +136,42 @@ fun CollectionTvScreen(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
+    if (state.isEditDialogVisible) {
+        TvCollectionEditDialog(
+            title = state.editTitle,
+            description = state.editDescription,
+            isPublic = state.editIsPublic,
+            isUpdating = state.isUpdating,
+            onTitleChanged = { onEvent(CollectionState.Event.EditTitleChanged(it)) },
+            onDescriptionChanged = { onEvent(CollectionState.Event.EditDescriptionChanged(it)) },
+            onPublicChanged = { onEvent(CollectionState.Event.EditPublicChanged(it)) },
+            onConfirm = { onEvent(CollectionState.Event.EditConfirmed) },
+            onDismiss = { onEvent(CollectionState.Event.EditDismissed) },
+        )
+    }
+    if (state.isDeleteDialogVisible) {
+        TvDeleteCollectionDialog(
+            isDeleting = state.isDeleting,
+            onConfirm = { onEvent(CollectionState.Event.DeleteConfirmed) },
+            onDismiss = { onEvent(CollectionState.Event.DeleteDismissed) },
+        )
+    }
+
     CollectionGridPane(
         collection = state.collection,
         isLoading = state.isLoading,
         isVoteLoading = state.isVoteLoading,
+        isOwner = state.isOwner,
+        isMutationLoading = state.isUpdating || state.isDeleting,
         error = state.error,
         firstVisibleItemIndex = state.firstVisibleItemIndex,
         firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
         onAnimeSelected = onAnimeSelected,
         onScrollPositionChanged = onScrollPositionChanged,
         onVote = onVote,
+        onEdit = { onEvent(CollectionState.Event.EditSelected) },
+        onDelete = { onEvent(CollectionState.Event.DeleteSelected) },
+        onComments = { onEvent(CollectionState.Event.CommentsSelected) },
         onRetry = onRetry,
         loadingFocusRequester = loadingFocusRequester,
         retryFocusRequester = retryFocusRequester,

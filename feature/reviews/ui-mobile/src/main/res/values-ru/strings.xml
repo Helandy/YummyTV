@@ -1,0 +1,26 @@
+<resources>
+    <string name="review_comments">Комментарии (%1$s)</string>
+    <string name="reviews_title">Рецензии</string>
+    <string name="reviews_new">Новые</string>
+    <string name="reviews_old">Старые</string>
+    <string name="reviews_top">Лучшие</string>
+    <string name="reviews_empty">Рецензий пока нет</string>
+    <string name="reviews_error">Не удалось загрузить рецензии</string>
+    <string name="review_like">Нравится</string>
+    <string name="review_dislike">Не нравится</string>
+    <string name="review_views">Просмотры: %1$s</string>
+    <string name="review_count_thousands">%1$sк</string>
+    <string name="review_count_millions">%1$sм</string>
+    <string name="review_details_title">Рецензия</string>
+    <string name="review_anime_label">Тайтл</string>
+    <string name="review_anime_open">Перейти к тайтлу</string>
+    <string name="review_rating_title">Оценки</string>
+    <string name="review_reactions_title">Рецензия была полезна?</string>
+    <string name="review_waiting">Ожидает модерации</string>
+    <string name="review_declined">Отклонён</string>
+    <string name="review_approved">Опубликован</string>
+    <string name="review_delete">Удалить</string>
+    <string name="review_delete_confirm">Удалить этот отзыв?</string>
+    <string name="review_cancel">Отмена</string>
+    <string name="review_retry">Повторить</string>
+</resources>

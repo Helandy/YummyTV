@@ -22,7 +22,6 @@
     <string name="comments_input_hint">Напишите комментарий</string>
     <string name="comments_cancel">Отмена</string>
     <string name="comments_send">Отправить</string>
-    <string name="comments_sending">Отправка...</string>
     <string name="comments_delete_title">Удалить комментарий?</string>
     <string name="comments_delete_message">Это действие нельзя отменить.</string>
     <string name="comments_report_title">Причина жалобы</string>

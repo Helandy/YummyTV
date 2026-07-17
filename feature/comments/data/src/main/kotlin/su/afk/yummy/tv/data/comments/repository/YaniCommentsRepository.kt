@@ -2,7 +2,9 @@ package su.afk.yummy.tv.data.comments.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.comments.CommentsStorageStore
 import su.afk.yummy.tv.core.storage.comments.isFresh
 import su.afk.yummy.tv.data.comments.dto.YaniClaimCommentBodyDto
@@ -10,7 +12,6 @@ import su.afk.yummy.tv.data.comments.dto.YaniPatchCommentBodyDto
 import su.afk.yummy.tv.data.comments.dto.YaniPostCommentBodyDto
 import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentBodyDto
 import su.afk.yummy.tv.data.comments.mapper.toComment
-import su.afk.yummy.tv.data.comments.mapper.toCommentItemEntry
 import su.afk.yummy.tv.data.comments.mapper.toCommentVoteResult
 import su.afk.yummy.tv.data.comments.mapper.toCommentsPage
 import su.afk.yummy.tv.data.comments.mapper.toCommentsPageCache
@@ -18,12 +19,12 @@ import su.afk.yummy.tv.data.comments.network.YaniCommentsApi
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.model.CommentSort
+import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.model.CommentsPage
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 
 private const val COMMENTS_CACHE_TTL_MS = 5 * 60 * 1000L
-private const val COMMENT_SCOPE_ANIME = "anime"
 private const val COMMENT_SCOPE_CHILDREN = "children"
 private const val COMMENT_CHILDREN_SORT = "children"
 private const val COMMENT_CHILDREN_LIMIT = 20
@@ -32,18 +33,21 @@ private const val COMMENT_CACHE_PRUNE_AGE_MS = 24 * 60 * 60 * 1000L
 class YaniCommentsRepository(
     private val api: YaniCommentsApi,
     private val commentsStorage: CommentsStorageStore,
+    private val settingsStore: SettingsStore,
 ) : CommentsRepository {
 
-    override suspend fun getAnimeComments(
-        animeId: Int,
+    override suspend fun getComments(
+        targetType: CommentTargetType,
+        targetId: Int,
         limit: Int,
         skip: Int,
         sort: CommentSort,
         forceRefresh: Boolean,
     ) = withContext(Dispatchers.IO) {
+        val scopeType = cacheScope(targetType.apiValue)
         val stored = commentsStorage.getPage(
-            scopeType = COMMENT_SCOPE_ANIME,
-            ownerId = animeId,
+            scopeType = scopeType,
+            ownerId = targetId,
             sort = sort.apiValue,
             limit = limit,
             skip = skip,
@@ -53,7 +57,7 @@ class YaniCommentsRepository(
         }
 
         try {
-            fetchAnimeCommentsFromNetwork(animeId, limit, skip, sort)
+            fetchCommentsFromNetwork(targetType, targetId, limit, skip, sort, scopeType)
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
@@ -65,8 +69,9 @@ class YaniCommentsRepository(
         commentId: Int,
         skip: Int,
     ) = withContext(Dispatchers.IO) {
+        val scopeType = cacheScope(COMMENT_SCOPE_CHILDREN)
         val stored = commentsStorage.getPage(
-            scopeType = COMMENT_SCOPE_CHILDREN,
+            scopeType = scopeType,
             ownerId = commentId,
             sort = COMMENT_CHILDREN_SORT,
             limit = COMMENT_CHILDREN_LIMIT,
@@ -77,7 +82,7 @@ class YaniCommentsRepository(
         }
 
         try {
-            fetchCommentChildrenFromNetwork(commentId, skip)
+            fetchCommentChildrenFromNetwork(commentId, skip, scopeType)
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
@@ -85,13 +90,15 @@ class YaniCommentsRepository(
         }
     }
 
-    override suspend fun addAnimeComment(
-        animeId: Int,
+    override suspend fun addComment(
+        targetType: CommentTargetType,
+        targetId: Int,
         draft: CommentDraft,
     ) = withContext(Dispatchers.IO) {
         val parentCommentId = draft.parentCommentId
-        val comment = api.addAnimeComment(
-            animeId = animeId,
+        val comment = api.addComment(
+            targetType = targetType.apiValue,
+            targetId = targetId,
             body = YaniPostCommentBodyDto(
                 text = draft.text,
                 parentComment = parentCommentId,
@@ -99,9 +106,13 @@ class YaniCommentsRepository(
             ),
         ).response.toComment()
         if (parentCommentId != null) {
-            commentsStorage.invalidateScope(COMMENT_SCOPE_CHILDREN, parentCommentId)
+            commentsStorage.invalidateScopePrefix(
+                cacheScopePrefix(COMMENT_SCOPE_CHILDREN),
+                parentCommentId,
+            )
+            commentsStorage.invalidateScopePrefix(cacheScopePrefix(targetType.apiValue), targetId)
         } else {
-            commentsStorage.invalidateScope(COMMENT_SCOPE_ANIME, animeId)
+            commentsStorage.invalidateScopePrefix(cacheScopePrefix(targetType.apiValue), targetId)
         }
         comment
     }
@@ -113,7 +124,7 @@ class YaniCommentsRepository(
         api.updateComment(commentId, YaniPatchCommentBodyDto(text))
             .response
             .let { dto ->
-                commentsStorage.updateComment(dto.toDetachedCacheEntry())
+                commentsStorage.deleteComment(commentId)
                 dto.toComment()
             }
     }
@@ -135,12 +146,7 @@ class YaniCommentsRepository(
             .toCommentVoteResult()
             .also { result ->
                 if (result.success) {
-                    commentsStorage.updateVote(
-                        commentId,
-                        result.likes,
-                        result.dislikes,
-                        vote.apiValue
-                    )
+                    commentsStorage.deleteComment(commentId)
                 }
             }
     }
@@ -150,12 +156,7 @@ class YaniCommentsRepository(
             api.removeCommentVote(commentId).response.toCommentVoteResult()
                 .also { result ->
                     if (result.success) {
-                        commentsStorage.updateVote(
-                            commentId,
-                            result.likes,
-                            result.dislikes,
-                            CommentVote.NEUTRAL.apiValue,
-                        )
+                        commentsStorage.deleteComment(commentId)
                     }
                 }
         }
@@ -167,16 +168,18 @@ class YaniCommentsRepository(
         api.reportComment(commentId, YaniClaimCommentBodyDto(reason.apiValue)).response
     }
 
-    private suspend fun fetchAnimeCommentsFromNetwork(
-        animeId: Int,
+    private suspend fun fetchCommentsFromNetwork(
+        targetType: CommentTargetType,
+        targetId: Int,
         limit: Int,
         skip: Int,
         sort: CommentSort,
+        cacheScopeType: String,
     ): CommentsPage {
         return savePage(
-            dto = api.getAnimeComments(animeId, limit, skip, sort.apiValue),
-            scopeType = COMMENT_SCOPE_ANIME,
-            ownerId = animeId,
+            dto = api.getComments(targetType.apiValue, targetId, limit, skip, sort.apiValue),
+            scopeType = cacheScopeType,
+            ownerId = targetId,
             sort = sort.apiValue,
             limit = limit,
             skip = skip,
@@ -186,10 +189,11 @@ class YaniCommentsRepository(
     private suspend fun fetchCommentChildrenFromNetwork(
         commentId: Int,
         skip: Int,
+        cacheScopeType: String,
     ): CommentsPage {
         return savePage(
             dto = api.getCommentChildren(commentId, skip),
-            scopeType = COMMENT_SCOPE_CHILDREN,
+            scopeType = cacheScopeType,
             ownerId = commentId,
             sort = COMMENT_CHILDREN_SORT,
             limit = COMMENT_CHILDREN_LIMIT,
@@ -221,13 +225,11 @@ class YaniCommentsRepository(
         return cache.toCommentsPage()
     }
 
-    private fun su.afk.yummy.tv.data.comments.dto.YaniCommentDto.toDetachedCacheEntry() =
-        toCommentItemEntry(
-            scopeType = "",
-            ownerId = 0,
-            sort = "",
-            limit = 0,
-            skip = 0,
-            position = 0,
-        )
+    private suspend fun cacheScope(scopeType: String): String {
+        val userId = settingsStore.yaniUserId.first().coerceAtLeast(0)
+        val language = settingsStore.yaniContentLanguage.first().apiCode
+        return "${cacheScopePrefix(scopeType)}$userId:$language"
+    }
+
+    private fun cacheScopePrefix(scopeType: String): String = "$scopeType:"
 }

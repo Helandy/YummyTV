@@ -11,13 +11,26 @@ import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 class CollectionsCatalogState {
     data class State(
         val items: Flow<PagingData<CollectionSummary>> = flowOf(PagingData.empty()),
+        val isCreateDialogVisible: Boolean = false,
+        val createTitle: String = "",
+        val createDescription: String = "",
+        val isCreatePublic: Boolean = true,
+        val isCreating: Boolean = false,
     ) : UiState
 
     sealed interface Event : UiEvent {
         data object BackSelected : Event
         data object RetrySelected : Event
+        data object CreateSelected : Event
+        data object CreateDismissed : Event
+        data object CreateConfirmed : Event
+        data class CreateTitleChanged(val title: String) : Event
+        data class CreateDescriptionChanged(val description: String) : Event
+        data class CreatePublicChanged(val isPublic: Boolean) : Event
         data class CollectionSelected(val collectionId: Int) : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data class ShowToast(val message: String) : Effect
+    }
 }

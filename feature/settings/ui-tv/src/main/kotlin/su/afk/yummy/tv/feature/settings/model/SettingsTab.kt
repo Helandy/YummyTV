@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import su.afk.yummy.tv.feature.settings.R
 
 internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
+    INTERFACE(R.string.settings_tab_interface),
     THEME(R.string.settings_tab_theme),
     PLAYER(R.string.settings_tab_player),
     POSTER_SIZE(R.string.settings_tab_poster_size),

@@ -140,6 +140,8 @@ fun DetailsMobileScreen(
                             onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
                             onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
                             onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                            onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                            onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }

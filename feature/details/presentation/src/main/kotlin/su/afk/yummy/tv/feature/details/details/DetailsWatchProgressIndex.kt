@@ -52,10 +52,14 @@ data class DetailsWatchProgressIndex(
                 it.positionMs
             })
 
-    fun latestMeaningful(animeId: Int): AnimeWatchProgress? =
-        entries
-            .filter { it.animeId == animeId && it.isMeaningfulProgress() }
-            .maxByOrNull { it.updatedAt }
+    fun latestMeaningful(animeId: Int): AnimeWatchProgress? {
+        val meaningful = entries.filter { it.animeId == animeId && it.isMeaningfulProgress() }
+        // Незавершённый эпизод важнее уже просмотренного, даже если у просмотренного
+        // updatedAt новее (например, из-за повторного открытия или серверной синхронизации) —
+        // иначе "продолжить просмотр" откатывается на давно закрытую серию.
+        val inProgress = meaningful.filter { it.isContinueWatchingProgress() }
+        return inProgress.maxByOrNull { it.updatedAt } ?: meaningful.maxByOrNull { it.updatedAt }
+    }
 
     companion object {
         val Empty = DetailsWatchProgressIndex()

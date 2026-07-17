@@ -9,6 +9,14 @@ class AnimeStorageStore(private val dao: AnimeStorageDao) {
         dao.replaceDetails(cache)
     }
 
+    suspend fun deleteDetails(animeId: Int, language: String) {
+        dao.deleteDetails(animeId, language)
+    }
+
+    suspend fun expireAllDetails() {
+        dao.expireAllDetails()
+    }
+
     suspend fun getVideos(animeId: Int, language: String): AnimeVideosCache? =
         dao.getVideos(animeId, language)
 

@@ -1,0 +1,18 @@
+<resources>
+    <string name="posts_comments">Комментарии (%1$d)</string>
+    <string name="posts_title">Новости</string>
+    <string name="posts_all">Все</string>
+    <string name="posts_new">Новые</string>
+    <string name="posts_old">Старые</string>
+    <string name="posts_best">Лучшие</string>
+    <string name="posts_empty">Публикаций пока нет</string>
+    <string name="posts_error">Не удалось загрузить новости</string>
+    <string name="posts_retry">Повторить</string>
+    <string name="posts_back">Назад</string>
+    <string name="posts_related_anime">Связанные аниме</string>
+    <string name="posts_views">Просмотров: %1$d</string>
+    <string name="posts_views_short">Просмотров: %1$s</string>
+    <string name="posts_count_thousands">%1$sк</string>
+    <string name="posts_count_millions">%1$s млн</string>
+    <string name="posts_comments_phone_only">Комментарии доступны в приложении на телефоне</string>
+</resources>

@@ -24,6 +24,7 @@ internal class PlayerProgressHandler @Inject constructor(
         context: PlayerProgressContext,
         snapshot: PlayerProgressSnapshot,
         forceRemoteSync: Boolean = false,
+        syncRemote: Boolean = true,
     ) {
         if (snapshot.durationMs <= 0) return
         val savedSnapshot = snapshot.withFullTimingIfWatched()
@@ -46,7 +47,7 @@ internal class PlayerProgressHandler @Inject constructor(
             )
         }
 
-        syncRemoteProgress(savedSnapshot, force = forceRemoteSync)
+        if (syncRemote) syncRemoteProgress(savedSnapshot, force = forceRemoteSync)
     }
 
     suspend fun saveContinueTarget(

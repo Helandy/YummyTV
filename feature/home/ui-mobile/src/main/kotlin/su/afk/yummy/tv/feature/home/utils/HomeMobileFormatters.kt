@@ -2,24 +2,16 @@ package su.afk.yummy.tv.feature.home.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.mobile.R
 
 internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this) {
+    HomeFeedSectionType.SCHEDULE,
     HomeFeedSectionType.NEW_RELEASES,
     HomeFeedSectionType.RECOMMENDATIONS,
     HomeFeedSectionType.COLLECTIONS -> false
-}
-
-internal suspend fun HomeContinueWatchingItem.resolveMobileContinueWatchingImage(): String? {
-    return resolveContinueWatchingImage(
-        screenshotUrl = screenshotUrl,
-        episodeUrl = episodeUrl,
-        posterUrl = poster.bestUrl(),
-    )
 }
 
 @Composable

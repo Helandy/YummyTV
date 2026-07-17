@@ -67,3 +67,17 @@ data class CommentVoteResult(
     val dislikes: Int,
     val success: Boolean,
 )
+
+enum class CommentTargetType(val apiValue: String) {
+    ANIME("anime"),
+    POST("post"),
+    REVIEW("review"),
+    USER("user"),
+    BLOG_VIDEO("blogvideo"),
+    COLLECTION("collection"),
+}
+
+data class CommentTarget(
+    val type: CommentTargetType,
+    val id: Int,
+)

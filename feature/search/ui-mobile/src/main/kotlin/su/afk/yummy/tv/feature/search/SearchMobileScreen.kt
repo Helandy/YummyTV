@@ -141,7 +141,10 @@ fun SearchMobileScreen(
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(
-                    onClick = { onEvent(SearchState.Event.SearchSubmitted) },
+                    onClick = {
+                        keyboardController?.hide()
+                        onEvent(SearchState.Event.SearchSubmitted)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(

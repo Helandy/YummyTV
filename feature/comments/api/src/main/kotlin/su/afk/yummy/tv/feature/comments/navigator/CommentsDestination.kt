@@ -4,4 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AnimeCommentsDestination(val animeId: Int) : NavKey
+data class CommentsDestination(
+    val targetType: String,
+    val targetId: Int,
+) : NavKey

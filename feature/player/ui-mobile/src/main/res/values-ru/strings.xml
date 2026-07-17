@@ -18,4 +18,21 @@
     <string name="player_mobile_pip_pause">Пауза</string>
     <string name="player_mobile_pip_play">Играть</string>
     <string name="player_mobile_pip_forward_10">Вперёд на 10 секунд</string>
+    <string name="player_mobile_gesture_tutorial_heading">Управляйте плеером жестами</string>
+    <string name="player_mobile_gesture_tutorial_step">Шаг %1$d из %2$d</string>
+    <string name="player_mobile_gesture_tutorial_next">Далее</string>
+    <string name="player_mobile_gesture_tutorial_thanks">Спасибо</string>
+    <string name="player_mobile_gesture_tutorial_tap_title">Управление одним касанием</string>
+    <string name="player_mobile_gesture_tutorial_tap_description">Коснитесь экрана один раз, чтобы показать или скрыть элементы управления</string>
+    <string name="player_mobile_gesture_tutorial_seek_title">Быстрая перемотка</string>
+    <string name="player_mobile_gesture_tutorial_seek_description">Дважды коснитесь левой или правой половины экрана, чтобы перемотать назад или вперёд</string>
+    <string name="player_mobile_gesture_tutorial_vertical_title">Яркость и громкость</string>
+    <string name="player_mobile_gesture_tutorial_vertical_description">Проведите вертикально слева для яркости или справа для громкости</string>
+    <string name="player_mobile_gesture_tutorial_brightness">Яркость</string>
+    <string name="player_mobile_gesture_tutorial_volume">Громкость</string>
+    <string name="player_mobile_gesture_tutorial_zoom_title">Масштаб и положение</string>
+    <string name="player_mobile_gesture_tutorial_zoom_description">Разведите два пальца, чтобы приблизить видео, и перемещайте его двумя пальцами</string>
+    <string name="player_mobile_gesture_tutorial_hold_title">Ускорение 2×</string>
+    <string name="player_mobile_gesture_tutorial_hold_description">Удерживайте палец на экране для временного воспроизведения на скорости 2×</string>
+    <string name="player_mobile_gesture_tutorial_illustration">Анимированная подсказка жеста</string>
 </resources>

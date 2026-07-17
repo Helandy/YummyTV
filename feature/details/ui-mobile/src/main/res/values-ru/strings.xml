@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_mobile_ignore_recommendation">Не рекомендовать это аниме</string>
+    <string name="details_mobile_restore_recommendation">Вернуть это аниме в рекомендации</string>
+    <string name="details_mobile_similar_like">Нравится похожий тайтл</string>
+    <string name="details_mobile_similar_dislike">Не нравится похожий тайтл</string>
+    <string name="details_mobile_blogger_videos">Видео блогеров</string>
+    <string name="details_mobile_reviews">Отзывы</string>
+    <string name="details_mobile_reviews_count">Отзывы (%1$d)</string>
     <string name="details_mobile_title">Детали</string>
     <string name="details_mobile_empty">Тайтл не найден</string>
     <string name="details_mobile_back">Назад</string>
@@ -103,6 +110,7 @@
     <string name="details_mobile_trailer_number">Трейлер %1$d</string>
     <string name="details_mobile_other_titles">Другие названия</string>
     <string name="details_mobile_studios">Студии</string>
+    <string name="details_mobile_genres">Жанры</string>
     <string name="details_mobile_creators">Создатели</string>
     <string name="details_mobile_similar_source_ai">Нейросеть</string>
     <string name="details_mobile_similar_source_site">Пользователи</string>
@@ -120,4 +128,6 @@
     <string name="details_mobile_list_stats">В списках</string>
     <string name="details_mobile_list_stat_item">%1$s %2$s</string>
     <string name="details_mobile_title_universe">Вселенная тайтла</string>
+    <string name="details_mobile_related_anime">Связанные аниме</string>
+    <string name="details_mobile_related_empty">Связанные аниме не найдены</string>
 </resources>

@@ -15,6 +15,13 @@ internal class PlayerSettingsHandler @Inject constructor(
 ) {
     val autoSkipOpeningsEndings: Flow<Boolean> = settingsStore.autoSkipOpeningsEndings
     val autoPlayNextEpisode: Flow<Boolean> = settingsStore.autoPlayNextEpisode
+    val pictureInPictureEnabled: Flow<Boolean> = settingsStore.pictureInPictureEnabled
+    val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
+        settingsStore.mobilePlayerGestureTutorialDismissed
+
+    suspend fun dismissMobilePlayerGestureTutorial() {
+        settingsStore.dismissMobilePlayerGestureTutorial()
+    }
 
     fun observeResizeSettings(scope: PlayerResizeSettingsScope): Flow<PlayerResizeSettings> =
         settingsStore.playerResizeSettings(

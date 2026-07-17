@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +10,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +28,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
@@ -32,13 +38,16 @@ import su.afk.yummy.tv.core.preferences.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.utils.openExternalUri
+import su.afk.yummy.tv.core.utils.restartApplication
 import su.afk.yummy.tv.feature.settings.mobile.BuildConfig
 import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePickerOption
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
+import su.afk.yummy.tv.feature.settings.view.MobileInterfaceModeConfirmationDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsMobileAboutRow
+import su.afk.yummy.tv.feature.settings.view.SettingsMobileActionRow
 import su.afk.yummy.tv.feature.settings.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.view.SettingsMobilePickerSheet
@@ -61,9 +70,34 @@ fun SettingsMobileScreen(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     var activePicker by remember { mutableStateOf<SettingsMobilePicker?>(null) }
+    var pendingInterfaceMode by remember { mutableStateOf<AppInterfaceMode?>(null) }
     val title = stringResource(R.string.settings_mobile_title)
     val context = LocalContext.current
     val repositoryUrl = stringResource(R.string.settings_repository_url)
+    val interfaceModeFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        repeat(3) {
+            withFrameNanos { }
+            if (runCatching { interfaceModeFocusRequester.requestFocus() }.getOrDefault(false)) {
+                return@LaunchedEffect
+            }
+        }
+    }
+
+    LaunchedEffect(effect) {
+        effect.collect { settingsEffect ->
+            if (settingsEffect is SettingsState.Effect.RestartApplication &&
+                !context.restartApplication()
+            ) {
+                Toast.makeText(
+                    context,
+                    R.string.settings_interface_restart_failed,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
 
     BaseScreen(
         isScroll = false,
@@ -78,6 +112,20 @@ fun SettingsMobileScreen(
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
+            item {
+                SettingsMobileSection(
+                    title = stringResource(R.string.settings_mobile_section_interface),
+                ) {
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_interface_type),
+                        value = state.interfaceMode.label(),
+                        hint = state.interfaceMode.hint(),
+                        onClick = { activePicker = SettingsMobilePicker.INTERFACE_MODE },
+                        modifier = Modifier.focusRequester(interfaceModeFocusRequester),
+                    )
+                }
+            }
+
             item {
                 SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_appearance)) {
                     SettingsMobileOptionRow(
@@ -152,6 +200,28 @@ fun SettingsMobileScreen(
                         },
                         enabled = state.autoPlayNextEpisode,
                         onClick = { onEvent(SettingsState.Event.AutoPlayNextEpisodeToggled) },
+                    )
+                    SettingsMobileToggleRow(
+                        label = stringResource(R.string.settings_picture_in_picture_label),
+                        hint = if (state.pictureInPictureEnabled) {
+                            stringResource(R.string.settings_picture_in_picture_enabled)
+                        } else {
+                            stringResource(R.string.settings_disabled)
+                        },
+                        enabled = state.pictureInPictureEnabled,
+                        onClick = { onEvent(SettingsState.Event.PictureInPictureToggled) },
+                    )
+                    SettingsMobileActionRow(
+                        label = stringResource(R.string.settings_player_gesture_tutorial_reset),
+                        hint = if (state.mobilePlayerGestureTutorialDismissed) {
+                            stringResource(R.string.settings_player_gesture_tutorial_reset_hint)
+                        } else {
+                            stringResource(R.string.settings_player_gesture_tutorial_reset_done)
+                        },
+                        enabled = state.mobilePlayerGestureTutorialDismissed,
+                        onClick = {
+                            onEvent(SettingsState.Event.MobilePlayerGestureTutorialReset)
+                        },
                     )
                     SettingsMobileToggleRow(
                         label = stringResource(R.string.settings_suggest_next_episode_on_watched_label),
@@ -245,6 +315,25 @@ fun SettingsMobileScreen(
     }
 
     when (activePicker) {
+        SettingsMobilePicker.INTERFACE_MODE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_interface_type),
+            selectedValue = state.interfaceMode,
+            options = AppInterfaceMode.entries.map {
+                SettingsMobilePickerOption(
+                    it,
+                    it.label(),
+                    it.hint(),
+                )
+            },
+            onDismiss = { activePicker = null },
+            onSelected = { selectedMode ->
+                activePicker = null
+                if (selectedMode != state.interfaceMode) {
+                    pendingInterfaceMode = selectedMode
+                }
+            },
+        )
+
         SettingsMobilePicker.THEME -> SettingsMobilePickerSheet(
             title = stringResource(R.string.settings_mobile_theme),
             selectedValue = state.appTheme,
@@ -381,5 +470,16 @@ fun SettingsMobileScreen(
         )
 
         null -> Unit
+    }
+
+    pendingInterfaceMode?.let { targetMode ->
+        MobileInterfaceModeConfirmationDialog(
+            targetModeLabel = targetMode.label(),
+            onConfirm = {
+                pendingInterfaceMode = null
+                onEvent(SettingsState.Event.InterfaceModeSelected(targetMode))
+            },
+            onDismiss = { pendingInterfaceMode = null },
+        )
     }
 }

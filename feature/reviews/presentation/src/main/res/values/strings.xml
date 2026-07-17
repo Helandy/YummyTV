@@ -1,0 +1,5 @@
+<resources>
+    <string name="reviews_auth_required">Sign in to vote</string>
+    <string name="reviews_vote_error">Could not save vote</string>
+    <string name="reviews_delete_error">Review was not deleted</string>
+</resources>

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
@@ -34,6 +37,7 @@ import su.afk.yummy.tv.feature.account.view.AccountMobileLogoutConfirmDialog
 import su.afk.yummy.tv.feature.account.view.AccountMobileNavigationButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileNotificationsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSettingsButton
+import su.afk.yummy.tv.feature.account.view.AccountMobileSitePagesButton
 import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileTabs
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -71,6 +75,7 @@ fun AccountMobileScreen(
 ) {
     var showLogoutConfirm by remember { mutableStateOf(false) }
     val mainActions = LocalMobileMainActions.current
+    val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
 
     BaseScreen(
         isScroll = false,
@@ -91,8 +96,14 @@ fun AccountMobileScreen(
                     item(key = "faq") {
                         AccountMobileFaqButton(onClick = mainActions.onFaqClick)
                     }
+                    item(key = "site_pages") {
+                        AccountMobileSitePagesButton(onClick = mainActions.onSitePagesClick)
+                    }
                     item(key = "settings") {
-                        AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
+                        AccountMobileSettingsButton(
+                            onClick = mainActions.onSettingsClick,
+                            focusRequester = bottomBarUpFocusRequester,
+                        )
                     }
                 }
                 item(key = "downloaded_episodes") {
@@ -102,6 +113,13 @@ fun AccountMobileScreen(
                         onClick = {
                             onEvent(AccountState.Event.DownloadedEpisodesSelected)
                         },
+                    )
+                }
+                item(key = "user_search") {
+                    AccountMobileNavigationButton(
+                        title = stringResource(R.string.account_user_search),
+                        icon = Icons.Filled.PersonSearch,
+                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
                     )
                 }
                 item {
@@ -124,8 +142,14 @@ fun AccountMobileScreen(
                     item(key = "faq") {
                         AccountMobileFaqButton(onClick = mainActions.onFaqClick)
                     }
+                    item(key = "site_pages") {
+                        AccountMobileSitePagesButton(onClick = mainActions.onSitePagesClick)
+                    }
                     item(key = "settings") {
-                        AccountMobileSettingsButton(onClick = mainActions.onSettingsClick)
+                        AccountMobileSettingsButton(
+                            onClick = mainActions.onSettingsClick,
+                            focusRequester = bottomBarUpFocusRequester,
+                        )
                     }
                 }
                 item(key = "downloaded_episodes") {
@@ -135,6 +159,20 @@ fun AccountMobileScreen(
                         onClick = {
                             onEvent(AccountState.Event.DownloadedEpisodesSelected)
                         },
+                    )
+                }
+                item(key = "user_search") {
+                    AccountMobileNavigationButton(
+                        title = stringResource(R.string.account_user_search),
+                        icon = Icons.Filled.PersonSearch,
+                        onClick = { onEvent(AccountState.Event.UserSearchSelected) },
+                    )
+                }
+                item(key = "messages") {
+                    AccountMobileNavigationButton(
+                        title = stringResource(R.string.account_messages),
+                        icon = Icons.Filled.Email,
+                        onClick = { onEvent(AccountState.Event.MessagesSelected) },
                     )
                 }
                 item(key = "profile") {
@@ -147,7 +185,7 @@ fun AccountMobileScreen(
                 item(key = "tabs") {
                     AccountMobileTabs(
                         selected = state.selectedTab,
-                        unreadCount = state.notificationCounts.sumOf { it.count },
+                        unreadCount = state.unreadNotificationCount,
                         onSelected = { onEvent(AccountState.Event.TabSelected(it)) },
                     )
                 }

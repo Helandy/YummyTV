@@ -24,8 +24,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.GlobalToastOverlay
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.feature.main.model.MobileMenuItem
 
 @Composable
@@ -37,6 +40,7 @@ internal fun <T> MobileMainScaffold(
     toastMessage: String?,
     content: @Composable () -> Unit,
 ) {
+    val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         bottomBar = {
@@ -62,6 +66,9 @@ internal fun <T> MobileMainScaffold(
                             MobileNavigationItem(
                                 item = item,
                                 selected = item.destination == selectedDestination,
+                                upFocusRequester = bottomBarUpFocusRequester.takeIf {
+                                    item.destination == selectedDestination
+                                },
                                 onSelected = { onDestinationSelected(item.destination) },
                             )
                         }
@@ -86,9 +93,13 @@ private const val BOTTOM_BAR_ANIMATION_MILLIS = 220
 private fun <T> RowScope.MobileNavigationItem(
     item: MobileMenuItem<T>,
     selected: Boolean,
+    upFocusRequester: FocusRequester?,
     onSelected: () -> Unit,
 ) {
     NavigationBarItem(
+        modifier = Modifier.focusProperties {
+            upFocusRequester?.let { up = it }
+        },
         selected = selected,
         onClick = onSelected,
         icon = {

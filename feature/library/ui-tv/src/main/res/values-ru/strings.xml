@@ -10,6 +10,13 @@
     <string name="library_retry">Повторить</string>
     <string name="library_tab_continue_watching">Продолжить</string>
     <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_tab_history">История</string>
+    <string name="library_tab_history_short">Ис</string>
+    <string name="library_history_sign_in">Войдите, чтобы увидеть историю просмотров</string>
+    <string name="library_history_empty">История просмотров пуста</string>
+    <string name="library_history_error">Не удалось загрузить историю просмотров</string>
+    <string name="library_history_details">Детали</string>
+    <string name="library_history_episode">Серия %1$s</string>
     <string name="library_tab_favorites">Любимые</string>
     <string name="library_tab_favorites_short">Лю</string>
     <string name="library_tab_watching">Смотрю</string>

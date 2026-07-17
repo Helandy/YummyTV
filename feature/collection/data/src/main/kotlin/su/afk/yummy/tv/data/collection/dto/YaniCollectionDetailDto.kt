@@ -14,14 +14,52 @@ data class YaniCollectionListResponseDto(
 )
 
 @Serializable
+data class YaniCreateCollectionBodyDto(
+    @SerialName("public") val isPublic: Boolean,
+    @SerialName("anime_ids") val animeIds: List<Int> = emptyList(),
+    val language: String,
+    val description: String,
+    val title: String,
+)
+
+@Serializable
+data class YaniCreateCollectionResponseDto(
+    val response: YaniCreateCollectionPayloadDto = YaniCreateCollectionPayloadDto(),
+)
+
+@Serializable
+data class YaniCreateCollectionPayloadDto(
+    val id: Int = 0,
+)
+
+@Serializable
 data class YaniCollectionDetailDto(
     val id: Int? = null,
+    val owner: YaniCollectionOwnerDto? = null,
     val title: String = "",
     val description: String = "",
+    @SerialName("public") val isPublic: Boolean = false,
     val views: Int = 0,
     val likes: YaniCollectionLikesDto? = null,
     val animes: List<YaniCollectionAnimeDto> = emptyList(),
     @SerialName("poster_previews") val posterPreviews: List<YaniCollectionPosterDto> = emptyList(),
+)
+
+@Serializable
+data class YaniCollectionOwnerDto(
+    val id: Int? = null,
+)
+
+@Serializable
+data class YaniUpdateCollectionBodyDto(
+    @SerialName("public") val isPublic: Boolean,
+    val description: String,
+    val title: String,
+)
+
+@Serializable
+data class YaniCollectionMutationResponseDto(
+    val response: Boolean = false,
 )
 
 @Serializable

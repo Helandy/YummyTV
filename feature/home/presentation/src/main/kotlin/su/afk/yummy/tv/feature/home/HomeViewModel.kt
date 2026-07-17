@@ -15,15 +15,19 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.utils.runSuspendCatching
+import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
+import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
+import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -37,7 +41,11 @@ class HomeViewModel @Inject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val collectionNavigator: ICollectionNavigator,
+    private val reviewsNavigator: IReviewsNavigator,
+    private val bloggerVideosNavigator: IBloggerVideosNavigator,
+    private val scheduleNavigator: IScheduleNavigator,
     private val getHomeFeed: GetHomeFeedUseCase,
+    private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
@@ -65,6 +73,7 @@ class HomeViewModel @Inject internal constructor(
             }
             .launchIn(viewModelScope)
         observeSupportPrompt()
+        loadBloggerVideos()
         load()
     }
 
@@ -97,6 +106,21 @@ class HomeViewModel @Inject internal constructor(
             HomeState.Event.CollectionsCatalogSelected -> {
                 nav.navigate(collectionNavigator.getCollectionsCatalogDest())
             }
+
+            HomeState.Event.ScheduleSelected -> {
+                nav.navigate(scheduleNavigator.getScheduleDest())
+            }
+
+            HomeState.Event.ReviewsSelected -> {
+                nav.navigate(reviewsNavigator.feed())
+            }
+
+            HomeState.Event.BloggerVideosSelected -> nav.navigate(bloggerVideosNavigator.feed())
+
+            HomeState.Event.BloggerVideosRetrySelected -> loadBloggerVideos()
+
+            is HomeState.Event.BloggerVideoSelected ->
+                setEffect(HomeState.Effect.OpenUri(event.video.watchUrl))
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
         }
@@ -197,6 +221,31 @@ class HomeViewModel @Inject internal constructor(
                             } else {
                                 error
                             },
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun loadBloggerVideos() {
+        viewModelScope.launch {
+            setState { copy(isBloggerVideosLoading = true, bloggerVideosError = null) }
+            runSuspendCatching { getBloggerVideos(limit = 10) }.fold(
+                onSuccess = { videos ->
+                    setState {
+                        copy(
+                            bloggerVideos = videos,
+                            isBloggerVideosLoading = false
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    setState {
+                        copy(
+                            isBloggerVideosLoading = false,
+                            bloggerVideosError = error.message
+                                ?: stringProvider.get(R.string.home_blogger_videos_load_error)
                         )
                     }
                 },

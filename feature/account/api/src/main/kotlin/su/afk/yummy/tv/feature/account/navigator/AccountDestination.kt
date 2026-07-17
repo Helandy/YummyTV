@@ -8,3 +8,15 @@ data object AccountDestination : NavKey
 
 @Serializable
 data class UserProfileDestination(val userId: Int) : NavKey
+
+@Serializable
+data class UserProfileByNicknameDestination(val nickname: String) : NavKey
+
+@Serializable
+data object UserSearchDestination : NavKey
+
+@Serializable
+data object ProfileEditDestination : NavKey
+
+@Serializable
+data object PasswordResetDestination : NavKey

@@ -1,20 +1,31 @@
 package su.afk.yummy.tv.feature.library
 
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 
 enum class LibraryTab {
     CONTINUE_WATCHING,
+    HISTORY,
     FAVORITES,
     WATCHING,
     PLANNED,
     COMPLETED,
     POSTPONED,
     DROPPED,
+
+    ;
+
+    companion object {
+        val visibleEntries: List<LibraryTab> = entries.filterNot { it == HISTORY }
+    }
 }
 
 enum class LibraryRemoveTarget {
@@ -26,6 +37,7 @@ class LibraryState {
     data class State(
         val items: List<LibraryItem> = emptyList(),
         val continueWatching: List<HomeContinueWatchingItem> = emptyList(),
+        val watchHistory: Flow<PagingData<WatchHistoryEntry>> = flowOf(PagingData.empty()),
         val isSignedIn: Boolean = false,
         val isRemoteLoading: Boolean = false,
         val remoteError: String? = null,
@@ -44,6 +56,10 @@ class LibraryState {
 
         /** Пользователь открыл детали элемента продолжения просмотра. */
         data class ContinueWatchingDetailsSelected(val entry: HomeContinueWatchingItem) : Event
+
+        data class HistorySelected(val entry: WatchHistoryEntry) : Event
+
+        data class HistoryDetailsSelected(val animeId: Int) : Event
 
         /** Пользователь выбрал вкладку библиотеки. */
         data class TabSelected(val tab: LibraryTab) : Event

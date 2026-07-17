@@ -94,6 +94,10 @@ class DetailsState {
         /** Пользователь открыл комментарии к этому аниме. */
         data object CommentsSelected : Event
 
+        data object ReviewsSelected : Event
+
+        data object BloggerVideosSelected : Event
+
         /** Пользователь переключил наличие тайтла в библиотеке. */
         data object LibraryToggled : Event
 

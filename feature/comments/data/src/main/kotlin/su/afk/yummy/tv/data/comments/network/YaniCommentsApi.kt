@@ -25,13 +25,14 @@ import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentResponseDto
 class YaniCommentsApi(
     private val clientProvider: YaniHttpClientProvider,
 ) {
-    suspend fun getAnimeComments(
-        animeId: Int,
+    suspend fun getComments(
+        targetType: String,
+        targetId: Int,
         limit: Int,
         skip: Int,
         sort: String,
     ): YaniCommentsResponseDto =
-        clientProvider.get().get("$YANI_BASE_URL/comments/anime/$animeId") {
+        clientProvider.get().get("$YANI_BASE_URL/comments/$targetType/$targetId") {
             parameter("limit", limit)
             parameter("skip", skip)
             parameter("sort", sort)
@@ -45,11 +46,12 @@ class YaniCommentsApi(
             parameter("skip", skip)
         }.body()
 
-    suspend fun addAnimeComment(
-        animeId: Int,
+    suspend fun addComment(
+        targetType: String,
+        targetId: Int,
         body: YaniPostCommentBodyDto,
     ): YaniCommentResponseDto =
-        clientProvider.get().post("$YANI_BASE_URL/comments/anime/$animeId") {
+        clientProvider.get().post("$YANI_BASE_URL/comments/$targetType/$targetId") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()

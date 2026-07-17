@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
+import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.schedule.mobile.R
@@ -62,6 +63,12 @@ fun ScheduleMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        customTopBar = {
+            MobileTopBar(
+                title = stringResource(R.string.schedule_mobile_title),
+                onBack = { onEvent(ScheduleState.Event.BackSelected) },
+            )
+        },
         isLoading = state.isLoading,
         error = state.error?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(ScheduleState.Event.RetrySelected) },

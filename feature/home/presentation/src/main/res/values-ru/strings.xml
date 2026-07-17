@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="home_blogger_videos_load_error">Не удалось загрузить видео блогеров</string>
     <string name="home_load_error">Не удалось загрузить главную страницу</string>
     <string name="home_remote_continue_progress_toast">Найден удалённый прогресс. Серия %1$s (%2$s)</string>
 </resources>

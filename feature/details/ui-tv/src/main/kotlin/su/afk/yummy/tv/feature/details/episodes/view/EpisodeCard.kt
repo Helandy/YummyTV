@@ -22,8 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
+import su.afk.yummy.tv.core.utils.KodikThumbnail
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.timingLabel
@@ -53,11 +51,6 @@ internal fun EpisodeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val screenshotUrl by produceState<String?>(null, kodikIframeUrl) {
-        if (kodikIframeUrl != null) {
-            value = KodikThumbnailExtractor.extract(kodikIframeUrl)
-        }
-    }
     val timingLabel = watchStatus.timingLabel()
     val shape = RoundedCornerShape(8.dp)
     Card(
@@ -77,20 +70,20 @@ internal fun EpisodeCard(
                     .height(ThumbnailHeight)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
-                if (screenshotUrl != null) {
+                // Placeholder with episode number, виден пока превью грузится или его нет
+                Text(
+                    text = video.episode,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White.copy(alpha = 0.15f),
+                    modifier = Modifier.align(Alignment.Center),
+                )
+                val previewModel = kodikIframeUrl?.let(::KodikThumbnail)
+                if (previewModel != null) {
                     AsyncImage(
-                        model = screenshotUrl,
+                        model = previewModel,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    // Placeholder with episode number
-                    Text(
-                        text = video.episode,
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White.copy(alpha = 0.15f),
-                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
 

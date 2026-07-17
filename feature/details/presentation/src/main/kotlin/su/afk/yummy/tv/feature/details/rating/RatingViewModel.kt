@@ -5,6 +5,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
@@ -13,10 +15,11 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeRatingSummaryUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeUserRatingUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetCachedAnimeListStatsUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeRatingUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -29,8 +32,8 @@ class RatingViewModel @AssistedInject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val getAnimeRatingSummary: GetAnimeRatingSummaryUseCase,
+    private val getAnimeListStats: GetAnimeListStatsUseCase,
     private val getAnimeUserRating: GetAnimeUserRatingUseCase,
-    private val getCachedAnimeListStats: GetCachedAnimeListStatsUseCase,
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
     private val settingsStore: SettingsStore,
@@ -57,6 +60,7 @@ class RatingViewModel @AssistedInject internal constructor(
                 analytics.eventRatingRetry(animeId)
                 load()
             }
+
             is RatingState.Event.RatingSelected -> setRating(event.rating)
             RatingState.Event.RatingDeleted -> deleteRating()
         }
@@ -65,9 +69,12 @@ class RatingViewModel @AssistedInject internal constructor(
     private fun load() {
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
-            val rating = runCatching { getAnimeRatingSummary(animeId) }
-            val stats = runCatching { getCachedAnimeListStats(animeId) }.getOrNull()
-            val userRating = runCatching { getAnimeUserRating(animeId) }
+            val (rating, stats, userRating) = coroutineScope {
+                val rating = async { runSuspendCatching { getAnimeRatingSummary(animeId) } }
+                val stats = async { runSuspendCatching { getAnimeListStats(animeId) } }
+                val userRating = async { runSuspendCatching { getAnimeUserRating(animeId) } }
+                Triple(rating.await(), stats.await(), userRating.await())
+            }
 
             if (rating.isFailure && userRating.isFailure) {
                 val error = rating.exceptionOrNull()
@@ -88,7 +95,7 @@ class RatingViewModel @AssistedInject internal constructor(
                     isLoading = false,
                     error = null,
                     ratingSummary = rating.getOrDefault(ratingSummary),
-                    listStats = stats ?: listStats,
+                    listStats = stats.getOrDefault(listStats),
                     selectedUserRating = userRating.getOrNull(),
                 )
             }

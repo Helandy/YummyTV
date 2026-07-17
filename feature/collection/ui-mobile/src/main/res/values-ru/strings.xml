@@ -1,5 +1,19 @@
 <resources>
+    <string name="collection_comments">Комментарии</string>
     <string name="collection_mobile_title">Коллекция</string>
     <string name="collection_catalog_mobile_title">Коллекции</string>
     <string name="collection_mobile_retry">Повторить</string>
+    <string name="collection_create_button">Создать</string>
+    <string name="collection_create_dialog_title">Новая коллекция</string>
+    <string name="collection_create_title_label">Название</string>
+    <string name="collection_create_description_label">Описание</string>
+    <string name="collection_create_public_label">Публичная коллекция</string>
+    <string name="collection_create_confirm">Создать</string>
+    <string name="collection_create_cancel">Отмена</string>
+    <string name="collection_edit">Редактировать</string>
+    <string name="collection_delete">Удалить</string>
+    <string name="collection_edit_dialog_title">Редактирование коллекции</string>
+    <string name="collection_save">Сохранить</string>
+    <string name="collection_delete_dialog_title">Удалить коллекцию?</string>
+    <string name="collection_delete_dialog_message">Коллекция будет удалена без возможности восстановления.</string>
 </resources>

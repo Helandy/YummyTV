@@ -29,6 +29,7 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
 import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
+import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -43,6 +44,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
+import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject internal constructor(
@@ -53,6 +55,8 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val commentsNavigator: ICommentsNavigator,
+    private val reviewsNavigator: IReviewsNavigator,
+    private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val observeAnimeLibraryState: ObserveAnimeLibraryStateUseCase,
     private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
@@ -189,6 +193,13 @@ class DetailsViewModel @AssistedInject internal constructor(
                 analytics.eventDetailsCommentsSelected(animeId)
                 nav.navigate(commentsNavigator.getAnimeCommentsDest(animeId))
             }
+
+            DetailsState.Event.ReviewsSelected -> nav.navigate(reviewsNavigator.list(animeId))
+            DetailsState.Event.BloggerVideosSelected -> nav.navigate(
+                bloggerVideosNavigator.anime(
+                    animeId
+                )
+            )
 
             DetailsState.Event.LibraryToggled ->
                 viewModelScope.launch { toggleLibrary() }

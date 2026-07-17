@@ -38,6 +38,7 @@ import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
+import su.afk.yummy.tv.feature.library.view.LibraryTvHistoryPage
 import su.afk.yummy.tv.feature.library.view.LibraryRemoteErrorBanner
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
 
@@ -79,6 +80,7 @@ fun LibraryTvScreen(
     }
     val hasFocusableGridContent = when (state.selectedTab) {
         LibraryTab.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
+        LibraryTab.HISTORY -> state.isSignedIn
         LibraryTab.FAVORITES -> state.items.any { it.isFavorite }
 
         LibraryTab.PLANNED,
@@ -190,6 +192,14 @@ fun LibraryTvScreen(
                     onRemoveWatchProgress = {
                         onEvent(LibraryState.Event.RemoveWatchProgress(it))
                     },
+                )
+
+                LibraryTab.HISTORY -> LibraryTvHistoryPage(
+                    history = state.watchHistory,
+                    isSignedIn = state.isSignedIn,
+                    gridFocusRequester = gridFocusRequester,
+                    onEntrySelected = { onEvent(LibraryState.Event.HistorySelected(it)) },
+                    onDetailsSelected = { onEvent(LibraryState.Event.HistoryDetailsSelected(it.animeId)) },
                 )
 
                 LibraryTab.FAVORITES -> {

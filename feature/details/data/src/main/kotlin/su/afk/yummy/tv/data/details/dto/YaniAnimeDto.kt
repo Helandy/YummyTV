@@ -29,6 +29,7 @@ data class YaniAnimeResponseDto(
     @SerialName("viewing_order") val viewingOrder: List<YaniViewingOrderItemDto> = emptyList(),
     @SerialName("random_screenshots") val randomScreenshots: List<YaniScreenshotDto> = emptyList(),
     val user: YaniAnimeUserDto? = null,
+    @SerialName("reviews_count") val reviewsCount: Int = 0,
 )
 
 @Serializable
@@ -53,7 +54,57 @@ data class YaniAnimeRatingDto(
 data class YaniAnimeUserDto(val rating: Double? = null)
 
 @Serializable
-data class YaniNamedDto(val id: Int? = null, val title: String = "")
+data class YaniNamedDto(
+    val id: Int? = null,
+    val title: String = "",
+    val url: String? = null,
+    val alias: String? = null,
+)
+
+@Serializable
+data class YaniStudioDetailsDto(val response: YaniStudioResponseDto = YaniStudioResponseDto())
+
+@Serializable
+data class YaniStudioResponseDto(
+    val id: Int? = null,
+    val title: String = "",
+    val url: String = "",
+)
+
+@Serializable
+data class YaniDirectorDetailsDto(val response: YaniDirectorResponseDto = YaniDirectorResponseDto())
+
+@Serializable
+data class YaniDirectorResponseDto(
+    val id: Int? = null,
+    val title: String = "",
+    @SerialName("title_jp") val japaneseTitle: String = "",
+)
+
+@Serializable
+data class YaniGenreDetailsDto(val response: YaniGenreResponseDto = YaniGenreResponseDto())
+
+@Serializable
+data class YaniGenreResponseDto(
+    val id: Int? = null,
+    val title: String = "",
+    val alias: String = "",
+    val url: String = "",
+    val description: String = "",
+    @SerialName("sub_genres") val subGenres: List<YaniNamedDto> = emptyList(),
+)
+
+@Serializable
+data class YaniRelatedAnimeResponseDto(val response: List<YaniRelatedAnimeDto> = emptyList())
+
+@Serializable
+data class YaniRelatedAnimeDto(
+    @SerialName("anime_id") val animeId: Int? = null,
+    val title: String = "",
+    val poster: YaniAnimePosterDto? = null,
+    val rating: YaniAnimeRatingDto = YaniAnimeRatingDto(),
+    val year: Int? = null,
+)
 
 @Serializable
 data class YaniAgeRatingDto(
@@ -145,7 +196,26 @@ data class YaniRecommendationItemDto(
     val rating: YaniAnimeRatingDto = YaniAnimeRatingDto(),
     val type: YaniAnimeTypeDto? = null,
     val year: Int? = null,
+    val likes: YaniRecommendationVoteDto = YaniRecommendationVoteDto(),
 )
+
+@Serializable
+data class YaniRecommendationVoteDto(
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+    val vote: Int = 0,
+)
+
+@Serializable
+data class YaniRecommendationVoteBodyDto(val action: Int)
+
+@Serializable
+data class YaniRecommendationVoteResponseDto(
+    val response: YaniRecommendationVoteDto = YaniRecommendationVoteDto(),
+)
+
+@Serializable
+data class YaniRecommendationMutationResponseDto(val response: Boolean = false)
 
 @Serializable
 data class YaniTrailersResponseDto(val response: List<YaniTrailerDto> = emptyList())

@@ -1,0 +1,18 @@
+<resources>
+    <string name="review_comments">Comments (%1$d)</string>
+    <string name="review_comments_tv">Comments (%1$s)</string>
+    <string name="review_comments_phone_only">Comments are available only in the phone app</string>
+    <string name="reviews_title">Reviews</string>
+    <string name="reviews_new">New</string>
+    <string name="reviews_old">Old</string>
+    <string name="reviews_top">Top</string>
+    <string name="reviews_empty">No reviews yet</string>
+    <string name="reviews_error">Could not load reviews</string>
+    <string name="review_retry">Retry</string>
+    <string name="review_like">Like</string>
+    <string name="review_dislike">Dislike</string>
+    <string name="review_waiting">Awaiting moderation</string>
+    <string name="review_declined">Declined</string>
+    <string name="review_approved">Published</string>
+    <string name="review_views">Views: %1$d</string>
+</resources>

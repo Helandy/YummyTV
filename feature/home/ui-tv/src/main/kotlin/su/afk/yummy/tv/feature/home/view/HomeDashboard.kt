@@ -391,7 +391,7 @@ private fun firstAvailableFocusRequester(
 ): FocusRequester = when {
     hasContinueWatching -> continueWatchingFocusRequester
     hasHero -> heroFocusRequester
-    else -> sectionFocusRequesters.firstOrNull() ?: FocusRequester.Default
+    else -> sectionFocusRequesters.firstOrNull() ?: heroFocusRequester
 }
 
 @OptIn(ExperimentalFoundationApi::class)

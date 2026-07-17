@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -53,6 +54,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
 import su.afk.yummy.tv.domain.account.model.UserPostSummary
@@ -67,6 +69,7 @@ import su.afk.yummy.tv.feature.account.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.view.AccountMobileSurfacePanel
+import su.afk.yummy.tv.feature.account.view.UserProfileActions
 import su.afk.yummy.tv.feature.account.view.toMobileListFilterUi
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -141,8 +144,8 @@ fun UserProfileMobileScreen(
         ) {
             item(key = "header") {
                 UserProfileHeader(
-                    profile = state.profile,
-                    isLoading = state.isOverviewLoading,
+                    state = state,
+                    onEvent = onEvent,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 )
             }
@@ -189,10 +192,11 @@ fun UserProfileMobileScreen(
 
 @Composable
 private fun UserProfileHeader(
-    profile: UserProfileSummary?,
-    isLoading: Boolean,
+    state: UserProfileState.State,
+    onEvent: (UserProfileState.Event) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val profile = state.profile
     AccountMobileSurfacePanel(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -235,7 +239,7 @@ private fun UserProfileHeader(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                } else if (isLoading) {
+                } else if (state.isOverviewLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
@@ -243,8 +247,59 @@ private fun UserProfileHeader(
                 }
             }
         }
+        if (!state.isOwnProfile || state.userId > 0) {
+            Spacer(Modifier.height(14.dp))
+            UserProfileActions(
+                showMessage = !state.isOwnProfile,
+                showFriendship = !state.isOwnProfile,
+                showComments = state.userId > 0,
+                isAuthorized = state.isAuthorized,
+                friendshipStatus = state.friendshipStatus,
+                friendshipLoading = state.isFriendshipLoading,
+                messageLabel = stringResource(R.string.user_profile_message),
+                friendshipLabel = if (state.isAuthorized) {
+                    state.friendshipStatus.friendshipActionLabel()
+                } else {
+                    stringResource(R.string.user_profile_login_to_friend)
+                },
+                commentsLabel = stringResource(R.string.user_profile_comments),
+                onMessageClick = { onEvent(UserProfileState.Event.MessageSelected) },
+                onFriendshipClick = {
+                    onEvent(
+                        if (state.isAuthorized) {
+                            UserProfileState.Event.FriendshipActionSelected
+                        } else {
+                            UserProfileState.Event.LoginToFriendSelected
+                        }
+                    )
+                },
+                onCommentsClick = { onEvent(UserProfileState.Event.CommentsSelected) },
+            )
+        }
+        if (state.friendshipError) {
+            Text(
+                text = stringResource(R.string.user_profile_friendship_error),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
     }
 }
+
+@Composable
+private fun FriendshipStatus.friendshipActionLabel(): String = stringResource(
+    when (this) {
+        FriendshipStatus.NONE -> R.string.user_profile_add_friend
+        FriendshipStatus.FOLLOWERS,
+        FriendshipStatus.REQUESTS -> R.string.user_profile_accept_friend
+
+        FriendshipStatus.FOLLOWING,
+        FriendshipStatus.SENT_REQUESTS -> R.string.user_profile_cancel_friend_request
+
+        FriendshipStatus.FRIENDS -> R.string.user_profile_remove_friend
+    }
+)
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -414,7 +469,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.collectionItems(
         count = content.itemCount,
         key = content.itemKey { "collection_${it.id}" },
     ) { index ->
-        content[index]?.let { item -> UserCollectionRow(item = item) }
+        content[index]?.let { item ->
+            UserCollectionRow(
+                item = item,
+                onClick = {
+                    onEvent(UserProfileState.Event.CollectionSelected(item.id))
+                },
+            )
+        }
     }
     appendStateItem(content, onRetry)
 }
@@ -432,7 +494,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.postItems(
         count = content.itemCount,
         key = content.itemKey { "post_${it.id}" },
     ) { index ->
-        content[index]?.let { item -> UserPostRow(item = item) }
+        content[index]?.let { item ->
+            UserPostRow(
+                item = item,
+                onClick = { onEvent(UserProfileState.Event.PostSelected(item.id)) },
+            )
+        }
     }
     appendStateItem(content, onRetry)
 }
@@ -453,7 +520,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.reviewItems(
         content[index]?.let { item ->
             UserReviewRow(
                 item = item,
-                onClick = { onEvent(UserProfileState.Event.AnimeSelected(item.animeId)) },
+                onClick = { onEvent(UserProfileState.Event.ReviewSelected(item.id)) },
             )
         }
     }
@@ -599,22 +666,22 @@ private fun UserAnimeListRow(item: UserAnimeListItem, onClick: () -> Unit) {
 }
 
 @Composable
-private fun UserCollectionRow(item: AnimeCollectionSummary) {
+private fun UserCollectionRow(item: AnimeCollectionSummary, onClick: () -> Unit) {
     UserProfileMediaRow(
         imageUrl = item.posterUrl,
         title = item.title,
         subtitle = item.description,
-        onClick = null,
+        onClick = onClick,
     )
 }
 
 @Composable
-private fun UserPostRow(item: UserPostSummary) {
+private fun UserPostRow(item: UserPostSummary, onClick: () -> Unit) {
     UserProfileMediaRow(
         imageUrl = item.previewImageUrl,
         title = item.title,
         subtitle = item.contentPreview.ifBlank { item.categoryTitle },
-        onClick = null,
+        onClick = onClick.takeIf { item.id > 0 },
     )
 }
 
@@ -624,7 +691,7 @@ private fun UserReviewRow(item: UserReviewSummary, onClick: () -> Unit) {
         imageUrl = item.animePosterUrl,
         title = item.animeTitle.ifBlank { stringResource(R.string.user_profile_review) },
         subtitle = item.textPreview,
-        onClick = onClick.takeIf { item.animeId > 0 },
+        onClick = onClick.takeIf { item.id > 0 },
     )
 }
 

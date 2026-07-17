@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.collection.catalog
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,17 +13,21 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,6 +46,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.mobile.R
+import su.afk.yummy.tv.feature.collection.view.CreateCollectionDialog
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -57,6 +63,7 @@ fun CollectionsCatalogMobileScreen(
     effect: Flow<CollectionsCatalogState.Effect>,
     onEvent: (CollectionsCatalogState.Event) -> Unit,
 ) {
+    val context = LocalContext.current
     val pagingItems = state.items.collectAsLazyPagingItems()
     val refreshState = pagingItems.loadState.refresh
     val appendState = pagingItems.loadState.append
@@ -65,6 +72,35 @@ fun CollectionsCatalogMobileScreen(
         ?.error
         ?.uiMessage()
     val gridState = rememberLazyGridState()
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is CollectionsCatalogState.Effect.ShowToast ->
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    if (state.isCreateDialogVisible) {
+        CreateCollectionDialog(
+            title = state.createTitle,
+            description = state.createDescription,
+            isPublic = state.isCreatePublic,
+            isCreating = state.isCreating,
+            onTitleChanged = {
+                onEvent(CollectionsCatalogState.Event.CreateTitleChanged(it))
+            },
+            onDescriptionChanged = {
+                onEvent(CollectionsCatalogState.Event.CreateDescriptionChanged(it))
+            },
+            onPublicChanged = {
+                onEvent(CollectionsCatalogState.Event.CreatePublicChanged(it))
+            },
+            onConfirm = { onEvent(CollectionsCatalogState.Event.CreateConfirmed) },
+            onDismiss = { onEvent(CollectionsCatalogState.Event.CreateDismissed) },
+        )
+    }
 
     BaseScreen(
         isScroll = false,
@@ -89,6 +125,19 @@ fun CollectionsCatalogMobileScreen(
                 )
             }
         },
+        floatingActionButtonEnd = {
+            ExtendedFloatingActionButton(
+                onClick = { onEvent(CollectionsCatalogState.Event.CreateSelected) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null,
+                    )
+                },
+                text = { Text(stringResource(R.string.collection_create_button)) },
+            )
+        },
+        floatingActionButtonBottomPadding = 8.dp,
     ) {
         MobilePosterGrid(
             contentPadding = PaddingValues(bottom = 80.dp),

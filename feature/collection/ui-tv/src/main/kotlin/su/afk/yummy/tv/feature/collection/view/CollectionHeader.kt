@@ -30,9 +30,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 
@@ -40,7 +42,12 @@ import su.afk.yummy.tv.domain.collection.model.CollectionVote
 internal fun CollectionHeader(
     collection: CollectionDetail,
     isVoteLoading: Boolean,
+    isOwner: Boolean,
+    isMutationLoading: Boolean,
     onVote: (CollectionVote) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onComments: () -> Unit,
     titleFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
@@ -49,6 +56,8 @@ internal fun CollectionHeader(
     val isTitleFocused by titleInteractionSource.collectIsFocusedAsState()
     val likeFocusRequester = remember { FocusRequester() }
     val dislikeFocusRequester = remember { FocusRequester() }
+    val editFocusRequester = remember { FocusRequester() }
+    val deleteFocusRequester = remember { FocusRequester() }
 
     Row(
         modifier = modifier
@@ -69,7 +78,7 @@ internal fun CollectionHeader(
                     },
                 )
                 .focusProperties {
-                    right = likeFocusRequester
+                    right = if (isOwner) editFocusRequester else likeFocusRequester
                     if (downFocusRequester != null) {
                         down = downFocusRequester
                     }
@@ -105,6 +114,36 @@ internal fun CollectionHeader(
             }
         }
 
+        if (isOwner) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onEdit,
+                    enabled = !isMutationLoading,
+                    modifier = Modifier
+                        .focusRequester(editFocusRequester)
+                        .focusProperties {
+                            if (titleFocusRequester != null) left = titleFocusRequester
+                            down = deleteFocusRequester
+                        },
+                ) {
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_edit))
+                }
+                OutlinedButton(
+                    onClick = onDelete,
+                    enabled = !isMutationLoading,
+                    modifier = Modifier
+                        .focusRequester(deleteFocusRequester)
+                        .focusProperties {
+                            if (titleFocusRequester != null) left = titleFocusRequester
+                            up = editFocusRequester
+                            down = likeFocusRequester
+                        },
+                ) {
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_delete))
+                }
+            }
+        }
+
         CollectionVoteActions(
             collection = collection,
             enabled = !isVoteLoading,
@@ -112,8 +151,12 @@ internal fun CollectionHeader(
             titleFocusRequester = titleFocusRequester,
             likeFocusRequester = likeFocusRequester,
             dislikeFocusRequester = dislikeFocusRequester,
+            leftFocusRequester = if (isOwner) deleteFocusRequester else titleFocusRequester,
             downFocusRequester = downFocusRequester,
         )
+        OutlinedButton(onClick = onComments) {
+            Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_comments))
+        }
     }
 }
 
@@ -125,6 +168,7 @@ private fun CollectionVoteActions(
     titleFocusRequester: FocusRequester?,
     likeFocusRequester: FocusRequester,
     dislikeFocusRequester: FocusRequester,
+    leftFocusRequester: FocusRequester?,
     downFocusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
 ) {
@@ -142,7 +186,7 @@ private fun CollectionVoteActions(
             modifier = Modifier
                 .focusRequester(likeFocusRequester)
                 .collectionVoteFocus(
-                    leftFocusRequester = titleFocusRequester,
+                    leftFocusRequester = leftFocusRequester,
                     downFocusRequester = dislikeFocusRequester,
                 ),
         )
@@ -155,7 +199,7 @@ private fun CollectionVoteActions(
             modifier = Modifier
                 .focusRequester(dislikeFocusRequester)
                 .collectionVoteFocus(
-                    leftFocusRequester = titleFocusRequester,
+                    leftFocusRequester = leftFocusRequester,
                     downFocusRequester = downFocusRequester,
                 ),
         )
@@ -172,7 +216,7 @@ private fun CollectionVoteButton(
     modifier: Modifier = Modifier,
 ) {
     val isLike = vote == CollectionVote.LIKE
-    val voteColor = if (isLike) LikeColor else DislikeColor
+    val voteColor = if (isLike) YummySemanticColors.Like else YummySemanticColors.Dislike
     val tint = if (selected) voteColor else voteColor.copy(alpha = 0.72f)
     OutlinedButton(
         modifier = modifier.width(112.dp),
@@ -207,6 +251,3 @@ private fun Modifier.collectionVoteFocus(
             down = downFocusRequester
         }
     }
-
-private val LikeColor = Color(0xFF69D38B)
-private val DislikeColor = Color(0xFFFF6B6B)

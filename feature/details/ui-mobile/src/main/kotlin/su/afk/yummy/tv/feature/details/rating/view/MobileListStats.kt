@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
+import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.mobile.R
 import java.text.NumberFormat
 
@@ -21,11 +22,11 @@ internal fun MobileListStats(
     modifier: Modifier = Modifier,
 ) {
     val items = listOf(
-        R.string.details_mobile_library_watching to (listStats.counts[0] ?: 0),
-        R.string.details_mobile_library_planned to (listStats.counts[1] ?: 0),
-        R.string.details_mobile_library_completed to (listStats.counts[2] ?: 0),
-        R.string.details_mobile_library_postponed to (listStats.counts[3] ?: 0),
-        R.string.details_mobile_library_dropped to (listStats.counts[4] ?: 0),
+        R.string.details_mobile_library_watching to listStats.count(UserAnimeList.WATCHING),
+        R.string.details_mobile_library_planned to listStats.count(UserAnimeList.PLANNED),
+        R.string.details_mobile_library_completed to listStats.count(UserAnimeList.COMPLETED),
+        R.string.details_mobile_library_postponed to listStats.count(UserAnimeList.POSTPONED),
+        R.string.details_mobile_library_dropped to listStats.count(UserAnimeList.DROPPED),
     ).filter { it.second > 0 }
     if (items.isEmpty()) return
 
@@ -58,3 +59,5 @@ internal fun MobileListStats(
         }
     }
 }
+
+private fun AnimeListStats.count(list: UserAnimeList): Int = counts[list.id] ?: 0

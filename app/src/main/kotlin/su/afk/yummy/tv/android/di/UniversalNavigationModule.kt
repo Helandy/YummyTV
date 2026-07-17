@@ -11,13 +11,18 @@ import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.TvUi
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.home.IHomeNavigator
 import su.afk.yummy.tv.feature.library.ILibraryNavigator
+import su.afk.yummy.tv.feature.messages.IMessagesNavigator
+import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.posts.IPostsNavigator
+import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
@@ -34,6 +39,7 @@ object UniversalNavigationModule {
         RootTab.ACCOUNT to su.afk.yummy.tv.feature.account.navigator.AccountDestination,
         RootTab.SEARCH to su.afk.yummy.tv.feature.search.navigator.SearchDestination(),
         RootTab.HOME to su.afk.yummy.tv.feature.home.navigator.HomeDestination,
+        RootTab.POSTS to su.afk.yummy.tv.feature.posts.navigator.PostsDestination,
         RootTab.COLLECTIONS to
                 su.afk.yummy.tv.feature.collection.navigator.CollectionsCatalogDestination,
         RootTab.SCHEDULE to su.afk.yummy.tv.feature.schedule.navigator.ScheduleDestination,
@@ -46,6 +52,11 @@ object UniversalNavigationModule {
     @Singleton
     fun provideAccountNavigator(): IAccountNavigator =
         su.afk.yummy.tv.feature.account.navigator.AccountNavigator()
+
+    @Provides
+    @Singleton
+    fun provideMessagesNavigator(): IMessagesNavigator =
+        su.afk.yummy.tv.feature.messages.navigator.MessagesNavigator()
 
     @Provides
     @Singleton
@@ -69,6 +80,11 @@ object UniversalNavigationModule {
 
     @Provides
     @Singleton
+    fun provideSitePagesNavigator(): ISitePagesNavigator =
+        su.afk.yummy.tv.feature.pages.navigator.SitePagesNavigator()
+
+    @Provides
+    @Singleton
     fun provideHomeNavigator(): IHomeNavigator =
         su.afk.yummy.tv.feature.home.navigator.HomeNavigator()
 
@@ -81,6 +97,21 @@ object UniversalNavigationModule {
     @Singleton
     fun providePlayerNavigator(): IPlayerNavigator =
         su.afk.yummy.tv.feature.player.navigator.PlayerNavigator()
+
+    @Provides
+    @Singleton
+    fun providePostsNavigator(): IPostsNavigator =
+        su.afk.yummy.tv.feature.posts.navigator.PostsNavigator()
+
+    @Provides
+    @Singleton
+    fun provideReviewsNavigator(): IReviewsNavigator =
+        su.afk.yummy.tv.feature.reviews.navigator.ReviewsNavigator()
+
+    @Provides
+    @Singleton
+    fun provideBloggerVideosNavigator(): IBloggerVideosNavigator =
+        su.afk.yummy.tv.feature.bloggers.navigator.BloggerVideosNavigator()
 
     @Provides
     @Singleton
@@ -140,6 +171,12 @@ object UniversalNavigationModule {
     @Provides
     @IntoSet
     @MobileUi
+    fun provideMobileSitePagesNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.pages.mobile.navigator.SitePagesNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobileHomeNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.home.mobile.navigator.HomeNavRegistrar()
 
@@ -152,8 +189,32 @@ object UniversalNavigationModule {
     @Provides
     @IntoSet
     @MobileUi
+    fun provideMobileMessagesNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.messages.mobile.navigator.MessagesNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobileReviewsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.reviews.mobile.navigator.ReviewsNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobileBloggerVideosNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.bloggers.mobile.navigator.BloggerVideosNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
     fun provideMobilePlayerNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.player.mobile.navigator.PlayerNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @MobileUi
+    fun provideMobilePostsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.posts.mobile.navigator.PostsNavRegistrar()
 
     @Provides
     @IntoSet
@@ -218,8 +279,26 @@ object UniversalNavigationModule {
     @Provides
     @IntoSet
     @TvUi
+    fun provideTvReviewsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.reviews.tv.navigator.ReviewsNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @TvUi
+    fun provideTvBloggerVideosNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.bloggers.tv.navigator.BloggerVideosNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvPlayerNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.player.tv.navigator.PlayerNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @TvUi
+    fun provideTvPostsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.posts.tv.navigator.PostsNavRegistrar()
 
     @Provides
     @IntoSet

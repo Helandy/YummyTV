@@ -1,5 +1,19 @@
 <resources>
+    <string name="collection_comments">Comments</string>
     <string name="collection_mobile_title">Collection</string>
     <string name="collection_catalog_mobile_title">Collections</string>
     <string name="collection_mobile_retry">Retry</string>
+    <string name="collection_create_button">Create</string>
+    <string name="collection_create_dialog_title">New collection</string>
+    <string name="collection_create_title_label">Title</string>
+    <string name="collection_create_description_label">Description</string>
+    <string name="collection_create_public_label">Public collection</string>
+    <string name="collection_create_confirm">Create</string>
+    <string name="collection_create_cancel">Cancel</string>
+    <string name="collection_edit">Edit</string>
+    <string name="collection_delete">Delete</string>
+    <string name="collection_edit_dialog_title">Edit collection</string>
+    <string name="collection_save">Save</string>
+    <string name="collection_delete_dialog_title">Delete collection?</string>
+    <string name="collection_delete_dialog_message">The collection will be permanently deleted.</string>
 </resources>

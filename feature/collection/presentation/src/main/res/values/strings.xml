@@ -4,4 +4,8 @@
     <string name="collection_catalog_load_error">Could not load collections</string>
     <string name="collection_vote_auth_required">Sign in to rate collections</string>
     <string name="collection_vote_error">Could not rate the collection</string>
+    <string name="collection_create_auth_required">Sign in to create a collection</string>
+    <string name="collection_create_error">Could not create the collection</string>
+    <string name="collection_update_error">Could not update the collection</string>
+    <string name="collection_delete_error">Could not delete the collection</string>
 </resources>

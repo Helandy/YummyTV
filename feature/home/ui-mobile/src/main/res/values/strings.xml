@@ -1,4 +1,8 @@
 <resources>
+    <string name="home_mobile_schedule">Schedule</string>
+    <string name="home_mobile_reviews">Reviews</string>
+    <string name="home_mobile_more">More</string>
+    <string name="home_mobile_blogger_videos">From bloggers</string>
     <string name="home_mobile_title">Home</string>
     <string name="home_mobile_search_hint">Search anime</string>
     <string name="home_mobile_retry">Retry</string>

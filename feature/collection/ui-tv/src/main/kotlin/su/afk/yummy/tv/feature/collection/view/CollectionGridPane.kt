@@ -52,12 +52,17 @@ internal fun CollectionGridPane(
     collection: CollectionDetail?,
     isLoading: Boolean,
     isVoteLoading: Boolean,
+    isOwner: Boolean,
+    isMutationLoading: Boolean,
     error: String?,
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
     onAnimeSelected: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
     onVote: (CollectionVote) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onComments: () -> Unit,
     onRetry: () -> Unit,
     loadingFocusRequester: FocusRequester,
     retryFocusRequester: FocusRequester,
@@ -88,11 +93,16 @@ internal fun CollectionGridPane(
             collection != null -> CollectionGrid(
                 collection = collection,
                 isVoteLoading = isVoteLoading,
+                isOwner = isOwner,
+                isMutationLoading = isMutationLoading,
                 firstVisibleItemIndex = firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
                 onAnimeSelected = onAnimeSelected,
                 onScrollPositionChanged = onScrollPositionChanged,
                 onVote = onVote,
+                onEdit = onEdit,
+                onDelete = onDelete,
+                onComments = onComments,
             )
         }
     }
@@ -102,11 +112,16 @@ internal fun CollectionGridPane(
 private fun CollectionGrid(
     collection: CollectionDetail,
     isVoteLoading: Boolean,
+    isOwner: Boolean,
+    isMutationLoading: Boolean,
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
     onAnimeSelected: (Int) -> Unit,
     onScrollPositionChanged: (index: Int, offset: Int) -> Unit,
     onVote: (CollectionVote) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onComments: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val gridState = rememberLazyGridState(
@@ -232,7 +247,12 @@ private fun CollectionGrid(
                 CollectionHeader(
                     collection = collection,
                     isVoteLoading = isVoteLoading,
+                    isOwner = isOwner,
+                    isMutationLoading = isMutationLoading,
                     onVote = onVote,
+                    onEdit = onEdit,
+                    onDelete = onDelete,
+                    onComments = onComments,
                     titleFocusRequester = headerFocusRequester,
                     downFocusRequester = focusRequesters.firstOrNull(),
                 )

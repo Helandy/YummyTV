@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.account.handler
 
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.domain.account.usecase.DeleteAllNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkNotificationReadUseCase
@@ -14,6 +15,7 @@ internal class AccountNotificationHandler @Inject constructor(
     private val markNotificationReadUseCase: MarkNotificationReadUseCase,
     private val markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
     private val deleteNotificationUseCase: DeleteNotificationUseCase,
+    private val deleteAllNotificationsUseCase: DeleteAllNotificationsUseCase,
 ) {
     suspend fun resolveAnimeId(slug: String): AccountOpenNotificationResult =
         runCatching { resolveNotificationAnimeId(slug) }.fold(
@@ -29,6 +31,13 @@ internal class AccountNotificationHandler @Inject constructor(
 
     suspend fun deleteNotification(id: Int): Result<Boolean> =
         runCatching { deleteNotificationUseCase(id) }
+
+    suspend fun deleteAllNotifications(): Result<Boolean> =
+        runCatching {
+            val deleted = deleteAllNotificationsUseCase()
+            if (deleted) settingsStore.setYaniUnreadNotificationsCount(0)
+            deleted
+        }
 
     suspend fun markAllNotificationsRead(): Result<Boolean> =
         runCatching {

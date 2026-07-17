@@ -92,6 +92,7 @@ internal fun LibraryTopTabs(
 private fun LibraryTab.tvTabColor(): Color =
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
+        LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
         LibraryTab.WATCHING -> Color(0xFFFF6B6B)
         LibraryTab.PLANNED -> Color(0xFFA678E8)
         LibraryTab.COMPLETED -> Color(0xFF69D38B)

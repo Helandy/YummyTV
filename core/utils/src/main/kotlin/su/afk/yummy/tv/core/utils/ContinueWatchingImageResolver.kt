@@ -4,12 +4,28 @@ suspend fun resolveContinueWatchingImage(
     screenshotUrl: String,
     episodeUrl: String,
     posterUrl: String?,
+    resolveKodikThumbnail: suspend (iframeUrl: String) -> String?,
 ): String? {
     val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
     val kodikEpisode = episodeUrl.takeIf { it.isKodikSourceUrl() }
     val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
-    return kodikScreenshot?.let { KodikThumbnailExtractor.extract(it) }
-        ?: kodikEpisode?.let { KodikThumbnailExtractor.extract(it) }
+    return kodikScreenshot?.let { resolveKodikThumbnail(it) }
+        ?: kodikEpisode?.let { resolveKodikThumbnail(it) }
+        ?: directScreenshot
+        ?: posterUrl
+}
+
+fun resolveContinueWatchingImageModel(
+    screenshotUrl: String,
+    episodeUrl: String,
+    posterUrl: String?,
+    kodikThumbnailModel: (iframeUrl: String) -> Any?,
+): Any? {
+    val kodikScreenshot = screenshotUrl.takeIf { it.isKodikSourceUrl() }
+    val kodikEpisode = episodeUrl.takeIf { it.isKodikSourceUrl() }
+    val directScreenshot = screenshotUrl.takeIf { it.isLikelyImageUrl() }
+    return kodikScreenshot?.let(kodikThumbnailModel)
+        ?: kodikEpisode?.let(kodikThumbnailModel)
         ?: directScreenshot
         ?: posterUrl
 }

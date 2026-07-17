@@ -18,8 +18,12 @@ class CommentsStorageStore(private val dao: CommentsStorageDao) {
         dao.invalidateScope(scopeType, ownerId)
     }
 
+    suspend fun invalidateScopePrefix(scopePrefix: String, ownerId: Int) {
+        dao.invalidateScopePrefix(scopePrefix, ownerId)
+    }
+
     suspend fun deleteComment(commentId: Int) {
-        dao.deleteItemsByCommentId(commentId)
+        dao.invalidatePagesContainingComment(commentId)
     }
 
     suspend fun updateComment(entry: CommentItemEntry) {

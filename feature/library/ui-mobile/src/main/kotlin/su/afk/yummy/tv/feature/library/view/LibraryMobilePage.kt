@@ -68,6 +68,16 @@ internal fun LibraryMobilePage(
         return
     }
 
+    if (tab == LibraryTab.HISTORY) {
+        LibraryMobileHistoryPage(
+            history = state.watchHistory,
+            isSignedIn = state.isSignedIn,
+            onEntrySelected = { onEvent(LibraryState.Event.HistorySelected(it)) },
+            onDetailsSelected = { onEvent(LibraryState.Event.HistoryDetailsSelected(it.animeId)) },
+        )
+        return
+    }
+
     val libraryItems = when (tab) {
         LibraryTab.FAVORITES -> state.items.filter { it.isFavorite }
         else -> {

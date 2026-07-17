@@ -34,7 +34,13 @@ class AccountState {
         val captchaError: AccountUiError? = null,
         val error: AccountUiError? = null,
         val hubError: AccountUiError? = null,
-    ) : UiState
+    ) : UiState {
+        val unreadNotificationCounts: List<NotificationCount>
+            get() = notificationCounts.filterNot { it.type.equals("message", ignoreCase = true) }
+
+        val unreadNotificationCount: Int
+            get() = unreadNotificationCounts.sumOf { it.count }
+    }
 
     enum class AccountTab {
         STATS,
@@ -78,6 +84,10 @@ class AccountState {
 
         /** Пользователь открыл скачанные серии на устройстве. */
         data object DownloadedEpisodesSelected : Event
+        data object MessagesSelected : Event
+        data object UserSearchSelected : Event
+        data object ProfileEditSelected : Event
+        data object PasswordResetSelected : Event
 
         /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
@@ -87,6 +97,9 @@ class AccountState {
 
         /** Пользователь отметил все уведомления прочитанными. */
         data object AllNotificationsReadSelected : Event
+
+        /** Пользователь удалил все уведомления. */
+        data object AllNotificationsDeleteSelected : Event
 
         /** Пользователь удалил уведомление с указанным идентификатором. */
         data class NotificationDeleteSelected(val id: Int) : Event

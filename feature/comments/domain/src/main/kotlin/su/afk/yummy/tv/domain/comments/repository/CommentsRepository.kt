@@ -4,13 +4,15 @@ import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.model.CommentSort
+import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.model.CommentVoteResult
 import su.afk.yummy.tv.domain.comments.model.CommentsPage
 
 interface CommentsRepository {
-    suspend fun getAnimeComments(
-        animeId: Int,
+    suspend fun getComments(
+        targetType: CommentTargetType,
+        targetId: Int,
         limit: Int,
         skip: Int,
         sort: CommentSort,
@@ -22,8 +24,9 @@ interface CommentsRepository {
         skip: Int,
     ): CommentsPage
 
-    suspend fun addAnimeComment(
-        animeId: Int,
+    suspend fun addComment(
+        targetType: CommentTargetType,
+        targetId: Int,
         draft: CommentDraft,
     ): Comment
 

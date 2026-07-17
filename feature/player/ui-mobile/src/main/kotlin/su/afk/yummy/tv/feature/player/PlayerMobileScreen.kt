@@ -73,7 +73,7 @@ fun PlayerMobileScreen(
         }
     }
 
-    HideMobilePlayerStatusBar()
+    HideMobilePlayerSystemBars()
 
     BackHandler {
         if (showErrorBalancerSheet) {
@@ -217,7 +217,7 @@ fun PlayerMobileScreen(
 }
 
 @Composable
-private fun HideMobilePlayerStatusBar() {
+private fun HideMobilePlayerSystemBars() {
     val context = LocalContext.current
     val view = LocalView.current
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
@@ -230,10 +230,10 @@ private fun HideMobilePlayerStatusBar() {
 
         controller.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        controller.hide(WindowInsetsCompat.Type.statusBars())
+        controller.hide(WindowInsetsCompat.Type.systemBars())
 
         onDispose {
-            controller.show(WindowInsetsCompat.Type.statusBars())
+            controller.show(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior = previousBehavior
         }
     }

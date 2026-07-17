@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_similar_auth_required">Войдите, чтобы управлять рекомендациями</string>
+    <string name="details_similar_mutation_error">Не удалось обновить рекомендации</string>
     <string name="details_load_error">Не удалось загрузить деталку</string>
     <string name="details_rating_auth_required">Для оценки нужно авторизоваться</string>
     <string name="details_quality_auto">авто</string>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="blogger_details_load_error">Не удалось загрузить страницу блогера</string>
+    <string name="blogger_video_load_error">Не удалось загрузить видео</string>
+    <string name="bloggers_auth_required">Войдите в аккаунт, чтобы выполнить это действие</string>
+    <string name="blogger_subscribe_error">Не удалось изменить подписку</string>
+    <string name="blogger_vote_error">Не удалось изменить оценку</string>
+    <string name="blogger_videos_load_error">Не удалось загрузить видео блогеров</string>
+</resources>

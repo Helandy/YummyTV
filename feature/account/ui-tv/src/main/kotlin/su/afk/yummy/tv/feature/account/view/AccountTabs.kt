@@ -5,7 +5,6 @@ package su.afk.yummy.tv.feature.account.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -36,15 +35,12 @@ internal fun AccountTabs(
     selectedTabFocusRequester: FocusRequester? = null,
     contentFocusRequester: FocusRequester? = null,
     onContentRequested: (() -> Unit)? = null,
-    onMarkAllRead: (() -> Unit)? = null,
-    markAllReadEnabled: Boolean = true,
     autoFocusSelected: Boolean = true,
 ) {
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val scope = rememberCoroutineScope()
     val statsFocusRequester = remember { FocusRequester() }
     val notificationsFocusRequester = remember { FocusRequester() }
-    val markAllReadFocusRequester = remember { FocusRequester() }
     val statsRequester =
         if (selected == AccountState.AccountTab.STATS && selectedTabFocusRequester != null) {
             selectedTabFocusRequester
@@ -120,7 +116,7 @@ internal fun AccountTabs(
                     .accountTabFocus(
                         contentFocusRequester = contentFocusRequester,
                         leftFocusRequester = statsRequester,
-                        rightFocusRequester = markAllReadFocusRequester.takeIf { onMarkAllRead != null },
+                        rightFocusRequester = null,
                         onDirectionLeft = null,
                         onFocusSelected = { onSelected(AccountState.AccountTab.NOTIFICATIONS) },
                         onActivated = {
@@ -130,17 +126,6 @@ internal fun AccountTabs(
                         },
                     )
                     .onFocusChanged { if (it.isFocused) onSelected(AccountState.AccountTab.NOTIFICATIONS) },
-            )
-        }
-        if (onMarkAllRead != null) {
-            AccountAction(
-                label = stringResource(R.string.account_mark_all_read),
-                onClick = onMarkAllRead,
-                modifier = Modifier
-                    .width(260.dp)
-                    .focusRequester(markAllReadFocusRequester)
-                    .focusProperties { left = notificationsRequester },
-                enabled = markAllReadEnabled,
             )
         }
     }

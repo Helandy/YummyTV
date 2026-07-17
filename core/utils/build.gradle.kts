@@ -1,5 +1,6 @@
 plugins {
     id("yummytv.android.library")
+    id("yummytv.android.hilt")
 }
 
 android {

@@ -18,7 +18,7 @@ internal fun TrailerMobileCard(
     DetailsMediaCard(
         title = stringResource(R.string.details_mobile_trailer_number, number),
         subtitle = trailer.youtubeWatchUrl ?: trailer.iframeUrl,
-        imageUrl = trailer.youtubeThumbnailUrl,
+        imageModel = trailer.youtubeThumbnailUrl,
         leadingIcon = DetailsPlayIcon,
         mediaWeight = 0.56f,
         onClick = {

@@ -32,8 +32,10 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
+import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.TvKodikBlockedOverlay
+import su.afk.yummy.tv.feature.player.view.TvPlayerBackgroundExitEffect
 import su.afk.yummy.tv.feature.player.view.TvStreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.TvStreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_INLINE_TOAST_DURATION
@@ -59,6 +61,12 @@ fun PlayerTvScreen(
     effect: Flow<PlayerState.Effect>,
     onEvent: (PlayerState.Event) -> Unit,
 ) {
+    val exitState = remember { TvPlayerExitState() }
+    TvPlayerBackgroundExitEffect {
+        exitState.request()
+        onEvent(PlayerState.Event.TvAppBackgrounded)
+    }
+
     val pressBackAgainText = stringResource(R.string.player_press_back_again)
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val uiState = rememberPlayerPlaybackUiState(
@@ -107,6 +115,7 @@ fun PlayerTvScreen(
         } else if (showErrorDubbingPanel) {
             showErrorDubbingPanel = false
         } else if (backPressedOnce) {
+            exitState.request()
             onEvent(PlayerState.Event.Back)
         } else {
             backPressedOnce = true
@@ -170,6 +179,7 @@ fun PlayerTvScreen(
                 playback = uiState,
                 streamUrl = streamUrl,
                 restoreControlFocusTarget = pendingControlFocusTarget,
+                exitState = exitState,
                 onControlFocusRestored = { pendingControlFocusTarget = null },
                 onDubbingSelected = { newIdx, currentPosMs ->
                     pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing

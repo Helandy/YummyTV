@@ -23,7 +23,7 @@ import su.afk.yummy.tv.core.model.anime.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
+import su.afk.yummy.tv.core.utils.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
@@ -48,6 +48,7 @@ import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.episodes.dubbings.episodeDubbingItems
+import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLaunchVideo
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
@@ -76,6 +77,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private val observeVideoDownloadStatuses: ObserveVideoDownloadStatusesUseCase,
     private val stringProvider: StringProvider,
     private val analytics: DetailsAnalytics,
+    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : BaseViewModelNew<EpisodesState.State, EpisodesState.Event, EpisodesState.Effect>(
     savedStateHandle
 ) {
@@ -513,9 +515,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
         val replacementDownloadId = pendingReplacementDownloadId
         viewModelScope.launch {
             val screenshotUrl = episodeVideos.kodikThumbnailIframeUrl()
-                ?.let { iframeUrl ->
-                    runCatching { KodikThumbnailExtractor.extract(iframeUrl) }.getOrNull()
-                }
+                ?.let { resolveKodikThumbnailUrl(it) }
                 .orEmpty()
             val request = VideoDownloadRequest(
                 animeId = animeId,
@@ -574,7 +574,9 @@ class EpisodesViewModel @AssistedInject internal constructor(
             allVideos = allVideos,
             preferredPlayer = preferredPlayerState.value,
         )) {
-            is DetailsPlayerSelection.Navigate -> showEpisodeDubbingPicker(selection.video)
+            is DetailsPlayerSelection.Navigate ->
+                showEpisodeDubbingPicker(selection.video, restrictToBalancer = false)
+
             is DetailsPlayerSelection.ShowPicker -> {
                 reportUnsupportedPlayers(selection.picker)
                 setState { copy(pendingBalancerSelection = selection.picker) }
@@ -582,14 +584,30 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun showEpisodeDubbingPicker(balancerVideo: AnimeVideo) {
+    private fun showEpisodeDubbingPicker(
+        balancerVideo: AnimeVideo,
+        restrictToBalancer: Boolean = true
+    ) {
         val episode = balancerVideo.episode
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        val balancerVideos = allVideos.filter { it.player == balancerVideo.player }
-        val options = balancerVideos.episodeDubbingItems(episode).mapNotNull { item ->
-            balancerVideos.firstOrNull {
-                it.episode == episode && it.dubbing.trim() == item.name
-            }?.let { video -> EpisodesState.EpisodeDubbingOption(video = video, item = item) }
+        // Пользователь явно выбрал балансер в пикере — сужаем озвучки до него.
+        // Если балансер подставился тихо (по предпочтению) — показываем все озвучки со всех балансеров.
+        val candidateVideos = if (restrictToBalancer) {
+            allVideos.filter { it.player == balancerVideo.player }
+        } else {
+            allVideos
+        }
+        val options = candidateVideos.episodeDubbingItems(episode).mapNotNull { item ->
+            val video = if (restrictToBalancer) {
+                candidateVideos.firstOrNull { it.episode == episode && it.dubbing.trim() == item.name }
+            } else {
+                allVideos.selectEpisodeDubbingLaunchVideo(
+                    episode = episode,
+                    dubbingName = item.name,
+                    preferredPlayer = preferredPlayerState.value,
+                )
+            }
+            video?.let { EpisodesState.EpisodeDubbingOption(video = it, item = item) }
         }
         if (options.isEmpty()) {
             navigateToPlayer(balancerVideo)

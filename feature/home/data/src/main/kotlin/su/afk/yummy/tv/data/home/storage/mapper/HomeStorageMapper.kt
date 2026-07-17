@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_CONTINUE_WATCHING
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_HERO
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_RECOMMENDATIONS
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_SCHEDULE
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
@@ -42,6 +43,10 @@ internal fun YaniFeedDto.toHomeFeedCache(
             language = language,
             watchSignature = watchSignature,
             container = HOME_FEED_CONTAINER_HERO,
+        ) + response.schedule.toSeriesEntries(
+            language,
+            watchSignature,
+            HOME_FEED_CONTAINER_SCHEDULE,
         ) + response.newVideos.toNewVideoEntries(language, watchSignature) +
                 response.recommends.toSeriesEntries(
                     language,
@@ -61,6 +66,11 @@ internal fun HomeFeedCache.toHomeFeed(stringProvider: StringProvider): HomeFeed 
             .sortedBy { it.position }
             .map { it.toHomeFeedItem() },
         sections = listOfNotNull(
+            section(
+                type = HomeFeedSectionType.SCHEDULE,
+                title = stringProvider.get(R.string.home_section_schedule),
+                container = HOME_FEED_CONTAINER_SCHEDULE,
+            ),
             section(
                 type = HomeFeedSectionType.NEW_RELEASES,
                 title = stringProvider.get(R.string.home_section_new),

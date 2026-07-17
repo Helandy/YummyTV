@@ -6,6 +6,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -16,13 +17,17 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.YaniApiJson
 import su.afk.yummy.tv.core.network.YaniHttpClientProvider
+import su.afk.yummy.tv.data.account.dto.YaniAnimeListStatDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniAnimeListStatsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeUserRatingDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeUserRatingResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniBooleanResponseDto
@@ -30,21 +35,33 @@ import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniDeleteVideosBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniErrorResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniFriendshipResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniLoginResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationAnimeResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniNotificationCountsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationsResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniOnlineBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniPasswordChangeBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniPasswordChangeResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniPasswordResetBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniPostVideoBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniPostVideoItemDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniProfileUpdateBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniPutVideoBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniRateBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniRatingBucketDto
 import su.afk.yummy.tv.data.account.dto.YaniRatingResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniRegistrationBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniRegistrationVerifyBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniRegistrationVerifyResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniSetFavoriteBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniSetListBodyDto
+import su.afk.yummy.tv.data.account.dto.YaniSuccessObjectResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniTokenResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUnlinkAccountResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
 import su.afk.yummy.tv.data.account.dto.YaniUserCollectionsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserFriendsResponseDto
@@ -56,7 +73,9 @@ import su.afk.yummy.tv.data.account.dto.YaniUserStatsGenresResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsListsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsRatingsResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniUserStatsTypesResponseDto
+import su.afk.yummy.tv.data.account.dto.YaniUsersResponseDto
 import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionsResponseDto
+import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 
 class YaniCaptchaRequiredException : RuntimeException("Captcha required")
 class YaniAccountException(message: String, val code: Int? = null) : RuntimeException(message)
@@ -64,6 +83,14 @@ class YaniAccountException(message: String, val code: Int? = null) : RuntimeExce
 class YaniAccountApi(
     private val clientProvider: YaniHttpClientProvider,
 ) {
+
+    suspend fun unlinkAccount(provider: LinkedAccountProvider): Boolean {
+        val response = clientProvider.get()
+            .delete("$YANI_BASE_URL/profile/login/${provider.apiValue}")
+            .body<YaniUnlinkAccountResponseDto>()
+            .response
+        return response?.jsonPrimitive?.booleanOrNull != false
+    }
 
     suspend fun login(login: String, password: String, captchaResponse: String? = null): String {
         val response = try {
@@ -103,6 +130,36 @@ class YaniAccountApi(
         return response.body<YaniLoginResponseDto>().response.token
     }
 
+    suspend fun register(body: YaniRegistrationBodyDto) {
+        val response = try {
+            AppLogger.d(TAG) { "POST /users" }
+            clientProvider.get().post("$YANI_BASE_URL/users") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
+        } catch (error: ClientRequestException) {
+            if (error.response.status.value == CAPTCHA_ERROR_CODE) {
+                throw YaniCaptchaRequiredException()
+            }
+            throw error
+        }
+        if (!response.body<YaniSuccessObjectResponseDto>().response.success) {
+            throw YaniAccountException("Could not register user")
+        }
+    }
+
+    suspend fun verifyRegistration(hash: String): String {
+        AppLogger.d(TAG) { "POST /users/registration-verify" }
+        val result = clientProvider.get().post("$YANI_BASE_URL/users/registration-verify") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniRegistrationVerifyBodyDto(hash = hash))
+        }.body<YaniRegistrationVerifyResponseDto>().response
+        if (!result.success || result.token.isBlank()) {
+            throw YaniAccountException("Could not verify registration")
+        }
+        return result.token
+    }
+
     suspend fun refreshToken(): String =
         clientProvider.get().get("$YANI_BASE_URL/profile/token")
             .body<YaniTokenResponseDto>().response.token
@@ -114,17 +171,126 @@ class YaniAccountApi(
             }
         }.body<YaniProfileResponseDto>().response
 
+    suspend fun updateOnline(deviceHash: String) {
+        AppLogger.d(TAG) { "POST /profile/online" }
+        val result = clientProvider.get().post("$YANI_BASE_URL/profile/online") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniOnlineBodyDto(hash = deviceHash))
+        }.body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not update online status")
+    }
+
     suspend fun getUserProfile(userId: Int): YaniUserProfileResponseDto =
         clientProvider.get().get("$YANI_BASE_URL/users/id$userId") {
             parameter("need_counts", true)
         }.body()
 
+    suspend fun searchUsers(query: String, limit: Int, offset: Int) =
+        clientProvider.get().get("$YANI_BASE_URL/users") {
+            parameter("nickname", query)
+            parameter("order_by", "a_z")
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }.body<YaniUsersResponseDto>().response.items
+
+    suspend fun getUserProfileByNickname(nickname: String): YaniUserProfileResponseDto =
+        clientProvider.get().get("$YANI_BASE_URL/users/$nickname") {
+            parameter("need_counts", true)
+        }.body()
+
+    suspend fun getFriendshipStatus(userId: Int, friendId: Int): String? =
+        try {
+            clientProvider.get().get("$YANI_BASE_URL/users/$userId/friends/$friendId")
+                .body<YaniFriendshipResponseDto>().response.status
+        } catch (error: ClientRequestException) {
+            if (error.response.status == HttpStatusCode.NotFound) null else throw error
+        }
+
+    suspend fun addFriend(userId: Int, friendId: Int) {
+        val result = clientProvider.get().put("$YANI_BASE_URL/users/$userId/friends/$friendId")
+            .body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not add friend")
+    }
+
+    suspend fun removeFriend(userId: Int, friendId: Int) {
+        val result = clientProvider.get().delete("$YANI_BASE_URL/users/$userId/friends/$friendId")
+            .body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not remove friend")
+    }
+
     suspend fun logout() {
         clientProvider.get().post("$YANI_BASE_URL/profile/logout")
     }
 
+    suspend fun updateProfile(body: YaniProfileUpdateBodyDto) {
+        val result = clientProvider.get().patch("$YANI_BASE_URL/profile") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }.body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not update profile")
+    }
+
+    suspend fun uploadAvatar(userId: Int, bytes: ByteArray) {
+        val result = clientProvider.get().put("$YANI_BASE_URL/users/$userId/avatar") {
+            contentType(ContentType.Application.OctetStream)
+            setBody(bytes)
+        }.body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not upload avatar")
+    }
+
+    suspend fun deleteAvatar(userId: Int) {
+        val result = clientProvider.get().delete("$YANI_BASE_URL/users/$userId/avatar")
+            .body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not delete avatar")
+    }
+
+    suspend fun uploadBanner(userId: Int, bytes: ByteArray) {
+        val result = clientProvider.get().put("$YANI_BASE_URL/users/$userId/banner") {
+            contentType(ContentType.Application.OctetStream)
+            setBody(bytes)
+        }.body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not upload banner")
+    }
+
+    suspend fun deleteBanner(userId: Int) {
+        val result = clientProvider.get().delete("$YANI_BASE_URL/users/$userId/banner")
+            .body<YaniBooleanResponseDto>().response
+        if (!result) throw YaniAccountException("Could not delete banner")
+    }
+
+    suspend fun changePassword(oldPassword: String, newPassword: String): String {
+        val response = clientProvider.get().patch("$YANI_BASE_URL/profile/password") {
+            contentType(ContentType.Application.Json)
+            setBody(YaniPasswordChangeBodyDto(oldPassword, newPassword))
+        }.body<YaniPasswordChangeResponseDto>().response
+        if (!response.success || response.token.isBlank()) {
+            throw YaniAccountException("Could not change password")
+        }
+        return response.token
+    }
+
+    suspend fun requestPasswordReset(email: String, captchaResponse: String?) {
+        val response = try {
+            clientProvider.get().post("$YANI_BASE_URL/profile/reset-password") {
+                contentType(ContentType.Application.Json)
+                setBody(YaniPasswordResetBodyDto(email, captchaResponse))
+            }
+        } catch (error: ClientRequestException) {
+            if (error.response.status.value == CAPTCHA_ERROR_CODE) throw YaniCaptchaRequiredException()
+            throw error
+        }
+        if (!response.body<YaniSuccessObjectResponseDto>().response.success) {
+            throw YaniAccountException("Could not request password reset")
+        }
+    }
+
     suspend fun getUserList(userId: Int, listId: Int): List<YaniUserAnimeDto> =
         clientProvider.get().get("$YANI_BASE_URL/users/$userId/lists/$listId")
+            .body<YaniUserListResponseDto>()
+            .response
+
+    suspend fun getAllUserLists(userId: Int): List<YaniUserAnimeDto> =
+        clientProvider.get().get("$YANI_BASE_URL/users/$userId/lists")
             .body<YaniUserListResponseDto>()
             .response
 
@@ -206,6 +372,11 @@ class YaniAccountApi(
             .body<YaniRatingResponseDto>()
             .response
 
+    suspend fun getAnimeListStats(animeId: Int): List<YaniAnimeListStatDto> =
+        clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/lists")
+            .body<YaniAnimeListStatsResponseDto>()
+            .response
+
     suspend fun getUserRating(animeId: Int): YaniAnimeUserRatingDto =
         clientProvider.get().get("$YANI_BASE_URL/anime/$animeId")
             .body<YaniAnimeUserRatingResponseDto>()
@@ -271,6 +442,11 @@ class YaniAccountApi(
             parameter("offset", offset)
         }.body<YaniNotificationsResponseDto>().response
 
+    suspend fun getNotificationCounts() =
+        clientProvider.get().get("$YANI_BASE_URL/profile/notifications/counts")
+            .body<YaniNotificationCountsResponseDto>()
+            .response
+
     suspend fun getNotificationAnimeId(slug: String): Int? =
         clientProvider.get().get("$YANI_BASE_URL/anime/$slug")
             .body<YaniNotificationAnimeResponseDto>()
@@ -292,6 +468,11 @@ class YaniAccountApi(
 
     suspend fun deleteNotification(id: Int): Boolean =
         clientProvider.get().delete("$YANI_BASE_URL/profile/notifications/$id")
+            .body<YaniBooleanResponseDto>()
+            .response
+
+    suspend fun deleteAllNotifications(): Boolean =
+        clientProvider.get().delete("$YANI_BASE_URL/profile/notifications")
             .body<YaniBooleanResponseDto>()
             .response
 

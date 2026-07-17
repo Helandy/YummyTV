@@ -42,6 +42,12 @@ abstract class CollectionStorageDao {
     @Query("DELETE FROM collection_anime_items WHERE collectionId = :collectionId AND language = :language")
     abstract suspend fun deleteItems(collectionId: Int, language: String)
 
+    @Query("DELETE FROM collection_details WHERE collectionId = :collectionId")
+    abstract suspend fun deleteDetailsForCollection(collectionId: Int)
+
+    @Query("DELETE FROM collection_anime_items WHERE collectionId = :collectionId")
+    abstract suspend fun deleteItemsForCollection(collectionId: Int)
+
     @Query(
         """
         UPDATE collection_details
@@ -77,6 +83,12 @@ abstract class CollectionStorageDao {
     @Query("DELETE FROM collection_catalog_items WHERE pageKey = :pageKey")
     abstract suspend fun deleteCatalogItems(pageKey: String)
 
+    @Query("DELETE FROM collection_catalog_pages")
+    abstract suspend fun deleteAllCatalogPages()
+
+    @Query("DELETE FROM collection_catalog_items")
+    abstract suspend fun deleteAllCatalogItems()
+
     @Transaction
     open suspend fun getCollection(collectionId: Int, language: String): CollectionDetailCache? {
         val entry = getDetailEntry(collectionId, language) ?: return null
@@ -95,6 +107,18 @@ abstract class CollectionStorageDao {
 
         insertDetail(cache.entry)
         if (cache.items.isNotEmpty()) insertItems(cache.items)
+    }
+
+    @Transaction
+    open suspend fun deleteCollection(collectionId: Int) {
+        deleteItemsForCollection(collectionId)
+        deleteDetailsForCollection(collectionId)
+    }
+
+    @Transaction
+    open suspend fun invalidateCatalog() {
+        deleteAllCatalogItems()
+        deleteAllCatalogPages()
     }
 
     @Transaction

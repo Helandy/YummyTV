@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -82,41 +85,27 @@ internal fun CommentsComposer(
                         }
                     }
                 }
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = onTextChange,
-                    enabled = enabled,
-                    minLines = 1,
-                    maxLines = 4,
-                    placeholder = { Text(stringResource(R.string.comments_input_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (mode is CommentsState.ComposerMode.New && text.isNotBlank()) {
-                        TextButton(
-                            onClick = onCancel,
-                            enabled = enabled,
-                        ) {
-                            Text(stringResource(R.string.comments_cancel))
-                        }
-                    }
-                    Box(Modifier.padding(start = 6.dp)) {
-                        Button(
-                            onClick = onSubmit,
-                            enabled = enabled && text.isNotBlank(),
-                        ) {
-                            Text(
-                                if (enabled) {
-                                    stringResource(R.string.comments_send)
-                                } else {
-                                    stringResource(R.string.comments_sending)
-                                }
-                            )
-                        }
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = onTextChange,
+                        enabled = enabled,
+                        minLines = 1,
+                        maxLines = 4,
+                        placeholder = { Text(stringResource(R.string.comments_input_hint)) },
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        onClick = onSubmit,
+                        enabled = enabled && text.isNotBlank(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(R.string.comments_send),
+                        )
                     }
                 }
             }

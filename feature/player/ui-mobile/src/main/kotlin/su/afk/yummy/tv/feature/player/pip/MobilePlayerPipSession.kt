@@ -19,6 +19,9 @@ internal class MobilePlayerPipSession(
     private var playing = false
 
     @Volatile
+    private var enabled = true
+
+    @Volatile
     private var aspectRatio: Rational = defaultAspectRatio
 
     @Volatile
@@ -34,6 +37,7 @@ internal class MobilePlayerPipSession(
     fun release() {
         active = false
         playing = false
+        enabled = true
         aspectRatio = defaultAspectRatio
         pictureInPictureRequested = false
         callbacks = null
@@ -44,6 +48,11 @@ internal class MobilePlayerPipSession(
         if (activity != null && isInPictureInPictureMode()) {
             updateParams(activity)
         }
+    }
+
+    fun setEnabled(isEnabled: Boolean) {
+        enabled = isEnabled
+        if (!isEnabled) pictureInPictureRequested = false
     }
 
     fun setCallbacks(callbacks: MobilePlayerPipCallbacks?) {
@@ -63,7 +72,7 @@ internal class MobilePlayerPipSession(
     }
 
     fun shouldKeepPlayingOnPause(): Boolean =
-        active && (pictureInPictureRequested || isInPictureInPictureMode())
+        active && enabled && (pictureInPictureRequested || isInPictureInPictureMode())
 
     fun enterIfPlaying(activity: Activity): Boolean {
         if (!active || !playing) return false
@@ -71,7 +80,10 @@ internal class MobilePlayerPipSession(
     }
 
     fun enter(activity: Activity): Boolean {
-        if (!canEnterPictureInPicture(activity) || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (!enabled ||
+            !canEnterPictureInPicture(activity) ||
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+        ) {
             return false
         }
         pictureInPictureRequested = true

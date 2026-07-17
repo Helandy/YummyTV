@@ -19,6 +19,10 @@ class FullDetailsState {
 
         /** Пользователь запросил повторную загрузку описания. */
         data object RetrySelected : Event
+
+        data class GenreSelected(val id: Int) : Event
+        data class StudioSelected(val id: Int, val url: String?) : Event
+        data class DirectorSelected(val id: Int) : Event
     }
 
     sealed interface Effect : UiEffect

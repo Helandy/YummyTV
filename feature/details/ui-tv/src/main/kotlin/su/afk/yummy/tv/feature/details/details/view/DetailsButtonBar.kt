@@ -29,7 +29,9 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -100,6 +102,8 @@ internal fun DetailsButtonBar(
     onScreenshotsSelected: () -> Unit,
     onRatingSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onReviewsSelected: () -> Unit,
+    onBloggerVideosSelected: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 150.dp,
 ) {
@@ -209,7 +213,24 @@ internal fun DetailsButtonBar(
             Icons.Filled.CollectionsBookmark,
             ButtonStyle.Normal,
             onCollectionsSelected,
-        )
+        ),
+        ButtonData(
+            DetailsButtonAction.REVIEWS,
+            if (details.reviewsCount > 0) stringResource(
+                R.string.details_reviews_count,
+                details.reviewsCount
+            ) else stringResource(R.string.details_reviews),
+            Icons.Filled.RateReview,
+            ButtonStyle.Normal,
+            onReviewsSelected,
+        ),
+        ButtonData(
+            DetailsButtonAction.BLOGGER_VIDEOS,
+            stringResource(R.string.details_blogger_videos),
+            Icons.Filled.VideoCameraFront,
+            ButtonStyle.Normal,
+            onBloggerVideosSelected,
+        ),
     ) + if (details.screenshots.isNotEmpty()) {
         listOf(
             ButtonData(
@@ -484,4 +505,3 @@ private fun ActionButton(
         }
     }
 }
-

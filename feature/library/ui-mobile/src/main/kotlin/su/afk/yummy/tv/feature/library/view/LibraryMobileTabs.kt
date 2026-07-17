@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.library.LibraryTab
+import su.afk.yummy.tv.feature.library.utils.libraryMobileTabs
 import su.afk.yummy.tv.feature.library.utils.mobileTitle
 
 @Composable
@@ -36,7 +37,7 @@ internal fun LibraryMobileTabs(
     val listState = rememberLazyListState()
 
     LaunchedEffect(selectedTab) {
-        val selectedIndex = LibraryTab.entries.indexOf(selectedTab).coerceAtLeast(0)
+        val selectedIndex = libraryMobileTabs.indexOf(selectedTab).coerceAtLeast(0)
         listState.animateScrollToItem((selectedIndex - 1).coerceAtLeast(0))
     }
 
@@ -50,7 +51,7 @@ internal fun LibraryMobileTabs(
             modifier = Modifier.padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(LibraryTab.entries, key = { it.name }) { tab ->
+            items(libraryMobileTabs, key = { it.name }) { tab ->
                 LibraryMobileTabChip(
                     title = tab.mobileTitle(),
                     count = tabCounts[tab] ?: 0,
@@ -138,6 +139,7 @@ private fun LibraryMobileTabCountBadge(count: Int, color: Color, selected: Boole
 private fun LibraryTab.mobileTabColor(): Color =
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
+        LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
         LibraryTab.WATCHING -> Color(0xFFFF6B6B)
         LibraryTab.PLANNED -> Color(0xFFA678E8)
         LibraryTab.COMPLETED -> Color(0xFF69D38B)

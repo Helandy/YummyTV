@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.comments.CommentsStorageStore
 import su.afk.yummy.tv.core.storage.db.AppDatabase
+import su.afk.yummy.tv.core.storage.document.DocumentCacheStore
 import su.afk.yummy.tv.core.storage.home.HomeFeedStore
 import su.afk.yummy.tv.core.storage.library.LibraryStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupStore
@@ -1729,6 +1730,59 @@ object StorageModule {
         }
     }
 
+    private val MIGRATION_37_38 = object : Migration(37, 38) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE collection_details " +
+                        "ADD COLUMN ownerId INTEGER NOT NULL DEFAULT 0"
+            )
+            db.execSQL(
+                "ALTER TABLE collection_details " +
+                        "ADD COLUMN isPublic INTEGER NOT NULL DEFAULT 0"
+            )
+        }
+    }
+
+    /**
+     * Normalizes databases created by an intermediate version 38 build.
+     * Their schema already matches version 39, but Room must validate it and store the current hash.
+     */
+    private val MIGRATION_38_39 = object : Migration(38, 39) {
+        override fun migrate(db: SupportSQLiteDatabase) = Unit
+    }
+
+    private val MIGRATION_39_40 = object : Migration(39, 40) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE anime_detail_named_items ADD COLUMN itemUrl TEXT")
+            // Старый кэш не содержит URL студий. Инвалидируем только детали аниме,
+            // чтобы первый показ заново получил кликабельные метаданные из API.
+            db.execSQL("DELETE FROM anime_details")
+        }
+    }
+
+    private val MIGRATION_40_41 = object : Migration(40, 41) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE anime_details ADD COLUMN reviewsCount INTEGER NOT NULL DEFAULT 0")
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS document_cache (" +
+                        "cacheKey TEXT NOT NULL, payload TEXT NOT NULL, cachedAt INTEGER NOT NULL, " +
+                        "PRIMARY KEY(cacheKey))"
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS index_document_cache_cachedAt " +
+                        "ON document_cache(cachedAt)"
+            )
+        }
+    }
+
+    /**
+     * Normalizes databases created before reviewsCount declared its Room default value.
+     * The physical schema is unchanged; completing the migration stores the current identity hash.
+     */
+    private val MIGRATION_41_42 = object : Migration(41, 42) {
+        override fun migrate(db: SupportSQLiteDatabase) = Unit
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1764,6 +1818,11 @@ object StorageModule {
                 MIGRATION_34_35,
                 MIGRATION_35_36,
                 MIGRATION_36_37,
+                MIGRATION_37_38,
+                MIGRATION_38_39,
+                MIGRATION_39_40,
+                MIGRATION_40_41,
+                MIGRATION_41_42,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,
@@ -1822,6 +1881,11 @@ object StorageModule {
     @Singleton
     fun provideCommentsStorageStore(db: AppDatabase): CommentsStorageStore =
         CommentsStorageStore(db.commentsStorageDao())
+
+    @Provides
+    @Singleton
+    fun provideDocumentCacheStore(db: AppDatabase): DocumentCacheStore =
+        DocumentCacheStore(db.documentCacheDao())
 
     @Provides
     @Singleton

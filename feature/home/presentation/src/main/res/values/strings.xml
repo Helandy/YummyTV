@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="home_blogger_videos_load_error">Failed to load blogger videos</string>
     <string name="home_load_error">Could not load the home page</string>
     <string name="home_remote_continue_progress_toast">Remote progress found. Episode %1$s (%2$s)</string>
 </resources>

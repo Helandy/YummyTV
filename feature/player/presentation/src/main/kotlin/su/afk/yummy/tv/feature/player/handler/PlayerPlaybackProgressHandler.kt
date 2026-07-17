@@ -47,15 +47,20 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
      *
      * Возвращает `null`, если активный источник неполный и сохранять нечего.
      */
-    fun currentProgressSaveRequest(state: PlayerState.State): PlayerProgressSaveRequest? =
+    fun currentProgressSaveRequest(
+        state: PlayerState.State,
+        syncRemote: Boolean = true,
+    ): PlayerProgressSaveRequest? =
         state.progressSnapshot(
-            positionMs = state.playbackPositionMs,
+            positionMs = state.playbackPositionMs.takeIf { it > 0L }
+                ?: state.resumeFromMs.coerceAtLeast(0L),
             durationMs = state.playbackDurationMs,
         )?.let { snapshot ->
             PlayerProgressSaveRequest(
                 context = state.progressContext(),
                 snapshot = snapshot,
                 forceRemoteSync = true,
+                syncRemote = syncRemote,
             )
         }
 
@@ -128,6 +133,7 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
             context = request.context,
             snapshot = request.snapshot,
             forceRemoteSync = request.forceRemoteSync,
+            syncRemote = request.syncRemote,
         )
     }
 
@@ -204,6 +210,7 @@ internal data class PlayerProgressSaveRequest(
     val context: PlayerProgressContext,
     val snapshot: PlayerProgressSnapshot,
     val forceRemoteSync: Boolean = false,
+    val syncRemote: Boolean = true,
 )
 
 /** Запрос на сохранение точки продолжения просмотра. */

@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
@@ -16,6 +17,22 @@ import su.afk.yummy.tv.core.preferences.settings.PreviewCacheSize
 import su.afk.yummy.tv.core.preferences.settings.YaniContentLanguage
 import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonOrderItem
+
+@Composable
+internal fun AppInterfaceMode.label(): String = stringResource(
+    when (this) {
+        AppInterfaceMode.MOBILE -> R.string.settings_interface_mobile
+        AppInterfaceMode.TV -> R.string.settings_interface_tv
+    },
+)
+
+@Composable
+internal fun AppInterfaceMode.hint(): String = stringResource(
+    when (this) {
+        AppInterfaceMode.MOBILE -> R.string.settings_interface_mobile_hint
+        AppInterfaceMode.TV -> R.string.settings_interface_tv_hint
+    },
+)
 
 @Composable
 internal fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<DetailsButtonOrderItem> =
@@ -84,6 +101,8 @@ internal fun DetailsButtonAction.label(): String = stringResource(
         DetailsButtonAction.VIEWING_ORDER -> R.string.settings_details_button_viewing_order
         DetailsButtonAction.RATING -> R.string.settings_details_button_rating
         DetailsButtonAction.COLLECTIONS -> R.string.settings_details_button_collections
+        DetailsButtonAction.REVIEWS -> R.string.settings_details_button_reviews
+        DetailsButtonAction.BLOGGER_VIDEOS -> R.string.settings_details_button_blogger_videos
         DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
     },
 )

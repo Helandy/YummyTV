@@ -144,6 +144,9 @@ abstract class AnimeStorageDao {
     @Query("DELETE FROM anime_details WHERE animeId = :animeId AND language = :language")
     abstract suspend fun deleteDetailsEntry(animeId: Int, language: String)
 
+    @Query("UPDATE anime_details SET cachedAt = 0")
+    abstract suspend fun expireAllDetails()
+
     @Query("DELETE FROM anime_detail_titles WHERE animeId = :animeId AND language = :language")
     abstract suspend fun deleteOtherTitles(animeId: Int, language: String)
 
@@ -247,6 +250,15 @@ abstract class AnimeStorageDao {
 
         if (cache.viewingOrder.isNotEmpty()) insertViewingOrder(cache.viewingOrder)
         if (cache.screenshots.isNotEmpty()) insertScreenshots(cache.screenshots)
+    }
+
+    @Transaction
+    open suspend fun deleteDetails(animeId: Int, language: String) {
+        deleteDetailsEntry(animeId, language)
+        deleteOtherTitles(animeId, language)
+        deleteNamedItems(animeId, language)
+        deleteViewingOrder(animeId, language)
+        deleteScreenshots(animeId, language)
     }
 
     @Transaction

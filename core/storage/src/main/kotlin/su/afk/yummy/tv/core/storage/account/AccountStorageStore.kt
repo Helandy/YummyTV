@@ -24,6 +24,10 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         dao.replaceUserList(cache)
     }
 
+    suspend fun saveUserLists(caches: List<AccountUserListCache>) {
+        dao.replaceUserLists(caches)
+    }
+
     suspend fun hasUserListCache(userId: Int): Boolean =
         dao.hasUserListPages(userId)
 
@@ -63,6 +67,10 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         dao.replaceListStats(cache)
     }
 
+    suspend fun invalidateListStats(animeId: Int) {
+        dao.invalidateListStats(animeId)
+    }
+
     suspend fun getCollections(pageKey: String): AccountCollectionsPageCache? =
         dao.getCollections(pageKey)
 
@@ -71,6 +79,10 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
         prunePagesCachedBefore: Long? = null,
     ) {
         dao.replaceCollections(cache, prunePagesCachedBefore)
+    }
+
+    suspend fun invalidateCollections() {
+        dao.invalidateCollections()
     }
 
     suspend fun getVideoSubscriptions(
@@ -116,6 +128,10 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
 
     suspend fun saveUserFriends(cache: AccountUserFriendsPageCache) {
         dao.replaceUserFriendsPage(cache)
+    }
+
+    suspend fun deleteUserFriends(userId: Int) {
+        dao.deleteUserFriendsContentForUser(userId)
     }
 
     suspend fun getUserReviews(
@@ -176,6 +192,10 @@ class AccountStorageStore(private val dao: AccountStorageDao) {
 
     suspend fun saveUserProfileSummary(cache: AccountUserProfileSummaryCache) {
         dao.replaceUserProfileSummary(cache)
+    }
+
+    suspend fun deleteUserProfileSummary(userId: Int) {
+        dao.deleteUserProfileSummaryForUser(userId)
     }
 
     suspend fun clearUserScoped(userId: Int) {

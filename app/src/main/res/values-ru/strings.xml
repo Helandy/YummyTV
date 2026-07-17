@@ -5,4 +5,10 @@
     <string name="search_settings_description">Поиск по каталогу YummyTV</string>
     <string name="search_suggest_anime">Аниме</string>
     <string name="search_suggest_rating">Рейтинг: %1$.1f</string>
+    <string name="interface_mode_title">Выберите интерфейс</string>
+    <string name="interface_mode_message">Выберите интерфейс, которым будет удобно управлять на этом устройстве.</string>
+    <string name="interface_mode_tv">ТВ-интерфейс</string>
+    <string name="interface_mode_tv_hint">Крупные элементы и удобная навигация с пульта</string>
+    <string name="interface_mode_mobile">Мобильный интерфейс</string>
+    <string name="interface_mode_mobile_hint">Компактная компоновка для сенсорного управления</string>
 </resources>

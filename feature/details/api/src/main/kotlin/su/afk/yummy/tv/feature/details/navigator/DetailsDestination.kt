@@ -38,3 +38,13 @@ data class DetailsRatingDestination(val animeId: Int) : NavKey
 
 @Serializable
 data class DetailsCollectionsDestination(val animeId: Int) : NavKey
+
+@Serializable
+enum class DetailsRelationKind { STUDIO, DIRECTOR, GENRE }
+
+@Serializable
+data class DetailsRelationDestination(
+    val kind: DetailsRelationKind,
+    val id: Int,
+    val url: String? = null,
+) : NavKey

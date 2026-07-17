@@ -12,6 +12,7 @@ import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStats
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionSummaries
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionsPageCache
+import su.afk.yummy.tv.data.account.storage.mapper.toListStatsCache
 import su.afk.yummy.tv.data.account.storage.mapper.toRatingBucketsCache
 import su.afk.yummy.tv.data.account.storage.mapper.toRatingSummary
 import su.afk.yummy.tv.data.account.storage.mapper.toUserRating
@@ -79,6 +80,23 @@ class YaniAnimeExtrasRepository(
         accountStorage.deleteRatingBuckets(animeId)
     }
 
+    override suspend fun getListStats(animeId: Int): AnimeListStats =
+        withContext(Dispatchers.IO) {
+            val stored = accountStorage.getListStats(animeId)
+            if (stored?.isFresh(ACCOUNT_MEDIUM_TTL_MS) == true) {
+                return@withContext stored.toAnimeListStats()
+            }
+
+            try {
+                fetchListStats(animeId)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toAnimeListStats()
+                    ?: throw error
+            }
+        }
+
     override suspend fun getCachedListStats(animeId: Int): AnimeListStats? =
         withContext(Dispatchers.IO) {
             accountStorage.getListStats(animeId)
@@ -114,6 +132,15 @@ class YaniAnimeExtrasRepository(
         )
         accountStorage.saveRatingBuckets(cache)
         return cache.toRatingSummary()
+    }
+
+    private suspend fun fetchListStats(animeId: Int): AnimeListStats {
+        val cache = api.getAnimeListStats(animeId).toListStatsCache(
+            animeId = animeId,
+            cachedAt = System.currentTimeMillis(),
+        )
+        accountStorage.saveListStats(cache)
+        return cache.toAnimeListStats()
     }
 
     private suspend fun fetchUserRating(userId: Int, animeId: Int): Int? {

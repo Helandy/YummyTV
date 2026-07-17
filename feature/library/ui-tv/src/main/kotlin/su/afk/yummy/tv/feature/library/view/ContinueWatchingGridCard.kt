@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -17,7 +16,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.components.TvProgressMediaCard
-import su.afk.yummy.tv.core.utils.resolveContinueWatchingImage
+import su.afk.yummy.tv.core.utils.KodikThumbnail
+import su.afk.yummy.tv.core.utils.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
 
@@ -40,18 +40,12 @@ internal fun ContinueWatchingGridCard(
     downFocusRequester: FocusRequester? = null,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
-    val imageUrl by produceState<String?>(
-        null,
-        entry.screenshotUrl,
-        entry.episodeUrl,
-        entry.poster.bestUrl(),
-    ) {
-        value = resolveContinueWatchingImage(
-            screenshotUrl = entry.screenshotUrl,
-            episodeUrl = entry.episodeUrl,
-            posterUrl = entry.poster.bestUrl(),
-        )
-    }
+    val imageModel = resolveContinueWatchingImageModel(
+        screenshotUrl = entry.screenshotUrl,
+        episodeUrl = entry.episodeUrl,
+        posterUrl = entry.poster.bestUrl(),
+        kodikThumbnailModel = ::KodikThumbnail,
+    )
     val progress =
         if (entry.durationMs > 0L) {
             (entry.positionMs.toFloat() / entry.durationMs.toFloat()).coerceIn(0f, 1f)
@@ -68,7 +62,7 @@ internal fun ContinueWatchingGridCard(
     ) {
         TvProgressMediaCard(
             title = entry.animeTitle.ifBlank { episodeLabel },
-            imageUrl = imageUrl,
+            imageModel = imageModel,
             subtitle = episodeLabel,
             trailingSubtitle = entry.timingLabel(),
             progress = progress,

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
+import su.afk.yummy.tv.core.storage.document.DocumentCacheStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.repository.YaniAnimeRepository
@@ -31,6 +32,14 @@ object DetailsDataModule {
         accountStorage: AccountStorageStore,
         settingsStore: SettingsStore,
         watchProgressStore: WatchProgressStore,
+        documentCache: DocumentCacheStore,
     ): AnimeRepository =
-        YaniAnimeRepository(api, animeStorage, accountStorage, settingsStore, watchProgressStore)
+        YaniAnimeRepository(
+            api,
+            animeStorage,
+            accountStorage,
+            settingsStore,
+            watchProgressStore,
+            documentCache,
+        )
 }

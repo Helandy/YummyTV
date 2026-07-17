@@ -9,9 +9,21 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.feature.account.account.AccountMobileScreen
 import su.afk.yummy.tv.feature.account.account.AccountViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
+import su.afk.yummy.tv.feature.account.navigator.PasswordResetDestination
+import su.afk.yummy.tv.feature.account.navigator.ProfileEditDestination
+import su.afk.yummy.tv.feature.account.navigator.UserProfileByNicknameDestination
 import su.afk.yummy.tv.feature.account.navigator.UserProfileDestination
+import su.afk.yummy.tv.feature.account.navigator.UserSearchDestination
+import su.afk.yummy.tv.feature.account.passwordreset.PasswordResetMobileScreen
+import su.afk.yummy.tv.feature.account.passwordreset.PasswordResetViewModel
+import su.afk.yummy.tv.feature.account.profileedit.ProfileEditMobileScreen
+import su.afk.yummy.tv.feature.account.profileedit.ProfileEditViewModel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileMobileScreen
+import su.afk.yummy.tv.feature.account.userprofile.UserProfileResolverMobileScreen
+import su.afk.yummy.tv.feature.account.userprofile.UserProfileResolverViewModel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileViewModel
+import su.afk.yummy.tv.feature.account.usersearch.UserSearchMobileScreen
+import su.afk.yummy.tv.feature.account.usersearch.UserSearchViewModel
 import javax.inject.Inject
 
 class AccountNavRegistrar @Inject constructor() : NavRegistrar {
@@ -30,6 +42,36 @@ class AccountNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     UserProfileMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<UserProfileByNicknameDestination> { dest ->
+                val viewModel = hiltViewModel<
+                        UserProfileResolverViewModel,
+                        UserProfileResolverViewModel.Factory,
+                        >(
+                    key = "mobile-user-profile-nickname-${dest.nickname}",
+                    creationCallback = { factory -> factory.create(dest.nickname) },
+                )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    UserProfileResolverMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<UserSearchDestination> {
+                val viewModel = hiltViewModel<UserSearchViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    UserSearchMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<ProfileEditDestination> {
+                val viewModel = hiltViewModel<ProfileEditViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    ProfileEditMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<PasswordResetDestination> {
+                val viewModel = hiltViewModel<PasswordResetViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    PasswordResetMobileScreen(state, effect, onEvent)
                 }
             }
         }

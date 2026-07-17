@@ -5,9 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionVoteBodyDto
+import su.afk.yummy.tv.data.collection.dto.YaniCreateCollectionBodyDto
+import su.afk.yummy.tv.data.collection.dto.YaniUpdateCollectionBodyDto
 import su.afk.yummy.tv.data.collection.mapper.toDomain
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionCatalogPageCache
@@ -18,6 +21,8 @@ import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.model.CollectionVoteResult
+import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
+import su.afk.yummy.tv.domain.collection.model.UpdateCollectionRequest
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 
 private const val COLLECTION_TTL_MS = 60 * 1000L
@@ -26,6 +31,7 @@ private const val COLLECTION_CATALOG_TTL_MS = 60 * 1000L
 class YaniCollectionDetailRepository(
     private val api: YaniCollectionApi,
     private val collectionStorage: CollectionStorageStore,
+    private val accountStorage: AccountStorageStore,
     private val settingsStore: SettingsStore,
 ) : CollectionRepository {
 
@@ -34,7 +40,7 @@ class YaniCollectionDetailRepository(
             val language = settingsStore.yaniContentLanguage.first()
             val languageCode = language.apiCode
             val stored = collectionStorage.getCollection(id, languageCode)
-            if (stored?.isFresh(COLLECTION_TTL_MS) == true) {
+            if (stored?.isFresh(COLLECTION_TTL_MS) == true && stored.entry.ownerId > 0) {
                 return@withContext stored.toCollectionDetail()
             }
 
@@ -80,6 +86,61 @@ class YaniCollectionDetailRepository(
             }
         }
 
+    override suspend fun createCollection(request: CreateCollectionRequest): Int =
+        withContext(Dispatchers.IO) {
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            api.createCollection(
+                YaniCreateCollectionBodyDto(
+                    isPublic = request.isPublic,
+                    language = languageCode,
+                    description = request.description,
+                    title = request.title,
+                )
+            ).response.id.also { id ->
+                check(id > 0) { "Collection creation returned an invalid id" }
+                invalidateCollectionLists()
+            }
+        }
+
+    override suspend fun updateCollection(id: Int, request: UpdateCollectionRequest): Boolean =
+        withContext(Dispatchers.IO) {
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            val updated = api.updateCollection(
+                id = id,
+                body = YaniUpdateCollectionBodyDto(
+                    isPublic = request.isPublic,
+                    description = request.description,
+                    title = request.title,
+                ),
+            ).response
+            if (updated) {
+                collectionStorage.getCollection(id, languageCode)?.let { stored ->
+                    collectionStorage.saveCollection(
+                        stored.copy(
+                            entry = stored.entry.copy(
+                                title = request.title,
+                                description = request.description,
+                                isPublic = request.isPublic,
+                                cachedAt = System.currentTimeMillis(),
+                            ),
+                        )
+                    )
+                }
+                invalidateCollectionLists()
+            }
+            updated
+        }
+
+    override suspend fun deleteCollection(id: Int): Boolean =
+        withContext(Dispatchers.IO) {
+            val deleted = api.deleteCollection(id).response
+            if (deleted) {
+                collectionStorage.deleteCollection(id)
+                invalidateCollectionLists()
+            }
+            deleted
+        }
+
     override suspend fun voteCollection(id: Int, vote: CollectionVote): CollectionVoteResult =
         withContext(Dispatchers.IO) {
             require(vote != CollectionVote.NEUTRAL)
@@ -123,4 +184,9 @@ class YaniCollectionDetailRepository(
 
     private fun catalogPageKey(language: String, limit: Int, offset: Int): String =
         "$language:$limit:$offset"
+
+    private suspend fun invalidateCollectionLists() {
+        collectionStorage.invalidateCatalog()
+        accountStorage.invalidateCollections()
+    }
 }

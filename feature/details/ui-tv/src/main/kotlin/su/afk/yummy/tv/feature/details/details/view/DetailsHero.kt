@@ -88,6 +88,8 @@ internal fun DetailsHero(
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onReviewsSelected: () -> Unit,
+    onBloggerVideosSelected: () -> Unit,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
 
@@ -210,6 +212,8 @@ internal fun DetailsHero(
                     onScreenshotsSelected = onScreenshotsSelected,
                     onRatingSelected = onRatingScreenSelected,
                     onCollectionsSelected = onCollectionsSelected,
+                    onReviewsSelected = onReviewsSelected,
+                    onBloggerVideosSelected = onBloggerVideosSelected,
                     modifier = Modifier.padding(top = 8.dp),
                     height = buttonBarHeight,
                 )

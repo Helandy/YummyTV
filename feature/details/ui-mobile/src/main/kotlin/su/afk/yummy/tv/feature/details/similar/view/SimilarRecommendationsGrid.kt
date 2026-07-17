@@ -6,6 +6,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.similar.utils.bestUrl
@@ -37,6 +39,9 @@ private const val SIMILAR_SKELETON_COUNT = 6
 internal fun SimilarRecommendationsGrid(
     similarState: SimilarUiState,
     onAnimeSelected: (Int) -> Unit,
+    onVote: (Int, AnimeRecommendationVote) -> Unit,
+    pendingVoteAnimeIds: Set<Int>,
+    showVoting: Boolean,
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
 ) {
@@ -83,30 +88,39 @@ internal fun SimilarRecommendationsGrid(
 
             is SimilarUiState.Content -> {
                 items(similarState.items, key = { it.animeId }) { item ->
-                    MobilePosterCard(
-                        title = item.title,
-                        posterUrl = item.poster.bestUrl(),
-                        rating = item.rating,
-                        posterOverlay = {
-                            item.year?.let { year ->
-                                Text(
-                                    text = year.toString(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.inverseSurface,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.inverseOnSurface,
-                                            RoundedCornerShape(4.dp),
-                                        )
-                                        .padding(horizontal = 6.dp, vertical = 3.dp),
-                                )
-                            }
-                        },
-                        onClick = { onAnimeSelected(item.animeId) },
-                    )
+                    Column {
+                        MobilePosterCard(
+                            title = item.title,
+                            posterUrl = item.poster.bestUrl(),
+                            rating = item.rating,
+                            posterOverlay = {
+                                item.year?.let { year ->
+                                    Text(
+                                        text = year.toString(),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.inverseSurface,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(4.dp)
+                                            .background(
+                                                MaterialTheme.colorScheme.inverseOnSurface,
+                                                RoundedCornerShape(4.dp),
+                                            )
+                                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                                    )
+                                }
+                            },
+                            onClick = { onAnimeSelected(item.animeId) },
+                        )
+                        if (showVoting) {
+                            MobileSimilarVoteButtons(
+                                item = item,
+                                enabled = item.animeId !in pendingVoteAnimeIds,
+                                onVote = { vote -> onVote(item.animeId, vote) },
+                            )
+                        }
+                    }
                 }
             }
         }

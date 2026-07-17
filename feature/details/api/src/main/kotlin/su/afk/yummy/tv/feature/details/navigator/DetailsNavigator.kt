@@ -17,4 +17,6 @@ class DetailsNavigator : IDetailsNavigator {
     override fun getScreenshotsDest(animeId: Int): NavKey = DetailsScreenshotsDestination(animeId)
     override fun getRatingDest(animeId: Int): NavKey = DetailsRatingDestination(animeId)
     override fun getCollectionsDest(animeId: Int): NavKey = DetailsCollectionsDestination(animeId)
+    override fun getRelationDest(kind: DetailsRelationKind, id: Int, url: String?): NavKey =
+        DetailsRelationDestination(kind = kind, id = id, url = url)
 }

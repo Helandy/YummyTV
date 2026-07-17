@@ -18,4 +18,4 @@ internal fun AccountState.State.loginCredentialsOrNull(): AccountLoginCredential
 }
 
 internal fun List<NotificationCount>.totalUnreadCount(): Int =
-    sumOf { it.count }
+    filterNot { it.type.equals("message", ignoreCase = true) }.sumOf { it.count }

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.home
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
+import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 
@@ -14,6 +15,9 @@ class HomeState {
         val continueWatching: List<HomeContinueWatchingItem> = emptyList(),
         val isContinueWatchingLoaded: Boolean = false,
         val supportPromptVisible: Boolean = false,
+        val bloggerVideos: List<BloggerVideo> = emptyList(),
+        val isBloggerVideosLoading: Boolean = true,
+        val bloggerVideosError: String? = null,
     ) : UiState
 
     /** Пользовательские действия на главном экране. */
@@ -39,11 +43,24 @@ class HomeState {
         /** Пользователь открыл каталог коллекций с главного экрана. */
         data object CollectionsCatalogSelected : Event
 
+        /** Пользователь открыл расписание с главного экрана. */
+        data object ScheduleSelected : Event
+
+        /** Пользователь открыл общую ленту рецензий с главного экрана. */
+        data object ReviewsSelected : Event
+
+        data object BloggerVideosSelected : Event
+
+        data object BloggerVideosRetrySelected : Event
+
+        data class BloggerVideoSelected(val video: BloggerVideo) : Event
+
         /** Пользователь отказался от предложения поддержать проект. */
         data object SupportPromptDismissed : Event
     }
 
     sealed interface Effect : UiEffect {
         data class ShowToast(val message: String) : Effect
+        data class OpenUri(val uri: String) : Effect
     }
 }

@@ -73,6 +73,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var activeAllohaSession: AllohaStreamSession? = null
     private var allohaSessionRefreshJob: Job? = null
     private var streamLoadingHintJob: Job? = null
+    private var mobileGestureTutorialReady = false
+    private var showMobileGestureTutorial = false
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
@@ -89,6 +91,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 newDest,
                 autoSkipOpeningsEndings = autoSkipOpeningsEndings,
                 autoPlayNextEpisode = autoPlayNextEpisode,
+                pictureInPictureEnabled = pictureInPictureEnabled,
+            ).copy(
+                mobileGestureTutorialReady = mobileGestureTutorialReady,
+                showMobileGestureTutorial = showMobileGestureTutorial,
             )
         }
         observeActivePlayerResizeSettings(force = true)
@@ -118,6 +124,21 @@ class PlayerViewModel @AssistedInject internal constructor(
         settingsHandler.autoPlayNextEpisode
             .onEach { enabled -> setState { copy(autoPlayNextEpisode = enabled) } }
             .launchIn(viewModelScope)
+        settingsHandler.pictureInPictureEnabled
+            .onEach { enabled -> setState { copy(pictureInPictureEnabled = enabled) } }
+            .launchIn(viewModelScope)
+        settingsHandler.mobilePlayerGestureTutorialDismissed
+            .onEach { dismissed ->
+                mobileGestureTutorialReady = true
+                showMobileGestureTutorial = !dismissed
+                setState {
+                    copy(
+                        mobileGestureTutorialReady = true,
+                        showMobileGestureTutorial = !dismissed,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
         if (dest.downloadId > 0L) {
             loadDownloadedDestination(dest.downloadId)
         } else {
@@ -133,6 +154,14 @@ class PlayerViewModel @AssistedInject internal constructor(
             PlayerState.Event.Back -> saveCurrentProgressThenNavigate {
                 closeAllohaSession()
                 nav.back()
+            }
+
+            PlayerState.Event.MobileGestureTutorialDismissed -> {
+                showMobileGestureTutorial = false
+                setState { copy(showMobileGestureTutorial = false) }
+                viewModelScope.launch {
+                    settingsHandler.dismissMobilePlayerGestureTutorial()
+                }
             }
 
             PlayerState.Event.OpenDetails -> {
@@ -164,6 +193,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                     loadStream(refreshSourcesOnFailure = true)
                 }
             }
+
+            PlayerState.Event.TvAppBackgrounded -> returnToDetailsAfterTvBackground()
 
             PlayerState.Event.RateTitle -> {
                 analytics.eventRateTitle(currentState.animeId)
@@ -447,8 +478,14 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun PlayerState.State.isAllohaSource(): Boolean =
         activeBalancerName(this).contains(ALLOHA_PLAYER_NAME, ignoreCase = true)
 
-    private fun saveCurrentProgressThenNavigate(navigate: () -> Unit) {
-        val request = playbackProgressHandler.currentProgressSaveRequest(currentState)
+    private fun saveCurrentProgressThenNavigate(
+        syncRemote: Boolean = true,
+        navigate: () -> Unit,
+    ) {
+        val request = playbackProgressHandler.currentProgressSaveRequest(
+            state = currentState,
+            syncRemote = syncRemote,
+        )
         if (request == null) {
             navigate()
             return
@@ -459,6 +496,19 @@ class PlayerViewModel @AssistedInject internal constructor(
                 playbackProgressHandler.saveProgress(request)
             }
             navigate()
+        }
+    }
+
+    private fun returnToDetailsAfterTvBackground() {
+        val animeId = currentState.animeId
+        saveCurrentProgressThenNavigate(syncRemote = false) {
+            closeAllohaSession()
+            if (animeId <= 0) {
+                nav.back()
+            } else {
+                val detailsDestination = detailsNavigator.getDetailsDest(animeId)
+                nav.replace(detailsDestination)
+            }
         }
     }
 

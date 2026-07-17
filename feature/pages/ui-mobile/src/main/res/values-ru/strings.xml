@@ -1,0 +1,15 @@
+<resources>
+    <string name="site_pages_title">Страницы сайта</string>
+    <string name="site_page_faq">FAQ сайта</string>
+    <string name="site_page_about">О сайте</string>
+    <string name="site_page_rules">Правила сайта</string>
+    <string name="site_page_review_rules">Правила рецензий</string>
+    <string name="site_page_collections_rules">Правила коллекций</string>
+    <string name="site_page_post_rules">Правила публикаций</string>
+    <string name="site_page_edit_rules">Правила правок</string>
+    <string name="site_page_privacy">Конфиденциальность</string>
+    <string name="site_page_copyright">Авторские права</string>
+    <string name="site_page_help">Хочу помочь</string>
+    <string name="site_page_fallback">Страница сайта временно недоступна. Сервер не вернул читаемый текст, поэтому приложение показывает локальное сообщение, а не устаревшие или придуманные правила.</string>
+    <string name="site_page_retry">Повторить</string>
+</resources>

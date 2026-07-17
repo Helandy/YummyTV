@@ -1,12 +1,15 @@
 package su.afk.yummy.tv.feature.details.similar
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -30,7 +33,17 @@ fun SimilarTvScreen(
     effect: Flow<SimilarState.Effect>,
     onEvent: (SimilarState.Event) -> Unit,
 ) {
+    val context = LocalContext.current
     BackHandler { onEvent(SimilarState.Event.BackSelected) }
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is SimilarState.Effect.ShowToast ->
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -42,6 +55,13 @@ fun SimilarTvScreen(
             fromAi = state.fromAi,
             onToggle = { onEvent(SimilarState.Event.SourceToggled) },
             onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
+            ignored = state.isRecommendationIgnored,
+            recommendationMutationPending = state.isRecommendationMutationPending,
+            pendingVoteAnimeIds = state.pendingVoteAnimeIds,
+            onRecommendationVisibilityToggled = {
+                onEvent(SimilarState.Event.RecommendationVisibilityToggled)
+            },
+            onVote = { id, vote -> onEvent(SimilarState.Event.VoteSelected(id, vote)) },
             modifier = Modifier.fillMaxSize(),
             onRetry = { onEvent(SimilarState.Event.RetrySelected) },
         )

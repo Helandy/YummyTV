@@ -2,7 +2,7 @@
 <resources>
     <string name="main_mobile_tab_profile">Профиль</string>
     <string name="main_mobile_tab_home">Главная</string>
-    <string name="main_mobile_tab_schedule">Расписание</string>
+    <string name="main_mobile_tab_news">Новости</string>
     <string name="main_mobile_tab_top">Топ</string>
     <string name="main_mobile_tab_library">Библиотека</string>
 </resources>

@@ -19,6 +19,12 @@ internal class AccountNotificationMutationHandler @Inject constructor(
             action = { notificationHandler.deleteNotification(id) },
         )
 
+    suspend fun deleteAllNotifications(): AccountNotificationMutationResult =
+        mutate(
+            error = AccountUiError.UPDATE_NOTIFICATIONS_FAILED,
+            action = notificationHandler::deleteAllNotifications,
+        )
+
     suspend fun markAllNotificationsRead(): AccountNotificationMutationResult =
         mutate(
             error = AccountUiError.UPDATE_NOTIFICATIONS_FAILED,

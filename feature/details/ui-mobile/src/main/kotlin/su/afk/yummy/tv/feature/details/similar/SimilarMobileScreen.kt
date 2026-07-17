@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.similar
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -22,6 +24,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.similar.view.MobileSimilarRecommendationVisibilityButton
 import su.afk.yummy.tv.feature.details.similar.view.SimilarRecommendationsGrid
 import su.afk.yummy.tv.feature.details.similar.view.SimilarSourceTabs
 
@@ -45,11 +48,21 @@ fun SimilarMobileScreen(
     onEvent: (SimilarState.Event) -> Unit,
 
     ) {
+    val context = LocalContext.current
     val pagerState = rememberPagerState(
         initialPage = state.fromAi.toSimilarSourcePage(),
         pageCount = { SIMILAR_SOURCE_PAGE_COUNT },
     )
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(effect, context) {
+        effect.collect { event ->
+            when (event) {
+                is SimilarState.Effect.ShowToast ->
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     LaunchedEffect(state.fromAi) {
         val targetPage = state.fromAi.toSimilarSourcePage()
@@ -92,6 +105,15 @@ fun SimilarMobileScreen(
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
             )
 
+            MobileSimilarRecommendationVisibilityButton(
+                ignored = state.isRecommendationIgnored,
+                enabled = !state.isRecommendationMutationPending,
+                onClick = {
+                    onEvent(SimilarState.Event.RecommendationVisibilityToggled)
+                },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+
             HorizontalPager(
                 state = pagerState,
                 key = { page -> page },
@@ -105,6 +127,11 @@ fun SimilarMobileScreen(
                         SimilarUiState.Loading
                     },
                     onAnimeSelected = { id -> onEvent(SimilarState.Event.AnimeSelected(id)) },
+                    onVote = { id, vote ->
+                        onEvent(SimilarState.Event.VoteSelected(id, vote))
+                    },
+                    pendingVoteAnimeIds = state.pendingVoteAnimeIds,
+                    showVoting = !pageFromAi,
                     onRetry = { onEvent(SimilarState.Event.RetrySelected) },
                 )
             }

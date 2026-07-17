@@ -2,8 +2,9 @@
 <resources>
     <string name="main_tab_search">Поиск</string>
     <string name="main_tab_home">Главная</string>
-    <string name="main_tab_collections">Коллекции</string>
     <string name="main_tab_schedule">Расписание</string>
+    <string name="main_tab_news">Новости</string>
+    <string name="main_tab_collections">Коллекции</string>
     <string name="main_tab_top">Топ</string>
     <string name="main_tab_library">Библиотека</string>
     <string name="main_settings_content_description">Настройки</string>

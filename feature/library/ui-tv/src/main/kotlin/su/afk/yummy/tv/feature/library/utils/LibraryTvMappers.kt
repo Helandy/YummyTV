@@ -6,6 +6,7 @@ import su.afk.yummy.tv.feature.library.LibraryTab
 
 internal fun LibraryState.State.tvTabItemCount(tab: LibraryTab): Int = when (tab) {
     LibraryTab.CONTINUE_WATCHING -> continueWatching.size
+    LibraryTab.HISTORY -> 0
     LibraryTab.FAVORITES -> items.count { it.isFavorite }
 
     LibraryTab.WATCHING,
@@ -20,6 +21,7 @@ internal fun LibraryState.State.tvTabItemCount(tab: LibraryTab): Int = when (tab
 
 internal fun LibraryTab.userAnimeListId(): Int? = when (this) {
     LibraryTab.CONTINUE_WATCHING -> null
+    LibraryTab.HISTORY -> null
     LibraryTab.FAVORITES -> null
     LibraryTab.WATCHING -> UserAnimeList.WATCHING.id
     LibraryTab.PLANNED -> UserAnimeList.PLANNED.id

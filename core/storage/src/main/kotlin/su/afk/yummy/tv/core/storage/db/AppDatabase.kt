@@ -53,6 +53,8 @@ import su.afk.yummy.tv.core.storage.collection.CollectionStorageDao
 import su.afk.yummy.tv.core.storage.comments.CommentItemEntry
 import su.afk.yummy.tv.core.storage.comments.CommentPageEntry
 import su.afk.yummy.tv.core.storage.comments.CommentsStorageDao
+import su.afk.yummy.tv.core.storage.document.DocumentCacheDao
+import su.afk.yummy.tv.core.storage.document.DocumentCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
@@ -144,9 +146,10 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AccountUserProfileWatchHistoryEntry::class,
         CommentPageEntry::class,
         CommentItemEntry::class,
+        DocumentCacheEntry::class,
         VideoDownloadEntry::class,
     ],
-    version = 37,
+    version = 42,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -160,6 +163,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun collectionStorageDao(): CollectionStorageDao
     abstract fun accountStorageDao(): AccountStorageDao
     abstract fun commentsStorageDao(): CommentsStorageDao
+    abstract fun documentCacheDao(): DocumentCacheDao
     abstract fun videoDownloadDao(): VideoDownloadDao
     abstract fun storageCleanupDao(): StorageCleanupDao
 }

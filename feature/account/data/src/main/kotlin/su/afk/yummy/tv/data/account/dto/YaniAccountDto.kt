@@ -28,6 +28,40 @@ data class YaniLoginTokenDto(
 )
 
 @Serializable
+data class YaniOnlineBodyDto(
+    val hash: String,
+)
+
+@Serializable
+data class YaniRegistrationBodyDto(
+    val email: String,
+    val password: String,
+    val username: String,
+    @SerialName("g-recaptcha-response") val captchaResponse: String? = null,
+    val hash: String? = null,
+    val shiki: String? = null,
+    val vk: String? = null,
+)
+
+@Serializable
+data class YaniRegistrationVerifyBodyDto(
+    val hash: String,
+    @EncodeDefault @SerialName("need_token") val needToken: Boolean = true,
+)
+
+@Serializable
+data class YaniRegistrationVerifyResponseDto(
+    val response: YaniRegistrationVerifyResultDto = YaniRegistrationVerifyResultDto(),
+)
+
+@Serializable
+data class YaniRegistrationVerifyResultDto(
+    val success: Boolean = false,
+    @SerialName("user_id") val userId: Int = 0,
+    val token: String = "",
+)
+
+@Serializable
 data class YaniErrorResponseDto(
     val error: String = "",
     @SerialName("error_title") val errorTitle: String = "",
@@ -55,6 +89,41 @@ data class YaniProfileDto(
     val id: Int = 0,
     val nickname: String = "",
     val avatars: YaniAvatarDto? = null,
+    val banner: YaniUserBannerDto? = null,
+    val about: String = "",
+    @SerialName("bdate") val birthDate: Long? = null,
+    val sex: Int? = null,
+    @SerialName("lists_privacy") val listsPrivacy: String? = null,
+    val privacy: YaniProfilePrivacyDto? = null,
+    val notifications: YaniProfileNotificationSettingsDto? = null,
+    val ids: YaniProfileIdsDto? = null,
+)
+
+@Serializable
+data class YaniProfileIdsDto(
+    val shikimori: JsonElement? = null,
+    val vk: JsonElement? = null,
+    @SerialName("tg_nickname") val telegramNickname: String? = null,
+    val discord: JsonElement? = null,
+)
+
+@Serializable
+data class YaniUnlinkAccountResponseDto(
+    val response: JsonElement? = null,
+)
+
+@Serializable
+data class YaniProfilePrivacyDto(
+    @SerialName("shiki_public") val shikimoriPublic: Boolean = true,
+    @SerialName("tg_public") val telegramPublic: Boolean = true,
+    @SerialName("vk_public") val vkPublic: Boolean = true,
+    @SerialName("discord_public") val discordPublic: Boolean = true,
+)
+
+@Serializable
+data class YaniProfileNotificationSettingsDto(
+    val vk: Boolean = false,
+    val telegram: Boolean = false,
 )
 
 @Serializable
@@ -69,6 +138,7 @@ data class YaniUserProfileDto(
     val avatars: YaniAvatarDto? = null,
     val banner: YaniUserBannerDto? = null,
     @SerialName("register_date") val registerDate: Long? = null,
+    @SerialName("last_online") val lastOnline: Long? = null,
     @SerialName("bdate") val birthDate: Long? = null,
     val sex: Int? = null,
     val about: String? = null,
@@ -271,6 +341,17 @@ data class YaniRatingBucketDto(
 )
 
 @Serializable
+data class YaniAnimeListStatsResponseDto(
+    val response: List<YaniAnimeListStatDto> = emptyList(),
+)
+
+@Serializable
+data class YaniAnimeListStatDto(
+    @SerialName("list_id") val listId: Int = 0,
+    val count: Int = 0,
+)
+
+@Serializable
 data class YaniRateBodyDto(
     val rate: Int,
 )
@@ -460,4 +541,84 @@ data class YaniNotificationCountsResponseDto(
 data class YaniNotificationCountDto(
     val type: String = "",
     val count: Int = 0,
+)
+
+@Serializable
+data class YaniUsersResponseDto(
+    val response: YaniUsersPageDto = YaniUsersPageDto(),
+)
+
+@Serializable
+data class YaniUsersPageDto(
+    val items: List<YaniUserProfileDto> = emptyList(),
+    val limit: Int = 0,
+    val offset: Int = 0,
+)
+
+@Serializable
+data class YaniFriendshipResponseDto(
+    val response: YaniFriendshipDto = YaniFriendshipDto(),
+)
+
+@Serializable
+data class YaniFriendshipDto(
+    val status: String = "",
+)
+
+@Serializable
+data class YaniProfileUpdateBodyDto(
+    val about: String,
+    @SerialName("bdate") val birthDate: String,
+    val sex: Int,
+    @SerialName("lists_privacy") val listsPrivacy: String,
+    val hide: YaniProfileHideBodyDto,
+    val notifications: YaniProfileNotificationsBodyDto,
+)
+
+@Serializable
+data class YaniProfileHideBodyDto(
+    val shiki: Boolean,
+    val tg: Boolean,
+    val vk: Boolean,
+    val discord: Boolean,
+)
+
+@Serializable
+data class YaniProfileNotificationsBodyDto(
+    val tg: Boolean,
+    val vk: Boolean,
+)
+
+@Serializable
+data class YaniPasswordChangeBodyDto(
+    @SerialName("old_password") val oldPassword: String,
+    @SerialName("new_password") val newPassword: String,
+    @EncodeDefault @SerialName("need_json") val needJson: Boolean = true,
+)
+
+@Serializable
+data class YaniPasswordChangeResponseDto(
+    val response: YaniPasswordChangeResultDto = YaniPasswordChangeResultDto(),
+)
+
+@Serializable
+data class YaniPasswordChangeResultDto(
+    val success: Boolean = false,
+    val token: String = "",
+)
+
+@Serializable
+data class YaniPasswordResetBodyDto(
+    val email: String,
+    @SerialName("recaptcha_response") val captchaResponse: String? = null,
+)
+
+@Serializable
+data class YaniSuccessObjectResponseDto(
+    val response: YaniSuccessObjectDto = YaniSuccessObjectDto(),
+)
+
+@Serializable
+data class YaniSuccessObjectDto(
+    val success: Boolean = false,
 )

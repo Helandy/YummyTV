@@ -18,9 +18,14 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +41,16 @@ internal fun <T> SettingsMobilePickerSheet(
     onSelected: (T) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedOptionFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(selectedValue, options) {
+        repeat(3) {
+            withFrameNanos { }
+            if (runCatching { selectedOptionFocusRequester.requestFocus() }.getOrDefault(false)) {
+                return@LaunchedEffect
+            }
+        }
+    }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -67,6 +82,11 @@ internal fun <T> SettingsMobilePickerSheet(
                         hint = option.hint,
                         selected = option.value == selectedValue,
                         onClick = { onSelected(option.value) },
+                        modifier = if (option.value == selectedValue) {
+                            Modifier.focusRequester(selectedOptionFocusRequester)
+                        } else {
+                            Modifier
+                        },
                     )
                 }
             }
@@ -80,10 +100,11 @@ private fun PickerOptionRow(
     hint: String,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(8.dp)
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .background(

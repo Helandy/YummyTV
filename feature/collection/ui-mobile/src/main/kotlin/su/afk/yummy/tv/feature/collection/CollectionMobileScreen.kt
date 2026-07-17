@@ -30,6 +30,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.mobile.R
 import su.afk.yummy.tv.feature.collection.view.CollectionMobileHeader
+import su.afk.yummy.tv.feature.collection.view.MobileCollectionEditDialog
+import su.afk.yummy.tv.feature.collection.view.MobileDeleteCollectionDialog
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -65,6 +67,27 @@ fun CollectionMobileScreen(
 ) {
     val context = LocalContext.current
     val collection = state.collection
+
+    if (state.isEditDialogVisible) {
+        MobileCollectionEditDialog(
+            title = state.editTitle,
+            description = state.editDescription,
+            isPublic = state.editIsPublic,
+            isUpdating = state.isUpdating,
+            onTitleChanged = { onEvent(CollectionState.Event.EditTitleChanged(it)) },
+            onDescriptionChanged = { onEvent(CollectionState.Event.EditDescriptionChanged(it)) },
+            onPublicChanged = { onEvent(CollectionState.Event.EditPublicChanged(it)) },
+            onConfirm = { onEvent(CollectionState.Event.EditConfirmed) },
+            onDismiss = { onEvent(CollectionState.Event.EditDismissed) },
+        )
+    }
+    if (state.isDeleteDialogVisible) {
+        MobileDeleteCollectionDialog(
+            isDeleting = state.isDeleting,
+            onConfirm = { onEvent(CollectionState.Event.DeleteConfirmed) },
+            onDismiss = { onEvent(CollectionState.Event.DeleteDismissed) },
+        )
+    }
 
     LaunchedEffect(effect, context) {
         effect.collect { event ->
@@ -103,7 +126,12 @@ fun CollectionMobileScreen(
                     CollectionMobileHeader(
                         collection = collection,
                         isVoteLoading = state.isVoteLoading,
+                        isOwner = state.isOwner,
+                        isMutationLoading = state.isUpdating || state.isDeleting,
                         onVote = { vote -> onEvent(CollectionState.Event.VoteSelected(vote)) },
+                        onEdit = { onEvent(CollectionState.Event.EditSelected) },
+                        onDelete = { onEvent(CollectionState.Event.DeleteSelected) },
+                        onComments = { onEvent(CollectionState.Event.CommentsSelected) },
                     )
                 }
                 items(collection.animes, key = { it.id }) { item ->

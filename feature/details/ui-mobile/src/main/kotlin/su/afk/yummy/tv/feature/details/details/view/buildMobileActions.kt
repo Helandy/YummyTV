@@ -8,7 +8,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -31,6 +33,8 @@ internal fun buildMobileActions(
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onReviewsSelected: () -> Unit,
+    onBloggerVideosSelected: () -> Unit,
 ): List<MobileDetailsAction> {
     val availableActions = buildList {
         add(
@@ -97,6 +101,25 @@ internal fun buildMobileActions(
                 stringResource(R.string.details_mobile_collections),
                 Icons.Filled.CollectionsBookmark,
                 onCollectionsSelected,
+            )
+        )
+        add(
+            MobileDetailsAction(
+                DetailsButtonAction.REVIEWS,
+                if (details.reviewsCount > 0) stringResource(
+                    R.string.details_mobile_reviews_count,
+                    details.reviewsCount
+                ) else stringResource(R.string.details_mobile_reviews),
+                Icons.Filled.RateReview,
+                onReviewsSelected,
+            )
+        )
+        add(
+            MobileDetailsAction(
+                DetailsButtonAction.BLOGGER_VIDEOS,
+                stringResource(R.string.details_mobile_blogger_videos),
+                Icons.Filled.VideoCameraFront,
+                onBloggerVideosSelected,
             )
         )
         if (details.screenshots.isNotEmpty()) {

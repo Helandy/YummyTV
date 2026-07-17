@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
+import su.afk.yummy.tv.core.storage.account.AccountUserListCache
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStateEntry
@@ -17,11 +18,41 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.repository.UserListsRepository
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListItem as toStoredUserListItem
 
+private const val FAVORITES_LIST_ID = 4
+private val ALL_LIST_IDS = UserAnimeList.entries.map(UserAnimeList::id) + FAVORITES_LIST_ID
+
 class YaniUserListsRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorageStore,
     private val settingsStore: SettingsStore,
 ) : UserListsRepository {
+
+    override suspend fun getAllUserLists(
+        userId: Int,
+        forceRefresh: Boolean,
+    ): List<UserAnimeListItem> =
+        withContext(Dispatchers.IO) {
+            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
+            val stored = ALL_LIST_IDS.mapNotNull { listId ->
+                accountStorage.getUserList(userId, listId, languageCode)
+            }
+            if (!forceRefresh &&
+                stored.size == ALL_LIST_IDS.size &&
+                stored.all { it.isFresh(ACCOUNT_SHORT_TTL_MS) }
+            ) {
+                return@withContext stored.toMergedUserListItems()
+            }
+
+            try {
+                fetchAllUserLists(userId, languageCode)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored.takeIf { it.size == ALL_LIST_IDS.size }
+                    ?.toMergedUserListItems()
+                    ?: throw error
+            }
+        }
 
     override suspend fun getUserList(
         userId: Int,
@@ -71,6 +102,7 @@ class YaniUserListsRepository(
             api.setAnimeList(animeId, list.id)
             updateCachedListState(userId, animeId, listId = list.id, updateList = true)
             invalidateUserLists(userId)
+            accountStorage.invalidateListStats(animeId)
         }
 
     override suspend fun removeAnimeList(animeId: Int) = withContext(Dispatchers.IO) {
@@ -78,6 +110,7 @@ class YaniUserListsRepository(
         api.removeAnimeList(animeId)
         updateCachedListState(userId, animeId, listId = null, updateList = true)
         invalidateUserLists(userId)
+        accountStorage.invalidateListStats(animeId)
     }
 
     override suspend fun setFavorite(animeId: Int, favorite: Boolean) =
@@ -91,10 +124,6 @@ class YaniUserListsRepository(
             updateCachedListState(userId, animeId, isFavorite = favorite)
             invalidateUserLists(userId)
         }
-
-    private companion object {
-        const val FAVORITES_LIST_ID = 4
-    }
 
     private suspend fun currentUserId(): Int =
         settingsStore.yaniUserId.first()
@@ -136,6 +165,30 @@ class YaniUserListsRepository(
         return cache.toUserListItems()
     }
 
+    private suspend fun fetchAllUserLists(
+        userId: Int,
+        languageCode: String,
+    ): List<UserAnimeListItem> {
+        val response = api.getAllUserLists(userId)
+        val cachedAt = System.currentTimeMillis()
+        val caches = ALL_LIST_IDS.map { listId ->
+            response.filter { item ->
+                if (listId == FAVORITES_LIST_ID) {
+                    item.user?.list?.isFav == true
+                } else {
+                    item.user?.list?.list?.id == listId
+                }
+            }.toUserListCache(
+                userId = userId,
+                listId = listId,
+                language = languageCode,
+                cachedAt = cachedAt,
+            )
+        }
+        accountStorage.saveUserLists(caches)
+        return caches.toMergedUserListItems()
+    }
+
     private suspend fun fetchAnimeListState(userId: Int, animeId: Int): UserAnimeListItem {
         val state = api.getAnimeListState(animeId)
         val entry = state.toAnimeListStateEntry(
@@ -173,4 +226,21 @@ class YaniUserListsRepository(
         }
     }
 
+}
+
+private fun List<AccountUserListCache>.toMergedUserListItems():
+        List<UserAnimeListItem> {
+    val itemsByAnimeId = linkedMapOf<Int, UserAnimeListItem>()
+    filter { it.entry.listId != FAVORITES_LIST_ID }
+        .flatMap { it.toUserListItems() }
+        .forEach { item -> itemsByAnimeId[item.animeId] = item }
+    firstOrNull { it.entry.listId == FAVORITES_LIST_ID }
+        ?.toUserListItems()
+        .orEmpty()
+        .forEach { favorite ->
+            itemsByAnimeId[favorite.animeId] = itemsByAnimeId[favorite.animeId]
+                ?.copy(isFavorite = true)
+                ?: favorite
+        }
+    return itemsByAnimeId.values.toList()
 }

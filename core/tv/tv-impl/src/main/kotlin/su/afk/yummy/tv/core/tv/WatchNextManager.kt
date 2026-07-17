@@ -6,7 +6,7 @@ import androidx.tvprovider.media.tv.TvContractCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.core.utils.KodikThumbnailExtractor
+import su.afk.yummy.tv.core.utils.ResolveKodikThumbnailUrlUseCase
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,6 +24,7 @@ private const val COLUMN_INTENT_URI = "intent_uri"
 @Singleton
 internal class WatchNextManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) {
     private val resolver = context.contentResolver
 
@@ -66,9 +67,9 @@ internal class WatchNextManager @Inject constructor(
 
     private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
         val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
-        return screenshotSource?.let { KodikThumbnailExtractor.extract(it) }
+        return screenshotSource?.let { resolveKodikThumbnailUrl(it) }
             ?: entry.episodeUrl.takeIf { it.isNotBlank() }
-                ?.let { KodikThumbnailExtractor.extract(it) }
+                ?.let { resolveKodikThumbnailUrl(it) }
     }
 }
 

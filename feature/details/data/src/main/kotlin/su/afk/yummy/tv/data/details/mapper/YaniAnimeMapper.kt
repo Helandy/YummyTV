@@ -38,8 +38,14 @@ internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
         otherTitles = source.otherTitles.filter { it.isNotBlank() },
         creators = source.creators.mapNotNull { it.toPerson() },
         studios = source.studios.mapNotNull { it.toStudio() },
-        viewingOrder = source.viewingOrder.mapNotNull { it.toViewingOrderItem() },
+        viewingOrder = source.viewingOrder.mapNotNull {
+            it.toViewingOrderItem(
+                currentAnimeId = source.animeId,
+                currentEpisodes = source.episodes
+            )
+        },
         screenshots = source.randomScreenshots.toAnimeScreenshots(),
+        reviewsCount = source.reviewsCount.coerceAtLeast(0),
     )
 }
 
@@ -90,7 +96,7 @@ private fun YaniNamedDto.toPerson(): AnimePerson? =
     title.knownText()?.let { AnimePerson(id = id, title = it) }
 
 private fun YaniNamedDto.toStudio(): AnimeStudio? =
-    title.knownText()?.let { AnimeStudio(id = id, title = it) }
+    title.knownText()?.let { AnimeStudio(id = id, title = it, url = url.knownText()) }
 
 private fun YaniEpisodesDto.toAnimeEpisodes(): AnimeEpisodes = AnimeEpisodes(
     count = count?.takeIf { it > 0 },
@@ -99,7 +105,10 @@ private fun YaniEpisodesDto.toAnimeEpisodes(): AnimeEpisodes = AnimeEpisodes(
     prevDateEpochSeconds = prevDate?.takeIf { it > 0 },
 )
 
-private fun YaniViewingOrderItemDto.toViewingOrderItem(): AnimeViewingOrderItem? {
+private fun YaniViewingOrderItemDto.toViewingOrderItem(
+    currentAnimeId: Int?,
+    currentEpisodes: YaniEpisodesDto?,
+): AnimeViewingOrderItem? {
     val id = animeId ?: return null
     val safeTitle = title.takeIf { it.isNotBlank() } ?: return null
 
@@ -108,7 +117,14 @@ private fun YaniViewingOrderItemDto.toViewingOrderItem(): AnimeViewingOrderItem?
         title = safeTitle,
         relation = data?.text.knownText(),
         type = type?.name.knownText() ?: type?.shortname.knownText(),
-        episodesCount = type?.value?.takeIf { it > 0 },
+        // API не отдаёт количество серий для элементов viewing_order — только код типа
+        // (TV/OVA/фильм и т.д.). Для текущего тайтла берём реальное число серий из
+        // основного ответа; для остальных элементов честно оставляем null.
+        episodesCount = if (id == currentAnimeId) {
+            currentEpisodes?.count?.takeIf { it > 0 } ?: currentEpisodes?.aired?.takeIf { it > 0 }
+        } else {
+            null
+        },
         poster = poster?.toAnimePoster(),
         year = year?.takeIf { it > 0 },
         rating = rating?.takeIf { it > 0.0 },

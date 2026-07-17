@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.anime
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -39,6 +40,7 @@ data class AnimeDetailsEntry(
     val episodesAired: Int? = null,
     val episodesNextDateEpochSeconds: Long? = null,
     val episodesPrevDateEpochSeconds: Long? = null,
+    @ColumnInfo(defaultValue = "0") val reviewsCount: Int = 0,
     val cachedAt: Long,
 )
 
@@ -76,6 +78,7 @@ data class AnimeDetailNamedEntry(
     val position: Int,
     val itemId: Int? = null,
     val title: String,
+    val itemUrl: String? = null,
 )
 
 @Entity(

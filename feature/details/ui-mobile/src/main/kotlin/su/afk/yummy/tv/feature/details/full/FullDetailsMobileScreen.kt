@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMetaRow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.feature.details.full.view.MobileRelationRow
 import su.afk.yummy.tv.feature.details.mobile.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -98,15 +99,36 @@ fun FullDetailsMobileScreen(
                     )
                 }
                 item {
-                    MobileMetaRow(
-                        stringResource(R.string.details_mobile_studios),
-                        details?.studios.orEmpty().joinToString { it.title },
+                    MobileRelationRow(
+                        label = stringResource(R.string.details_mobile_genres),
+                        items = details?.genres.orEmpty().mapNotNull { genre ->
+                            val id = genre.id ?: return@mapNotNull null
+                            genre.title to {
+                                onEvent(FullDetailsState.Event.GenreSelected(id))
+                            }
+                        },
                     )
                 }
                 item {
-                    MobileMetaRow(
-                        stringResource(R.string.details_mobile_creators),
-                        details?.creators.orEmpty().joinToString { it.title },
+                    MobileRelationRow(
+                        label = stringResource(R.string.details_mobile_studios),
+                        items = details?.studios.orEmpty().mapNotNull { studio ->
+                            val id = studio.id ?: return@mapNotNull null
+                            studio.title to {
+                                onEvent(FullDetailsState.Event.StudioSelected(id, studio.url))
+                            }
+                        },
+                    )
+                }
+                item {
+                    MobileRelationRow(
+                        label = stringResource(R.string.details_mobile_creators),
+                        items = details?.creators.orEmpty().mapNotNull { creator ->
+                            val id = creator.id ?: return@mapNotNull null
+                            creator.title to {
+                                onEvent(FullDetailsState.Event.DirectorSelected(id))
+                            }
+                        },
                     )
                 }
             }

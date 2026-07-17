@@ -12,6 +12,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
@@ -90,6 +91,12 @@ internal fun AccountMobileLoginCard(
                 } else {
                     Text(stringResource(R.string.account_login))
                 }
+            }
+            TextButton(
+                onClick = { onEvent(AccountState.Event.PasswordResetSelected) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.account_forgot_password))
             }
             if (state.isCaptchaRequired) {
                 key(state.captchaChallengeId) {

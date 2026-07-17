@@ -36,7 +36,7 @@ import coil3.compose.AsyncImage
 internal fun DetailsMediaCard(
     title: String,
     subtitle: String?,
-    imageUrl: String?,
+    imageModel: Any?,
     modifier: Modifier = Modifier,
     footerText: String? = null,
     footerTextColor: Color = Color.Unspecified,
@@ -87,7 +87,7 @@ internal fun DetailsMediaCard(
                 contentAlignment = Alignment.Center,
             ) {
                 AsyncImage(
-                    model = imageUrl,
+                    model = imageModel,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

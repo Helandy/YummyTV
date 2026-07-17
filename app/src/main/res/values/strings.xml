@@ -4,4 +4,10 @@
     <string name="search_settings_description">Search YummyTV catalog</string>
     <string name="search_suggest_anime">Anime</string>
     <string name="search_suggest_rating">Rating: %1$.1f</string>
+    <string name="interface_mode_title">Choose interface</string>
+    <string name="interface_mode_message">You can choose the interface that works best with this device.</string>
+    <string name="interface_mode_tv">TV interface</string>
+    <string name="interface_mode_tv_hint">Large controls and comfortable remote navigation</string>
+    <string name="interface_mode_mobile">Mobile interface</string>
+    <string name="interface_mode_mobile_hint">Compact layout optimized for touchscreen controls</string>
 </resources>

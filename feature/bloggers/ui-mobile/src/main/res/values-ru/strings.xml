@@ -1,0 +1,37 @@
+<resources>
+    <string name="blogger_video_comments">Комментарии (%1$s)</string>
+    <string name="blogger_details_title">Блогер</string>
+    <string name="blogger_details_loading">Загружаем страницу блогера…</string>
+    <string name="blogger_subscribers">Подписчиков: %1$d</string>
+    <string name="blogger_videos_count">Видео: %1$d</string>
+    <string name="blogger_subscribe">Подписаться</string>
+    <string name="blogger_unsubscribe">Отписаться</string>
+    <string name="blogger_videos_section">Видео</string>
+    <string name="blogger_video_details_title">Видео</string>
+    <string name="blogger_video_loading">Загружаем видео…</string>
+    <string name="blogger_video_watch">Смотреть</string>
+    <string name="blogger_video_spoiler">Содержит спойлеры</string>
+    <string name="blogger_video_spoiler_short">Спойлеры</string>
+    <string name="blogger_video_views">Просмотры: %1$s</string>
+    <string name="blogger_video_reactions_title">Оцените видео</string>
+    <string name="blogger_video_about">О видео</string>
+    <string name="blogger_open_page">Страница блогера</string>
+    <string name="blogger_videos_title">Видео блогеров</string>
+    <string name="blogger_videos_anime_title">Видео об аниме</string>
+    <string name="blogger_videos_retry">Повторить</string>
+    <string name="blogger_videos_loading">Загружаем видео блогеров…</string>
+    <string name="blogger_videos_error">Не удалось загрузить видео блогеров</string>
+    <string name="blogger_videos_empty">Видео блогеров не найдены</string>
+    <string name="blogger_videos_all">Все</string>
+    <string name="blogger_videos_all_bloggers">Все блогеры</string>
+    <string name="blogger_videos_sort_new">Новые</string>
+    <string name="blogger_videos_sort_top">Популярные</string>
+    <string name="blogger_videos_sort_old">Старые</string>
+    <string name="blogger_filters">Фильтры</string>
+    <string name="blogger_filters_count">Фильтры · %1$d</string>
+    <string name="blogger_filters_title">Фильтры видео</string>
+    <string name="blogger_filters_category">Категория</string>
+    <string name="blogger_filters_blogger">Блогер</string>
+    <string name="blogger_filters_reset">Сбросить</string>
+    <string name="blogger_filters_done">Готово</string>
+</resources>

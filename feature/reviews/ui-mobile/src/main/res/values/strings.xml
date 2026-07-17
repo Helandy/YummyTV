@@ -1,0 +1,26 @@
+<resources>
+    <string name="review_comments">Comments (%1$s)</string>
+    <string name="reviews_title">Reviews</string>
+    <string name="reviews_new">New</string>
+    <string name="reviews_old">Old</string>
+    <string name="reviews_top">Top</string>
+    <string name="reviews_empty">No reviews yet</string>
+    <string name="reviews_error">Could not load reviews</string>
+    <string name="review_like">Like</string>
+    <string name="review_dislike">Dislike</string>
+    <string name="review_views">Views: %1$s</string>
+    <string name="review_count_thousands">%1$sK</string>
+    <string name="review_count_millions">%1$sM</string>
+    <string name="review_details_title">Review</string>
+    <string name="review_anime_label">Title</string>
+    <string name="review_anime_open">Open title</string>
+    <string name="review_rating_title">Ratings</string>
+    <string name="review_reactions_title">Was this review helpful?</string>
+    <string name="review_waiting">Awaiting moderation</string>
+    <string name="review_declined">Declined</string>
+    <string name="review_approved">Published</string>
+    <string name="review_delete">Delete</string>
+    <string name="review_delete_confirm">Delete this review?</string>
+    <string name="review_cancel">Cancel</string>
+    <string name="review_retry">Retry</string>
+</resources>

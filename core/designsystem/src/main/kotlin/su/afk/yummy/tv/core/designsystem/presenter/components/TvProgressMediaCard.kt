@@ -40,7 +40,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 @Composable
 fun TvProgressMediaCard(
     title: String,
-    imageUrl: String?,
+    imageModel: Any?,
     subtitle: String,
     trailingSubtitle: String?,
     progress: Float,
@@ -95,13 +95,13 @@ fun TvProgressMediaCard(
                 contentAlignment = Alignment.Center,
             ) {
                 AsyncImage(
-                    model = imageUrl,
+                    model = imageModel,
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                if (imageUrl == null) {
+                if (imageModel == null) {
                     Text(
                         text = title.take(1),
                         style = MaterialTheme.typography.displayLarge,

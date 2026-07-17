@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
+import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
@@ -29,6 +30,11 @@ class UserProfileState {
         val posts: Flow<PagingData<UserPostSummary>> = flowOf(PagingData.empty()),
         val reviews: Flow<PagingData<UserReviewSummary>> = flowOf(PagingData.empty()),
         val friends: Flow<PagingData<UserFriend>> = flowOf(PagingData.empty()),
+        val isAuthorized: Boolean = false,
+        val isOwnProfile: Boolean = false,
+        val friendshipStatus: FriendshipStatus = FriendshipStatus.NONE,
+        val isFriendshipLoading: Boolean = false,
+        val friendshipError: Boolean = false,
     ) : UiState
 
     data class PagedContent<T>(
@@ -63,7 +69,14 @@ class UserProfileState {
         data class ListFilterSelected(val filter: ListFilter) : Event
         data object RetryTabSelected : Event
         data class AnimeSelected(val animeId: Int) : Event
+        data class CollectionSelected(val collectionId: Int) : Event
+        data class PostSelected(val postId: Int) : Event
+        data class ReviewSelected(val reviewId: Int) : Event
         data class FriendSelected(val userId: Int) : Event
+        data object FriendshipActionSelected : Event
+        data object LoginToFriendSelected : Event
+        data object MessageSelected : Event
+        data object CommentsSelected : Event
     }
 
     sealed interface Effect : UiEffect

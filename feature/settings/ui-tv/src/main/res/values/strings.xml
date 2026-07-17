@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_tab_posters">Posters</string>
+    <string name="settings_tab_interface">Interface</string>
     <string name="settings_tab_poster_size">Poster size</string>
     <string name="settings_tab_poster_quality">Quality</string>
     <string name="settings_tab_continue_watching">Continue</string>
@@ -15,6 +16,15 @@
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">About</string>
     <string name="settings_poster_size_title">Poster size on screen</string>
+    <string name="settings_interface_mobile">Mobile</string>
+    <string name="settings_interface_mobile_hint">Optimized for touchscreen controls</string>
+    <string name="settings_interface_tv">TV</string>
+    <string name="settings_interface_tv_hint">Optimized for remote control navigation</string>
+    <string name="settings_interface_confirm_title">Switch interface?</string>
+    <string name="settings_interface_confirm_message">Switch to %1$s? The app will restart and the current screen will close.</string>
+    <string name="settings_interface_confirm">Switch</string>
+    <string name="settings_interface_cancel">Cancel</string>
+    <string name="settings_interface_restart_failed">The interface will change the next time you open the app</string>
     <string name="settings_poster_quality_title">Poster image quality</string>
     <string name="settings_show_top_title_year">Show title year in Top</string>
     <string name="settings_show_top_title_year_enabled">Year is shown on Top title cards</string>
@@ -36,6 +46,8 @@
     <string name="settings_details_button_viewing_order">Viewing order</string>
     <string name="settings_details_button_rating">Rating</string>
     <string name="settings_details_button_collections">Collections</string>
+    <string name="settings_details_button_reviews">Reviews</string>
+    <string name="settings_details_button_blogger_videos">Blogger videos</string>
     <string name="settings_details_button_screenshots">Screenshots</string>
     <string name="settings_preview_channel_label">New releases</string>
     <string name="settings_preview_channel_added">Channel added to the home screen</string>

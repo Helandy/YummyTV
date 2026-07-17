@@ -10,6 +10,7 @@ internal fun LibraryItem.tvDateText(tab: LibraryTab): String? =
     when (tab) {
         LibraryTab.FAVORITES -> favoriteUpdatedAt
         LibraryTab.CONTINUE_WATCHING -> 0L
+        LibraryTab.HISTORY -> 0L
         else -> listUpdatedAt
     }.formatLibraryDate()
 

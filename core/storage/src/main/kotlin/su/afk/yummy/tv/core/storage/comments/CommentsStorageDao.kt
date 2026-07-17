@@ -95,8 +95,36 @@ abstract class CommentsStorageDao {
     @Query("DELETE FROM comment_items WHERE scopeType = :scopeType AND ownerId = :ownerId")
     abstract suspend fun deleteItemsForScope(scopeType: String, ownerId: Int)
 
+    @Query("DELETE FROM comment_pages WHERE scopeType LIKE :scopePrefix || '%' AND ownerId = :ownerId")
+    abstract suspend fun deletePagesForScopePrefix(scopePrefix: String, ownerId: Int)
+
+    @Query("DELETE FROM comment_items WHERE scopeType LIKE :scopePrefix || '%' AND ownerId = :ownerId")
+    abstract suspend fun deleteItemsForScopePrefix(scopePrefix: String, ownerId: Int)
+
     @Query("DELETE FROM comment_items WHERE commentId = :commentId")
     abstract suspend fun deleteItemsByCommentId(commentId: Int)
+
+    @Query(
+        """
+        SELECT DISTINCT page.* FROM comment_pages AS page
+        INNER JOIN comment_items AS item
+            ON item.scopeType = page.scopeType
+            AND item.ownerId = page.ownerId
+            AND item.sort = page.sort
+            AND item.`limit` = page.`limit`
+            AND item.skip = page.skip
+        WHERE item.commentId = :commentId
+        """
+    )
+    abstract suspend fun getPagesContainingComment(commentId: Int): List<CommentPageEntry>
+
+    @Query(
+        """
+        SELECT DISTINCT parentId FROM comment_items
+        WHERE commentId = :commentId AND parentId IS NOT NULL
+        """
+    )
+    abstract suspend fun getParentIds(commentId: Int): List<Int>
 
     @Query(
         """
@@ -197,5 +225,23 @@ abstract class CommentsStorageDao {
     open suspend fun invalidateScope(scopeType: String, ownerId: Int) {
         deleteItemsForScope(scopeType, ownerId)
         deletePagesForScope(scopeType, ownerId)
+    }
+
+    @Transaction
+    open suspend fun invalidateScopePrefix(scopePrefix: String, ownerId: Int) {
+        deleteItemsForScopePrefix(scopePrefix, ownerId)
+        deletePagesForScopePrefix(scopePrefix, ownerId)
+    }
+
+    @Transaction
+    open suspend fun invalidatePagesContainingComment(commentId: Int) {
+        val affectedCommentIds = listOf(commentId) + getParentIds(commentId)
+        affectedCommentIds
+            .flatMap { id -> getPagesContainingComment(id) }
+            .distinct()
+            .forEach { page ->
+                deleteItems(page.scopeType, page.ownerId, page.sort, page.limit, page.skip)
+                deletePage(page.scopeType, page.ownerId, page.sort, page.limit, page.skip)
+            }
     }
 }

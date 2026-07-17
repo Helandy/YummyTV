@@ -24,8 +24,10 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
         entry = CollectionDetailEntry(
             collectionId = id ?: fallbackId,
             language = language,
+            ownerId = owner?.id ?: 0,
             title = title,
             description = description,
+            isPublic = isPublic,
             views = views,
             posterUrl = posterPreviews.firstOrNull()?.toUrl(),
             likes = likes?.likes?.coerceAtLeast(0) ?: 0,
@@ -53,8 +55,10 @@ internal fun YaniCollectionDetailDto.toCollectionDetailCache(
 internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
     CollectionDetail(
         id = entry.collectionId,
+        ownerId = entry.ownerId,
         title = entry.title,
         description = entry.description,
+        isPublic = entry.isPublic,
         views = entry.views,
         posterUrl = entry.posterUrl,
         likesCount = entry.likes,

@@ -9,6 +9,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
@@ -21,12 +23,15 @@ class SettingsViewModel @Inject internal constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
+    private val interfaceModePreferences: AppInterfaceModePreferences,
     private val tvIntegration: ITvIntegration,
     private val nav: NavigationManager,
     private val analytics: SettingsAnalytics,
 ) : BaseViewModelNew<SettingsState.State, SettingsState.Event, SettingsState.Effect>(savedStateHandle) {
 
-    override fun createInitialState() = SettingsState.State()
+    override fun createInitialState() = SettingsState.State(
+        interfaceMode = interfaceModePreferences.selectedMode ?: AppInterfaceMode.MOBILE,
+    )
 
     init {
         analytics.eventScreenOpened()
@@ -45,6 +50,7 @@ class SettingsViewModel @Inject internal constructor(
                         previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
                         autoPlayNextEpisode = snapshot.autoPlayNextEpisode,
+                        pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
                         refreshContinueWatchingProgressOnLaunch =
                             snapshot.refreshContinueWatchingProgressOnLaunch,
@@ -55,6 +61,11 @@ class SettingsViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        settingsStore.mobilePlayerGestureTutorialDismissed
+            .onEach { dismissed ->
+                setState { copy(mobilePlayerGestureTutorialDismissed = dismissed) }
+            }
+            .launchIn(viewModelScope)
         tvIntegration.previewChannelBrowsable
             .onEach { setState { copy(isPreviewChannelBrowsable = it) } }
             .launchIn(viewModelScope)
@@ -63,6 +74,13 @@ class SettingsViewModel @Inject internal constructor(
     override fun onEvent(event: SettingsState.Event) {
         when (event) {
             SettingsState.Event.BackSelected -> nav.back()
+            is SettingsState.Event.InterfaceModeSelected -> {
+                if (event.mode == currentState.interfaceMode) return
+                interfaceModePreferences.select(event.mode)
+                analytics.eventInterfaceModeSelected(event.mode)
+                setState { copy(interfaceMode = event.mode) }
+                setEffect(SettingsState.Effect.RestartApplication)
+            }
             is SettingsState.Event.AppThemeSelected -> viewModelScope.launch {
                 analytics.eventAppThemeSelected(event.theme)
                 settingsStore.setAppTheme(event.theme)
@@ -116,6 +134,15 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.autoPlayNextEpisode
                 analytics.eventAutoPlayNextEpisodeToggled(enabled)
                 settingsStore.setAutoPlayNextEpisode(enabled)
+            }
+            SettingsState.Event.PictureInPictureToggled -> viewModelScope.launch {
+                val enabled = !currentState.pictureInPictureEnabled
+                analytics.eventPictureInPictureToggled(enabled)
+                settingsStore.setPictureInPictureEnabled(enabled)
+            }
+            SettingsState.Event.MobilePlayerGestureTutorialReset -> viewModelScope.launch {
+                analytics.eventMobilePlayerGestureTutorialReset()
+                settingsStore.resetMobilePlayerGestureTutorial()
             }
             SettingsState.Event.SuggestNextEpisodeOnWatchedToggled -> viewModelScope.launch {
                 val enabled = !currentState.suggestNextEpisodeOnWatched

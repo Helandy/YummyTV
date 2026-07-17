@@ -8,6 +8,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.core.preferences.auth.KeystoreYaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
+import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.DataStoreSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import javax.inject.Singleton
@@ -20,6 +22,12 @@ object PreferencesModule {
     @Singleton
     fun provideSettingsStore(@ApplicationContext context: Context): SettingsStore =
         DataStoreSettingsStore(context)
+
+    @Provides
+    @Singleton
+    fun provideAppInterfaceModePreferences(
+        @ApplicationContext context: Context,
+    ): AppInterfaceModePreferences = SharedPreferencesAppInterfaceModePreferences(context)
 
     @Provides
     @Singleton

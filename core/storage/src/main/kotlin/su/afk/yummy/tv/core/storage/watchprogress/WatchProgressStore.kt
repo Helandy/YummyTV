@@ -134,10 +134,11 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
     /**
      * Сохраняет фактическую позицию просмотра серии.
      *
-     * Позиции меньше минимального порога не создают отдельный прогресс, но уже созданная цель
-     * продолжения `0:00` сохраняется до тех пор, пока просмотр не станет значимым. Запись
-     * синхронизирована с [saveContinueTarget], чтобы параллельные события плеера не перетирали
-     * более актуальное состояние серии.
+     * Позиции меньше минимального порога не создают отдельный прогресс. Уже созданная цель
+     * продолжения `0:00` обновляет метаданные, а существующая значимая запись сохраняется без
+     * изменений: временный ноль от lifecycle/Media3 не должен удалять Continue Watching.
+     * Запись синхронизирована с [saveContinueTarget], чтобы параллельные события плеера не
+     * перетирали более актуальное состояние серии.
      */
     suspend fun save(
         animeId: Int,
@@ -169,6 +170,9 @@ class WatchProgressStore(private val dao: WatchProgressDao) {
                         updatedAt = updatedAt,
                     )
                 )
+                return@withLock
+            }
+            if (existing != null && isMeaningfulProgressEntry(existing)) {
                 return@withLock
             }
             dao.delete(animeId, episode)

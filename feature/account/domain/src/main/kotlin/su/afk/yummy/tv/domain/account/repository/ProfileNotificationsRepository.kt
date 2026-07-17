@@ -10,4 +10,5 @@ interface ProfileNotificationsRepository {
     suspend fun markNotificationRead(id: Int): Boolean
     suspend fun markAllNotificationsRead(): Boolean
     suspend fun deleteNotification(id: Int): Boolean
+    suspend fun deleteAllNotifications(): Boolean
 }

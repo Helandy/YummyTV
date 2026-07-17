@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.feature.library
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -12,14 +15,18 @@ import su.afk.yummy.tv.core.error.StringProvider
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.OffsetPage
+import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
+import su.afk.yummy.tv.domain.library.usecase.GetWatchHistoryPageUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.library.handler.HistoryLaunchHandler
 import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
 import su.afk.yummy.tv.feature.library.presentation.R
@@ -43,13 +50,17 @@ class LibraryViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
     private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val getWatchHistoryPage: GetWatchHistoryPageUseCase,
+    private val historyLaunchHandler: HistoryLaunchHandler,
     private val stringProvider: StringProvider,
     private val analytics: LibraryAnalytics,
 ) : BaseViewModelNew<LibraryState.State, LibraryState.Event, LibraryState.Effect>(savedStateHandle) {
 
     override fun createInitialState() = LibraryState.State(
+        watchHistory = createWatchHistoryFlow(),
         selectedTab = savedStateHandle.get<String>(KEY_SELECTED_TAB)
             ?.let { runCatching { LibraryTab.valueOf(it) }.getOrNull() }
+            ?.takeIf { it in LibraryTab.visibleEntries }
             ?: LibraryTab.CONTINUE_WATCHING
     )
 
@@ -118,8 +129,15 @@ class LibraryViewModel @Inject internal constructor(
                 openDetails(event.entry.animeId)
             }
 
+            is LibraryState.Event.HistorySelected -> launchHistory(event.entry)
+
+            is LibraryState.Event.HistoryDetailsSelected -> openDetails(event.animeId)
+
             is LibraryState.Event.TabSelected -> {
-                if (event.tab != currentState.selectedTab) {
+                if (
+                    event.tab in LibraryTab.visibleEntries &&
+                    event.tab != currentState.selectedTab
+                ) {
                     analytics.eventTabSelected(event.tab)
                     setState { copy(selectedTab = event.tab) }
                 }
@@ -259,6 +277,34 @@ class LibraryViewModel @Inject internal constructor(
             nav.navigate(result.destination)
         }
     }
+
+    private fun launchHistory(entry: su.afk.yummy.tv.domain.library.model.WatchHistoryEntry) {
+        viewModelScope.launch {
+            runCatching { historyLaunchHandler.destination(entry) }
+                .onSuccess(nav::navigate)
+                .onFailure {
+                    setEffect(
+                        LibraryState.Effect.ShowToast(
+                            it.message ?: stringProvider.get(R.string.library_history_launch_error),
+                        ),
+                    )
+                }
+        }
+    }
+
+    private fun createWatchHistoryFlow() = Pager(
+        config = PagingConfig(pageSize = 100, initialLoadSize = 100, enablePlaceholders = false),
+        pagingSourceFactory = {
+            OffsetPagingSource { limit, offset ->
+                val items = getWatchHistoryPage(limit.coerceAtMost(100), offset)
+                OffsetPage(
+                    items = items,
+                    nextOffset = offset + items.size,
+                    canLoadMore = items.size >= limit.coerceAtMost(100),
+                )
+            }
+        },
+    ).flow.cachedIn(viewModelScope)
 
     private fun Long.toToastTimeString(): String {
         val totalSeconds = coerceAtLeast(0L) / 1_000L

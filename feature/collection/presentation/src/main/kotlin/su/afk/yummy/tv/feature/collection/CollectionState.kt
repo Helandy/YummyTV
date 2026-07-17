@@ -10,11 +10,22 @@ class CollectionState {
     data class State(
         val isLoading: Boolean = true,
         val isVoteLoading: Boolean = false,
+        val currentUserId: Int = 0,
         val collection: CollectionDetail? = null,
         val error: String? = null,
         val firstVisibleItemIndex: Int = 0,
         val firstVisibleItemScrollOffset: Int = 0,
-    ) : UiState
+        val isEditDialogVisible: Boolean = false,
+        val editTitle: String = "",
+        val editDescription: String = "",
+        val editIsPublic: Boolean = false,
+        val isUpdating: Boolean = false,
+        val isDeleteDialogVisible: Boolean = false,
+        val isDeleting: Boolean = false,
+    ) : UiState {
+        val isOwner: Boolean
+            get() = currentUserId > 0 && collection?.ownerId == currentUserId
+    }
 
     /** Пользовательские действия на экране коллекции. */
     sealed interface Event : UiEvent {
@@ -29,6 +40,17 @@ class CollectionState {
 
         /** Пользователь выбрал лайк или дизлайк для коллекции. */
         data class VoteSelected(val vote: CollectionVote) : Event
+
+        data object EditSelected : Event
+        data object EditDismissed : Event
+        data object EditConfirmed : Event
+        data class EditTitleChanged(val title: String) : Event
+        data class EditDescriptionChanged(val description: String) : Event
+        data class EditPublicChanged(val isPublic: Boolean) : Event
+        data object DeleteSelected : Event
+        data object DeleteDismissed : Event
+        data object DeleteConfirmed : Event
+        data object CommentsSelected : Event
 
         /** Сетка коллекции прокрутилась к указанной позиции и смещению. */
         data class GridScrolled(val index: Int, val offset: Int) : Event

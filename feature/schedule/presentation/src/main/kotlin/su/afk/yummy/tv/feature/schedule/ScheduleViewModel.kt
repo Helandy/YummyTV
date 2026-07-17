@@ -35,6 +35,8 @@ class ScheduleViewModel @Inject internal constructor(
 
     override fun onEvent(event: ScheduleState.Event) {
         when (event) {
+            ScheduleState.Event.BackSelected -> nav.back()
+
             is ScheduleState.Event.AnimeSelected -> {
                 analytics.eventAnimeSelected(event.animeId)
                 nav.navigate(detailsNavigator.getDetailsDest(event.animeId))

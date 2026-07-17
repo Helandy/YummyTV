@@ -6,12 +6,13 @@ import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.R
 
 internal fun libraryTabsDisplayOrder(): List<LibraryTab> =
-    LibraryTab.entries
+    LibraryTab.visibleEntries
 
 @Composable
 internal fun LibraryTab.label(): String = stringResource(
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching
+        LibraryTab.HISTORY -> R.string.library_tab_history
         LibraryTab.FAVORITES -> R.string.library_tab_favorites
         LibraryTab.WATCHING -> R.string.library_tab_watching
         LibraryTab.PLANNED -> R.string.library_tab_planned
@@ -25,6 +26,7 @@ internal fun LibraryTab.label(): String = stringResource(
 internal fun LibraryTab.shortLabel(): String = stringResource(
     when (this) {
         LibraryTab.CONTINUE_WATCHING -> R.string.library_tab_continue_watching_short
+        LibraryTab.HISTORY -> R.string.library_tab_history_short
         LibraryTab.FAVORITES -> R.string.library_tab_favorites_short
         LibraryTab.WATCHING -> R.string.library_tab_watching_short
         LibraryTab.PLANNED -> R.string.library_tab_planned_short

@@ -1,0 +1,8 @@
+<resources>
+    <string name="blogger_details_load_error">Failed to load blogger</string>
+    <string name="blogger_video_load_error">Failed to load video</string>
+    <string name="bloggers_auth_required">Sign in to perform this action</string>
+    <string name="blogger_subscribe_error">Failed to update subscription</string>
+    <string name="blogger_vote_error">Failed to update vote</string>
+    <string name="blogger_videos_load_error">Failed to load blogger videos</string>
+</resources>

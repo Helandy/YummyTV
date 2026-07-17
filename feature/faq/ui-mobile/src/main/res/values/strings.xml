@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="faq_title">FAQ</string>
+    <string name="faq_title">Developer FAQ</string>
     <string name="faq_who_am_i_title">Who is the developer?</string>
     <string name="faq_who_am_i_answer">I am the independent developer behind YummyTV. I work on the app in my free time because I want to make watching anime more convenient and enjoyable.</string>
     <string name="faq_why_this_app_title">Why is the app like this?</string>

@@ -19,4 +19,5 @@ data class AnimeDetails(
     val studios: List<AnimeStudio>,
     val viewingOrder: List<AnimeViewingOrderItem>,
     val screenshots: List<AnimeScreenshot>,
+    val reviewsCount: Int = 0,
 )

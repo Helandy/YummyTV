@@ -72,7 +72,14 @@ fun FullDetailsTvScreen(
                 onRetry = { onEvent(FullDetailsState.Event.RetrySelected) },
             )
 
-            details != null -> FullDetailsBody(details)
+            details != null -> FullDetailsBody(
+                details = details,
+                onGenreSelected = { onEvent(FullDetailsState.Event.GenreSelected(it)) },
+                onStudioSelected = { id, url ->
+                    onEvent(FullDetailsState.Event.StudioSelected(id, url))
+                },
+                onDirectorSelected = { onEvent(FullDetailsState.Event.DirectorSelected(it)) },
+            )
             else -> DetailsError(
                 message = error.orEmpty(),
                 onRetry = { onEvent(FullDetailsState.Event.RetrySelected) },

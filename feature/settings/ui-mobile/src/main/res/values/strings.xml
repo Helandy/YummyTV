@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_mobile_title">Settings</string>
+    <string name="settings_mobile_section_interface">Interface</string>
     <string name="settings_mobile_section_appearance">Appearance</string>
     <string name="settings_mobile_section_player">Player</string>
     <string name="settings_mobile_section_details">Details</string>
@@ -10,6 +11,16 @@
     <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">About</string>
     <string name="settings_mobile_theme">Theme</string>
+    <string name="settings_interface_type">Interface type</string>
+    <string name="settings_interface_mobile">Mobile</string>
+    <string name="settings_interface_mobile_hint">Optimized for touchscreen controls</string>
+    <string name="settings_interface_tv">TV</string>
+    <string name="settings_interface_tv_hint">Optimized for remote control navigation</string>
+    <string name="settings_interface_confirm_title">Switch interface?</string>
+    <string name="settings_interface_confirm_message">Switch to %1$s? The app will restart and the current screen will close.</string>
+    <string name="settings_interface_confirm">Switch</string>
+    <string name="settings_interface_cancel">Cancel</string>
+    <string name="settings_interface_restart_failed">The interface will change the next time you open the app</string>
     <string name="settings_mobile_poster_size">Poster size</string>
     <string name="settings_mobile_poster_quality">Poster quality</string>
     <string name="settings_show_top_title_year">Show title year in Top</string>
@@ -44,6 +55,8 @@
     <string name="settings_details_button_viewing_order">Viewing order</string>
     <string name="settings_details_button_rating">Rating</string>
     <string name="settings_details_button_collections">Collections</string>
+    <string name="settings_details_button_reviews">Reviews</string>
+    <string name="settings_details_button_blogger_videos">Blogger videos</string>
     <string name="settings_details_button_screenshots">Screenshots</string>
     <string name="settings_watch_next_label">Continue watching</string>
     <string name="settings_watch_next_enabled">Synced with TV Home</string>
@@ -99,6 +112,11 @@
     <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
     <string name="settings_auto_play_next_episode_label">Autoplay next episode</string>
     <string name="settings_auto_play_next_episode_enabled">Start the next episode after a 10-second countdown</string>
+    <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
+    <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
+    <string name="settings_player_gesture_tutorial_reset">Replay gesture tutorial</string>
+    <string name="settings_player_gesture_tutorial_reset_hint">Show the tutorial the next time a video is opened</string>
+    <string name="settings_player_gesture_tutorial_reset_done">The tutorial will be shown the next time a video is opened</string>
     <string name="settings_refresh_continue_watching_progress_label">Latest continue progress</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
     <string name="settings_cache_size_min">Minimum</string>

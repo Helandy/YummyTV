@@ -34,10 +34,13 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
     private val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
+    private val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
     private val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
     private val refreshContinueWatchingProgressOnLaunchKey =
         booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
+    private val mobilePlayerGestureTutorialDismissedKey =
+        booleanPreferencesKey("player_mobile_gesture_tutorial_dismissed")
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
@@ -118,6 +121,10 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         prefs[autoPlayNextEpisodeKey] ?: false
     }
 
+    override val pictureInPictureEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[pictureInPictureEnabledKey] ?: true
+    }
+
     override val suggestNextEpisodeOnWatched: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[suggestNextEpisodeOnWatchedKey] ?: true
     }
@@ -125,6 +132,11 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     override val refreshContinueWatchingProgressOnLaunch: Flow<Boolean> =
         context.dataStore.data.map { prefs ->
             prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false
+        }
+
+    override val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
+        context.dataStore.data.map { prefs ->
+            prefs[mobilePlayerGestureTutorialDismissedKey] ?: false
         }
 
     override val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
@@ -239,6 +251,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             },
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
             autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
+            pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
             refreshContinueWatchingProgressOnLaunch =
                 prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
@@ -328,6 +341,10 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         context.dataStore.edit { prefs -> prefs[autoPlayNextEpisodeKey] = enabled }
     }
 
+    override suspend fun setPictureInPictureEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[pictureInPictureEnabledKey] = enabled }
+    }
+
     override suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[suggestNextEpisodeOnWatchedKey] = enabled }
     }
@@ -335,6 +352,18 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     override suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[refreshContinueWatchingProgressOnLaunchKey] = enabled
+        }
+    }
+
+    override suspend fun dismissMobilePlayerGestureTutorial() {
+        context.dataStore.edit { prefs ->
+            prefs[mobilePlayerGestureTutorialDismissedKey] = true
+        }
+    }
+
+    override suspend fun resetMobilePlayerGestureTutorial() {
+        context.dataStore.edit { prefs ->
+            prefs[mobilePlayerGestureTutorialDismissedKey] = false
         }
     }
 

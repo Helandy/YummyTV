@@ -13,6 +13,8 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
+import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @HiltViewModel(assistedFactory = FullDetailsViewModel.Factory::class)
@@ -25,7 +27,10 @@ class FullDetailsViewModel @AssistedInject internal constructor(
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val stringProvider: StringProvider,
     private val analytics: DetailsAnalytics,
-) : BaseViewModelNew<FullDetailsState.State, FullDetailsState.Event, FullDetailsState.Effect>(savedStateHandle) {
+    private val detailsNavigator: IDetailsNavigator,
+) : BaseViewModelNew<FullDetailsState.State, FullDetailsState.Event, FullDetailsState.Effect>(
+    savedStateHandle
+) {
 
     @AssistedFactory
     interface Factory {
@@ -46,6 +51,22 @@ class FullDetailsViewModel @AssistedInject internal constructor(
                 analytics.eventFullRetry(animeId)
                 load()
             }
+
+            is FullDetailsState.Event.GenreSelected -> nav.navigate(
+                detailsNavigator.getRelationDest(DetailsRelationKind.GENRE, event.id)
+            )
+
+            is FullDetailsState.Event.StudioSelected -> nav.navigate(
+                detailsNavigator.getRelationDest(
+                    kind = DetailsRelationKind.STUDIO,
+                    id = event.id,
+                    url = event.url,
+                )
+            )
+
+            is FullDetailsState.Event.DirectorSelected -> nav.navigate(
+                detailsNavigator.getRelationDest(DetailsRelationKind.DIRECTOR, event.id)
+            )
         }
     }
 

@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefault
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
@@ -34,8 +35,10 @@ import su.afk.yummy.tv.feature.home.mobile.R
 import su.afk.yummy.tv.feature.home.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.view.HomeHeroCarousel
+import su.afk.yummy.tv.feature.home.view.HomeQuickActionsSection
 import su.afk.yummy.tv.feature.home.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
+import su.afk.yummy.tv.feature.home.view.MobileHomeBloggerVideosSection
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -84,6 +87,8 @@ fun HomeMobileScreen(
                 is HomeState.Effect.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+
+                is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
             }
         }
     }
@@ -136,7 +141,7 @@ fun HomeMobileScreen(
                 bottom = MobileBottomBarDefaults.ContentBottomPadding +
                         MobileBottomBarDefaults.ExtraContentBottomPadding,
             ),
-            verticalArrangement = Arrangement.spacedBy(26.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             val feed = state.feed
 
@@ -171,7 +176,11 @@ fun HomeMobileScreen(
 
             feed?.sections
                 .orEmpty()
-                .filter { it.items.isNotEmpty() }
+                .filter {
+                    it.items.isNotEmpty() &&
+                            it.type != HomeFeedSectionType.RECOMMENDATIONS &&
+                            it.type != HomeFeedSectionType.SCHEDULE
+                }
                 .forEach { section ->
                     item(key = "section_${section.type.name}") {
                         val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
@@ -191,6 +200,41 @@ fun HomeMobileScreen(
                         )
                     }
                 }
+
+            if (state.bloggerVideos.isNotEmpty()) {
+                item(key = "blogger_videos") {
+                    MobileHomeBloggerVideosSection(
+                        title = stringResource(R.string.home_mobile_blogger_videos),
+                        allLabel = stringResource(R.string.home_mobile_all),
+                        videos = state.bloggerVideos,
+                        onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
+                        onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                    )
+                }
+            }
+
+            state.bloggerVideosError?.let { message ->
+                item(key = "blogger_videos_error") {
+                    MobileMessage(
+                        title = message,
+                        actionLabel = stringResource(R.string.home_mobile_retry),
+                        onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
+                    )
+                }
+            }
+
+            item(key = "quick_actions") {
+                HomeQuickActionsSection(
+                    title = stringResource(R.string.home_mobile_more),
+                    scheduleTitle = stringResource(R.string.home_mobile_schedule),
+                    reviewsTitle = stringResource(R.string.home_mobile_reviews),
+                    showSchedule = feed?.sections?.any {
+                        it.type == HomeFeedSectionType.SCHEDULE
+                    } == true,
+                    onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
+                    onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
+                )
+            }
         }
     }
 

@@ -17,10 +17,12 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:details:domain"))
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:library:domain"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:watching:presentation"))
 
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)
 }

@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
@@ -81,6 +83,8 @@ fun HomeTvScreen(
                 is HomeState.Effect.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+
+                is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
             }
         }
     }
@@ -112,7 +116,17 @@ fun HomeTvScreen(
     }
 
     val error = state.error
-    val feed = state.feed
+    // Расписание вынесено в отдельную вкладку бокового меню, поэтому его секция
+    // не показывается в ленте главной на ТВ.
+    val feed = remember(state.feed) {
+        state.feed?.let { home ->
+            home.copy(
+                sections = home.sections.filterNot {
+                    it.type == HomeFeedSectionType.SCHEDULE
+                },
+            )
+        }
+    }
     val isInitialContentReady = feed != null && state.isContinueWatchingLoaded
     when {
         error != null -> HomeError(

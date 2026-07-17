@@ -4,250 +4,122 @@ import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.model.CommentSort
+import su.afk.yummy.tv.domain.comments.model.CommentTarget
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import javax.inject.Inject
 
 internal class CommentsAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
-    /**
-     * Пользователь открыл экран комментариев.
-     *
-     * Параметры: anime_id, sort.
-     */
-    fun eventScreenOpened(animeId: Int, sort: CommentSort) {
-        eventWithAnime(EVENT_SCREEN_OPENED, animeId, sort)
-    }
+    fun eventScreenOpened(target: CommentTarget, sort: CommentSort) =
+        eventWithTarget(EVENT_SCREEN_OPENED, target, sort)
 
-    /**
-     * Пользователь повторил загрузку комментариев.
-     *
-     * Параметры: anime_id, sort.
-     */
-    fun eventRetrySelected(animeId: Int, sort: CommentSort) {
-        eventWithAnime(EVENT_RETRY_SELECTED, animeId, sort)
-    }
+    fun eventRetrySelected(target: CommentTarget, sort: CommentSort) =
+        eventWithTarget(EVENT_RETRY_SELECTED, target, sort)
 
-    /**
-     * Пользователь обновил список комментариев.
-     *
-     * Параметры: anime_id, sort.
-     */
-    fun eventRefreshSelected(animeId: Int, sort: CommentSort) {
-        eventWithAnime(EVENT_REFRESH_SELECTED, animeId, sort)
-    }
+    fun eventRefreshSelected(target: CommentTarget, sort: CommentSort) =
+        eventWithTarget(EVENT_REFRESH_SELECTED, target, sort)
 
-    /**
-     * Пользователь сменил сортировку комментариев.
-     *
-     * Параметры: anime_id, sort.
-     */
-    fun eventSortSelected(animeId: Int, sort: CommentSort) {
-        eventWithAnime(EVENT_SORT_SELECTED, animeId, sort)
-    }
+    fun eventSortSelected(target: CommentTarget, sort: CommentSort) =
+        eventWithTarget(EVENT_SORT_SELECTED, target, sort)
 
-    /**
-     * Пользователь открыл автора комментария.
-     *
-     * Параметры: anime_id, user_id.
-     */
-    fun eventAuthorSelected(animeId: Int, userId: Int) {
-        tracker.track(
-            EVENT_AUTHOR_SELECTED,
-            analyticsParamsOf(
-                PARAM_ANIME_ID to animeId,
-                PARAM_USER_ID to userId,
-            ),
-        )
-    }
+    fun eventAuthorSelected(target: CommentTarget, userId: Int) = tracker.track(
+        EVENT_AUTHOR_SELECTED,
+        target.params() + analyticsParamsOf(PARAM_USER_ID to userId),
+    )
 
-    /**
-     * Пользователь начал отвечать на комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventReplySelected(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPLY_SELECTED, animeId, commentId)
-    }
+    fun eventReplySelected(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPLY_SELECTED, target, commentId)
 
-    /**
-     * Пользователь начал редактировать комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventEditSelected(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_EDIT_SELECTED, animeId, commentId)
-    }
+    fun eventEditSelected(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_EDIT_SELECTED, target, commentId)
 
-    /**
-     * Пользователь открыл подтверждение удаления комментария.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventDeleteSelected(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_DELETE_SELECTED, animeId, commentId)
-    }
+    fun eventDeleteSelected(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_DELETE_SELECTED, target, commentId)
 
-    /**
-     * Пользователь открыл жалобу на комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventReportSelected(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPORT_SELECTED, animeId, commentId)
-    }
+    fun eventReportSelected(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPORT_SELECTED, target, commentId)
 
-    /**
-     * Пользователь успешно создал комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventCreated(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_CREATED, animeId, commentId)
-    }
+    fun eventCreated(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_CREATED, target, commentId)
 
-    /**
-     * Пользователь успешно создал ответ.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventReplyCreated(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPLY_CREATED, animeId, commentId)
-    }
+    fun eventReplyCreated(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPLY_CREATED, target, commentId)
 
-    /**
-     * Пользователь успешно обновил комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventUpdated(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_UPDATED, animeId, commentId)
-    }
+    fun eventUpdated(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_UPDATED, target, commentId)
 
-    /**
-     * Пользователь успешно удалил комментарий.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventDeleted(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_DELETED, animeId, commentId)
-    }
+    fun eventDeleted(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_DELETED, target, commentId)
 
-    /**
-     * Пользователь успешно отправил жалобу на комментарий.
-     *
-     * Параметры: anime_id, comment_id, reason.
-     */
-    fun eventReported(animeId: Int, commentId: Int, reason: CommentReportReason) {
+    fun eventReported(target: CommentTarget, commentId: Int, reason: CommentReportReason) =
         tracker.track(
             EVENT_REPORTED,
-            commentParams(animeId, commentId) + analyticsParamsOf(
-                PARAM_REASON to reason.analyticsValue(),
-            ),
+            commentParams(
+                target,
+                commentId
+            ) + analyticsParamsOf(PARAM_REASON to reason.name.lowercase()),
         )
-    }
 
-    /**
-     * Пользователь изменил голос за комментарий.
-     *
-     * Параметры: anime_id, comment_id, vote.
-     */
-    fun eventVoteChanged(animeId: Int, commentId: Int, vote: CommentVote) {
+    fun eventVoteChanged(target: CommentTarget, commentId: Int, vote: CommentVote) =
         tracker.track(
             EVENT_VOTE_CHANGED,
-            commentParams(animeId, commentId) + analyticsParamsOf(
-                PARAM_VOTE to vote.analyticsValue(),
-            ),
+            commentParams(
+                target,
+                commentId
+            ) + analyticsParamsOf(PARAM_VOTE to vote.name.lowercase()),
         )
-    }
 
-    /**
-     * Пользователь раскрыл ответы к комментарию.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventRepliesShown(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPLIES_SHOWN, animeId, commentId)
-    }
+    fun eventRepliesShown(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPLIES_SHOWN, target, commentId)
 
-    /**
-     * Пользователь скрыл ответы к комментарию.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventRepliesHidden(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPLIES_HIDDEN, animeId, commentId)
-    }
+    fun eventRepliesHidden(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPLIES_HIDDEN, target, commentId)
 
-    /**
-     * Пользователь запросил следующую страницу ответов.
-     *
-     * Параметры: anime_id, comment_id.
-     */
-    fun eventRepliesLoadMoreSelected(animeId: Int, commentId: Int) {
-        eventWithComment(EVENT_REPLIES_LOAD_MORE_SELECTED, animeId, commentId)
-    }
+    fun eventRepliesLoadMoreSelected(target: CommentTarget, commentId: Int) =
+        eventWithComment(EVENT_REPLIES_LOAD_MORE_SELECTED, target, commentId)
 
-    /**
-     * Ошибка загрузки комментариев.
-     */
-    fun eventLoadError(animeId: Int, sort: CommentSort, throwable: Throwable) {
+    fun eventLoadError(target: CommentTarget, sort: CommentSort, throwable: Throwable) =
         tracker.reportError(
             groupIdentifier = ERROR_LOAD,
-            message = "$ERROR_LOAD_MESSAGE_PREFIX ($PARAM_ANIME_ID=$animeId, " +
-                    "$PARAM_SORT=${sort.analyticsValue()}): ${throwable.analyticsType()}",
+            message = "Comments load failed (${target.type.apiValue}/${target.id}, " +
+                    "sort=${sort.name.lowercase()}): ${throwable.analyticsType()}",
             throwable = throwable,
         )
-    }
 
-    /**
-     * Ошибка загрузки ответов к комментарию.
-     */
-    fun eventRepliesLoadError(animeId: Int, commentId: Int, throwable: Throwable) {
+    fun eventRepliesLoadError(target: CommentTarget, commentId: Int, throwable: Throwable) =
         tracker.reportError(
             groupIdentifier = ERROR_REPLIES_LOAD,
-            message = "$ERROR_REPLIES_LOAD_MESSAGE_PREFIX ($PARAM_ANIME_ID=$animeId, " +
-                    "$PARAM_COMMENT_ID=$commentId): ${throwable.analyticsType()}",
+            message = "Comment replies load failed (${target.type.apiValue}/${target.id}, " +
+                    "comment_id=$commentId): ${throwable.analyticsType()}",
             throwable = throwable,
         )
-    }
 
-    private fun eventWithAnime(eventName: String, animeId: Int, sort: CommentSort) {
+    private fun eventWithTarget(event: String, target: CommentTarget, sort: CommentSort) =
         tracker.track(
-            eventName,
-            analyticsParamsOf(
-                PARAM_ANIME_ID to animeId,
-                PARAM_SORT to sort.analyticsValue(),
-            ),
-        )
-    }
-
-    private fun eventWithComment(eventName: String, animeId: Int, commentId: Int) {
-        tracker.track(eventName, commentParams(animeId, commentId))
-    }
-
-    private fun commentParams(animeId: Int, commentId: Int): Map<String, String> =
-        analyticsParamsOf(
-            PARAM_ANIME_ID to animeId,
-            PARAM_COMMENT_ID to commentId,
+            event,
+            target.params() + analyticsParamsOf(PARAM_SORT to sort.name.lowercase())
         )
 
-    private fun CommentSort.analyticsValue(): String = name.lowercase()
+    private fun eventWithComment(event: String, target: CommentTarget, commentId: Int) =
+        tracker.track(event, commentParams(target, commentId))
 
-    private fun CommentReportReason.analyticsValue(): String = name.lowercase()
+    private fun commentParams(target: CommentTarget, commentId: Int) =
+        target.params() + analyticsParamsOf(PARAM_COMMENT_ID to commentId)
 
-    private fun CommentVote.analyticsValue(): String = name.lowercase()
+    private fun CommentTarget.params() = analyticsParamsOf(
+        PARAM_TARGET_TYPE to type.apiValue,
+        PARAM_TARGET_ID to id,
+    )
 
     private fun Throwable.analyticsType(): String =
         this::class.java.simpleName.takeIf { it.isNotBlank() } ?: "unknown"
 
     internal companion object {
         private const val ERROR_LOAD = "comments_load_error"
-        private const val ERROR_LOAD_MESSAGE_PREFIX = "Comments load failed"
         private const val ERROR_REPLIES_LOAD = "comments_replies_load_error"
-        private const val ERROR_REPLIES_LOAD_MESSAGE_PREFIX = "Comment replies load failed"
-
-        private const val PARAM_ANIME_ID = "anime_id"
+        private const val PARAM_TARGET_TYPE = "target_type"
+        private const val PARAM_TARGET_ID = "target_id"
         private const val PARAM_COMMENT_ID = "comment_id"
         private const val PARAM_REASON = "reason"
         private const val PARAM_SORT = "sort"

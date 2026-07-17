@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.player.view.player
 
-import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -16,8 +15,8 @@ import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.logPlaybackError
 import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
 import su.afk.yummy.tv.feature.player.common.positionSnapshot
-import su.afk.yummy.tv.feature.player.common.service.PlayerMediaSessionService
 import su.afk.yummy.tv.feature.player.common.toPlaybackErrorEvent
+import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.model.TvPlayerSkipUiState
@@ -36,6 +35,7 @@ internal fun TvPlayerListenerEffect(
     stepSeekToast: PlayerStepSeekToastState,
     panels: TvPlayerPanelsState,
     prompts: TvPlayerPromptsState,
+    exitState: TvPlayerExitState,
     fallbackDurationMs: () -> Long,
     hasNextEpisode: () -> Boolean,
     nextEpisodeSwitchesDubbing: () -> Boolean,
@@ -77,6 +77,7 @@ internal fun TvPlayerListenerEffect(
                         positionMs = snapshot.positionMs,
                         durationMs = snapshot.durationMs,
                     )
+                    if (exitState.requested) return
                     if (currentHasNextEpisode()) {
                         // При переходе в другую озвучку авто-отсчёт не запускаем:
                         // озвучку не меняем без явного подтверждения пользователя
@@ -108,14 +109,12 @@ internal fun TvPlayerListenerEffect(
             skipUi.cancel()
             currentStepSeekToast.cancel()
             player.removeListener(listener)
-            val snapshot = player.positionSnapshot(currentFallbackDuration())
-            reporter.notifyPositionChanged(snapshot.positionMs, snapshot.durationMs)
-            reporter.saveProgress(snapshot.positionMs, snapshot.durationMs)
-            runCatching {
-                player.pause()
-                player.clearMediaItems()
-                context.stopService(Intent(context, PlayerMediaSessionService::class.java))
+            if (player.mediaItemCount > 0) {
+                val snapshot = player.positionSnapshot(currentFallbackDuration())
+                reporter.notifyPositionChanged(snapshot.positionMs, snapshot.durationMs)
+                reporter.saveProgress(snapshot.positionMs, snapshot.durationMs)
             }
+            releaseTvPlaybackResources(context, player)
         }
     }
 }

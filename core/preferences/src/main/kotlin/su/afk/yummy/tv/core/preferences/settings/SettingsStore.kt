@@ -14,6 +14,7 @@ data class SettingsSnapshot(
     val previewCacheSize: PreviewCacheSize,
     val autoSkipOpeningsEndings: Boolean,
     val autoPlayNextEpisode: Boolean,
+    val pictureInPictureEnabled: Boolean,
     val suggestNextEpisodeOnWatched: Boolean,
     val refreshContinueWatchingProgressOnLaunch: Boolean,
     val yaniApplicationToken: String,
@@ -49,8 +50,10 @@ interface SettingsStore {
     val previewCacheSize: Flow<PreviewCacheSize>
     val autoSkipOpeningsEndings: Flow<Boolean>
     val autoPlayNextEpisode: Flow<Boolean>
+    val pictureInPictureEnabled: Flow<Boolean>
     val suggestNextEpisodeOnWatched: Flow<Boolean>
     val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
+    val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
     val playerResizeMode: Flow<PlayerResizeMode>
     val playerZoomLevel: Flow<PlayerZoomLevel>
     val appTheme: Flow<AppTheme>
@@ -89,8 +92,11 @@ interface SettingsStore {
     suspend fun setPreviewCacheSize(size: PreviewCacheSize)
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean)
     suspend fun setAutoPlayNextEpisode(enabled: Boolean)
+    suspend fun setPictureInPictureEnabled(enabled: Boolean)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
     suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
+    suspend fun dismissMobilePlayerGestureTutorial()
+    suspend fun resetMobilePlayerGestureTutorial()
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
 
@@ -150,6 +156,8 @@ interface SettingsStore {
             DetailsButtonAction.VIEWING_ORDER,
             DetailsButtonAction.RATING,
             DetailsButtonAction.COLLECTIONS,
+            DetailsButtonAction.REVIEWS,
+            DetailsButtonAction.BLOGGER_VIDEOS,
             DetailsButtonAction.SCREENSHOTS,
         )
     }

@@ -1,4 +1,8 @@
 <resources>
+    <string name="home_mobile_schedule">Расписание</string>
+    <string name="home_mobile_reviews">Рецензии</string>
+    <string name="home_mobile_more">Ещё</string>
+    <string name="home_mobile_blogger_videos">От блогеров</string>
     <string name="home_mobile_title">Главная</string>
     <string name="home_mobile_search_hint">Найти аниме</string>
     <string name="home_mobile_retry">Повторить</string>

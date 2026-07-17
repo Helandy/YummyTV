@@ -4,6 +4,11 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 
 interface UserListsRepository {
+    suspend fun getAllUserLists(
+        userId: Int,
+        forceRefresh: Boolean = false,
+    ): List<UserAnimeListItem>
+
     suspend fun getUserList(
         userId: Int,
         list: UserAnimeList,

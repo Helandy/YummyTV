@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,15 +40,30 @@ internal fun AccountMobileFaqButton(
 }
 
 @Composable
+internal fun AccountMobileSitePagesButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountMobileNavigationButton(
+        title = stringResource(R.string.account_site_pages),
+        icon = Icons.Default.Language,
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
+
+@Composable
 internal fun AccountMobileSettingsButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
 ) {
     AccountMobileNavigationButton(
         title = stringResource(R.string.account_settings),
         icon = Icons.Default.Settings,
         onClick = onClick,
         modifier = modifier,
+        focusRequester = focusRequester,
     )
 }
 
@@ -55,7 +73,9 @@ internal fun AccountMobileNavigationButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
 ) {
+    val focusModifier = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -64,6 +84,7 @@ internal fun AccountMobileNavigationButton(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(focusModifier)
                 .clickable(onClick = onClick)
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="library_mobile_tab_history">История</string>
+    <string name="library_mobile_history_sign_in">Войдите, чтобы увидеть историю просмотров</string>
+    <string name="library_mobile_history_empty">История просмотров пуста</string>
+    <string name="library_mobile_history_error">Не удалось загрузить историю просмотров</string>
+    <string name="library_mobile_history_details">Детали</string>
+    <string name="library_mobile_history_episode">Серия %1$s</string>
     <string name="library_mobile_title">Библиотека</string>
     <string name="library_mobile_tab_continue_watching">Продолжить</string>
     <string name="library_mobile_tab_favorites">Любимое</string>

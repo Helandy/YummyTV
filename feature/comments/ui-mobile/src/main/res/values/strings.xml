@@ -22,7 +22,6 @@
     <string name="comments_input_hint">Write a comment</string>
     <string name="comments_cancel">Cancel</string>
     <string name="comments_send">Send</string>
-    <string name="comments_sending">Sending...</string>
     <string name="comments_delete_title">Delete comment?</string>
     <string name="comments_delete_message">This action cannot be undone.</string>
     <string name="comments_report_title">Report reason</string>

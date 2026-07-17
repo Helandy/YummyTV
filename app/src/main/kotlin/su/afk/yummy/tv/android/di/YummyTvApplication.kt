@@ -22,11 +22,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.BuildConfig
+import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.analytics.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleInitializer
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupStore
+import su.afk.yummy.tv.core.utils.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.data.videodownload.cache.LegacyStreamingCachePruner
 import java.io.File
 import javax.inject.Inject
@@ -58,6 +60,12 @@ class YummyTvApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var okHttpClient: OkHttpClient
 
+    @Inject
+    lateinit var resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase
+
+    @Inject
+    lateinit var onlineStatusCoordinator: OnlineStatusCoordinator
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val workManagerConfiguration: Configuration
@@ -82,6 +90,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
         setupAnalytics()
         setupFeatureToggles()
         setupCoilImageLoader()
+        onlineStatusCoordinator.start()
         homeFeedRefreshScheduler.schedule()
         applicationScope.launch {
             settingsStore.ensureYaniContentLanguageInitialized()
@@ -137,6 +146,8 @@ class YummyTvApplication : Application(), Configuration.Provider {
                         .build()
                 }
                 .components {
+                    add(KodikThumbnailKeyer())
+                    add(KodikThumbnailFetcher.Factory(resolveKodikThumbnailUrl))
                     add(KtorNetworkFetcherFactory(httpClient = imageHttpClient))
                 }
                 .build()

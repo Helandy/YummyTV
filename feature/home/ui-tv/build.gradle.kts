@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:utils"))
     implementation(project(":feature:collection:api"))
+    implementation(project(":feature:bloggers:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:home:api"))
     implementation(project(":feature:home:presentation"))

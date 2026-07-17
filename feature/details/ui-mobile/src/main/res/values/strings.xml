@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_mobile_ignore_recommendation">Do not recommend this anime</string>
+    <string name="details_mobile_restore_recommendation">Restore this anime in recommendations</string>
+    <string name="details_mobile_similar_like">Like similar title</string>
+    <string name="details_mobile_similar_dislike">Dislike similar title</string>
+    <string name="details_mobile_blogger_videos">Blogger videos</string>
+    <string name="details_mobile_reviews">Reviews</string>
+    <string name="details_mobile_reviews_count">Reviews (%1$d)</string>
     <string name="details_mobile_title">Details</string>
     <string name="details_mobile_empty">Title not found</string>
     <string name="details_mobile_back">Back</string>
@@ -97,6 +104,7 @@
     <string name="details_mobile_trailer_number">Trailer %1$d</string>
     <string name="details_mobile_other_titles">Other titles</string>
     <string name="details_mobile_studios">Studios</string>
+    <string name="details_mobile_genres">Genres</string>
     <string name="details_mobile_creators">Creators</string>
     <string name="details_mobile_similar_source_ai">AI</string>
     <string name="details_mobile_similar_source_site">Users</string>
@@ -114,4 +122,6 @@
     <string name="details_mobile_list_stats">In lists</string>
     <string name="details_mobile_list_stat_item">%1$s %2$s</string>
     <string name="details_mobile_title_universe">Title universe</string>
+    <string name="details_mobile_related_anime">Related anime</string>
+    <string name="details_mobile_related_empty">No related anime found</string>
 </resources>

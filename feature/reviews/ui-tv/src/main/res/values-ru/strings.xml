@@ -1,0 +1,18 @@
+<resources>
+    <string name="review_comments">Комментарии (%1$d)</string>
+    <string name="review_comments_tv">Комментарии (%1$s)</string>
+    <string name="review_comments_phone_only">Комментарии доступны только с телефона</string>
+    <string name="reviews_title">Отзывы</string>
+    <string name="reviews_new">Новые</string>
+    <string name="reviews_old">Старые</string>
+    <string name="reviews_top">Лучшие</string>
+    <string name="reviews_empty">Отзывов пока нет</string>
+    <string name="reviews_error">Не удалось загрузить отзывы</string>
+    <string name="review_retry">Повторить</string>
+    <string name="review_like">Нравится</string>
+    <string name="review_dislike">Не нравится</string>
+    <string name="review_waiting">Ожидает модерации</string>
+    <string name="review_declined">Отклонён</string>
+    <string name="review_approved">Опубликован</string>
+    <string name="review_views">Просмотры: %1$d</string>
+</resources>

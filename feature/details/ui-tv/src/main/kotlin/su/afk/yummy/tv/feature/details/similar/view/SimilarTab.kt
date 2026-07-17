@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
@@ -56,6 +57,11 @@ internal fun SimilarTab(
     fromAi: Boolean,
     onToggle: () -> Unit,
     onAnimeSelected: (Int) -> Unit,
+    ignored: Boolean,
+    recommendationMutationPending: Boolean,
+    pendingVoteAnimeIds: Set<Int>,
+    onRecommendationVisibilityToggled: () -> Unit,
+    onVote: (Int, AnimeRecommendationVote) -> Unit,
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
 ) {
@@ -64,6 +70,12 @@ internal fun SimilarTab(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        TvSimilarRecommendationVisibilityButton(
+            ignored = ignored,
+            enabled = !recommendationMutationPending,
+            onClick = onRecommendationVisibilityToggled,
+        )
+
         SourceToggle(
             fromAi = fromAi,
             onToggle = onToggle,
@@ -160,18 +172,27 @@ internal fun SimilarTab(
                             val posterUrl = item.poster?.run { big ?: medium ?: fullsize ?: small }
                             val meta =
                                 listOfNotNull(item.type).joinToString(" · ")
-                            RelatedTitleCard(
-                                title = item.title,
-                                posterUrl = posterUrl,
-                                onClick = { onAnimeSelected(item.animeId) },
-                                rating = item.rating,
-                                year = item.year,
-                                meta = meta,
-                                onFocused = { rememberFocusedItem(index) },
-                                modifier = Modifier
-                                    .focusRequester(focusRequesters[index])
-                                    .then(directionKeyModifier),
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                RelatedTitleCard(
+                                    title = item.title,
+                                    posterUrl = posterUrl,
+                                    onClick = { onAnimeSelected(item.animeId) },
+                                    rating = item.rating,
+                                    year = item.year,
+                                    meta = meta,
+                                    onFocused = { rememberFocusedItem(index) },
+                                    modifier = Modifier
+                                        .focusRequester(focusRequesters[index])
+                                        .then(directionKeyModifier),
+                                )
+                                if (!fromAi) {
+                                    TvSimilarVoteButtons(
+                                        item = item,
+                                        enabled = item.animeId !in pendingVoteAnimeIds,
+                                        onVote = { vote -> onVote(item.animeId, vote) },
+                                    )
+                                }
+                            }
                         }
                     }
                 }

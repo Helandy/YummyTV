@@ -132,6 +132,12 @@ abstract class AccountStorageDao {
     @Query("DELETE FROM account_list_stats WHERE animeId = :animeId")
     abstract suspend fun deleteListStats(animeId: Int)
 
+    @Transaction
+    open suspend fun invalidateListStats(animeId: Int) {
+        deleteListStats(animeId)
+        deleteListStatsCache(animeId)
+    }
+
     @Query("SELECT * FROM account_collection_pages WHERE pageKey = :pageKey LIMIT 1")
     abstract suspend fun getCollectionPageEntry(pageKey: String): AccountCollectionPageEntry?
 
@@ -162,6 +168,12 @@ abstract class AccountStorageDao {
 
     @Query("DELETE FROM account_collection_pages WHERE cachedAt < :minCachedAt")
     abstract suspend fun deleteCollectionPagesCachedBefore(minCachedAt: Long)
+
+    @Query("DELETE FROM account_collection_pages")
+    abstract suspend fun deleteAllCollectionPages()
+
+    @Query("DELETE FROM account_collection_items")
+    abstract suspend fun deleteAllCollectionItems()
 
     @Query(
         """
@@ -374,6 +386,12 @@ abstract class AccountStorageDao {
 
     @Query("DELETE FROM account_user_profile_content_pages WHERE userId = :userId")
     abstract suspend fun deleteUserProfileContentPages(userId: Int)
+
+    @Query(
+        "DELETE FROM account_user_profile_content_pages " +
+                "WHERE userId = :userId AND contentType = :contentType"
+    )
+    abstract suspend fun deleteUserProfileContentPages(userId: Int, contentType: String)
 
     @Query("DELETE FROM account_user_friends WHERE userId = :userId")
     abstract suspend fun deleteUserFriends(userId: Int)
@@ -655,6 +673,11 @@ abstract class AccountStorageDao {
     }
 
     @Transaction
+    open suspend fun replaceUserLists(caches: List<AccountUserListCache>) {
+        caches.forEach { cache -> replaceUserList(cache) }
+    }
+
+    @Transaction
     open suspend fun deleteUserLists(userId: Int) {
         deleteUserListPages(userId)
         deleteUserListItems(userId)
@@ -717,6 +740,12 @@ abstract class AccountStorageDao {
             deleteCollectionItemsCachedBefore(it)
             deleteCollectionPagesCachedBefore(it)
         }
+    }
+
+    @Transaction
+    open suspend fun invalidateCollections() {
+        deleteAllCollectionItems()
+        deleteAllCollectionPages()
     }
 
     @Transaction
@@ -891,6 +920,19 @@ abstract class AccountStorageDao {
         deleteUserFriends(userId)
         deleteUserReviews(userId)
         deleteUserPosts(userId)
+    }
+
+    @Transaction
+    open suspend fun deleteUserFriendsContentForUser(userId: Int) {
+        deleteUserProfileContentPages(userId, ACCOUNT_USER_PROFILE_CONTENT_FRIENDS)
+        deleteUserFriends(userId)
+    }
+
+    @Transaction
+    open suspend fun deleteUserProfileSummaryForUser(userId: Int) {
+        deleteUserProfileSummaryCaches(userId)
+        deleteUserProfileWatchTypes(userId)
+        deleteUserProfileWatchHistory(userId)
     }
 
     @Transaction

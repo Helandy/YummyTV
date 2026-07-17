@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="library_history_launch_error">This episode is no longer available</string>
     <string name="library_remote_continue_progress_toast">Remote progress found. Episode %1$s (%2$s)</string>
 </resources>

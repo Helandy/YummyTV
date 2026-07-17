@@ -96,13 +96,16 @@ private val GraphitePalette = YummyTvPalette(
 @Composable
 fun YummyTvTheme(
     appTheme: AppTheme = AppTheme.WARM_AMBER,
+    isTelevision: Boolean? = null,
     content: @Composable () -> Unit,
 ) {
-    val isTelevision = LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
+    val useTvTypography = isTelevision ?: (
+            LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                    Configuration.UI_MODE_TYPE_TELEVISION
+            )
     MaterialTheme(
         colorScheme = appTheme.palette.toColorScheme(),
-        typography = if (isTelevision) YummyTvTypography else YummyMobileTypography,
+        typography = if (useTvTypography) YummyTvTypography else YummyMobileTypography,
         content = content,
     )
 }

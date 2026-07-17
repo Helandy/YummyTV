@@ -4,4 +4,8 @@
     <string name="collection_catalog_load_error">Не удалось загрузить коллекции</string>
     <string name="collection_vote_auth_required">Войдите, чтобы оценивать коллекции</string>
     <string name="collection_vote_error">Не удалось оценить коллекцию</string>
+    <string name="collection_create_auth_required">Войдите, чтобы создать коллекцию</string>
+    <string name="collection_create_error">Не удалось создать коллекцию</string>
+    <string name="collection_update_error">Не удалось изменить коллекцию</string>
+    <string name="collection_delete_error">Не удалось удалить коллекцию</string>
 </resources>

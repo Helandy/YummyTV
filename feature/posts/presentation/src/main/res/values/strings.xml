@@ -1,0 +1,5 @@
+<resources>
+    <string name="posts_auth_required">Sign in to vote</string>
+    <string name="posts_vote_error">Could not save vote</string>
+    <string name="posts_load_error">Could not load publication</string>
+</resources>

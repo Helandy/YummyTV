@@ -47,6 +47,7 @@ import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
 import su.afk.yummy.tv.feature.player.model.rememberTvPlaybackProgressState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
@@ -72,6 +73,7 @@ internal fun TvExoPlayerView(
     playback: PlayerPlaybackUiState,
     streamUrl: String,
     restoreControlFocusTarget: PlayerControlFocusTarget?,
+    exitState: TvPlayerExitState,
     onControlFocusRestored: () -> Unit,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit,
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit,
@@ -180,6 +182,15 @@ internal fun TvExoPlayerView(
 
     PlayerKeepScreenOnEffect()
 
+    LaunchedEffect(exitState.requested) {
+        if (exitState.requested) {
+            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
+            prompts.showRateTitlePrompt = false
+            autoHide.cancel()
+            exoPlayer.pause()
+        }
+    }
+
     val progressSource = remember(
         exoPlayer,
         episodeKey,
@@ -228,6 +239,7 @@ internal fun TvExoPlayerView(
     }
 
     fun playNextEpisode() {
+        if (exitState.requested) return
         reporter.saveProgress(progress.currentPosition, progress.duration)
         prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
         prompts.showRateTitlePrompt = false
@@ -236,6 +248,7 @@ internal fun TvExoPlayerView(
     }
 
     fun rateTitle() {
+        if (exitState.requested) return
         prompts.showRateTitlePrompt = false
         panels.close()
         onPlayerEvent(PlayerState.Event.RateTitle)
@@ -288,6 +301,7 @@ internal fun TvExoPlayerView(
         stepSeekToast = stepSeekToast,
         panels = panels,
         prompts = prompts,
+        exitState = exitState,
         fallbackDurationMs = { progress.duration },
         hasNextEpisode = { playback.hasNextEpisode || playback.nextEpisodeDubbing != null },
         nextEpisodeSwitchesDubbing = {
@@ -337,7 +351,9 @@ internal fun TvExoPlayerView(
         promptState = prompts.nextEpisodePrompt,
         contentKey = episodeKey,
         onPromptStateChange = { prompts.nextEpisodePrompt = it },
-        onFinished = ::playNextEpisode,
+        onFinished = {
+            if (!exitState.requested) playNextEpisode()
+        },
     )
 
     BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible) {

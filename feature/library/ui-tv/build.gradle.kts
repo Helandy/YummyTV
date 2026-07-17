@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.bundles.coil.full)
 
     implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.androidx.paging.compose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.material.icons.core)
 }

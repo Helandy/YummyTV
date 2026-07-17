@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.AppTheme
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.preferences.settings.PosterCardSize
@@ -50,6 +51,7 @@ internal fun SettingsTvPanelHost(
     selectedTab: SettingsTab,
     tabFocusRequesters: Map<SettingsTab, FocusRequester>,
     contentFocusRequesters: Map<SettingsTab, FocusRequester>,
+    onInterfaceModeSelected: (AppInterfaceMode) -> Unit,
     onEvent: (SettingsState.Event) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -75,6 +77,27 @@ internal fun SettingsTvPanelHost(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 when (tab) {
+                    SettingsTab.INTERFACE -> AppInterfaceMode.entries.forEachIndexed { index, mode ->
+                        QualityRow(
+                            label = mode.label(),
+                            hint = mode.hint(),
+                            selected = mode == state.interfaceMode,
+                            onClick = { onInterfaceModeSelected(mode) },
+                            modifier = Modifier
+                                .then(
+                                    if (index == 0) {
+                                        Modifier.focusRequester(tabContentFocusRequester)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                        )
+                        if (index < AppInterfaceMode.entries.lastIndex) {
+                            SettingsDivider()
+                        }
+                    }
+
                     SettingsTab.THEME -> AppTheme.entries.forEachIndexed { index, theme ->
                         QualityRow(
                             label = theme.label(),

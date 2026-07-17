@@ -78,6 +78,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
             episodesAired = source.episodes?.aired?.takeIf { it > 0 },
             episodesNextDateEpochSeconds = source.episodes?.nextDate?.takeIf { it > 0 },
             episodesPrevDateEpochSeconds = source.episodes?.prevDate?.takeIf { it > 0 },
+            reviewsCount = source.reviewsCount,
             cachedAt = cachedAt,
         ),
         otherTitles = source.otherTitles.filter { it.isNotBlank() }.mapIndexed { index, title ->
@@ -122,6 +123,7 @@ internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
                 position = index,
                 itemId = studio.id,
                 title = title,
+                itemUrl = studio.url,
             )
         },
         viewingOrder = source.viewingOrder.mapNotNull { item ->
@@ -137,7 +139,15 @@ internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
                 title = title,
                 relation = item.data?.text.knownText(),
                 type = item.type?.name.knownText() ?: item.type?.shortname.knownText(),
-                episodesCount = item.type?.value?.takeIf { it > 0 },
+                // API не отдаёт количество серий для элементов viewing_order — только код типа
+                // (TV/OVA/фильм и т.д.). Для текущего тайтла берём реальное число серий из
+                // основного ответа; для остальных элементов честно оставляем null.
+                episodesCount = if (relatedId == animeId) {
+                    source.episodes?.count?.takeIf { it > 0 }
+                        ?: source.episodes?.aired?.takeIf { it > 0 }
+                } else {
+                    null
+                },
                 posterSmallUrl = item.poster?.small?.toHttpsUrl(),
                 posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
                 posterBigUrl = item.poster?.big?.toHttpsUrl(),
@@ -203,7 +213,9 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
         episodes = source.toEpisodesOrNull(),
         otherTitles = otherTitles.map { it.title },
         creators = creators.map { AnimePerson(id = it.itemId, title = it.title) },
-        studios = studios.map { AnimeStudio(id = it.itemId, title = it.title) },
+        studios = studios.map {
+            AnimeStudio(id = it.itemId, title = it.title, url = it.itemUrl)
+        },
         viewingOrder = viewingOrder.map { it.toAnimeViewingOrderItem() },
         screenshots = screenshots.map {
             AnimeScreenshot(
@@ -213,6 +225,7 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
                 full = it.fullUrl,
             )
         },
+        reviewsCount = source.reviewsCount,
     )
 }
 

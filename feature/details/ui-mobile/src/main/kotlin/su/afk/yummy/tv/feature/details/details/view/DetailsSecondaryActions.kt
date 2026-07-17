@@ -32,6 +32,8 @@ internal fun DetailsSecondaryActions(
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onReviewsSelected: () -> Unit,
+    onBloggerVideosSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val actions = buildMobileActions(
@@ -46,6 +48,8 @@ internal fun DetailsSecondaryActions(
         onScreenshotsSelected = onScreenshotsSelected,
         onRatingScreenSelected = onRatingScreenSelected,
         onCollectionsSelected = onCollectionsSelected,
+        onReviewsSelected = onReviewsSelected,
+        onBloggerVideosSelected = onBloggerVideosSelected,
     )
     if (actions.isEmpty()) return
 

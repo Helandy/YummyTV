@@ -10,6 +10,8 @@ import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationAnimeEntry
+import su.afk.yummy.tv.data.account.storage.mapper.toNotificationCounts
+import su.afk.yummy.tv.data.account.storage.mapper.toNotificationCountsCache
 import su.afk.yummy.tv.data.account.storage.mapper.toNotifications
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationsPageCache
 import su.afk.yummy.tv.domain.account.model.NotificationCount
@@ -33,8 +35,22 @@ class YaniProfileNotificationsRepository(
         withContext(Dispatchers.IO) {
             val userId = currentUserId()
             if (userId <= 0) return@withContext emptyList()
-            val languageCode = settingsStore.yaniContentLanguage.first().apiCode
-            loadUnreadNotificationCounts(userId, languageCode)
+            val stored = accountStorage.getNotificationCounts(userId)
+            if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
+                return@withContext stored.toNotificationCounts()
+            }
+            try {
+                val cache = api.getNotificationCounts().toNotificationCountsCache(
+                    userId = userId,
+                    cachedAt = System.currentTimeMillis(),
+                )
+                accountStorage.saveNotificationCounts(cache)
+                cache.toNotificationCounts()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                stored?.toNotificationCounts() ?: throw error
+            }
         }
 
     override suspend fun resolveAnimeIdBySlug(slug: String): Int? =
@@ -81,6 +97,14 @@ class YaniProfileNotificationsRepository(
             }
         }
 
+    override suspend fun deleteAllNotifications(): Boolean =
+        withContext(Dispatchers.IO) {
+            val userId = currentUserId()
+            api.deleteAllNotifications().also {
+                invalidateNotifications(userId)
+            }
+        }
+
     private suspend fun currentUserId(): Int =
         settingsStore.yaniUserId.first()
 
@@ -103,33 +127,6 @@ class YaniProfileNotificationsRepository(
             stored?.toNotifications()
                 ?: throw error
         }
-    }
-
-    private suspend fun loadUnreadNotificationCounts(
-        userId: Int,
-        languageCode: String,
-    ): List<NotificationCount> {
-        val counts = linkedMapOf<String, Int>()
-        var offset = 0
-        var scanned = 0
-
-        while (scanned < NOTIFICATION_UNREAD_SCAN_MAX) {
-            val limit = minOf(
-                NOTIFICATION_UNREAD_SCAN_PAGE_SIZE,
-                NOTIFICATION_UNREAD_SCAN_MAX - scanned,
-            )
-            val page = getNotificationsPage(userId, languageCode, limit, offset)
-            if (page.isEmpty()) break
-
-            page.filterNot(ProfileNotification::viewed).forEach { notification ->
-                counts[notification.type] = (counts[notification.type] ?: 0) + 1
-            }
-            scanned += page.size
-            if (page.size < limit) break
-            offset += page.size
-        }
-
-        return counts.map { (type, count) -> NotificationCount(type = type, count = count) }
     }
 
     private suspend fun fetchNotifications(
@@ -169,6 +166,3 @@ class YaniProfileNotificationsRepository(
         accountStorage.deleteNotificationCounts(userId)
     }
 }
-
-private const val NOTIFICATION_UNREAD_SCAN_PAGE_SIZE = 100
-private const val NOTIFICATION_UNREAD_SCAN_MAX = 1_000

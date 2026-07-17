@@ -9,9 +9,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CollectionsBookmark
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
@@ -54,13 +55,14 @@ class TvMainGraph @Inject constructor(
 
     private val menuItems = listOf(
         TvMenuItem(R.string.main_tab_search, RootTab.SEARCH, Icons.Default.Search),
+        TvMenuItem(R.string.main_tab_schedule, RootTab.SCHEDULE, Icons.Default.CalendarMonth),
         TvMenuItem(R.string.main_tab_home, RootTab.HOME, Icons.Default.Home),
         TvMenuItem(
             R.string.main_tab_collections,
             RootTab.COLLECTIONS,
             Icons.Filled.CollectionsBookmark,
         ),
-        TvMenuItem(R.string.main_tab_schedule, RootTab.SCHEDULE, Icons.Default.DateRange),
+        TvMenuItem(R.string.main_tab_news, RootTab.POSTS, Icons.Default.Newspaper),
         TvMenuItem(R.string.main_tab_top, RootTab.TOP, Icons.Default.Star),
         TvMenuItem(R.string.main_tab_library, RootTab.LIBRARY, Icons.AutoMirrored.Filled.List),
     )
@@ -114,7 +116,7 @@ class TvMainGraph @Inject constructor(
                 }
             }
 
-            YummyTvTheme(appTheme = state.appTheme) {
+            YummyTvTheme(appTheme = state.appTheme, isTelevision = true) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,

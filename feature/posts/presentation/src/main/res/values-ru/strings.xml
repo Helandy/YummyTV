@@ -1,0 +1,5 @@
+<resources>
+    <string name="posts_auth_required">Войдите, чтобы оценить публикацию</string>
+    <string name="posts_vote_error">Не удалось сохранить реакцию</string>
+    <string name="posts_load_error">Не удалось загрузить публикацию</string>
+</resources>

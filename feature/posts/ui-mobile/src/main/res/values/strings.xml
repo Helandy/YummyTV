@@ -1,0 +1,17 @@
+<resources>
+    <string name="posts_comments">Comments (%1$s)</string>
+    <string name="posts_title">News</string>
+    <string name="posts_publication">Publication</string>
+    <string name="posts_all">All</string>
+    <string name="posts_new">New</string>
+    <string name="posts_old">Old</string>
+    <string name="posts_best">Best</string>
+    <string name="posts_empty">No publications yet</string>
+    <string name="posts_error">Could not load news</string>
+    <string name="posts_retry">Retry</string>
+    <string name="posts_back">Back</string>
+    <string name="posts_related_anime">Related anime</string>
+    <string name="posts_views">%1$s views</string>
+    <string name="posts_reactions_title">Rate this publication</string>
+    <string name="posts_close_image">Close image</string>
+</resources>

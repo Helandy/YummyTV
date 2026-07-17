@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_mobile_title">Настройки</string>
+    <string name="settings_mobile_section_interface">Интерфейс</string>
     <string name="settings_mobile_section_appearance">Внешний вид</string>
     <string name="settings_mobile_section_player">Плеер</string>
     <string name="settings_mobile_section_details">Деталка</string>
@@ -10,6 +11,16 @@
     <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">О приложении</string>
     <string name="settings_mobile_theme">Тема</string>
+    <string name="settings_interface_type">Тип интерфейса</string>
+    <string name="settings_interface_mobile">Мобильный</string>
+    <string name="settings_interface_mobile_hint">Управление с сенсорного экрана</string>
+    <string name="settings_interface_tv">ТВ</string>
+    <string name="settings_interface_tv_hint">Навигация с помощью пульта</string>
+    <string name="settings_interface_confirm_title">Сменить интерфейс?</string>
+    <string name="settings_interface_confirm_message">Переключиться на «%1$s»? Приложение перезапустится, текущий экран закроется.</string>
+    <string name="settings_interface_confirm">Переключить</string>
+    <string name="settings_interface_cancel">Отмена</string>
+    <string name="settings_interface_restart_failed">Интерфейс изменится при следующем запуске приложения</string>
     <string name="settings_mobile_poster_size">Размер постеров</string>
     <string name="settings_mobile_poster_quality">Качество постеров</string>
     <string name="settings_show_top_title_year">Отображать год у тайтлов в топе</string>
@@ -44,6 +55,8 @@
     <string name="settings_details_button_viewing_order">Порядок просмотра</string>
     <string name="settings_details_button_rating">Рейтинг</string>
     <string name="settings_details_button_collections">Коллекции</string>
+    <string name="settings_details_button_reviews">Отзывы</string>
+    <string name="settings_details_button_blogger_videos">Видео блогеров</string>
     <string name="settings_details_button_screenshots">Скриншоты</string>
     <string name="settings_watch_next_label">Продолжить просмотр</string>
     <string name="settings_watch_next_enabled">Синхронизируется с TV Home</string>
@@ -99,6 +112,11 @@
     <string name="settings_suggest_next_episode_on_watched_enabled">Показывать на главной после завершения текущей</string>
     <string name="settings_auto_play_next_episode_label">Автовоспроизведение следующей серии</string>
     <string name="settings_auto_play_next_episode_enabled">Запускать следующую серию после 10-секундного отсчёта</string>
+    <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
+    <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
+    <string name="settings_player_gesture_tutorial_reset">Повторить обучение жестам</string>
+    <string name="settings_player_gesture_tutorial_reset_hint">Показать обучалку при следующем открытии видео</string>
+    <string name="settings_player_gesture_tutorial_reset_done">Обучалка будет показана при следующем открытии видео</string>
     <string name="settings_refresh_continue_watching_progress_label">Последний прогресс</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Проверять прогресс аккаунта при запуске из «Продолжить просмотр» на главной или в библиотеке, чтобы продолжать с более свежего устройства</string>
     <string name="settings_cache_size_min">Минимальный</string>

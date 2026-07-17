@@ -29,7 +29,7 @@ import coil3.compose.AsyncImage
 @Composable
 fun MobileProgressMediaCard(
     title: String,
-    imageUrl: String?,
+    imageModel: Any?,
     subtitle: String?,
     trailingSubtitle: String? = null,
     progress: Float,
@@ -49,7 +49,7 @@ fun MobileProgressMediaCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             AsyncImage(
-                model = imageUrl,
+                model = imageModel,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),

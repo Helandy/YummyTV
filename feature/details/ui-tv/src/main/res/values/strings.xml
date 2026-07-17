@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="details_ignore_recommendation">Do not recommend this anime</string>
+    <string name="details_restore_recommendation">Restore this anime in recommendations</string>
+    <string name="details_similar_like">Like similar title</string>
+    <string name="details_similar_dislike">Dislike similar title</string>
+    <string name="details_blogger_videos">Blogger videos</string>
+    <string name="details_reviews">Reviews</string>
+    <string name="details_reviews_count">Reviews (%1$d)</string>
     <string name="details_screenshots_empty">No screenshots found</string>
     <string name="details_screenshots_title">Screenshots</string>
     <string name="details_episode_content_description">Episode %1$s</string>
@@ -104,7 +111,12 @@
     <string name="details_rating_empty">No Yani ratings yet</string>
     <string name="details_rating_votes_short">%1$d user ratings</string>
     <string name="details_rating_percent">%1$d%%</string>
-    <string name="details_list_stats">Watching %1$d · Planned %2$d · Completed %3$d</string>
+    <string name="details_list_watching">Watching</string>
+    <string name="details_list_planned">Planned</string>
+    <string name="details_list_completed">Completed</string>
+    <string name="details_list_postponed">Postponed</string>
+    <string name="details_list_dropped">Dropped</string>
+    <string name="details_list_stat_item">%1$s %2$s</string>
     <string name="details_collections_button">Collections</string>
     <string name="details_collections_title">Collections with this title</string>
     <string name="details_collections_empty">No collections found</string>
@@ -115,4 +127,6 @@
     <string name="details_viewing_order_description">Related titles in the recommended sequence</string>
     <string name="details_views_millions">%1$sM</string>
     <string name="details_views_thousands">%1$dK</string>
+    <string name="details_related_anime">Related anime</string>
+    <string name="details_related_empty">No related anime found</string>
 </resources>

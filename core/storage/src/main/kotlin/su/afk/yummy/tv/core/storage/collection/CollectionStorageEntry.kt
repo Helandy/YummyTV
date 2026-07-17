@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.collection
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 
@@ -21,6 +22,10 @@ data class CollectionDetailEntry(
     val dislikes: Int = 0,
     val vote: Int = 0,
     val cachedAt: Long,
+    @ColumnInfo(defaultValue = "0")
+    val ownerId: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    val isPublic: Boolean = false,
 )
 
 @Entity(

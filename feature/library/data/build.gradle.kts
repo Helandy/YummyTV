@@ -8,6 +8,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:network"))
     implementation(project(":core:storage"))
     implementation(project(":feature:library:domain"))
+
+    implementation(libs.kotlinx.serialization.json)
 }

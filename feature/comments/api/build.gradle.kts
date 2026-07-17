@@ -8,5 +8,6 @@ android {
 }
 
 dependencies {
+    api(project(":feature:comments:domain"))
     api(libs.bundles.navigation.serialization)
 }

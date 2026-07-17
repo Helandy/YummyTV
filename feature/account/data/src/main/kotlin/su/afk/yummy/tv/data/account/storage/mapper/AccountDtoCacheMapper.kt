@@ -10,6 +10,12 @@ import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_REVIEWS
 import su.afk.yummy.tv.core.storage.account.AccountCollectionItemEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionsPageCache
+import su.afk.yummy.tv.core.storage.account.AccountListStatEntry
+import su.afk.yummy.tv.core.storage.account.AccountListStatsCache
+import su.afk.yummy.tv.core.storage.account.AccountListStatsCacheEntry
+import su.afk.yummy.tv.core.storage.account.AccountNotificationCountCacheEntry
+import su.afk.yummy.tv.core.storage.account.AccountNotificationCountEntry
+import su.afk.yummy.tv.core.storage.account.AccountNotificationCountsCache
 import su.afk.yummy.tv.core.storage.account.AccountNotificationEntry
 import su.afk.yummy.tv.core.storage.account.AccountNotificationPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountNotificationsPageCache
@@ -33,7 +39,9 @@ import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
 import su.afk.yummy.tv.core.utils.htmlToPlainText
 import su.afk.yummy.tv.core.utils.toHttpsUrl
 import su.afk.yummy.tv.data.account.dto.YaniAccountPosterDto
+import su.afk.yummy.tv.data.account.dto.YaniAnimeListStatDto
 import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
+import su.afk.yummy.tv.data.account.dto.YaniNotificationCountDto
 import su.afk.yummy.tv.data.account.dto.YaniNotificationDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniRatingBucketDto
@@ -101,6 +109,19 @@ internal fun List<YaniRatingBucketDto>.toRatingBucketsCache(
         buckets = mapIndexed { index, item ->
             AccountRatingBucketEntry(animeId, index, item.rating, item.count)
         },
+    )
+
+internal fun List<YaniAnimeListStatDto>.toListStatsCache(
+    animeId: Int,
+    cachedAt: Long,
+): AccountListStatsCache =
+    AccountListStatsCache(
+        entry = AccountListStatsCacheEntry(animeId, cachedAt),
+        stats = mapNotNull { item ->
+            item.listId.takeIf { it >= 0 }?.let { listId ->
+                AccountListStatEntry(animeId, listId, item.count.coerceAtLeast(0))
+            }
+        }.distinctBy { it.listId },
     )
 
 internal fun List<YaniCollectionSummaryDto>.toCollectionsPageCache(
@@ -186,6 +207,22 @@ internal fun List<YaniNotificationDto>.toNotificationsPageCache(
                 objectId = item.objectId,
                 animeSlug = item.clickUri.toCatalogItemSlug(),
                 isNewEpisode = item.type == "anime_episode" && item.subType == "new_episode",
+            )
+        },
+    )
+
+internal fun List<YaniNotificationCountDto>.toNotificationCountsCache(
+    userId: Int,
+    cachedAt: Long,
+): AccountNotificationCountsCache =
+    AccountNotificationCountsCache(
+        entry = AccountNotificationCountCacheEntry(userId = userId, cachedAt = cachedAt),
+        items = filter { it.type.isNotBlank() && it.count > 0 }.mapIndexed { index, item ->
+            AccountNotificationCountEntry(
+                userId = userId,
+                position = index,
+                type = item.type,
+                count = item.count,
             )
         },
     )

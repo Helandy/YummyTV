@@ -28,7 +28,12 @@ import su.afk.yummy.tv.feature.details.utils.formatAiredProgress
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun FullDetailsBody(details: AnimeDetails) {
+internal fun FullDetailsBody(
+    details: AnimeDetails,
+    onGenreSelected: (Int) -> Unit,
+    onStudioSelected: (Int, String?) -> Unit,
+    onDirectorSelected: (Int) -> Unit,
+) {
     val listState = rememberLazyListState()
     val firstFocusRequester = remember { FocusRequester() }
     val episodeProgress = details.episodes?.formatAiredProgress()
@@ -90,7 +95,12 @@ internal fun FullDetailsBody(details: AnimeDetails) {
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            details.genres.forEach { genre -> FullDetailsChip(genre.title) }
+                            details.genres.forEach { genre ->
+                                FullDetailsChip(
+                                    label = genre.title,
+                                    onClick = genre.id?.let { id -> { onGenreSelected(id) } },
+                                )
+                            }
                         }
                     }
                 }
@@ -128,20 +138,40 @@ internal fun FullDetailsBody(details: AnimeDetails) {
         if (details.studios.isNotEmpty()) {
             item {
                 FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(
-                        label = stringResource(R.string.details_full_studio),
-                        value = details.studios.joinToString { it.title },
-                    )
+                    FullDetailsRow(label = stringResource(R.string.details_full_studio)) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            details.studios.forEach { studio ->
+                                FullDetailsChip(
+                                    label = studio.title,
+                                    onClick = studio.id?.let { id ->
+                                        { onStudioSelected(id, studio.url) }
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
         if (details.creators.isNotEmpty()) {
             item {
                 FocusableDetailsItem(index = nextIndex(), listState = listState) {
-                    FullDetailsTextRow(
-                        label = stringResource(R.string.details_full_director),
-                        value = details.creators.joinToString { it.title },
-                    )
+                    FullDetailsRow(label = stringResource(R.string.details_full_director)) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            details.creators.forEach { creator ->
+                                FullDetailsChip(
+                                    label = creator.title,
+                                    onClick = creator.id?.let { id -> { onDirectorSelected(id) } },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

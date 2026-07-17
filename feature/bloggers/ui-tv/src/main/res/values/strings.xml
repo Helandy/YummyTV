@@ -1,0 +1,29 @@
+<resources>
+    <string name="blogger_video_comments">Comments (%1$d)</string>
+    <string name="blogger_details_title">Blogger</string>
+    <string name="blogger_details_loading">Loading blogger…</string>
+    <string name="blogger_subscribers">%1$d subscribers</string>
+    <string name="blogger_videos_count">%1$d videos</string>
+    <string name="blogger_subscribers_tv">%1$s subscribers</string>
+    <string name="blogger_videos_count_tv">%1$s videos</string>
+    <string name="blogger_comments_phone_only">Comments are available only in the phone app</string>
+    <string name="blogger_subscribe">Subscribe</string>
+    <string name="blogger_unsubscribe">Unsubscribe</string>
+    <string name="blogger_videos_section">Videos</string>
+    <string name="blogger_video_loading">Loading video…</string>
+    <string name="blogger_video_watch">Watch</string>
+    <string name="blogger_video_spoiler">Contains spoilers</string>
+    <string name="blogger_video_views_tv">%1$s views</string>
+    <string name="blogger_videos_retry">Retry</string>
+    <string name="blogger_open_page">Blogger page</string>
+    <string name="blogger_videos_title">Blogger videos</string>
+    <string name="blogger_videos_anime_title">Blogger videos about this anime</string>
+    <string name="blogger_videos_loading">Loading blogger videos…</string>
+    <string name="blogger_videos_error">Couldn\'t load blogger videos</string>
+    <string name="blogger_videos_empty">No blogger videos found</string>
+    <string name="blogger_videos_all">All</string>
+    <string name="blogger_videos_all_bloggers">All bloggers</string>
+    <string name="blogger_videos_sort_new">New</string>
+    <string name="blogger_videos_sort_top">Popular</string>
+    <string name="blogger_videos_sort_old">Old</string>
+</resources>

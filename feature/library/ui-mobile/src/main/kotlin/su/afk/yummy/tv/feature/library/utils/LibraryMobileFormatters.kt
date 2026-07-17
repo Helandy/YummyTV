@@ -12,6 +12,7 @@ import java.util.Locale
 @Composable
 internal fun LibraryTab.mobileTitle(): String = when (this) {
     LibraryTab.CONTINUE_WATCHING -> stringResource(R.string.library_mobile_tab_continue_watching)
+    LibraryTab.HISTORY -> stringResource(R.string.library_mobile_tab_history)
     LibraryTab.FAVORITES -> stringResource(R.string.library_mobile_tab_favorites)
     LibraryTab.WATCHING -> stringResource(R.string.library_mobile_tab_watching)
     LibraryTab.PLANNED -> stringResource(R.string.library_mobile_tab_planned)
@@ -30,6 +31,7 @@ internal fun LibraryItem.mobileDateText(tab: LibraryTab): String? {
     val date = when (tab) {
         LibraryTab.FAVORITES -> favoriteUpdatedAt
         LibraryTab.CONTINUE_WATCHING -> 0L
+        LibraryTab.HISTORY -> 0L
         else -> listUpdatedAt
     }.formatLibraryDate()
     return date

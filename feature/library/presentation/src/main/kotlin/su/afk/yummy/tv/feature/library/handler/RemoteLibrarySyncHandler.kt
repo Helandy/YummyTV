@@ -1,12 +1,9 @@
 package su.afk.yummy.tv.feature.library.handler
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
-import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
-import su.afk.yummy.tv.domain.account.usecase.GetUserFavoriteAnimeListUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAllUserAnimeListsUseCase
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
@@ -24,8 +21,7 @@ import javax.inject.Inject
 /** Loads remote library tabs and syncs local-only library mutations back to the account. */
 internal class RemoteLibrarySyncHandler @Inject constructor(
     private val libraryRepository: LibraryRepository,
-    private val getUserAnimeList: GetUserAnimeListUseCase,
-    private val getUserFavoriteAnimeList: GetUserFavoriteAnimeListUseCase,
+    private val getAllUserAnimeLists: GetAllUserAnimeListsUseCase,
     private val hasCachedUserLists: HasCachedUserListsUseCase,
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
@@ -85,26 +81,17 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     private suspend fun fetchRemoteLists(
         userId: Int,
         forceRefresh: Boolean,
-    ): Map<LibraryTab, List<UserAnimeListItem>> =
-        coroutineScope {
-            val watching = async { getUserAnimeList(userId, UserAnimeList.WATCHING, forceRefresh) }
-            val favorites = async { getUserFavoriteAnimeList(userId, forceRefresh) }
-            val planned = async { getUserAnimeList(userId, UserAnimeList.PLANNED, forceRefresh) }
-            val completed =
-                async { getUserAnimeList(userId, UserAnimeList.COMPLETED, forceRefresh) }
-            val postponed =
-                async { getUserAnimeList(userId, UserAnimeList.POSTPONED, forceRefresh) }
-            val dropped = async { getUserAnimeList(userId, UserAnimeList.DROPPED, forceRefresh) }
-
-            mapOf(
-                LibraryTab.WATCHING to watching.await(),
-                LibraryTab.FAVORITES to favorites.await(),
-                LibraryTab.PLANNED to planned.await(),
-                LibraryTab.COMPLETED to completed.await(),
-                LibraryTab.POSTPONED to postponed.await(),
-                LibraryTab.DROPPED to dropped.await(),
-            )
-        }
+    ): Map<LibraryTab, List<UserAnimeListItem>> {
+        val items = getAllUserAnimeLists(userId, forceRefresh)
+        return mapOf(
+            LibraryTab.WATCHING to items.filter { it.list == UserAnimeList.WATCHING },
+            LibraryTab.FAVORITES to items.filter(UserAnimeListItem::isFavorite),
+            LibraryTab.PLANNED to items.filter { it.list == UserAnimeList.PLANNED },
+            LibraryTab.COMPLETED to items.filter { it.list == UserAnimeList.COMPLETED },
+            LibraryTab.POSTPONED to items.filter { it.list == UserAnimeList.POSTPONED },
+            LibraryTab.DROPPED to items.filter { it.list == UserAnimeList.DROPPED },
+        )
+    }
 
     private suspend fun syncLocalChangesToRemote(
         remote: Map<LibraryTab, List<UserAnimeListItem>>,

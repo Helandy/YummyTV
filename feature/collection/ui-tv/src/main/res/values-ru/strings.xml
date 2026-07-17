@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="collection_comments">Комментарии</string>
     <string name="retry">Повторить</string>
     <string name="collection_catalog_tv_title">Коллекции</string>
     <string name="collection_catalog_tv_empty">Коллекций пока нет</string>
+    <string name="collection_edit">Редактировать</string>
+    <string name="collection_delete">Удалить</string>
+    <string name="collection_edit_dialog_title">Редактирование коллекции</string>
+    <string name="collection_title_label">Название</string>
+    <string name="collection_description_label">Описание</string>
+    <string name="collection_public_label">Публичная коллекция</string>
+    <string name="collection_save">Сохранить</string>
+    <string name="collection_cancel">Отмена</string>
+    <string name="collection_delete_dialog_title">Удалить коллекцию?</string>
+    <string name="collection_delete_dialog_message">Коллекция будет удалена без возможности восстановления.</string>
 </resources>

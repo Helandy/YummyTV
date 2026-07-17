@@ -1,0 +1,15 @@
+<resources>
+    <string name="site_pages_title">Site pages</string>
+    <string name="site_page_faq">Site FAQ</string>
+    <string name="site_page_about">About the site</string>
+    <string name="site_page_rules">Site rules</string>
+    <string name="site_page_review_rules">Review rules</string>
+    <string name="site_page_collections_rules">Collection rules</string>
+    <string name="site_page_post_rules">Post rules</string>
+    <string name="site_page_edit_rules">Edit rules</string>
+    <string name="site_page_privacy">Privacy</string>
+    <string name="site_page_copyright">Copyright</string>
+    <string name="site_page_help">Want to help?</string>
+    <string name="site_page_fallback">The site page is temporarily unavailable. The server returned no readable content, so the app is showing this local notice instead of outdated or invented rules.</string>
+    <string name="site_page_retry">Retry</string>
+</resources>
