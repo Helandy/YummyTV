@@ -8,6 +8,10 @@ import su.afk.yummy.tv.core.storage.search.SearchItemEntry
 import su.afk.yummy.tv.core.storage.search.SearchPageCache
 import su.afk.yummy.tv.core.storage.search.SearchPageEntry
 import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
+import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
+import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
+import su.afk.yummy.tv.data.search.dto.YaniSearchItemDto
 import su.afk.yummy.tv.domain.search.model.SearchAnimeType
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchGenre
@@ -15,7 +19,7 @@ import su.afk.yummy.tv.domain.search.model.SearchGenreGroup
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchPage
 
-internal fun List<SearchItem>.toSearchPageCache(
+internal fun List<YaniSearchItemDto>.toSearchPageCache(
     pageKey: String,
     language: String,
     limit: Int,
@@ -32,14 +36,17 @@ internal fun List<SearchItem>.toSearchPageCache(
             responseSize = responseSize,
             cachedAt = cachedAt,
         ),
-        items = mapIndexed { index, item ->
+        items = mapNotNull { item ->
+            val animeId = item.animeId ?: return@mapNotNull null
+            animeId to item
+        }.mapIndexed { index, (animeId, item) ->
             SearchItemEntry(
                 pageKey = pageKey,
                 position = index,
-                animeId = item.id,
+                animeId = animeId,
                 title = item.title,
-                posterUrl = item.posterUrl,
-                rating = item.rating,
+                posterUrl = item.poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
+                rating = item.rating?.average,
                 year = item.year,
             )
         },
@@ -62,7 +69,8 @@ internal fun SearchPageCache.toSearchPage(): SearchPage =
         canLoadMore = entry.responseSize >= entry.limit,
     )
 
-internal fun SearchFilterOptions.toSearchFilterOptionsCache(
+internal fun YaniSearchGenresDto.toSearchFilterOptionsCache(
+    catalog: YaniSearchCatalogDto,
     language: String,
     cachedAt: Long,
 ): SearchFilterOptionsCache =
@@ -71,32 +79,43 @@ internal fun SearchFilterOptions.toSearchFilterOptionsCache(
             language = language,
             cachedAt = cachedAt,
         ),
-        genreGroups = genreGroups.mapIndexed { index, group ->
+        genreGroups = groups.mapNotNull { group ->
+            val id = group.id ?: return@mapNotNull null
+            id to group
+        }.mapIndexed { index, (id, group) ->
             SearchGenreGroupEntry(
                 language = language,
                 position = index,
-                groupId = group.id,
+                groupId = id,
                 title = group.title,
             )
         },
-        genres = genres.mapIndexed { index, genre ->
+        genres = genres.mapNotNull { genre ->
+            val id = genre.value ?: return@mapNotNull null
+            id to genre
+        }.mapIndexed { index, (id, genre) ->
             SearchGenreEntry(
                 language = language,
                 position = index,
-                genreId = genre.id,
+                genreId = id.toString(),
                 title = genre.title,
-                groupId = genre.groupId,
+                groupId = genre.groupId ?: 0,
             )
         },
-        types = types.mapIndexed { index, type ->
+        types = catalog.types.mapNotNull { item ->
+            val type = item.type ?: return@mapNotNull null
+            val id = type.alias ?: type.value?.toString() ?: return@mapNotNull null
+            id to type
+        }.mapIndexed { index, (id, type) ->
             SearchTypeEntry(
                 language = language,
                 position = index,
-                typeId = type.id,
-                title = type.title,
+                typeId = id,
+                title = type.name,
             )
         },
     )
+
 
 internal fun SearchFilterOptionsCache.toSearchFilterOptions(): SearchFilterOptions =
     SearchFilterOptions(

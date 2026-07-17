@@ -7,10 +7,8 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.top.AnimeTopStore
 import su.afk.yummy.tv.core.storage.top.isFresh
-import su.afk.yummy.tv.data.top.mapper.toAnimeTopItem
 import su.afk.yummy.tv.data.top.network.YaniAnimeTopApi
 import su.afk.yummy.tv.data.top.storage.mapper.toAnimeTopPageCache
-import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.domain.top.repository.AnimeTopRepository
@@ -51,30 +49,20 @@ class YaniAnimeTopRepository(
         languageCode: String,
     ): AnimeTopPage {
         val response = api.getTopAnime(type, limit, offset).response
-        val items = response.mapNotNull { it.toAnimeTopItem() }
         val cachedAt = System.currentTimeMillis()
+        val cache = response.toAnimeTopPageCache(
+            type = type,
+            language = languageCode,
+            limit = limit,
+            offset = offset,
+            responseSize = response.size,
+            cachedAt = cachedAt,
+        )
         topStore.savePage(
-            items.toAnimeTopPageCache(
-                type = type,
-                language = languageCode,
-                limit = limit,
-                offset = offset,
-                responseSize = response.size,
-                cachedAt = cachedAt,
-            ),
+            cache,
             prunePagesCachedBefore = cachedAt - ANIME_TOP_CACHE_RETENTION_MS,
         )
-        return items.toAnimeTopPage(limit, offset, response.size)
+        return cache.toStoredAnimeTopPage()
     }
 
-    private fun List<AnimeTopItem>.toAnimeTopPage(
-        limit: Int,
-        offset: Int,
-        responseSize: Int,
-    ): AnimeTopPage =
-        AnimeTopPage(
-            items = this,
-            nextOffset = offset + responseSize,
-            canLoadMore = responseSize >= limit,
-        )
 }

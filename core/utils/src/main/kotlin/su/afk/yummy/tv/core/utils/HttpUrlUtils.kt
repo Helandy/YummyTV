@@ -2,6 +2,12 @@ package su.afk.yummy.tv.core.utils
 
 import java.net.URI
 
+fun String.toHttpsUrl(): String = when {
+    startsWith("//") -> "https:$this"
+    startsWith("http://") -> replaceFirst("http://", "https://")
+    else -> this
+}
+
 fun String.normalizedHttpUrl(): String =
     when {
         startsWith("//") -> "https:$this"

@@ -112,9 +112,9 @@ class YaniCommentsRepository(
     ) = withContext(Dispatchers.IO) {
         api.updateComment(commentId, YaniPatchCommentBodyDto(text))
             .response
-            .toComment()
-            .also { comment ->
-                commentsStorage.updateComment(comment.toDetachedCacheEntry())
+            .let { dto ->
+                commentsStorage.updateComment(dto.toDetachedCacheEntry())
+                dto.toComment()
             }
     }
 
@@ -173,57 +173,55 @@ class YaniCommentsRepository(
         skip: Int,
         sort: CommentSort,
     ): CommentsPage {
-        val page = api.getAnimeComments(animeId, limit, skip, sort.apiValue).toCommentsPage()
-        savePage(
-            page = page,
+        return savePage(
+            dto = api.getAnimeComments(animeId, limit, skip, sort.apiValue),
             scopeType = COMMENT_SCOPE_ANIME,
             ownerId = animeId,
             sort = sort.apiValue,
             limit = limit,
             skip = skip,
         )
-        return page
     }
 
     private suspend fun fetchCommentChildrenFromNetwork(
         commentId: Int,
         skip: Int,
     ): CommentsPage {
-        val page = api.getCommentChildren(commentId, skip).toCommentsPage()
-        savePage(
-            page = page,
+        return savePage(
+            dto = api.getCommentChildren(commentId, skip),
             scopeType = COMMENT_SCOPE_CHILDREN,
             ownerId = commentId,
             sort = COMMENT_CHILDREN_SORT,
             limit = COMMENT_CHILDREN_LIMIT,
             skip = skip,
         )
-        return page
     }
 
     private suspend fun savePage(
-        page: CommentsPage,
+        dto: su.afk.yummy.tv.data.comments.dto.YaniCommentsResponseDto,
         scopeType: String,
         ownerId: Int,
         sort: String,
         limit: Int,
         skip: Int,
-    ) {
+    ): CommentsPage {
         val cachedAt = System.currentTimeMillis()
+        val cache = dto.toCommentsPageCache(
+            scopeType = scopeType,
+            ownerId = ownerId,
+            sort = sort,
+            limit = limit,
+            skip = skip,
+            cachedAt = cachedAt,
+        )
         commentsStorage.savePage(
-            cache = page.toCommentsPageCache(
-                scopeType = scopeType,
-                ownerId = ownerId,
-                sort = sort,
-                limit = limit,
-                skip = skip,
-                cachedAt = cachedAt,
-            ),
+            cache = cache,
             prunePagesCachedBefore = cachedAt - COMMENT_CACHE_PRUNE_AGE_MS,
         )
+        return cache.toCommentsPage()
     }
 
-    private fun su.afk.yummy.tv.domain.comments.model.Comment.toDetachedCacheEntry() =
+    private fun su.afk.yummy.tv.data.comments.dto.YaniCommentDto.toDetachedCacheEntry() =
         toCommentItemEntry(
             scopeType = "",
             ownerId = 0,

@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.storage.account.ACCOUNT_PROFILE_KEY_CURRENT
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
+import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
@@ -42,7 +43,7 @@ class YaniAccountRepository(
         }
         if (token.isBlank()) error("Empty access token")
         val profileDto = api.getProfile(token)
-        val savedProfile = saveProfile(profileDto.toAccount())
+        val savedProfile = saveProfile(profileDto)
         settingsStore.setYaniAccount(savedProfile.id, savedProfile.nickname, savedProfile.avatarUrl)
         yaniAuthPreferences.setRefreshToken(token)
         savedProfile
@@ -53,7 +54,7 @@ class YaniAccountRepository(
         if (token.isBlank()) return@withContext getCachedProfileOrNull()
         val profile = runCatching {
             val profileDto = api.getProfile(token)
-            saveProfile(profileDto.toAccount())
+            saveProfile(profileDto)
         }.getOrElse {
             getCachedProfileOrNull()
         }
@@ -94,7 +95,7 @@ class YaniAccountRepository(
             }
 
             try {
-                saveProfile(api.getProfile().toAccount())
+                saveProfile(api.getProfile())
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -116,10 +117,10 @@ class YaniAccountRepository(
     }
 
     private suspend fun saveProfile(
-        profile: YaniAccount,
+        profile: YaniProfileDto,
         cachedAt: Long = System.currentTimeMillis()
     ): YaniAccount {
-        if (profile.id <= 0) return profile
+        if (profile.id <= 0) return profile.toAccount()
         val entry = profile.toProfileEntry(ACCOUNT_PROFILE_KEY_CURRENT, cachedAt)
         accountStorage.saveProfile(entry)
         accountStorage.saveProfile(

@@ -1,49 +1,22 @@
 package su.afk.yummy.tv.data.account.storage.mapper
 
-import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_FRIENDS
-import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_POSTS
-import su.afk.yummy.tv.core.storage.account.ACCOUNT_USER_PROFILE_CONTENT_REVIEWS
 import su.afk.yummy.tv.core.storage.account.AccountAnimeListStateEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionItemEntry
-import su.afk.yummy.tv.core.storage.account.AccountCollectionPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountCollectionsPageCache
-import su.afk.yummy.tv.core.storage.account.AccountListStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountListStatsCache
-import su.afk.yummy.tv.core.storage.account.AccountListStatsCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountNotificationAnimeEntry
-import su.afk.yummy.tv.core.storage.account.AccountNotificationCountCacheEntry
-import su.afk.yummy.tv.core.storage.account.AccountNotificationCountEntry
 import su.afk.yummy.tv.core.storage.account.AccountNotificationCountsCache
-import su.afk.yummy.tv.core.storage.account.AccountNotificationEntry
-import su.afk.yummy.tv.core.storage.account.AccountNotificationPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountNotificationsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountProfileEntry
-import su.afk.yummy.tv.core.storage.account.AccountRatingBucketCacheEntry
-import su.afk.yummy.tv.core.storage.account.AccountRatingBucketEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketsCache
-import su.afk.yummy.tv.core.storage.account.AccountUserFriendEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserFriendsPageCache
-import su.afk.yummy.tv.core.storage.account.AccountUserGenreStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListCache
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserListPageEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserListWatchStatEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserPostEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserPostsPageCache
-import su.afk.yummy.tv.core.storage.account.AccountUserProfileContentPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCache
-import su.afk.yummy.tv.core.storage.account.AccountUserProfileSummaryCacheEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchHistoryEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserProfileWatchTypeEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserRatingStatEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserReviewEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserReviewsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
-import su.afk.yummy.tv.core.storage.account.AccountUserStatsCacheEntry
-import su.afk.yummy.tv.core.storage.account.AccountUserTypeStatEntry
-import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionCacheEntry
-import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
@@ -72,15 +45,6 @@ import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
 import su.afk.yummy.tv.domain.account.model.YaniAccount
-
-internal fun YaniAccount.toProfileEntry(profileKey: String, cachedAt: Long): AccountProfileEntry =
-    AccountProfileEntry(
-        profileKey = profileKey,
-        userId = id,
-        nickname = nickname,
-        avatarUrl = avatarUrl,
-        cachedAt = cachedAt,
-    )
 
 internal fun AccountProfileEntry.toAccount(): YaniAccount =
     YaniAccount(
@@ -130,43 +94,6 @@ internal fun Int?.toUserRatingEntry(
         cachedAt = cachedAt,
     )
 
-internal fun List<UserAnimeListItem>.toUserListCache(
-    userId: Int,
-    listId: Int,
-    language: String,
-    cachedAt: Long,
-): AccountUserListCache =
-    AccountUserListCache(
-        entry = AccountUserListPageEntry(
-            userId = userId,
-            listId = listId,
-            language = language,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountUserListItemEntry(
-                userId = userId,
-                listId = listId,
-                language = language,
-                position = index,
-                animeId = item.animeId,
-                title = item.title,
-                posterUrl = item.posterUrl,
-                posterSmallUrl = item.poster?.small,
-                posterMediumUrl = item.poster?.medium,
-                posterBigUrl = item.poster?.big,
-                posterFullsizeUrl = item.poster?.fullsize,
-                posterMegaUrl = item.poster?.mega,
-                rating = item.rating,
-                userRating = item.userRating,
-                year = item.year,
-                userListId = item.list?.id,
-                isFavorite = item.isFavorite,
-                updatedAtSeconds = item.updatedAtSeconds,
-            )
-        },
-    )
-
 internal fun AccountUserListCache.toUserListItems(): List<UserAnimeListItem> =
     items.map { it.toUserListItem() }
 
@@ -184,22 +111,6 @@ internal fun AccountAnimeListStateEntry.toUserListItem(): UserAnimeListItem =
         updatedAtSeconds = cachedAt / 1000L,
     )
 
-internal fun List<AnimeRatingBucket>.toRatingBucketsCache(
-    animeId: Int,
-    cachedAt: Long,
-): AccountRatingBucketsCache =
-    AccountRatingBucketsCache(
-        entry = AccountRatingBucketCacheEntry(animeId = animeId, cachedAt = cachedAt),
-        buckets = mapIndexed { index, bucket ->
-            AccountRatingBucketEntry(
-                animeId = animeId,
-                position = index,
-                rating = bucket.rating,
-                count = bucket.count,
-            )
-        },
-    )
-
 internal fun AccountRatingBucketsCache.toRatingSummary(userRating: Int? = null): AnimeRatingSummary =
     AnimeRatingSummary(
         distribution = buckets.map { AnimeRatingBucket(rating = it.rating, count = it.count) },
@@ -209,79 +120,11 @@ internal fun AccountRatingBucketsCache.toRatingSummary(userRating: Int? = null):
 internal fun AccountUserRatingEntry.toUserRating(): Int? =
     rating?.takeIf { it in 1..10 }
 
-internal fun AnimeListStats.toListStatsCache(animeId: Int, cachedAt: Long): AccountListStatsCache =
-    AccountListStatsCache(
-        entry = AccountListStatsCacheEntry(animeId = animeId, cachedAt = cachedAt),
-        stats = counts.map { (listId, count) ->
-            AccountListStatEntry(
-                animeId = animeId,
-                listId = listId,
-                count = count,
-            )
-        },
-    )
-
 internal fun AccountListStatsCache.toAnimeListStats(): AnimeListStats =
     AnimeListStats(counts = stats.associate { it.listId to it.count })
 
-internal fun List<AnimeCollectionSummary>.toCollectionsPageCache(
-    pageKey: String,
-    language: String,
-    cachedAt: Long,
-): AccountCollectionsPageCache =
-    AccountCollectionsPageCache(
-        entry = AccountCollectionPageEntry(
-            pageKey = pageKey,
-            language = language,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountCollectionItemEntry(
-                pageKey = pageKey,
-                position = index,
-                collectionId = item.id,
-                title = item.title,
-                description = item.description,
-                posterUrl = item.posterUrl,
-                posterSmallUrl = item.poster?.small,
-                posterMediumUrl = item.poster?.medium,
-                posterBigUrl = item.poster?.big,
-                posterFullsizeUrl = item.poster?.fullsize,
-                posterMegaUrl = item.poster?.mega,
-                views = item.views,
-            )
-        },
-    )
-
 internal fun AccountCollectionsPageCache.toCollectionSummaries(): List<AnimeCollectionSummary> =
     items.map { it.toCollectionSummary() }
-
-internal fun List<VideoSubscription>.toVideoSubscriptionsCache(
-    userId: Int,
-    language: String,
-    cachedAt: Long,
-): AccountVideoSubscriptionsCache =
-    AccountVideoSubscriptionsCache(
-        entry = AccountVideoSubscriptionCacheEntry(
-            userId = userId,
-            language = language,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountVideoSubscriptionEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                animeId = item.animeId,
-                animeUrl = item.animeUrl,
-                playerId = item.playerId,
-                player = item.player,
-                dubbing = item.dubbing,
-                posterUrl = item.posterUrl,
-                title = item.title,
-            )
-        },
-    )
 
 internal fun AccountVideoSubscriptionsCache.toVideoSubscriptions(): List<VideoSubscription> =
     items.map {
@@ -295,43 +138,6 @@ internal fun AccountVideoSubscriptionsCache.toVideoSubscriptions(): List<VideoSu
             title = it.title,
         )
     }
-
-internal fun List<ProfileNotification>.toNotificationsPageCache(
-    userId: Int,
-    language: String,
-    limit: Int,
-    offset: Int,
-    cachedAt: Long,
-): AccountNotificationsPageCache =
-    AccountNotificationsPageCache(
-        entry = AccountNotificationPageEntry(
-            userId = userId,
-            language = language,
-            limit = limit,
-            offset = offset,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountNotificationEntry(
-                userId = userId,
-                language = language,
-                limit = limit,
-                offset = offset,
-                position = index,
-                notificationId = item.id,
-                dateSeconds = item.dateSeconds,
-                title = item.title,
-                text = item.text,
-                clickUri = item.clickUri,
-                type = item.type,
-                subType = item.subType,
-                viewed = item.viewed,
-                objectId = item.objectId,
-                animeSlug = item.animeSlug,
-                isNewEpisode = item.isNewEpisode,
-            )
-        },
-    )
 
 internal fun AccountNotificationsPageCache.toNotifications(): List<ProfileNotification> =
     items.map {
@@ -350,38 +156,6 @@ internal fun AccountNotificationsPageCache.toNotifications(): List<ProfileNotifi
         )
     }
 
-internal fun List<UserFriend>.toUserFriendsPageCache(
-    userId: Int,
-    language: String,
-    limit: Int,
-    offset: Int,
-    cachedAt: Long,
-): AccountUserFriendsPageCache =
-    AccountUserFriendsPageCache(
-        entry = AccountUserProfileContentPageEntry(
-            userId = userId,
-            language = language,
-            contentType = ACCOUNT_USER_PROFILE_CONTENT_FRIENDS,
-            limit = limit,
-            offset = offset,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountUserFriendEntry(
-                userId = userId,
-                language = language,
-                limit = limit,
-                offset = offset,
-                position = index,
-                friendId = item.id,
-                nickname = item.nickname,
-                avatarUrl = item.avatarUrl,
-                lastOnlineSeconds = item.lastOnlineSeconds,
-                status = item.status,
-            )
-        },
-    )
-
 internal fun AccountUserFriendsPageCache.toUserFriends(): List<UserFriend> =
     items.map {
         UserFriend(
@@ -392,43 +166,6 @@ internal fun AccountUserFriendsPageCache.toUserFriends(): List<UserFriend> =
             status = it.status,
         )
     }
-
-internal fun List<UserReviewSummary>.toUserReviewsPageCache(
-    userId: Int,
-    language: String,
-    limit: Int,
-    offset: Int,
-    cachedAt: Long,
-): AccountUserReviewsPageCache =
-    AccountUserReviewsPageCache(
-        entry = AccountUserProfileContentPageEntry(
-            userId = userId,
-            language = language,
-            contentType = ACCOUNT_USER_PROFILE_CONTENT_REVIEWS,
-            limit = limit,
-            offset = offset,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountUserReviewEntry(
-                userId = userId,
-                language = language,
-                limit = limit,
-                offset = offset,
-                position = index,
-                reviewId = item.id,
-                animeId = item.animeId,
-                animeTitle = item.animeTitle,
-                animePosterUrl = item.animePosterUrl,
-                textPreview = item.textPreview,
-                rating = item.rating,
-                likes = item.likes,
-                dislikes = item.dislikes,
-                commentsCount = item.commentsCount,
-                updatedAtSeconds = item.updatedAtSeconds,
-            )
-        },
-    )
 
 internal fun AccountUserReviewsPageCache.toUserReviews(): List<UserReviewSummary> =
     items.map {
@@ -446,39 +183,6 @@ internal fun AccountUserReviewsPageCache.toUserReviews(): List<UserReviewSummary
         )
     }
 
-internal fun List<UserPostSummary>.toUserPostsPageCache(
-    userId: Int,
-    language: String,
-    limit: Int,
-    offset: Int,
-    cachedAt: Long,
-): AccountUserPostsPageCache =
-    AccountUserPostsPageCache(
-        entry = AccountUserProfileContentPageEntry(
-            userId = userId,
-            language = language,
-            contentType = ACCOUNT_USER_PROFILE_CONTENT_POSTS,
-            limit = limit,
-            offset = offset,
-            cachedAt = cachedAt,
-        ),
-        items = mapIndexed { index, item ->
-            AccountUserPostEntry(
-                userId = userId,
-                language = language,
-                limit = limit,
-                offset = offset,
-                position = index,
-                postId = item.id,
-                title = item.title,
-                previewImageUrl = item.previewImageUrl,
-                contentPreview = item.contentPreview,
-                categoryTitle = item.categoryTitle,
-                createdAtSeconds = item.createdAtSeconds,
-            )
-        },
-    )
-
 internal fun AccountUserPostsPageCache.toUserPosts(): List<UserPostSummary> =
     items.map {
         UserPostSummary(
@@ -491,22 +195,6 @@ internal fun AccountUserPostsPageCache.toUserPosts(): List<UserPostSummary> =
         )
     }
 
-internal fun List<NotificationCount>.toNotificationCountsCache(
-    userId: Int,
-    cachedAt: Long,
-): AccountNotificationCountsCache =
-    AccountNotificationCountsCache(
-        entry = AccountNotificationCountCacheEntry(userId = userId, cachedAt = cachedAt),
-        items = mapIndexed { index, item ->
-            AccountNotificationCountEntry(
-                userId = userId,
-                position = index,
-                type = item.type,
-                count = item.count,
-            )
-        },
-    )
-
 internal fun AccountNotificationCountsCache.toNotificationCounts(): List<NotificationCount> =
     items.map { NotificationCount(type = it.type, count = it.count) }
 
@@ -518,114 +206,6 @@ internal fun Int?.toNotificationAnimeEntry(
         slug = slug,
         animeId = this,
         cachedAt = cachedAt,
-    )
-
-internal fun UserStats.toUserStatsCache(
-    userId: Int,
-    language: String,
-    cachedAt: Long,
-): AccountUserStatsCache =
-    AccountUserStatsCache(
-        entry = AccountUserStatsCacheEntry(
-            userId = userId,
-            language = language,
-            cachedAt = cachedAt,
-        ),
-        genres = genres.mapIndexed { index, item ->
-            AccountUserGenreStatEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                genreId = item.id,
-                title = item.title,
-                count = item.count,
-            )
-        },
-        ratings = ratings.mapIndexed { index, item ->
-            AccountUserRatingStatEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                rating = item.rating,
-                count = item.count,
-            )
-        },
-        lists = lists.mapIndexed { index, item ->
-            AccountUserListWatchStatEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                listId = item.id,
-                title = item.title,
-                href = item.href,
-                seconds = item.seconds,
-            )
-        },
-        types = types.mapIndexed { index, item ->
-            AccountUserTypeStatEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                typeId = item.id,
-                title = item.title,
-                shortName = item.shortName,
-                count = item.count,
-            )
-        },
-    )
-
-internal fun UserProfileSummary.toUserProfileSummaryCache(
-    userId: Int,
-    language: String,
-    cachedAt: Long,
-): AccountUserProfileSummaryCache =
-    AccountUserProfileSummaryCache(
-        entry = AccountUserProfileSummaryCacheEntry(
-            userId = userId,
-            language = language,
-            cachedAt = cachedAt,
-            nickname = nickname,
-            avatarUrl = avatarUrl,
-            bannerUrl = bannerUrl,
-            registerDateSeconds = registerDateSeconds,
-            birthDateSeconds = birthDateSeconds,
-            sex = sex.toStorageValue(),
-            about = about,
-            daysOnline = daysOnline,
-            watchingCount = counts.watching,
-            plannedCount = counts.planned,
-            completedCount = counts.completed,
-            droppedCount = counts.dropped,
-            postponedCount = counts.postponed,
-            favoriteCount = counts.favorite,
-            friendsCount = socialCounts.friends,
-            reviewsCount = socialCounts.reviews,
-            commentsCount = socialCounts.comments,
-            postsCount = socialCounts.posts,
-            collectionsCount = socialCounts.collections,
-        ),
-        watchTypes = watchTypes.mapIndexed { index, item ->
-            AccountUserProfileWatchTypeEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                typeId = item.id,
-                alias = item.alias,
-                title = item.title,
-                shortName = item.shortName,
-                spentSeconds = item.spentSeconds,
-            )
-        },
-        watchHistory = watchHistory.mapIndexed { index, item ->
-            AccountUserProfileWatchHistoryEntry(
-                userId = userId,
-                language = language,
-                position = index,
-                dateSeconds = item.dateSeconds,
-                durationSeconds = item.durationSeconds,
-                episodeCount = item.episodeCount,
-            )
-        },
     )
 
 internal fun AccountUserStatsCache.toUserStats(): UserStats =

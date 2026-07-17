@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toVideoSubscription
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toVideoSubscriptions
 import su.afk.yummy.tv.data.account.storage.mapper.toVideoSubscriptionsCache
@@ -57,8 +56,7 @@ class YaniVideoSubscriptionRepository(
         userId: Int,
         languageCode: String,
     ): List<VideoSubscription> {
-        val subscriptions = api.getSubscriptions(userId).mapNotNull { it.toVideoSubscription() }
-        val cache = subscriptions.toVideoSubscriptionsCache(
+        val cache = api.getSubscriptions(userId).toVideoSubscriptionsCache(
             userId = userId,
             language = languageCode,
             cachedAt = System.currentTimeMillis(),

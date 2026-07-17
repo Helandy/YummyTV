@@ -3,6 +3,8 @@ package su.afk.yummy.tv.data.schedule.storage.mapper
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCache
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleItemEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
+import su.afk.yummy.tv.data.schedule.dto.YaniScheduleAnimeDto
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleItem
 import java.time.Instant
@@ -10,7 +12,7 @@ import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
 
-internal fun List<AnimeScheduleDay>.toAnimeScheduleCache(
+internal fun List<YaniScheduleAnimeDto>.toAnimeScheduleCache(
     language: String,
     cachedAt: Long,
 ): AnimeScheduleCache =
@@ -19,20 +21,23 @@ internal fun List<AnimeScheduleDay>.toAnimeScheduleCache(
             language = language,
             cachedAt = cachedAt,
         ),
-        items = flatMap { it.items }
-            .mapIndexed { index, item ->
-                AnimeScheduleItemEntry(
-                    language = language,
-                    position = index,
-                    animeId = item.animeId,
-                    title = item.title,
-                    posterUrl = item.posterUrl,
-                    nextDateEpochSeconds = item.nextDateEpochSeconds,
-                    previousDateEpochSeconds = item.previousDateEpochSeconds,
-                    airedEpisodes = item.airedEpisodes,
-                    totalEpisodes = item.totalEpisodes,
-                )
-            },
+        items = mapNotNull { item ->
+            val animeId = item.animeId ?: return@mapNotNull null
+            animeId to item
+        }.mapIndexed { index, (animeId, item) ->
+            AnimeScheduleItemEntry(
+                language = language,
+                position = index,
+                animeId = animeId,
+                title = item.title,
+                posterUrl = item.poster?.run { mega ?: big ?: medium ?: fullsize ?: small }
+                    ?.toHttpsUrl(),
+                nextDateEpochSeconds = item.episodes?.nextDate?.takeIf { it > 0 },
+                previousDateEpochSeconds = item.episodes?.prevDate?.takeIf { it > 0 },
+                airedEpisodes = item.episodes?.aired?.takeIf { it > 0 },
+                totalEpisodes = item.episodes?.count?.takeIf { it > 0 },
+            )
+        },
     )
 
 internal fun AnimeScheduleCache.toScheduleDays(): List<AnimeScheduleDay> =

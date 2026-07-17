@@ -7,10 +7,6 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
-import su.afk.yummy.tv.data.account.mapper.toUserFriend
-import su.afk.yummy.tv.data.account.mapper.toUserPostSummary
-import su.afk.yummy.tv.data.account.mapper.toUserReviewSummary
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionSummaries
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionsPageCache
@@ -40,9 +36,7 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                val friends = api.getUserFriends(userId, limit, offset)
-                    .mapNotNull { it.toUserFriend() }
-                val cache = friends.toUserFriendsPageCache(
+                val cache = api.getUserFriends(userId, limit, offset).toUserFriendsPageCache(
                     userId = userId,
                     language = languageCode,
                     limit = limit,
@@ -68,9 +62,7 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                val reviews = api.getUserReviews(userId, limit, offset)
-                    .mapNotNull { it.toUserReviewSummary() }
-                val cache = reviews.toUserReviewsPageCache(
+                val cache = api.getUserReviews(userId, limit, offset).toUserReviewsPageCache(
                     userId = userId,
                     language = languageCode,
                     limit = limit,
@@ -96,9 +88,7 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                val posts = api.getUserPosts(userId, limit, offset)
-                    .mapNotNull { it.toUserPostSummary() }
-                val cache = posts.toUserPostsPageCache(
+                val cache = api.getUserPosts(userId, limit, offset).toUserPostsPageCache(
                     userId = userId,
                     language = languageCode,
                     limit = limit,
@@ -129,10 +119,8 @@ class YaniUserProfileContentRepository(
             }
 
             try {
-                val collections = api.getUserCollections(userId, limit, offset)
-                    .mapNotNull { it.toCollectionSummary() }
                 val cachedAt = System.currentTimeMillis()
-                val cache = collections.toCollectionsPageCache(
+                val cache = api.getUserCollections(userId, limit, offset).toCollectionsPageCache(
                     pageKey = pageKey,
                     language = languageCode,
                     cachedAt = cachedAt,

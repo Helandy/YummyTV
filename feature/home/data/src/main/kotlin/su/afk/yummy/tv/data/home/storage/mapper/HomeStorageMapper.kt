@@ -13,7 +13,12 @@ import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
 import su.afk.yummy.tv.data.home.R
+import su.afk.yummy.tv.data.home.dto.YaniAnimeDto
+import su.afk.yummy.tv.data.home.dto.YaniCollectionDto
+import su.afk.yummy.tv.data.home.dto.YaniFeedDto
+import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
@@ -22,7 +27,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 
-internal fun HomeFeed.toHomeFeedCache(
+internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
     watchSignature: String,
     cachedAt: Long,
@@ -33,21 +38,16 @@ internal fun HomeFeed.toHomeFeedCache(
             watchSignature = watchSignature,
             cachedAt = cachedAt,
         ),
-        items = heroItems.toHomeFeedItemEntries(
+        items = response.topCarousel.items.toSeriesEntries(
             language = language,
             watchSignature = watchSignature,
             container = HOME_FEED_CONTAINER_HERO,
-        ) + continueWatchingItems.toContinueWatchingEntries(
-            language = language,
-            watchSignature = watchSignature,
-        ) +
-                sections.flatMap { section ->
-                    section.items.toHomeFeedItemEntries(
-                        language = language,
-                        watchSignature = watchSignature,
-                        container = section.type.toStorageContainer(),
-                    )
-                },
+        ) + response.newVideos.toNewVideoEntries(language, watchSignature) +
+                response.recommends.toSeriesEntries(
+                    language,
+                    watchSignature,
+                    HOME_FEED_CONTAINER_RECOMMENDATIONS,
+                ) + response.collections.toCollectionEntries(language, watchSignature),
     )
 
 internal fun HomeFeedCache.toHomeFeed(stringProvider: StringProvider): HomeFeed =
@@ -138,62 +138,93 @@ private fun HomeFeedCache.section(
         ?.let { HomeFeedSection(type = type, title = title, items = it) }
 }
 
-private fun List<HomeFeedItem>.toHomeFeedItemEntries(
+private fun List<YaniAnimeDto>.toSeriesEntries(
     language: String,
     watchSignature: String,
     container: String,
 ): List<HomeFeedItemEntry> =
-    mapIndexed { index, item ->
+    mapNotNull { item ->
+        val id = item.animeId ?: return@mapNotNull null
+        val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        Triple(id, title, item)
+    }.mapIndexed { index, (id, title, item) ->
         HomeFeedItemEntry(
             language = language,
             watchSignature = watchSignature,
             container = container,
             position = index,
-            itemId = item.id,
-            title = item.title,
+            itemId = id,
+            title = title,
             description = item.description,
-            posterSmallUrl = item.poster?.small,
-            posterMediumUrl = item.poster?.medium,
-            posterBigUrl = item.poster?.big,
-            posterFullsizeUrl = item.poster?.fullsize,
-            posterMegaUrl = item.poster?.mega,
-            rating = item.rating,
-            year = item.year,
-            actionType = item.action.storageType,
-            actionId = item.action.storageId,
+            posterSmallUrl = item.poster?.small?.toHttpsUrl(),
+            posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
+            posterBigUrl = item.poster?.big?.toHttpsUrl(),
+            posterFullsizeUrl = item.poster?.fullsize?.toHttpsUrl(),
+            posterMegaUrl = item.poster?.mega?.toHttpsUrl(),
+            rating = item.rating?.average?.takeIf { it > 0.0 },
+            year = item.year?.takeIf { it > 0 },
+            actionType = HOME_FEED_ACTION_SERIES,
+            actionId = id,
         )
     }
 
-private fun List<HomeContinueWatchingItem>.toContinueWatchingEntries(
+private fun List<YaniVideoDto>.toNewVideoEntries(
     language: String,
     watchSignature: String,
 ): List<HomeFeedItemEntry> =
-    mapIndexed { index, item ->
+    groupBy { it.animeId }.mapNotNull { (animeId, videos) ->
+        val id = animeId ?: return@mapNotNull null
+        val item = videos.first()
+        val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        Triple(id, title, item)
+    }.mapIndexed { index, (id, title, item) ->
         HomeFeedItemEntry(
             language = language,
             watchSignature = watchSignature,
-            container = HOME_FEED_CONTAINER_CONTINUE_WATCHING,
+            container = HOME_FEED_CONTAINER_NEW_RELEASES,
             position = index,
-            itemId = item.animeId,
-            title = item.animeTitle,
+            itemId = id,
+            title = title,
             description = item.description,
-            posterSmallUrl = item.poster?.small,
-            posterMediumUrl = item.poster?.medium,
-            posterBigUrl = item.poster?.big,
-            posterFullsizeUrl = item.poster?.fullsize,
-            posterMegaUrl = item.poster?.mega,
+            posterSmallUrl = item.poster?.small?.toHttpsUrl(),
+            posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
+            posterBigUrl = item.poster?.big?.toHttpsUrl(),
+            posterFullsizeUrl = item.poster?.fullsize?.toHttpsUrl(),
+            posterMegaUrl = item.poster?.mega?.toHttpsUrl(),
             rating = null,
             year = null,
-            actionType = if (item.videoId > 0) HOME_FEED_ACTION_VIDEO else HOME_FEED_ACTION_SERIES,
-            actionId = item.videoId.takeIf { it > 0 } ?: item.animeId,
-            episode = item.episode,
-            episodeUrl = item.episodeUrl,
-            positionMs = item.positionMs,
-            durationMs = item.durationMs,
-            updatedAt = item.updatedAt,
-            playerName = item.playerName,
-            dubbing = item.dubbing,
-            screenshotUrl = item.screenshotUrl,
+            actionType = HOME_FEED_ACTION_SERIES,
+            actionId = id,
+        )
+    }
+
+private fun List<YaniCollectionDto>.toCollectionEntries(
+    language: String,
+    watchSignature: String,
+): List<HomeFeedItemEntry> =
+    mapNotNull { item ->
+        val id = item.id ?: return@mapNotNull null
+        val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        Triple(id, title, item)
+    }.mapIndexed { index, (id, title, item) ->
+        val poster = item.posterPreviews.firstOrNull()
+        HomeFeedItemEntry(
+            language = language,
+            watchSignature = watchSignature,
+            container = HOME_FEED_CONTAINER_COLLECTIONS,
+            position = index,
+            itemId = -id,
+            title = title,
+            description = item.description,
+            posterSmallUrl = poster?.small?.toHttpsUrl(),
+            posterMediumUrl = poster?.medium?.toHttpsUrl(),
+            posterBigUrl = poster?.big?.toHttpsUrl(),
+            posterFullsizeUrl = poster?.fullsize?.toHttpsUrl(),
+            posterMegaUrl = poster?.mega?.toHttpsUrl(),
+            rating = null,
+            year = null,
+            actionType = HOME_FEED_ACTION_COLLECTION,
+            actionId = id,
         )
     }
 
@@ -240,27 +271,6 @@ private fun HomeFeedItemEntry.toContinueWatchingItem(): HomeContinueWatchingItem
         dubbing = dubbing,
         screenshotUrl = screenshotUrl,
     )
-
-private fun HomeFeedSectionType.toStorageContainer(): String =
-    when (this) {
-        HomeFeedSectionType.NEW_RELEASES -> HOME_FEED_CONTAINER_NEW_RELEASES
-        HomeFeedSectionType.RECOMMENDATIONS -> HOME_FEED_CONTAINER_RECOMMENDATIONS
-        HomeFeedSectionType.COLLECTIONS -> HOME_FEED_CONTAINER_COLLECTIONS
-    }
-
-private val HomeFeedItemAction.storageType: String
-    get() = when (this) {
-        is HomeFeedItemAction.OpenCollection -> HOME_FEED_ACTION_COLLECTION
-        is HomeFeedItemAction.OpenVideo -> HOME_FEED_ACTION_VIDEO
-        is HomeFeedItemAction.OpenSeries -> HOME_FEED_ACTION_SERIES
-    }
-
-private val HomeFeedItemAction.storageId: Int
-    get() = when (this) {
-        is HomeFeedItemAction.OpenCollection -> collectionId
-        is HomeFeedItemAction.OpenVideo -> videoId
-        is HomeFeedItemAction.OpenSeries -> seriesId
-    }
 
 private fun posterOrNull(
     small: String?,

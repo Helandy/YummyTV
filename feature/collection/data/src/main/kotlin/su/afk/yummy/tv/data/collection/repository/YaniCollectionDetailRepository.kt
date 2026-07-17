@@ -9,7 +9,6 @@ import su.afk.yummy.tv.core.storage.collection.CollectionStorageStore
 import su.afk.yummy.tv.core.storage.collection.isFresh
 import su.afk.yummy.tv.data.collection.dto.YaniCollectionVoteBodyDto
 import su.afk.yummy.tv.data.collection.mapper.toDomain
-import su.afk.yummy.tv.data.collection.mapper.toSummary
 import su.afk.yummy.tv.data.collection.network.YaniCollectionApi
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionCatalogPageCache
 import su.afk.yummy.tv.data.collection.storage.mapper.toCollectionDetail
@@ -61,22 +60,18 @@ class YaniCollectionDetailRepository(
 
             try {
                 val response = api.getCollections(limit, offset).response
-                val collections = response.mapNotNull { it.toSummary() }
+                val cache = response.toCollectionCatalogPageCache(
+                    pageKey = pageKey,
+                    language = languageCode,
+                    limit = limit,
+                    offset = offset,
+                    responseSize = response.size,
+                    cachedAt = System.currentTimeMillis(),
+                )
                 collectionStorage.saveCatalogPage(
-                    collections.toCollectionCatalogPageCache(
-                        pageKey = pageKey,
-                        language = languageCode,
-                        limit = limit,
-                        offset = offset,
-                        responseSize = response.size,
-                        cachedAt = System.currentTimeMillis(),
-                    )
+                    cache
                 )
-                CollectionSummaryPage(
-                    items = collections,
-                    nextOffset = offset + response.size,
-                    canLoadMore = response.size >= limit,
-                )
+                cache.toCollectionSummaryPage()
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -117,14 +112,13 @@ class YaniCollectionDetailRepository(
         }
 
     private suspend fun fetchCollection(id: Int, languageCode: String): CollectionDetail {
-        val collection = api.getCollection(id).response.toDomain(fallbackId = id)
-        collectionStorage.saveCollection(
-            collection.toCollectionDetailCache(
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = api.getCollection(id).response.toCollectionDetailCache(
+            fallbackId = id,
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return collection
+        collectionStorage.saveCollection(cache)
+        return cache.toCollectionDetail()
     }
 
     private fun catalogPageKey(language: String, limit: Int, offset: Int): String =

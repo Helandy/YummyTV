@@ -3,11 +3,13 @@ package su.afk.yummy.tv.data.top.storage.mapper
 import su.afk.yummy.tv.core.storage.top.AnimeTopItemEntry
 import su.afk.yummy.tv.core.storage.top.AnimeTopPageCache
 import su.afk.yummy.tv.core.storage.top.AnimeTopPageEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
+import su.afk.yummy.tv.data.top.dto.YaniAnimeTopItemDto
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopPage
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
 
-internal fun List<AnimeTopItem>.toAnimeTopPageCache(
+internal fun List<YaniAnimeTopItemDto>.toAnimeTopPageCache(
     type: AnimeTopType,
     language: String,
     limit: Int,
@@ -24,21 +26,25 @@ internal fun List<AnimeTopItem>.toAnimeTopPageCache(
             responseSize = responseSize,
             cachedAt = cachedAt,
         ),
-        items = mapIndexed { index, item ->
+        items = mapNotNull { item ->
+            val animeId = item.animeId ?: return@mapNotNull null
+            animeId to item
+        }.mapIndexed { index, (animeId, item) ->
             AnimeTopItemEntry(
                 type = type.apiValue,
                 language = language,
                 limit = limit,
                 offset = offset,
                 position = index,
-                animeId = item.id,
+                animeId = animeId,
                 title = item.title,
-                posterUrl = item.posterUrl,
-                rating = item.rating,
+                posterUrl = item.poster?.run { medium ?: big ?: fullsize ?: small }?.toHttpsUrl(),
+                rating = item.rating?.average,
                 year = item.year,
             )
         },
     )
+
 
 internal fun AnimeTopPageCache.toAnimeTopPage(): AnimeTopPage =
     AnimeTopPage(

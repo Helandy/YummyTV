@@ -1,5 +1,10 @@
 package su.afk.yummy.tv.data.details.storage.mapper
 
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_CREATOR
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_GENRE
@@ -19,6 +24,13 @@ import su.afk.yummy.tv.core.storage.anime.AnimeVideoCacheEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideoEntry
 import su.afk.yummy.tv.core.storage.anime.AnimeVideosCache
 import su.afk.yummy.tv.core.storage.anime.AnimeViewingOrderEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
+import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
+import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
+import su.afk.yummy.tv.data.details.dto.YaniAnimeVideoDto
+import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
+import su.afk.yummy.tv.data.details.dto.YaniScreenshotDto
+import su.afk.yummy.tv.data.details.dto.YaniTrailerDto
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.model.AnimeGenre
@@ -34,40 +46,41 @@ import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
 import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 
-internal fun AnimeDetails.toAnimeDetailsCache(
+internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
     language: String,
     cachedAt: Long,
-): AnimeDetailsCache {
-    val animeId = id
+): AnimeDetailsCache? {
+    val source = response
+    val animeId = source.animeId ?: return null
     return AnimeDetailsCache(
         entry = AnimeDetailsEntry(
             animeId = animeId,
             language = language,
-            animeUrl = animeUrl,
-            title = title,
-            description = description,
-            posterSmallUrl = poster?.small,
-            posterMediumUrl = poster?.medium,
-            posterBigUrl = poster?.big,
-            posterFullsizeUrl = poster?.fullsize,
-            posterMegaUrl = poster?.mega,
-            ratingAverage = rating.average,
-            ratingCounters = rating.counters,
-            ratingKinopoisk = rating.kinopoisk,
-            ratingShikimori = rating.shikimori,
-            ratingMyAnimeList = rating.myAnimeList,
-            year = year,
-            ageRating = ageRating,
-            views = views,
-            status = status,
-            type = type,
-            episodesCount = episodes?.count,
-            episodesAired = episodes?.aired,
-            episodesNextDateEpochSeconds = episodes?.nextDateEpochSeconds,
-            episodesPrevDateEpochSeconds = episodes?.prevDateEpochSeconds,
+            animeUrl = source.animeUrl,
+            title = source.title,
+            description = source.description,
+            posterSmallUrl = source.poster?.small?.toHttpsUrl(),
+            posterMediumUrl = source.poster?.medium?.toHttpsUrl(),
+            posterBigUrl = source.poster?.big?.toHttpsUrl(),
+            posterFullsizeUrl = source.poster?.fullsize?.toHttpsUrl(),
+            posterMegaUrl = source.poster?.mega?.toHttpsUrl(),
+            ratingAverage = source.rating.average?.takeIf { it > 0.0 },
+            ratingCounters = source.rating.counters,
+            ratingKinopoisk = source.rating.kinopoisk?.takeIf { it > 0.0 },
+            ratingShikimori = source.rating.shikimori?.takeIf { it > 0.0 },
+            ratingMyAnimeList = source.rating.myAnimeList?.takeIf { it > 0.0 },
+            year = source.year?.takeIf { it > 0 },
+            ageRating = source.minAge.toShortAgeRating(),
+            views = source.views,
+            status = source.animeStatus?.title.knownText(),
+            type = source.type?.name.knownText() ?: source.type?.shortname.knownText(),
+            episodesCount = source.episodes?.count?.takeIf { it > 0 },
+            episodesAired = source.episodes?.aired?.takeIf { it > 0 },
+            episodesNextDateEpochSeconds = source.episodes?.nextDate?.takeIf { it > 0 },
+            episodesPrevDateEpochSeconds = source.episodes?.prevDate?.takeIf { it > 0 },
             cachedAt = cachedAt,
         ),
-        otherTitles = otherTitles.mapIndexed { index, title ->
+        otherTitles = source.otherTitles.filter { it.isNotBlank() }.mapIndexed { index, title ->
             AnimeDetailTitleEntry(
                 animeId = animeId,
                 language = language,
@@ -75,64 +88,80 @@ internal fun AnimeDetails.toAnimeDetailsCache(
                 title = title,
             )
         },
-        genres = genres.mapIndexed { index, genre ->
+        genres = source.genres.mapNotNull { item ->
+            item.title.knownText()?.let { item to it }
+        }.mapIndexed { index, (genre, title) ->
             AnimeDetailNamedEntry(
                 animeId = animeId,
                 language = language,
                 kind = ANIME_DETAIL_NAMED_KIND_GENRE,
                 position = index,
                 itemId = genre.id,
-                title = genre.title,
+                title = title,
             )
         },
-        creators = creators.mapIndexed { index, creator ->
+        creators = source.creators.mapNotNull { item ->
+            item.title.knownText()?.let { item to it }
+        }.mapIndexed { index, (creator, title) ->
             AnimeDetailNamedEntry(
                 animeId = animeId,
                 language = language,
                 kind = ANIME_DETAIL_NAMED_KIND_CREATOR,
                 position = index,
                 itemId = creator.id,
-                title = creator.title,
+                title = title,
             )
         },
-        studios = studios.mapIndexed { index, studio ->
+        studios = source.studios.mapNotNull { item ->
+            item.title.knownText()?.let { item to it }
+        }.mapIndexed { index, (studio, title) ->
             AnimeDetailNamedEntry(
                 animeId = animeId,
                 language = language,
                 kind = ANIME_DETAIL_NAMED_KIND_STUDIO,
                 position = index,
                 itemId = studio.id,
-                title = studio.title,
+                title = title,
             )
         },
-        viewingOrder = viewingOrder.mapIndexed { index, item ->
+        viewingOrder = source.viewingOrder.mapNotNull { item ->
+            val relatedId = item.animeId ?: return@mapNotNull null
+            val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            Triple(relatedId, title, item)
+        }.mapIndexed { index, (relatedId, title, item) ->
             AnimeViewingOrderEntry(
                 animeId = animeId,
                 language = language,
                 position = index,
-                relatedAnimeId = item.animeId,
-                title = item.title,
-                relation = item.relation,
-                type = item.type,
-                episodesCount = item.episodesCount,
-                posterSmallUrl = item.poster?.small,
-                posterMediumUrl = item.poster?.medium,
-                posterBigUrl = item.poster?.big,
-                posterFullsizeUrl = item.poster?.fullsize,
-                posterMegaUrl = item.poster?.mega,
-                year = item.year,
-                rating = item.rating,
+                relatedAnimeId = relatedId,
+                title = title,
+                relation = item.data?.text.knownText(),
+                type = item.type?.name.knownText() ?: item.type?.shortname.knownText(),
+                episodesCount = item.type?.value?.takeIf { it > 0 },
+                posterSmallUrl = item.poster?.small?.toHttpsUrl(),
+                posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
+                posterBigUrl = item.poster?.big?.toHttpsUrl(),
+                posterFullsizeUrl = item.poster?.fullsize?.toHttpsUrl(),
+                posterMegaUrl = item.poster?.mega?.toHttpsUrl(),
+                year = item.year?.takeIf { it > 0 },
+                rating = item.rating?.takeIf { it > 0.0 },
             )
         },
-        screenshots = screenshots.mapIndexed { index, screenshot ->
+        screenshots = source.randomScreenshots.map { screenshot ->
+            Triple(
+                screenshot,
+                screenshot.sizes.small?.toHttpsUrl(),
+                screenshot.sizes.full?.toHttpsUrl(),
+            )
+        }.filterDistinctScreenshots().mapIndexed { index, (screenshot, small, full) ->
             AnimeScreenshotEntry(
                 animeId = animeId,
                 language = language,
                 position = index,
                 screenshotId = screenshot.id,
                 episode = screenshot.episode,
-                smallUrl = screenshot.small,
-                fullUrl = screenshot.full,
+                smallUrl = small,
+                fullUrl = full,
             )
         },
     )
@@ -187,7 +216,7 @@ internal fun AnimeDetailsCache.toAnimeDetails(): AnimeDetails {
     )
 }
 
-internal fun List<AnimeVideo>.toAnimeVideosCache(
+internal fun List<YaniAnimeVideoDto>.toAnimeVideosCache(
     animeId: Int,
     language: String,
     cachedAt: Long,
@@ -199,24 +228,26 @@ internal fun List<AnimeVideo>.toAnimeVideosCache(
             cachedAt = cachedAt,
         ),
         videos = mapIndexed { index, video ->
+            val opening = video.skips?.opening.toSkipSegment()
+            val ending = video.skips?.ending.toSkipSegment()
             AnimeVideoEntry(
                 animeId = animeId,
                 language = language,
                 position = index,
-                videoId = video.id,
-                episode = video.episode,
-                dubbing = video.dubbing,
-                player = video.player,
-                playerId = video.playerId,
-                iframeUrl = video.iframeUrl,
-                durationSeconds = video.durationSeconds,
+                videoId = video.videoId,
+                episode = video.number,
+                dubbing = video.data.dubbing,
+                player = video.data.player,
+                playerId = video.data.playerId,
+                iframeUrl = video.iframeUrl.toHttpsUrl(),
+                durationSeconds = video.duration,
                 views = video.views,
-                watchedEndTimeSeconds = video.watchedEndTimeSeconds,
-                watchedDateSeconds = video.watchedDateSeconds,
-                openingStartMs = video.skips.opening?.startMs,
-                openingEndMs = video.skips.opening?.endMs,
-                endingStartMs = video.skips.ending?.startMs,
-                endingEndMs = video.skips.ending?.endMs,
+                watchedEndTimeSeconds = video.watched?.endTime,
+                watchedDateSeconds = video.watched?.date,
+                openingStartMs = opening?.first,
+                openingEndMs = opening?.second,
+                endingStartMs = ending?.first,
+                endingEndMs = ending?.second,
             )
         },
     )
@@ -224,7 +255,7 @@ internal fun List<AnimeVideo>.toAnimeVideosCache(
 internal fun AnimeVideosCache.toAnimeVideos(): List<AnimeVideo> =
     videos.map { it.toAnimeVideo() }
 
-internal fun List<AnimeRecommendation>.toAnimeRecommendationsCache(
+internal fun List<YaniRecommendationItemDto>.toAnimeRecommendationsCache(
     animeId: Int,
     language: String,
     fromAi: Boolean,
@@ -237,22 +268,27 @@ internal fun List<AnimeRecommendation>.toAnimeRecommendationsCache(
             fromAi = fromAi,
             cachedAt = cachedAt,
         ),
-        recommendations = mapIndexed { index, recommendation ->
+        recommendations = mapNotNull { item ->
+            val id = item.animeId ?: return@mapNotNull null
+            val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            Triple(id, title, item)
+        }.mapIndexed { index, (id, title, recommendation) ->
             AnimeRecommendationEntry(
                 animeId = animeId,
                 language = language,
                 fromAi = fromAi,
                 position = index,
-                recommendationAnimeId = recommendation.animeId,
-                title = recommendation.title,
-                posterSmallUrl = recommendation.poster?.small,
-                posterMediumUrl = recommendation.poster?.medium,
-                posterBigUrl = recommendation.poster?.big,
-                posterFullsizeUrl = recommendation.poster?.fullsize,
-                posterMegaUrl = recommendation.poster?.mega,
-                rating = recommendation.rating,
-                type = recommendation.type,
-                year = recommendation.year,
+                recommendationAnimeId = id,
+                title = title,
+                posterSmallUrl = recommendation.poster?.small?.toHttpsUrl(),
+                posterMediumUrl = recommendation.poster?.medium?.toHttpsUrl(),
+                posterBigUrl = recommendation.poster?.big?.toHttpsUrl(),
+                posterFullsizeUrl = recommendation.poster?.fullsize?.toHttpsUrl(),
+                posterMegaUrl = recommendation.poster?.mega?.toHttpsUrl(),
+                rating = recommendation.rating.average?.takeIf { it > 0.0 },
+                type = recommendation.type?.name.knownText()
+                    ?: recommendation.type?.shortname.knownText(),
+                year = recommendation.year?.takeIf { it > 0 },
             )
         },
     )
@@ -277,7 +313,7 @@ internal fun AnimeRecommendationsCache.toAnimeRecommendations(): List<AnimeRecom
             )
         }
 
-internal fun List<AnimeTrailer>.toAnimeTrailersCache(
+internal fun List<YaniTrailerDto>.toAnimeTrailersCache(
     animeId: Int,
     language: String,
     cachedAt: Long,
@@ -288,12 +324,12 @@ internal fun List<AnimeTrailer>.toAnimeTrailersCache(
             language = language,
             cachedAt = cachedAt,
         ),
-        trailers = mapIndexed { index, trailer ->
+        trailers = map { it.iframeUrl.toHttpsUrl() }.distinct().mapIndexed { index, iframeUrl ->
             AnimeTrailerEntry(
                 animeId = animeId,
                 language = language,
                 position = index,
-                iframeUrl = trailer.iframeUrl,
+                iframeUrl = iframeUrl,
             )
         },
     )
@@ -303,6 +339,65 @@ internal fun AnimeTrailersCache.toAnimeTrailers(): List<AnimeTrailer> =
         .sortedBy { it.position }
         .map { AnimeTrailer(iframeUrl = it.iframeUrl) }
         .distinctBy { it.iframeUrl }
+
+private fun List<Triple<YaniScreenshotDto, String?, String?>>.filterDistinctScreenshots():
+        List<Triple<YaniScreenshotDto, String?, String?>> {
+    val seenImageUrls = mutableSetOf<String>()
+    return filter { (_, small, full) ->
+        val imageUrl = full?.takeIf { it.isNotBlank() } ?: small?.takeIf { it.isNotBlank() }
+        imageUrl == null || seenImageUrls.add(imageUrl)
+    }
+}
+
+private fun JsonElement?.toSkipSegment(): Pair<Long, Long>? {
+    val (start, end) = when (this) {
+        is JsonObject -> {
+            val start = this["time"]?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
+            val length = this["length"]?.jsonPrimitive?.intOrNull?.takeIf { it > 0 } ?: return null
+            start to start + length
+        }
+
+        is JsonArray -> {
+            val start = getOrNull(0)?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
+            val end = getOrNull(1)?.jsonPrimitive?.intOrNull?.takeIf { it > start } ?: return null
+            start to end
+        }
+
+        else -> return null
+    }
+    return start * 1_000L to end * 1_000L
+}
+
+private fun YaniAgeRatingDto?.toShortAgeRating(): String? {
+    this ?: return null
+    value.toShortAgeRatingLabel()?.let { return it }
+    return title.knownText()?.toShortAgeRatingTitle()
+        ?: titleLong.knownText()?.toShortAgeRatingTitle()
+}
+
+private fun Int?.toShortAgeRatingLabel(): String? = when (this) {
+    1 -> "G"
+    2 -> "PG"
+    3 -> "PG-13"
+    4 -> "R-17"
+    5 -> "R+"
+    else -> null
+}
+
+private fun String.toShortAgeRatingTitle(): String = when (val code = substringBefore("(").trim()) {
+    "G", "PG", "PG-13", "R+" -> code
+    "R-17", "R-17+" -> "R-17"
+    else -> this
+}
+
+private fun String?.knownText(): String? {
+    val value = this?.trim().orEmpty()
+    return value.takeIf {
+        it.isNotBlank() &&
+                !it.equals("unknown", ignoreCase = true) &&
+                !it.equals("unknow", ignoreCase = true)
+    }
+}
 
 private fun AnimeDetailsEntry.toPosterOrNull(): AnimePoster? =
     posterOrNull(

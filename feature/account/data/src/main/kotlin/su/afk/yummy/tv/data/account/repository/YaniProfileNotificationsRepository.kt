@@ -8,7 +8,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountNotificationAnimeEntry
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toNotification
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toNotificationAnimeEntry
 import su.afk.yummy.tv.data.account.storage.mapper.toNotifications
@@ -139,10 +138,8 @@ class YaniProfileNotificationsRepository(
         limit: Int,
         offset: Int,
     ): List<ProfileNotification> {
-        val notifications =
-            api.getNotifications(limit = limit, offset = offset).map { it.toNotification() }
         val cachedAt = System.currentTimeMillis()
-        val cache = notifications.toNotificationsPageCache(
+        val cache = api.getNotifications(limit = limit, offset = offset).toNotificationsPageCache(
             userId = userId,
             language = languageCode,
             limit = limit,

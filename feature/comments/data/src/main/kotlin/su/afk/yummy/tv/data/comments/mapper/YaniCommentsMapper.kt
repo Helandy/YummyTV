@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.comments.mapper
 import su.afk.yummy.tv.core.storage.comments.CommentItemEntry
 import su.afk.yummy.tv.core.storage.comments.CommentPageEntry
 import su.afk.yummy.tv.core.storage.comments.CommentsPageCache
+import su.afk.yummy.tv.core.utils.toHttpsUrl
 import su.afk.yummy.tv.data.comments.dto.YaniCommentDto
 import su.afk.yummy.tv.data.comments.dto.YaniCommentsResponseDto
 import su.afk.yummy.tv.data.comments.dto.YaniVoteCommentPayloadDto
@@ -13,12 +14,6 @@ import su.afk.yummy.tv.domain.comments.model.CommentVoteResult
 import su.afk.yummy.tv.domain.comments.model.CommentsPage
 
 private const val ROLE_SEPARATOR = "|"
-
-internal fun YaniCommentsResponseDto.toCommentsPage(): CommentsPage =
-    CommentsPage(
-        comments = response.comments.map { it.toComment() },
-        isModerator = response.isModerator,
-    )
 
 internal fun YaniCommentDto.toComment(): Comment =
     Comment(
@@ -48,7 +43,7 @@ internal fun YaniVoteCommentPayloadDto.toCommentVoteResult(): CommentVoteResult 
         success = success,
     )
 
-internal fun CommentsPage.toCommentsPageCache(
+internal fun YaniCommentsResponseDto.toCommentsPageCache(
     scopeType: String,
     ownerId: Int,
     sort: String,
@@ -63,11 +58,11 @@ internal fun CommentsPage.toCommentsPageCache(
             sort = sort,
             limit = limit,
             skip = skip,
-            responseSize = comments.size,
-            isModerator = isModerator,
+            responseSize = response.comments.size,
+            isModerator = response.isModerator,
             cachedAt = cachedAt,
         ),
-        items = comments.mapIndexed { index, comment ->
+        items = response.comments.mapIndexed { index, comment ->
             comment.toCommentItemEntry(
                 scopeType = scopeType,
                 ownerId = ownerId,
@@ -85,7 +80,7 @@ internal fun CommentsPageCache.toCommentsPage(): CommentsPage =
         isModerator = entry.isModerator,
     )
 
-internal fun Comment.toCommentItemEntry(
+internal fun YaniCommentDto.toCommentItemEntry(
     scopeType: String,
     ownerId: Int,
     sort: String,
@@ -101,20 +96,20 @@ internal fun Comment.toCommentItemEntry(
         skip = skip,
         position = position,
         commentId = id,
-        authorId = author.id,
-        authorName = author.name,
-        avatarSmallUrl = author.avatarSmallUrl,
-        avatarBigUrl = author.avatarBigUrl,
-        avatarFullUrl = author.avatarFullUrl,
+        authorId = userId,
+        authorName = name,
+        avatarSmallUrl = avatars.small.toHttpsUrlOrNull(),
+        avatarBigUrl = avatars.big.toHttpsUrlOrNull(),
+        avatarFullUrl = avatars.full.toHttpsUrlOrNull(),
         text = text,
-        createdAtEpochSeconds = createdAtEpochSeconds,
-        parentId = parentId,
-        childrenCount = childrenCount,
-        likes = likes,
-        dislikes = dislikes,
-        vote = vote.apiValue,
+        createdAtEpochSeconds = time,
+        parentId = parentId.takeIf { it > 0 },
+        childrenCount = childrenCount.coerceAtLeast(0),
+        likes = likes.coerceAtLeast(0),
+        dislikes = dislikes.coerceAtLeast(0),
+        vote = CommentVote.fromApi(vote).apiValue,
         roles = roles.joinToString(ROLE_SEPARATOR),
-        deletedAtEpochSeconds = deletedAtEpochSeconds,
+        deletedAtEpochSeconds = deletedAt.takeIf { it > 0 },
     )
 
 private fun CommentItemEntry.toComment(): Comment =
@@ -140,9 +135,5 @@ private fun CommentItemEntry.toComment(): Comment =
 
 private fun String?.toHttpsUrlOrNull(): String? {
     val value = this?.takeIf { it.isNotBlank() } ?: return null
-    return when {
-        value.startsWith("//") -> "https:$value"
-        value.startsWith("http://") -> value.replaceFirst("http://", "https://")
-        else -> value
-    }
+    return value.toHttpsUrl()
 }

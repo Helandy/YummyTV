@@ -9,15 +9,8 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.dto.YaniUserAnimeTypeStatDto
-import su.afk.yummy.tv.data.account.dto.YaniUserGenreStatDto
-import su.afk.yummy.tv.data.account.dto.YaniUserListWatchStatDto
-import su.afk.yummy.tv.data.account.dto.YaniUserRatingStatDto
-import su.afk.yummy.tv.data.account.mapper.toAnimeTypeStat
-import su.afk.yummy.tv.data.account.mapper.toGenreStat
-import su.afk.yummy.tv.data.account.mapper.toListWatchStat
-import su.afk.yummy.tv.data.account.mapper.toRatingStat
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.storage.mapper.YaniUserStatsDtoBundle
 import su.afk.yummy.tv.data.account.storage.mapper.toUserStatsCache
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.repository.UserStatsRepository
@@ -53,14 +46,12 @@ class YaniUserStatsRepository(
             val lists = async { api.getUserStatsLists(userId) }
             val types = async { api.getUserStatsTypes(userId) }
 
-            val stats = YaniUserStatsCacheDto(
+            val cache = YaniUserStatsDtoBundle(
                 genres = genres.await(),
                 ratings = ratings.await(),
                 lists = lists.await(),
                 types = types.await(),
-            ).toUserStats()
-
-            val cache = stats.toUserStatsCache(
+            ).toUserStatsCache(
                 userId = userId,
                 language = languageCode,
                 cachedAt = System.currentTimeMillis(),
@@ -69,18 +60,3 @@ class YaniUserStatsRepository(
             cache.toStoredUserStats()
         }
 }
-
-private fun YaniUserStatsCacheDto.toUserStats(): UserStats =
-    UserStats(
-        genres = genres.map { it.toGenreStat() },
-        ratings = ratings.map { it.toRatingStat() },
-        lists = lists.mapNotNull { it.toListWatchStat() },
-        types = types.mapNotNull { it.toAnimeTypeStat() },
-    )
-
-private data class YaniUserStatsCacheDto(
-    val genres: List<YaniUserGenreStatDto> = emptyList(),
-    val ratings: List<YaniUserRatingStatDto> = emptyList(),
-    val lists: List<YaniUserListWatchStatDto> = emptyList(),
-    val types: List<YaniUserAnimeTypeStatDto> = emptyList(),
-)

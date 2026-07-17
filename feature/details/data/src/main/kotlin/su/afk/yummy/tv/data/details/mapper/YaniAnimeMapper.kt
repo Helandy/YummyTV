@@ -1,20 +1,13 @@
 package su.afk.yummy.tv.data.details.mapper
 
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonPrimitive
+import su.afk.yummy.tv.core.utils.toHttpsUrl
 import su.afk.yummy.tv.data.details.dto.YaniAgeRatingDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimePosterDto
 import su.afk.yummy.tv.data.details.dto.YaniAnimeRatingDto
-import su.afk.yummy.tv.data.details.dto.YaniAnimeVideoDto
 import su.afk.yummy.tv.data.details.dto.YaniEpisodesDto
 import su.afk.yummy.tv.data.details.dto.YaniNamedDto
-import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniScreenshotDto
-import su.afk.yummy.tv.data.details.dto.YaniVideoSkipsDto
 import su.afk.yummy.tv.data.details.dto.YaniViewingOrderItemDto
 import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
@@ -22,12 +15,8 @@ import su.afk.yummy.tv.domain.anime.model.AnimeGenre
 import su.afk.yummy.tv.domain.anime.model.AnimePerson
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeRating
-import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
 import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
 import su.afk.yummy.tv.domain.anime.model.AnimeStudio
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 
 internal fun YaniAnimeDetailsDto.toAnimeDetails(): AnimeDetails {
@@ -145,64 +134,6 @@ private fun List<YaniScreenshotDto>.toAnimeScreenshots(): List<AnimeScreenshot> 
 private fun AnimeScreenshot.dedupeImageUrl(): String? =
     full?.takeIf { it.isNotBlank() }
         ?: small?.takeIf { it.isNotBlank() }
-
-internal fun YaniAnimeVideoDto.toAnimeVideo(): AnimeVideo = AnimeVideo(
-    id = videoId,
-    episode = number,
-    dubbing = data.dubbing,
-    player = data.player,
-    playerId = data.playerId,
-    iframeUrl = iframeUrl.toHttpsUrl(),
-    durationSeconds = duration,
-    views = views,
-    watchedEndTimeSeconds = watched?.endTime,
-    watchedDateSeconds = watched?.date,
-    skips = skips.toAnimeVideoSkips(),
-)
-
-private fun YaniVideoSkipsDto?.toAnimeVideoSkips(): AnimeVideoSkips = AnimeVideoSkips(
-    opening = this?.opening.toAnimeVideoSkipSegment(),
-    ending = this?.ending.toAnimeVideoSkipSegment(),
-)
-
-private fun JsonElement?.toAnimeVideoSkipSegment(): AnimeVideoSkipSegment? {
-    val (start, end) = when (this) {
-        is JsonObject -> {
-            val start = this["time"]?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
-            val length = this["length"]?.jsonPrimitive?.intOrNull?.takeIf { it > 0 } ?: return null
-            start to start + length
-        }
-        is JsonArray -> {
-            val start = getOrNull(0)?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 } ?: return null
-            val end = getOrNull(1)?.jsonPrimitive?.intOrNull?.takeIf { it > start } ?: return null
-            start to end
-        }
-        else -> return null
-    }
-    return AnimeVideoSkipSegment(
-        startMs = start * 1_000L,
-        endMs = end * 1_000L,
-    )
-}
-
-internal fun YaniRecommendationItemDto.toAnimeRecommendation(): AnimeRecommendation? {
-    val id = animeId ?: return null
-    val safeTitle = title.takeIf { it.isNotBlank() } ?: return null
-    return AnimeRecommendation(
-        animeId = id,
-        title = safeTitle,
-        poster = poster?.toAnimePoster(),
-        rating = rating.average?.takeIf { it > 0.0 },
-        type = type?.name.knownText() ?: type?.shortname.knownText(),
-        year = year?.takeIf { it > 0 },
-    )
-}
-
-internal fun String.toHttpsUrl(): String = when {
-    startsWith("//") -> "https:$this"
-    startsWith("http://") -> replaceFirst("http://", "https://")
-    else -> this
-}
 
 private fun String?.knownText(): String? {
     val value = this?.trim().orEmpty()

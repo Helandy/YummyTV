@@ -13,9 +13,6 @@ import su.afk.yummy.tv.core.storage.search.SearchStorageStore
 import su.afk.yummy.tv.core.storage.search.isFresh
 import su.afk.yummy.tv.data.search.dto.YaniSearchCatalogDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
-import su.afk.yummy.tv.data.search.mapper.toSearchAnimeType
-import su.afk.yummy.tv.data.search.mapper.toSearchGenre
-import su.afk.yummy.tv.data.search.mapper.toSearchGenreGroup
 import su.afk.yummy.tv.data.search.mapper.toSearchItem
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchFilterOptionsCache
@@ -104,32 +101,33 @@ class YaniSearchRepository(
         language: String,
     ): SearchPage {
         val response = api.search(query, filters, limit, offset)
-        val items = response.mapNotNull { it.toSearchItem() }
         val cachedAt = System.currentTimeMillis()
+        val cache = response.toSearchPageCache(
+            pageKey = pageKey,
+            language = language,
+            limit = limit,
+            offset = offset,
+            responseSize = response.size,
+            cachedAt = cachedAt,
+        )
         searchStorage.savePage(
-            items.toSearchPageCache(
-                pageKey = pageKey,
-                language = language,
-                limit = limit,
-                offset = offset,
-                responseSize = response.size,
-                cachedAt = cachedAt,
-            ),
+            cache,
             prunePagesCachedBefore = cachedAt - SEARCH_RESULTS_CACHE_RETENTION_MS,
         )
-        return items.toSearchPage(limit, offset, response.size)
+        return cache.toStoredSearchPage()
     }
 
     private suspend fun fetchFilterOptions(language: String): SearchFilterOptions {
         val response = fetchFilterOptionsDto()
-        val options = response.toSearchFilterOptions()
-        searchStorage.saveFilterOptions(
-            options.toSearchFilterOptionsCache(
-                language = language,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = response.genres.toSearchFilterOptionsCache(
+            catalog = response.catalog,
+            language = language,
+            cachedAt = System.currentTimeMillis(),
         )
-        return options
+        searchStorage.saveFilterOptions(
+            cache
+        )
+        return cache.toStoredSearchFilterOptions()
     }
 
     private suspend fun fetchFilterOptionsDto(): YaniSearchFilterOptionsDto =
@@ -141,24 +139,6 @@ class YaniSearchRepository(
                 catalog = catalog.await(),
             )
         }
-
-    private fun YaniSearchFilterOptionsDto.toSearchFilterOptions(): SearchFilterOptions =
-        SearchFilterOptions(
-            genreGroups = genres.groups.mapNotNull { it.toSearchGenreGroup() },
-            genres = genres.genres.mapNotNull { it.toSearchGenre() },
-            types = catalog.types.mapNotNull { it.toSearchAnimeType() },
-        )
-
-    private fun List<SearchItem>.toSearchPage(
-        limit: Int,
-        offset: Int,
-        responseSize: Int,
-    ): SearchPage =
-        SearchPage(
-            items = this,
-            nextOffset = offset + responseSize,
-            canLoadMore = responseSize >= limit,
-        )
 
     private fun searchCacheKey(
         query: String,

@@ -14,9 +14,6 @@ import su.afk.yummy.tv.core.storage.anime.isFresh
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
-import su.afk.yummy.tv.data.details.mapper.toAnimeRecommendation
-import su.afk.yummy.tv.data.details.mapper.toAnimeVideo
-import su.afk.yummy.tv.data.details.mapper.toHttpsUrl
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
@@ -153,20 +150,16 @@ class YaniAnimeRepository(
         languageCode: String,
     ): AnimeDetails {
         val dto = api.getAnimeDetails(animeId)
-        val details = dto.toAnimeDetails()
         val cachedAt = System.currentTimeMillis()
         // Если удалось сохранить в кэш — возвращаем результат через тот же cache->domain
         // маппер, что и при чтении из кэша, чтобы свежая загрузка не расходилась с ним.
-        val result = if (dto.response.animeId != null) {
-            val cache = details.toAnimeDetailsCache(
-                language = languageCode,
-                cachedAt = cachedAt,
-            )
+        val result = dto.toAnimeDetailsCache(
+            language = languageCode,
+            cachedAt = cachedAt,
+        )?.let { cache ->
             animeStorage.saveDetails(cache)
             cache.toStoredAnimeDetails()
-        } else {
-            details
-        }
+        } ?: dto.toAnimeDetails()
         saveUserRatingFromDetails(dto, animeId, cachedAt)
         return result
     }
@@ -193,8 +186,7 @@ class YaniAnimeRepository(
         languageCode: String,
     ): List<AnimeVideo> {
         val dto = api.getAnimeVideos(animeId)
-        val videos = dto.response.map { it.toAnimeVideo() }
-        val cache = videos.toAnimeVideosCache(
+        val cache = dto.response.toAnimeVideosCache(
             animeId = animeId,
             language = languageCode,
             cachedAt = System.currentTimeMillis(),
@@ -208,15 +200,13 @@ class YaniAnimeRepository(
         languageCode: String,
         fromAi: Boolean,
     ): List<AnimeRecommendation> {
-        val recommendations = api.getAnimeRecommendations(animeId, fromAi)
-            .response
-            .mapNotNull { it.toAnimeRecommendation() }
-        val cache = recommendations.toAnimeRecommendationsCache(
-            animeId = animeId,
-            language = languageCode,
-            fromAi = fromAi,
-            cachedAt = System.currentTimeMillis(),
-        )
+        val cache =
+            api.getAnimeRecommendations(animeId, fromAi).response.toAnimeRecommendationsCache(
+                animeId = animeId,
+                language = languageCode,
+                fromAi = fromAi,
+                cachedAt = System.currentTimeMillis(),
+            )
         animeStorage.saveRecommendations(cache)
         return cache.toStoredAnimeRecommendations()
     }
@@ -225,11 +215,7 @@ class YaniAnimeRepository(
         animeId: Int,
         languageCode: String,
     ): List<AnimeTrailer> {
-        val trailers = api.getAnimeTrailers(animeId)
-            .response
-            .map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
-            .distinctBy { it.iframeUrl }
-        val cache = trailers.toAnimeTrailersCache(
+        val cache = api.getAnimeTrailers(animeId).response.toAnimeTrailersCache(
             animeId = animeId,
             language = languageCode,
             cachedAt = System.currentTimeMillis(),

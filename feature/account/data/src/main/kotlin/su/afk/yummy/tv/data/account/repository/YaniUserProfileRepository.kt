@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toProfileSummary
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toUserProfileSummary
 import su.afk.yummy.tv.data.account.storage.mapper.toUserProfileSummaryCache
@@ -42,8 +41,7 @@ class YaniUserProfileRepository(
         userId: Int,
         languageCode: String,
     ): UserProfileSummary {
-        val summary = api.getUserProfile(userId).response.toProfileSummary()
-        val cache = summary.toUserProfileSummaryCache(
+        val cache = api.getUserProfile(userId).response.toUserProfileSummaryCache(
             userId = userId,
             language = languageCode,
             cachedAt = System.currentTimeMillis(),

@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:storage"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:comments:domain"))
 
     implementation(libs.kotlinx.serialization.json)

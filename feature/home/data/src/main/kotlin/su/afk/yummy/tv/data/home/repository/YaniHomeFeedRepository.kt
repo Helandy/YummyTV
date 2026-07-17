@@ -16,7 +16,6 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
-import su.afk.yummy.tv.data.home.mapper.toHomeFeed
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
@@ -106,8 +105,7 @@ class YaniHomeFeedRepository(
         AppLogger.i(TAG) { "Fetch feed language=$languageCode watchSignature=$watchSignature" }
         val dto = api.getFeed()
         AppLogger.i(TAG) { "Feed dto ${dto.summaryForLog()}" }
-        val remoteFeed = dto.toHomeFeed(stringProvider)
-        val cache = remoteFeed.toHomeFeedCache(
+        val cache = dto.toHomeFeedCache(
             language = languageCode,
             watchSignature = watchSignature,
             cachedAt = System.currentTimeMillis(),

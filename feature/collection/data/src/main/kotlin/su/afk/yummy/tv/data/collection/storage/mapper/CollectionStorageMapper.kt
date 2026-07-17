@@ -6,39 +6,46 @@ import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageCache
 import su.afk.yummy.tv.core.storage.collection.CollectionCatalogPageEntry
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailCache
 import su.afk.yummy.tv.core.storage.collection.CollectionDetailEntry
+import su.afk.yummy.tv.core.utils.toHttpsUrl
+import su.afk.yummy.tv.data.collection.dto.YaniCollectionDetailDto
+import su.afk.yummy.tv.data.collection.dto.YaniCollectionPosterDto
 import su.afk.yummy.tv.domain.collection.model.CollectionAnimeItem
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionSummary
 import su.afk.yummy.tv.domain.collection.model.CollectionSummaryPage
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 
-internal fun CollectionDetail.toCollectionDetailCache(
+internal fun YaniCollectionDetailDto.toCollectionDetailCache(
+    fallbackId: Int,
     language: String,
     cachedAt: Long,
 ): CollectionDetailCache =
     CollectionDetailCache(
         entry = CollectionDetailEntry(
-            collectionId = id,
+            collectionId = id ?: fallbackId,
             language = language,
             title = title,
             description = description,
             views = views,
-            posterUrl = posterUrl,
-            likes = likesCount,
-            dislikes = dislikesCount,
-            vote = vote.apiValue,
+            posterUrl = posterPreviews.firstOrNull()?.toUrl(),
+            likes = likes?.likes?.coerceAtLeast(0) ?: 0,
+            dislikes = likes?.dislikes?.coerceAtLeast(0) ?: 0,
+            vote = CollectionVote.fromApi(likes?.vote).apiValue,
             cachedAt = cachedAt,
         ),
-        items = animes.mapIndexed { index, item ->
+        items = animes.mapNotNull { item ->
+            val animeId = item.animeId ?: return@mapNotNull null
+            animeId to item
+        }.mapIndexed { index, (animeId, item) ->
             CollectionAnimeItemEntry(
-                collectionId = id,
+                collectionId = id ?: fallbackId,
                 language = language,
                 position = index,
-                animeId = item.id,
+                animeId = animeId,
                 title = item.title,
-                posterUrl = item.posterUrl,
-                rating = item.rating,
-                year = item.year,
+                posterUrl = item.poster?.toUrl(),
+                rating = item.rating?.average,
+                year = item.year?.takeIf { it > 0 },
             )
         },
     )
@@ -66,7 +73,7 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
             },
     )
 
-internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
+internal fun List<YaniCollectionDetailDto>.toCollectionCatalogPageCache(
     pageKey: String,
     language: String,
     limit: Int,
@@ -83,18 +90,25 @@ internal fun List<CollectionSummary>.toCollectionCatalogPageCache(
             responseSize = responseSize,
             cachedAt = cachedAt,
         ),
-        items = mapIndexed { index, item ->
+        items = mapNotNull { item ->
+            val id = item.id ?: return@mapNotNull null
+            val title = item.title.trim().takeIf { it.isNotEmpty() } ?: return@mapNotNull null
+            Triple(id, title, item)
+        }.mapIndexed { index, (id, title, item) ->
             CollectionCatalogItemEntry(
                 pageKey = pageKey,
                 position = index,
-                collectionId = item.id,
-                title = item.title,
+                collectionId = id,
+                title = title,
                 description = item.description,
-                posterUrl = item.posterUrl,
-                likes = item.likesCount,
+                posterUrl = item.posterPreviews.firstOrNull()?.toUrl(),
+                likes = item.likes?.likes?.coerceAtLeast(0) ?: 0,
             )
         },
     )
+
+private fun YaniCollectionPosterDto.toUrl(): String? =
+    (big ?: medium ?: fullsize ?: small)?.toHttpsUrl()
 
 internal fun CollectionCatalogPageCache.toCollectionSummaryPage(): CollectionSummaryPage =
     items

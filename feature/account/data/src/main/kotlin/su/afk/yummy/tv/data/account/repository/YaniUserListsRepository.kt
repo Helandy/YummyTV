@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toUserListItem
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStateEntry
 import su.afk.yummy.tv.data.account.storage.mapper.toUpdatedAnimeListStateEntry
@@ -127,8 +126,7 @@ class YaniUserListsRepository(
         listId: Int,
         languageCode: String,
     ): List<UserAnimeListItem> {
-        val items = api.getUserList(userId, listId).mapNotNull { it.toUserListItem() }
-        val cache = items.toUserListCache(
+        val cache = api.getUserList(userId, listId).toUserListCache(
             userId = userId,
             listId = listId,
             language = languageCode,

@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.account.isFresh
-import su.afk.yummy.tv.data.account.mapper.toCollectionSummary
+import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStats
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionSummaries
@@ -18,7 +18,6 @@ import su.afk.yummy.tv.data.account.storage.mapper.toUserRating
 import su.afk.yummy.tv.data.account.storage.mapper.toUserRatingEntry
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
-import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 
@@ -87,7 +86,11 @@ class YaniAnimeExtrasRepository(
                 ?.toAnimeListStats()
         }
 
-    override suspend fun getCollections(animeId: Int, limit: Int, offset: Int): List<AnimeCollectionSummary> =
+    override suspend fun getCollections(
+        animeId: Int,
+        limit: Int,
+        offset: Int
+    ): List<AnimeCollectionSummary> =
         withContext(Dispatchers.IO) {
             val language = settingsStore.yaniContentLanguage.first()
             val languageCode = language.apiCode
@@ -97,7 +100,6 @@ class YaniAnimeExtrasRepository(
                 languageCode = languageCode,
                 fetch = {
                     api.getAnimeCollections(animeId, limit, offset)
-                        .mapNotNull { it.toCollectionSummary() }
                 },
             )
         }
@@ -106,8 +108,7 @@ class YaniAnimeExtrasRepository(
         settingsStore.yaniUserId.first()
 
     private suspend fun fetchRatingSummary(animeId: Int): AnimeRatingSummary {
-        val buckets = api.getRatingBuckets(animeId).map { AnimeRatingBucket(it.rating, it.count) }
-        val cache = buckets.toRatingBucketsCache(
+        val cache = api.getRatingBuckets(animeId).toRatingBucketsCache(
             animeId = animeId,
             cachedAt = System.currentTimeMillis(),
         )
@@ -133,7 +134,7 @@ class YaniAnimeExtrasRepository(
     private suspend fun getCollectionsPage(
         pageKey: String,
         languageCode: String,
-        fetch: suspend () -> List<AnimeCollectionSummary>,
+        fetch: suspend () -> List<YaniCollectionSummaryDto>,
     ): List<AnimeCollectionSummary> {
         val stored = accountStorage.getCollections(pageKey)
         if (stored?.isFresh(ACCOUNT_MEDIUM_TTL_MS) == true) {
@@ -141,9 +142,8 @@ class YaniAnimeExtrasRepository(
         }
 
         return try {
-            val collections = fetch()
             val cachedAt = System.currentTimeMillis()
-            val cache = collections.toCollectionsPageCache(
+            val cache = fetch().toCollectionsPageCache(
                 pageKey = pageKey,
                 language = languageCode,
                 cachedAt = cachedAt,

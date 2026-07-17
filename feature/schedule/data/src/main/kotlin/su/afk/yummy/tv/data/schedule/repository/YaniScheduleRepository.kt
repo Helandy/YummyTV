@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleStore
 import su.afk.yummy.tv.core.storage.schedule.isFresh
-import su.afk.yummy.tv.data.schedule.mapper.toScheduleDays
 import su.afk.yummy.tv.data.schedule.network.YaniScheduleApi
 import su.afk.yummy.tv.data.schedule.storage.mapper.toAnimeScheduleCache
 import su.afk.yummy.tv.domain.schedule.model.AnimeScheduleDay
@@ -41,13 +40,11 @@ class YaniScheduleRepository(
     }
 
     private suspend fun fetchSchedule(languageCode: String): List<AnimeScheduleDay> {
-        val days = api.getSchedule().response.toScheduleDays()
-        scheduleStore.saveSchedule(
-            days.toAnimeScheduleCache(
-                language = languageCode,
-                cachedAt = System.currentTimeMillis(),
-            )
+        val cache = api.getSchedule().response.toAnimeScheduleCache(
+            language = languageCode,
+            cachedAt = System.currentTimeMillis(),
         )
-        return days
+        scheduleStore.saveSchedule(cache)
+        return cache.toStoredScheduleDays()
     }
 }
