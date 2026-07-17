@@ -699,7 +699,9 @@ class PlayerViewModel @AssistedInject internal constructor(
             val wasAlreadyResolving = currentState.streamUrl == null &&
                     currentState.playerError == null &&
                     currentState.kodikBlockedError == null
-            if (!wasAlreadyResolving && !preserveStreamDuringAllohaRecovery) {
+            val hintTimerAlreadyRunning =
+                wasAlreadyResolving && streamLoadingHintJob?.isActive == true
+            if (!hintTimerAlreadyRunning && !preserveStreamDuringAllohaRecovery) {
                 startChangePlayerHintTimer()
             }
             val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
