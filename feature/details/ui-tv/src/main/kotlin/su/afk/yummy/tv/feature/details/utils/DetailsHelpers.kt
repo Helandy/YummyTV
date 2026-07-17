@@ -1,7 +1,11 @@
 package su.afk.yummy.tv.feature.details.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
 import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.domain.anime.model.AnimeVideo
@@ -28,10 +32,33 @@ internal fun Int.formatViews(): String = when {
 internal fun AnimeEpisodes.formatAiredProgress(): String? {
     val airedCount = aired ?: return null
     val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
-    return stringResource(
+    val progress = stringResource(
         R.string.details_aired,
         stringResource(R.string.details_aired_progress, airedCount, totalCount)
     )
+    val releaseCountdown = formatReleaseCountdown() ?: return progress
+    return stringResource(R.string.details_aired_with_release, progress, releaseCountdown)
+}
+
+@Composable
+private fun AnimeEpisodes.formatReleaseCountdown(): String? {
+    if (nextDateEpochSeconds == null) return null
+    val nowEpochSeconds by produceState(
+        initialValue = System.currentTimeMillis() / 1_000L,
+        key1 = nextDateEpochSeconds,
+    ) {
+        while (true) {
+            value = System.currentTimeMillis() / 1_000L
+            delay(60_000L)
+        }
+    }
+    val countdown = releaseCountdown(nowEpochSeconds) ?: return null
+    val resource = when (countdown.unit) {
+        EpisodeReleaseCountdown.TimeUnit.DAYS -> R.plurals.details_release_in_days
+        EpisodeReleaseCountdown.TimeUnit.HOURS -> R.plurals.details_release_in_hours
+        EpisodeReleaseCountdown.TimeUnit.MINUTES -> R.plurals.details_release_in_minutes
+    }
+    return pluralStringResource(resource, countdown.value, countdown.value)
 }
 
 internal fun Int.formatDuration(): String {

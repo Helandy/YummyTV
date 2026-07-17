@@ -134,7 +134,7 @@ internal fun DetailsHero(
         val titleMaxLines = 3
         val descriptionMaxLines = 3
         val posterWidth = if (isCompactHeight) 260.dp else 300.dp
-        val buttonBarHeight = if (isCompactHeight) 124.dp else 150.dp
+        val buttonBarHeight = if (isCompactHeight) 132.dp else 150.dp
 
         Row(
             modifier = Modifier
