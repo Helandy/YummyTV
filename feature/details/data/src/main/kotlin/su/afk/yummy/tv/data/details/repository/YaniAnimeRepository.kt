@@ -228,6 +228,7 @@ class YaniAnimeRepository(
         val trailers = api.getAnimeTrailers(animeId)
             .response
             .map { AnimeTrailer(iframeUrl = it.iframeUrl.toHttpsUrl()) }
+            .distinctBy { it.iframeUrl }
         val cache = trailers.toAnimeTrailersCache(
             animeId = animeId,
             language = languageCode,

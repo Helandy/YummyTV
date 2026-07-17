@@ -9,6 +9,7 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -28,6 +29,7 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("yummytv.android.library")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        configureComposeCompiler()
         dependencies.add("implementation", libs.findLibrary("compose-uiToolingPreview").get())
         dependencies.add("debugImplementation", libs.findLibrary("compose-uiTooling").get())
         Unit
@@ -38,6 +40,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.application")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        configureComposeCompiler()
         extensions.configure<ApplicationExtension> {
             compileSdk = libs.versionInt("android-compileSdk")
             defaultConfig {
@@ -94,4 +97,21 @@ private fun ApplicationExtension.configureJava21() {
 
 private fun Project.addCoreLibraryDesugaring() {
     dependencies.add("coreLibraryDesugaring", libs.findLibrary("desugar-jdk-libs").get())
+}
+
+// Метрики/отчёты стабильности Compose: -PenableComposeCompilerReports=true.
+// providers.gradleProperty + isolated.rootProject — ради configuration cache и project isolation.
+private fun Project.configureComposeCompiler() {
+    extensions.configure<ComposeCompilerGradlePluginExtension> {
+        if (providers.gradleProperty("enableComposeCompilerReports").orNull == "true") {
+            val outputDir = layout.buildDirectory.dir("compose_compiler")
+            metricsDestination.set(outputDir)
+            reportsDestination.set(outputDir)
+        }
+        val stabilityFile =
+            isolated.rootProject.projectDirectory.file("config/compose-stability.conf")
+        if (stabilityFile.asFile.exists()) {
+            stabilityConfigurationFiles.add(stabilityFile)
+        }
+    }
 }

@@ -16,10 +16,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
+import su.afk.yummy.tv.core.network.YaniApiJson
 import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
@@ -297,7 +297,7 @@ class YaniAccountApi(
 
     private suspend fun HttpResponse.toYaniError(): YaniErrorResponseDto =
         runCatching {
-            ERROR_JSON.decodeFromString<YaniErrorResponseDto>(bodyAsText())
+            YaniApiJson.decodeFromString<YaniErrorResponseDto>(bodyAsText())
         }.getOrElse {
             YaniErrorResponseDto(error = status.description.ifBlank { "Could not sign in" })
         }
@@ -306,6 +306,5 @@ class YaniAccountApi(
         const val TAG = "YaniAccountApi"
         const val CAPTCHA_ERROR_CODE = 420
         const val YANI_AUTHORIZATION_PREFIX = "Bearer "
-        val ERROR_JSON = Json { ignoreUnknownKeys = true }
     }
 }

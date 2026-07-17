@@ -1,11 +1,7 @@
 package su.afk.yummy.tv.data.home.network
 
+import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import su.afk.yummy.tv.core.logger.AppLogger
 import su.afk.yummy.tv.core.network.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.YaniHttpClientProvider
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
@@ -13,38 +9,6 @@ import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 class YaniHomeApi(
     private val clientProvider: YaniHttpClientProvider,
 ) {
-    suspend fun getFeed(): YaniFeedDto {
-        val body = clientProvider.get().get("$YANI_BASE_URL/feed").bodyAsText()
-        logFeedResponse(body = body)
-        return FEED_JSON.decodeFromString(body)
-    }
-
-    private fun logFeedResponse(body: String) {
-        AppLogger.d(TAG) {
-            val root = runCatching { FEED_JSON.parseToJsonElement(body).jsonObject }
-            "Feed response chars=${body.length} " +
-                    root.fold(
-                        onSuccess = { it.feedKeysForLog() },
-                        onFailure = { "keysError=${it::class.java.simpleName}" },
-                    )
-        }
-    }
-
-    private fun JsonObject.feedKeysForLog(): String {
-        val response = this["response"] as? JsonObject
-        val rootKeys = keys.sorted().joinToString(prefix = "[", postfix = "]")
-        val responseKeys = response?.keys
-            ?.sorted()
-            ?.joinToString(prefix = "[", postfix = "]")
-            ?: "[]"
-        return "rootKeys=$rootKeys responseKeys=$responseKeys"
-    }
-
-    private companion object {
-        const val TAG = "YaniHomeFeed"
-        val FEED_JSON = Json {
-            ignoreUnknownKeys = true
-            explicitNulls = false
-        }
-    }
+    suspend fun getFeed(): YaniFeedDto =
+        clientProvider.get().get("$YANI_BASE_URL/feed").body()
 }

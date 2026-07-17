@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.network
 
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import javax.inject.Inject
@@ -39,6 +40,7 @@ private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 class YaniHttpClientProvider @Inject constructor(
     private val settingsStore: SettingsStore,
     private val yaniAuthPreferences: YaniAuthPreferences,
+    private val okHttpClient: OkHttpClient,
 ) {
     private val mutex = Mutex()
 
@@ -50,7 +52,7 @@ class YaniHttpClientProvider @Inject constructor(
         return mutex.withLock {
             client?.let { return it }
             withContext(Dispatchers.IO) {
-                buildYaniHttpClient(settingsStore, yaniAuthPreferences)
+                buildYaniHttpClient(settingsStore, yaniAuthPreferences, okHttpClient)
             }.also { client = it }
         }
     }
@@ -59,10 +61,14 @@ class YaniHttpClientProvider @Inject constructor(
 fun buildYaniHttpClient(
     settingsStore: SettingsStore,
     yaniAuthPreferences: YaniAuthPreferences,
+    okHttpClient: OkHttpClient,
 ): HttpClient {
     val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences)
 
-    return HttpClient {
+    return HttpClient(OkHttp) {
+        engine {
+            preconfigured = okHttpClient
+        }
         install(HttpTimeout) {
             connectTimeoutMillis = 20_000
             requestTimeoutMillis = 40_000
@@ -80,12 +86,7 @@ fun buildYaniHttpClient(
             delayMillis { retry -> 500L * retry }
         }
         install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                },
-            )
+            json(YaniApiJson)
         }
         install(createClientPlugin("YaniApplicationHeader") {
             onRequest { request, _ ->

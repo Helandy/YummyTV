@@ -20,8 +20,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.work.runtime.ktx)
     implementation(libs.bundles.media3.player)
-    implementation("androidx.media3:media3-datasource-okhttp:1.10.1")
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation(libs.androidx.media3.datasource.okhttp)
+    implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
 
     add("ksp", libs.hilt.work.compiler)

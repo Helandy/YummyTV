@@ -302,6 +302,7 @@ internal fun AnimeTrailersCache.toAnimeTrailers(): List<AnimeTrailer> =
     trailers
         .sortedBy { it.position }
         .map { AnimeTrailer(iframeUrl = it.iframeUrl) }
+        .distinctBy { it.iframeUrl }
 
 private fun AnimeDetailsEntry.toPosterOrNull(): AnimePoster? =
     posterOrNull(

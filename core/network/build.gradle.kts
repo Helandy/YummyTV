@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":core:preferences"))
 
     api(libs.ktor.client.core)
+    api(libs.okhttp)
 
     implementation(libs.bundles.ktor.client.json)
 

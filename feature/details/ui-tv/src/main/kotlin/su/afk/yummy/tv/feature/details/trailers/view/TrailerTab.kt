@@ -66,7 +66,11 @@ internal fun TrailerTab(
             contentPadding = PaddingValues(horizontal = 24.dp),
             modifier = Modifier.tvFocusRestorer(),
         ) {
-            itemsIndexed(trailers) { index, trailer ->
+            itemsIndexed(
+                items = trailers,
+                key = { _, trailer -> trailer.iframeUrl },
+                contentType = { _, _ -> "trailer" },
+            ) { index, trailer ->
                 TrailerItem(
                     number = index + 1,
                     trailer = trailer,

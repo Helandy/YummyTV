@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.worker.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.analytics.AnalyticsInitializer
@@ -53,6 +54,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var storageCleanupStore: StorageCleanupStore
+
+    @Inject
+    lateinit var okHttpClient: OkHttpClient
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -112,7 +116,13 @@ class YummyTvApplication : Application(), Configuration.Provider {
         val memoryCachePercent =
             if (isLowRamDevice()) LOW_RAM_MEMORY_CACHE_PERCENT else MEMORY_CACHE_PERCENT
         SingletonImageLoader.setSafe {
-            val imageHttpClient = HttpClient(OkHttp)
+            // newBuilder(): общий пул соединений и диспетчер с API-клиентом,
+            // но независимая конфигурация — картинки кэширует сам Coil.
+            val imageHttpClient = HttpClient(OkHttp) {
+                engine {
+                    preconfigured = okHttpClient.newBuilder().build()
+                }
+            }
             ImageLoader.Builder(it)
                 .crossfade(true)
                 .memoryCache {
