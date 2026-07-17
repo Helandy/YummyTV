@@ -9,11 +9,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -46,6 +49,7 @@ internal fun HomeSection(
     showYear: Boolean,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     rowFocusRequester: FocusRequester? = null,
+    registerFocusHandler: ((suspend () -> Boolean)?) -> Unit = {},
     rowIsFocused: Boolean = false,
     rowKey: String = "",
     restoreItemKey: String? = null,
@@ -116,6 +120,35 @@ internal fun HomeSection(
         focusMoveJob?.cancel()
         focusMoveJob = null
         isRestoringFocusState.value = false
+    }
+
+    // Обработчик для requestRowFocus дашборда: rowFocusRequester прикреплён к карточке под
+    // restoreIndex(), которая после обновления фида может быть не скомпонована в LazyRow —
+    // сначала подкручиваем ряд к ней, иначе requestFocus() гарантированно фейлится.
+    val restoreItemFocus by rememberUpdatedState<suspend () -> Boolean>(handler@{
+        if (items.isEmpty()) return@handler false
+        val target = restoreIndex()
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == target }) {
+            listState.scrollToItem(target)
+            withFrameNanos { }
+        }
+        runCatching { focusRequesterForItem(target).requestFocus() }.getOrDefault(false)
+    })
+    DisposableEffect(Unit) {
+        registerFocusHandler { restoreItemFocus() }
+        onDispose { registerFocusHandler(null) }
+    }
+
+    // Пока ряд не в фокусе, держим карточку восстановления скомпонованной: к ней прикреплён
+    // rowFocusRequester, через который в ряд входят снаружи и в обход обработчика (вход
+    // из бокового меню, focusProperties.up/down, fallback focusRestorer'а) — иначе после
+    // обновления фида requestFocus() на отсоединённом requester'е молча фейлится.
+    LaunchedEffect(items, restoreItemKey) {
+        if (items.isEmpty() || rowHasFocusState.value) return@LaunchedEffect
+        val target = restoreIndex()
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == target }) {
+            listState.scrollToItem(target)
+        }
     }
 
     Column {

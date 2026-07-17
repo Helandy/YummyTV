@@ -9,11 +9,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -43,6 +46,7 @@ internal fun ContinueWatchingSection(
     items: List<HomeContinueWatchingItem>,
     onItemSelected: (HomeContinueWatchingItem) -> Unit,
     rowFocusRequester: FocusRequester? = null,
+    registerFocusHandler: ((suspend () -> Boolean)?) -> Unit = {},
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
     onMoveUp: (() -> Unit)? = null,
@@ -57,13 +61,18 @@ internal fun ContinueWatchingSection(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable { mutableIntStateOf(0) }
-    var lastFocusedKey by rememberSaveable { mutableStateOf<String?>(null) }
     var currentFocusedIndex by remember { mutableIntStateOf(-1) }
-    val focusRequesters = remember(items.size, rowFocusRequester) {
-        List(items.size) { index ->
-            if (index == 0) rowFocusRequester ?: FocusRequester() else FocusRequester()
-        }
+    val rowFocusRequesterToUse = rowFocusRequester ?: remember { FocusRequester() }
+    val focusRequesters = remember(items.size) {
+        List(items.size) { FocusRequester() }
     }
+
+    fun HomeContinueWatchingItem.focusKey(): String = "$animeId:$videoId:$episode:$episodeUrl"
+
+    // Вход в ряд всегда ведёт на первую карточку: список отсортирован по свежести,
+    // и после просмотра самая актуальная запись оказывается первой.
+    fun focusRequesterForItem(index: Int): FocusRequester =
+        if (index == 0) rowFocusRequesterToUse else focusRequesters[index]
 
     suspend fun requestItemFocus(index: Int) {
         val target = index.coerceIn(0, items.lastIndex)
@@ -72,9 +81,9 @@ internal fun ContinueWatchingSection(
             listState.scrollToItem(target)
             withFrameNanos { }
         }
-        runCatching { focusRequesters[target].requestFocus() }
+        runCatching { focusRequesterForItem(target).requestFocus() }
         withFrameNanos { }
-        runCatching { focusRequesters[target].requestFocus() }
+        runCatching { focusRequesterForItem(target).requestFocus() }
     }
 
     fun cancelPendingFocusMove() {
@@ -83,19 +92,33 @@ internal fun ContinueWatchingSection(
         isRestoring.value = false
     }
 
-    fun HomeContinueWatchingItem.focusKey(): String = "$animeId:$videoId:$episode:$episodeUrl"
-
-    fun restoreIndex(): Int {
-        val keyedIndex = lastFocusedKey?.let { key ->
-            items.indexOfFirst { it.focusKey() == key }
-        } ?: -1
-        return keyedIndex.takeIf { it >= 0 } ?: lastFocusedIndex.coerceIn(0, items.lastIndex)
-    }
-
-    fun rememberFocusedItem(index: Int, entry: HomeContinueWatchingItem) {
+    fun rememberFocusedItem(index: Int) {
         currentFocusedIndex = index
         lastFocusedIndex = index
-        lastFocusedKey = entry.focusKey()
+    }
+
+    // Обработчик для requestRowFocus дашборда: rowFocusRequester прикреплён к первой карточке,
+    // которая может быть не скомпонована, если ряд проскроллен вправо — сначала подкручиваем
+    // ряд к началу, иначе requestFocus() гарантированно фейлится.
+    val restoreItemFocus by rememberUpdatedState<suspend () -> Boolean>(handler@{
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == 0 }) {
+            listState.scrollToItem(0)
+            withFrameNanos { }
+        }
+        runCatching { focusRequesterForItem(0).requestFocus() }.getOrDefault(false)
+    })
+    DisposableEffect(Unit) {
+        registerFocusHandler { restoreItemFocus() }
+        onDispose { registerFocusHandler(null) }
+    }
+
+    // Пока ряд не в фокусе, держим первую карточку скомпонованной — к ней прикреплён
+    // rowFocusRequester, через который в ряд входят снаружи и в обход обработчика.
+    LaunchedEffect(items) {
+        if (rowHasFocus.value) return@LaunchedEffect
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == 0 }) {
+            listState.scrollToItem(0)
+        }
     }
 
     Column {
@@ -124,9 +147,8 @@ internal fun ContinueWatchingSection(
                         isRestoring.value = true
                         focusMoveJob?.cancel()
                         focusMoveJob = scope.launch {
-                            val target = restoreIndex().coerceIn(0, items.lastIndex)
-                            requestItemFocus(target)
-                            items.getOrNull(target)?.let { rememberFocusedItem(target, it) }
+                            requestItemFocus(0)
+                            rememberFocusedItem(0)
                             isRestoring.value = false
                         }
                     }
@@ -167,7 +189,7 @@ internal fun ContinueWatchingSection(
                     }
                 }
                 .tvFocusRestorer(
-                    fallback = focusRequesters.getOrNull(restoreIndex()) ?: FocusRequester.Default,
+                    fallback = focusRequesterForItem(0),
                 ),
         ) {
             itemsIndexed(items = items, key = { _, e -> e.focusKey() }) { index, entry ->
@@ -175,13 +197,13 @@ internal fun ContinueWatchingSection(
                     entry = entry,
                     onFocused = {
                         currentFocusedIndex = index
-                        if (rowHasFocus.value && !isRestoring.value) rememberFocusedItem(index, entry)
+                        if (rowHasFocus.value && !isRestoring.value) rememberFocusedItem(index)
                     },
                     onClick = {
-                        rememberFocusedItem(index, entry)
+                        rememberFocusedItem(index)
                         onItemSelected(entry)
                     },
-                    modifier = Modifier.focusRequester(focusRequesters[index]),
+                    modifier = Modifier.focusRequester(focusRequesterForItem(index)),
                     leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },
                     upFocusRequester = upFocusRequester,
                     downFocusRequester = downFocusRequester,

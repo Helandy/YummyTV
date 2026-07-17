@@ -86,6 +86,17 @@ internal fun HomeDashboard(
         List(feed.sections.size) { FocusRequester() }
     }
 
+    // FocusRequester ряда прикреплён к конкретной карточке вложенного LazyRow, и после
+    // обновления фида карточка восстановления может оказаться вне скомпонованного окна ряда —
+    // тогда requestFocus() фейлится до таймаута и фокус «залипает» в текущем ряду. Ряды
+    // регистрируют обработчик, который сначала подкручивает вложенный ряд к нужной карточке.
+    val rowFocusHandlers = remember { mutableMapOf<String, suspend () -> Boolean>() }
+    fun registerRowFocusHandler(key: String, handler: (suspend () -> Boolean)?) {
+        if (handler == null) rowFocusHandlers.remove(key) else rowFocusHandlers[key] = handler
+    }
+
+    val rowFocusJob = remember { mutableStateOf<Job?>(null) }
+
     fun focusRequesterForLazyIndex(index: Int): FocusRequester = when {
         hasContinueWatching && index == 0 -> continueWatchingFocusRequester
         hasHero && index == heroLazyIdx -> heroFocusRequester
@@ -148,26 +159,39 @@ internal fun HomeDashboard(
     fun requestRowFocus(index: Int) {
         if (totalLazyItems <= 0 || index !in 0 until totalLazyItems) return
         val target = index.coerceIn(0, totalLazyItems - 1)
-        lastFocusedRowKey = rowKeyForLazyIndex(target)
-        scope.launch {
+        val previousRowKey = lastFocusedRowKey
+        val targetRowKey = rowKeyForLazyIndex(target)
+        lastFocusedRowKey = targetRowKey
+        // Быстрые повторные нажатия: предыдущий цикл подбора фокуса отменяется, чтобы два
+        // конкурирующих цикла не завершились в обратном порядке — побеждает последнее нажатие.
+        rowFocusJob.value?.cancel()
+        rowFocusJob.value = scope.launch {
             lazyColumnState.scrollToItem(target)
             snapshotFlow {
                 lazyColumnState.layoutInfo.visibleItemsInfo.any { it.index == target }
             }.first { it }
             // FocusRequester ряда прикреплён к карточке внутри вложенного LazyRow,
             // которая может быть ещё не скомпонована на этом кадре — повторяем по кадрам
-            val requester = focusRequesterForLazyIndex(target)
             val focused = withTimeoutOrNull(ROW_FOCUS_TIMEOUT_MILLIS) {
                 var ok = false
                 while (!ok) {
-                    ok = runCatching { requester.requestFocus() }.getOrDefault(false)
+                    val handler = targetRowKey?.let { rowFocusHandlers[it] }
+                    ok = runCatching {
+                        handler?.invoke()
+                            ?: focusRequesterForLazyIndex(target).requestFocus()
+                    }.getOrDefault(false)
                     if (!ok) withFrameNanos { }
                 }
                 true
             } ?: false
             if (!focused) {
                 AppLogger.w(TAG) {
-                    "requestRowFocus: не удалось сфокусировать ряд ${rowKeyForLazyIndex(target)} (index=$target)"
+                    "requestRowFocus: не удалось сфокусировать ряд $targetRowKey (index=$target)"
+                }
+                // Фокус фактически остался в прежнем ряду — возвращаем ключ, иначе подсветка
+                // заголовков и fallback восстановления будут указывать не на тот ряд.
+                if (lastFocusedRowKey == targetRowKey) {
+                    lastFocusedRowKey = previousRowKey
                 }
             }
         }
@@ -220,6 +244,9 @@ internal fun HomeDashboard(
                                 items = continueWatching,
                                 onItemSelected = onContinueWatchingSelected,
                                 rowFocusRequester = continueWatchingFocusRequester,
+                                registerFocusHandler = { handler ->
+                                    registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)
+                                },
                                 downFocusRequester = nextRowFocusRequester(0),
                                 onMoveDown = if (totalLazyItems > 1) {
                                     { requestRowFocus(1) }
@@ -323,6 +350,9 @@ internal fun HomeDashboard(
                             showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                             onItemSelected = onItemSelected,
                             rowFocusRequester = sectionFocusRequesters[index],
+                            registerFocusHandler = { handler ->
+                                registerRowFocusHandler(rowKey, handler)
+                            },
                             rowIsFocused = columnHasFocus && lastFocusedRowKey == rowKey,
                             rowKey = rowKey,
                             restoreItemKey = lastFocusedSectionItemKeys[rowKey],

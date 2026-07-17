@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.details.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -285,19 +286,22 @@ internal fun DetailsButtonBar(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .height(height),
     ) {
+        // i = W*(s-1)/(2s): при ширине кнопки W-2i и масштабе s выступ (W-2i)*(s-1)/2 == i,
+        // так что сфокусированная кнопка встаёт ровно по краю бара.
+        val focusInset = maxWidth * ((ButtonFocusedScale - 1f) / (2f * ButtonFocusedScale))
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height),
             contentPadding = PaddingValues(
-                start = 2.dp,
-                end = 2.dp,
+                start = focusInset,
+                end = focusInset,
                 top = topPadding,
                 bottom = verticalCenterInset,
             ),
@@ -312,8 +316,7 @@ internal fun DetailsButtonBar(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(40.dp)
-                                .padding(horizontal = 2.dp),
+                                .height(40.dp),
                         ) {
                             DetailsActionButton(
                                 button = row.button,
@@ -331,8 +334,7 @@ internal fun DetailsButtonBar(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(40.dp)
-                                .padding(horizontal = 2.dp),
+                                .height(40.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -371,6 +373,7 @@ internal fun DetailsButtonBar(
 
 private val ButtonRowHeight = 40.dp
 private val ButtonRowSpacing = 6.dp
+private const val ButtonFocusedScale = 1.04f
 
 private fun List<ButtonData>.toButtonRows(): List<ButtonRowData> = buildList {
     var index = 0
@@ -400,7 +403,7 @@ private fun DetailsActionButton(
     showLabel: Boolean = true,
     iconSize: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
-    focusedScale: Float = 1.04f,
+    focusedScale: Float = ButtonFocusedScale,
 ) {
     ActionButton(
         label = button.label,
@@ -432,7 +435,7 @@ private fun ActionButton(
     showLabel: Boolean = true,
     iconSize: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
-    focusedScale: Float = 1.04f,
+    focusedScale: Float = ButtonFocusedScale,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
