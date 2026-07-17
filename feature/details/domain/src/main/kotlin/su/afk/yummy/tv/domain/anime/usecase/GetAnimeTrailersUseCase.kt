@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.anime.usecase
 
-import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 

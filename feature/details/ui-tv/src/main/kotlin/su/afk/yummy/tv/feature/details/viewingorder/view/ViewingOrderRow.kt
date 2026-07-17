@@ -32,7 +32,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.launchTvLazyListKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
-import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.feature.details.R
 
 private val RelatedCardWidth = 188.dp

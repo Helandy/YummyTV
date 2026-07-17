@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.utils.bestUrl
 import su.afk.yummy.tv.feature.details.mobile.R
 

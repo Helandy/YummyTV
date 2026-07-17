@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.feature.details.utils.toLibraryItem
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster

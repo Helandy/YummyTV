@@ -11,7 +11,7 @@ internal fun DetailsPickerSheets(
     onLibraryDismiss: () -> Unit,
     onSubscriptionToggle: (String) -> Unit,
     onSubscriptionsDismiss: () -> Unit,
-    onBalancerConfirmed: (su.afk.yummy.tv.domain.anime.model.AnimeVideo) -> Unit,
+    onBalancerConfirmed: (su.afk.yummy.tv.core.model.anime.AnimeVideo) -> Unit,
     onBalancerDismiss: () -> Unit,
 ) {
     if (state.showLibraryListPicker) {

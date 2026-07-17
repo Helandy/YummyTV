@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.viewingorder
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 
 class ViewingOrderState {
     data class State(

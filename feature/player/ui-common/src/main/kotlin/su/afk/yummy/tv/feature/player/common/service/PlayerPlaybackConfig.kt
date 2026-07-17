@@ -2,9 +2,8 @@ package su.afk.yummy.tv.feature.player.common.service
 
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import su.afk.yummy.tv.data.videodownload.cache.RotatingHlsCacheKeyFactory
-import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.feature.player.common.PlayerDataSourceFactory
+import su.afk.yummy.tv.feature.videodownload.playback.VideoDownloadPlaybackCache
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +34,7 @@ private data class OfflineCacheConfig(
 
 @Singleton
 class DefaultPlayerPlaybackConfig @Inject constructor(
-    private val cacheProvider: VideoDownloadCacheProvider,
+    private val downloadPlaybackCache: VideoDownloadPlaybackCache,
     private val streamingCacheProvider: PlayerStreamingCacheProvider,
 ) : PlayerPlaybackConfig {
     @Volatile
@@ -72,11 +71,11 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
         val offline = offlineCacheConfig
         if (offline != null) {
             CacheDataSource.Factory()
-                .setCache(cacheProvider.cache)
+                .setCache(downloadPlaybackCache.cache)
                 .apply {
                     if (offline.useRotatingHlsCacheKeys) {
                         setCacheKeyFactory(
-                            RotatingHlsCacheKeyFactory(
+                            downloadPlaybackCache.rotatingHlsCacheKeyFactory(
                                 downloadCacheKey = offline.cacheKey,
                                 manifestUri = offline.manifestUri,
                             )

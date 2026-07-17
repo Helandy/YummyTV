@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:utils"))
     implementation(project(":feature:player:domain"))
+    implementation(project(":feature:video-download:api"))
     implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.core.ktx)

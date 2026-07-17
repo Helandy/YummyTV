@@ -3,10 +3,10 @@ package su.afk.yummy.tv.data.player.repository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.domain.player.model.PlayerSourceData
 import su.afk.yummy.tv.domain.player.model.PlayerSourceSkipSegment

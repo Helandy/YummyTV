@@ -2,11 +2,11 @@ package su.afk.yummy.tv.feature.watching.handler
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.flow.first
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem

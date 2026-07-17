@@ -6,9 +6,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
-import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
-import su.afk.yummy.tv.domain.anime.model.AnimePoster
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
+import su.afk.yummy.tv.core.model.anime.AnimePoster
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 

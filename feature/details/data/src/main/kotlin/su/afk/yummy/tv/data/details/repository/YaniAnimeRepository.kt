@@ -7,6 +7,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorageStore
 import su.afk.yummy.tv.core.storage.anime.AnimeStorageStore
@@ -21,11 +26,6 @@ import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendationsCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeTrailersCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeVideosCache
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeWatchProgress
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetails as toStoredAnimeDetails
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeRecommendations as toStoredAnimeRecommendations

@@ -1,9 +1,11 @@
 plugins {
-    id("yummytv.android.library")
+    alias(libs.plugins.kotlin.jvm)
 }
 
-android {
-    namespace = "su.afk.yummy.tv.domain.schedule"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 dependencies {

@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.utils.formatViews
 
 @OptIn(ExperimentalLayoutApi::class)

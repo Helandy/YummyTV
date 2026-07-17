@@ -1,6 +1,5 @@
-package su.afk.yummy.tv.domain.anime.utils
+package su.afk.yummy.tv.core.model.anime
 
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 
 fun List<AnimeVideo>.bestKodikDubbing(): String {
     val kodikVideos = filter { it.isKodikSource() }

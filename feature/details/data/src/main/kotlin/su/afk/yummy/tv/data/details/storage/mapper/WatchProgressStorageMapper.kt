@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.details.storage.mapper
 
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
 
 internal fun WatchProgressEntry.toAnimeWatchProgress(): AnimeWatchProgress =
     AnimeWatchProgress(

@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 /**
  * Bounded on-disk cache for regular (non-offline) playback, kept separate from
- * [su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider], whose cache is
+ * [su.afk.yummy.tv.feature.videodownload.playback.VideoDownloadPlaybackCache], whose cache is
  * unbounded and reserved for user-initiated downloads.
  */
 @OptIn(UnstableApi::class)

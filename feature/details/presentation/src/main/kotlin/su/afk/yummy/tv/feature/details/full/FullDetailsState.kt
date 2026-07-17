@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.full
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEffect
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 
 class FullDetailsState {
     data class State(

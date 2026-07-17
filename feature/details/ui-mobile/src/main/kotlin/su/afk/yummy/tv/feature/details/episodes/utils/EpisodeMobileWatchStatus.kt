@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.details.episodes.utils
 
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.isMeaningfulProgress
-import su.afk.yummy.tv.domain.anime.model.isWatchedProgress
-import su.afk.yummy.tv.domain.anime.model.progress
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
+import su.afk.yummy.tv.core.model.anime.isWatchedProgress
+import su.afk.yummy.tv.core.model.anime.progress
 import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeMobileWatchStatus
 

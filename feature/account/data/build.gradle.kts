@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
-    implementation(project(":feature:details:domain"))
 
     implementation(libs.kotlinx.serialization.json)
 }

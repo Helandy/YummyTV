@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.details.details
 
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority

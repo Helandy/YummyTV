@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.removeHtmlEntities
 import su.afk.yummy.tv.core.utils.stripHtmlTags
 import su.afk.yummy.tv.domain.account.model.VideoSubscription
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 import kotlin.time.Duration.Companion.milliseconds
 

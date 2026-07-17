@@ -12,8 +12,8 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.MobileDetailsAction
 import su.afk.yummy.tv.feature.details.mobile.R
@@ -114,5 +114,5 @@ internal fun buildMobileActions(
     return state.detailsButtonOrder
         .filterNot { it == DetailsButtonAction.WATCH || it == DetailsButtonAction.LIBRARY || it == DetailsButtonAction.FAVORITE }
         .mapNotNull { byAction[it] } +
-        availableActions.filterNot { it.action in state.detailsButtonOrder }
+            availableActions.filterNot { it.action in state.detailsButtonOrder }
 }

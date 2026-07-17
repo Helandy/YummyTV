@@ -1,12 +1,14 @@
 plugins {
-    id("yummytv.android.library")
-    id("yummytv.android.hilt")
+    alias(libs.plugins.kotlin.jvm)
 }
 
-android {
-    namespace = "su.afk.yummy.tv.domain.videodownload"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.javax.inject)
+    implementation(libs.kotlinx.coroutines.core)
 }

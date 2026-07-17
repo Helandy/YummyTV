@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.domain.anime.repository
 
 import kotlinx.coroutines.flow.Flow
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 
 interface AnimeRepository {
     suspend fun getAnimeDetails(animeId: Int): AnimeDetails

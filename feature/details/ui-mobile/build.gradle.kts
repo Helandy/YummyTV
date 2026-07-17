@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
-    implementation(project(":feature:details:domain"))
+    implementation(project(":core:model"))
     implementation(project(":feature:details:presentation"))
     implementation(project(":feature:player:api"))
 

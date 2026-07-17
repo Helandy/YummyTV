@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.details.episodes.utils
 
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.utils.bestKodikDubbing
-import su.afk.yummy.tv.domain.anime.utils.isKodikSource
-import su.afk.yummy.tv.domain.anime.utils.kodikThumbnailIframeUrl
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.bestKodikDubbing
+import su.afk.yummy.tv.core.model.anime.isKodikSource
+import su.afk.yummy.tv.core.model.anime.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.episodes.model.MobileEpisodeGroup
 
 internal fun List<AnimeVideo>.toMobileEpisodeGroups(): List<MobileEpisodeGroup> {

@@ -6,10 +6,10 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
-import su.afk.yummy.tv.domain.anime.model.AnimePoster
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
@@ -80,10 +80,12 @@ internal fun DetailsState.State.watchLabel(details: AnimeDetails): String {
         isWatchLaunchPending || videosState is VideosUiState.Loading -> {
             stringResource(R.string.details_mobile_loading_episodes)
         }
+
         videosState is VideosUiState.Empty -> stringResource(R.string.details_mobile_watch_not_found)
         continueTarget != null && continueTarget.video.episode.isNotBlank() -> {
             stringResource(R.string.details_mobile_continue_episode, continueTarget.video.episode)
         }
+
         else -> stringResource(R.string.details_mobile_watch)
     }
 }

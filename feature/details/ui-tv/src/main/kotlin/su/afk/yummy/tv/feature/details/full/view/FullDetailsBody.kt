@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.full.utils.formatEpochSeconds
 import su.afk.yummy.tv.feature.details.utils.formatAiredProgress

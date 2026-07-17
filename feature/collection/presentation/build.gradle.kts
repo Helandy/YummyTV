@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":feature:collection:api"))
 
     api(project(":feature:collection:domain"))
-    api(project(":feature:details:domain"))
 
     implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))

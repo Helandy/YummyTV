@@ -5,6 +5,20 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
+import su.afk.yummy.tv.core.model.anime.AnimeGenre
+import su.afk.yummy.tv.core.model.anime.AnimePerson
+import su.afk.yummy.tv.core.model.anime.AnimePoster
+import su.afk.yummy.tv.core.model.anime.AnimeRating
+import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
+import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.anime.AnimeStudio
+import su.afk.yummy.tv.core.model.anime.AnimeTrailer
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
+import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
+import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_CREATOR
 import su.afk.yummy.tv.core.storage.anime.ANIME_DETAIL_NAMED_KIND_GENRE
@@ -31,20 +45,6 @@ import su.afk.yummy.tv.data.details.dto.YaniAnimeVideoDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniScreenshotDto
 import su.afk.yummy.tv.data.details.dto.YaniTrailerDto
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
-import su.afk.yummy.tv.domain.anime.model.AnimeGenre
-import su.afk.yummy.tv.domain.anime.model.AnimePerson
-import su.afk.yummy.tv.domain.anime.model.AnimePoster
-import su.afk.yummy.tv.domain.anime.model.AnimeRating
-import su.afk.yummy.tv.domain.anime.model.AnimeRecommendation
-import su.afk.yummy.tv.domain.anime.model.AnimeScreenshot
-import su.afk.yummy.tv.domain.anime.model.AnimeStudio
-import su.afk.yummy.tv.domain.anime.model.AnimeTrailer
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.anime.model.AnimeVideoSkips
-import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
 
 internal fun YaniAnimeDetailsDto.toAnimeDetailsCache(
     language: String,

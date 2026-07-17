@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
-import su.afk.yummy.tv.domain.anime.model.AnimeDetails
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption

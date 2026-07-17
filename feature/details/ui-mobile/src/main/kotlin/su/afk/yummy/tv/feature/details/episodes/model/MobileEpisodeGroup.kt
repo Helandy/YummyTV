@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.episodes.model
 
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 
 internal data class MobileEpisodeGroup(
     val episode: String,

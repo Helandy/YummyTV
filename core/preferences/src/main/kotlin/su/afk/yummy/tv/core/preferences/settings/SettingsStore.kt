@@ -1,23 +1,6 @@
 package su.afk.yummy.tv.core.preferences.settings
 
-import android.content.Context
-import android.os.Build
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
 
 data class SettingsSnapshot(
     val appTheme: AppTheme,
@@ -52,566 +35,109 @@ data class SupportPromptSnapshot(
     val firstEligibleTimeMs: Long,
 )
 
-class SettingsStore(private val context: Context) {
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val posterQualityKey = stringPreferencesKey("poster_quality")
-    private val posterCardSizeKey = stringPreferencesKey("poster_card_size")
-    private val showTopTitleYearKey = booleanPreferencesKey("show_top_title_year")
-    private val libraryContinueWatchingCardSizeKey =
-        stringPreferencesKey("library_continue_watching_card_size")
-    private val preferredPlayerKey = stringPreferencesKey("preferred_player")
-    private val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
-    private val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
-    private val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
-    private val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
-    private val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
-    private val suggestNextEpisodeOnWatchedKey =
-        booleanPreferencesKey("suggest_next_episode_on_watched")
-    private val refreshContinueWatchingProgressOnLaunchKey =
-        booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
-    private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
-    private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
-    private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
-    private val appThemeKey = stringPreferencesKey("app_theme")
-    private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
-    private val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
-    private val yaniUserIdKey = intPreferencesKey("yani_user_id")
-    private val yaniNicknameKey = stringPreferencesKey("yani_nickname")
-    private val yaniAvatarUrlKey = stringPreferencesKey("yani_avatar_url")
-    private val yaniTokenRefreshAtKey = stringPreferencesKey("yani_token_refresh_at")
-    private val yaniUnreadNotificationsCountKey = intPreferencesKey("yani_unread_notifications_count")
-    private val lastStartedVersionCodeKey = intPreferencesKey("last_started_version_code")
-    private val yaniContentLanguageKey = stringPreferencesKey("yani_content_language")
-    private val supportPromptDismissedKey = booleanPreferencesKey("support_prompt_dismissed")
-    private val supportPromptFirstInstallTimeMsKey =
-        longPreferencesKey("support_prompt_first_install_time_ms")
-    private val legacyStreamingCachePrunedKey =
-        booleanPreferencesKey("legacy_streaming_cache_pruned")
-
-    @Volatile private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
+interface SettingsStore {
 
     val currentPreviewCacheSize: PreviewCacheSize
-        get() = previewCacheSizeSnapshot
 
-    val posterQuality: Flow<PosterQuality> = context.dataStore.data.map { prefs ->
-        prefs[posterQualityKey]?.let { name ->
-            runCatching { PosterQuality.valueOf(name) }.getOrNull()
-        } ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD
-    }
-
-    val posterCardSize: Flow<PosterCardSize> = context.dataStore.data.map { prefs ->
-        prefs[posterCardSizeKey]?.let { name ->
-            runCatching { PosterCardSize.valueOf(name) }.getOrNull()
-        } ?: PosterCardSize.STANDARD
-    }
-
-    val showTopTitleYear: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[showTopTitleYearKey] ?: false
-    }
-
-    val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize> =
-        context.dataStore.data.map { prefs ->
-            prefs[libraryContinueWatchingCardSizeKey]?.let { name ->
-                runCatching { LibraryContinueWatchingCardSize.valueOf(name) }.getOrNull()
-            } ?: LibraryContinueWatchingCardSize.LARGE
-        }
-
-    val preferredPlayer: Flow<PreferredPlayer> = context.dataStore.data.map { prefs ->
-        prefs[preferredPlayerKey]?.let { name ->
-            runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
-        } ?: PreferredPlayer.NONE
-    }
-
-    val preferredVideoQuality: Flow<PreferredVideoQuality> = context.dataStore.data.map { prefs ->
-        prefs[preferredVideoQualityKey]?.let { name ->
-            runCatching { PreferredVideoQuality.valueOf(name) }.getOrNull()
-        } ?: PreferredVideoQuality.BEST
-    }
-
-    val watchNextEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[watchNextEnabledKey] ?: true
-    }
-
-    val previewCacheSize: Flow<PreviewCacheSize> = context.dataStore.data.map { prefs ->
-        val mb = prefs[previewCacheSizeKey] ?: PreviewCacheSize.MB_100.megabytes
-        PreviewCacheSize.entries.firstOrNull { it.megabytes == mb } ?: PreviewCacheSize.MB_100
-    }
-
-    val autoSkipOpeningsEndings: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[autoSkipOpeningsEndingsKey] ?: false
-    }
-
-    val autoPlayNextEpisode: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[autoPlayNextEpisodeKey] ?: false
-    }
-
-    val suggestNextEpisodeOnWatched: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[suggestNextEpisodeOnWatchedKey] ?: true
-    }
-
-    val refreshContinueWatchingProgressOnLaunch: Flow<Boolean> =
-        context.dataStore.data.map { prefs ->
-            prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false
-        }
-
-    val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
-        prefs[playerResizeModeKey]?.let { name ->
-            runCatching { PlayerResizeMode.valueOf(name) }.getOrNull()
-        } ?: PlayerResizeMode.FIT
-    }
-
-    val playerZoomLevel: Flow<PlayerZoomLevel> = context.dataStore.data.map { prefs ->
-        prefs[playerZoomLevelKey]?.let { name ->
-            runCatching { PlayerZoomLevel.valueOf(name) }.getOrNull()
-        } ?: PlayerZoomLevel.PERCENT_10
-    }
+    val posterQuality: Flow<PosterQuality>
+    val posterCardSize: Flow<PosterCardSize>
+    val showTopTitleYear: Flow<Boolean>
+    val libraryContinueWatchingCardSize: Flow<LibraryContinueWatchingCardSize>
+    val preferredPlayer: Flow<PreferredPlayer>
+    val preferredVideoQuality: Flow<PreferredVideoQuality>
+    val watchNextEnabled: Flow<Boolean>
+    val previewCacheSize: Flow<PreviewCacheSize>
+    val autoSkipOpeningsEndings: Flow<Boolean>
+    val autoPlayNextEpisode: Flow<Boolean>
+    val suggestNextEpisodeOnWatched: Flow<Boolean>
+    val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
+    val playerResizeMode: Flow<PlayerResizeMode>
+    val playerZoomLevel: Flow<PlayerZoomLevel>
+    val appTheme: Flow<AppTheme>
+    val detailsButtonOrder: Flow<List<DetailsButtonAction>>
+    val yaniApplicationToken: Flow<String>
+    val yaniApplicationTokenState: Flow<YaniApplicationTokenState>
+    val yaniUserId: Flow<Int>
+    val yaniNickname: Flow<String>
+    val yaniAvatarUrl: Flow<String>
+    val yaniTokenRefreshAt: Flow<Long>
+    val yaniUnreadNotificationsCount: Flow<Int>
+    val yaniContentLanguage: Flow<YaniContentLanguage>
+    val settingsSnapshot: Flow<SettingsSnapshot>
+    val mainSettingsSnapshot: Flow<MainSettingsSnapshot>
+    val supportPromptSnapshot: Flow<SupportPromptSnapshot>
 
     fun playerResizeSettings(
         animeId: Int,
         animeTitle: String,
         playerName: String,
-    ): Flow<PlayerResizeSettings> {
-        val key = playerScopedResizeSettingsKey(animeId, animeTitle, playerName)
-        return context.dataStore.data.map { prefs ->
-            prefs[key]?.toPlayerResizeSettings() ?: PlayerResizeSettings()
-        }
-    }
+    ): Flow<PlayerResizeSettings>
 
     fun playerMobileVideoTransformSettings(
         animeId: Int,
         animeTitle: String,
         playerName: String,
-    ): Flow<PlayerMobileVideoTransformSettings> {
-        val key = playerScopedMobileVideoTransformSettingsKey(animeId, animeTitle, playerName)
-        return context.dataStore.data.map { prefs ->
-            prefs[key]?.toPlayerMobileVideoTransformSettings()
-                ?: PlayerMobileVideoTransformSettings()
-        }
-    }
+    ): Flow<PlayerMobileVideoTransformSettings>
 
-    val appTheme: Flow<AppTheme> = context.dataStore.data.map { prefs ->
-        prefs[appThemeKey]?.let { name ->
-            runCatching { AppTheme.valueOf(name) }.getOrNull()
-        } ?: AppTheme.WARM_AMBER
-    }
-
-    val detailsButtonOrder: Flow<List<DetailsButtonAction>> = context.dataStore.data.map { prefs ->
-        prefs[detailsButtonOrderKey].toDetailsButtonOrder()
-    }
-
-    val yaniApplicationToken: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs.yaniApplicationToken()
-    }
-
-    val yaniApplicationTokenState: Flow<YaniApplicationTokenState> =
-        context.dataStore.data.map { prefs ->
-            prefs.yaniApplicationTokenState()
-        }
-
-    val yaniUserId: Flow<Int> = context.dataStore.data.map { prefs ->
-        prefs[yaniUserIdKey] ?: 0
-    }
-
-    val yaniNickname: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[yaniNicknameKey].orEmpty()
-    }
-
-    val yaniAvatarUrl: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[yaniAvatarUrlKey].orEmpty()
-    }
-
-    val yaniTokenRefreshAt: Flow<Long> = context.dataStore.data.map { prefs ->
-        prefs[yaniTokenRefreshAtKey]?.toLongOrNull() ?: 0L
-    }
-
-    val yaniUnreadNotificationsCount: Flow<Int> = context.dataStore.data.map { prefs ->
-        prefs[yaniUnreadNotificationsCountKey] ?: 0
-    }
-
-    val yaniContentLanguage: Flow<YaniContentLanguage> = context.dataStore.data.map { prefs ->
-        YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
-            ?: YaniContentLanguage.fromSystemLocale(context)
-    }
-
-    val settingsSnapshot: Flow<SettingsSnapshot> = context.dataStore.data.map { prefs ->
-        SettingsSnapshot(
-            appTheme = prefs[appThemeKey]?.let { name ->
-                runCatching { AppTheme.valueOf(name) }.getOrNull()
-            } ?: AppTheme.WARM_AMBER,
-            posterQuality = prefs[posterQualityKey]?.let { name ->
-                runCatching { PosterQuality.valueOf(name) }.getOrNull()
-            }
-                ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD,
-            posterCardSize = prefs[posterCardSizeKey]?.let { name ->
-                runCatching { PosterCardSize.valueOf(name) }.getOrNull()
-            } ?: PosterCardSize.STANDARD,
-            showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
-            libraryContinueWatchingCardSize =
-                prefs[libraryContinueWatchingCardSizeKey]?.let { name ->
-                    runCatching { LibraryContinueWatchingCardSize.valueOf(name) }.getOrNull()
-                } ?: LibraryContinueWatchingCardSize.LARGE,
-            preferredPlayer = prefs[preferredPlayerKey]?.let { name ->
-                runCatching { PreferredPlayer.valueOf(name) }.getOrNull()
-            } ?: PreferredPlayer.NONE,
-            preferredVideoQuality = prefs[preferredVideoQualityKey]?.let { name ->
-                runCatching { PreferredVideoQuality.valueOf(name) }.getOrNull()
-            } ?: PreferredVideoQuality.BEST,
-            watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
-            previewCacheSize = (prefs[previewCacheSizeKey]
-                ?: PreviewCacheSize.MB_100.megabytes).let { mb ->
-                PreviewCacheSize.entries.firstOrNull { it.megabytes == mb }
-                    ?: PreviewCacheSize.MB_100
-            },
-            autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
-            autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
-            suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
-            refreshContinueWatchingProgressOnLaunch =
-                prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
-            yaniApplicationToken = prefs.yaniApplicationToken(),
-            contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
-                ?: YaniContentLanguage.fromSystemLocale(context),
-            detailsButtonOrder = prefs[detailsButtonOrderKey].toDetailsButtonOrder(),
-        )
-    }
-
-    val mainSettingsSnapshot: Flow<MainSettingsSnapshot> = context.dataStore.data.map { prefs ->
-        MainSettingsSnapshot(
-            appTheme = prefs[appThemeKey]?.let { name ->
-                runCatching { AppTheme.valueOf(name) }.getOrNull()
-            } ?: AppTheme.WARM_AMBER,
-            posterQuality = prefs[posterQualityKey]?.let { name ->
-                runCatching { PosterQuality.valueOf(name) }.getOrNull()
-            }
-                ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PosterQuality.MEGA else PosterQuality.STANDARD,
-            posterCardSize = prefs[posterCardSizeKey]?.let { name ->
-                runCatching { PosterCardSize.valueOf(name) }.getOrNull()
-            } ?: PosterCardSize.STANDARD,
-            yaniNickname = prefs[yaniNicknameKey].orEmpty(),
-            yaniAvatarUrl = prefs[yaniAvatarUrlKey].orEmpty(),
-            yaniUnreadNotificationsCount = prefs[yaniUnreadNotificationsCountKey] ?: 0,
-        )
-    }
-
-    val supportPromptSnapshot: Flow<SupportPromptSnapshot> = context.dataStore.data.map { prefs ->
-        SupportPromptSnapshot(
-            dismissed = prefs[supportPromptDismissedKey] ?: false,
-            firstEligibleTimeMs = prefs[supportPromptFirstInstallTimeMsKey]
-                ?: System.currentTimeMillis(),
-        )
-    }
-
-    init {
-        scope.launch {
-            previewCacheSize.collect { size ->
-                previewCacheSizeSnapshot = size
-            }
-        }
-    }
-
-    suspend fun setPosterQuality(quality: PosterQuality) {
-        context.dataStore.edit { prefs -> prefs[posterQualityKey] = quality.name }
-    }
-
-    suspend fun setPosterCardSize(size: PosterCardSize) {
-        context.dataStore.edit { prefs -> prefs[posterCardSizeKey] = size.name }
-    }
-
-    suspend fun setShowTopTitleYear(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[showTopTitleYearKey] = enabled }
-    }
-
-    suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize) {
-        context.dataStore.edit { prefs ->
-            prefs[libraryContinueWatchingCardSizeKey] = size.name
-        }
-    }
-
-    suspend fun setPreferredPlayer(player: PreferredPlayer) {
-        context.dataStore.edit { prefs -> prefs[preferredPlayerKey] = player.name }
-    }
-
-    suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality) {
-        context.dataStore.edit { prefs -> prefs[preferredVideoQualityKey] = quality.name }
-    }
-
-    suspend fun setWatchNextEnabled(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[watchNextEnabledKey] = enabled }
-    }
-
-    suspend fun setPreviewCacheSize(size: PreviewCacheSize) {
-        previewCacheSizeSnapshot = size
-        context.dataStore.edit { prefs -> prefs[previewCacheSizeKey] = size.megabytes }
-    }
-
-    suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[autoSkipOpeningsEndingsKey] = enabled }
-    }
-
-    suspend fun setAutoPlayNextEpisode(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[autoPlayNextEpisodeKey] = enabled }
-    }
-
-    suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[suggestNextEpisodeOnWatchedKey] = enabled }
-    }
-
-    suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) {
-        context.dataStore.edit { prefs ->
-            prefs[refreshContinueWatchingProgressOnLaunchKey] = enabled
-        }
-    }
-
-    suspend fun setPlayerResizeMode(mode: PlayerResizeMode) {
-        context.dataStore.edit { prefs -> prefs[playerResizeModeKey] = mode.name }
-    }
-
-    suspend fun setPlayerZoomLevel(level: PlayerZoomLevel) {
-        context.dataStore.edit { prefs -> prefs[playerZoomLevelKey] = level.name }
-    }
+    suspend fun setPosterQuality(quality: PosterQuality)
+    suspend fun setPosterCardSize(size: PosterCardSize)
+    suspend fun setShowTopTitleYear(enabled: Boolean)
+    suspend fun setLibraryContinueWatchingCardSize(size: LibraryContinueWatchingCardSize)
+    suspend fun setPreferredPlayer(player: PreferredPlayer)
+    suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality)
+    suspend fun setWatchNextEnabled(enabled: Boolean)
+    suspend fun setPreviewCacheSize(size: PreviewCacheSize)
+    suspend fun setAutoSkipOpeningsEndings(enabled: Boolean)
+    suspend fun setAutoPlayNextEpisode(enabled: Boolean)
+    suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
+    suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
+    suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
+    suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
 
     suspend fun setPlayerResizeSettings(
         animeId: Int,
         animeTitle: String,
         playerName: String,
         settings: PlayerResizeSettings,
-    ) {
-        val key = playerScopedResizeSettingsKey(animeId, animeTitle, playerName)
-        context.dataStore.edit { prefs ->
-            prefs[key] = settings.toPreferenceValue()
-        }
-    }
+    )
 
     suspend fun setPlayerMobileVideoTransformSettings(
         animeId: Int,
         animeTitle: String,
         playerName: String,
         settings: PlayerMobileVideoTransformSettings,
-    ) {
-        val key = playerScopedMobileVideoTransformSettingsKey(animeId, animeTitle, playerName)
-        context.dataStore.edit { prefs ->
-            prefs[key] = settings.toPreferenceValue()
-        }
-    }
+    )
 
-    suspend fun setAppTheme(theme: AppTheme) {
-        context.dataStore.edit { prefs -> prefs[appThemeKey] = theme.name }
-    }
-
-    suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>) {
-        context.dataStore.edit { prefs ->
-            prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder().joinToString(DETAILS_BUTTON_ORDER_SEPARATOR) {
-                it.name
-            }
-        }
-    }
-
-    suspend fun setYaniApplicationToken(token: String) {
-        context.dataStore.edit { prefs ->
-            val trimmedToken = token.trim()
-            if (trimmedToken.isBlank()) {
-                prefs.remove(yaniApplicationTokenKey)
-            } else {
-                prefs[yaniApplicationTokenKey] = trimmedToken
-            }
-        }
-    }
+    suspend fun setAppTheme(theme: AppTheme)
+    suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
+    suspend fun setYaniApplicationToken(token: String)
 
     suspend fun setYaniAccount(
         userId: Int,
         nickname: String,
         avatarUrl: String?,
         refreshedAt: Long = System.currentTimeMillis(),
-    ) {
-        context.dataStore.edit { prefs ->
-            prefs[yaniUserIdKey] = userId
-            prefs[yaniNicknameKey] = nickname
-            prefs[yaniTokenRefreshAtKey] = refreshedAt.toString()
-            if (avatarUrl.isNullOrBlank()) {
-                prefs.remove(yaniAvatarUrlKey)
-            } else {
-                prefs[yaniAvatarUrlKey] = avatarUrl
-            }
-        }
-    }
+    )
 
-    suspend fun clearLegacyYaniAccessToken() {
-        context.dataStore.edit { prefs ->
-            prefs.remove(yaniAccessTokenKey)
-        }
-    }
+    suspend fun clearLegacyYaniAccessToken()
+    suspend fun clearYaniAccount()
+    suspend fun setYaniUnreadNotificationsCount(count: Int)
+    suspend fun setYaniContentLanguage(language: YaniContentLanguage)
+    suspend fun ensureYaniContentLanguageInitialized()
+    suspend fun ensureSupportPromptInstallTimeInitialized()
+    suspend fun dismissSupportPrompt()
 
-    suspend fun clearYaniAccount() {
-        context.dataStore.edit { prefs ->
-            prefs.remove(yaniAccessTokenKey)
-            prefs.remove(yaniUserIdKey)
-            prefs.remove(yaniNicknameKey)
-            prefs.remove(yaniAvatarUrlKey)
-            prefs.remove(yaniTokenRefreshAtKey)
-            prefs.remove(yaniUnreadNotificationsCountKey)
-        }
-    }
-
-    suspend fun setYaniUnreadNotificationsCount(count: Int) {
-        context.dataStore.edit { prefs ->
-            prefs[yaniUnreadNotificationsCountKey] = count.coerceAtLeast(0)
-        }
-    }
-
-    suspend fun setYaniContentLanguage(language: YaniContentLanguage) {
-        context.dataStore.edit { prefs -> prefs[yaniContentLanguageKey] = language.name }
-    }
-
-    suspend fun ensureYaniContentLanguageInitialized() {
-        context.dataStore.edit { prefs ->
-            if (YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey]) == null) {
-                prefs[yaniContentLanguageKey] = YaniContentLanguage.fromSystemLocale(context).name
-            }
-        }
-    }
-
-    suspend fun ensureSupportPromptInstallTimeInitialized() {
-        context.dataStore.edit { prefs ->
-            if (prefs[supportPromptFirstInstallTimeMsKey] == null) {
-                prefs[supportPromptFirstInstallTimeMsKey] = System.currentTimeMillis()
-            }
-        }
-    }
-
-    suspend fun dismissSupportPrompt() {
-        context.dataStore.edit { prefs ->
-            prefs[supportPromptDismissedKey] = true
-        }
-    }
-
-    suspend fun markStartedVersion(versionCode: Int): Boolean {
-        var isFreshVersion = true
-        context.dataStore.edit { prefs ->
-            val lastStartedVersionCode = prefs[lastStartedVersionCodeKey]
-            isFreshVersion = lastStartedVersionCode != versionCode
-            if (isFreshVersion && prefs[supportPromptDismissedKey] != true) {
-                prefs[supportPromptFirstInstallTimeMsKey] = System.currentTimeMillis()
-            }
-            prefs[lastStartedVersionCodeKey] = versionCode
-        }
-        return isFreshVersion
-    }
+    /** Returns `true` when [versionCode] differs from the previously started one. */
+    suspend fun markStartedVersion(versionCode: Int): Boolean
 
     /**
      * Returns `true` exactly once: the first time this is called after the streaming/download
      * cache split, so callers can prune the now-unbounded-legacy entries a single time. Every
      * later call returns `false`.
      */
-    suspend fun consumeLegacyStreamingCachePruneFlag(): Boolean {
-        var shouldPrune = false
-        context.dataStore.edit { prefs ->
-            shouldPrune = prefs[legacyStreamingCachePrunedKey] != true
-            prefs[legacyStreamingCachePrunedKey] = true
-        }
-        return shouldPrune
-    }
-
-    private fun String?.toDetailsButtonOrder(): List<DetailsButtonAction> {
-        if (isNullOrBlank()) return defaultDetailsButtonOrder
-        return split(DETAILS_BUTTON_ORDER_SEPARATOR)
-            .mapNotNull { name -> runCatching { DetailsButtonAction.valueOf(name) }.getOrNull() }
-            .normalizedDetailsButtonOrder()
-    }
-
-    private fun Preferences.yaniApplicationToken(): String =
-        this[yaniApplicationTokenKey]?.takeIf { it.isNotBlank() } ?: DEFAULT_YANI_APPLICATION_TOKEN
-
-    private fun Preferences.yaniApplicationTokenState(): YaniApplicationTokenState {
-        val token = this[yaniApplicationTokenKey]?.trim().orEmpty()
-        return if (token.isNotBlank() && token != DEFAULT_YANI_APPLICATION_TOKEN) {
-            YaniApplicationTokenState.CUSTOM
-        } else {
-            YaniApplicationTokenState.DEFAULT
-        }
-    }
-
-    private fun List<DetailsButtonAction>.normalizedDetailsButtonOrder(): List<DetailsButtonAction> {
-        val unique = distinct()
-        val complete = unique + defaultDetailsButtonOrder.filterNot { it in unique }
-        val withoutFavorite = complete.filterNot { it == DetailsButtonAction.FAVORITE }
-        val libraryIndex = withoutFavorite.indexOf(DetailsButtonAction.LIBRARY)
-        if (libraryIndex == -1) return complete
-        return withoutFavorite.toMutableList().apply {
-            add(libraryIndex + 1, DetailsButtonAction.FAVORITE)
-        }
-    }
-
-    private fun playerScopedResizeSettingsKey(
-        animeId: Int,
-        animeTitle: String,
-        playerName: String,
-    ): Preferences.Key<String> {
-        val titleKey = if (animeId > 0) {
-            "anime_id:$animeId"
-        } else {
-            "title:${animeTitle.normalizedPlayerResizeKeyPart()}"
-        }
-        val playerKey = playerName.normalizedPlayerResizeKeyPart()
-        return stringPreferencesKey("player_resize_settings|$titleKey|player:$playerKey")
-    }
-
-    private fun playerScopedMobileVideoTransformSettingsKey(
-        animeId: Int,
-        animeTitle: String,
-        playerName: String,
-    ): Preferences.Key<String> {
-        val titleKey = if (animeId > 0) {
-            "anime_id:$animeId"
-        } else {
-            "title:${animeTitle.normalizedPlayerResizeKeyPart()}"
-        }
-        val playerKey = playerName.normalizedPlayerResizeKeyPart()
-        return stringPreferencesKey("player_mobile_video_transform|$titleKey|player:$playerKey")
-    }
-
-    private fun String.normalizedPlayerResizeKeyPart(): String =
-        trim()
-            .lowercase()
-            .replace(Regex("\\s+"), " ")
-            .ifBlank { "unknown" }
-
-    private fun PlayerResizeSettings.toPreferenceValue(): String =
-        "${resizeMode.name}|${zoomLevel.name}"
-
-    private fun String.toPlayerResizeSettings(): PlayerResizeSettings? {
-        val parts = split('|')
-        val mode = parts.getOrNull(0)?.let { name ->
-            runCatching { PlayerResizeMode.valueOf(name) }.getOrNull()
-        } ?: return null
-        val level = parts.getOrNull(1)?.let { name ->
-            runCatching { PlayerZoomLevel.valueOf(name) }.getOrNull()
-        } ?: PlayerZoomLevel.PERCENT_10
-        return PlayerResizeSettings(
-            resizeMode = mode,
-            zoomLevel = level,
-        )
-    }
-
-    private fun PlayerMobileVideoTransformSettings.toPreferenceValue(): String =
-        "$scale|$offsetX|$offsetY"
-
-    private fun String.toPlayerMobileVideoTransformSettings(): PlayerMobileVideoTransformSettings? {
-        val parts = split('|')
-        val scale = parts.getOrNull(0)?.toFloatOrNull() ?: return null
-        val offsetX = parts.getOrNull(1)?.toFloatOrNull() ?: 0f
-        val offsetY = parts.getOrNull(2)?.toFloatOrNull() ?: 0f
-        return PlayerMobileVideoTransformSettings(
-            scale = scale,
-            offsetX = offsetX,
-            offsetY = offsetY,
-        )
-    }
+    suspend fun consumeLegacyStreamingCachePruneFlag(): Boolean
 
     companion object {
-        private const val DEFAULT_YANI_APPLICATION_TOKEN = "ze645twqfeql6l1u"
-        private const val DETAILS_BUTTON_ORDER_SEPARATOR = "|"
-
         val defaultDetailsButtonOrder: List<DetailsButtonAction> = listOf(
             DetailsButtonAction.WATCH,
             DetailsButtonAction.LIBRARY,

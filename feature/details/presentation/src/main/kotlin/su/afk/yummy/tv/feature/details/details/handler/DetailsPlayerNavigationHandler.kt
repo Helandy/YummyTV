@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import androidx.navigation3.runtime.NavKey
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.utils.toPlayerVideoSource

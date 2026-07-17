@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.anime.model
+package su.afk.yummy.tv.core.model.anime
 
 private const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
 private const val WATCHED_REMAINING_MS = 5 * 60 * 1000L

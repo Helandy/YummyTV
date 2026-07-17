@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.details
 
 import su.afk.yummy.tv.core.analytics.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.analyticsParamsOf
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
 import javax.inject.Inject
 
 internal class DetailsAnalytics @Inject constructor(

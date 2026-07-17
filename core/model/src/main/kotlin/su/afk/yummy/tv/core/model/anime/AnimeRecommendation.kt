@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.anime.model
+package su.afk.yummy.tv.core.model.anime
 
 data class AnimeRecommendation(
     val animeId: Int,

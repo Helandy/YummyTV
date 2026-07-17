@@ -8,7 +8,6 @@ android {
 }
 
 dependencies {
-    api(project(":feature:details:domain"))
     api(project(":feature:search:domain"))
 
     implementation(project(":core:analytics"))

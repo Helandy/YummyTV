@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.viewingorder.view
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.domain.anime.model.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.utils.bestUrl
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard

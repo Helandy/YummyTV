@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.utils
 
-import su.afk.yummy.tv.domain.anime.model.AnimeEpisodes
+import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 
 data class EpisodeReleaseCountdown(
     val value: Int,

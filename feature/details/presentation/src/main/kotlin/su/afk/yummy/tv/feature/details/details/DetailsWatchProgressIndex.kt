@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.details.details
 
-import su.afk.yummy.tv.domain.anime.model.AnimeVideo
-import su.afk.yummy.tv.domain.anime.model.AnimeWatchProgress
-import su.afk.yummy.tv.domain.anime.model.isContinueWatchingProgress
-import su.afk.yummy.tv.domain.anime.model.isMeaningfulProgress
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
+import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 
 data class DetailsWatchProgressIndex(
