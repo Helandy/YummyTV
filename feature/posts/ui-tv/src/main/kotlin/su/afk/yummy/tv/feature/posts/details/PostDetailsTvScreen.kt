@@ -22,6 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbDown
@@ -37,13 +40,24 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -51,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
@@ -63,6 +78,7 @@ import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
 import su.afk.yummy.tv.feature.posts.tv.R
 import su.afk.yummy.tv.feature.posts.utils.parsePostContent
+import su.afk.yummy.tv.feature.posts.view.TvPostFullscreenImageDialog
 import java.util.Locale
 
 @Composable
@@ -111,9 +127,14 @@ private fun PostDetailsContent(
 ) {
     val context = LocalContext.current
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    val likeFocusRequester = remember { FocusRequester() }
+    var fullscreenImage by remember { mutableStateOf<Pair<String, String?>?>(null) }
     val viewsLabel = stringResource(R.string.posts_views_short, details.views.compactCount())
     LazyColumn(
         Modifier.fillMaxSize(),
+        state = listState,
         contentPadding = PaddingValues(
             start = TvScreenPadding.Horizontal,
             end = TvScreenPadding.Horizontal,
@@ -130,10 +151,29 @@ private fun PostDetailsContent(
             )
         }
         item {
+            val interactionSource = remember { MutableInteractionSource() }
+            val focused by interactionSource.collectIsFocusedAsState()
+            val bringIntoViewRequester = remember { BringIntoViewRequester() }
+            val shape = RoundedCornerShape(12.dp)
             Text(
                 details.title,
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(shape)
+                    .background(
+                        if (focused) MaterialTheme.colorScheme.surfaceContainerHigh
+                        else Color.Transparent,
+                    )
+                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .onFocusChanged {
+                        if (it.isFocused) {
+                            coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                        }
+                    }
+                    .focusable(interactionSource = interactionSource)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
             )
         }
         item {
@@ -143,12 +183,36 @@ private fun PostDetailsContent(
         }
         details.previewImageUrl?.takeIf(String::isNotBlank)?.let { url ->
             item {
+                val interactionSource = remember { MutableInteractionSource() }
+                val focused by interactionSource.collectIsFocusedAsState()
+                val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                val shape = RoundedCornerShape(12.dp)
                 AsyncImage(
                     url,
                     details.title,
                     Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 520.dp),
+                        .heightIn(max = 520.dp)
+                        .clip(shape)
+                        .then(
+                            if (focused) {
+                                Modifier.border(3.dp, MaterialTheme.colorScheme.primary, shape)
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .bringIntoViewRequester(bringIntoViewRequester)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                            }
+                        }
+                        .tvFocusableClick(
+                            onClick = { fullscreenImage = url to details.title },
+                            shape = shape,
+                            interactionSource = interactionSource,
+                            focusedScale = 1f,
+                        ),
                     contentScale = ContentScale.FillWidth
                 )
             }
@@ -178,6 +242,7 @@ private fun PostDetailsContent(
                 is PostContentBlock.Image -> {
                     val interactionSource = remember { MutableInteractionSource() }
                     val focused by interactionSource.collectIsFocusedAsState()
+                    val bringIntoViewRequester = remember { BringIntoViewRequester() }
                     val shape = RoundedCornerShape(12.dp)
                     AsyncImage(
                         block.url,
@@ -193,7 +258,18 @@ private fun PostDetailsContent(
                                     Modifier
                                 },
                             )
-                            .focusable(interactionSource = interactionSource),
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                                }
+                            }
+                            .tvFocusableClick(
+                                onClick = { fullscreenImage = block.url to block.description },
+                                shape = shape,
+                                interactionSource = interactionSource,
+                                focusedScale = 1f,
+                            ),
                         contentScale = ContentScale.FillWidth,
                     )
                 }
@@ -208,7 +284,19 @@ private fun PostDetailsContent(
                 )
             }
             item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                val relatedAnimeBringIntoViewRequester = remember { BringIntoViewRequester() }
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .bringIntoViewRequester(relatedAnimeBringIntoViewRequester),
+                    contentPadding = PaddingValues(
+                        start = 10.dp,
+                        top = 10.dp,
+                        end = 10.dp,
+                        bottom = 24.dp,
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                ) {
                     itemsIndexed(
                         details.relatedAnime,
                         key = { _, anime -> anime.id },
@@ -217,6 +305,13 @@ private fun PostDetailsContent(
                         Card(
                             modifier = Modifier
                                 .width(190.dp)
+                                .onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            relatedAnimeBringIntoViewRequester.bringIntoView()
+                                        }
+                                    }
+                                }
                                 .focusProperties {
                                     // крайняя левая карточка уводит фокус в боковое меню,
                                     // крайняя правая не даёт фокусу «уехать» в пустоту
@@ -225,6 +320,25 @@ private fun PostDetailsContent(
                                     }
                                     if (index == details.relatedAnime.lastIndex) {
                                         right = FocusRequester.Cancel
+                                    }
+                                }
+                                .onPreviewKeyEvent { event ->
+                                    if (
+                                        event.type == KeyEventType.KeyDown &&
+                                        event.key == Key.DirectionDown
+                                    ) {
+                                        coroutineScope.launch {
+                                            val lastItemIndex =
+                                                listState.layoutInfo.totalItemsCount - 1
+                                            if (lastItemIndex >= 0) {
+                                                listState.scrollToItem(lastItemIndex)
+                                                withFrameNanos { }
+                                            }
+                                            likeFocusRequester.requestFocus()
+                                        }
+                                        true
+                                    } else {
+                                        false
                                     }
                                 }
                                 .tvFocusableClick(
@@ -267,6 +381,13 @@ private fun PostDetailsContent(
             }
         }
         item {
+            Text(
+                viewsLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        }
+        item {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -275,6 +396,8 @@ private fun PostDetailsContent(
                     isLike = true,
                     count = details.reaction.likes,
                     selected = details.reaction.vote == PostVote.LIKE,
+                    enabled = !voting,
+                    modifier = Modifier.focusRequester(likeFocusRequester),
                     onClick = {
                         if (!voting) onEvent(PostDetailsState.Event.VoteSelected(PostVote.LIKE))
                     },
@@ -283,20 +406,11 @@ private fun PostDetailsContent(
                     isLike = false,
                     count = details.reaction.dislikes,
                     selected = details.reaction.vote == PostVote.DISLIKE,
+                    enabled = !voting,
                     onClick = {
                         if (!voting) onEvent(PostDetailsState.Event.VoteSelected(PostVote.DISLIKE))
                     },
                 )
-                Text(
-                    viewsLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                OutlinedButton(onClick = { onEvent(PostDetailsState.Event.BackSelected) }) {
-                    Text(
-                        stringResource(R.string.posts_back)
-                    )
-                }
                 OutlinedButton(
                     onClick = {
                         Toast.makeText(
@@ -311,6 +425,13 @@ private fun PostDetailsContent(
             }
         }
     }
+    fullscreenImage?.let { (url, description) ->
+        TvPostFullscreenImageDialog(
+            imageUrl = url,
+            contentDescription = description,
+            onDismiss = { fullscreenImage = null },
+        )
+    }
 }
 
 @Composable
@@ -318,24 +439,24 @@ private fun PostVoteButton(
     isLike: Boolean,
     count: Int,
     selected: Boolean,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     val voteColor = if (isLike) YummySemanticColors.Like else YummySemanticColors.Dislike
     val tint = if (selected) voteColor else voteColor.copy(alpha = 0.72f)
-    val shape = RoundedCornerShape(percent = 50)
-    Row(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh, shape)
-            .tvFocusableClick(onClick = onClick, shape = shape)
-            .padding(horizontal = 18.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    OutlinedButton(
+        modifier = modifier.width(112.dp),
+        enabled = enabled,
+        onClick = onClick,
     ) {
         Icon(
             imageVector = if (isLike) Icons.Default.ThumbUp else Icons.Default.ThumbDown,
             contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier
+                .size(18.dp)
+                .padding(end = 4.dp),
         )
         Text(
             text = count.toString(),
