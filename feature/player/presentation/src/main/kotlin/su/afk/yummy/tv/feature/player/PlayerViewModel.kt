@@ -507,7 +507,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                 nav.back()
             } else {
                 val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-                nav.replace(detailsDestination)
+                val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
+                if (previousDestination == detailsDestination) {
+                    nav.back()
+                } else {
+                    nav.replace(detailsDestination)
+                }
             }
         }
     }
