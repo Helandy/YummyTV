@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:library:domain"))
     implementation(project(":feature:player:api"))
-    implementation(project(":feature:watching:presentation"))
+    implementation(project(":feature:watching:domain"))
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)

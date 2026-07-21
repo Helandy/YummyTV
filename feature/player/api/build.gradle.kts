@@ -8,7 +8,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
     implementation(project(":feature:player:domain"))
+    implementation(project(":feature:watching:domain"))
 
     api(libs.bundles.navigation.serialization)
 }

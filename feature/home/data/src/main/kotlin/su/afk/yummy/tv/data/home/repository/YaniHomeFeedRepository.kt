@@ -19,6 +19,7 @@ import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
+import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
@@ -64,6 +65,25 @@ class YaniHomeFeedRepository(
                 .filter { it > 0 }
                 .distinct()
         }
+
+    override suspend fun migrateContinueWatchingProgress(
+        migration: ContinueWatchingProgressMigration,
+    ) = withContext(Dispatchers.IO) {
+        watchProgressStore.save(
+            animeId = migration.animeId,
+            episode = migration.episode,
+            videoId = migration.videoId,
+            episodeUrl = migration.episodeUrl,
+            positionMs = migration.positionMs,
+            durationMs = migration.durationMs,
+            animeTitle = migration.animeTitle,
+            posterUrl = migration.posterUrl,
+            playerName = migration.playerName,
+            dubbing = migration.dubbing,
+            screenshotUrl = migration.screenshotUrl,
+        )
+        watchProgressStore.delete(migration.animeId, migration.previousEpisode)
+    }
 
     override fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>> =
         watchProgressStore.observeContinueWatching()

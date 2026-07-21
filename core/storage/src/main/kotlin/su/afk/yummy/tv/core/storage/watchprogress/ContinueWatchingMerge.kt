@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.core.storage.watchprogress
 
+import su.afk.yummy.tv.core.model.anime.utils.episodeNumberOrNull
+
 object ContinueWatchingMerge {
 
     fun merge(
@@ -85,14 +87,4 @@ object ContinueWatchingMerge {
 
     private fun WatchProgressEntry.progressScore(): Float =
         WatchProgressStore.progress(positionMs, durationMs)
-
-    private fun String.episodeNumberOrNull(): Double? {
-        val normalized = trim().replace(',', '.')
-        return normalized.toDoubleOrNull()
-            ?: Regex("""\d+(?:[.,]\d+)?""")
-                .find(normalized)
-                ?.value
-                ?.replace(',', '.')
-                ?.toDoubleOrNull()
-    }
 }

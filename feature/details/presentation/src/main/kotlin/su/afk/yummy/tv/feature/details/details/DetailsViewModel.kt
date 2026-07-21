@@ -21,14 +21,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PreferredPlayer
-import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.utils.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
-import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
-import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
-import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
-import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -36,6 +29,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryMutationResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
+import su.afk.yummy.tv.feature.details.details.handler.DetailsScreenDataHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
@@ -57,13 +51,8 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val commentsNavigator: ICommentsNavigator,
     private val reviewsNavigator: IReviewsNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
-    private val getAnimeDetails: GetAnimeDetailsUseCase,
-    private val observeAnimeLibraryState: ObserveAnimeLibraryStateUseCase,
-    private val observeAnimeWatchProgress: ObserveAnimeWatchProgressUseCase,
-    private val refreshLibraryMetadata: RefreshLibraryMetadataUseCase,
-    private val settingsStore: SettingsStore,
-    private val observeAccountSession: ObserveAccountSessionUseCase,
     private val stringProvider: StringProvider,
+    private val screenDataHandler: DetailsScreenDataHandler,
     private val libraryHandler: DetailsLibraryHandler,
     private val videoHandler: DetailsVideoHandler,
     private val subscriptionHandler: DetailsSubscriptionHandler,
@@ -78,12 +67,12 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     override fun createInitialState() = DetailsState.State()
 
-    private val preferredPlayerState = settingsStore.preferredPlayer.stateIn(
+    private val preferredPlayerState = screenDataHandler.preferredPlayer.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = PreferredPlayer.NONE,
     )
-    private val yaniUserIdState = settingsStore.yaniUserId.stateIn(
+    private val yaniUserIdState = screenDataHandler.yaniUserId.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = 0,
@@ -95,7 +84,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     init {
         analytics.eventDetailsScreenOpened(animeId)
         load()
-        observeAnimeLibraryState(animeId)
+        screenDataHandler.observeLibraryState(animeId)
             .onEach { library ->
                 setState {
                     copy(
@@ -105,17 +94,17 @@ class DetailsViewModel @AssistedInject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
-        observeAnimeWatchProgress(animeId)
+        screenDataHandler.observeWatchProgress(animeId)
             .flowOn(Dispatchers.Default)
             .onEach { progress ->
                 localWatchProgress = progress
                 updateMergedWatchProgress()
             }
             .launchIn(viewModelScope)
-        settingsStore.detailsButtonOrder
+        screenDataHandler.detailsButtonOrder
             .onEach { order -> setState { copy(detailsButtonOrder = order) } }
             .launchIn(viewModelScope)
-        observeAccountSession()
+        screenDataHandler.observeAccountSession()
             .onEach { session ->
                 val wasSignedIn = currentState.isSignedIn
                 val signedIn = session.isAuthorized
@@ -350,10 +339,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     private suspend fun loadDetails() {
         setState { copy(isLoading = true, error = null) }
-        runSuspendCatching { getAnimeDetails(animeId) }.fold(
+        screenDataHandler.loadDetails(animeId).fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, details = details) }
-                refreshLibraryMetadata(
+                screenDataHandler.refreshLibraryMetadata(
                     animeId = details.id,
                     title = details.title,
                     poster = details.poster?.toLibraryPoster(),
@@ -421,7 +410,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             copy(
                 videosState = result.videosState,
                 subscriptions = result.subscriptions,
-                watchProgress = result.videos.toWatchProgressIndex(),
+                watchProgress = buildWatchProgressIndex(result.videos),
             )
         }
     }
@@ -443,15 +432,15 @@ class DetailsViewModel @AssistedInject internal constructor(
         serverVideos: List<AnimeVideo> = (currentState.videosState as? VideosUiState.Content)?.videos.orEmpty(),
     ) {
         setState {
-            copy(watchProgress = serverVideos.toWatchProgressIndex())
+            copy(watchProgress = buildWatchProgressIndex(serverVideos))
         }
     }
 
-    private fun List<AnimeVideo>.toWatchProgressIndex(): DetailsWatchProgressIndex =
+    private fun buildWatchProgressIndex(videos: List<AnimeVideo>): DetailsWatchProgressIndex =
         DetailsWatchProgressIndex.merge(
             animeId = animeId,
             localEntries = localWatchProgress,
-            videos = this,
+            videos = videos,
         )
 
     private fun onWatchSelected() {

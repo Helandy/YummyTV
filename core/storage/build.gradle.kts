@@ -8,6 +8,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+
     implementation(libs.bundles.room)
 
     add("ksp", libs.room.compiler)

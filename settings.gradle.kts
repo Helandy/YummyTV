@@ -157,7 +157,7 @@ include(":feature:library:data")
 include(":feature:library:ui-tv")
 include(":feature:library:ui-mobile")
 
-include(":feature:watching:presentation")
+include(":feature:watching:domain")
 
 include(":feature:account:domain")
 include(":feature:account:data")

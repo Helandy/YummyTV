@@ -20,8 +20,8 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.utils.OffsetPage
 import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
-import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.usecase.AddFriendUseCase
+import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetFriendshipUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetUserCollectionsUseCase
@@ -67,7 +67,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private val getUserPosts: GetUserPostsUseCase,
     private val getUserReviews: GetUserReviewsUseCase,
     private val getUserFriends: GetUserFriendsUseCase,
-    private val accountRepository: AccountRepository,
+    private val getAccountSession: GetAccountSessionUseCase,
     private val getFriendship: GetFriendshipUseCase,
     private val addFriend: AddFriendUseCase,
     private val removeFriend: RemoveFriendUseCase,
@@ -186,7 +186,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     }
 
     private fun loadFriendship() = viewModelScope.launch {
-        val session = accountRepository.getSession()
+        val session = getAccountSession()
         val ownProfile = session.isAuthorized && session.userId == userId
         setState {
             copy(
@@ -210,7 +210,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
         val state = currentState
         if (!state.isAuthorized || state.isOwnProfile || state.isFriendshipLoading) return
         viewModelScope.launch {
-            val session = accountRepository.getSession()
+            val session = getAccountSession()
             if (!session.isAuthorized || session.userId <= 0) return@launch
             setState { copy(isFriendshipLoading = true, friendshipError = false) }
             val mutation = when (state.friendshipStatus) {

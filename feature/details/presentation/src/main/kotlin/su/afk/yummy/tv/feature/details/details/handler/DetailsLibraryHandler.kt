@@ -6,14 +6,18 @@ import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
-import su.afk.yummy.tv.domain.library.repository.LibraryRepository
+import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
+import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
+import su.afk.yummy.tv.domain.library.usecase.UpsertLibraryItemUseCase
 import su.afk.yummy.tv.feature.details.utils.toLibraryItem
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster
 import javax.inject.Inject
 
 /** Applies details-screen library and favorite mutations with local-first rollback support. */
 internal class DetailsLibraryHandler @Inject constructor(
-    private val libraryRepository: LibraryRepository,
+    private val removeLibraryItem: RemoveLibraryItemUseCase,
+    private val setLibraryFavorite: SetLibraryFavoriteUseCase,
+    private val upsertLibraryItem: UpsertLibraryItemUseCase,
     private val getAnimeListState: GetAnimeListStateUseCase,
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
     private val setAnimeList: SetAnimeListUseCase,
@@ -38,13 +42,13 @@ internal class DetailsLibraryHandler @Inject constructor(
         isFavorite: Boolean,
         isSignedIn: Boolean,
     ): DetailsLibraryMutationResult {
-        libraryRepository.remove(animeId)
+        removeLibraryItem(animeId)
         if (!isSignedIn || previousList == null) return DetailsLibraryMutationResult.Success
 
         val result = runCatching { removeAnimeList(animeId) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
-        libraryRepository.add(details.toLibraryItem(previousList, isFavorite))
+        upsertLibraryItem(details.toLibraryItem(previousList, isFavorite))
         return DetailsLibraryMutationResult.RollbackLibrary(
             isInLibrary = wasInLibrary,
             libraryList = previousList,
@@ -60,16 +64,16 @@ internal class DetailsLibraryHandler @Inject constructor(
         isFavorite: Boolean,
         isSignedIn: Boolean,
     ): DetailsLibraryMutationResult {
-        libraryRepository.add(details.toLibraryItem(list, isFavorite))
+        upsertLibraryItem(details.toLibraryItem(list, isFavorite))
         if (!isSignedIn) return DetailsLibraryMutationResult.Success
 
         val result = runCatching { setAnimeList(animeId, list) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
         if (wasInLibrary && previousList != null) {
-            libraryRepository.add(details.toLibraryItem(previousList, isFavorite))
+            upsertLibraryItem(details.toLibraryItem(previousList, isFavorite))
         } else {
-            libraryRepository.remove(animeId)
+            removeLibraryItem(animeId)
         }
         return DetailsLibraryMutationResult.RollbackLibrary(
             isInLibrary = wasInLibrary,
@@ -84,7 +88,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         previousFavorite: Boolean,
         isSignedIn: Boolean,
     ): DetailsLibraryMutationResult {
-        libraryRepository.setFavorite(
+        setLibraryFavorite(
             animeId = details.id,
             title = details.title,
             poster = details.poster?.toLibraryPoster(),
@@ -95,7 +99,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         val result = runCatching { setAnimeFavorite(animeId, favorite) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
-        libraryRepository.setFavorite(
+        setLibraryFavorite(
             animeId = details.id,
             title = details.title,
             poster = details.poster?.toLibraryPoster(),

@@ -26,17 +26,12 @@ import su.afk.yummy.tv.domain.comments.model.CommentSort
 import su.afk.yummy.tv.domain.comments.model.CommentTarget
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.comments.model.CommentVote
-import su.afk.yummy.tv.domain.comments.usecase.AddCommentUseCase
-import su.afk.yummy.tv.domain.comments.usecase.DeleteCommentUseCase
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentChildrenUseCase
 import su.afk.yummy.tv.domain.comments.usecase.GetCommentsUseCase
-import su.afk.yummy.tv.domain.comments.usecase.RemoveCommentVoteUseCase
-import su.afk.yummy.tv.domain.comments.usecase.ReportCommentUseCase
-import su.afk.yummy.tv.domain.comments.usecase.UpdateCommentUseCase
-import su.afk.yummy.tv.domain.comments.usecase.VoteCommentUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.CommentsState.CommentUi
 import su.afk.yummy.tv.feature.comments.CommentsState.ComposerMode
+import su.afk.yummy.tv.feature.comments.handler.CommentsMutationHandler
 import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.findUi
 import su.afk.yummy.tv.feature.comments.utils.replaceComment
@@ -57,12 +52,7 @@ class CommentsViewModel @AssistedInject internal constructor(
     private val stringProvider: StringProvider,
     private val getComments: GetCommentsUseCase,
     private val getCommentChildren: GetCommentChildrenUseCase,
-    private val addComment: AddCommentUseCase,
-    private val updateComment: UpdateCommentUseCase,
-    private val deleteComment: DeleteCommentUseCase,
-    private val voteComment: VoteCommentUseCase,
-    private val removeCommentVote: RemoveCommentVoteUseCase,
-    private val reportComment: ReportCommentUseCase,
+    private val mutationHandler: CommentsMutationHandler,
     private val analytics: CommentsAnalytics,
 ) : BaseViewModelNew<CommentsState.State, CommentsState.Event, CommentsState.Effect>(
     savedStateHandle
@@ -245,9 +235,11 @@ class CommentsViewModel @AssistedInject internal constructor(
         viewModelScope.launch {
             setState { copy(isMutating = true) }
             when (val mode = currentState.composerMode) {
-                ComposerMode.New -> runCatching {
-                    addComment(targetType, targetId, CommentDraft(text))
-                }.onSuccess { created ->
+                ComposerMode.New -> mutationHandler.create(
+                    targetType,
+                    targetId,
+                    CommentDraft(text),
+                ).onSuccess { created ->
                     analytics.eventCreated(target, created.id)
                     setState {
                         copy(
@@ -264,25 +256,24 @@ class CommentsViewModel @AssistedInject internal constructor(
                     if (currentState.sort == CommentSort.OLD) reloadComments(forceRefresh = true)
                 }.onFailure { showMutationError(it) }
 
-                is ComposerMode.Reply -> runCatching {
-                    addComment(
-                        targetType,
-                        targetId,
-                        CommentDraft(
-                            text = text,
-                            parentCommentId = mode.parentCommentId,
-                            replyToCommentId = mode.replyToCommentId,
-                        ),
-                    )
-                }.onSuccess { created ->
+                is ComposerMode.Reply -> mutationHandler.create(
+                    targetType,
+                    targetId,
+                    CommentDraft(
+                        text = text,
+                        parentCommentId = mode.parentCommentId,
+                        replyToCommentId = mode.replyToCommentId,
+                    ),
+                ).onSuccess { created ->
                     analytics.eventReplyCreated(target, created.id)
                     resetComposer(isMutating = false)
                     loadChildren(mode.parentCommentId, append = false, forceVisible = true)
                 }.onFailure { showMutationError(it) }
 
-                is ComposerMode.Edit -> runCatching {
-                    updateComment(mode.commentId, text)
-                }.onSuccess { updated ->
+                is ComposerMode.Edit -> mutationHandler.update(
+                    mode.commentId,
+                    text,
+                ).onSuccess { updated ->
                     analytics.eventUpdated(target, updated.id)
                     setState {
                         copy(
@@ -339,7 +330,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         if (!canEditOrDelete(comment)) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { deleteComment(comment.id) }.fold(
+            mutationHandler.delete(comment.id).fold(
                 onSuccess = { deleted ->
                     if (deleted) {
                         analytics.eventDeleted(target, comment.id)
@@ -372,7 +363,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         if (!canMutate()) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { reportComment(comment.id, reason) }.fold(
+            mutationHandler.report(comment.id, reason).fold(
                 onSuccess = { reported ->
                     if (reported) {
                         analytics.eventReported(target, comment.id, reason)
@@ -397,15 +388,11 @@ class CommentsViewModel @AssistedInject internal constructor(
         if (vote == CommentVote.NEUTRAL) return
         val comment = findComment(commentId) ?: return
         viewModelScope.launch {
-            val result = runCatching {
-                if (comment.vote == vote) {
-                    removeCommentVote(commentId) to CommentVote.NEUTRAL
-                } else {
-                    voteComment(commentId, vote) to vote
-                }
-            }
+            val result = mutationHandler.changeVote(commentId, comment.vote, vote)
             result.fold(
-                onSuccess = { (voteResult, newVote) ->
+                onSuccess = { change ->
+                    val voteResult = change.result
+                    val newVote = change.vote
                     if (voteResult.success) {
                         analytics.eventVoteChanged(target, commentId, newVote)
                         setState {
@@ -534,14 +521,14 @@ class CommentsViewModel @AssistedInject internal constructor(
     private fun visibleCommentTree(): List<CommentUi> =
         (currentState.prependedComments + visibleComments.values)
             .filterNot { it.comment.id in currentState.deletedCommentIds }
-            .map { it.withCurrentOverlays() }
+            .map(::withCurrentOverlays)
 
-    private fun CommentUi.withCurrentOverlays(): CommentUi {
-        val overlaid = currentState.commentOverlays[comment.id] ?: this
+    private fun withCurrentOverlays(item: CommentUi): CommentUi {
+        val overlaid = currentState.commentOverlays[item.comment.id] ?: item
         return overlaid.copy(
             children = overlaid.children
                 .filterNot { it.comment.id in currentState.deletedCommentIds }
-                .map { it.withCurrentOverlays() },
+                .map(::withCurrentOverlays),
         )
     }
 

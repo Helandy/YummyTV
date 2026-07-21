@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -22,13 +23,17 @@ import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
+import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
+import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
+import su.afk.yummy.tv.feature.home.utils.toToastTimeString
+import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
-import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -50,7 +55,8 @@ class HomeViewModel @Inject internal constructor(
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val stringProvider: StringProvider,
-    private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
+    private val playerNavigator: IPlayerNavigator,
     private val settingsStore: SettingsStore,
     private val analytics: HomeAnalytics,
 ) : BaseViewModelNew<HomeState.State, HomeState.Event, HomeState.Effect>(savedStateHandle) {
@@ -178,7 +184,12 @@ class HomeViewModel @Inject internal constructor(
             return
         }
         viewModelScope.launch {
-            val result = continueWatchingLaunchHandler.getPlayerLaunchResult(entry)
+            val result = resolveContinueWatchingLaunch(
+                entry = entry,
+                refreshProgressOnLaunch = settingsStore
+                    .refreshContinueWatchingProgressOnLaunch
+                    .first(),
+            )
             result.remoteProgressSwitch?.let { progress ->
                 setEffect(
                     HomeState.Effect.ShowToast(
@@ -190,7 +201,7 @@ class HomeViewModel @Inject internal constructor(
                     )
                 )
             }
-            nav.navigate(result.destination)
+            nav.navigate(playerNavigator.getPlayerDest(result))
         }
     }
 
@@ -298,21 +309,6 @@ class HomeViewModel @Inject internal constructor(
                 isLoading = isLoading,
                 feed = feed,
             )
-        }
-    }
-
-    private fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
-        videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()
-
-    private fun Long.toToastTimeString(): String {
-        val totalSeconds = coerceAtLeast(0L) / 1_000L
-        val hours = totalSeconds / 3_600L
-        val minutes = (totalSeconds % 3_600L) / 60L
-        val seconds = totalSeconds % 60L
-        return if (hours > 0) {
-            "%d:%02d:%02d".format(hours, minutes, seconds)
-        } else {
-            "%d:%02d".format(minutes, seconds)
         }
     }
 

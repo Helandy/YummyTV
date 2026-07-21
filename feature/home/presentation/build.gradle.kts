@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":feature:player:api"))
     implementation(project(":feature:reviews:api"))
     implementation(project(":feature:schedule:api"))
-    implementation(project(":feature:watching:presentation"))
+    implementation(project(":feature:watching:domain"))
 
     implementation(libs.bundles.compose.presentation)
 

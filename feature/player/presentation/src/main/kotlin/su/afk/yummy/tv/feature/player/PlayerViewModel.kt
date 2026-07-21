@@ -20,11 +20,12 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerMobileVideoTransformSetti
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
+import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
@@ -49,12 +50,14 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val sourceStreamHandler: PlayerSourceStreamHandler,
     private val playbackProgressHandler: PlayerPlaybackProgressHandler,
     private val settingsHandler: PlayerSettingsHandler,
+    private val displaySettingsHandler: PlayerDisplaySettingsHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
     private val getVideoDownload: GetVideoDownloadUseCase,
     private val strings: StringProvider,
     private val analytics: PlayerAnalytics,
-    private val allohaSessionManager: AllohaPlaybackSessionManager,
+    private val allohaRecovery: PlayerAllohaRecoveryHandler,
+    private val allohaSession: PlayerAllohaSessionHandler,
 ) : BaseViewModelNew<PlayerState.State, PlayerState.Event, PlayerState.Effect>(savedStateHandle) {
 
     @AssistedFactory
@@ -66,12 +69,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var pendingDestinationResumeMs: Long? = dest.resumeFromMs.takeIf { it > 0L }
     private var sourceGraphJob: Job? = null
     private var allohaPlaybackRecoveryJob: Job? = null
-    private var isRecoveringAllohaPlayback = false
-    private var allohaPlaybackRecoveryRetryCount = 0
-    private var allohaPlaybackRecoveryQuality: String? = null
-    private var allohaPlaybackRecoveryPositionMs = 0L
-    private var activeAllohaSession: AllohaStreamSession? = null
-    private var allohaSessionRefreshJob: Job? = null
     private var streamLoadingHintJob: Job? = null
     private var mobileGestureTutorialReady = false
     private var showMobileGestureTutorial = false
@@ -79,11 +76,8 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
-        closeAllohaSession()
-        isRecoveringAllohaPlayback = false
-        allohaPlaybackRecoveryRetryCount = 0
-        allohaPlaybackRecoveryQuality = null
-        allohaPlaybackRecoveryPositionMs = 0L
+        allohaSession.close()
+        allohaRecovery.reset()
         allohaPlaybackRecoveryJob?.cancel()
         activeDest = newDest
         pendingDestinationResumeMs = newDest.resumeFromMs.takeIf { it > 0L }
@@ -113,11 +107,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     override fun createInitialState() = destinationStateMapper.toState(dest)
 
     private var extractionJob: Job? = null
-    private var playerResizeSettingsJob: Job? = null
-    private var activePlayerResizeSettingsScope: PlayerResizeSettingsScope? = null
-    private var playerMobileVideoTransformSettingsJob: Job? = null
-    private var playerMobileVideoTransformSaveJob: Job? = null
-    private var activePlayerMobileVideoTransformSettingsScope: PlayerResizeSettingsScope? = null
 
     init {
         analytics.eventScreenOpened(dest.animeId)
@@ -165,7 +154,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     override fun onEvent(event: PlayerState.Event) {
         when (event) {
             PlayerState.Event.Back -> saveCurrentProgressThenNavigate {
-                closeAllohaSession()
+                allohaSession.close()
                 nav.back()
             }
 
@@ -210,7 +199,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     )
                 } else {
                     setState { copy(retryKey = retryKey + 1) }
-                    closeAllohaSession()
+                    allohaSession.close()
                     loadStream(refreshSourcesOnFailure = true)
                 }
             }
@@ -238,7 +227,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     errorType = event.errorType,
                 )
                 if (!currentState.isOfflinePlayback && currentState.isAllohaSource()) {
-                    if (isRecoveringAllohaPlayback) {
+                    if (allohaRecovery.isRecovering) {
                         Log.w(
                             LOG_TAG,
                             "Ignoring duplicate Alloha playback error during fresh-session recovery " +
@@ -269,7 +258,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             PlayerState.Event.PlaybackReady -> {
                 if (
                     currentState.isAllohaPlaybackRecovering &&
-                    !isRecoveringAllohaPlayback &&
+                    !allohaRecovery.isRecovering &&
                     !currentState.isOfflinePlayback &&
                     currentState.isAllohaSource()
                 ) {
@@ -283,7 +272,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             PlayerState.Event.PrevEpisode -> {
-                closeAllohaSession()
+                allohaSession.close()
                 analytics.eventPrevEpisode(currentState.animeId)
                 applySourceSelection(
                     sourceSelectionHandler.previousEpisode(currentState),
@@ -293,7 +282,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.NextEpisode -> {
-                closeAllohaSession()
+                allohaSession.close()
                 analytics.eventNextEpisode(currentState, event.source)
                 val nextState = sourceSelectionHandler.nextEpisode(currentState)
                     ?: sourceSelectionHandler.nextEpisodeInOtherDubbing(currentState)
@@ -317,7 +306,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.DubbingSelected -> {
-                closeAllohaSession()
+                allohaSession.close()
                 analytics.eventDubbingSelected(
                     state = currentState,
                     index = event.index,
@@ -334,7 +323,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.BalancerSelected -> {
-                closeAllohaSession()
+                allohaSession.close()
                 analytics.eventBalancerSelected(
                     state = currentState,
                     index = event.index,
@@ -353,10 +342,10 @@ class PlayerViewModel @AssistedInject internal constructor(
             is PlayerState.Event.QualitySelected -> {
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
-                if (isRecoveringAllohaPlayback) {
-                    allohaPlaybackRecoveryQuality = event.quality
+                if (allohaRecovery.isRecovering) {
+                    allohaRecovery.selectedQuality = event.quality
                 }
-                activeAllohaSession?.selectQuality(event.quality)
+                allohaSession.selectQuality(event.quality)
                 setState {
                     copy(
                         selectedQuality = event.quality,
@@ -411,8 +400,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 if (!isActivePlaybackSource(event.episodeUrl)) return
                 val position = event.positionMs.coerceAtLeast(0L)
                 val duration = event.durationMs.coerceAtLeast(0L)
-                if (isRecoveringAllohaPlayback && position > 0L) {
-                    allohaPlaybackRecoveryPositionMs = position
+                if (allohaRecovery.isRecovering && position > 0L) {
+                    allohaRecovery.positionMs = position
                 }
                 setState {
                     copy(
@@ -447,7 +436,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private fun loadDownloadedDestination(downloadId: Long) {
-        closeAllohaSession()
+        allohaSession.close()
         streamLoadingHintJob?.cancel()
         viewModelScope.launch {
             val item = getVideoDownload(downloadId)
@@ -499,9 +488,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun PlayerState.State.isAllohaSource(): Boolean =
-        activeBalancerName(this).contains(ALLOHA_PLAYER_NAME, ignoreCase = true)
-
     private fun saveCurrentProgressThenNavigate(
         syncRemote: Boolean = true,
         navigate: () -> Unit,
@@ -526,7 +512,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun returnToDetailsAfterTvBackground() {
         val animeId = currentState.animeId
         saveCurrentProgressThenNavigate(syncRemote = false) {
-            closeAllohaSession()
+            allohaSession.close()
             if (animeId <= 0) {
                 nav.back()
             } else {
@@ -597,10 +583,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         refreshSourcesBeforeStream: Boolean = false,
     ) {
         if (state == null) return
-        isRecoveringAllohaPlayback = false
-        allohaPlaybackRecoveryRetryCount = 0
-        allohaPlaybackRecoveryQuality = null
-        allohaPlaybackRecoveryPositionMs = 0L
+        allohaRecovery.reset()
         allohaPlaybackRecoveryJob?.cancel()
         setState { sourceStreamHandler.preparingStreamLoad(state, resumeMode) }
         if (sourceScopeChanged) {
@@ -692,75 +675,67 @@ class PlayerViewModel @AssistedInject internal constructor(
     /** Подписывается на настройки размера для текущей пары тайтл/плеер. */
     private fun observeActivePlayerResizeSettings(force: Boolean = false) {
         val scope = currentPlayerResizeSettingsScope()
-        if (!force && scope == activePlayerResizeSettingsScope) return
-        activePlayerResizeSettingsScope = scope
-        playerResizeSettingsJob?.cancel()
-        setState {
-            copy(
-                resizeMode = PlayerResizeMode.FIT,
-                zoomLevel = PlayerZoomLevel.PERCENT_10,
-            )
-        }
-        playerResizeSettingsJob = settingsHandler
-            .observeResizeSettings(scope)
-            .onEach { settings ->
-                if (scope == activePlayerResizeSettingsScope) {
-                    setState {
-                        copy(
-                            resizeMode = settings.resizeMode,
-                            zoomLevel = settings.zoomLevel
-                        )
-                    }
+        val changed = displaySettingsHandler.observeResizeSettings(
+            scope = scope,
+            coroutineScope = viewModelScope,
+            force = force,
+            onChanged = { settings ->
+                setState {
+                    copy(
+                        resizeMode = settings.resizeMode,
+                        zoomLevel = settings.zoomLevel,
+                    )
                 }
+            },
+        )
+        if (changed) {
+            setState {
+                copy(
+                    resizeMode = PlayerResizeMode.FIT,
+                    zoomLevel = PlayerZoomLevel.PERCENT_10,
+                )
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     /** Сохраняет настройки размера для текущей пары тайтл/плеер. */
     private fun savePlayerResizeSettings(settings: PlayerResizeSettings) {
         val scope = currentPlayerResizeSettingsScope()
-        viewModelScope.launch {
-            settingsHandler.saveResizeSettings(scope, settings)
-        }
+        displaySettingsHandler.saveResizeSettings(scope, settings, viewModelScope)
     }
 
     /** Подписывается на мобильные настройки масштаба и смещения для текущей пары тайтл/плеер. */
     private fun observeActivePlayerMobileVideoTransformSettings(force: Boolean = false) {
         val scope = currentPlayerResizeSettingsScope()
-        if (!force && scope == activePlayerMobileVideoTransformSettingsScope) return
-        activePlayerMobileVideoTransformSettingsScope = scope
-        playerMobileVideoTransformSettingsJob?.cancel()
-        playerMobileVideoTransformSaveJob?.cancel()
-        setState {
-            copy(
-                mobileVideoScale = 1f,
-                mobileVideoOffsetX = 0f,
-                mobileVideoOffsetY = 0f,
-            )
-        }
-        playerMobileVideoTransformSettingsJob = settingsHandler
-            .observeMobileVideoTransformSettings(scope)
-            .onEach { settings ->
-                if (scope == activePlayerMobileVideoTransformSettingsScope) {
-                    setState {
-                        copy(
-                            mobileVideoScale = settings.scale,
-                            mobileVideoOffsetX = settings.offsetX,
-                            mobileVideoOffsetY = settings.offsetY,
-                        )
-                    }
+        val changed = displaySettingsHandler.observeMobileTransformSettings(
+            scope = scope,
+            coroutineScope = viewModelScope,
+            force = force,
+            onChanged = { settings ->
+                setState {
+                    copy(
+                        mobileVideoScale = settings.scale,
+                        mobileVideoOffsetX = settings.offsetX,
+                        mobileVideoOffsetY = settings.offsetY,
+                    )
                 }
+            },
+        )
+        if (changed) {
+            setState {
+                copy(
+                    mobileVideoScale = 1f,
+                    mobileVideoOffsetX = 0f,
+                    mobileVideoOffsetY = 0f,
+                )
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     /** Сохраняет мобильные настройки масштаба и смещения для текущей пары тайтл/плеер. */
     private fun savePlayerMobileVideoTransformSettings(settings: PlayerMobileVideoTransformSettings) {
         val scope = currentPlayerResizeSettingsScope()
-        playerMobileVideoTransformSaveJob?.cancel()
-        playerMobileVideoTransformSaveJob = viewModelScope.launch {
-            settingsHandler.saveMobileVideoTransformSettings(scope, settings)
-        }
+        displaySettingsHandler.saveMobileTransformSettings(scope, settings, viewModelScope)
     }
 
     /** Возвращает ключ хранения, общий для TV-настроек размера и мобильного transform. */
@@ -786,7 +761,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         extractionJob?.cancel()
         extractionJob = viewModelScope.launch {
             val preserveStreamDuringAllohaRecovery =
-                isRecoveringAllohaPlayback && currentState.streamUrl != null
+                allohaRecovery.isRecovering && currentState.streamUrl != null
             val wasAlreadyResolving = currentState.streamUrl == null &&
                     currentState.playerError == null &&
                     currentState.kodikBlockedError == null
@@ -796,8 +771,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 startChangePlayerHintTimer()
             }
             val canPreserveCurrent = resumeMode == PlayerStreamResumeMode.PreserveCurrent
-            val stateResumeMs = allohaPlaybackRecoveryPositionMs
-                .takeIf { canPreserveCurrent && isRecoveringAllohaPlayback && it > 0L }
+            val stateResumeMs = allohaRecovery.positionMs
+                .takeIf { canPreserveCurrent && allohaRecovery.isRecovering && it > 0L }
                 ?: currentState.playbackPositionMs.takeIf { canPreserveCurrent && it > 0L }
                 ?: currentState.resumeFromMs.takeIf { canPreserveCurrent && it > 0L }
             val destinationResumeMs = pendingDestinationResumeMs.takeIf { canPreserveCurrent }
@@ -828,17 +803,17 @@ class PlayerViewModel @AssistedInject internal constructor(
                     val resolveFailed = result.state.playerError != null ||
                             result.state.kodikBlockedError != null
                     val completedAllohaPlaybackRecovery =
-                        isRecoveringAllohaPlayback &&
+                        allohaRecovery.isRecovering &&
                                 !currentState.isOfflinePlayback &&
                                 currentState.isAllohaSource()
                     if (!resolveFailed) {
-                        activateAllohaSession(result.allohaSession)
+                        allohaSession.activate(result.allohaSession, viewModelScope)
                         result.state.selectedQuality?.let { quality ->
-                            activeAllohaSession?.selectQuality(quality)
+                            allohaSession.selectQuality(quality)
                         }
                     }
                     if (
-                        isRecoveringAllohaPlayback &&
+                        allohaRecovery.isRecovering &&
                         !currentState.isOfflinePlayback &&
                         currentState.isAllohaSource() &&
                         resolveFailed
@@ -853,11 +828,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                         scheduleFreshAllohaPlaybackAttempt(ALLOHA_PLAYBACK_RECOVERY_DELAY_MS)
                         return@launch
                     }
-                    val completedRecoveryAttempts = allohaPlaybackRecoveryRetryCount
-                    isRecoveringAllohaPlayback = false
-                    allohaPlaybackRecoveryRetryCount = 0
-                    allohaPlaybackRecoveryQuality = null
-                    allohaPlaybackRecoveryPositionMs = 0L
+                    val completedRecoveryAttempts = allohaRecovery.complete()
                     allohaPlaybackRecoveryJob?.cancel()
                     if (result.consumedDestinationResume) {
                         pendingDestinationResumeMs = null
@@ -924,12 +895,9 @@ class PlayerViewModel @AssistedInject internal constructor(
     ) {
         extractionJob?.cancel()
         allohaPlaybackRecoveryJob?.cancel()
-        closeAllohaSession()
-        isRecoveringAllohaPlayback = true
-        allohaPlaybackRecoveryRetryCount = 0
-        allohaPlaybackRecoveryQuality = selectedQuality
+        allohaSession.close()
         val resumePosition = positionMs.coerceAtLeast(0L)
-        allohaPlaybackRecoveryPositionMs = resumePosition
+        allohaRecovery.start(resumePosition, selectedQuality)
         streamLoadingHintJob?.cancel()
         setState {
             copy(
@@ -945,7 +913,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         // [ALLOHA_RECOVERY_HINT_DELAY_MS] - предлагаем юзеру сменить плеер/озвучку.
         streamLoadingHintJob = viewModelScope.launch {
             delay(ALLOHA_RECOVERY_HINT_DELAY_MS)
-            if (isRecoveringAllohaPlayback) {
+            if (allohaRecovery.isRecovering) {
                 setState { copy(showChangePlayerHint = true) }
             }
         }
@@ -961,7 +929,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         allohaPlaybackRecoveryJob?.cancel()
         val destination = activeDest
         val iframeUrl = activeIframeUrl(currentState)
-        val attempt = ++allohaPlaybackRecoveryRetryCount
+        val attempt = allohaRecovery.nextAttempt()
         allohaPlaybackRecoveryJob = viewModelScope.launch {
             delay(delayMs)
             if (
@@ -969,66 +937,37 @@ class PlayerViewModel @AssistedInject internal constructor(
                 activeIframeUrl(currentState) == iframeUrl &&
                 !currentState.isOfflinePlayback &&
                 currentState.isAllohaSource() &&
-                isRecoveringAllohaPlayback
+                allohaRecovery.isRecovering
             ) {
-                closeAllohaSession()
+                allohaSession.close()
                 Log.i(
                     LOG_TAG,
                     "Opening fresh Alloha playback session attempt=$attempt " +
-                            "positionMs=$allohaPlaybackRecoveryPositionMs",
+                            "positionMs=${allohaRecovery.positionMs}",
                 )
                 loadStream(
                     refreshSourcesOnFailure = false,
                     forceFreshAllohaSession = true,
-                    selectedQualityOverride = allohaPlaybackRecoveryQuality,
+                    selectedQualityOverride = allohaRecovery.selectedQuality,
                 )
             }
         }
-    }
-
-    private fun activateAllohaSession(session: AllohaStreamSession?) {
-        if (activeAllohaSession === session) return
-        closeAllohaSession()
-        activeAllohaSession = session?.let(allohaSessionManager::activate) ?: return
-        allohaSessionRefreshJob = viewModelScope.launch {
-            while (true) {
-                val expiresAt = session.expiresAtMs()
-                if (expiresAt == null) {
-                    delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
-                    continue
-                }
-                delay(
-                    (expiresAt - System.currentTimeMillis() - ALLOHA_SESSION_REFRESH_LEAD_MS).coerceAtLeast(
-                        0L
-                    )
-                )
-                if (activeAllohaSession === session && session.expiresAtMs() == expiresAt) {
-                    session.refresh()
-                }
-            }
-        }
-    }
-
-    private fun closeAllohaSession(immediately: Boolean = true) {
-        allohaSessionRefreshJob?.cancel()
-        allohaSessionRefreshJob = null
-        activeAllohaSession?.let { allohaSessionManager.release(it, immediately) }
-        activeAllohaSession = null
     }
 
     override fun onCleared() {
         allohaPlaybackRecoveryJob?.cancel()
-        closeAllohaSession(immediately = false)
+        allohaSession.close(immediately = false)
         streamLoadingHintJob?.cancel()
         super.onCleared()
     }
 
     private companion object {
+        fun PlayerState.State.isAllohaSource(): Boolean =
+            activeBalancerName(this).contains(ALLOHA_PLAYER_NAME, ignoreCase = true)
+
         private const val ALLOHA_PLAYER_NAME = "alloha"
         private const val LOG_TAG = "PlayerViewModel"
         private const val ALLOHA_PLAYBACK_RECOVERY_DELAY_MS = 1_000L
-        private const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
-        private const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
         private const val CHANGE_PLAYER_HINT_DELAY_MS = 10_000L
         private const val ALLOHA_RECOVERY_HINT_DELAY_MS = 15_000L
     }

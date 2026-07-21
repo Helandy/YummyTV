@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -23,15 +24,18 @@ import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.library.usecase.GetWatchHistoryPageUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
+import su.afk.yummy.tv.domain.library.usecase.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
+import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.HistoryLaunchHandler
-import su.afk.yummy.tv.feature.library.handler.RemoteLibraryLoadResult
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
 import su.afk.yummy.tv.feature.library.presentation.R
+import su.afk.yummy.tv.feature.library.utils.toToastTimeString
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
-import su.afk.yummy.tv.feature.watching.handler.ContinueWatchingLaunchHandler
+import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.player.getPlayerDest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,7 +53,8 @@ class LibraryViewModel @Inject internal constructor(
     private val nav: NavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val remoteLibrarySyncHandler: RemoteLibrarySyncHandler,
-    private val continueWatchingLaunchHandler: ContinueWatchingLaunchHandler,
+    private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
+    private val playerNavigator: IPlayerNavigator,
     private val getWatchHistoryPage: GetWatchHistoryPageUseCase,
     private val historyLaunchHandler: HistoryLaunchHandler,
     private val stringProvider: StringProvider,
@@ -196,7 +201,7 @@ class LibraryViewModel @Inject internal constructor(
         remoteListsJob = viewModelScope.launch {
             setState { copy(isRemoteLoading = true, remoteError = null) }
             when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId, forceRefresh)) {
-                is RemoteLibraryLoadResult.Success -> {
+                is RemoteLibrarySyncResult.Success -> {
                     result.syncError?.let { analytics.eventLoadError(it) }
                     setState {
                         copy(
@@ -206,7 +211,7 @@ class LibraryViewModel @Inject internal constructor(
                     }
                 }
 
-                is RemoteLibraryLoadResult.Failure -> {
+                is RemoteLibrarySyncResult.Failure -> {
                     analytics.eventLoadError(result.error)
                     setState {
                         copy(
@@ -262,7 +267,12 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         viewModelScope.launch {
-            val result = continueWatchingLaunchHandler.getPlayerLaunchResult(entry)
+            val result = resolveContinueWatchingLaunch(
+                entry = entry,
+                refreshProgressOnLaunch = settingsStore
+                    .refreshContinueWatchingProgressOnLaunch
+                    .first(),
+            )
             result.remoteProgressSwitch?.let { progress ->
                 setEffect(
                     LibraryState.Effect.ShowToast(
@@ -274,7 +284,7 @@ class LibraryViewModel @Inject internal constructor(
                     )
                 )
             }
-            nav.navigate(result.destination)
+            nav.navigate(playerNavigator.getPlayerDest(result))
         }
     }
 
@@ -305,17 +315,5 @@ class LibraryViewModel @Inject internal constructor(
             }
         },
     ).flow.cachedIn(viewModelScope)
-
-    private fun Long.toToastTimeString(): String {
-        val totalSeconds = coerceAtLeast(0L) / 1_000L
-        val hours = totalSeconds / 3_600L
-        val minutes = (totalSeconds % 3_600L) / 60L
-        val seconds = totalSeconds % 60L
-        return if (hours > 0) {
-            "%d:%02d:%02d".format(hours, minutes, seconds)
-        } else {
-            "%d:%02d".format(minutes, seconds)
-        }
-    }
 
 }

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player
 
 import androidx.navigation3.runtime.NavKey
+import su.afk.yummy.tv.core.model.anime.utils.isPlaceholderEpisode as isCorePlaceholderEpisode
 
 data class PlayerVideoSource(
     val id: Int,
@@ -49,9 +50,9 @@ fun List<PlayerVideoSource>.selectContinueWatchingVideo(
         ?: firstOrNull { episodeUrl.isNotBlank() && it.iframeUrl == episodeUrl }
         ?: firstOrNull {
             !episode.isPlaceholderEpisode() &&
-                it.episode == episode &&
-                it.player == playerName &&
-                it.dubbing == dubbing
+                    it.episode == episode &&
+                    it.player == playerName &&
+                    it.dubbing == dubbing
         }
         ?: firstOrNull { !episode.isPlaceholderEpisode() && it.episode == episode }
 
@@ -65,4 +66,4 @@ fun List<PlayerVideoSource>.selectContinueWatchingVideo(
         ?: exact
 }
 
-fun String.isPlaceholderEpisode(): Boolean = trim().isEmpty() || trim() == "-"
+fun String.isPlaceholderEpisode(): Boolean = isCorePlaceholderEpisode()
