@@ -120,7 +120,11 @@ fun UserSearchMobileScreen(
                     results[index]?.let { item ->
                         UserSearchCard(
                             item = item,
-                            onClick = { onEvent(UserSearchState.Event.UserSelected(item.nickname)) },
+                            onClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                onEvent(UserSearchState.Event.UserSelected(item.nickname))
+                            },
                         )
                     }
                 }
