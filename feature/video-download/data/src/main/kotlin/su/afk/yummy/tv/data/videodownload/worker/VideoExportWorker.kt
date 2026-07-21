@@ -42,6 +42,7 @@ import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportReposi
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import java.io.File
 import kotlin.math.roundToInt
+import kotlin.Result as KotlinResult
 
 @OptIn(UnstableApi::class)
 @HiltWorker
@@ -155,7 +156,7 @@ class VideoExportWorker @AssistedInject internal constructor(
             mediaSourceFactory,
             bitmapLoader,
         )
-        val completion = CompletableDeferred<Result<Unit>>()
+        val completion = CompletableDeferred<KotlinResult<Unit>>()
         val transformer = withContext(Dispatchers.Main.immediate) {
             Transformer.Builder(applicationContext)
                 .setAssetLoaderFactory(assetLoaderFactory)
@@ -165,7 +166,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                             composition: Composition,
                             exportResult: ExportResult,
                         ) {
-                            completion.complete(Result.success(Unit))
+                            completion.complete(KotlinResult.success(Unit))
                         }
 
                         override fun onError(
@@ -173,7 +174,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                             exportResult: ExportResult,
                             exportException: ExportException,
                         ) {
-                            completion.complete(Result.failure(exportException))
+                            completion.complete(KotlinResult.failure(exportException))
                         }
                     }
                 )
