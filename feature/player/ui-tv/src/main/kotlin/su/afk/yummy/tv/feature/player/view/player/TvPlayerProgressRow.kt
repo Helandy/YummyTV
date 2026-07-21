@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.view.player
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +55,7 @@ internal fun TvPlayerProgressRow(
 ) {
     val focusManager = LocalFocusManager.current
     var sliderJustFocused by remember { mutableStateOf(false) }
+    var sliderFocused by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -95,9 +98,13 @@ internal fun TvPlayerProgressRow(
                 }
             },
             onValueChangeFinished = onSeekFinished,
+            focused = sliderFocused,
             modifier = Modifier
                 .weight(1f)
-                .onFocusChanged { if (it.isFocused) sliderJustFocused = true }
+                .onFocusChanged {
+                    sliderFocused = it.isFocused
+                    if (it.isFocused) sliderJustFocused = true
+                }
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
@@ -128,14 +135,31 @@ private fun PlayerBufferedSlider(
     bufferedProgress: Float,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
+    focused: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val activeProgress = value.coerceIn(0f, 1f)
     val buffered = bufferedProgress.coerceIn(activeProgress, 1f)
+    val focusedColor = MaterialTheme.colorScheme.primary
+    val sliderColor by animateColorAsState(
+        targetValue = if (focused) focusedColor else Color.White,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvPlayerProgressColor",
+    )
+    val bufferedColor by animateColorAsState(
+        targetValue = if (focused) focusedColor.copy(alpha = 0.58f) else Color.White.copy(alpha = 0.42f),
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvPlayerBufferedProgressColor",
+    )
+    val inactiveTrackColor by animateColorAsState(
+        targetValue = if (focused) focusedColor.copy(alpha = 0.30f) else Color.White.copy(alpha = 0.30f),
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvPlayerInactiveProgressColor",
+    )
     val colors = SliderDefaults.colors(
-        thumbColor = Color.White,
-        activeTrackColor = Color.White,
-        inactiveTrackColor = Color.White.copy(alpha = 0.30f),
+        thumbColor = sliderColor,
+        activeTrackColor = sliderColor,
+        inactiveTrackColor = inactiveTrackColor,
         activeTickColor = Color.Transparent,
         inactiveTickColor = Color.Transparent,
     )
@@ -153,7 +177,7 @@ private fun PlayerBufferedSlider(
                 modifier = Modifier.bufferedTrackOverlay(
                     activeProgress = activeProgress,
                     bufferedProgress = buffered,
-                    color = Color.White.copy(alpha = 0.42f),
+                    color = bufferedColor,
                 ),
             )
         },

@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.player.view.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -165,17 +167,31 @@ private fun PlayerResizeSelectionItem(
     val shape = RoundedCornerShape(8.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val background = when {
-        focused -> Color.White
-        selected -> Color.White.copy(alpha = 0.86f)
-        else -> Color.White.copy(alpha = 0.10f)
-    }
-    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
-    val contentColor = if (focused || selected) Color.Black else Color.White
+    val colors = MaterialTheme.colorScheme
+    val background by animateColorAsState(
+        targetValue = when {
+            focused -> colors.primary
+            selected -> Color.White.copy(alpha = 0.86f)
+            else -> Color.White.copy(alpha = 0.10f)
+        },
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerResizeItemBackground",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (focused) colors.primary else Color.Transparent,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerResizeItemBorder",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (focused) colors.onPrimary else if (selected) Color.Black else Color.White,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerResizeItemContent",
+    )
 
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .tvPlayerFocusScale(focused)
             .clip(shape)
             .background(background)
             .border(2.dp, borderColor, shape)
@@ -235,13 +251,26 @@ private fun PlayerZoomLevelItem(
     val shape = RoundedCornerShape(8.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val background = when {
-        focused -> Color.White
-        selected -> Color.White.copy(alpha = 0.86f)
-        else -> Color.White.copy(alpha = 0.10f)
-    }
-    val borderColor = if (focused) MaterialTheme.colorScheme.primary else Color.Transparent
-    val contentColor = if (focused || selected) Color.Black else Color.White
+    val colors = MaterialTheme.colorScheme
+    val background by animateColorAsState(
+        targetValue = when {
+            focused -> colors.primary
+            selected -> Color.White.copy(alpha = 0.86f)
+            else -> Color.White.copy(alpha = 0.10f)
+        },
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerZoomItemBackground",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (focused) colors.primary else Color.Transparent,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerZoomItemBorder",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (focused) colors.onPrimary else if (selected) Color.Black else Color.White,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerZoomItemContent",
+    )
 
     Box(
         modifier = modifier
@@ -257,6 +286,7 @@ private fun PlayerZoomLevelItem(
                     else -> false
                 }
             }
+            .tvPlayerFocusScale(focused)
             .clip(shape)
             .background(background)
             .border(2.dp, borderColor, shape)

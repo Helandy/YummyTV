@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,6 +35,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_FOCUS_ANIMATION_DURATION_MS
+import su.afk.yummy.tv.feature.player.view.player.tvPlayerFocusScale
 
 @Composable
 internal fun TvStreamLoadingView(
@@ -219,20 +223,33 @@ internal fun TvOverlayButton(
     val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(8.dp)
 
-    val bgColor = when {
-        focused && primary -> Color.White
-        focused -> Color.White.copy(alpha = 0.15f)
-        primary -> Color.White.copy(alpha = 0.18f)
-        else -> Color.Transparent
-    }
-    val textColor = if (focused && primary) Color.Black else Color.White
-    val borderColor = if (focused) Color.White else Color.White.copy(alpha = 0.35f)
+    val colors = MaterialTheme.colorScheme
+    val bgColor by animateColorAsState(
+        targetValue = when {
+            focused -> colors.primary
+            primary -> Color.White.copy(alpha = 0.18f)
+            else -> Color.Transparent
+        },
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvOverlayButtonBackground",
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (focused) colors.onPrimary else Color.White,
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvOverlayButtonContent",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (focused) colors.primary else Color.White.copy(alpha = 0.35f),
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "tvOverlayButtonBorder",
+    )
 
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
         color = textColor,
         modifier = modifier
+            .tvPlayerFocusScale(focused)
             .border(width = 2.dp, color = borderColor, shape = shape)
             .background(bgColor, shape)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
