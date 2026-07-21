@@ -389,6 +389,18 @@ internal fun TvExoPlayerView(
                 .focusProperties { canFocus = false },
         )
 
+        TvPlayerPointerOverlay(
+            enabled = !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible,
+            onClick = {
+                if (controllerVisible) {
+                    autoHide.cancel()
+                    controllerVisible = false
+                } else {
+                    onInteraction()
+                }
+            },
+        )
+
         PlayerBufferingIndicator(
             visible = isBuffering || state.isAllohaPlaybackRecovering,
             modifier = Modifier.align(Alignment.Center),
