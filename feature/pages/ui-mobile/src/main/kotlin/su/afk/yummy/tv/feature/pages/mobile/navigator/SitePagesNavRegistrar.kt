@@ -6,8 +6,8 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.feature.pages.SitePagesMobileScreen
 import su.afk.yummy.tv.feature.pages.SitePagesViewModel
+import su.afk.yummy.tv.feature.pages.mobile.SitePagesMobileScreen
 import su.afk.yummy.tv.feature.pages.navigator.SitePagesDestination
 
 class SitePagesNavRegistrar : NavRegistrar {

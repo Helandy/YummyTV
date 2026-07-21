@@ -1,0 +1,9 @@
+package su.afk.yummy.tv.feature.account.mobile.account.model
+
+import androidx.compose.ui.graphics.Color
+
+internal data class AccountMobileProfileStatSlice(
+    val title: String,
+    val value: Long,
+    val color: Color,
+)

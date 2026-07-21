@@ -4,7 +4,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.navigation.NavRegistrar
 import su.afk.yummy.tv.core.navigation.NavigationManager
-import su.afk.yummy.tv.feature.faq.FaqMobileScreen
+import su.afk.yummy.tv.feature.faq.mobile.FaqMobileScreen
 import su.afk.yummy.tv.feature.faq.navigator.FaqDestination
 
 class FaqNavRegistrar : NavRegistrar {

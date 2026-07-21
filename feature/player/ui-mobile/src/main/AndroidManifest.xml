@@ -3,7 +3,7 @@
 
     <application>
         <receiver
-            android:name="su.afk.yummy.tv.feature.player.pip.MobilePlayerPipActionReceiver"
+            android:name="su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipActionReceiver"
             android:exported="false" />
 
     </application>

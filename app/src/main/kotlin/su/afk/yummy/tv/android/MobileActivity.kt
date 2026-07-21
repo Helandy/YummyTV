@@ -9,8 +9,8 @@ import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.android.search.SystemSearchIntentHandler
 import su.afk.yummy.tv.core.deeplink.DeepLinkHandler
-import su.afk.yummy.tv.feature.main.MobileMainGraph
-import su.afk.yummy.tv.feature.player.pip.MobilePlayerPipController
+import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
+import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import javax.inject.Inject
 
 @AndroidEntryPoint

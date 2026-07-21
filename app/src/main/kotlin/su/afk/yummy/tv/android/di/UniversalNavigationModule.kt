@@ -244,7 +244,7 @@ object UniversalNavigationModule {
     @IntoSet
     @MobileUi
     fun provideMobileVideoDownloadNavRegistrar(): NavRegistrar =
-        su.afk.yummy.tv.feature.videodownload.navigator.VideoDownloadNavRegistrar()
+        su.afk.yummy.tv.feature.videodownload.mobile.navigator.VideoDownloadNavRegistrar()
 
     @Provides
     @IntoSet
