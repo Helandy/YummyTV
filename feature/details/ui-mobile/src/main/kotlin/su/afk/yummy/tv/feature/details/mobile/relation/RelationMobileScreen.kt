@@ -1,14 +1,12 @@
 package su.afk.yummy.tv.feature.details.mobile.relation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,13 +25,45 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.domain.anime.model.AnimeRelation
+import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
+import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.relation.utils.labelRes
+import su.afk.yummy.tv.feature.details.mobile.relation.view.RelationMobileHeaderCard
 import su.afk.yummy.tv.feature.details.relation.RelationState
+import su.afk.yummy.tv.feature.details.relation.model.RelationType
 
-@Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
+@Preview(name = "Studio", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
-private fun RelationMobileScreenPreview() = ScreenPreviewTheme {
-    RelationMobileScreen(RelationState.State(isLoading = false), emptyFlow()) {}
+private fun RelationMobileStudioScreenPreview() = ScreenPreviewTheme {
+    RelationMobileScreen(
+        state = RelationState.State(
+            relationType = RelationType.STUDIO,
+            isLoading = false,
+            relation = previewStudioRelation(),
+        ),
+        effect = emptyFlow(),
+        onEvent = {},
+    )
+}
+
+@Preview(
+    name = "Empty genre",
+    device = "spec:width=412dp,height=915dp,dpi=420",
+    showBackground = true
+)
+@Composable
+private fun RelationMobileEmptyGenreScreenPreview() = ScreenPreviewTheme {
+    RelationMobileScreen(
+        state = RelationState.State(
+            relationType = RelationType.GENRE,
+            isLoading = false,
+            relation = previewEmptyGenreRelation(),
+        ),
+        effect = emptyFlow(),
+        onEvent = {},
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +77,7 @@ fun RelationMobileScreen(
         isScroll = false,
         topBar = {
             MobileTopBar(
-                title = state.relation?.title.orEmpty(),
+                title = stringResource(state.relationType.labelRes()),
                 onBack = { onEvent(RelationState.Event.BackSelected) },
             )
         },
@@ -63,36 +93,25 @@ fun RelationMobileScreen(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        relation.secondaryTitle?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        relation.description?.let {
-                            Text(text = it, style = MaterialTheme.typography.bodyLarge)
-                        }
-                        relation.subGenres.forEach { genre ->
-                            AssistChip(
-                                onClick = {
-                                    onEvent(RelationState.Event.SubGenreSelected(genre.id))
-                                },
-                                label = { Text(genre.title) },
-                            )
-                        }
+                        RelationMobileHeaderCard(
+                            relationType = state.relationType,
+                            relation = relation,
+                            onSubGenreSelected = { genreId ->
+                                onEvent(RelationState.Event.SubGenreSelected(genreId))
+                            },
+                        )
                         Text(
                             text = stringResource(R.string.details_mobile_related_anime),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 8.dp),
+                            modifier = Modifier.padding(top = 20.dp),
                         )
                         if (relation.anime.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.details_mobile_related_empty),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 8.dp),
                             )
                         }
                     }
@@ -129,3 +148,33 @@ fun RelationMobileScreen(
         }
     }
 }
+
+private fun previewStudioRelation() = AnimeRelation(
+    title = "Kyoto Animation",
+    anime = listOf(
+        AnimeRelationItem(
+            animeId = 1,
+            title = "Violet Evergarden",
+            posterUrl = null,
+            rating = 8.7,
+            year = 2018,
+        ),
+        AnimeRelationItem(
+            animeId = 2,
+            title = "K-On!",
+            posterUrl = null,
+            rating = 8.1,
+            year = 2009,
+        ),
+    ),
+)
+
+private fun previewEmptyGenreRelation() = AnimeRelation(
+    title = "Приключения",
+    description = "Истории о путешествиях, открытиях и необычных мирах.",
+    subGenres = listOf(
+        AnimeRelationSubGenre(id = 1, title = "Фэнтези"),
+        AnimeRelationSubGenre(id = 2, title = "Экшен"),
+    ),
+    anime = emptyList(),
+)

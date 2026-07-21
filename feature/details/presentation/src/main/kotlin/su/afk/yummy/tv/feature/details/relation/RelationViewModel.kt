@@ -17,6 +17,7 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRelationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.navigator.DetailsRelationKind
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.relation.model.RelationType
 
 @HiltViewModel(assistedFactory = RelationViewModel.Factory::class)
 class RelationViewModel @AssistedInject internal constructor(
@@ -39,7 +40,13 @@ class RelationViewModel @AssistedInject internal constructor(
         fun create(kind: DetailsRelationKind, id: Int, url: String?): RelationViewModel
     }
 
-    override fun createInitialState() = RelationState.State()
+    override fun createInitialState() = RelationState.State(
+        relationType = when (kind) {
+            DetailsRelationKind.STUDIO -> RelationType.STUDIO
+            DetailsRelationKind.DIRECTOR -> RelationType.DIRECTOR
+            DetailsRelationKind.GENRE -> RelationType.GENRE
+        },
+    )
 
     init {
         load()

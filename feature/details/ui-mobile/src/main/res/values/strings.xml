@@ -124,4 +124,8 @@
     <string name="details_mobile_title_universe">Title universe</string>
     <string name="details_mobile_related_anime">Related anime</string>
     <string name="details_mobile_related_empty">No related anime found</string>
+    <string name="details_mobile_relation_studio">Studio</string>
+    <string name="details_mobile_relation_director">Director</string>
+    <string name="details_mobile_relation_genre">Genre</string>
+    <string name="details_mobile_relation_titles_found">Titles found: %1$d</string>
 </resources>

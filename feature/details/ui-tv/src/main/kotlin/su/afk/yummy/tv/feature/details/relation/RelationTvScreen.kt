@@ -5,8 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -37,22 +35,52 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.domain.anime.model.AnimeRelation
+import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
+import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
 import su.afk.yummy.tv.feature.details.R
-import su.afk.yummy.tv.feature.details.full.view.FullDetailsChip
+import su.afk.yummy.tv.feature.details.relation.model.RelationType
+import su.afk.yummy.tv.feature.details.relation.view.RelationTvHeaderCard
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 
 @Preview(
-    name = "Default",
+    name = "Director",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
     showBackground = true,
 )
 @Composable
-private fun RelationTvScreenPreview() = ScreenPreviewTheme {
-    RelationTvScreen(RelationState.State(isLoading = false), emptyFlow()) {}
+private fun RelationTvDirectorScreenPreview() = ScreenPreviewTheme {
+    RelationTvScreen(
+        state = RelationState.State(
+            relationType = RelationType.DIRECTOR,
+            isLoading = false,
+            relation = previewDirectorRelation(),
+        ),
+        effect = emptyFlow(),
+        onEvent = {},
+    )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@Preview(
+    name = "Empty genre",
+    device = "spec:width=1920dp,height=1080dp,dpi=160",
+    uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
+    showBackground = true,
+)
+@Composable
+private fun RelationTvEmptyGenreScreenPreview() = ScreenPreviewTheme {
+    RelationTvScreen(
+        state = RelationState.State(
+            relationType = RelationType.GENRE,
+            isLoading = false,
+            relation = previewEmptyGenreRelation(),
+        ),
+        effect = emptyFlow(),
+        onEvent = {},
+    )
+}
+
 @Composable
 fun RelationTvScreen(
     state: RelationState.State,
@@ -88,48 +116,18 @@ fun RelationTvScreen(
                     verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(
-                                text = relation.title,
-                                style = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.ExtraBold,
+                        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                            RelationTvHeaderCard(
+                                relationType = state.relationType,
+                                relation = relation,
+                                onSubGenreSelected = { genreId ->
+                                    onEvent(RelationState.Event.SubGenreSelected(genreId))
+                                },
                             )
-                            relation.secondaryTitle?.let {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            relation.description?.let {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            if (relation.subGenres.isNotEmpty()) {
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    relation.subGenres.forEach { genre ->
-                                        FullDetailsChip(
-                                            label = genre.title,
-                                            onClick = {
-                                                onEvent(
-                                                    RelationState.Event.SubGenreSelected(genre.id)
-                                                )
-                                            },
-                                        )
-                                    }
-                                }
-                            }
                             Text(
                                 text = stringResource(R.string.details_related_anime),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp),
                             )
                             if (relation.anime.isEmpty()) {
                                 Text(
@@ -180,3 +178,34 @@ fun RelationTvScreen(
         }
     }
 }
+
+private fun previewDirectorRelation() = AnimeRelation(
+    title = "Hayao Miyazaki",
+    secondaryTitle = "宮崎 駿",
+    anime = listOf(
+        AnimeRelationItem(
+            animeId = 1,
+            title = "Spirited Away",
+            posterUrl = null,
+            rating = 8.9,
+            year = 2001,
+        ),
+        AnimeRelationItem(
+            animeId = 2,
+            title = "Howl's Moving Castle",
+            posterUrl = null,
+            rating = 8.7,
+            year = 2004,
+        ),
+    ),
+)
+
+private fun previewEmptyGenreRelation() = AnimeRelation(
+    title = "Приключения",
+    description = "Истории о путешествиях, открытиях и необычных мирах.",
+    subGenres = listOf(
+        AnimeRelationSubGenre(id = 1, title = "Фэнтези"),
+        AnimeRelationSubGenre(id = 2, title = "Экшен"),
+    ),
+    anime = emptyList(),
+)

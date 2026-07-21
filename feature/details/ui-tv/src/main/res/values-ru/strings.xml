@@ -135,4 +135,8 @@
     <string name="details_views_thousands">%1$d к</string>
     <string name="details_related_anime">Связанные аниме</string>
     <string name="details_related_empty">Связанные аниме не найдены</string>
+    <string name="details_relation_studio">Студия</string>
+    <string name="details_relation_director">Режиссёр</string>
+    <string name="details_relation_genre">Жанр</string>
+    <string name="details_relation_titles_found">Найдено тайтлов: %1$d</string>
 </resources>

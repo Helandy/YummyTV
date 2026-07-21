@@ -130,4 +130,8 @@
     <string name="details_mobile_title_universe">Вселенная тайтла</string>
     <string name="details_mobile_related_anime">Связанные аниме</string>
     <string name="details_mobile_related_empty">Связанные аниме не найдены</string>
+    <string name="details_mobile_relation_studio">Студия</string>
+    <string name="details_mobile_relation_director">Режиссёр</string>
+    <string name="details_mobile_relation_genre">Жанр</string>
+    <string name="details_mobile_relation_titles_found">Найдено тайтлов: %1$d</string>
 </resources>

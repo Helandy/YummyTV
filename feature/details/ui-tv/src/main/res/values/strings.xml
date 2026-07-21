@@ -129,4 +129,8 @@
     <string name="details_views_thousands">%1$dK</string>
     <string name="details_related_anime">Related anime</string>
     <string name="details_related_empty">No related anime found</string>
+    <string name="details_relation_studio">Studio</string>
+    <string name="details_relation_director">Director</string>
+    <string name="details_relation_genre">Genre</string>
+    <string name="details_relation_titles_found">Titles found: %1$d</string>
 </resources>
