@@ -120,7 +120,7 @@ class HomeViewModel @Inject internal constructor(
             HomeState.Event.BloggerVideosRetrySelected -> loadBloggerVideos()
 
             is HomeState.Event.BloggerVideoSelected ->
-                setEffect(HomeState.Effect.OpenUri(event.video.watchUrl))
+                nav.navigate(bloggerVideosNavigator.video(event.video.id))
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
         }
