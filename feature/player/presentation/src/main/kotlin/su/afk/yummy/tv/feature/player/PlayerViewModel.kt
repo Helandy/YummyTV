@@ -75,6 +75,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var streamLoadingHintJob: Job? = null
     private var mobileGestureTutorialReady = false
     private var showMobileGestureTutorial = false
+    private var isNavigatingToRating = false
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
@@ -194,14 +195,17 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
 
-            PlayerState.Event.TvAppBackgrounded -> returnToDetailsAfterTvBackground()
+            PlayerState.Event.TvAppBackgrounded -> {
+                if (!isNavigatingToRating) returnToDetailsAfterTvBackground()
+            }
 
             PlayerState.Event.RateTitle -> {
                 analytics.eventRateTitle(currentState.animeId)
                 val animeId = currentState.animeId
-                if (animeId > 0) {
+                if (animeId > 0 && !isNavigatingToRating) {
+                    isNavigatingToRating = true
                     saveCurrentProgressThenNavigate {
-                        nav.navigate(detailsNavigator.getRatingDest(animeId))
+                        navigateFromPlayerToRating(animeId)
                     }
                 }
             }
@@ -514,6 +518,18 @@ class PlayerViewModel @AssistedInject internal constructor(
                     nav.replace(detailsDestination)
                 }
             }
+        }
+    }
+
+    private fun navigateFromPlayerToRating(animeId: Int) {
+        val detailsDestination = detailsNavigator.getDetailsDest(animeId)
+        val ratingDestination = detailsNavigator.getRatingDest(animeId)
+        val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
+        if (previousDestination == detailsDestination) {
+            nav.replace(ratingDestination)
+        } else {
+            nav.replace(detailsDestination)
+            nav.navigate(ratingDestination)
         }
     }
 

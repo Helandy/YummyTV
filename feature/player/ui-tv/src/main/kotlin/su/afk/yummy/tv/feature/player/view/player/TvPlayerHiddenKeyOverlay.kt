@@ -28,6 +28,8 @@ internal fun TvPlayerHiddenKeyOverlay(
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
+                    Key.Back -> false
+
                     Key.DirectionLeft -> {
                         onSeekBackward()
                         true

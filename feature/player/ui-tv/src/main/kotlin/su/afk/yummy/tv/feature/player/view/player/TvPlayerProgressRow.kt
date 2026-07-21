@@ -48,6 +48,7 @@ internal fun TvPlayerProgressRow(
     bufferedProgress: Float,
     currentPosition: Long,
     playFocusRequester: FocusRequester,
+    playUpFocusRequester: FocusRequester?,
     progressFocusRequester: FocusRequester,
     progressDownFocusRequester: FocusRequester,
     onPlayPause: () -> Unit,
@@ -67,7 +68,10 @@ internal fun TvPlayerProgressRow(
             onClick = { onPlayPause(); onInteraction() },
             onFocused = onInteraction,
             focusRequester = playFocusRequester,
-            modifier = Modifier.focusProperties { down = progressFocusRequester },
+            modifier = Modifier.focusProperties {
+                if (playUpFocusRequester != null) up = playUpFocusRequester
+                down = progressFocusRequester
+            },
             primary = true,
         ) { color ->
             Icon(

@@ -356,19 +356,24 @@ internal fun TvExoPlayerView(
         },
     )
 
-    BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible) {
-        prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-        prompts.showRateTitlePrompt = false
-        panels.close(
-            returnFocusTarget = when (panels.activePanel) {
-                TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
-                TvPlayerPanel.Dubbing -> PanelReturnFocusTarget.Dubbing
-                TvPlayerPanel.Balancer -> PanelReturnFocusTarget.Balancer
-                TvPlayerPanel.Speed -> PanelReturnFocusTarget.Speed
-                TvPlayerPanel.Resize -> PanelReturnFocusTarget.Resize
-                null -> null
-            }
-        )
+    BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible || controllerVisible) {
+        if (panels.isAnyOpen || prompts.anyVisible) {
+            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
+            prompts.showRateTitlePrompt = false
+            panels.close(
+                returnFocusTarget = when (panels.activePanel) {
+                    TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
+                    TvPlayerPanel.Dubbing -> PanelReturnFocusTarget.Dubbing
+                    TvPlayerPanel.Balancer -> PanelReturnFocusTarget.Balancer
+                    TvPlayerPanel.Speed -> PanelReturnFocusTarget.Speed
+                    TvPlayerPanel.Resize -> PanelReturnFocusTarget.Resize
+                    null -> null
+                }
+            )
+        } else {
+            autoHide.cancel()
+            controllerVisible = false
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -55,6 +56,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleResize: () -> Unit,
     onToggleSpeed: () -> Unit,
 ) {
+    val visibleSkip = activeSkip.takeUnless { autoSkipOpeningsEndings }
     val progressDownFocusRequester = when {
         playback.dubbingNames.size > 1 -> focus.dubbing
         playback.balancerNames.size > 1 -> focus.balancer
@@ -88,7 +90,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     .padding(horizontal = 48.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (activeSkip != null && !autoSkipOpeningsEndings) {
+                if (visibleSkip != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
@@ -97,7 +99,8 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                             onClick = onSkipActiveSegment,
                             onFocused = onInteraction,
                             focusRequester = focus.skip,
-                            primary = highlightedSkipKey == activeSkip.key,
+                            modifier = Modifier.focusProperties { down = focus.play },
+                            primary = highlightedSkipKey == visibleSkip.key,
                         ) { color ->
                             Text(
                                 text = stringResource(R.string.player_skip_segment),
@@ -116,6 +119,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     bufferedProgress = bufferedProgress,
                     currentPosition = progress.currentPosition,
                     playFocusRequester = focus.play,
+                    playUpFocusRequester = focus.skip.takeIf { visibleSkip != null },
                     progressFocusRequester = focus.progress,
                     progressDownFocusRequester = progressDownFocusRequester,
                     onPlayPause = onPlayPause,
