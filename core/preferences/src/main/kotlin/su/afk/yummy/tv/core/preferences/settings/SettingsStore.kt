@@ -54,6 +54,7 @@ interface SettingsStore {
     val suggestNextEpisodeOnWatched: Flow<Boolean>
     val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
+    val mobilePlayerVolumePercent: Flow<Int>
     val playerResizeMode: Flow<PlayerResizeMode>
     val playerZoomLevel: Flow<PlayerZoomLevel>
     val appTheme: Flow<AppTheme>
@@ -97,6 +98,7 @@ interface SettingsStore {
     suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
     suspend fun dismissMobilePlayerGestureTutorial()
     suspend fun resetMobilePlayerGestureTutorial()
+    suspend fun setMobilePlayerVolumePercent(percent: Int)
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
 

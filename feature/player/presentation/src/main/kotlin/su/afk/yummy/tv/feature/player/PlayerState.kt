@@ -53,6 +53,8 @@ class PlayerState {
         val pictureInPictureEnabled: Boolean = true,
         val mobileGestureTutorialReady: Boolean = false,
         val showMobileGestureTutorial: Boolean = false,
+        val mobilePlayerVolumeReady: Boolean = false,
+        val mobilePlayerVolumePercent: Int = 100,
         val mobileVideoScale: Float = 1f,
         val mobileVideoOffsetX: Float = 0f,
         val mobileVideoOffsetY: Float = 0f,
@@ -140,6 +142,9 @@ class PlayerState {
 
         /** Пользователь завершил одноразовое обучение жестам мобильного плеера. */
         data object MobileGestureTutorialDismissed : Event
+
+        /** Пользователь завершил изменение внутренней громкости мобильного плеера. */
+        data class MobilePlayerVolumeChanged(val percent: Int) : Event
 
         /** Пользователь запросил повторное получение потока. */
         data object RetryStream : Event

@@ -68,6 +68,7 @@ import su.afk.yummy.tv.feature.player.utils.gestureIcon
 import su.afk.yummy.tv.feature.player.utils.mobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.utils.toGesturePercentText
 import su.afk.yummy.tv.feature.player.view.tutorial.MobilePlayerGestureTutorial
+import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -150,11 +151,24 @@ internal fun MobileNativePlayer(
     val gestures = rememberMobilePlayerGestureController(
         activity = activity,
         initialTransform = videoTransform,
+        volumeLevelProvider = {
+            mediaController?.volume
+                ?: state.mobilePlayerVolumePercent.toFloat() / 100f
+        },
+        onVolumeChanged = { level -> mediaController?.volume = level },
+        onVolumeChangeFinished = { level ->
+            onEvent(
+                PlayerState.Event.MobilePlayerVolumeChanged(
+                    percent = (level * 100f).roundToInt(),
+                ),
+            )
+        },
         onGestureStart = { overlay.cancelHide() },
         onVideoTransformChanged = onVideoTransformChanged,
     )
     val effectiveSpeed = if (gestures.isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
-    val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
+    val playbackShouldPlay =
+        wantsPlay && !tutorialBlocksPlayback && state.mobilePlayerVolumeReady
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
@@ -357,8 +371,17 @@ internal fun MobileNativePlayer(
         }
     }
 
-    LaunchedEffect(player, effectiveSpeed, playbackShouldPlay) {
+    LaunchedEffect(
+        player,
+        effectiveSpeed,
+        playbackShouldPlay,
+        state.mobilePlayerVolumeReady,
+        state.mobilePlayerVolumePercent,
+    ) {
         player.setPlaybackSpeed(effectiveSpeed)
+        if (state.mobilePlayerVolumeReady) {
+            player.volume = state.mobilePlayerVolumePercent.coerceIn(0, 100) / 100f
+        }
         player.playWhenReady = playbackShouldPlay
         pipSession.setPlaying(playbackShouldPlay, activity)
     }
@@ -428,7 +451,9 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureLayer(
-            enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,
+            enabled = !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback &&
+                    state.mobilePlayerVolumeReady,
             onTap = { overlay.toggle() },
             onDoubleTap = seekController::stepSeek,
             onTransformStart = gestures::startTransformGesture,

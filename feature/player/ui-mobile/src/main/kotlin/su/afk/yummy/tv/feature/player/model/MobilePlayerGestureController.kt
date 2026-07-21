@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.player.model
 
 import android.app.Activity
 import android.content.Context
-import android.media.AudioManager
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,9 +31,10 @@ private const val VERTICAL_GESTURE_STEP = 0.05f
 internal class MobilePlayerGestureController(
     private val activity: Activity?,
     private val context: Context,
-    private val audioManager: AudioManager?,
-    private val maxVolume: Int,
     initialTransform: MobileVideoTransform,
+    private val volumeLevelProvider: () -> Float,
+    private val onVolumeChanged: (Float) -> Unit,
+    private val onVolumeChangeFinished: (Float) -> Unit,
     private val onGestureStart: () -> Unit,
     private val onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ) {
@@ -87,10 +87,7 @@ internal class MobilePlayerGestureController(
             }
 
             MobileVerticalGestureZone.Volume -> {
-                rawVolumeLevel = audioManager
-                    ?.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    ?.div(maxVolume.toFloat())
-                    ?: 0f
+                rawVolumeLevel = volumeLevelProvider().coerceIn(0f, 1f)
                 volumeLevel = rawVolumeLevel
                 volumeGestureActive = true
             }
@@ -118,11 +115,7 @@ internal class MobilePlayerGestureController(
                 val stepped = rawVolumeLevel.quantizeToGestureStep().coerceIn(0f, 1f)
                 if (stepped == volumeLevel) return
                 volumeLevel = stepped
-                audioManager?.setStreamVolume(
-                    AudioManager.STREAM_MUSIC,
-                    (volumeLevel * maxVolume).roundToInt(),
-                    0,
-                )
+                onVolumeChanged(volumeLevel)
             }
         }
     }
@@ -133,7 +126,10 @@ internal class MobilePlayerGestureController(
     fun endVerticalGesture(zone: MobileVerticalGestureZone) {
         when (zone) {
             MobileVerticalGestureZone.Brightness -> brightnessGestureActive = false
-            MobileVerticalGestureZone.Volume -> volumeGestureActive = false
+            MobileVerticalGestureZone.Volume -> {
+                volumeGestureActive = false
+                onVolumeChangeFinished(volumeLevel)
+            }
         }
     }
 
@@ -162,25 +158,28 @@ internal class MobilePlayerGestureController(
 internal fun rememberMobilePlayerGestureController(
     activity: Activity?,
     initialTransform: MobileVideoTransform,
+    volumeLevelProvider: () -> Float,
+    onVolumeChanged: (Float) -> Unit,
+    onVolumeChangeFinished: (Float) -> Unit,
     onGestureStart: () -> Unit,
     onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ): MobilePlayerGestureController {
     val context = LocalContext.current
-    val audioManager = remember(context) {
-        context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-    }
-    val maxVolume = remember(audioManager) {
-        audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC)?.takeIf { it > 0 } ?: 1
-    }
+    val currentVolumeLevelProvider = rememberUpdatedState(volumeLevelProvider)
+    val currentOnVolumeChanged = rememberUpdatedState(onVolumeChanged)
+    val currentOnVolumeChangeFinished = rememberUpdatedState(onVolumeChangeFinished)
     val currentOnGestureStart = rememberUpdatedState(onGestureStart)
     val currentOnVideoTransformChanged = rememberUpdatedState(onVideoTransformChanged)
     val controller = remember {
         MobilePlayerGestureController(
             activity = activity,
             context = context,
-            audioManager = audioManager,
-            maxVolume = maxVolume,
             initialTransform = initialTransform,
+            volumeLevelProvider = { currentVolumeLevelProvider.value.invoke() },
+            onVolumeChanged = { currentOnVolumeChanged.value.invoke(it) },
+            onVolumeChangeFinished = {
+                currentOnVolumeChangeFinished.value.invoke(it)
+            },
             onGestureStart = { currentOnGestureStart.value.invoke() },
             onVideoTransformChanged = { currentOnVideoTransformChanged.value.invoke(it) },
         )

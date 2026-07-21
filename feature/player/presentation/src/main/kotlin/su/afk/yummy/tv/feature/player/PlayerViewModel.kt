@@ -96,6 +96,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             ).copy(
                 mobileGestureTutorialReady = mobileGestureTutorialReady,
                 showMobileGestureTutorial = showMobileGestureTutorial,
+                mobilePlayerVolumeReady = mobilePlayerVolumeReady,
+                mobilePlayerVolumePercent = mobilePlayerVolumePercent,
             )
         }
         observeActivePlayerResizeSettings(force = true)
@@ -140,6 +142,16 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        settingsHandler.mobilePlayerVolumePercent
+            .onEach { percent ->
+                setState {
+                    copy(
+                        mobilePlayerVolumeReady = true,
+                        mobilePlayerVolumePercent = percent.coerceIn(0, 100),
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
         if (dest.downloadId > 0L) {
             loadDownloadedDestination(dest.downloadId)
         } else {
@@ -162,6 +174,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                 setState { copy(showMobileGestureTutorial = false) }
                 viewModelScope.launch {
                     settingsHandler.dismissMobilePlayerGestureTutorial()
+                }
+            }
+
+            is PlayerState.Event.MobilePlayerVolumeChanged -> {
+                val percent = event.percent.coerceIn(0, 100)
+                setState { copy(mobilePlayerVolumePercent = percent) }
+                viewModelScope.launch {
+                    settingsHandler.saveMobilePlayerVolumePercent(percent)
                 }
             }
 

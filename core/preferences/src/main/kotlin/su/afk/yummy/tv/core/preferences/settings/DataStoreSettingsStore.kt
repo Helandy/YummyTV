@@ -41,6 +41,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
     private val mobilePlayerGestureTutorialDismissedKey =
         booleanPreferencesKey("player_mobile_gesture_tutorial_dismissed")
+    private val mobilePlayerVolumePercentKey = intPreferencesKey("mobile_player_volume_percent")
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
@@ -138,6 +139,10 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         context.dataStore.data.map { prefs ->
             prefs[mobilePlayerGestureTutorialDismissedKey] ?: false
         }
+
+    override val mobilePlayerVolumePercent: Flow<Int> = context.dataStore.data.map { prefs ->
+        (prefs[mobilePlayerVolumePercentKey] ?: 100).coerceIn(0, 100)
+    }
 
     override val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
         prefs[playerResizeModeKey]?.let { name ->
@@ -364,6 +369,12 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     override suspend fun resetMobilePlayerGestureTutorial() {
         context.dataStore.edit { prefs ->
             prefs[mobilePlayerGestureTutorialDismissedKey] = false
+        }
+    }
+
+    override suspend fun setMobilePlayerVolumePercent(percent: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[mobilePlayerVolumePercentKey] = percent.coerceIn(0, 100)
         }
     }
 

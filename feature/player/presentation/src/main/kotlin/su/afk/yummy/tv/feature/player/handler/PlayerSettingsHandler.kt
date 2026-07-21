@@ -18,9 +18,14 @@ internal class PlayerSettingsHandler @Inject constructor(
     val pictureInPictureEnabled: Flow<Boolean> = settingsStore.pictureInPictureEnabled
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
         settingsStore.mobilePlayerGestureTutorialDismissed
+    val mobilePlayerVolumePercent: Flow<Int> = settingsStore.mobilePlayerVolumePercent
 
     suspend fun dismissMobilePlayerGestureTutorial() {
         settingsStore.dismissMobilePlayerGestureTutorial()
+    }
+
+    suspend fun saveMobilePlayerVolumePercent(percent: Int) {
+        settingsStore.setMobilePlayerVolumePercent(percent)
     }
 
     fun observeResizeSettings(scope: PlayerResizeSettingsScope): Flow<PlayerResizeSettings> =
