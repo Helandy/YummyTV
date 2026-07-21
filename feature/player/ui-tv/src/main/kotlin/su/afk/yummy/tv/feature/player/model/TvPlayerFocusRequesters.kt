@@ -6,6 +6,7 @@ import androidx.compose.ui.focus.FocusRequester
 
 internal class TvPlayerFocusRequesters {
     val play = FocusRequester()
+    val progress = FocusRequester()
     val quality = FocusRequester()
     val dubbing = FocusRequester()
     val balancer = FocusRequester()

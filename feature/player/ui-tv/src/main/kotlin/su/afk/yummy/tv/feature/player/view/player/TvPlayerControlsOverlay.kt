@@ -55,6 +55,13 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleResize: () -> Unit,
     onToggleSpeed: () -> Unit,
 ) {
+    val progressDownFocusRequester = when {
+        playback.dubbingNames.size > 1 -> focus.dubbing
+        playback.balancerNames.size > 1 -> focus.balancer
+        qualityCount > 0 -> focus.quality
+        else -> focus.resize
+    }
+
     AnimatedVisibility(
         visible = visible,
         modifier = Modifier
@@ -109,6 +116,8 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     bufferedProgress = bufferedProgress,
                     currentPosition = progress.currentPosition,
                     playFocusRequester = focus.play,
+                    progressFocusRequester = focus.progress,
+                    progressDownFocusRequester = progressDownFocusRequester,
                     onPlayPause = onPlayPause,
                     onSeekChange = { v ->
                         progress.isSeeking = true
@@ -138,6 +147,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     dubbingFocusRequester = focus.dubbing,
                     balancerFocusRequester = focus.balancer,
                     speedFocusRequester = focus.speed,
+                    upFocusRequester = focus.progress,
                     onInteraction = onInteraction,
                     onPrevEpisode = onPrevEpisode,
                     onNextEpisode = onNextEpisode,

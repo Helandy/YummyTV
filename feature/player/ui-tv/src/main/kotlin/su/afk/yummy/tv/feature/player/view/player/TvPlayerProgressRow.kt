@@ -22,8 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -33,7 +34,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.utils.formatTime
@@ -48,12 +48,13 @@ internal fun TvPlayerProgressRow(
     bufferedProgress: Float,
     currentPosition: Long,
     playFocusRequester: FocusRequester,
+    progressFocusRequester: FocusRequester,
+    progressDownFocusRequester: FocusRequester,
     onPlayPause: () -> Unit,
     onSeekChange: (Float) -> Unit,
     onSeekFinished: () -> Unit,
     onInteraction: () -> Unit,
 ) {
-    val focusManager = LocalFocusManager.current
     var sliderJustFocused by remember { mutableStateOf(false) }
     var sliderFocused by remember { mutableStateOf(false) }
 
@@ -66,6 +67,7 @@ internal fun TvPlayerProgressRow(
             onClick = { onPlayPause(); onInteraction() },
             onFocused = onInteraction,
             focusRequester = playFocusRequester,
+            modifier = Modifier.focusProperties { down = progressFocusRequester },
             primary = true,
         ) { color ->
             Icon(
@@ -101,23 +103,37 @@ internal fun TvPlayerProgressRow(
             focused = sliderFocused,
             modifier = Modifier
                 .weight(1f)
-                .onFocusChanged {
-                    sliderFocused = it.isFocused
-                    if (it.isFocused) sliderJustFocused = true
+                .focusRequester(progressFocusRequester)
+                .focusProperties {
+                    up = playFocusRequester
+                    down = progressDownFocusRequester
                 }
                 .onPreviewKeyEvent { event ->
-                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     when (event.key) {
                         Key.DirectionUp -> {
-                            focusManager.moveFocus(FocusDirection.Up); true
+                            when (event.type) {
+                                KeyEventType.KeyDown -> playFocusRequester.requestFocus()
+                                KeyEventType.KeyUp -> Unit
+                                else -> return@onPreviewKeyEvent false
+                            }
+                            true
                         }
 
                         Key.DirectionDown -> {
-                            focusManager.moveFocus(FocusDirection.Down); true
+                            when (event.type) {
+                                KeyEventType.KeyDown -> progressDownFocusRequester.requestFocus()
+                                KeyEventType.KeyUp -> Unit
+                                else -> return@onPreviewKeyEvent false
+                            }
+                            true
                         }
 
                         else -> false
                     }
+                }
+                .onFocusChanged {
+                    sliderFocused = it.isFocused
+                    if (it.isFocused) sliderJustFocused = true
                 },
         )
         Text(

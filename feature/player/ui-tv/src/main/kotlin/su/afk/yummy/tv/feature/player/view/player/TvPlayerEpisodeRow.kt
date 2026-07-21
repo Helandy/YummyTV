@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,7 @@ internal fun TvPlayerEpisodeRow(
     balancerFocusRequester: FocusRequester? = null,
     resizeFocusRequester: FocusRequester? = null,
     speedFocusRequester: FocusRequester? = null,
+    upFocusRequester: FocusRequester,
     onInteraction: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
@@ -55,7 +57,11 @@ internal fun TvPlayerEpisodeRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (hasPrevEpisode) {
-            TvControlButton(onClick = onPrevEpisode, onFocused = onInteraction) { color ->
+            TvControlButton(
+                onClick = onPrevEpisode,
+                onFocused = onInteraction,
+                modifier = Modifier.focusProperties { up = upFocusRequester },
+            ) { color ->
                 Text(stringResource(R.string.player_previous_episode), style = MaterialTheme.typography.labelLarge, color = color)
             }
         }
@@ -68,7 +74,9 @@ internal fun TvPlayerEpisodeRow(
                 onClick = onToggleDubbing,
                 onFocused = onInteraction,
                 focusRequester = dubbingFocusRequester,
-                modifier = Modifier.widthIn(min = 164.dp, max = 220.dp),
+                modifier = Modifier
+                    .focusProperties { up = upFocusRequester }
+                    .widthIn(min = 164.dp, max = 220.dp),
             ) { color ->
                 Text(
                     text = label,
@@ -87,7 +95,9 @@ internal fun TvPlayerEpisodeRow(
                 onClick = onToggleBalancer,
                 onFocused = onInteraction,
                 focusRequester = balancerFocusRequester,
-                modifier = Modifier.widthIn(min = 128.dp, max = 156.dp),
+                modifier = Modifier
+                    .focusProperties { up = upFocusRequester }
+                    .widthIn(min = 128.dp, max = 156.dp),
             ) { color ->
                 Text(
                     text = label,
@@ -104,7 +114,9 @@ internal fun TvPlayerEpisodeRow(
                 onClick = onToggleQuality,
                 onFocused = onInteraction,
                 focusRequester = qualityFocusRequester,
-                modifier = Modifier.widthIn(min = 92.dp),
+                modifier = Modifier
+                    .focusProperties { up = upFocusRequester }
+                    .widthIn(min = 92.dp),
             ) { color ->
                 Text(
                     text = currentQualityLabel,
@@ -120,7 +132,9 @@ internal fun TvPlayerEpisodeRow(
             onClick = onToggleResize,
             onFocused = onInteraction,
             focusRequester = resizeFocusRequester,
-            modifier = Modifier.width(48.dp),
+            modifier = Modifier
+                .focusProperties { up = upFocusRequester }
+                .width(48.dp),
             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 9.dp),
         ) { color ->
             Icon(
@@ -135,7 +149,9 @@ internal fun TvPlayerEpisodeRow(
             onClick = onToggleSpeed,
             onFocused = onInteraction,
             focusRequester = speedFocusRequester,
-            modifier = Modifier.widthIn(min = 76.dp),
+            modifier = Modifier
+                .focusProperties { up = upFocusRequester }
+                .widthIn(min = 76.dp),
         ) { color ->
             Text(
                 text = currentSpeedLabel,
@@ -149,11 +165,19 @@ internal fun TvPlayerEpisodeRow(
             Spacer(Modifier.width(8.dp))
         }
         if (hasNextEpisode) {
-            TvControlButton(onClick = onNextEpisode, onFocused = onInteraction) { color ->
+            TvControlButton(
+                onClick = onNextEpisode,
+                onFocused = onInteraction,
+                modifier = Modifier.focusProperties { up = upFocusRequester },
+            ) { color ->
                 Text(stringResource(R.string.player_next_episode), style = MaterialTheme.typography.labelLarge, color = color)
             }
         } else if (canRateTitle) {
-            TvControlButton(onClick = onRateTitle, onFocused = onInteraction) { color ->
+            TvControlButton(
+                onClick = onRateTitle,
+                onFocused = onInteraction,
+                modifier = Modifier.focusProperties { up = upFocusRequester },
+            ) { color ->
                 Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
             }
         }
