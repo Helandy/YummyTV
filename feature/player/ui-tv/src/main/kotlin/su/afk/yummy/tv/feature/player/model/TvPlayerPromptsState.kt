@@ -12,18 +12,18 @@ import su.afk.yummy.tv.feature.player.common.isVisible
 
 /**
  * Промпты конца эпизода: следующий эпизод (сбрасывается по episodeKey/streamUrl)
- * и оценка тайтла (живёт без ключей — как раньше).
+ * и финальное действие тайтла (живёт без ключей — как раньше).
  */
 @Stable
 internal class TvPlayerPromptsState(
     nextEpisodePromptState: MutableState<PlayerEndPromptState>,
-    showRateTitlePromptState: MutableState<Boolean>,
+    finalEpisodeActionPromptState: MutableState<PlayerFinalEpisodeAction?>,
 ) {
     var nextEpisodePrompt: PlayerEndPromptState by nextEpisodePromptState
-    var showRateTitlePrompt: Boolean by showRateTitlePromptState
+    var finalEpisodeActionPrompt: PlayerFinalEpisodeAction? by finalEpisodeActionPromptState
 
     val anyVisible: Boolean
-        get() = nextEpisodePrompt.isVisible || showRateTitlePrompt
+        get() = nextEpisodePrompt.isVisible || finalEpisodeActionPrompt != null
 }
 
 @Composable
@@ -34,11 +34,11 @@ internal fun rememberTvPlayerPromptsState(
     val nextEpisodePrompt = remember(episodeKey, streamUrl) {
         mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
     }
-    val showRateTitlePrompt = remember { mutableStateOf(false) }
+    val finalEpisodeActionPrompt = remember { mutableStateOf<PlayerFinalEpisodeAction?>(null) }
     return remember(nextEpisodePrompt) {
         TvPlayerPromptsState(
             nextEpisodePromptState = nextEpisodePrompt,
-            showRateTitlePromptState = showRateTitlePrompt,
+            finalEpisodeActionPromptState = finalEpisodeActionPrompt,
         )
     }
 }

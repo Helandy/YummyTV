@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.preferences.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.preferences.settings.PlayerZoomLevel
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 
 data class PlayerProgressSnapshot(
     val episode: String,
@@ -62,6 +63,7 @@ class PlayerState {
         val offlineCacheKey: String? = null,
         val isAllohaPlaybackRecovering: Boolean = false,
         val showChangePlayerHint: Boolean = false,
+        val finalEpisodeAction: PlayerFinalEpisodeAction = PlayerFinalEpisodeAction.Loading,
     ) : UiState
 
     /** Пользовательские действия и события воспроизведения на экране плеера. */
@@ -155,6 +157,9 @@ class PlayerState {
         /** Мобильный плеер запросил фоновое обновление подписанного Alloha-потока. */
         /** Пользователь перешёл к оценке текущего тайтла. */
         data object RateTitle : Event
+
+        /** Пользователь перешёл к управлению уведомлениями о новых сериях. */
+        data object ManageSubscriptions : Event
 
     }
 

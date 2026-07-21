@@ -20,7 +20,7 @@ internal class TvPlayerFocusRequesters {
     val selectedResize = FocusRequester()
     val skip = FocusRequester()
     val nextEpisode = FocusRequester()
-    val rateTitle = FocusRequester()
+    val finalEpisodeAction = FocusRequester()
 
     fun control(target: PlayerControlFocusTarget): FocusRequester =
         when (target) {

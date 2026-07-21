@@ -16,6 +16,7 @@ import su.afk.yummy.tv.feature.player.common.logPlaybackError
 import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
 import su.afk.yummy.tv.feature.player.common.positionSnapshot
 import su.afk.yummy.tv.feature.player.common.toPlaybackErrorEvent
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
@@ -39,7 +40,7 @@ internal fun TvPlayerListenerEffect(
     fallbackDurationMs: () -> Long,
     hasNextEpisode: () -> Boolean,
     nextEpisodeSwitchesDubbing: () -> Boolean,
-    canRateTitleOnEnd: () -> Boolean,
+    finalEpisodeAction: () -> PlayerFinalEpisodeAction,
     autoPlayNextEpisode: () -> Boolean,
     wantsPlay: () -> Boolean,
     onWantsPlayChanged: (Boolean) -> Unit,
@@ -50,7 +51,7 @@ internal fun TvPlayerListenerEffect(
     val currentFallbackDuration by rememberUpdatedState(fallbackDurationMs)
     val currentHasNextEpisode by rememberUpdatedState(hasNextEpisode)
     val currentNextEpisodeSwitchesDubbing by rememberUpdatedState(nextEpisodeSwitchesDubbing)
-    val currentCanRateTitleOnEnd by rememberUpdatedState(canRateTitleOnEnd)
+    val currentFinalEpisodeAction by rememberUpdatedState(finalEpisodeAction)
     val currentAutoPlayNextEpisode by rememberUpdatedState(autoPlayNextEpisode)
     val currentWantsPlay by rememberUpdatedState(wantsPlay)
     val currentOnWantsPlayChanged by rememberUpdatedState(onWantsPlayChanged)
@@ -87,11 +88,16 @@ internal fun TvPlayerListenerEffect(
                         currentOnControllerVisibleChange(true)
                         panels.close()
                         autoHide.cancel()
-                    } else if (currentCanRateTitleOnEnd()) {
-                        prompts.showRateTitlePrompt = true
-                        currentOnControllerVisibleChange(true)
-                        panels.close()
-                        autoHide.cancel()
+                    } else {
+                        val action = currentFinalEpisodeAction()
+                        if (action == PlayerFinalEpisodeAction.RateTitle ||
+                            action == PlayerFinalEpisodeAction.ManageSubscriptions
+                        ) {
+                            prompts.finalEpisodeActionPrompt = action
+                            currentOnControllerVisibleChange(true)
+                            panels.close()
+                            autoHide.cancel()
+                        }
                     }
                 }
             }

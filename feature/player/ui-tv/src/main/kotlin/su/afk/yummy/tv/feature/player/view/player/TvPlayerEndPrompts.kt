@@ -7,11 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.presentation.R
 
-/** Промпты по центру: следующий эпизод (с отсчётом) и оценка тайтла. */
+/** Промпты по центру: следующий эпизод и финальное действие тайтла. */
 @Composable
 internal fun BoxScope.TvPlayerEndPrompts(
     prompts: TvPlayerPromptsState,
@@ -20,6 +21,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
     nextEpisodeDubbing: String?,
     onPlayNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
+    onManageSubscriptions: () -> Unit,
     onInteraction: () -> Unit,
 ) {
     TvPlayerEndPrompt(
@@ -52,15 +54,34 @@ internal fun BoxScope.TvPlayerEndPrompts(
         modifier = Modifier.align(Alignment.Center),
     )
 
+    val finalAction = prompts.finalEpisodeActionPrompt
     TvPlayerEndPrompt(
-        visible = prompts.showRateTitlePrompt,
-        title = stringResource(R.string.player_rate_title_prompt),
-        primaryLabel = stringResource(R.string.player_rate_title),
+        visible = finalAction != null,
+        title = stringResource(
+            if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
+                R.string.player_notifications_prompt
+            } else {
+                R.string.player_rate_title_prompt
+            }
+        ),
+        primaryLabel = stringResource(
+            if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
+                R.string.player_manage_notifications
+            } else {
+                R.string.player_rate_title
+            }
+        ),
         stayLabel = stringResource(R.string.player_stay),
-        primaryFocusRequester = focus.rateTitle,
-        onPrimary = onRateTitle,
+        primaryFocusRequester = focus.finalEpisodeAction,
+        onPrimary = {
+            if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
+                onManageSubscriptions()
+            } else {
+                onRateTitle()
+            }
+        },
         onStay = {
-            prompts.showRateTitlePrompt = false
+            prompts.finalEpisodeActionPrompt = null
             onInteraction()
         },
         onInteraction = onInteraction,

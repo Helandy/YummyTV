@@ -22,6 +22,7 @@ import su.afk.yummy.tv.feature.details.navigator.DetailsRatingDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsRelationDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsScreenshotsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsSimilarDestination
+import su.afk.yummy.tv.feature.details.navigator.DetailsSubscriptionsDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsTrailersDestination
 import su.afk.yummy.tv.feature.details.navigator.DetailsViewingOrderDestination
 import su.afk.yummy.tv.feature.details.rating.RatingTvScreen
@@ -32,6 +33,8 @@ import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsTvScreen
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsViewModel
 import su.afk.yummy.tv.feature.details.similar.SimilarTvScreen
 import su.afk.yummy.tv.feature.details.similar.SimilarViewModel
+import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsTvScreen
+import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsViewModel
 import su.afk.yummy.tv.feature.details.trailers.TrailersTvScreen
 import su.afk.yummy.tv.feature.details.trailers.TrailersViewModel
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderTvScreen
@@ -69,6 +72,17 @@ class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     EpisodesTvScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+
+            entry<DetailsSubscriptionsDestination> { dest ->
+                val viewModel =
+                    hiltViewModel<SubscriptionsViewModel, SubscriptionsViewModel.Factory>(
+                        key = "subscriptions-${dest.animeId}",
+                        creationCallback = { factory -> factory.create(dest.animeId) },
+                    )
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    SubscriptionsTvScreen(state = state, effect = effect, onEvent = onEvent)
                 }
             }
 

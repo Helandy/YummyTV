@@ -185,7 +185,7 @@ internal fun TvExoPlayerView(
     LaunchedEffect(exitState.requested) {
         if (exitState.requested) {
             prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.showRateTitlePrompt = false
+            prompts.finalEpisodeActionPrompt = null
             autoHide.cancel()
             exoPlayer.pause()
         }
@@ -242,16 +242,23 @@ internal fun TvExoPlayerView(
         if (exitState.requested) return
         reporter.saveProgress(progress.currentPosition, progress.duration)
         prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-        prompts.showRateTitlePrompt = false
+        prompts.finalEpisodeActionPrompt = null
         panels.close()
         onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
     }
 
     fun rateTitle() {
         if (exitState.requested) return
-        prompts.showRateTitlePrompt = false
+        prompts.finalEpisodeActionPrompt = null
         panels.close()
         onPlayerEvent(PlayerState.Event.RateTitle)
+    }
+
+    fun manageSubscriptions() {
+        if (exitState.requested) return
+        prompts.finalEpisodeActionPrompt = null
+        panels.close()
+        onPlayerEvent(PlayerState.Event.ManageSubscriptions)
     }
 
     val activeSkip = if (isMediaReady) {
@@ -307,7 +314,7 @@ internal fun TvExoPlayerView(
         nextEpisodeSwitchesDubbing = {
             !playback.hasNextEpisode && playback.nextEpisodeDubbing != null
         },
-        canRateTitleOnEnd = { playback.canRateTitleOnEnd },
+        finalEpisodeAction = { playback.finalEpisodeAction },
         autoPlayNextEpisode = { state.autoPlayNextEpisode },
         wantsPlay = { wantsPlay },
         onWantsPlayChanged = { wantsPlay = it },
@@ -359,7 +366,7 @@ internal fun TvExoPlayerView(
     BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible || controllerVisible) {
         if (panels.isAnyOpen || prompts.anyVisible) {
             prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.showRateTitlePrompt = false
+            prompts.finalEpisodeActionPrompt = null
             panels.close(
                 returnFocusTarget = when (panels.activePanel) {
                     TvPlayerPanel.Quality -> PanelReturnFocusTarget.Quality
@@ -475,6 +482,7 @@ internal fun TvExoPlayerView(
                 onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
             },
             onRateTitle = ::rateTitle,
+            onManageSubscriptions = ::manageSubscriptions,
             onToggleQuality = {
                 togglePanel(TvPlayerPanel.Quality, PanelReturnFocusTarget.Quality)
             },
@@ -558,6 +566,7 @@ internal fun TvExoPlayerView(
             nextEpisodeDubbing = playback.nextEpisodeDubbing,
             onPlayNextEpisode = ::playNextEpisode,
             onRateTitle = ::rateTitle,
+            onManageSubscriptions = ::manageSubscriptions,
             onInteraction = ::onInteraction,
         )
 

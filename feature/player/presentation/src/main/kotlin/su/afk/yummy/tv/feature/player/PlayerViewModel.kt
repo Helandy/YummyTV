@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
+import androidx.navigation3.runtime.NavKey
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -26,6 +27,7 @@ import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HI
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceGraphLoadResult
@@ -33,6 +35,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerSourceSelectionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerSourceStreamHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResumeMode
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
@@ -51,6 +54,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val playbackProgressHandler: PlayerPlaybackProgressHandler,
     private val settingsHandler: PlayerSettingsHandler,
     private val displaySettingsHandler: PlayerDisplaySettingsHandler,
+    private val finalEpisodeActionHandler: PlayerFinalEpisodeActionHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
     private val getVideoDownload: GetVideoDownloadUseCase,
@@ -70,9 +74,10 @@ class PlayerViewModel @AssistedInject internal constructor(
     private var sourceGraphJob: Job? = null
     private var allohaPlaybackRecoveryJob: Job? = null
     private var streamLoadingHintJob: Job? = null
+    private var finalEpisodeActionJob: Job? = null
     private var mobileGestureTutorialReady = false
     private var showMobileGestureTutorial = false
-    private var isNavigatingToRating = false
+    private var isNavigatingToChildScreen = false
 
     fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
@@ -94,6 +99,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 mobilePlayerVolumePercent = mobilePlayerVolumePercent,
             )
         }
+        loadFinalEpisodeAction(newDest.animeId)
         observeActivePlayerResizeSettings(force = true)
         observeActivePlayerMobileVideoTransformSettings(force = true)
         if (newDest.downloadId > 0L) {
@@ -144,6 +150,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (dest.downloadId > 0L) {
             loadDownloadedDestination(dest.downloadId)
         } else {
+            loadFinalEpisodeAction(dest.animeId)
             observeActivePlayerResizeSettings()
             observeActivePlayerMobileVideoTransformSettings()
             loadSourceGraph()
@@ -205,16 +212,33 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             PlayerState.Event.TvAppBackgrounded -> {
-                if (!isNavigatingToRating) returnToDetailsAfterTvBackground()
+                if (!isNavigatingToChildScreen) returnToDetailsAfterTvBackground()
             }
 
             PlayerState.Event.RateTitle -> {
                 analytics.eventRateTitle(currentState.animeId)
                 val animeId = currentState.animeId
-                if (animeId > 0 && !isNavigatingToRating) {
-                    isNavigatingToRating = true
+                if (animeId > 0 && !isNavigatingToChildScreen) {
+                    isNavigatingToChildScreen = true
                     saveCurrentProgressThenNavigate {
-                        navigateFromPlayerToRating(animeId)
+                        navigateFromPlayerToChild(
+                            animeId = animeId,
+                            childDestination = detailsNavigator.getRatingDest(animeId),
+                        )
+                    }
+                }
+            }
+
+            PlayerState.Event.ManageSubscriptions -> {
+                analytics.eventManageSubscriptions(currentState.animeId)
+                val animeId = currentState.animeId
+                if (animeId > 0 && !isNavigatingToChildScreen) {
+                    isNavigatingToChildScreen = true
+                    saveCurrentProgressThenNavigate {
+                        navigateFromPlayerToChild(
+                            animeId = animeId,
+                            childDestination = detailsNavigator.getSubscriptionsDest(animeId),
+                        )
                     }
                 }
             }
@@ -485,6 +509,16 @@ class PlayerViewModel @AssistedInject internal constructor(
                     playerError = null,
                 )
             }
+            loadFinalEpisodeAction(item.animeId)
+        }
+    }
+
+    private fun loadFinalEpisodeAction(animeId: Int) {
+        finalEpisodeActionJob?.cancel()
+        setState { copy(finalEpisodeAction = PlayerFinalEpisodeAction.Loading) }
+        finalEpisodeActionJob = viewModelScope.launch {
+            val action = finalEpisodeActionHandler.resolve(animeId)
+            setState { copy(finalEpisodeAction = action) }
         }
     }
 
@@ -527,15 +561,14 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun navigateFromPlayerToRating(animeId: Int) {
+    private fun navigateFromPlayerToChild(animeId: Int, childDestination: NavKey) {
         val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-        val ratingDestination = detailsNavigator.getRatingDest(animeId)
         val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
         if (previousDestination == detailsDestination) {
-            nav.replace(ratingDestination)
+            nav.replace(childDestination)
         } else {
             nav.replace(detailsDestination)
-            nav.navigate(ratingDestination)
+            nav.navigate(childDestination)
         }
     }
 

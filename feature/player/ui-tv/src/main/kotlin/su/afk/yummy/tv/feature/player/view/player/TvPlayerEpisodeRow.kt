@@ -20,13 +20,14 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun TvPlayerEpisodeRow(
     hasPrevEpisode: Boolean,
     hasNextEpisode: Boolean,
-    canRateTitle: Boolean,
+    finalEpisodeAction: PlayerFinalEpisodeAction,
     qualityCount: Int,
     allDubbingNames: List<String>,
     currentDubbingIndex: Int,
@@ -46,6 +47,7 @@ internal fun TvPlayerEpisodeRow(
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
+    onManageSubscriptions: () -> Unit,
     onToggleQuality: () -> Unit,
     onToggleDubbing: () -> Unit,
     onToggleBalancer: () -> Unit,
@@ -161,7 +163,9 @@ internal fun TvPlayerEpisodeRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (hasNextEpisode || canRateTitle) {
+        val hasFinalEpisodeAction = finalEpisodeAction == PlayerFinalEpisodeAction.RateTitle ||
+                finalEpisodeAction == PlayerFinalEpisodeAction.ManageSubscriptions
+        if (hasNextEpisode || hasFinalEpisodeAction) {
             Spacer(Modifier.width(8.dp))
         }
         if (hasNextEpisode) {
@@ -172,13 +176,27 @@ internal fun TvPlayerEpisodeRow(
             ) { color ->
                 Text(stringResource(R.string.player_next_episode), style = MaterialTheme.typography.labelLarge, color = color)
             }
-        } else if (canRateTitle) {
+        } else if (hasFinalEpisodeAction) {
+            val onFinalEpisodeAction = when (finalEpisodeAction) {
+                PlayerFinalEpisodeAction.ManageSubscriptions -> onManageSubscriptions
+                else -> onRateTitle
+            }
             TvControlButton(
-                onClick = onRateTitle,
+                onClick = onFinalEpisodeAction,
                 onFocused = onInteraction,
                 modifier = Modifier.focusProperties { up = upFocusRequester },
             ) { color ->
-                Text(stringResource(R.string.player_rate_title), style = MaterialTheme.typography.labelLarge, color = color)
+                Text(
+                    text = stringResource(
+                        if (finalEpisodeAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
+                            R.string.player_manage_notifications
+                        } else {
+                            R.string.player_rate_title
+                        }
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = color,
+                )
             }
         }
     }

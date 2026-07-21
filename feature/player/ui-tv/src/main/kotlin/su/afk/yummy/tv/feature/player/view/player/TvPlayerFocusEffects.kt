@@ -14,7 +14,7 @@ import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 
 /**
- * Управление фокусом TV-плеера. Приоритет: промпт следующего эпизода -> промпт оценки ->
+ * Управление фокусом TV-плеера. Приоритет: следующий эпизод -> финальное действие ->
  * контролы (внешняя цель -> возврат из панели -> play) -> скрытый оверлей.
  * Каждая панель получает фокус своим отдельным LaunchedEffect.
  */
@@ -41,7 +41,7 @@ internal fun TvPlayerFocusEffects(
         controllerVisible,
         panels.activePanel,
         prompts.nextEpisodePrompt.isVisible,
-        prompts.showRateTitlePrompt,
+        prompts.finalEpisodeActionPrompt,
         recoveryHintVisible,
         restoreControlFocusTarget,
     ) {
@@ -51,10 +51,10 @@ internal fun TvPlayerFocusEffects(
                 focus.nextEpisode.requestFocus()
             } catch (_: Exception) {
             }
-        } else if (prompts.showRateTitlePrompt) {
+        } else if (prompts.finalEpisodeActionPrompt != null) {
             withFrameNanos { }
             try {
-                focus.rateTitle.requestFocus()
+                focus.finalEpisodeAction.requestFocus()
             } catch (_: Exception) {
             }
         } else if (recoveryHintVisible) {

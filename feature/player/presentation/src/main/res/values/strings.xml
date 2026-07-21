@@ -52,6 +52,8 @@
     <string name="player_next_episode_prompt_other_dubbing">Continue with the “%1$s” voiceover?</string>
     <string name="player_rate_title_prompt">Rate this title?</string>
     <string name="player_rate_title">Rate</string>
+    <string name="player_manage_notifications">Notifications</string>
+    <string name="player_notifications_prompt">Get notified about new episodes?</string>
     <string name="player_watch_next">Watch</string>
     <string name="player_stay">Stay</string>
 </resources>

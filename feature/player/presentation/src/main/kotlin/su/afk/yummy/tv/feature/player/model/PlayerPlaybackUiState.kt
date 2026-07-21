@@ -35,7 +35,7 @@ data class PlayerPlaybackUiState(
     val hasNextEpisode: Boolean,
     /** Озвучка, в которой есть серия N+1, когда в активной озвучке серии закончились */
     val nextEpisodeDubbing: String?,
-    val canRateTitleOnEnd: Boolean,
+    val finalEpisodeAction: PlayerFinalEpisodeAction,
     val dubbingNames: List<String>,
     val dubbingEpisodeCounts: List<Int>,
     val dubbingViews: List<Int>,
@@ -97,7 +97,11 @@ fun PlayerState.State.toPlayerPlaybackUiState(
                 sourceGraph.balancers[source.balancerIndex].dubbings[source.dubbingIndex].name
             }
         },
-        canRateTitleOnEnd = isFinalAvailableEpisode(this, activeEpisode) && animeId > 0,
+        finalEpisodeAction = if (isFinalAvailableEpisode(this, activeEpisode) && animeId > 0) {
+            finalEpisodeAction
+        } else {
+            PlayerFinalEpisodeAction.None
+        },
         dubbingNames = displayedDubbingNames,
         dubbingEpisodeCounts = globalEpisodeNumbers.map { it.distinct().size },
         dubbingViews = globalViews,

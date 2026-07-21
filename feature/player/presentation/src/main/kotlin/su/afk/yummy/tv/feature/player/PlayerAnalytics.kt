@@ -52,6 +52,11 @@ internal class PlayerAnalytics @Inject constructor(
         tracker.track(EVENT_RATE_TITLE_SELECTED, playerParams(animeId))
     }
 
+    /** Пользователь открыл управление уведомлениями о новых сериях из плеера. */
+    fun eventManageSubscriptions(animeId: Int) {
+        tracker.track(EVENT_MANAGE_SUBSCRIPTIONS_SELECTED, playerParams(animeId))
+    }
+
     /**
      * Пользователь открыл тайтл из плеера.
      *
@@ -415,6 +420,7 @@ internal class PlayerAnalytics @Inject constructor(
         const val EVENT_PREVIOUS_EPISODE_SELECTED = "player_previous_episode_selected"
         const val EVENT_QUALITY_SELECTED = "player_quality_selected"
         const val EVENT_RATE_TITLE_SELECTED = "player_rate_title_selected"
+        const val EVENT_MANAGE_SUBSCRIPTIONS_SELECTED = "player_manage_subscriptions_selected"
         const val EVENT_RESIZE_MODE_SELECTED = "player_resize_mode_selected"
         const val EVENT_RETRY_STREAM_SELECTED = "player_retry_stream_selected"
         const val EVENT_SCREEN_OPENED = "player_screen"
