@@ -1,8 +1,10 @@
 package su.afk.yummy.tv.feature.player.view
 
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,9 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import su.afk.yummy.tv.feature.player.common.StepSeekDirection
 import su.afk.yummy.tv.feature.player.model.MobileVerticalGestureZone
 import kotlin.math.sqrt
+
+private const val VERTICAL_GESTURE_EDGE_FRACTION = 0.2f
 
 @Composable
 internal fun MobilePlayerGestureLayer(
@@ -113,33 +118,44 @@ internal fun MobilePlayerGestureLayer(
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
 
-                var zone: MobileVerticalGestureZone? = null
-                detectVerticalDragGestures(
-                    onDragStart = { offset ->
-                        zone = if (offset.x < size.width / 2f) {
-                            MobileVerticalGestureZone.Brightness
-                        } else {
-                            MobileVerticalGestureZone.Volume
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val gestureHeight = size.height
+                    if (!down.position.isInVerticalGestureArea(gestureHeight)) {
+                        return@awaitEachGesture
+                    }
+
+                    val zone = if (down.position.x < size.width / 2f) {
+                        MobileVerticalGestureZone.Brightness
+                    } else {
+                        MobileVerticalGestureZone.Volume
+                    }
+                    var overSlop = 0f
+                    val drag = awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
+                        change.consume()
+                        overSlop = over
+                    }
+                    if (drag != null) {
+                        currentOnVerticalDragStart(zone)
+                        currentOnVerticalDrag(zone, -overSlop / gestureHeight)
+                        verticalDrag(drag.id) { change ->
+                            currentOnVerticalDrag(
+                                zone,
+                                -change.positionChange().y / gestureHeight,
+                            )
+                            change.consume()
                         }
-                        zone?.let(currentOnVerticalDragStart)
-                    },
-                    onVerticalDrag = { _, dragAmount ->
-                        val activeZone = zone ?: return@detectVerticalDragGestures
-                        if (size.height > 0) {
-                            currentOnVerticalDrag(activeZone, -dragAmount / size.height)
-                        }
-                    },
-                    onDragEnd = {
-                        zone?.let(currentOnVerticalDragEnd)
-                        zone = null
-                    },
-                    onDragCancel = {
-                        zone?.let(currentOnVerticalDragEnd)
-                        zone = null
-                    },
-                )
+                        currentOnVerticalDragEnd(zone)
+                    }
+                }
             },
     )
+}
+
+private fun Offset.isInVerticalGestureArea(height: Int): Boolean {
+    if (height <= 0) return false
+    val edgeHeight = height * VERTICAL_GESTURE_EDGE_FRACTION
+    return y in edgeHeight..(height - edgeHeight)
 }
 
 private fun centroidOf(first: Offset, second: Offset): Offset =

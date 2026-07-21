@@ -27,7 +27,7 @@
     <string name="player_mobile_gesture_tutorial_seek_title">Quick seeking</string>
     <string name="player_mobile_gesture_tutorial_seek_description">Double-tap the left or right half of the screen to seek backward or forward</string>
     <string name="player_mobile_gesture_tutorial_vertical_title">Brightness and volume</string>
-    <string name="player_mobile_gesture_tutorial_vertical_description">Swipe vertically on the left for brightness or on the right for volume</string>
+    <string name="player_mobile_gesture_tutorial_vertical_description">Swipe vertically in the center of the screen: left for brightness or right for volume</string>
     <string name="player_mobile_gesture_tutorial_brightness">Brightness</string>
     <string name="player_mobile_gesture_tutorial_volume">Volume</string>
     <string name="player_mobile_gesture_tutorial_zoom_title">Zoom and position</string>

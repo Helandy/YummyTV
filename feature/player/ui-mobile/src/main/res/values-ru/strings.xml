@@ -27,7 +27,7 @@
     <string name="player_mobile_gesture_tutorial_seek_title">Быстрая перемотка</string>
     <string name="player_mobile_gesture_tutorial_seek_description">Дважды коснитесь левой или правой половины экрана, чтобы перемотать назад или вперёд</string>
     <string name="player_mobile_gesture_tutorial_vertical_title">Яркость и громкость</string>
-    <string name="player_mobile_gesture_tutorial_vertical_description">Проведите вертикально слева для яркости или справа для громкости</string>
+    <string name="player_mobile_gesture_tutorial_vertical_description">Проведите вертикально в центре экрана: слева для яркости или справа для громкости</string>
     <string name="player_mobile_gesture_tutorial_brightness">Яркость</string>
     <string name="player_mobile_gesture_tutorial_volume">Громкость</string>
     <string name="player_mobile_gesture_tutorial_zoom_title">Масштаб и положение</string>
