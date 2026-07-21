@@ -4,20 +4,12 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbingName
-import su.afk.yummy.tv.feature.player.utils.activeEpisode
-import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
-import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.model.PlayerCompletionAnalyticsKey
+import su.afk.yummy.tv.feature.player.utils.completionAnalyticsKey
+import su.afk.yummy.tv.feature.player.utils.isFirstEpisodeNumber
+import su.afk.yummy.tv.feature.player.utils.progressContext
+import su.afk.yummy.tv.feature.player.utils.progressSnapshot
 import javax.inject.Inject
-
-private data class PlayerCompletionAnalyticsKey(
-    val animeId: Int,
-    val videoId: Int,
-    val episode: String,
-    val iframeUrl: String,
-)
 
 /**
  * Координирует сохранение прогресса просмотра и аналитику завершения эпизода.
@@ -153,56 +145,6 @@ internal class PlayerPlaybackProgressHandler @Inject constructor(
     suspend fun shouldSuggestNextEpisodeOnWatched(): Boolean =
         progressHandler.shouldSuggestNextEpisodeOnWatched()
 
-    private fun PlayerState.State.progressContext(): PlayerProgressContext =
-        PlayerProgressContext(
-            animeId = animeId,
-            animeTitle = animeTitle,
-            posterUrl = posterUrl,
-        )
-
-    private fun PlayerState.State.progressSnapshot(
-        positionMs: Long,
-        durationMs: Long,
-    ): PlayerProgressSnapshot? {
-        val episodeUrl = activeIframeUrl(this)
-        val episode = activeEpisode(this)
-        if (episodeUrl.isBlank() || episode.isBlank()) return null
-        return PlayerProgressSnapshot(
-            episode = episode,
-            episodeUrl = episodeUrl,
-            videoId = activeVideoId(this),
-            playerName = activeBalancerName(this),
-            dubbing = activeDubbingName(this),
-            screenshotUrl = activeScreenshotUrl(this),
-            positionMs = positionMs,
-            durationMs = durationMs,
-        )
-    }
-
-    private fun PlayerState.State.completionAnalyticsKey(): PlayerCompletionAnalyticsKey? {
-        val animeId = animeId.takeIf { it > 0 } ?: return null
-        val videoId = activeVideoId(this)
-        val episode = activeEpisode(this)
-        val iframeUrl = activeIframeUrl(this)
-        if (videoId <= 0 && episode.isBlank() && iframeUrl.isBlank()) return null
-        return PlayerCompletionAnalyticsKey(
-            animeId = animeId,
-            videoId = videoId,
-            episode = episode,
-            iframeUrl = iframeUrl,
-        )
-    }
-
-    private fun String.isFirstEpisodeNumber(): Boolean {
-        val normalized = trim().replace(',', '.')
-        val number = normalized.toDoubleOrNull()
-            ?: Regex("""\d+(?:[.,]\d+)?""")
-                .find(normalized)
-                ?.value
-                ?.replace(',', '.')
-                ?.toDoubleOrNull()
-        return number == 1.0
-    }
 }
 
 /** Запрос на сохранение прогресса просмотра. */

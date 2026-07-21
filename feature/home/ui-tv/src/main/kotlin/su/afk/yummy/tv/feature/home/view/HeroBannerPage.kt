@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.feature.home.utils.posterUrl
 
 @Composable
 internal fun HeroBannerPage(

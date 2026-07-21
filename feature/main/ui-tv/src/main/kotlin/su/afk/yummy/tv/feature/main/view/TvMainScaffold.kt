@@ -3,7 +3,12 @@ package su.afk.yummy.tv.feature.main.view
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,6 +33,7 @@ fun TvMainScaffold(
     menuItems: List<TvMenuItem>,
     state: MainState.State,
     showMainMenu: Boolean = true,
+    applyTopSafeDrawingInset: Boolean = true,
     onEvent: (MainState.Event) -> Unit = {},
     toastMessage: String? = null,
     content: @Composable () -> Unit,
@@ -49,6 +55,13 @@ fun TvMainScaffold(
     val menuCanFocus = focusController.menuCanFocus &&
             focusController.previousShowMainMenu &&
             !focusController.restoreContentFocusAfterMenuShown
+    val topSafeDrawingModifier = if (applyTopSafeDrawingInset) {
+        Modifier.windowInsetsPadding(
+            WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
+        )
+    } else {
+        Modifier
+    }
 
     LaunchedEffect(showMainMenu) {
         if (!showMainMenu) {
@@ -91,50 +104,57 @@ fun TvMainScaffold(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            TvMainContentPane(
-                showMainMenu = showMainMenu,
-                menuExpanded = menuExpanded,
-                contentFocusRequester = focusController.contentFocusRequester,
-                selectedRootFocusRequester = selectedRootFocusRequester,
-                currentPreferredContentFocusRequester = currentPreferredContentFocusRequester,
-                onFocusChanged = { isFocused, hasFocus ->
-                    focusController.onContentFocusChanged(
-                        isFocused = isFocused,
-                        hasFocus = hasFocus,
-                        currentPreferredContentFocusRequester = currentPreferredContentFocusRequester,
-                    )
-                },
+            Box(
+                modifier = topSafeDrawingModifier.fillMaxSize(),
             ) {
-                content()
+                TvMainContentPane(
+                    showMainMenu = showMainMenu,
+                    menuExpanded = menuExpanded,
+                    contentFocusRequester = focusController.contentFocusRequester,
+                    selectedRootFocusRequester = selectedRootFocusRequester,
+                    currentPreferredContentFocusRequester = currentPreferredContentFocusRequester,
+                    onFocusChanged = { isFocused, hasFocus ->
+                        focusController.onContentFocusChanged(
+                            isFocused = isFocused,
+                            hasFocus = hasFocus,
+                            currentPreferredContentFocusRequester = currentPreferredContentFocusRequester,
+                        )
+                    },
+                ) {
+                    content()
+                }
             }
 
             GlobalToastOverlay(text = toastMessage)
 
             if (showMainMenu) {
-                TvSideMenu(
-                    selectedRoot = selectedRoot,
-                    menuItems = menuItems,
-                    accountLabel = accountLabel,
-                    accountAvatarUrl = accountAvatarUrl,
-                    unreadNotificationsCount = state.unreadNotificationsCount,
-                    expanded = menuExpanded,
-                    onExpandedChange = { expanded ->
-                        // Пока запрос фокуса контента в полёте, меню не должно
-                        // само раскрываться, перехватив временно потерянный фокус
-                        menuExpanded = expanded &&
-                                focusController.pendingContentFocusRequest == null
-                    },
-                    onEvent = onEvent,
-                    rootFocusRequesters = focusController.rootFocusRequesters,
-                    menuEnterFocusRequester = selectedRootFocusRequester,
-                    rightFocusRequesterForRoot = focusController.rightFocusRequesterForRoot,
-                    canFocus = menuCanFocus,
-                    onMenuNavigationFocusLocked = focusController::updateMenuNavigationFocusLocked,
-                    onMoveToContent = { root ->
-                        menuExpanded = false
-                        focusController.requestContentFocus(root)
-                    },
-                )
+                Box(modifier = topSafeDrawingModifier.fillMaxSize()) {
+                    TvSideMenu(
+                        selectedRoot = selectedRoot,
+                        menuItems = menuItems,
+                        accountLabel = accountLabel,
+                        accountAvatarUrl = accountAvatarUrl,
+                        unreadNotificationsCount = state.unreadNotificationsCount,
+                        expanded = menuExpanded,
+                        onExpandedChange = { expanded ->
+                            // Пока запрос фокуса контента в полёте, меню не должно
+                            // само раскрываться, перехватив временно потерянный фокус
+                            menuExpanded = expanded &&
+                                    focusController.pendingContentFocusRequest == null
+                        },
+                        onEvent = onEvent,
+                        rootFocusRequesters = focusController.rootFocusRequesters,
+                        menuEnterFocusRequester = selectedRootFocusRequester,
+                        rightFocusRequesterForRoot = focusController.rightFocusRequesterForRoot,
+                        canFocus = menuCanFocus,
+                        onMenuNavigationFocusLocked =
+                            focusController::updateMenuNavigationFocusLocked,
+                        onMoveToContent = { root ->
+                            menuExpanded = false
+                            focusController.requestContentFocus(root)
+                        },
+                    )
+                }
             }
         }
     }

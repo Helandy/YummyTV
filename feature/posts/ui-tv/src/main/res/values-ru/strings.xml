@@ -14,5 +14,4 @@
     <string name="posts_views_short">Просмотров: %1$s</string>
     <string name="posts_count_thousands">%1$sк</string>
     <string name="posts_count_millions">%1$s млн</string>
-    <string name="posts_comments_phone_only">Комментарии доступны в приложении на телефоне</string>
 </resources>

@@ -33,14 +33,15 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingSc
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.feature.library.utils.focusStateKey
 import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.utils.userAnimeListId
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
-import su.afk.yummy.tv.feature.library.view.LibraryTvHistoryPage
 import su.afk.yummy.tv.feature.library.view.LibraryRemoteErrorBanner
 import su.afk.yummy.tv.feature.library.view.LibraryTopTabs
+import su.afk.yummy.tv.feature.library.view.LibraryTvHistoryPage
 
 @Preview(
     name = "Default",
@@ -263,5 +264,3 @@ fun LibraryTvScreen(
 }
 
 private const val LibraryFocusSourceLocal = "local"
-
-private fun LibraryTab.focusStateKey(source: String): String = "${name}_$source"

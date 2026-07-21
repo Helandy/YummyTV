@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
 import su.afk.yummy.tv.feature.bloggers.mobile.R
+import su.afk.yummy.tv.feature.bloggers.mobile.utils.labelRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -237,10 +238,4 @@ private fun BloggerVideosFiltersSheet(
 @Composable
 private fun FilterSectionTitle(text: String) {
     Text(text = text, fontWeight = FontWeight.SemiBold)
-}
-
-private fun BloggerVideoSort.labelRes() = when (this) {
-    BloggerVideoSort.NEW -> R.string.blogger_videos_sort_new
-    BloggerVideoSort.TOP -> R.string.blogger_videos_sort_top
-    BloggerVideoSort.OLD -> R.string.blogger_videos_sort_old
 }

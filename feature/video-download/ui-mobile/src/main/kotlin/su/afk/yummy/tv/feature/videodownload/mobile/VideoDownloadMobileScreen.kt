@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.rememberNotificationPe
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.videodownload.VideoDownloadState
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.formatDiskSize
+import su.afk.yummy.tv.feature.videodownload.mobile.utils.isEligibleForExport
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadDeleteConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadMobileCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportAllConfirmationDialog
@@ -198,13 +199,3 @@ fun VideoDownloadMobileScreen(
 
     NotificationPermissionGateHost(state = notificationPermissionGate)
 }
-
-private fun su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem.isEligibleForExport(
-    destinationUri: String?,
-): Boolean =
-    status == su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus.Downloaded &&
-            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Queued &&
-            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Preparing &&
-            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Copying &&
-            !(exportStatus == su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Exported &&
-                    exportDirectoryUri == destinationUri)

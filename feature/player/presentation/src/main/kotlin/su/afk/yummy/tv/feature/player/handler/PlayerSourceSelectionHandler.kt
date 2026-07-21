@@ -11,6 +11,8 @@ import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.resolveDubbingSource
+import su.afk.yummy.tv.feature.player.utils.toDubbingSource
+import su.afk.yummy.tv.feature.player.utils.withEpisodeSelection
 import javax.inject.Inject
 
 internal class PlayerSourceSelectionHandler @Inject constructor() {
@@ -112,19 +114,3 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         const val RESUME_BACKOFF_MS = 3_000L
     }
 }
-
-private fun PlayerState.State.withEpisodeSelection(selection: PlayerSourceSelection): PlayerState.State =
-    copy(
-        sourceSelection = selection,
-        dubbingResumeMs = -1L,
-        resumeFromMs = 0L,
-        playbackPositionMs = 0L,
-        playbackDurationMs = 0L,
-    )
-
-private fun PlayerSourceSelection.toDubbingSource() =
-    su.afk.yummy.tv.feature.player.utils.DubbingSource(
-        balancerIndex = balancerIndex,
-        dubbingIndex = dubbingIndex,
-        episodeIndex = episodeIndex,
-    )

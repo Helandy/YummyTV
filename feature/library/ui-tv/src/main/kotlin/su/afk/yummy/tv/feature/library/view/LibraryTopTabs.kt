@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -15,12 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.label
 import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
+import su.afk.yummy.tv.feature.library.utils.tvTabColor
 
 @Composable
 internal fun LibraryTopTabs(
@@ -87,16 +86,3 @@ internal fun LibraryTopTabs(
         }
     }
 }
-
-@Composable
-private fun LibraryTab.tvTabColor(): Color =
-    when (this) {
-        LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
-        LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
-        LibraryTab.WATCHING -> Color(0xFFFF6B6B)
-        LibraryTab.PLANNED -> Color(0xFFA678E8)
-        LibraryTab.COMPLETED -> Color(0xFF69D38B)
-        LibraryTab.POSTPONED -> Color(0xFFFFC857)
-        LibraryTab.DROPPED -> Color(0xFF9CA3AF)
-        LibraryTab.FAVORITES -> Color(0xFFD86BFF)
-    }

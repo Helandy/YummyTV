@@ -14,6 +14,9 @@ import su.afk.yummy.tv.domain.videodownload.usecase.CancelOrDeleteVideoDownloadU
 import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
+import su.afk.yummy.tv.feature.details.episodes.utils.aggregateDubbingDownloadStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadDubbingName
+import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
@@ -257,31 +260,6 @@ internal class EpisodeDownloadHandler @Inject constructor(
         val headers: Map<String, String>,
     )
 
-    private companion object {
-        fun AnimeVideo.toDownloadStatusKey(): String =
-            listOf(id.toString(), iframeUrl).joinToString("|")
-
-        fun AnimeVideo.toDownloadDubbingName(): String = dubbing.ifBlank { player }
-
-        fun List<AnimeVideo>.aggregateDubbingDownloadStatus(
-            statuses: Map<String, EpisodesState.EpisodeDownloadUiState>,
-        ): EpisodesState.EpisodeDownloadUiState? {
-            val states = map { statuses[it.toDownloadStatusKey()] }
-            if (states.isEmpty() || states.any { it == null }) return null
-            val present = states.filterNotNull()
-            return when {
-                present.all {
-                    it.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                            it.status == EpisodesState.EpisodeDownloadUiStatus.Downloading
-                } -> present.first()
-
-                present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Downloaded } -> present.first()
-                present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Paused } -> present.first()
-                present.all { it.status == EpisodesState.EpisodeDownloadUiStatus.Failed } -> present.first()
-                else -> null
-            }
-        }
-    }
 }
 
 internal sealed interface EpisodeDownloadPrepareResult {

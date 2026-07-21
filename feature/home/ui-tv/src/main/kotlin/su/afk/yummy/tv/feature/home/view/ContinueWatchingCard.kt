@@ -10,8 +10,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.TvProgressMediaCar
 import su.afk.yummy.tv.core.utils.KodikThumbnail
 import su.afk.yummy.tv.core.utils.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.R
+import su.afk.yummy.tv.feature.home.utils.bestUrl
 import su.afk.yummy.tv.feature.home.utils.msToTimeString
 
 private val CardWidth = 220.dp
@@ -67,6 +67,3 @@ internal fun ContinueWatchingCard(
         progressColor = InProgressColor,
     )
 }
-
-private fun HomePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small

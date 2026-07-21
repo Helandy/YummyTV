@@ -31,6 +31,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobilePosterGrid
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.feature.top.mobile.R
+import su.afk.yummy.tv.feature.top.mobile.utils.uiMessage
 
 @Composable
 internal fun TopMobileGrid(
@@ -155,6 +156,3 @@ private fun TopMobileRankBadge(
             .padding(horizontal = 5.dp, vertical = 2.dp),
     )
 }
-
-private fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

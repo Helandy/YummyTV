@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.rating.utils.count
 import java.text.NumberFormat
 
 @Composable
@@ -59,5 +60,3 @@ internal fun MobileListStats(
         }
     }
 }
-
-private fun AnimeListStats.count(list: UserAnimeList): Int = counts[list.id] ?: 0

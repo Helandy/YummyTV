@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,12 +26,9 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -61,7 +57,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
@@ -70,7 +65,6 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingSc
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.core.designsystem.presenter.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatFeedDateTime
 import su.afk.yummy.tv.domain.posts.model.PostVote
@@ -78,6 +72,7 @@ import su.afk.yummy.tv.feature.posts.details.utils.compactCount
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
 import su.afk.yummy.tv.feature.posts.tv.R
 import su.afk.yummy.tv.feature.posts.utils.parsePostContent
+import su.afk.yummy.tv.feature.posts.view.PostVoteButton
 import su.afk.yummy.tv.feature.posts.view.TvPostFullscreenImageDialog
 
 @Composable
@@ -418,13 +413,7 @@ fun PostDetailsTvScreen(
                             },
                         )
                         OutlinedButton(
-                            onClick = {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.posts_comments_phone_only),
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                            },
+                            onClick = { onEvent(PostDetailsState.Event.CommentsSelected) },
                         ) {
                             Text(stringResource(R.string.posts_comments, details.comments))
                         }
@@ -439,37 +428,5 @@ fun PostDetailsTvScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun PostVoteButton(
-    isLike: Boolean,
-    count: Int,
-    selected: Boolean,
-    enabled: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    val voteColor = if (isLike) YummySemanticColors.Like else YummySemanticColors.Dislike
-    val tint = if (selected) voteColor else voteColor.copy(alpha = 0.72f)
-    OutlinedButton(
-        modifier = modifier.width(112.dp),
-        enabled = enabled,
-        onClick = onClick,
-    ) {
-        Icon(
-            imageVector = if (isLike) Icons.Default.ThumbUp else Icons.Default.ThumbDown,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier
-                .size(18.dp)
-                .padding(end = 4.dp),
-        )
-        Text(
-            text = count.toString(),
-            color = tint,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-        )
     }
 }

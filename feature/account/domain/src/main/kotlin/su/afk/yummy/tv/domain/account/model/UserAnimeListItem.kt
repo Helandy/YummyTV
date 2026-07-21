@@ -12,11 +12,3 @@ data class UserAnimeListItem(
     val updatedAtSeconds: Long? = null,
     val userRating: Int? = null,
 )
-
-data class UserAnimePoster(
-    val small: String?,
-    val medium: String?,
-    val big: String?,
-    val fullsize: String?,
-    val mega: String?,
-)

@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.account.model.ProfileCounterItem
 
 @Composable
 internal fun ProfileListCountersRow(
@@ -245,9 +246,3 @@ private fun Modifier.profileCounterChipFocus(
         }
         .focusable()
 }
-
-private data class ProfileCounterItem(
-    val label: String,
-    val count: Int,
-    val color: Color,
-)

@@ -14,5 +14,4 @@
     <string name="posts_views_short">%1$s views</string>
     <string name="posts_count_thousands">%1$sK</string>
     <string name="posts_count_millions">%1$sM</string>
-    <string name="posts_comments_phone_only">Comments are available in the phone app</string>
 </resources>

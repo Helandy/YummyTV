@@ -15,6 +15,7 @@
     <string name="comments_delete">Удалить</string>
     <string name="comments_report">Пожаловаться</string>
     <string name="comments_spoiler_hidden">%1$s скрыт</string>
+    <string name="comments_spoiler_title">Спойлер</string>
     <string name="comments_sign_in_hint">Войдите, чтобы писать комментарии, голосовать и жаловаться.</string>
     <string name="comments_new_comment">Новый комментарий</string>
     <string name="comments_reply_to">Ответ для %1$s</string>

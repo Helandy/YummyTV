@@ -98,6 +98,7 @@ internal fun DetailsButtonAction.label(): String = stringResource(
         DetailsButtonAction.VIEWING_ORDER -> R.string.settings_details_button_viewing_order
         DetailsButtonAction.RATING -> R.string.settings_details_button_rating
         DetailsButtonAction.COLLECTIONS -> R.string.settings_details_button_collections
+        DetailsButtonAction.COMMENTS -> R.string.settings_details_button_comments
         DetailsButtonAction.REVIEWS -> R.string.settings_details_button_reviews
         DetailsButtonAction.BLOGGER_VIDEOS -> R.string.settings_details_button_blogger_videos
         DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots

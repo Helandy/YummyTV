@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
-import su.afk.yummy.tv.feature.details.mobile.view.common.formatCompactCount
+import su.afk.yummy.tv.feature.details.mobile.utils.formatCompactCount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

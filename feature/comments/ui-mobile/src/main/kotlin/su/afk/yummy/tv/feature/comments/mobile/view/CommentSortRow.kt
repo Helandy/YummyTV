@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.comments.model.CommentSort
+import su.afk.yummy.tv.feature.comments.mobile.utils.label
 
 @Composable
 internal fun CommentSortRow(

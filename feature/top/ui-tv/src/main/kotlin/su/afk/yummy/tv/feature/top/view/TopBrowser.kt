@@ -59,6 +59,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
+import su.afk.yummy.tv.feature.top.utils.uiMessage
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
@@ -396,9 +397,6 @@ internal fun TopBrowser(
         }
     }
 }
-
-private fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()
 
 private val TOP_FOCUS_RESTORE_TIMEOUT = 500.milliseconds
 private val TvFocusedCardBottomInset = 24.dp

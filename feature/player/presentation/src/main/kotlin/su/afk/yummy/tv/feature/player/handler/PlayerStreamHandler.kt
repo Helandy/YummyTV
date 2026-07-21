@@ -14,6 +14,8 @@ import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.qualityHeight
+import su.afk.yummy.tv.feature.player.utils.toMessage
 import javax.inject.Inject
 
 /** Resolves the active player iframe into a playable stream and presentation-ready stream errors. */
@@ -62,7 +64,7 @@ internal class PlayerStreamHandler @Inject constructor(
 
             is PlayerStreamResolveResult.KodikBlocked -> {
                 session?.close()
-                PlayerStreamResult.KodikBlocked(message = result.toMessage())
+                PlayerStreamResult.KodikBlocked(message = result.toMessage(strings))
             }
 
             is PlayerStreamResolveResult.Unavailable -> {
@@ -129,14 +131,6 @@ internal class PlayerStreamHandler @Inject constructor(
                 ?.first
             ?: available.maxByOrNull { (_, height) -> height }?.first
     }
-
-    private fun String.qualityHeight(): Int? =
-        Regex("""\d+""").find(this)?.value?.toIntOrNull()
-
-    private fun PlayerStreamResolveResult.KodikBlocked.toMessage(): String =
-        message
-            ?: statusCode?.let { strings.get(R.string.player_server_error, it) }
-            ?: strings.get(R.string.player_kodik_blocked)
 
     private companion object {
         const val ALLOHA_PLAYBACK_FALLBACK_SESSION_TTL_SECONDS = 120

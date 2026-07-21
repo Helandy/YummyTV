@@ -11,9 +11,9 @@ import su.afk.yummy.tv.feature.player.common.PlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.PlayerCompletionTracker
 import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.logPlaybackError
-import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
-import su.afk.yummy.tv.feature.player.common.positionSnapshot
 import su.afk.yummy.tv.feature.player.common.toPlaybackErrorEvent
+import su.afk.yummy.tv.feature.player.common.utils.playerEndPromptFor
+import su.afk.yummy.tv.feature.player.common.utils.positionSnapshot
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanelsState

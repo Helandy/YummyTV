@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 
 @Composable
 internal fun LinkedAccountsSection(
@@ -63,13 +64,3 @@ internal fun LinkedAccountsSection(
         }
     }
 }
-
-@Composable
-internal fun LinkedAccountProvider.label(): String = stringResource(
-    when (this) {
-        LinkedAccountProvider.VK -> R.string.profile_linked_vk
-        LinkedAccountProvider.TELEGRAM -> R.string.profile_linked_telegram
-        LinkedAccountProvider.DISCORD -> R.string.profile_linked_discord
-        LinkedAccountProvider.SHIKIMORI -> R.string.profile_linked_shikimori
-    }
-)

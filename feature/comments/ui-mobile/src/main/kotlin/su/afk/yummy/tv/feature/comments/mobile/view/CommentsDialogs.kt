@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.feature.comments.mobile.R
+import su.afk.yummy.tv.feature.comments.mobile.utils.label
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

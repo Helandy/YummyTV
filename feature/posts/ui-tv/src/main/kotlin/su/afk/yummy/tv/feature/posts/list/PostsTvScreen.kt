@@ -49,6 +49,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.feature.posts.tv.R
+import su.afk.yummy.tv.feature.posts.utils.label
 import su.afk.yummy.tv.feature.posts.view.PostChip
 import su.afk.yummy.tv.feature.posts.view.PostTvCard
 
@@ -84,7 +85,8 @@ fun PostsTvScreen(
     fun cardFocusRequester(id: Int): FocusRequester =
         cardFocusRequesters.getOrPut(id) { FocusRequester() }
 
-    val restoreTargetId = initialRestoreId?.takeIf { itemIds.contains(it) } ?: itemIds.firstOrNull()
+    val savedRestoreTargetId = initialRestoreId?.takeIf { itemIds.contains(it) }
+    val restoreTargetId = savedRestoreTargetId ?: itemIds.firstOrNull()
 
     // Регистрируем КОНКРЕТНУЮ карточку как preferred-фокус контента: иначе скаффолд с
     // задержкой фокусирует сам список и уводит фокус на верхнюю видимую карточку,
@@ -98,15 +100,17 @@ fun PostsTvScreen(
     }
 
     // Восстановление фокуса на сохранённой новости (или первой при первом заходе):
-    // карточка может быть ещё не скомпонована, поэтому подкручиваем к ней список, ждём
-    // появления и просим фокус по кадрам. isRestoringFocus гасит перезапись
-    // savedFocusedId промежуточным фокусом на верхней карточке.
-    LaunchedEffect(hasContent) {
+    // к сохранённой карточке подкручиваем список, но при первом входе оставляем начало
+    // списка с заголовком и фильтрами. Затем ждём появления карточки и просим фокус
+    // по кадрам. isRestoringFocus гасит перезапись savedFocusedId промежуточным фокусом.
+    LaunchedEffect(hasContent, savedRestoreTargetId) {
         if (!hasContent) return@LaunchedEffect
         val targetId = restoreTargetId ?: return@LaunchedEffect
-        val index = itemIds.indexOf(targetId)
         isRestoringFocus = true
-        listState.scrollToItem((index + HEADER_ITEM_COUNT).coerceAtLeast(0))
+        savedRestoreTargetId?.let {
+            val index = itemIds.indexOf(it)
+            listState.scrollToItem((index + HEADER_ITEM_COUNT).coerceAtLeast(0))
+        }
         snapshotFlow {
             listState.layoutInfo.visibleItemsInfo.any { it.key == targetId }
         }.first { it }
@@ -238,13 +242,6 @@ fun PostsTvScreen(
             else -> Unit
         }
     }
-}
-
-@Composable
-private fun PostSort.label() = when (this) {
-    PostSort.NEW -> stringResource(R.string.posts_new)
-    PostSort.OLD -> stringResource(R.string.posts_old)
-    PostSort.BEST -> stringResource(R.string.posts_best)
 }
 
 // Ряды-заголовки (заголовок+сортировка, ряд категорий) перед карточками в LazyColumn.

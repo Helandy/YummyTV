@@ -7,6 +7,7 @@
     <string name="details_blogger_videos">Blogger videos</string>
     <string name="details_reviews">Reviews</string>
     <string name="details_reviews_count">Reviews (%1$d)</string>
+    <string name="details_comments">Comments</string>
     <string name="details_screenshots_empty">No screenshots found</string>
     <string name="details_screenshots_title">Screenshots</string>
     <string name="details_episode_content_description">Episode %1$s</string>

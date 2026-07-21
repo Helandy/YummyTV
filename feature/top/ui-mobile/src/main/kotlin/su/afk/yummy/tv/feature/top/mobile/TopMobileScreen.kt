@@ -18,13 +18,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.domain.top.model.AnimeTopType
 import su.afk.yummy.tv.feature.top.TopState
+import su.afk.yummy.tv.feature.top.mobile.utils.toTopType
+import su.afk.yummy.tv.feature.top.mobile.utils.toTopTypePage
+import su.afk.yummy.tv.feature.top.mobile.utils.topMobileTypes
 import su.afk.yummy.tv.feature.top.mobile.view.TopMobileGrid
 import su.afk.yummy.tv.feature.top.mobile.view.TopMobileTypeTabs
-
-private val topMobileTypes: List<AnimeTopType>
-    get() = AnimeTopType.entries
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -102,9 +101,3 @@ fun TopMobileScreen(
         }
     }
 }
-
-private fun AnimeTopType.toTopTypePage(): Int =
-    topMobileTypes.indexOf(this).coerceAtLeast(0)
-
-private fun Int.toTopType(): AnimeTopType =
-    topMobileTypes.getOrElse(this) { AnimeTopType.TV }

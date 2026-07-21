@@ -55,6 +55,7 @@
     <string name="settings_details_button_viewing_order">Порядок просмотра</string>
     <string name="settings_details_button_rating">Рейтинг</string>
     <string name="settings_details_button_collections">Коллекции</string>
+    <string name="settings_details_button_comments">Комментарии</string>
     <string name="settings_details_button_reviews">Отзывы</string>
     <string name="settings_details_button_blogger_videos">Видео блогеров</string>
     <string name="settings_details_button_screenshots">Скриншоты</string>

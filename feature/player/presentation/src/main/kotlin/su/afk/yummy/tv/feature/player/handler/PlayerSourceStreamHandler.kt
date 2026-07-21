@@ -2,19 +2,13 @@ package su.afk.yummy.tv.feature.player.handler
 
 import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
-import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbingName
-import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
-import su.afk.yummy.tv.feature.player.utils.activePlayerId
-import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.toPresentationSourceGraph
+import su.afk.yummy.tv.feature.player.utils.toSourceRequest
 import javax.inject.Inject
 
 /** Описывает, как обращаться с позицией просмотра при запросе нового потока. */
@@ -261,19 +255,6 @@ internal class PlayerSourceStreamHandler @Inject constructor(
     fun playbackErrorMessage(message: String, errorCode: String? = null): String =
         streamHandler.playbackErrorMessage(message, errorCode)
 
-    /** Собирает domain-запрос источников из текущего выбранного presentation-источника. */
-    private fun PlayerState.State.toSourceRequest(): PlayerSourceRequest =
-        PlayerSourceRequest(
-            animeId = animeId,
-            iframeUrl = activeIframeUrl(this),
-            animeTitle = animeTitle,
-            episode = activeEpisode(this),
-            playerName = activeBalancerName(this),
-            dubbing = activeDubbingName(this),
-            selectedVideoId = activeVideoId(this),
-            selectedPlayerId = activePlayerId(this),
-            selectedScreenshotUrl = activeScreenshotUrl(this),
-        )
 }
 
 /** Инструкция после попытки загрузить или обновить граф источников плеера. */

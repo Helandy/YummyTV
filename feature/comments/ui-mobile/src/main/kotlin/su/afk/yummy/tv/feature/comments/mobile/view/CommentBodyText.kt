@@ -17,17 +17,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.comments.mobile.R
-
-private val spoilerRegex = Regex(
-    pattern = "\\[спойлер(?:=\"([^\"]*)\")?](.*?)\\[/спойлер]",
-    options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
-)
-private val bbCodeRegex = Regex("\\[/?[^\\]]+]")
+import su.afk.yummy.tv.feature.comments.mobile.model.CommentTextPart
+import su.afk.yummy.tv.feature.comments.mobile.utils.splitSpoilers
+import su.afk.yummy.tv.feature.comments.mobile.utils.stripBbCode
 
 @Composable
 internal fun CommentBodyText(text: String) {
     val spoilers = remember(text) { mutableStateMapOf<Int, Boolean>() }
-    val parts = remember(text) { splitSpoilers(text) }
+    val defaultSpoilerTitle = stringResource(R.string.comments_spoiler_title)
+    val parts = remember(text, defaultSpoilerTitle) {
+        splitSpoilers(text, defaultSpoilerTitle)
+    }
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -68,30 +68,3 @@ internal fun CommentBodyText(text: String) {
         }
     }
 }
-
-private sealed interface CommentTextPart {
-    data class Plain(val text: String) : CommentTextPart
-    data class Spoiler(val title: String, val text: String) : CommentTextPart
-}
-
-private fun splitSpoilers(text: String): List<CommentTextPart> {
-    val result = mutableListOf<CommentTextPart>()
-    var cursor = 0
-    spoilerRegex.findAll(text).forEach { match ->
-        val before = text.substring(cursor, match.range.first)
-        if (before.isNotBlank()) result += CommentTextPart.Plain(before)
-        result += CommentTextPart.Spoiler(
-            title = match.groups[1]?.value?.takeIf { it.isNotBlank() } ?: "Спойлер",
-            text = match.groups[2]?.value.orEmpty(),
-        )
-        cursor = match.range.last + 1
-    }
-    val tail = text.substring(cursor)
-    if (tail.isNotBlank()) result += CommentTextPart.Plain(tail)
-    return result.ifEmpty { listOf(CommentTextPart.Plain(text)) }
-}
-
-private fun String.stripBbCode(): String =
-    replace(bbCodeRegex, "")
-        .replace("&nbsp;", " ")
-        .trim()

@@ -13,8 +13,3 @@ data class ProfileNotification(
     val animeSlug: String? = null,
     val isNewEpisode: Boolean = false,
 )
-
-data class NotificationCount(
-    val type: String,
-    val count: Int,
-)

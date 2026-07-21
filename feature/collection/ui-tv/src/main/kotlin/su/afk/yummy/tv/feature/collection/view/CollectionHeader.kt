@@ -172,10 +172,10 @@ private fun CollectionVoteActions(
     downFocusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    Row(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.End,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         CollectionVoteButton(
             selected = collection.vote == CollectionVote.LIKE,
@@ -187,7 +187,8 @@ private fun CollectionVoteActions(
                 .focusRequester(likeFocusRequester)
                 .collectionVoteFocus(
                     leftFocusRequester = leftFocusRequester,
-                    downFocusRequester = dislikeFocusRequester,
+                    rightFocusRequester = dislikeFocusRequester,
+                    downFocusRequester = downFocusRequester,
                 ),
         )
         CollectionVoteButton(
@@ -199,7 +200,7 @@ private fun CollectionVoteActions(
             modifier = Modifier
                 .focusRequester(dislikeFocusRequester)
                 .collectionVoteFocus(
-                    leftFocusRequester = leftFocusRequester,
+                    leftFocusRequester = likeFocusRequester,
                     downFocusRequester = downFocusRequester,
                 ),
         )
@@ -241,11 +242,15 @@ private fun CollectionVoteButton(
 
 private fun Modifier.collectionVoteFocus(
     leftFocusRequester: FocusRequester?,
+    rightFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester?,
 ): Modifier =
     focusProperties {
         if (leftFocusRequester != null) {
             left = leftFocusRequester
+        }
+        if (rightFocusRequester != null) {
+            right = rightFocusRequester
         }
         if (downFocusRequester != null) {
             down = downFocusRequester

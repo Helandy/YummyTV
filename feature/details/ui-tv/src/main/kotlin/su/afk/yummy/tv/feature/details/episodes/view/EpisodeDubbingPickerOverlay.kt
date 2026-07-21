@@ -53,7 +53,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.view.common.formatCompactCount
+import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 
 @Composable
 internal fun EpisodeDubbingPickerOverlay(

@@ -44,11 +44,10 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.rememberTvLazyFocusRest
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.utils.posterUrl
 import su.afk.yummy.tv.feature.library.utils.tvDateText
 import su.afk.yummy.tv.feature.library.utils.tvUserRating
 
@@ -278,13 +277,4 @@ internal fun LibraryGrid(
             }
         }
     }
-}
-
-private fun LibraryItem.posterUrl(quality: PosterQuality): String? = poster.posterUrl(quality)
-
-private fun LibraryPoster?.posterUrl(quality: PosterQuality): String? = when (quality) {
-    PosterQuality.LOW -> this?.medium ?: this?.big ?: this?.fullsize ?: this?.small
-    PosterQuality.STANDARD -> this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
-    PosterQuality.MEGA -> this?.mega ?: this?.big ?: this?.medium ?: this?.fullsize ?: this?.small
-    PosterQuality.HIGH -> this?.fullsize ?: this?.mega ?: this?.big ?: this?.medium ?: this?.small
 }

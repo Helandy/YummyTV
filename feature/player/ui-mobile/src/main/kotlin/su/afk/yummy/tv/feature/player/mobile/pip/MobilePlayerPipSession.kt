@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.util.Rational
+import su.afk.yummy.tv.feature.player.mobile.pip.model.MobilePlayerPipCallbacks
 
 internal class MobilePlayerPipSession(
     private val canEnterPictureInPicture: (Context) -> Boolean,

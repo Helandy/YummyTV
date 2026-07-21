@@ -7,8 +7,8 @@ import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.model.anime.progress
 import su.afk.yummy.tv.feature.details.R
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 internal fun List<AnimeVideo>.watchStatus(
     watchProgress: DetailsWatchProgressIndex,

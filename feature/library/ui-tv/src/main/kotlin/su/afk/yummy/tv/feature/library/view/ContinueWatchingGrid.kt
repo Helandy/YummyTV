@@ -43,6 +43,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalMainMenuFocusRequ
 import su.afk.yummy.tv.core.preferences.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.utils.continueWatchingFocusKey
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -295,9 +296,6 @@ internal fun ContinueWatchingGrid(
         }
     }
 }
-
-private fun HomeContinueWatchingItem.continueWatchingFocusKey(): String =
-    "$animeId:$videoId:$episode:$episodeUrl"
 
 private val LibraryContinueWatchingCardSize.tvMinCardWidth
     get() = when (this) {

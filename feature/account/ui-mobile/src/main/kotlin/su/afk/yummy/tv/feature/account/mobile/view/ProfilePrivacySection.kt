@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.ProfileListPrivacy
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,13 +124,3 @@ private fun ProfileSwitch(
         Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
-
-@Composable
-private fun ProfileListPrivacy.label() = stringResource(
-    when (this) {
-        ProfileListPrivacy.PUBLIC -> R.string.profile_privacy_public
-        ProfileListPrivacy.FRIENDS -> R.string.profile_privacy_friends
-        ProfileListPrivacy.AUTHORIZED -> R.string.profile_privacy_authorized
-        ProfileListPrivacy.PRIVATE -> R.string.profile_privacy_private
-    }
-)

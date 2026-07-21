@@ -9,6 +9,23 @@ import su.afk.yummy.tv.feature.player.PlayerState
 internal fun normalizedSourceSelection(state: PlayerState.State): PlayerSourceSelection =
     state.sourceSelection.normalizedFor(state.sourceGraph.balancers)
 
+internal fun PlayerState.State.withEpisodeSelection(
+    selection: PlayerSourceSelection,
+): PlayerState.State = copy(
+    sourceSelection = selection,
+    dubbingResumeMs = -1L,
+    resumeFromMs = 0L,
+    playbackPositionMs = 0L,
+    playbackDurationMs = 0L,
+)
+
+internal fun PlayerSourceSelection.toDubbingSource(): DubbingSource =
+    DubbingSource(
+        balancerIndex = balancerIndex,
+        dubbingIndex = dubbingIndex,
+        episodeIndex = episodeIndex,
+    )
+
 internal fun PlayerSourceSelection.normalizedFor(
     balancers: List<PlayerSourceBalancer>,
 ): PlayerSourceSelection {

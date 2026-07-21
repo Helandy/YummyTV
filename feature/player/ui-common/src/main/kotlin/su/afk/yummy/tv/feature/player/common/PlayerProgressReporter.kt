@@ -5,6 +5,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
+import su.afk.yummy.tv.feature.player.common.utils.buildProgressSnapshot
 
 /**
  * Отправка позиции воспроизведения и сохранение прогресса.

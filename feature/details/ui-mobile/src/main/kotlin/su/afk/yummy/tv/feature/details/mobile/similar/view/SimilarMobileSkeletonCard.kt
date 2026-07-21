@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TITLE_POSTER_ASPECT_RATIO
 
 @Composable
 internal fun SimilarMobileSkeletonCard(alpha: Float, color: Color) {
@@ -28,7 +29,7 @@ internal fun SimilarMobileSkeletonCard(alpha: Float, color: Color) {
         SkeletonBlock(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f),
+                .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
             alpha = alpha,
             color = color,
             shape = RoundedCornerShape(0.dp),

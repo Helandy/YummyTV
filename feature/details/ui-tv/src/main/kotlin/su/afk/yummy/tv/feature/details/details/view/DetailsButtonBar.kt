@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -69,13 +70,13 @@ import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.R
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.model.ButtonData
 import su.afk.yummy.tv.feature.details.details.model.ButtonRowData
 import su.afk.yummy.tv.feature.details.details.model.ButtonStyle
-import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.details.utils.label
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 
 @Composable
 internal fun DetailsButtonBar(
@@ -102,6 +103,7 @@ internal fun DetailsButtonBar(
     onScreenshotsSelected: () -> Unit,
     onRatingSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
     modifier: Modifier = Modifier,
@@ -213,6 +215,13 @@ internal fun DetailsButtonBar(
             Icons.Filled.CollectionsBookmark,
             ButtonStyle.Normal,
             onCollectionsSelected,
+        ),
+        ButtonData(
+            DetailsButtonAction.COMMENTS,
+            stringResource(R.string.details_comments),
+            Icons.AutoMirrored.Filled.Comment,
+            ButtonStyle.Normal,
+            onCommentsSelected,
         ),
         ButtonData(
             DetailsButtonAction.REVIEWS,

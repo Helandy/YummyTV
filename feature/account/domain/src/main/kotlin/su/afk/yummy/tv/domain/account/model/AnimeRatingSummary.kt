@@ -1,0 +1,6 @@
+package su.afk.yummy.tv.domain.account.model
+
+data class AnimeRatingSummary(
+    val distribution: List<AnimeRatingBucket> = emptyList(),
+    val userRating: Int? = null,
+)

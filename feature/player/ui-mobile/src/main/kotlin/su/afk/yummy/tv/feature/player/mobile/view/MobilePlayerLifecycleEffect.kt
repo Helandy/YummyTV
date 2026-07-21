@@ -9,10 +9,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.Player
-import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
-import su.afk.yummy.tv.feature.player.common.downgradedCountdown
-import su.afk.yummy.tv.feature.player.common.positionSnapshot
+import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
+import su.afk.yummy.tv.feature.player.common.utils.downgradedCountdown
+import su.afk.yummy.tv.feature.player.common.utils.positionSnapshot
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipSession
 
 /**

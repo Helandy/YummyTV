@@ -85,6 +85,7 @@ include(":feature:comments:domain")
 include(":feature:comments:data")
 include(":feature:comments:presentation")
 include(":feature:comments:ui-mobile")
+include(":feature:comments:ui-tv")
 
 include(":feature:reviews:api")
 include(":feature:reviews:domain")

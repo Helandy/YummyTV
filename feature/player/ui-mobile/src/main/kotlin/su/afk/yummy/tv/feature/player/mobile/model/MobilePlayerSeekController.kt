@@ -7,7 +7,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
-import su.afk.yummy.tv.feature.player.common.StepSeekDirection
+import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.mobile.utils.isAtMobilePlayerEnd
 
 /** Перемотка мобильного плеера: clamp к длительности, обработка конца эпизода, step-seek. */

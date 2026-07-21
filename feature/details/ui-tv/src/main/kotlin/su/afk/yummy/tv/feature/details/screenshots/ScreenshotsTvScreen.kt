@@ -29,8 +29,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
-import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
 
@@ -122,8 +122,3 @@ fun ScreenshotsTvScreen(
         }
     }
 }
-
-private fun AnimeScreenshot.screenshotLazyKey(index: Int): String =
-    full?.takeIf { it.isNotBlank() }
-        ?: small?.takeIf { it.isNotBlank() }
-        ?: "empty:$index"

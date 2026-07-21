@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.reviews.model.ReviewRating
 import su.afk.yummy.tv.feature.reviews.mobile.R
+import su.afk.yummy.tv.feature.reviews.mobile.utils.reviewScoreColor
 
 @Composable
 internal fun ReviewRatingCard(
@@ -48,7 +49,7 @@ internal fun ReviewRatingCard(
                 )
                 rating.average?.let { score ->
                     Surface(
-                        color = score.scoreColor(),
+                        color = score.reviewScoreColor(),
                         contentColor = YummySemanticColors.OnScoreBadge,
                         shape = RoundedCornerShape(10.dp),
                     ) {
@@ -86,11 +87,4 @@ internal fun ReviewRatingCard(
             }
         }
     }
-}
-
-@Composable
-private fun Int.scoreColor() = when {
-    this >= 8 -> YummySemanticColors.ScoreHigh
-    this >= 5 -> YummySemanticColors.ScoreMid
-    else -> MaterialTheme.colorScheme.error
 }

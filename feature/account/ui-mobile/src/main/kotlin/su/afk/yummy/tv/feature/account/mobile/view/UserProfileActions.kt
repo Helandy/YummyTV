@@ -9,11 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
+import su.afk.yummy.tv.feature.account.mobile.account.utils.actionIcon
 
 @Composable
 internal fun UserProfileActions(
@@ -130,13 +128,4 @@ private fun ProfileAction(
             )
         }
     }
-}
-
-private fun FriendshipStatus.actionIcon(isAuthorized: Boolean): ImageVector = when {
-    !isAuthorized -> Icons.AutoMirrored.Filled.Login
-    this == FriendshipStatus.FRIENDS ||
-            this == FriendshipStatus.FOLLOWING ||
-            this == FriendshipStatus.SENT_REQUESTS -> Icons.Filled.PersonRemove
-
-    else -> Icons.Filled.PersonAdd
 }

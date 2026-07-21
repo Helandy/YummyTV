@@ -34,6 +34,7 @@ import su.afk.yummy.tv.feature.details.details.handler.DetailsSubscriptionHandle
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideoHandler
 import su.afk.yummy.tv.feature.details.details.handler.DetailsVideosResult
 import su.afk.yummy.tv.feature.details.details.handler.DetailsWatchTarget
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.subscribedKeys
 import su.afk.yummy.tv.feature.details.utils.toLibraryPoster

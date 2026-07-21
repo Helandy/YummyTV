@@ -18,8 +18,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotFullscreenDialog
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotMobileCard
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsState
@@ -103,8 +103,3 @@ fun ScreenshotsMobileScreen(
         }
     }
 }
-
-private fun AnimeScreenshot.screenshotLazyKey(index: Int): String =
-    full?.takeIf { it.isNotBlank() }
-        ?: small?.takeIf { it.isNotBlank() }
-        ?: "empty:$index"

@@ -40,6 +40,8 @@ import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchSort
 import su.afk.yummy.tv.feature.search.R
+import su.afk.yummy.tv.feature.search.utils.focusStateKey
+import su.afk.yummy.tv.feature.search.utils.uiMessage
 
 @Composable
 internal fun SearchResultsPane(
@@ -288,29 +290,3 @@ private fun SearchErrorMessage(
         modifier = modifier,
     )
 }
-
-private fun SearchFilters.focusStateKey(): String = buildString {
-    append("genres=")
-    append(genres.sorted().joinToString(","))
-    append("|excluded=")
-    append(excludedGenres.sorted().joinToString(","))
-    append("|types=")
-    append(types.sorted().joinToString(","))
-    append("|statuses=")
-    append(statuses.sorted().joinToString(","))
-    append("|from=")
-    append(fromYear)
-    append("|to=")
-    append(toYear)
-    append("|seasons=")
-    append(seasons.sorted().joinToString(","))
-    append("|ages=")
-    append(ageRatings.sorted().joinToString(","))
-    append("|sort=")
-    append(sort.name)
-    append("|forward=")
-    append(sortForward)
-}
-
-private fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

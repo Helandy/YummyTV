@@ -11,8 +11,8 @@ import androidx.compose.ui.focus.FocusRequester
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 @Composable
 internal fun DetailsBody(
@@ -38,6 +38,7 @@ internal fun DetailsBody(
     onScreenshotsSelected: () -> Unit,
     onRatingScreenSelected: () -> Unit,
     onCollectionsSelected: () -> Unit,
+    onCommentsSelected: () -> Unit,
     onReviewsSelected: () -> Unit,
     onBloggerVideosSelected: () -> Unit,
 ) {
@@ -71,6 +72,7 @@ internal fun DetailsBody(
             onScreenshotsSelected = onScreenshotsSelected,
             onRatingScreenSelected = onRatingScreenSelected,
             onCollectionsSelected = onCollectionsSelected,
+            onCommentsSelected = onCommentsSelected,
             onReviewsSelected = onReviewsSelected,
             onBloggerVideosSelected = onBloggerVideosSelected,
         )

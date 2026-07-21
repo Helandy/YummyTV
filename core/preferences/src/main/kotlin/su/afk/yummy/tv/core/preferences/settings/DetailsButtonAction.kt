@@ -12,6 +12,7 @@ enum class DetailsButtonAction {
     VIEWING_ORDER,
     RATING,
     COLLECTIONS,
+    COMMENTS,
     REVIEWS,
     BLOGGER_VIDEOS,
     SCREENSHOTS,

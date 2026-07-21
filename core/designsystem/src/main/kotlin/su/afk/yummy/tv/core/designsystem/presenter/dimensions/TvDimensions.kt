@@ -16,6 +16,8 @@ object TvCardSpacing {
     val Vertical = 12.dp
 }
 
+const val TITLE_POSTER_ASPECT_RATIO = 570f / 800f
+
 data class PosterCardDimensions(
     val width: Dp,
     val posterHeight: Dp,
@@ -41,14 +43,19 @@ private val PosterCardSize.mobilePosterWidth: Dp
 
 private val PosterCardSize.tvTitleCardDimensions: PosterCardDimensions
     get() = when (this) {
-        PosterCardSize.COMPACT -> PosterCardDimensions(width = 144.dp, posterHeight = 198.dp)
-        PosterCardSize.STANDARD -> PosterCardDimensions(width = 172.dp, posterHeight = 236.dp)
-        PosterCardSize.LARGE -> PosterCardDimensions(width = 200.dp, posterHeight = 274.dp)
+        PosterCardSize.COMPACT -> posterCardDimensions(width = 144.dp)
+        PosterCardSize.STANDARD -> posterCardDimensions(width = 172.dp)
+        PosterCardSize.LARGE -> posterCardDimensions(width = 200.dp)
     }
 
 private val PosterCardSize.tvHomeFeedCardDimensions: PosterCardDimensions
     get() = when (this) {
-        PosterCardSize.COMPACT -> PosterCardDimensions(width = 152.dp, posterHeight = 194.dp)
-        PosterCardSize.STANDARD -> PosterCardDimensions(width = 180.dp, posterHeight = 230.dp)
-        PosterCardSize.LARGE -> PosterCardDimensions(width = 208.dp, posterHeight = 266.dp)
+        PosterCardSize.COMPACT -> posterCardDimensions(width = 152.dp)
+        PosterCardSize.STANDARD -> posterCardDimensions(width = 180.dp)
+        PosterCardSize.LARGE -> posterCardDimensions(width = 208.dp)
     }
+
+private fun posterCardDimensions(width: Dp): PosterCardDimensions = PosterCardDimensions(
+    width = width,
+    posterHeight = width / TITLE_POSTER_ASPECT_RATIO,
+)

@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.domain.reviews.model.ReviewReactions
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 import su.afk.yummy.tv.domain.reviews.usecase.DeleteReviewUseCase
 import su.afk.yummy.tv.domain.reviews.usecase.GetReviewDetailsUseCase
@@ -142,7 +143,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
         }
     }
 
-    private fun su.afk.yummy.tv.domain.reviews.model.ReviewReactions.optimistic(target: ReviewVote): su.afk.yummy.tv.domain.reviews.model.ReviewReactions {
+    private fun ReviewReactions.optimistic(target: ReviewVote): ReviewReactions {
         var nextLikes = likes - if (vote == ReviewVote.LIKE) 1 else 0
         var nextDislikes = dislikes - if (vote == ReviewVote.DISLIKE) 1 else 0
         if (target == ReviewVote.LIKE) nextLikes++

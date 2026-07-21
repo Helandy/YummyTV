@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 
@@ -46,6 +47,7 @@ fun TvTitleCard(
     val shape = RoundedCornerShape(8.dp)
     val cardDimensions = currentTvTitleCardDimensions()
     val cardWidth = width ?: cardDimensions.width
+    val posterHeight = width?.div(TITLE_POSTER_ASPECT_RATIO) ?: cardDimensions.posterHeight
     var isFocused by remember { mutableStateOf(false) }
 
     Card(
@@ -66,7 +68,7 @@ fun TvTitleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(cardDimensions.posterHeight)
+                    .height(posterHeight)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {

@@ -161,6 +161,7 @@ interface SettingsStore {
             DetailsButtonAction.VIEWING_ORDER,
             DetailsButtonAction.RATING,
             DetailsButtonAction.COLLECTIONS,
+            DetailsButtonAction.COMMENTS,
             DetailsButtonAction.REVIEWS,
             DetailsButtonAction.BLOGGER_VIDEOS,
             DetailsButtonAction.SCREENSHOTS,

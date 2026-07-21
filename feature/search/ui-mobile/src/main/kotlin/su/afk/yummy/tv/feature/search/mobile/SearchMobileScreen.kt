@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.SearchState
+import su.afk.yummy.tv.feature.search.mobile.utils.uiMessage
 import su.afk.yummy.tv.feature.search.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterPanel
@@ -247,6 +248,3 @@ fun SearchMobileScreen(
         )
     }
 }
-
-private fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

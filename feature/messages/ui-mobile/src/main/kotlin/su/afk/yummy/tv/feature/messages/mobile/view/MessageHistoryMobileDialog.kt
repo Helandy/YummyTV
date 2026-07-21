@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.domain.messages.model.MessageHistoryChangeType
 import su.afk.yummy.tv.domain.messages.model.MessageHistoryEntry
 import su.afk.yummy.tv.feature.messages.mobile.R
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
+import su.afk.yummy.tv.feature.messages.mobile.utils.label
 
 @Composable
 internal fun MessageHistoryMobileDialog(
@@ -103,14 +103,3 @@ private fun MessageHistoryRow(entry: MessageHistoryEntry) {
         }
     }
 }
-
-@Composable
-private fun MessageHistoryChangeType.label(): String = stringResource(
-    when (this) {
-        MessageHistoryChangeType.ADD -> R.string.messages_history_added
-        MessageHistoryChangeType.DELETE -> R.string.messages_history_deleted
-        MessageHistoryChangeType.EDIT -> R.string.messages_history_edited
-        MessageHistoryChangeType.RESTORE -> R.string.messages_history_restored
-        MessageHistoryChangeType.UNKNOWN -> R.string.messages_history_changed
-    }
-)

@@ -32,6 +32,8 @@ import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.feature.reviews.mobile.R
 import su.afk.yummy.tv.feature.reviews.mobile.utils.displayCompactReviewCount
 import su.afk.yummy.tv.feature.reviews.mobile.utils.displayReviewDate
+import su.afk.yummy.tv.feature.reviews.mobile.utils.reviewStatusColor
+import su.afk.yummy.tv.feature.reviews.mobile.utils.reviewStatusLabel
 
 @Composable
 internal fun ReviewDetailsHeader(

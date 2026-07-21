@@ -10,12 +10,11 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
-import su.afk.yummy.tv.feature.reviews.mobile.R
+import su.afk.yummy.tv.feature.reviews.mobile.utils.label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,13 +45,6 @@ internal fun ReviewsSortSelector(
             )
         }
     }
-}
-
-@Composable
-private fun ReviewSort.label() = when (this) {
-    ReviewSort.NEW -> stringResource(R.string.reviews_new)
-    ReviewSort.OLD -> stringResource(R.string.reviews_old)
-    ReviewSort.TOP -> stringResource(R.string.reviews_top)
 }
 
 @Preview(name = "General feed", showBackground = true)

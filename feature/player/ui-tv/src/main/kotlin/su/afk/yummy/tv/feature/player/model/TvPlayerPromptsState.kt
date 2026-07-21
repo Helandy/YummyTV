@@ -7,8 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
-import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
+import su.afk.yummy.tv.feature.player.common.utils.isVisible
 
 /**
  * Промпты конца эпизода: следующий эпизод (сбрасывается по episodeKey/streamUrl)

@@ -33,6 +33,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileSectionLoading
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.feature.posts.list.PostsListState
 import su.afk.yummy.tv.feature.posts.mobile.R
+import su.afk.yummy.tv.feature.posts.mobile.utils.label
 import su.afk.yummy.tv.feature.posts.mobile.view.PostMobileCard
 import su.afk.yummy.tv.feature.posts.mobile.view.PostsLoadingState
 
@@ -142,11 +143,4 @@ fun PostsMobileScreen(
             }
         }
     }
-}
-
-@Composable
-private fun PostSort.label() = when (this) {
-    PostSort.NEW -> stringResource(R.string.posts_new)
-    PostSort.OLD -> stringResource(R.string.posts_old)
-    PostSort.BEST -> stringResource(R.string.posts_best)
 }

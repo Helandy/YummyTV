@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.library.mobile.utils
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
@@ -63,3 +66,15 @@ private fun LibraryPoster?.posterUrl(): String? =
 
 internal fun HomePoster?.posterUrl(): String? =
     this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
+
+@Composable
+internal fun LibraryTab.mobileTabColor(): Color = when (this) {
+    LibraryTab.CONTINUE_WATCHING -> MaterialTheme.colorScheme.primary
+    LibraryTab.HISTORY -> MaterialTheme.colorScheme.tertiary
+    LibraryTab.WATCHING -> Color(0xFFFF6B6B)
+    LibraryTab.PLANNED -> Color(0xFFA678E8)
+    LibraryTab.COMPLETED -> Color(0xFF69D38B)
+    LibraryTab.POSTPONED -> Color(0xFFFFC857)
+    LibraryTab.DROPPED -> Color(0xFF9CA3AF)
+    LibraryTab.FAVORITES -> Color(0xFFD86BFF)
+}

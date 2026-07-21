@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.tv.R
+import su.afk.yummy.tv.feature.bloggers.utils.labelRes
 import su.afk.yummy.tv.feature.bloggers.view.BloggerVideoTvCard
 
 private const val ALL_CATEGORY_ID = "all"
@@ -168,10 +169,4 @@ fun BloggerVideosListTvScreen(
             }
         }
     }
-}
-
-private fun BloggerVideoSort.labelRes() = when (this) {
-    BloggerVideoSort.NEW -> R.string.blogger_videos_sort_new
-    BloggerVideoSort.TOP -> R.string.blogger_videos_sort_top
-    BloggerVideoSort.OLD -> R.string.blogger_videos_sort_old
 }

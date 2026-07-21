@@ -32,7 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
-import java.util.Locale
+import su.afk.yummy.tv.feature.details.mobile.episodes.utils.formatMegabytesOrNull
+import su.afk.yummy.tv.feature.details.mobile.episodes.utils.playerLabel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -154,20 +155,5 @@ private fun EpisodeSheetActionButton(
                 color = color,
             )
         }
-    }
-}
-
-private fun String.playerLabel(): String =
-    trim()
-        .removePrefix("Плеер ")
-        .removePrefix("Player ")
-
-private fun Long.formatMegabytesOrNull(): String? {
-    if (this <= 0L) return null
-    val megabytes = toDouble() / (1024.0 * 1024.0)
-    return if (megabytes < 100.0) {
-        String.format(Locale.US, "%.1f MB", megabytes)
-    } else {
-        String.format(Locale.US, "%.0f MB", megabytes)
     }
 }

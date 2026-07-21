@@ -7,6 +7,7 @@
     <string name="details_blogger_videos">Видео блогеров</string>
     <string name="details_reviews">Отзывы</string>
     <string name="details_reviews_count">Отзывы (%1$d)</string>
+    <string name="details_comments">Комментарии</string>
     <string name="details_screenshots_empty">Скриншоты не найдены</string>
     <string name="details_screenshots_title">Скриншоты</string>
     <string name="details_episode_content_description">Серия %1$s</string>

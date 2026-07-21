@@ -34,7 +34,6 @@ import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.episodes.dubbings.episodeDubbingItems
@@ -42,6 +41,7 @@ import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLau
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadEnqueueResult
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareResult
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 

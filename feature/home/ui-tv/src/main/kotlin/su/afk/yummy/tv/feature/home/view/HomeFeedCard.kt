@@ -35,9 +35,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentTvHomeFeedCardDimensions
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPosterQuality
-import su.afk.yummy.tv.core.preferences.settings.PosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.feature.home.utils.posterUrl
 
 @Composable
 internal fun HomeFeedCard(
@@ -156,11 +156,4 @@ internal fun HomeFeedCard(
             }
         }
     }
-}
-
-internal fun HomeFeedItem.posterUrl(quality: PosterQuality): String? = when (quality) {
-    PosterQuality.LOW -> poster?.medium ?: poster?.big ?: poster?.fullsize ?: poster?.small
-    PosterQuality.STANDARD -> poster?.big ?: poster?.medium ?: poster?.fullsize ?: poster?.small
-    PosterQuality.MEGA -> poster?.mega ?: poster?.big ?: poster?.medium ?: poster?.fullsize ?: poster?.small
-    PosterQuality.HIGH -> poster?.fullsize ?: poster?.mega ?: poster?.big ?: poster?.medium ?: poster?.small
 }

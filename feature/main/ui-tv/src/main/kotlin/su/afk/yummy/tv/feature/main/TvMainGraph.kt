@@ -42,6 +42,7 @@ import su.afk.yummy.tv.core.update.nav.UpdateDestination
 import su.afk.yummy.tv.feature.main.api.IMainGraph
 import su.afk.yummy.tv.feature.main.model.TvMenuItem
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
+import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
@@ -127,6 +128,7 @@ class TvMainGraph @Inject constructor(
                         menuItems = menuItems,
                         state = state,
                         showMainMenu = showMainMenu,
+                        applyTopSafeDrawingInset = currentDestination !is PlayerDestination,
                         onEvent = onEvent,
                         toastMessage = toastMessage,
                     ) {

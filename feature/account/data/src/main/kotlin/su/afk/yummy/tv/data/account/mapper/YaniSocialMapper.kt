@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.account.mapper
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -46,7 +47,7 @@ internal fun YaniProfileDto.toEditableProfile(): EditableProfile = EditableProfi
     },
 )
 
-private fun kotlinx.serialization.json.JsonElement?.isLinkedValue(): Boolean = when (this) {
+private fun JsonElement?.isLinkedValue(): Boolean = when (this) {
     null, JsonNull -> false
     is JsonObject -> isNotEmpty()
     is JsonArray -> isNotEmpty()

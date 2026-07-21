@@ -160,15 +160,13 @@ fun BloggerVideoDetailsTvScreen(
                             onClick = { onEvent(BloggerVideoDetailsState.Event.WatchSelected) },
                             modifier = Modifier.focusRequester(watchFocus),
                         )
-                        val commentsPhoneOnly = stringResource(R.string.blogger_comments_phone_only)
                         VideoActionButton(
                             label = stringResource(
                                 R.string.blogger_video_comments,
                                 video.commentsCount
                             ),
                             onClick = {
-                                Toast.makeText(context, commentsPhoneOnly, Toast.LENGTH_SHORT)
-                                    .show()
+                                onEvent(BloggerVideoDetailsState.Event.CommentsSelected)
                             },
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

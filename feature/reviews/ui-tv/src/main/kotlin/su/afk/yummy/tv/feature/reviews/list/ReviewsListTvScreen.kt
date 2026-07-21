@@ -38,8 +38,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
-import su.afk.yummy.tv.domain.reviews.model.ReviewSort
 import su.afk.yummy.tv.feature.reviews.tv.R
+import su.afk.yummy.tv.feature.reviews.utils.label
 import su.afk.yummy.tv.feature.reviews.view.ReviewTvCard
 
 @Composable
@@ -169,11 +169,4 @@ fun ReviewsListTvScreen(
             }
         }
     }
-}
-
-@Composable
-private fun ReviewSort.label() = when (this) {
-    ReviewSort.NEW -> stringResource(R.string.reviews_new)
-    ReviewSort.OLD -> stringResource(R.string.reviews_old)
-    ReviewSort.TOP -> stringResource(R.string.reviews_top)
 }

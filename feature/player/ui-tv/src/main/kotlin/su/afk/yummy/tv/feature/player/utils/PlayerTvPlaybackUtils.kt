@@ -7,6 +7,19 @@ import su.afk.yummy.tv.feature.player.model.ActiveSkipType
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 
+internal fun String.withoutDubbingTitlePrefix(title: String): String {
+    val trimmed = trim()
+    if (!trimmed.startsWith(title, ignoreCase = true)) return trimmed
+
+    val withoutTitle = trimmed
+        .drop(title.length)
+        .trimStart()
+        .trimStart(':', '-')
+        .trimStart()
+
+    return withoutTitle.ifBlank { trimmed }
+}
+
 internal fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlFocusTarget =
     when (this) {
         PanelReturnFocusTarget.Quality -> PlayerControlFocusTarget.Quality

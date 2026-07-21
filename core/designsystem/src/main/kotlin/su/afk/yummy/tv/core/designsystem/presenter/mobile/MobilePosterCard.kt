@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentMobilePosterWidth
 
 @Composable
@@ -46,7 +47,7 @@ fun MobilePosterCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f),
+                .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
         ) {
             AsyncImage(
                 model = posterUrl,

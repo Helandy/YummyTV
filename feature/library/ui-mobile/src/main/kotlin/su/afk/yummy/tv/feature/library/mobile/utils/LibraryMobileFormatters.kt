@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.library.mobile.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.LibraryTab
 import su.afk.yummy.tv.feature.library.mobile.R
@@ -44,3 +45,21 @@ private fun Long.formatLibraryDate(): String? =
     takeIf { it > 0L }?.let {
         SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(it))
     }
+
+internal fun HomeContinueWatchingItem.watchProgress(): Float =
+    if (durationMs <= 0L) 0f else (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+
+internal fun HomeContinueWatchingItem.timingLabel(): String? =
+    if (durationMs > 0L) {
+        "${positionMs.toTimeString()} / ${durationMs.toTimeString()}"
+    } else {
+        positionMs.toTimeString()
+    }
+
+private fun Long.toTimeString(): String {
+    val totalSec = coerceAtLeast(0L) / 1000
+    val h = totalSec / 3600
+    val m = (totalSec % 3600) / 60
+    val s = totalSec % 60
+    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+}

@@ -23,6 +23,7 @@ import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.mobile.R
+import su.afk.yummy.tv.feature.comments.mobile.utils.resolve
 import su.afk.yummy.tv.feature.comments.mobile.utils.uiMessage
 
 @Composable
@@ -127,14 +128,4 @@ internal fun CommentsList(
             }
         }
     }
-}
-
-internal fun CommentsState.CommentUi.resolve(
-    state: CommentsState.State,
-): CommentsState.CommentUi? {
-    if (comment.id in state.deletedCommentIds) return null
-    val overlaid = state.commentOverlays[comment.id] ?: this
-    return overlaid.copy(
-        children = overlaid.children.mapNotNull { it.resolve(state) },
-    )
 }

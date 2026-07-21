@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.ui.graphics.vector.ImageVector
+import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 
 val StepSeekDirection.toastIcon: ImageVector
     get() = when (this) {

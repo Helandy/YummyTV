@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.domain.pages.model.SitePageType
 import su.afk.yummy.tv.feature.pages.SitePagesState
+import su.afk.yummy.tv.feature.pages.mobile.utils.title
 import su.afk.yummy.tv.feature.pages.mobile.view.SitePageRow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,19 +90,3 @@ fun SitePagesMobileScreen(
         }
     }
 }
-
-@Composable
-private fun SitePageType.title(): String = stringResource(
-    when (this) {
-        SitePageType.FAQ -> R.string.site_page_faq
-        SitePageType.ABOUT_SITE -> R.string.site_page_about
-        SitePageType.RULES -> R.string.site_page_rules
-        SitePageType.REVIEW_RULES -> R.string.site_page_review_rules
-        SitePageType.COLLECTIONS_RULES -> R.string.site_page_collections_rules
-        SitePageType.POST_RULES -> R.string.site_page_post_rules
-        SitePageType.EDIT_RULES -> R.string.site_page_edit_rules
-        SitePageType.PRIVACY -> R.string.site_page_privacy
-        SitePageType.COPYRIGHT -> R.string.site_page_copyright
-        SitePageType.WANT_TO_HELP -> R.string.site_page_help
-    }
-)

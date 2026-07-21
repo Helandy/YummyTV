@@ -5,8 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
-import su.afk.yummy.tv.feature.player.common.isVisible
+import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
+import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState

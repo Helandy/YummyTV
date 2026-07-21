@@ -261,6 +261,12 @@ object UniversalNavigationModule {
     @Provides
     @IntoSet
     @TvUi
+    fun provideTvCommentsNavRegistrar(): NavRegistrar =
+        su.afk.yummy.tv.feature.comments.tv.navigator.CommentsNavRegistrar()
+
+    @Provides
+    @IntoSet
+    @TvUi
     fun provideTvDetailsNavRegistrar(): NavRegistrar =
         su.afk.yummy.tv.feature.details.tv.navigator.DetailsNavRegistrar()
 

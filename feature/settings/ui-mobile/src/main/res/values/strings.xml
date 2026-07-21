@@ -55,6 +55,7 @@
     <string name="settings_details_button_viewing_order">Viewing order</string>
     <string name="settings_details_button_rating">Rating</string>
     <string name="settings_details_button_collections">Collections</string>
+    <string name="settings_details_button_comments">Comments</string>
     <string name="settings_details_button_reviews">Reviews</string>
     <string name="settings_details_button_blogger_videos">Blogger videos</string>
     <string name="settings_details_button_screenshots">Screenshots</string>

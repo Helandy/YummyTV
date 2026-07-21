@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.feature.player.PlayerProgressSnapshot
+import su.afk.yummy.tv.feature.player.utils.withFullTimingIfWatched
 import javax.inject.Inject
 
 private const val REMOTE_PROGRESS_SYNC_INTERVAL_MS = 10_000L
@@ -135,12 +136,6 @@ internal class PlayerProgressHandler @Inject constructor(
         return now - lastAttempt >= REMOTE_PROGRESS_SYNC_INTERVAL_MS
     }
 
-    private fun PlayerProgressSnapshot.withFullTimingIfWatched(): PlayerProgressSnapshot =
-        if (WatchProgressStore.isWatchedProgress(positionMs, durationMs)) {
-            copy(positionMs = durationMs)
-        } else {
-            this
-        }
 }
 
 /** Метаданные экрана, нужные для сохранения записи прогресса. */

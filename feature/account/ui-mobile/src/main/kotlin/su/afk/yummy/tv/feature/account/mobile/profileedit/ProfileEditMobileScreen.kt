@@ -36,6 +36,8 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileMessage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.account.utils.label
+import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.messageRes
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.prepareProfileImage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.view.LinkedAccountsSection
@@ -43,7 +45,6 @@ import su.afk.yummy.tv.feature.account.mobile.view.ProfileMainSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfileMediaSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePasswordSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePrivacySection
-import su.afk.yummy.tv.feature.account.mobile.view.label
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditState
 import java.time.Instant
 import java.time.LocalDate
@@ -310,15 +311,4 @@ fun ProfileEditMobileScreen(
             },
         ) { DatePicker(state = dateState) }
     }
-}
-
-private fun ProfileEditState.MessageType.messageRes() = when (this) {
-    ProfileEditState.MessageType.PROFILE_SAVED -> R.string.profile_saved
-    ProfileEditState.MessageType.PROFILE_SAVE_FAILED -> R.string.profile_save_failed
-    ProfileEditState.MessageType.IMAGE_SAVED -> R.string.profile_image_saved
-    ProfileEditState.MessageType.IMAGE_SAVE_FAILED -> R.string.profile_image_save_failed
-    ProfileEditState.MessageType.PASSWORD_CHANGED -> R.string.profile_password_changed
-    ProfileEditState.MessageType.PASSWORD_CHANGE_FAILED -> R.string.profile_password_change_failed
-    ProfileEditState.MessageType.ACCOUNT_UNLINKED -> R.string.profile_account_unlinked
-    ProfileEditState.MessageType.ACCOUNT_UNLINK_FAILED -> R.string.profile_account_unlink_failed
 }

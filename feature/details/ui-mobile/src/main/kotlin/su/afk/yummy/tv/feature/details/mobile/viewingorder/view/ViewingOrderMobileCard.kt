@@ -18,15 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileRatingBadge
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.utils.bestUrl
+import su.afk.yummy.tv.feature.details.mobile.viewingorder.utils.mobileMeta
 
 @Composable
 internal fun ViewingOrderMobileCard(
@@ -133,9 +132,3 @@ internal fun ViewingOrderMobileCard(
         }
     }
 }
-
-@Composable
-private fun AnimeViewingOrderItem.mobileMeta(): String = listOfNotNull(
-    type,
-    episodesCount?.let { stringResource(R.string.details_mobile_episodes_count_short, it) },
-).joinToString(" · ")

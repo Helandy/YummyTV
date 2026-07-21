@@ -4,12 +4,12 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.VideosUiState
-import su.afk.yummy.tv.feature.details.details.resolveDetailsContinueTarget
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.utils.selectInitialDetailsVideo
-import su.afk.yummy.tv.feature.details.utils.toSubscriptionOptions
+import su.afk.yummy.tv.feature.details.utils.toDetailsVideosResult
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import javax.inject.Inject
 
@@ -26,7 +26,7 @@ internal class DetailsVideoHandler @Inject constructor(
     ): DetailsVideosResult? =
         runCatching { getCachedAnimeVideos(animeId) }
             .getOrNull()
-            ?.toResult(optimisticSubscriptionKeys, optimisticSubscriptionStates)
+            ?.toDetailsVideosResult(optimisticSubscriptionKeys, optimisticSubscriptionStates)
 
     suspend fun load(
         animeId: Int,
@@ -34,7 +34,7 @@ internal class DetailsVideoHandler @Inject constructor(
         optimisticSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
         runCatching {
-            getAnimeVideos(animeId).toResult(
+            getAnimeVideos(animeId).toDetailsVideosResult(
                 optimisticSubscriptionKeys,
                 optimisticSubscriptionStates
             )
@@ -46,7 +46,7 @@ internal class DetailsVideoHandler @Inject constructor(
         optimisticSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
         runCatching {
-            refreshAnimeVideos(animeId).toResult(
+            refreshAnimeVideos(animeId).toDetailsVideosResult(
                 optimisticSubscriptionKeys,
                 optimisticSubscriptionStates
             )
@@ -68,19 +68,6 @@ internal class DetailsVideoHandler @Inject constructor(
 
         return videos.selectInitialDetailsVideo()?.let { DetailsWatchTarget.Initial(it) }
     }
-
-    private fun List<AnimeVideo>.toResult(
-        optimisticSubscriptionKeys: Set<String>,
-        optimisticSubscriptionStates: Map<String, Boolean>,
-    ): DetailsVideosResult =
-        DetailsVideosResult(
-            videos = this,
-            videosState = if (isEmpty()) VideosUiState.Empty else VideosUiState.Content(this),
-            subscriptions = toSubscriptionOptions(
-                optimisticKeys = optimisticSubscriptionKeys,
-                optimisticStates = optimisticSubscriptionStates,
-            ),
-        )
 }
 
 internal data class DetailsVideosResult(

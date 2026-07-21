@@ -40,6 +40,7 @@ import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingSc
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
 import su.afk.yummy.tv.feature.details.details.view.LibraryListPickerOverlay
 import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
@@ -149,6 +150,7 @@ fun DetailsTvScreen(
                     onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
                     onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
                     onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                    onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
                     onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
                     onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
                 )
@@ -239,5 +241,3 @@ fun DetailsTvScreen(
         }
     }
 }
-
-private enum class DetailsScreenState { Loading, Error, Content }

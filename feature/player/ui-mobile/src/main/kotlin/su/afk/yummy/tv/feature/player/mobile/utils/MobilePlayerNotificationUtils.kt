@@ -7,14 +7,9 @@ import su.afk.yummy.tv.feature.player.common.buildPlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.common.playerAudioTrackPolicyFor
 import su.afk.yummy.tv.feature.player.common.playerUseRotatingHlsCacheKeys
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemConfig
+import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
-
-internal data class MobilePlayerNotificationMeta(
-    val subtitle: String?,
-    val description: String?,
-    val contentText: String,
-)
 
 @Composable
 internal fun mobilePlayerNotificationMeta(ui: PlayerPlaybackUiState): MobilePlayerNotificationMeta {

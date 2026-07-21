@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.withoutDubbingTitlePrefix
 
 @Composable
 internal fun TvPlayerEpisodeRow(
@@ -64,7 +65,11 @@ internal fun TvPlayerEpisodeRow(
                 onFocused = onInteraction,
                 modifier = Modifier.focusProperties { up = upFocusRequester },
             ) { color ->
-                Text(stringResource(R.string.player_previous_episode), style = MaterialTheme.typography.labelLarge, color = color)
+                Text(
+                    stringResource(R.string.player_previous_episode),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = color
+                )
             }
         }
         Spacer(Modifier.weight(1f))
@@ -174,7 +179,11 @@ internal fun TvPlayerEpisodeRow(
                 onFocused = onInteraction,
                 modifier = Modifier.focusProperties { up = upFocusRequester },
             ) { color ->
-                Text(stringResource(R.string.player_next_episode), style = MaterialTheme.typography.labelLarge, color = color)
+                Text(
+                    stringResource(R.string.player_next_episode),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = color
+                )
             }
         } else if (hasFinalEpisodeAction) {
             val onFinalEpisodeAction = when (finalEpisodeAction) {
@@ -200,17 +209,4 @@ internal fun TvPlayerEpisodeRow(
             }
         }
     }
-}
-
-private fun String.withoutDubbingTitlePrefix(title: String): String {
-    val trimmed = trim()
-    if (!trimmed.startsWith(title, ignoreCase = true)) return trimmed
-
-    val withoutTitle = trimmed
-        .drop(title.length)
-        .trimStart()
-        .trimStart(':', '-')
-        .trimStart()
-
-    return withoutTitle.ifBlank { trimmed }
 }

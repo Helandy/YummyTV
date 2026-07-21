@@ -9,9 +9,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
-import su.afk.yummy.tv.feature.player.common.downgradedCountdown
-import su.afk.yummy.tv.feature.player.common.positionSnapshot
 import su.afk.yummy.tv.feature.player.common.service.PlayerPlaybackSessionClient
+import su.afk.yummy.tv.feature.player.common.utils.downgradedCountdown
+import su.afk.yummy.tv.feature.player.common.utils.positionSnapshot
 import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 
 /** Сохраняет прогресс и единожды выгружает TV playback-сессию без PiP. */
@@ -63,6 +63,7 @@ internal fun TvPlayerLifecycleEffect(
                 Lifecycle.Event.ON_RESUME -> if (!released && currentWantsPlay()) {
                     currentPlayer?.play()
                 }
+
                 else -> Unit
             }
         }

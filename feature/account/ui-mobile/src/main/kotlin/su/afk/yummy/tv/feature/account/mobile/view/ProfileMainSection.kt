@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,12 +94,3 @@ internal fun ProfileMainSection(
         }
     }
 }
-
-@Composable
-private fun UserProfileSex.label() = stringResource(
-    when (this) {
-        UserProfileSex.MALE -> R.string.account_profile_sex_male
-        UserProfileSex.FEMALE -> R.string.account_profile_sex_female
-        UserProfileSex.UNKNOWN -> R.string.account_profile_unknown
-    }
-)

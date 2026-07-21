@@ -24,14 +24,13 @@ import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.similar.utils.SIMILAR_SOURCE_PAGE_COUNT
+import su.afk.yummy.tv.feature.details.mobile.similar.utils.toSimilarSourceFromAi
+import su.afk.yummy.tv.feature.details.mobile.similar.utils.toSimilarSourcePage
 import su.afk.yummy.tv.feature.details.mobile.similar.view.MobileSimilarRecommendationVisibilityButton
 import su.afk.yummy.tv.feature.details.mobile.similar.view.SimilarRecommendationsGrid
 import su.afk.yummy.tv.feature.details.mobile.similar.view.SimilarSourceTabs
 import su.afk.yummy.tv.feature.details.similar.SimilarState
-
-private const val SIMILAR_SOURCE_PAGE_COUNT = 2
-private const val SIMILAR_SOURCE_SITE_PAGE = 0
-private const val SIMILAR_SOURCE_AI_PAGE = 1
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -139,9 +138,3 @@ fun SimilarMobileScreen(
         }
     }
 }
-
-private fun Boolean.toSimilarSourcePage(): Int =
-    if (this) SIMILAR_SOURCE_AI_PAGE else SIMILAR_SOURCE_SITE_PAGE
-
-private fun Int.toSimilarSourceFromAi(): Boolean =
-    this == SIMILAR_SOURCE_AI_PAGE

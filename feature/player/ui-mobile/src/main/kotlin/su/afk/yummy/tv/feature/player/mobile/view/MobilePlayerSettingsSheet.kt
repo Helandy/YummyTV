@@ -1,45 +1,28 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.feature.player.common.formatCompactCount
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
@@ -209,132 +192,5 @@ internal fun MobilePlayerSettingsSheet(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun MobilePlayerSettingsSection(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 2.dp),
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
-    }
-}
-
-@Composable
-private fun MobilePlayerSelectionRow(
-    label: String,
-    selected: Boolean,
-    enabled: Boolean = true,
-    metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
-    trailingContent: @Composable (() -> Unit)? = null,
-    onClick: () -> Unit,
-) {
-    val shape = RoundedCornerShape(10.dp)
-    val background = if (selected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f)
-    }
-    val textColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(background)
-            .clickable(
-                enabled = enabled,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = 14.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                color = textColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            metaContent(textColor)
-        }
-        if (selected) {
-            Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)
-        }
-        trailingContent?.invoke()
-    }
-}
-
-@Composable
-private fun MobilePlayerDubbingMeta(
-    views: Int,
-    episodeCount: Int,
-    sourceNames: String,
-    contentColor: Color,
-) {
-    val metaColor = contentColor.copy(alpha = 0.68f)
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Visibility,
-            contentDescription = null,
-            tint = metaColor,
-            modifier = Modifier.size(13.dp),
-        )
-        Text(
-            text = views.formatCompactCount(),
-            style = MaterialTheme.typography.labelSmall,
-            color = metaColor,
-            maxLines = 1,
-        )
-        Icon(
-            imageVector = Icons.Filled.VideoLibrary,
-            contentDescription = null,
-            tint = metaColor,
-            modifier = Modifier
-                .padding(start = 7.dp)
-                .size(13.dp),
-        )
-        Text(
-            text = episodeCount.toString(),
-            style = MaterialTheme.typography.labelSmall,
-            color = metaColor,
-            maxLines = 1,
-        )
-    }
-    if (sourceNames.isNotBlank()) {
-        Text(
-            text = sourceNames,
-            style = MaterialTheme.typography.labelSmall,
-            color = metaColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }

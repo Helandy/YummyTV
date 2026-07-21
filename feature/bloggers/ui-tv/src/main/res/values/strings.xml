@@ -6,7 +6,6 @@
     <string name="blogger_videos_count">%1$d videos</string>
     <string name="blogger_subscribers_tv">%1$s subscribers</string>
     <string name="blogger_videos_count_tv">%1$s videos</string>
-    <string name="blogger_comments_phone_only">Comments are available only in the phone app</string>
     <string name="blogger_subscribe">Subscribe</string>
     <string name="blogger_unsubscribe">Unsubscribe</string>
     <string name="blogger_videos_section">Videos</string>

@@ -29,11 +29,10 @@ import su.afk.yummy.tv.feature.player.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
-import su.afk.yummy.tv.feature.player.common.PlayerEndPromptCountdownEffect
-import su.afk.yummy.tv.feature.player.common.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
-import su.afk.yummy.tv.feature.player.common.PlayerProgressSource
-import su.afk.yummy.tv.feature.player.common.StepSeekDirection
+import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
+import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
+import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.rememberPlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
@@ -44,6 +43,7 @@ import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackSessionClient
 import su.afk.yummy.tv.feature.player.common.toastIcon
+import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState

@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.mobile.model.GestureTutorialStep
+import su.afk.yummy.tv.feature.player.mobile.utils.text
 
 @Composable
 internal fun GestureTutorialDetails(
@@ -90,27 +92,4 @@ internal fun GestureTutorialDetails(
         }
         Spacer(Modifier.height(4.dp))
     }
-}
-
-@Composable
-private fun GestureTutorialStep.text(): Pair<String, String> = when (this) {
-    GestureTutorialStep.Tap -> stringResource(
-        R.string.player_mobile_gesture_tutorial_tap_title
-    ) to stringResource(R.string.player_mobile_gesture_tutorial_tap_description)
-
-    GestureTutorialStep.Seek -> stringResource(
-        R.string.player_mobile_gesture_tutorial_seek_title
-    ) to stringResource(R.string.player_mobile_gesture_tutorial_seek_description)
-
-    GestureTutorialStep.Vertical -> stringResource(
-        R.string.player_mobile_gesture_tutorial_vertical_title
-    ) to stringResource(R.string.player_mobile_gesture_tutorial_vertical_description)
-
-    GestureTutorialStep.Zoom -> stringResource(
-        R.string.player_mobile_gesture_tutorial_zoom_title
-    ) to stringResource(R.string.player_mobile_gesture_tutorial_zoom_description)
-
-    GestureTutorialStep.Hold -> stringResource(
-        R.string.player_mobile_gesture_tutorial_hold_title
-    ) to stringResource(R.string.player_mobile_gesture_tutorial_hold_description)
 }

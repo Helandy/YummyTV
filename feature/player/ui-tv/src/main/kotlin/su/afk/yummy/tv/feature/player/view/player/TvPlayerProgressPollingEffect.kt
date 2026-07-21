@@ -7,7 +7,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
-import su.afk.yummy.tv.feature.player.common.calculateBufferedProgress
+import su.afk.yummy.tv.feature.player.common.utils.calculateBufferedProgress
 import su.afk.yummy.tv.feature.player.model.TvPlaybackProgressState
 import kotlin.time.Duration.Companion.milliseconds
 

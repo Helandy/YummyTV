@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.reviews.details
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,17 +9,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,8 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -46,10 +39,12 @@ import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 import su.afk.yummy.tv.feature.reviews.model.ReviewContentBlock
 import su.afk.yummy.tv.feature.reviews.tv.R
 import su.afk.yummy.tv.feature.reviews.utils.parseReviewBlocks
+import su.afk.yummy.tv.feature.reviews.utils.reviewStatusColor
+import su.afk.yummy.tv.feature.reviews.utils.reviewStatusLabel
+import su.afk.yummy.tv.feature.reviews.view.ReviewActionButton
+import su.afk.yummy.tv.feature.reviews.view.ReviewReactionButton
 import su.afk.yummy.tv.feature.reviews.view.ReviewRemoteImage
 import su.afk.yummy.tv.feature.reviews.view.ReviewRichParagraph
-import su.afk.yummy.tv.feature.reviews.view.reviewStatusColor
-import su.afk.yummy.tv.feature.reviews.view.reviewStatusLabel
 
 @Composable
 fun ReviewDetailsTvScreen(
@@ -189,69 +184,16 @@ fun ReviewDetailsTvScreen(
                 }
                 if (details.review.commentable) {
                     item {
-                        val commentsPhoneOnly = stringResource(R.string.review_comments_phone_only)
                         ReviewActionButton(
                             label = stringResource(
                                 R.string.review_comments_tv,
                                 details.commentsCount.toCompactCount(),
                             ),
-                            onClick = {
-                                Toast.makeText(context, commentsPhoneOnly, Toast.LENGTH_SHORT)
-                                    .show()
-                            },
+                            onClick = { onEvent(ReviewDetailsState.Event.CommentsSelected) },
                         )
                     }
                 }
             }
         }
-    }
-}
-
-/** Кнопка реакции (лайк/дизлайк) с цветным контентом и видимым фокусом. */
-@Composable
-private fun ReviewReactionButton(
-    icon: ImageVector,
-    count: Int,
-    color: Color,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val shape = RoundedCornerShape(8.dp)
-    val bgColor =
-        if (selected) color.copy(alpha = 0.20f) else MaterialTheme.colorScheme.surfaceVariant
-    Box(
-        modifier = Modifier
-            .tvFocusableClick(onClick = onClick, shape = shape)
-            .background(bgColor, shape)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
-            Text(count.toCompactCount(), color = color, style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
-
-/** Кнопка действия с видимым фокусом (масштаб + рамка через [tvFocusableClick]). */
-@Composable
-private fun ReviewActionButton(
-    label: String,
-    onClick: () -> Unit,
-) {
-    val shape = RoundedCornerShape(8.dp)
-    Box(
-        modifier = Modifier
-            .tvFocusableClick(onClick = onClick, shape = shape)
-            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f), shape)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-    ) {
-        Text(
-            label,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.labelLarge,
-        )
     }
 }

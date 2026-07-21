@@ -13,8 +13,3 @@ enum class CollectionVote(val apiValue: Int) {
         }
     }
 }
-
-data class CollectionVoteResult(
-    val likes: Int,
-    val dislikes: Int,
-)

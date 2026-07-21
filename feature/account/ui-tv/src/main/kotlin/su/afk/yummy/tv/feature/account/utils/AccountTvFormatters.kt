@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.domain.account.model.UserListWatchStat
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
@@ -167,7 +168,7 @@ private fun UserWatchTypeStat.profileShortName(movieLabel: String): String =
         else -> shortName.ifBlank { title.ifBlank { alias } }
     }
 
-private fun su.afk.yummy.tv.domain.account.model.UserListWatchStat.listProfileColor(index: Int): Color =
+private fun UserListWatchStat.listProfileColor(index: Int): Color =
     when (id) {
         0 -> Color(0xFFFF6B6B)
         1 -> Color(0xFFA678E8)

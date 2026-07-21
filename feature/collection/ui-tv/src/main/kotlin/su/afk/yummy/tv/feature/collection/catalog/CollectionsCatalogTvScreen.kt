@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,7 +30,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.locals.LocalPreferredContentF
 import su.afk.yummy.tv.core.designsystem.presenter.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.presenter.tv.TvStateMessage
 import su.afk.yummy.tv.feature.collection.R
+import su.afk.yummy.tv.feature.collection.utils.uiMessage
 import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogGrid
+import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogMessage
 
 @Preview(
     name = "Default",
@@ -151,21 +151,3 @@ fun CollectionsCatalogTvScreen(
         }
     }
 }
-
-@Composable
-private fun CollectionsCatalogMessage(
-    message: String,
-    onRetry: () -> Unit,
-    retryFocusRequester: FocusRequester,
-) {
-    TvStateMessage(
-        title = message,
-        icon = Icons.Filled.Warning,
-        retryLabel = stringResource(R.string.retry),
-        onRetry = onRetry,
-        retryFocusRequester = retryFocusRequester,
-    )
-}
-
-private fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

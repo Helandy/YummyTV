@@ -5,9 +5,9 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiEvent
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.UiState
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.BalancerPickerState
-import su.afk.yummy.tv.feature.details.details.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.details.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
+import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 
 class EpisodesState {
     data class State(

@@ -8,11 +8,3 @@ data class AnimeCollectionSummary(
     val poster: AnimeCollectionPoster?,
     val views: Int?,
 )
-
-data class AnimeCollectionPoster(
-    val small: String?,
-    val medium: String?,
-    val big: String?,
-    val fullsize: String?,
-    val mega: String?,
-)
