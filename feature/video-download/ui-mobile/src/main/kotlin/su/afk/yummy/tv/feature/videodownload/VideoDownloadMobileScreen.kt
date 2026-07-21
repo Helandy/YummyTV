@@ -1,17 +1,27 @@
 package su.afk.yummy.tv.feature.videodownload
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +37,7 @@ import su.afk.yummy.tv.feature.videodownload.mobile.R
 import su.afk.yummy.tv.feature.videodownload.utils.formatDiskSize
 import su.afk.yummy.tv.feature.videodownload.view.VideoDownloadDeleteConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.view.VideoDownloadMobileCard
+import su.afk.yummy.tv.feature.videodownload.view.VideoExportAllConfirmationDialog
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -44,6 +55,29 @@ fun VideoDownloadMobileScreen(
     onEvent: (VideoDownloadState.Event) -> Unit,
 ) {
     val notificationPermissionGate = rememberNotificationPermissionGate()
+    val context = LocalContext.current
+    val exportDirectoryPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            onEvent(VideoDownloadState.Event.ExportDirectoryGranted(it.toString()))
+        }
+    }
+    LaunchedEffect(effect) {
+        effect.collect { exportEffect ->
+            when (exportEffect) {
+                VideoDownloadState.Effect.OpenExportDirectoryPicker ->
+                    exportDirectoryPicker.launch(null)
+
+                VideoDownloadState.Effect.ExportDirectorySelectionFailed ->
+                    Toast.makeText(
+                        context,
+                        R.string.video_export_directory_error,
+                        Toast.LENGTH_LONG,
+                    ).show()
+            }
+        }
+    }
     val occupiedSize = state.items
         .sumOf { item -> item.bytesDownloaded.coerceAtLeast(0L) }
         .formatDiskSize()
@@ -54,6 +88,27 @@ fun VideoDownloadMobileScreen(
                 title = stringResource(R.string.video_download_mobile_title),
                 onBack = { onEvent(VideoDownloadState.Event.BackSelected) },
                 actions = {
+                    IconButton(
+                        onClick = { onEvent(VideoDownloadState.Event.ExportDirectorySelected) },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CreateNewFolder,
+                            contentDescription = stringResource(
+                                R.string.video_export_choose_directory,
+                            ),
+                        )
+                    }
+                    IconButton(
+                        onClick = { onEvent(VideoDownloadState.Event.ExportAllSelected) },
+                        enabled = state.items.any { item ->
+                            item.isEligibleForExport(state.exportDestination?.uri)
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.SaveAlt,
+                            contentDescription = stringResource(R.string.video_export_all),
+                        )
+                    }
                     Text(
                         text = stringResource(
                             R.string.video_download_total_disk_size,
@@ -106,6 +161,14 @@ fun VideoDownloadMobileScreen(
                                 onEvent(VideoDownloadState.Event.RestartSelected(item.id))
                             }
                         },
+                        onExport = {
+                            notificationPermissionGate {
+                                onEvent(VideoDownloadState.Event.ExportSelected(item.id))
+                            }
+                        },
+                        onCancelExport = {
+                            onEvent(VideoDownloadState.Event.CancelExportSelected(item.id))
+                        },
                     )
                 }
             }
@@ -121,5 +184,27 @@ fun VideoDownloadMobileScreen(
         )
     }
 
+    if (state.pendingBulkExportCount > 0) {
+        VideoExportAllConfirmationDialog(
+            count = state.pendingBulkExportCount,
+            onConfirm = {
+                notificationPermissionGate {
+                    onEvent(VideoDownloadState.Event.ExportAllConfirmed)
+                }
+            },
+            onDismiss = { onEvent(VideoDownloadState.Event.ExportAllDismissed) },
+        )
+    }
+
     NotificationPermissionGateHost(state = notificationPermissionGate)
 }
+
+private fun su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem.isEligibleForExport(
+    destinationUri: String?,
+): Boolean =
+    status == su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus.Downloaded &&
+            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Queued &&
+            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Preparing &&
+            exportStatus != su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Copying &&
+            !(exportStatus == su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus.Exported &&
+                    exportDirectoryUri == destinationUri)

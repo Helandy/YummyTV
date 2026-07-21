@@ -43,6 +43,7 @@ class SettingsState {
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
+        val videoExportDirectoryName: String? = null,
     ) : UiState
 
     /** Пользовательские действия на экране настроек. */
@@ -123,10 +124,15 @@ class SettingsState {
 
         /** Пользователь сбросил порядок кнопок деталей к стандартному. */
         data object DetailsButtonOrderReset : Event
+
+        data object VideoExportDirectorySelected : Event
+        data class VideoExportDirectoryGranted(val uri: String) : Event
     }
 
     sealed interface Effect : UiEffect {
         /** Сохранён новый тип интерфейса, приложение нужно запустить заново. */
         data object RestartApplication : Effect
+        data object OpenVideoExportDirectoryPicker : Effect
+        data object VideoExportDirectorySelectionFailed : Effect
     }
 }

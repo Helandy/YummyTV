@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:tv:tv-api"))
     implementation(project(":feature:settings:api"))
+    implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.lifecycle.viewmodelCompose)
 }

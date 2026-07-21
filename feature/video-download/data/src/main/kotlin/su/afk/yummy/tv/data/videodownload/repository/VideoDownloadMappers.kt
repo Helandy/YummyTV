@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadEntry
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRequest
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
+import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 
 private val videoDownloadJson = Json { ignoreUnknownKeys = true }
 
@@ -31,6 +32,11 @@ internal fun VideoDownloadEntry.toDomain(): VideoDownloadItem =
         bytesDownloaded = bytesDownloaded,
         totalBytes = totalBytes,
         errorMessage = errorMessage,
+        exportStatus = exportStatus.toExportStatus(),
+        exportProgress = exportProgress,
+        exportDirectoryUri = exportDirectoryUri,
+        exportedFileUri = exportedFileUri,
+        exportErrorMessage = exportErrorMessage,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -56,6 +62,11 @@ internal fun VideoDownloadRequest.toEntry(now: Long): VideoDownloadEntry =
         bytesDownloaded = 0L,
         totalBytes = null,
         errorMessage = null,
+        exportStatus = VideoExportStatus.Idle.name,
+        exportProgress = 0f,
+        exportDirectoryUri = null,
+        exportedFileUri = null,
+        exportErrorMessage = null,
         createdAt = now,
         updatedAt = now,
     )
@@ -67,6 +78,9 @@ internal fun VideoDownloadStatus.storageName(): String = name
 
 private fun String.toStatus(): VideoDownloadStatus =
     runCatching { VideoDownloadStatus.valueOf(this) }.getOrDefault(VideoDownloadStatus.Failed)
+
+private fun String.toExportStatus(): VideoExportStatus =
+    runCatching { VideoExportStatus.valueOf(this) }.getOrDefault(VideoExportStatus.Idle)
 
 private fun buildCacheKey(request: VideoDownloadRequest): String =
     listOf(

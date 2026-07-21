@@ -7,4 +7,14 @@
     <string name="video_download_notification_pause">Пауза</string>
     <string name="video_download_notification_resume">Продолжить</string>
     <string name="video_download_worker_stopped">Загрузка остановилась. Нажмите, чтобы перезапустить.</string>
+    <string name="video_export_notification_channel">Экспорт видео</string>
+    <string name="video_export_notification_title">Экспорт серии %1$s</string>
+    <string name="video_export_notification_progress">Подготовка MP4 • %1$d%%</string>
+    <string name="video_export_error_no_space">Недостаточно внутренней памяти для подготовки MP4.</string>
+    <string name="video_export_error_create_file">Не удалось создать файл в выбранной папке.</string>
+    <string name="video_export_error_open_file">Выбранный накопитель недоступен или защищён от записи.</string>
+    <string name="video_export_error_unknown">Не удалось экспортировать серию. Подключите накопитель и повторите попытку.</string>
+    <string name="video_export_error_directory_read_only">В выбранной папке нельзя создавать файлы.</string>
+    <string name="video_export_worker_stopped">Экспорт MP4 остановился. Подключите накопитель и повторите попытку.</string>
+    <string name="video_export_selected_directory">Выбранная папка</string>
 </resources>

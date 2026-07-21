@@ -5,8 +5,10 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.data.videodownload.cache.DefaultVideoDownloadPlaybackCache
+import su.afk.yummy.tv.data.videodownload.repository.DefaultVideoDownloadExportRepository
 import su.afk.yummy.tv.data.videodownload.repository.DefaultVideoDownloadRepository
 import su.afk.yummy.tv.data.videodownload.repository.DefaultVideoDownloadStreamRefresher
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefresher
 import su.afk.yummy.tv.feature.videodownload.playback.VideoDownloadPlaybackCache
@@ -20,6 +22,12 @@ interface VideoDownloadDataModule {
     fun bindVideoDownloadRepository(
         repository: DefaultVideoDownloadRepository,
     ): VideoDownloadRepository
+
+    @Binds
+    @Singleton
+    fun bindVideoDownloadExportRepository(
+        repository: DefaultVideoDownloadExportRepository,
+    ): VideoDownloadExportRepository
 
     @Binds
     @Singleton

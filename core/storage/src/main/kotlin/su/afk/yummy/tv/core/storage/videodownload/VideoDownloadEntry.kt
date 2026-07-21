@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.storage.videodownload
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -38,6 +39,13 @@ data class VideoDownloadEntry(
     val bytesDownloaded: Long,
     val totalBytes: Long?,
     val errorMessage: String?,
+    @ColumnInfo(defaultValue = "'Idle'")
+    val exportStatus: String,
+    @ColumnInfo(defaultValue = "0")
+    val exportProgress: Float,
+    val exportDirectoryUri: String?,
+    val exportedFileUri: String?,
+    val exportErrorMessage: String?,
     val createdAt: Long,
     val updatedAt: Long,
 )

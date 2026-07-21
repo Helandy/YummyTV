@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(project(":core:analytics"))
     implementation(project(":core:logger"))
+    implementation(project(":core:preferences"))
     implementation(project(":core:storage"))
     implementation(project(":core:utils"))
     implementation(project(":feature:player:domain"))
@@ -22,6 +23,7 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.bundles.media3.player)
     implementation(libs.androidx.media3.datasource.okhttp)
+    implementation(libs.media3.transformer)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
 

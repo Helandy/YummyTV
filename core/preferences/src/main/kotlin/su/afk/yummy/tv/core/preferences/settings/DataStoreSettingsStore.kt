@@ -61,6 +61,8 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         longPreferencesKey("support_prompt_first_install_time_ms")
     private val legacyStreamingCachePrunedKey =
         booleanPreferencesKey("legacy_streaming_cache_pruned")
+    private val videoExportDirectoryUriKey = stringPreferencesKey("video_export_directory_uri")
+    private val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
 
     @Volatile
     private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
@@ -295,6 +297,14 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             )
         }
 
+    override val videoExportDirectoryUri: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[videoExportDirectoryUriKey].orEmpty()
+    }
+
+    override val videoExportDirectoryName: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[videoExportDirectoryNameKey].orEmpty()
+    }
+
     init {
         scope.launch {
             previewCacheSize.collect { size ->
@@ -498,6 +508,13 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     override suspend fun dismissSupportPrompt() {
         context.dataStore.edit { prefs ->
             prefs[supportPromptDismissedKey] = true
+        }
+    }
+
+    override suspend fun setVideoExportDirectory(uri: String, displayName: String) {
+        context.dataStore.edit { prefs ->
+            prefs[videoExportDirectoryUriKey] = uri
+            prefs[videoExportDirectoryNameKey] = displayName
         }
     }
 

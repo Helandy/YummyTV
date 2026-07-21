@@ -137,4 +137,8 @@
     <string name="settings_version_label">Version</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
+    <string name="settings_video_export_directory">MP4 export folder</string>
+    <string name="settings_video_export_directory_not_selected">Not selected</string>
+    <string name="settings_video_export_directory_hint">Choose internal storage, MicroSD, USB, or a compatible document provider</string>
+    <string name="settings_video_export_directory_error">Unable to write to the selected folder</string>
 </resources>

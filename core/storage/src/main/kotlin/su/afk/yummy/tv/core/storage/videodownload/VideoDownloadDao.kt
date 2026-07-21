@@ -29,6 +29,14 @@ interface VideoDownloadDao {
     @Query(
         """
         SELECT * FROM video_downloads
+        WHERE exportStatus IN ('Queued', 'Preparing', 'Copying')
+        """
+    )
+    suspend fun getUnfinishedExports(): List<VideoDownloadEntry>
+
+    @Query(
+        """
+        SELECT * FROM video_downloads
         WHERE animeId = :animeId
           AND episode = :episode
         LIMIT 1

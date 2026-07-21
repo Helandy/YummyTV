@@ -149,7 +149,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         DocumentCacheEntry::class,
         VideoDownloadEntry::class,
     ],
-    version = 42,
+    version = 43,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

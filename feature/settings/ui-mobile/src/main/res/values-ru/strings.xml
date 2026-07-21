@@ -137,4 +137,8 @@
     <string name="settings_version_label">Версия</string>
     <string name="settings_feedback_label">Вопросы/Идеи/Предложения</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
+    <string name="settings_video_export_directory">Папка экспорта MP4</string>
+    <string name="settings_video_export_directory_not_selected">Не выбрана</string>
+    <string name="settings_video_export_directory_hint">Внутренняя память, MicroSD, USB или совместимый файловый provider</string>
+    <string name="settings_video_export_directory_error">Не удалось получить доступ на запись к выбранной папке</string>
 </resources>

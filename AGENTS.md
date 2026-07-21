@@ -3,6 +3,12 @@
 - Stick to clean architecture.
 - Do not write tests unless explicitly asked.
 
+## Domain Structure
+
+- Keep every public domain model, enum, sealed contract, repository contract, and use case in its
+  own same-named Kotlin file.
+- Add KDoc to every use case describing the domain operation it performs.
+
 ## Compose UI Feature Structure
 
 - Keep `XxxMobileScreen.kt` and `XxxTvScreen.kt` as public screen entrypoints:

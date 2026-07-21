@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.settings
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,6 +77,13 @@ fun SettingsMobileScreen(
     val context = LocalContext.current
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val interfaceModeFocusRequester = remember { FocusRequester() }
+    val videoExportDirectoryPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            onEvent(SettingsState.Event.VideoExportDirectoryGranted(it.toString()))
+        }
+    }
 
     LaunchedEffect(Unit) {
         repeat(3) {
@@ -87,14 +96,26 @@ fun SettingsMobileScreen(
 
     LaunchedEffect(effect) {
         effect.collect { settingsEffect ->
-            if (settingsEffect is SettingsState.Effect.RestartApplication &&
-                !context.restartApplication()
-            ) {
-                Toast.makeText(
-                    context,
-                    R.string.settings_interface_restart_failed,
-                    Toast.LENGTH_LONG,
-                ).show()
+            when (settingsEffect) {
+                SettingsState.Effect.RestartApplication -> {
+                    if (!context.restartApplication()) {
+                        Toast.makeText(
+                            context,
+                            R.string.settings_interface_restart_failed,
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
+
+                SettingsState.Effect.OpenVideoExportDirectoryPicker ->
+                    videoExportDirectoryPicker.launch(null)
+
+                SettingsState.Effect.VideoExportDirectorySelectionFailed ->
+                    Toast.makeText(
+                        context,
+                        R.string.settings_video_export_directory_error,
+                        Toast.LENGTH_LONG,
+                    ).show()
             }
         }
     }
@@ -269,6 +290,15 @@ fun SettingsMobileScreen(
                         value = state.previewCacheSize.label(),
                         hint = state.previewCacheSize.hint(),
                         onClick = { activePicker = SettingsMobilePicker.CACHE },
+                    )
+                    SettingsMobileOptionRow(
+                        label = stringResource(R.string.settings_video_export_directory),
+                        value = state.videoExportDirectoryName
+                            ?: stringResource(R.string.settings_video_export_directory_not_selected),
+                        hint = stringResource(R.string.settings_video_export_directory_hint),
+                        onClick = {
+                            onEvent(SettingsState.Event.VideoExportDirectorySelected)
+                        },
                     )
                 }
             }

@@ -1783,6 +1783,16 @@ object StorageModule {
         override fun migrate(db: SupportSQLiteDatabase) = Unit
     }
 
+    private val MIGRATION_42_43 = object : Migration(42, 43) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE video_downloads ADD COLUMN exportStatus TEXT NOT NULL DEFAULT 'Idle'")
+            db.execSQL("ALTER TABLE video_downloads ADD COLUMN exportProgress REAL NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE video_downloads ADD COLUMN exportDirectoryUri TEXT")
+            db.execSQL("ALTER TABLE video_downloads ADD COLUMN exportedFileUri TEXT")
+            db.execSQL("ALTER TABLE video_downloads ADD COLUMN exportErrorMessage TEXT")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
@@ -1823,6 +1833,7 @@ object StorageModule {
                 MIGRATION_39_40,
                 MIGRATION_40_41,
                 MIGRATION_41_42,
+                MIGRATION_42_43,
             )
             .fallbackToDestructiveMigrationFrom(
                 dropAllTables = true,

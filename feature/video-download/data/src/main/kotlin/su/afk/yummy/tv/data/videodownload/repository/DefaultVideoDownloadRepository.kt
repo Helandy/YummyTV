@@ -133,6 +133,9 @@ class DefaultVideoDownloadRepository @Inject constructor(
         val workManager = WorkManager.getInstance(context)
         episodeDownloads.forEach { download ->
             workManager.cancelUniqueWork(uniqueWorkName(download.id)).await()
+            workManager.cancelUniqueWork(
+                DefaultVideoDownloadExportRepository.uniqueWorkName(download.id)
+            ).await()
         }
         episodeDownloads.map { it.cacheKey }.distinct().forEach { cacheKey ->
             runCatching { cacheProvider.cache.removeResource(cacheKey) }

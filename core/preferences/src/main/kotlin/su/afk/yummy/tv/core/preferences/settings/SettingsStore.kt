@@ -70,6 +70,8 @@ interface SettingsStore {
     val settingsSnapshot: Flow<SettingsSnapshot>
     val mainSettingsSnapshot: Flow<MainSettingsSnapshot>
     val supportPromptSnapshot: Flow<SupportPromptSnapshot>
+    val videoExportDirectoryUri: Flow<String>
+    val videoExportDirectoryName: Flow<String>
 
     fun playerResizeSettings(
         animeId: Int,
@@ -134,6 +136,7 @@ interface SettingsStore {
     suspend fun ensureYaniContentLanguageInitialized()
     suspend fun ensureSupportPromptInstallTimeInitialized()
     suspend fun dismissSupportPrompt()
+    suspend fun setVideoExportDirectory(uri: String, displayName: String)
 
     /** Returns `true` when [versionCode] differs from the previously started one. */
     suspend fun markStartedVersion(versionCode: Int): Boolean

@@ -7,4 +7,14 @@
     <string name="video_download_notification_pause">Pause</string>
     <string name="video_download_notification_resume">Resume</string>
     <string name="video_download_worker_stopped">Download stopped. Tap to restart it.</string>
+    <string name="video_export_notification_channel">Video exports</string>
+    <string name="video_export_notification_title">Exporting episode %1$s</string>
+    <string name="video_export_notification_progress">Preparing MP4 • %1$d%%</string>
+    <string name="video_export_error_no_space">Not enough internal space to prepare the MP4 file.</string>
+    <string name="video_export_error_create_file">Unable to create a file in the selected folder.</string>
+    <string name="video_export_error_open_file">The selected storage is unavailable or read-only.</string>
+    <string name="video_export_error_unknown">Unable to export the episode. Reconnect the storage and try again.</string>
+    <string name="video_export_error_directory_read_only">The selected folder does not allow creating files.</string>
+    <string name="video_export_worker_stopped">MP4 export stopped. Reconnect the storage and try again.</string>
+    <string name="video_export_selected_directory">Selected folder</string>
 </resources>

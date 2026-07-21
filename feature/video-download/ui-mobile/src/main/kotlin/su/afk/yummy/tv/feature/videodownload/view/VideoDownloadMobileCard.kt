@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
+import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 import su.afk.yummy.tv.feature.videodownload.mobile.R
 import su.afk.yummy.tv.feature.videodownload.utils.formatMegabytesOrNull
 import kotlin.math.roundToInt
@@ -52,13 +55,17 @@ internal fun VideoDownloadMobileCard(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onRestart: () -> Unit,
+    onExport: () -> Unit,
+    onCancelExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val imageUrl = item.screenshotUrl.ifBlank { item.posterUrl }
     val statusText = item.statusText()
     val diskSizeText = item.diskSizeText()
-    val statusColor = when (item.status) {
-        VideoDownloadStatus.Failed -> MaterialTheme.colorScheme.error
+    val statusColor = when {
+        item.status == VideoDownloadStatus.Failed ||
+                item.exportStatus == VideoExportStatus.Failed -> MaterialTheme.colorScheme.error
+
         else -> DownloadActiveColor
     }
 
@@ -97,9 +104,9 @@ internal fun VideoDownloadMobileCard(
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 7.dp, vertical = 3.dp),
                 )
-                if (item.status.hasProgressIndicator) {
+                if (item.hasProgressIndicator) {
                     LinearProgressIndicator(
-                        progress = { item.progress.coerceIn(0f, 1f) },
+                        progress = { item.visibleProgress.coerceIn(0f, 1f) },
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
                         modifier = Modifier
@@ -206,6 +213,27 @@ internal fun VideoDownloadMobileCard(
                             )
                         }
                     }
+                    if (item.status == VideoDownloadStatus.Downloaded) {
+                        if (item.exportStatus.isActive) {
+                            IconButton(onClick = onCancelExport) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = stringResource(
+                                        R.string.video_export_cancel,
+                                    ),
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = onExport) {
+                                Icon(
+                                    imageVector = Icons.Filled.SaveAlt,
+                                    contentDescription = stringResource(
+                                        R.string.video_export_item,
+                                    ),
+                                )
+                            }
+                        }
+                    }
                     IconButton(onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
@@ -220,24 +248,48 @@ internal fun VideoDownloadMobileCard(
 
 @Composable
 private fun VideoDownloadItem.statusText(): String? =
-    when (status) {
-        VideoDownloadStatus.Resolving,
-        VideoDownloadStatus.Queued,
-        VideoDownloadStatus.Downloading -> {
-            val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
-            stringResource(R.string.video_download_item_progress, percent)
+    when {
+        status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Queued ->
+            stringResource(R.string.video_export_status_queued)
+
+        status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Preparing ->
+            stringResource(
+                R.string.video_export_status_preparing,
+                (exportProgress.coerceIn(0f, 1f) * 100).roundToInt(),
+            )
+
+        status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Copying ->
+            stringResource(
+                R.string.video_export_status_copying,
+                (exportProgress.coerceIn(0f, 1f) * 100).roundToInt(),
+            )
+
+        status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Exported ->
+            stringResource(R.string.video_export_status_exported)
+
+        status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Failed ->
+            exportErrorMessage?.takeIf(String::isNotBlank)
+                ?: stringResource(R.string.video_export_status_failed)
+
+        else -> when (status) {
+            VideoDownloadStatus.Resolving,
+            VideoDownloadStatus.Queued,
+            VideoDownloadStatus.Downloading -> {
+                val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
+                stringResource(R.string.video_download_item_progress, percent)
+            }
+
+            VideoDownloadStatus.Paused -> {
+                val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
+                stringResource(R.string.video_download_item_paused, percent)
+            }
+
+            VideoDownloadStatus.Failed -> errorMessage
+                ?.takeIf { it.isNotBlank() }
+                ?: stringResource(R.string.video_download_item_error_unknown)
+
+            else -> null
         }
-
-        VideoDownloadStatus.Paused -> {
-            val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
-            stringResource(R.string.video_download_item_paused, percent)
-        }
-
-        VideoDownloadStatus.Failed -> errorMessage
-            ?.takeIf { it.isNotBlank() }
-            ?: stringResource(R.string.video_download_item_error_unknown)
-
-        else -> null
     }
 
 @Composable
@@ -255,11 +307,20 @@ private fun String.balancerLabel(): String =
         .removePrefix("Плеер ")
         .removePrefix("Player ")
 
-private val VideoDownloadStatus.hasProgressIndicator: Boolean
-    get() = this == VideoDownloadStatus.Resolving ||
-            this == VideoDownloadStatus.Queued ||
-            this == VideoDownloadStatus.Downloading ||
-            this == VideoDownloadStatus.Paused
+private val VideoDownloadItem.hasProgressIndicator: Boolean
+    get() = status == VideoDownloadStatus.Resolving ||
+            status == VideoDownloadStatus.Queued ||
+            status == VideoDownloadStatus.Downloading ||
+            status == VideoDownloadStatus.Paused ||
+            exportStatus.isActive
+
+private val VideoDownloadItem.visibleProgress: Float
+    get() = if (exportStatus.isActive) exportProgress else progress
+
+private val VideoExportStatus.isActive: Boolean
+    get() = this == VideoExportStatus.Queued ||
+            this == VideoExportStatus.Preparing ||
+            this == VideoExportStatus.Copying
 
 private val VideoDownloadStatus.canPause: Boolean
     get() = this == VideoDownloadStatus.Queued ||
