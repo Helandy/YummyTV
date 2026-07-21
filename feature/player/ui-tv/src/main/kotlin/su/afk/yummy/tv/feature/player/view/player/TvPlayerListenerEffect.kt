@@ -4,13 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.PlayerCompletionTracker
-import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.logPlaybackError
 import su.afk.yummy.tv.feature.player.common.playerEndPromptFor
@@ -24,12 +22,11 @@ import su.afk.yummy.tv.feature.player.model.TvPlayerSkipUiState
 
 /**
  * Player.Listener TV-плеера: play/pause, завершение эпизода с промптами, ошибки.
- * Порядок dispose важен: cancel jobs -> removeListener -> notify/save -> pause/clear/stopService.
+ * Выгрузкой сервиса и финальным сохранением владеет TvPlayerLifecycleEffect.
  */
 @Composable
 internal fun TvPlayerListenerEffect(
     player: Player,
-    reporter: PlayerProgressReporter,
     completionTracker: PlayerCompletionTracker,
     autoHide: PlayerAutoHideController,
     skipUi: TvPlayerSkipUiState,
@@ -47,7 +44,6 @@ internal fun TvPlayerListenerEffect(
     onControllerVisibleChange: (Boolean) -> Unit,
     onEvent: (PlayerState.Event) -> Unit,
 ) {
-    val context = LocalContext.current
     val currentFallbackDuration by rememberUpdatedState(fallbackDurationMs)
     val currentHasNextEpisode by rememberUpdatedState(hasNextEpisode)
     val currentNextEpisodeSwitchesDubbing by rememberUpdatedState(nextEpisodeSwitchesDubbing)
@@ -115,12 +111,6 @@ internal fun TvPlayerListenerEffect(
             skipUi.cancel()
             currentStepSeekToast.cancel()
             player.removeListener(listener)
-            if (player.mediaItemCount > 0) {
-                val snapshot = player.positionSnapshot(currentFallbackDuration())
-                reporter.notifyPositionChanged(snapshot.positionMs, snapshot.durationMs)
-                reporter.saveProgress(snapshot.positionMs, snapshot.durationMs)
-            }
-            releaseTvPlaybackResources(context, player)
         }
     }
 }

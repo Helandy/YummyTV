@@ -3,6 +3,7 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.repository.UserProfileContentRepository
 import javax.inject.Inject
 
+/** Загружает страницу рецензий выбранного пользователя. */
 class GetUserReviewsUseCase @Inject constructor(
     private val repository: UserProfileContentRepository,
 ) {

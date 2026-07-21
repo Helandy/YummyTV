@@ -17,7 +17,9 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.posts.model.PostReaction
 import su.afk.yummy.tv.domain.posts.model.PostVote
-import su.afk.yummy.tv.domain.posts.usecase.PostsUseCases
+import su.afk.yummy.tv.domain.posts.usecase.GetPostDetailsUseCase
+import su.afk.yummy.tv.domain.posts.usecase.RemovePostVoteUseCase
+import su.afk.yummy.tv.domain.posts.usecase.VotePostUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -30,7 +32,9 @@ class PostDetailsViewModel @AssistedInject constructor(
     override val errorHandler: IErrorHandlerUseCase,
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
-    private val posts: PostsUseCases,
+    private val getPostDetails: GetPostDetailsUseCase,
+    private val votePost: VotePostUseCase,
+    private val removePostVote: RemovePostVoteUseCase,
     private val accountNavigator: IAccountNavigator,
     private val detailsNavigator: IDetailsNavigator,
     private val commentsNavigator: ICommentsNavigator,
@@ -77,7 +81,7 @@ class PostDetailsViewModel @AssistedInject constructor(
 
     private fun load() = viewModelScope.launch {
         setState { copy(loading = true, error = null) }
-        runCatching { posts.details(postId) }.fold(
+        runCatching { getPostDetails(postId) }.fold(
             { setState { copy(loading = false, details = it) } },
             {
                 setState {
@@ -105,7 +109,7 @@ class PostDetailsViewModel @AssistedInject constructor(
         }
         viewModelScope.launch {
             runCatching {
-                if (actualTarget == PostVote.NONE) posts.removeVote(postId) else posts.vote(
+                if (actualTarget == PostVote.NONE) removePostVote(postId) else votePost(
                     postId,
                     actualTarget
                 )

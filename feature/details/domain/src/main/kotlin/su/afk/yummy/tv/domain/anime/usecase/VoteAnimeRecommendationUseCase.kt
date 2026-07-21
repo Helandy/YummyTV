@@ -5,6 +5,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
 import javax.inject.Inject
 
+/** Сохраняет оценку сходства между выбранным аниме и рекомендацией. */
 class VoteAnimeRecommendationUseCase @Inject constructor(
     private val repository: AnimeRepository,
 ) {

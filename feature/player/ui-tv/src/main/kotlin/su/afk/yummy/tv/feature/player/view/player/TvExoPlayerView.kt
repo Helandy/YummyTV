@@ -41,8 +41,8 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
-import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
+import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackSessionClient
 import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
@@ -131,15 +131,16 @@ internal fun TvExoPlayerView(
         activeQuality?.let(qualities::get) ?: streamUrl
     }
 
-    val exoPlayer = rememberPlayerMediaController()
-    val isBuffering = rememberPlayerBufferingState(exoPlayer)
+    val playbackSession = rememberPlayerPlaybackSessionClient()
+    val player = playbackSession.player
+    val isBuffering = rememberPlayerBufferingState(player)
     val playbackConfig = rememberPlayerPlaybackConfig()
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val playbackKey =
         remember(currentUrl, state.streamHeaders, state.offlineCacheKey, state.retryKey) {
             buildTvPlayerPlaybackKey(state = state, url = currentUrl)
         }
-    val isMediaReady = rememberPlayerMediaReadyState(exoPlayer, playbackKey)
+    val isMediaReady = rememberPlayerMediaReadyState(player, playbackKey)
     val mediaItemKey = remember(
         playbackKey,
         state.animeTitle,
@@ -157,42 +158,7 @@ internal fun TvExoPlayerView(
         )
     }
 
-    LaunchedEffect(exoPlayer, playbackKey, mediaItemKey, episodeKey) {
-        val player = exoPlayer ?: return@LaunchedEffect
-        mediaItemUpdater.update(
-            player = player,
-            playbackConfig = playbackConfig,
-            config = buildTvPlayerMediaItemConfig(
-                playbackKey = playbackKey,
-                mediaItemKey = mediaItemKey,
-                url = currentUrl,
-                state = state,
-                playback = playback,
-                durationMs = progress.duration,
-                playbackPositionMs = seekOnSwitch,
-            ),
-        )
-        player.playWhenReady = wantsPlay
-    }
-
-    if (exoPlayer == null) {
-        PlayerBlackBackdrop()
-        return
-    }
-
-    PlayerKeepScreenOnEffect()
-
-    LaunchedEffect(exitState.requested) {
-        if (exitState.requested) {
-            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.finalEpisodeActionPrompt = null
-            autoHide.cancel()
-            exoPlayer.pause()
-        }
-    }
-
     val progressSource = remember(
-        exoPlayer,
         episodeKey,
         playback.activeEpisode,
         playback.activeVideoId,
@@ -213,6 +179,49 @@ internal fun TvExoPlayerView(
         source = { progressSource },
         onEvent = onPlayerEvent,
     )
+
+    TvPlayerLifecycleEffect(
+        player = player,
+        playbackSession = playbackSession,
+        reporter = reporter,
+        prompts = prompts,
+        fallbackDurationMs = { progress.duration },
+        wantsPlay = { wantsPlay },
+    )
+
+    LaunchedEffect(player, playbackKey, mediaItemKey, episodeKey) {
+        val activePlayer = player ?: return@LaunchedEffect
+        mediaItemUpdater.update(
+            player = activePlayer,
+            playbackConfig = playbackConfig,
+            config = buildTvPlayerMediaItemConfig(
+                playbackKey = playbackKey,
+                mediaItemKey = mediaItemKey,
+                url = currentUrl,
+                state = state,
+                playback = playback,
+                durationMs = progress.duration,
+                playbackPositionMs = seekOnSwitch,
+            ),
+        )
+        activePlayer.playWhenReady = wantsPlay
+    }
+
+    if (player == null) {
+        PlayerBlackBackdrop()
+        return
+    }
+
+    PlayerKeepScreenOnEffect()
+
+    LaunchedEffect(exitState.requested) {
+        if (exitState.requested) {
+            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
+            prompts.finalEpisodeActionPrompt = null
+            autoHide.cancel()
+            player.pause()
+        }
+    }
     val completionTracker = rememberPlayerCompletionTracker(
         contentKey = episodeKey,
         streamUrl = streamUrl,
@@ -220,7 +229,7 @@ internal fun TvExoPlayerView(
         onEvent = onPlayerEvent,
     )
     val seekController = rememberTvPlayerSeekController(
-        player = exoPlayer,
+        player = player,
         progress = progress,
         reporter = reporter,
         stepSeekToast = stepSeekToast,
@@ -277,7 +286,7 @@ internal fun TvExoPlayerView(
             formatTime(skip.segment.endMs),
         )
         skipUi.showSnackbar(message)
-        val fromPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+        val fromPosition = player.currentPosition.coerceAtLeast(0L)
         if (reportSelection) {
             onPlayerEvent(
                 PlayerState.Event.SkipSegmentSelected(
@@ -291,17 +300,8 @@ internal fun TvExoPlayerView(
         onInteraction()
     }
 
-    TvPlayerLifecycleEffect(
-        player = exoPlayer,
-        reporter = reporter,
-        prompts = prompts,
-        fallbackDurationMs = { progress.duration },
-        wantsPlay = { wantsPlay },
-    )
-
     TvPlayerListenerEffect(
-        player = exoPlayer,
-        reporter = reporter,
+        player = player,
         completionTracker = completionTracker,
         autoHide = autoHide,
         skipUi = skipUi,
@@ -322,12 +322,12 @@ internal fun TvExoPlayerView(
         onEvent = onPlayerEvent,
     )
 
-    LaunchedEffect(exoPlayer, activeSpeed) {
-        exoPlayer.setPlaybackSpeed(activeSpeed)
+    LaunchedEffect(player, activeSpeed) {
+        player.setPlaybackSpeed(activeSpeed)
     }
 
     TvPlayerProgressPollingEffect(
-        player = exoPlayer,
+        player = player,
         progress = progress,
         reporter = reporter,
         episodeKey = { episodeKey },
@@ -385,7 +385,7 @@ internal fun TvExoPlayerView(
 
     Box(modifier = Modifier.fillMaxSize()) {
         ContentFrame(
-            player = exoPlayer,
+            player = player,
             surfaceType = SURFACE_TYPE_SURFACE_VIEW,
             contentScale = tvPlayerContentScale(state.resizeMode, state.zoomLevel),
             keepContentOnReset = state.isAllohaPlaybackRecovering,
@@ -473,7 +473,7 @@ internal fun TvExoPlayerView(
             qualityCount = qualities.size,
             currentQualityLabel = activeQuality.orEmpty(),
             currentSpeedLabel = activeSpeed.speedLabel(),
-            onPlayPause = { if (wantsPlay) exoPlayer.pause() else exoPlayer.play() },
+            onPlayPause = { if (wantsPlay) player.pause() else player.play() },
             onSeekTo = seekController::seekTo,
             onInteraction = ::onInteraction,
             onSkipActiveSegment = { skipActiveSegment() },
@@ -513,7 +513,7 @@ internal fun TvExoPlayerView(
             onQualitySelected = { idx ->
                 val quality = qualities.keys.toList()[idx]
                 if (quality != activeQuality) {
-                    val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                    val position = player.currentPosition.coerceAtLeast(0L)
                     seekOnSwitch = position
                     reporter.saveProgress(position, progress.duration)
                     onPlayerEvent(PlayerState.Event.QualitySelected(quality, position))
@@ -522,12 +522,12 @@ internal fun TvExoPlayerView(
                 onInteraction()
             },
             onDubbingSelected = { idx ->
-                onDubbingSelected(idx, exoPlayer.currentPosition)
+                onDubbingSelected(idx, player.currentPosition)
                 panels.close(PanelReturnFocusTarget.Dubbing)
                 onInteraction()
             },
             onBalancerSelected = { idx ->
-                onBalancerSelected(idx, exoPlayer.currentPosition)
+                onBalancerSelected(idx, player.currentPosition)
                 panels.close(PanelReturnFocusTarget.Balancer)
                 onInteraction()
             },

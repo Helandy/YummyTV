@@ -52,8 +52,3 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
         RemoteLibrarySyncResult.Failure(error)
     }
 }
-
-sealed interface RemoteLibrarySyncResult {
-    data class Success(val syncError: Throwable?) : RemoteLibrarySyncResult
-    data class Failure(val error: Throwable) : RemoteLibrarySyncResult
-}

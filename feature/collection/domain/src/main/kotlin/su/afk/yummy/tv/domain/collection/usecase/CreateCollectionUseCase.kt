@@ -5,6 +5,7 @@ import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 import javax.inject.Inject
 
+/** Создаёт коллекцию и уведомляет наблюдателей об изменении списка. */
 class CreateCollectionUseCase @Inject constructor(
     private val repository: CollectionRepository,
     private val mutationNotifier: CollectionMutationNotifier,

@@ -13,7 +13,8 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.utils.OffsetPage
 import su.afk.yummy.tv.core.utils.OffsetPagingSource
 import su.afk.yummy.tv.domain.posts.model.PostSort
-import su.afk.yummy.tv.domain.posts.usecase.PostsUseCases
+import su.afk.yummy.tv.domain.posts.usecase.GetPostCategoriesUseCase
+import su.afk.yummy.tv.domain.posts.usecase.GetPostsUseCase
 import su.afk.yummy.tv.feature.posts.IPostsNavigator
 import javax.inject.Inject
 
@@ -24,7 +25,8 @@ class PostsListViewModel @Inject constructor(
     override val retryStorage: RetryStorage,
     private val nav: NavigationManager,
     private val navigator: IPostsNavigator,
-    private val posts: PostsUseCases,
+    private val getPostCategories: GetPostCategoriesUseCase,
+    private val getPosts: GetPostsUseCase,
 ) : BaseViewModelNew<PostsListState.State, PostsListState.Event, PostsListState.Effect>(
     savedStateHandle
 ) {
@@ -53,7 +55,7 @@ class PostsListViewModel @Inject constructor(
     }
 
     private fun loadCategories() = viewModelScope.launch {
-        runCatching { posts.categories() }.fold(
+        runCatching { getPostCategories() }.fold(
             { loaded -> setState { copy(categories = loaded, categoriesLoading = false) } },
             { setState { copy(categoriesLoading = false) } },
         )
@@ -62,7 +64,7 @@ class PostsListViewModel @Inject constructor(
     private fun createFlow(category: String?, sort: PostSort) =
         Pager(PagingConfig(pageSize = 20, initialLoadSize = 20, enablePlaceholders = false)) {
             OffsetPagingSource { limit, offset ->
-                val page = posts.page(category, sort.apiValue, limit.coerceAtMost(20), offset)
+                val page = getPosts(category, sort.apiValue, limit.coerceAtMost(20), offset)
                 OffsetPage(page, offset + page.size, page.size >= limit.coerceAtMost(20))
             }
         }.flow.cachedIn(viewModelScope)

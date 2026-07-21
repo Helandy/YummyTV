@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 import javax.inject.Inject
 
+/** Сохраняет реакцию текущего пользователя на выбранную коллекцию. */
 class VoteCollectionUseCase @Inject constructor(
     private val repository: CollectionRepository,
 ) {

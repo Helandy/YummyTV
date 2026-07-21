@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 import javax.inject.Inject
 
+/** Отправляет жалобу на выбранный комментарий с указанной причиной. */
 class ReportCommentUseCase @Inject constructor(
     private val repository: CommentsRepository,
 ) {

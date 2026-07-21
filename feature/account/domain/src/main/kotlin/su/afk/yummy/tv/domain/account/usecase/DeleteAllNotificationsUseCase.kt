@@ -3,6 +3,7 @@ package su.afk.yummy.tv.domain.account.usecase
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import javax.inject.Inject
 
+/** Удаляет все уведомления текущего профиля. */
 class DeleteAllNotificationsUseCase @Inject constructor(
     private val repository: ProfileNotificationsRepository,
 ) {

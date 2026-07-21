@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 import javax.inject.Inject
 
+/** Сохраняет реакцию текущего пользователя на выбранный комментарий. */
 class VoteCommentUseCase @Inject constructor(
     private val repository: CommentsRepository,
 ) {

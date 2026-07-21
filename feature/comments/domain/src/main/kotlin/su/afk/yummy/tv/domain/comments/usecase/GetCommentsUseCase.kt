@@ -5,6 +5,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 import javax.inject.Inject
 
+/** Загружает страницу комментариев выбранной сущности с сортировкой и управлением кешем. */
 class GetCommentsUseCase @Inject constructor(
     private val repository: CommentsRepository,
 ) {

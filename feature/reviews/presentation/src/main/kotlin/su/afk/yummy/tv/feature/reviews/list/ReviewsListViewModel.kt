@@ -26,7 +26,9 @@ import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.domain.reviews.model.ReviewReactions
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
-import su.afk.yummy.tv.domain.reviews.usecase.ReviewsUseCases
+import su.afk.yummy.tv.domain.reviews.usecase.GetAnimeReviewsUseCase
+import su.afk.yummy.tv.domain.reviews.usecase.GetReviewFeedUseCase
+import su.afk.yummy.tv.domain.reviews.usecase.VoteReviewUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.reviews.presentation.R
@@ -40,7 +42,9 @@ class ReviewsListViewModel @AssistedInject constructor(
     private val nav: NavigationManager,
     private val navigator: IReviewsNavigator,
     private val accountNavigator: IAccountNavigator,
-    private val reviews: ReviewsUseCases,
+    private val getReviewFeed: GetReviewFeedUseCase,
+    private val getAnimeReviews: GetAnimeReviewsUseCase,
+    private val voteReview: VoteReviewUseCase,
     private val strings: StringProvider,
     mutationNotifier: ReviewMutationNotifier,
     settingsStore: SettingsStore,
@@ -91,8 +95,8 @@ class ReviewsListViewModel @AssistedInject constructor(
         Pager(PagingConfig(pageSize = 20, initialLoadSize = 20, enablePlaceholders = false)) {
             OffsetPagingSource { limit, offset ->
                 val pageLimit = limit.coerceAtMost(20)
-                val page = animeId?.let { reviews.page(it, sort, pageLimit, offset) }
-                    ?: reviews.feedPage(sort, pageLimit, offset)
+                val page = animeId?.let { getAnimeReviews(it, sort, pageLimit, offset) }
+                    ?: getReviewFeed(sort, pageLimit, offset)
                 OffsetPage(
                     page.reviews,
                     offset + page.reviews.size,
@@ -109,7 +113,7 @@ class ReviewsListViewModel @AssistedInject constructor(
         val optimistic = old.optimistic(target)
         setState { copy(reactionOverrides = reactionOverrides + (review.id to optimistic)) }
         viewModelScope.launch {
-            runCatching { reviews.vote(review.id, target) }.fold(
+            runCatching { voteReview(review.id, target) }.fold(
                 { saved -> setState { copy(reactionOverrides = reactionOverrides + (review.id to saved)) } },
                 {
                     setState { copy(reactionOverrides = reactionOverrides + (review.id to old)) }; toast(

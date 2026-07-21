@@ -3,6 +3,7 @@ package su.afk.yummy.tv.domain.comments.usecase
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 import javax.inject.Inject
 
+/** Изменяет текст выбранного комментария. */
 class UpdateCommentUseCase @Inject constructor(
     private val repository: CommentsRepository,
 ) {

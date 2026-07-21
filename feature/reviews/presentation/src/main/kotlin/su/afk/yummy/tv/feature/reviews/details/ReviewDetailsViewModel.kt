@@ -16,7 +16,9 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
-import su.afk.yummy.tv.domain.reviews.usecase.ReviewsUseCases
+import su.afk.yummy.tv.domain.reviews.usecase.DeleteReviewUseCase
+import su.afk.yummy.tv.domain.reviews.usecase.GetReviewDetailsUseCase
+import su.afk.yummy.tv.domain.reviews.usecase.VoteReviewUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -32,7 +34,9 @@ class ReviewDetailsViewModel @AssistedInject constructor(
     private val accountNavigator: IAccountNavigator,
     private val commentsNavigator: ICommentsNavigator,
     private val detailsNavigator: IDetailsNavigator,
-    private val reviews: ReviewsUseCases,
+    private val getReviewDetails: GetReviewDetailsUseCase,
+    private val voteReview: VoteReviewUseCase,
+    private val deleteReview: DeleteReviewUseCase,
     private val strings: StringProvider,
     settingsStore: SettingsStore,
 ) : BaseViewModelNew<ReviewDetailsState.State, ReviewDetailsState.Event, ReviewDetailsState.Effect>(
@@ -79,7 +83,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
                     loading = true,
                     error = null
                 )
-            }; runCatching { reviews.details(reviewId) }.fold({
+            }; runCatching { getReviewDetails(reviewId) }.fold({
             setState {
                 copy(
                     loading = false,
@@ -99,7 +103,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
             old.copy(review = old.review.copy(reactions = old.review.reactions.optimistic(vote)))
         setState { copy(details = optimistic) }
         viewModelScope.launch {
-            runCatching { reviews.vote(reviewId, vote) }.fold(
+            runCatching { voteReview(reviewId, vote) }.fold(
                 { saved ->
                     setState {
                         copy(details = details?.let {
@@ -123,7 +127,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
     private fun delete() {
         if (!currentState.isOwner) return; viewModelScope.launch {
             setState { copy(deleting = true) }; runCatching {
-            reviews.delete(
+            deleteReview(
                 reviewId
             )
         }.fold({
