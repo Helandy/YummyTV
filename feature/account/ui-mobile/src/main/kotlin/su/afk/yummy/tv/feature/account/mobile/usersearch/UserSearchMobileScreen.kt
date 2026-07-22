@@ -16,6 +16,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -43,10 +49,17 @@ fun UserSearchMobileScreen(
     onEvent: (UserSearchState.Event) -> Unit,
 ) {
     val results = state.results.collectAsLazyPagingItems()
-    val focusRequester = androidx.compose.runtime.remember { FocusRequester() }
+    val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    androidx.compose.runtime.LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    // Автофокус только при первом входе: при возврате из профиля клавиатура не открывается
+    var autoFocusDone by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!autoFocusDone && state.query.isEmpty()) {
+            focusRequester.requestFocus()
+        }
+        autoFocusDone = true
+    }
 
     BaseScreen(
         isScroll = false,
