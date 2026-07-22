@@ -17,6 +17,7 @@ data class SettingsSnapshot(
     val pictureInPictureEnabled: Boolean,
     val suggestNextEpisodeOnWatched: Boolean,
     val refreshContinueWatchingProgressOnLaunch: Boolean,
+    val tvPlayerVolumeKeysEnabled: Boolean,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,
@@ -54,7 +55,7 @@ interface SettingsStore {
     val suggestNextEpisodeOnWatched: Flow<Boolean>
     val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
-    val mobilePlayerVolumePercent: Flow<Int>
+    val tvPlayerVolumeKeysEnabled: Flow<Boolean>
     val playerResizeMode: Flow<PlayerResizeMode>
     val playerZoomLevel: Flow<PlayerZoomLevel>
     val appTheme: Flow<AppTheme>
@@ -100,7 +101,7 @@ interface SettingsStore {
     suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
     suspend fun dismissMobilePlayerGestureTutorial()
     suspend fun resetMobilePlayerGestureTutorial()
-    suspend fun setMobilePlayerVolumePercent(percent: Int)
+    suspend fun setTvPlayerVolumeKeysEnabled(enabled: Boolean)
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
 

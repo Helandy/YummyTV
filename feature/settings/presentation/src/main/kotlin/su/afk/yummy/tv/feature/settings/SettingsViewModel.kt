@@ -60,6 +60,7 @@ class SettingsViewModel @Inject internal constructor(
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
                         refreshContinueWatchingProgressOnLaunch =
                             snapshot.refreshContinueWatchingProgressOnLaunch,
+                        tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
                         detailsButtonOrder = snapshot.detailsButtonOrder,
@@ -162,6 +163,10 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.pictureInPictureEnabled
                 analytics.eventPictureInPictureToggled(enabled)
                 settingsStore.setPictureInPictureEnabled(enabled)
+            }
+
+            SettingsState.Event.TvPlayerVolumeKeysToggled -> viewModelScope.launch {
+                settingsStore.setTvPlayerVolumeKeysEnabled(!currentState.tvPlayerVolumeKeysEnabled)
             }
 
             SettingsState.Event.MobilePlayerGestureTutorialReset -> viewModelScope.launch {

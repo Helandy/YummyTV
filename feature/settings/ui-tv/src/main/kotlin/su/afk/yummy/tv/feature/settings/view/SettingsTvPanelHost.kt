@@ -326,6 +326,19 @@ internal fun SettingsTvPanelHost(
                             },
                         )
                         SettingsDivider()
+                        ToggleRow(
+                            label = stringResource(R.string.settings_tv_volume_keys_label),
+                            hint = if (state.tvPlayerVolumeKeysEnabled) {
+                                stringResource(R.string.settings_tv_volume_keys_enabled)
+                            } else {
+                                stringResource(R.string.settings_tv_volume_keys_disabled)
+                            },
+                            enabled = state.tvPlayerVolumeKeysEnabled,
+                            onClick = {
+                                onEvent(SettingsState.Event.TvPlayerVolumeKeysToggled)
+                            },
+                        )
+                        SettingsDivider()
                         SettingsSectionTitle(
                             text = stringResource(R.string.settings_preferred_player_title),
                         )

@@ -34,7 +34,6 @@ internal class MobilePlayerGestureController(
     initialTransform: MobileVideoTransform,
     private val volumeLevelProvider: () -> Float,
     private val onVolumeChanged: (Float) -> Unit,
-    private val onVolumeChangeFinished: (Float) -> Unit,
     private val onGestureStart: () -> Unit,
     private val onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ) {
@@ -126,10 +125,7 @@ internal class MobilePlayerGestureController(
     fun endVerticalGesture(zone: MobileVerticalGestureZone) {
         when (zone) {
             MobileVerticalGestureZone.Brightness -> brightnessGestureActive = false
-            MobileVerticalGestureZone.Volume -> {
-                volumeGestureActive = false
-                onVolumeChangeFinished(volumeLevel)
-            }
+            MobileVerticalGestureZone.Volume -> volumeGestureActive = false
         }
     }
 
@@ -160,14 +156,12 @@ internal fun rememberMobilePlayerGestureController(
     initialTransform: MobileVideoTransform,
     volumeLevelProvider: () -> Float,
     onVolumeChanged: (Float) -> Unit,
-    onVolumeChangeFinished: (Float) -> Unit,
     onGestureStart: () -> Unit,
     onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ): MobilePlayerGestureController {
     val context = LocalContext.current
     val currentVolumeLevelProvider = rememberUpdatedState(volumeLevelProvider)
     val currentOnVolumeChanged = rememberUpdatedState(onVolumeChanged)
-    val currentOnVolumeChangeFinished = rememberUpdatedState(onVolumeChangeFinished)
     val currentOnGestureStart = rememberUpdatedState(onGestureStart)
     val currentOnVideoTransformChanged = rememberUpdatedState(onVideoTransformChanged)
     val controller = remember {
@@ -177,9 +171,6 @@ internal fun rememberMobilePlayerGestureController(
             initialTransform = initialTransform,
             volumeLevelProvider = { currentVolumeLevelProvider.value.invoke() },
             onVolumeChanged = { currentOnVolumeChanged.value.invoke(it) },
-            onVolumeChangeFinished = {
-                currentOnVolumeChangeFinished.value.invoke(it)
-            },
             onGestureStart = { currentOnGestureStart.value.invoke() },
             onVideoTransformChanged = { currentOnVideoTransformChanged.value.invoke(it) },
         )

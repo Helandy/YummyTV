@@ -40,6 +40,7 @@ class SettingsState {
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
         val refreshContinueWatchingProgressOnLaunch: Boolean = false,
+        val tvPlayerVolumeKeysEnabled: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
@@ -94,6 +95,9 @@ class SettingsState {
 
         /** Пользователь включил или выключил плавающий режим мобильного плеера. */
         data object PictureInPictureToggled : Event
+
+        /** Пользователь переключил перехват кнопок громкости в ТВ-плеере. */
+        data object TvPlayerVolumeKeysToggled : Event
 
         /** Пользователь запросил повторный показ обучения жестам мобильного плеера. */
         data object MobilePlayerGestureTutorialReset : Event

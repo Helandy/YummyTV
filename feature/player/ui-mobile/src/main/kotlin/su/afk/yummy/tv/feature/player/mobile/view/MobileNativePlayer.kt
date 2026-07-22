@@ -45,6 +45,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
@@ -69,7 +70,6 @@ import su.afk.yummy.tv.feature.player.mobile.utils.toGesturePercentText
 import su.afk.yummy.tv.feature.player.mobile.view.tutorial.MobilePlayerGestureTutorial
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
-import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -120,6 +120,7 @@ internal fun MobileNativePlayer(
         buildMobilePlayerPlaybackKey(state = state, url = currentUrl)
     }
     val mediaController = rememberPlayerMediaController()
+    val systemVolume = rememberPlayerSystemVolumeController()
     val playbackConfig = rememberPlayerPlaybackConfig()
     val stepSeekToast = rememberPlayerStepSeekToastState(
         streamUrl = streamUrl,
@@ -152,24 +153,13 @@ internal fun MobileNativePlayer(
     val gestures = rememberMobilePlayerGestureController(
         activity = activity,
         initialTransform = videoTransform,
-        volumeLevelProvider = {
-            mediaController?.volume
-                ?: state.mobilePlayerVolumePercent.toFloat() / 100f
-        },
-        onVolumeChanged = { level -> mediaController?.volume = level },
-        onVolumeChangeFinished = { level ->
-            onEvent(
-                PlayerState.Event.MobilePlayerVolumeChanged(
-                    percent = (level * 100f).roundToInt(),
-                ),
-            )
-        },
+        volumeLevelProvider = { systemVolume.currentFraction() },
+        onVolumeChanged = { level -> systemVolume.setFraction(level) },
         onGestureStart = { overlay.cancelHide() },
         onVideoTransformChanged = onVideoTransformChanged,
     )
     val effectiveSpeed = if (gestures.isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
-    val playbackShouldPlay =
-        wantsPlay && !tutorialBlocksPlayback && state.mobilePlayerVolumeReady
+    val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
     val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
@@ -372,17 +362,8 @@ internal fun MobileNativePlayer(
         }
     }
 
-    LaunchedEffect(
-        player,
-        effectiveSpeed,
-        playbackShouldPlay,
-        state.mobilePlayerVolumeReady,
-        state.mobilePlayerVolumePercent,
-    ) {
+    LaunchedEffect(player, effectiveSpeed, playbackShouldPlay) {
         player.setPlaybackSpeed(effectiveSpeed)
-        if (state.mobilePlayerVolumeReady) {
-            player.volume = state.mobilePlayerVolumePercent.coerceIn(0, 100) / 100f
-        }
         player.playWhenReady = playbackShouldPlay
         pipSession.setPlaying(playbackShouldPlay, activity)
     }
@@ -452,9 +433,7 @@ internal fun MobileNativePlayer(
         )
 
         MobilePlayerGestureLayer(
-            enabled = !isInPictureInPictureMode &&
-                    !tutorialBlocksPlayback &&
-                    state.mobilePlayerVolumeReady,
+            enabled = !isInPictureInPictureMode && !tutorialBlocksPlayback,
             onTap = { overlay.toggle() },
             onDoubleTap = seekController::stepSeek,
             onTransformStart = gestures::startTransformGesture,

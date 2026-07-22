@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
@@ -39,6 +46,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
 import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
 import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackSessionClient
@@ -55,6 +63,7 @@ import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerSeekController
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerSkipUiState
+import su.afk.yummy.tv.feature.player.model.rememberTvPlayerVolumeKeysState
 import su.afk.yummy.tv.feature.player.utils.buildTvMediaItemKey
 import su.afk.yummy.tv.feature.player.utils.buildTvPlayerMediaItemConfig
 import su.afk.yummy.tv.feature.player.utils.buildTvPlayerPlaybackKey
@@ -103,6 +112,11 @@ internal fun TvExoPlayerView(
         toastDuration = TV_PLAYER_INLINE_TOAST_DURATION,
     )
     val focus = rememberTvPlayerFocusRequesters()
+    val systemVolume = rememberPlayerSystemVolumeController()
+    val volumeKeys = rememberTvPlayerVolumeKeysState(
+        systemVolume = systemVolume,
+        indicatorDuration = TV_PLAYER_INLINE_TOAST_DURATION,
+    )
     val canChangePlayer = playback.balancerNames.size > 1
     val canChangeDubbing = playback.dubbingNames.size > 1
     // Пока виден хинт восстановления, оверлей нельзя автоскрывать:
@@ -383,7 +397,31 @@ internal fun TvExoPlayerView(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onPreviewKeyEvent { event ->
+                // Без настройки кнопки уходят системе — поведение по умолчанию не меняем
+                if (!state.tvPlayerVolumeKeysEnabled) return@onPreviewKeyEvent false
+                if (event.type != KeyEventType.KeyDown) {
+                    return@onPreviewKeyEvent event.key == Key.VolumeUp ||
+                            event.key == Key.VolumeDown
+                }
+                when (event.key) {
+                    Key.VolumeUp -> {
+                        volumeKeys.step(up = true)
+                        true
+                    }
+
+                    Key.VolumeDown -> {
+                        volumeKeys.step(up = false)
+                        true
+                    }
+
+                    else -> false
+                }
+            },
+    ) {
         ContentFrame(
             player = player,
             surfaceType = SURFACE_TYPE_SURFACE_VIEW,
@@ -576,6 +614,14 @@ internal fun TvExoPlayerView(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = if (controllerVisible) 136.dp else 36.dp),
+        )
+
+        TvPlayerInlineToast(
+            text = volumeKeys.indicatorText,
+            icon = Icons.AutoMirrored.Filled.VolumeUp,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 48.dp),
         )
     }
 }

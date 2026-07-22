@@ -41,7 +41,8 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         booleanPreferencesKey("refresh_continue_watching_progress_on_launch")
     private val mobilePlayerGestureTutorialDismissedKey =
         booleanPreferencesKey("player_mobile_gesture_tutorial_dismissed")
-    private val mobilePlayerVolumePercentKey = intPreferencesKey("mobile_player_volume_percent")
+    private val tvPlayerVolumeKeysEnabledKey =
+        booleanPreferencesKey("tv_player_volume_keys_enabled")
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
@@ -142,8 +143,8 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             prefs[mobilePlayerGestureTutorialDismissedKey] ?: false
         }
 
-    override val mobilePlayerVolumePercent: Flow<Int> = context.dataStore.data.map { prefs ->
-        (prefs[mobilePlayerVolumePercentKey] ?: 100).coerceIn(0, 100)
+    override val tvPlayerVolumeKeysEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[tvPlayerVolumeKeysEnabledKey] ?: false
     }
 
     override val playerResizeMode: Flow<PlayerResizeMode> = context.dataStore.data.map { prefs ->
@@ -262,6 +263,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
             refreshContinueWatchingProgressOnLaunch =
                 prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
+            tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: YaniContentLanguage.fromSystemLocale(context),
@@ -382,9 +384,9 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         }
     }
 
-    override suspend fun setMobilePlayerVolumePercent(percent: Int) {
+    override suspend fun setTvPlayerVolumeKeysEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
-            prefs[mobilePlayerVolumePercentKey] = percent.coerceIn(0, 100)
+            prefs[tvPlayerVolumeKeysEnabledKey] = enabled
         }
     }
 

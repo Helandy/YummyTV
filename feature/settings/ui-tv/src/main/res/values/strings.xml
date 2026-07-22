@@ -121,6 +121,9 @@
     <string name="settings_auto_play_next_episode_enabled">Start the next episode after a 10-second countdown</string>
     <string name="settings_refresh_continue_watching_progress_label">Latest continue progress</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
+    <string name="settings_tv_volume_keys_label">Volume keys in the player</string>
+    <string name="settings_tv_volume_keys_enabled">The player handles volume keys in 1% steps</string>
+    <string name="settings_tv_volume_keys_disabled">Volume is handled by the system as usual</string>
     <string name="settings_cache_size_min">Minimum</string>
     <string name="settings_cache_size_50">50 MB</string>
     <string name="settings_cache_size_standard">Standard</string>
