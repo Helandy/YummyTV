@@ -56,7 +56,8 @@ class DefaultVideoDownloadRepository @Inject constructor(
             .map { entries ->
                 entries.map { it.toDomain() }
                     .visibleAfterLatestEpisodeDeletion()
-                    .associateBy { it.statusKey }
+                    .groupBy { it.statusKey }
+                    .mapValues { (_, group) -> group.maxBy { it.createdAt } }
             }
             .distinctUntilChanged()
 
@@ -309,7 +310,10 @@ private fun List<VideoDownloadItem>.visibleAfterLatestEpisodeDeletion(): List<Vi
                         (deletedAt == null || item.updatedAt > deletedAt)
             }
         }
-        .sortedByDescending { it.updatedAt }
+        // порядок задаёт момент добавления: прогресс параллельных загрузок не должен тасовать список
+        .sortedWith(
+            compareByDescending<VideoDownloadItem> { it.createdAt }.thenByDescending { it.id },
+        )
 
 private fun String.toVideoDownloadStatus(): VideoDownloadStatus =
     runCatching { VideoDownloadStatus.valueOf(this) }.getOrDefault(VideoDownloadStatus.Failed)

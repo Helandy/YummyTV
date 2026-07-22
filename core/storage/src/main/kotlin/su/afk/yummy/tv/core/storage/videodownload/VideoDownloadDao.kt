@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VideoDownloadDao {
-    @Query("SELECT * FROM video_downloads ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM video_downloads ORDER BY createdAt DESC, id DESC")
     fun observeDownloads(): Flow<List<VideoDownloadEntry>>
 
-    @Query("SELECT * FROM video_downloads WHERE animeId = :animeId ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM video_downloads WHERE animeId = :animeId ORDER BY createdAt DESC, id DESC")
     fun observeDownloadsForAnime(animeId: Int): Flow<List<VideoDownloadEntry>>
 
     @Query("SELECT * FROM video_downloads WHERE id = :id LIMIT 1")
