@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +38,7 @@ import su.afk.yummy.tv.feature.videodownload.mobile.utils.isEligibleForExport
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadDeleteConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadMobileCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportAllConfirmationDialog
+import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportReExportConfirmationDialog
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -89,16 +89,6 @@ fun VideoDownloadMobileScreen(
                 title = stringResource(R.string.video_download_mobile_title),
                 onBack = { onEvent(VideoDownloadState.Event.BackSelected) },
                 actions = {
-                    IconButton(
-                        onClick = { onEvent(VideoDownloadState.Event.ExportDirectorySelected) },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CreateNewFolder,
-                            contentDescription = stringResource(
-                                R.string.video_export_choose_directory,
-                            ),
-                        )
-                    }
                     IconButton(
                         onClick = { onEvent(VideoDownloadState.Event.ExportAllSelected) },
                         enabled = state.items.any { item ->
@@ -182,6 +172,19 @@ fun VideoDownloadMobileScreen(
             episode = item.episode,
             onConfirm = { onEvent(VideoDownloadState.Event.DeleteConfirmed) },
             onDismiss = { onEvent(VideoDownloadState.Event.DeleteDismissed) },
+        )
+    }
+
+    state.pendingReExportItem?.let { item ->
+        VideoExportReExportConfirmationDialog(
+            animeTitle = item.animeTitle,
+            episode = item.episode,
+            onConfirm = {
+                notificationPermissionGate {
+                    onEvent(VideoDownloadState.Event.ReExportConfirmed)
+                }
+            },
+            onDismiss = { onEvent(VideoDownloadState.Event.ReExportDismissed) },
         )
     }
 

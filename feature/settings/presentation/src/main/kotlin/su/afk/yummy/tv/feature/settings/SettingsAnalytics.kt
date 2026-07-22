@@ -163,6 +163,22 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил автовыгрузку серии после скачивания. */
+    fun eventVideoExportAutoToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_VIDEO_EXPORT_AUTO_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
+    /** Пользователь включил или выключил перехват кнопок громкости в ТВ-плеере. */
+    fun eventTvPlayerVolumeKeysToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_TV_PLAYER_VOLUME_KEYS_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь включил повторный показ обучения жестам мобильного плеера. */
     fun eventMobilePlayerGestureTutorialReset() {
         tracker.track(EVENT_MOBILE_PLAYER_GESTURE_TUTORIAL_RESET)
@@ -280,6 +296,9 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_auto_play_next_episode_toggled"
         const val EVENT_PICTURE_IN_PICTURE_TOGGLED =
             "settings_picture_in_picture_toggled"
+        const val EVENT_VIDEO_EXPORT_AUTO_TOGGLED = "settings_video_export_auto_toggled"
+        const val EVENT_TV_PLAYER_VOLUME_KEYS_TOGGLED =
+            "settings_tv_player_volume_keys_toggled"
         const val EVENT_MOBILE_PLAYER_GESTURE_TUTORIAL_RESET =
             "settings_mobile_player_gesture_tutorial_reset"
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"

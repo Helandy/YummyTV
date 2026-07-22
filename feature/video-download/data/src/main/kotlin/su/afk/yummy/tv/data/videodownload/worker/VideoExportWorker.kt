@@ -55,6 +55,7 @@ class VideoExportWorker @AssistedInject internal constructor(
     private val cacheProvider: VideoDownloadCacheProvider,
     private val strategyResolver: DownloadPlayerStrategyResolver,
     private val notificationService: VideoExportNotificationService,
+    private val analytics: VideoExportAnalytics,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -82,6 +83,7 @@ class VideoExportWorker @AssistedInject internal constructor(
         val tempDirectory = File(applicationContext.cacheDir, TEMP_DIRECTORY_NAME)
         val tempFile = File(tempDirectory, "$downloadId.mp4")
         var createdDocumentUri: Uri? = null
+        val startedAtMs = System.currentTimeMillis()
         return try {
             // Проверяем доступ до перекодирования: иначе пользователь ждёт минуты ради SecurityException
             check(exportRepository.isDestinationWritable(destinationUri)) {
@@ -97,11 +99,17 @@ class VideoExportWorker @AssistedInject internal constructor(
                 destinationUri = destinationUri,
             )
             transformCachedMedia(item, tempFile)
-            createdDocumentUri = createUniqueDocument(
+            createdDocumentUri = createExportDocument(
                 treeUri = Uri.parse(destinationUri),
                 item = item,
             )
+            val exportedBytes = tempFile.length()
             copyToDocument(item, tempFile, createdDocumentUri)
+            analytics.reportSucceeded(
+                item = item,
+                durationMs = System.currentTimeMillis() - startedAtMs,
+                bytes = exportedBytes,
+            )
             exportRepository.updateState(
                 downloadId = downloadId,
                 status = VideoExportStatus.Exported,
@@ -120,6 +128,11 @@ class VideoExportWorker @AssistedInject internal constructor(
                 }
             }
             if (throwable is CancellationException) throw throwable
+            analytics.reportFailed(
+                item = item,
+                details = throwable.userFacingExportError(),
+                throwable = throwable,
+            )
             exportRepository.updateState(
                 downloadId = downloadId,
                 status = VideoExportStatus.Failed,
@@ -216,7 +229,7 @@ class VideoExportWorker @AssistedInject internal constructor(
     }
 
     /** Каждый тайтл получает свою подпапку, внутри — файл вида «Серия N_Озвучка_Качество_Балансер». */
-    private fun createUniqueDocument(treeUri: Uri, item: VideoDownloadItem): Uri {
+    private fun createExportDocument(treeUri: Uri, item: VideoDownloadItem): Uri {
         val resolver = applicationContext.contentResolver
         val titleDirectoryUri = findOrCreateDirectory(
             treeUri = treeUri,
@@ -224,20 +237,23 @@ class VideoExportWorker @AssistedInject internal constructor(
             name = item.exportDirectoryName(),
         )
         val requestedName = item.exportFileName()
-        val existingNames = readChildNames(treeUri, titleDirectoryUri).map { it.name }.toSet()
-        val baseName = requestedName.removeSuffix(MP4_EXTENSION)
-        var candidate = requestedName
-        var suffix = 2
-        while (candidate in existingNames) {
-            candidate = "$baseName ($suffix)$MP4_EXTENSION"
-            suffix += 1
-        }
+        // Имя детерминированное, поэтому файл с таким же именем — это та же серия: заменяем его
+        readChildNames(treeUri, titleDirectoryUri)
+            .firstOrNull { it.name == requestedName }
+            ?.let { existing ->
+                runCatching {
+                    DocumentsContract.deleteDocument(
+                        resolver,
+                        DocumentsContract.buildDocumentUriUsingTree(treeUri, existing.documentId),
+                    )
+                }
+            }
         return checkNotNull(
             DocumentsContract.createDocument(
                 resolver,
                 titleDirectoryUri,
                 MP4_MIME_TYPE,
-                candidate,
+                requestedName,
             )
         ) { applicationContext.getString(R.string.video_export_error_create_file) }
     }

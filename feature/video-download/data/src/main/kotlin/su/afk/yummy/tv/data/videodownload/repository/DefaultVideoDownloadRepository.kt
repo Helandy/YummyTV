@@ -23,6 +23,7 @@ import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.RotatingHlsCacheKeyFactory
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.notification.VideoDownloadNotificationService
+import su.afk.yummy.tv.data.videodownload.worker.VideoDownloadAnalytics
 import su.afk.yummy.tv.data.videodownload.worker.VideoDownloadWorker
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRequest
@@ -38,6 +39,7 @@ class DefaultVideoDownloadRepository @Inject constructor(
     private val store: VideoDownloadStore,
     private val cacheProvider: VideoDownloadCacheProvider,
     private val notificationService: VideoDownloadNotificationService,
+    private val analytics: VideoDownloadAnalytics,
 ) : VideoDownloadRepository {
     private val orphanReconciliationMutex = Mutex()
     private val enqueueMutex = Mutex()
@@ -94,16 +96,20 @@ class DefaultVideoDownloadRepository @Inject constructor(
                     policy = ExistingWorkPolicy.REPLACE,
                     forceStreamRefresh = true,
                 )
-                return store.dao.getById(duplicate.id)?.toDomain()
-                    ?: error("Restarted video download is missing: ${duplicate.id}")
+                return (
+                        store.dao.getById(duplicate.id)?.toDomain()
+                            ?: error("Restarted video download is missing: ${duplicate.id}")
+                        ).also { analytics.reportEnqueued(it, restarted = true) }
             }
             return duplicate.toDomain()
         }
 
         val id = store.dao.insert(request.toEntry(now))
         scheduleWorker(id)
-        return store.dao.getById(id)?.toDomain()
-            ?: error("Inserted video download is missing: $id")
+        return (
+                store.dao.getById(id)?.toDomain()
+                    ?: error("Inserted video download is missing: $id")
+                ).also { analytics.reportEnqueued(it, restarted = false) }
     }
 
     override suspend fun pause(id: Long) {

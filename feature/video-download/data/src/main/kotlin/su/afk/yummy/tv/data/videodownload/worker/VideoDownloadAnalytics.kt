@@ -5,9 +5,17 @@ import su.afk.yummy.tv.core.analytics.analyticsParamsOf
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import javax.inject.Inject
 
-internal class VideoDownloadAnalytics @Inject constructor(
+class VideoDownloadAnalytics @Inject constructor(
     private val tracker: AnalyticsTracker,
 ) {
+    /** Пользователь поставил серию в очередь скачивания (или перезапустил упавшую). */
+    fun reportEnqueued(item: VideoDownloadItem, restarted: Boolean) {
+        tracker.track(
+            EVENT_ENQUEUED,
+            item.analyticsParams() + analyticsParamsOf(PARAM_RESTARTED to restarted),
+        )
+    }
+
     fun reportSucceeded(item: VideoDownloadItem) {
         tracker.track(EVENT_SUCCEEDED, item.analyticsParams())
     }
@@ -42,7 +50,9 @@ internal class VideoDownloadAnalytics @Inject constructor(
     )
 
     private companion object {
+        const val EVENT_ENQUEUED = "video_download_enqueued"
         const val EVENT_SUCCEEDED = "video_download_succeeded"
+        const val PARAM_RESTARTED = "restarted"
         const val ERROR_GROUP = "video_download_failed"
         const val PARAM_DOWNLOAD_ID = "download_id"
         const val PARAM_ANIME_ID = "anime_id"

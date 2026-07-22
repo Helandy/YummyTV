@@ -18,7 +18,6 @@
     <string name="video_download_delete_confirm_message">The downloaded episode of “%1$s” will be removed from this device.</string>
     <string name="video_download_delete_confirm">Delete</string>
     <string name="video_download_delete_cancel">Cancel</string>
-    <string name="video_export_choose_directory">Choose export folder</string>
     <string name="video_export_all">Export all episodes to MP4</string>
     <string name="video_export_item">Export MP4</string>
     <string name="video_export_cancel">Cancel MP4 export</string>
@@ -31,5 +30,9 @@
     <string name="video_export_all_dialog_message">%1$d episodes will be prepared as MP4 files. Temporary internal space roughly equal to an episode size is required.</string>
     <string name="video_export_all_dialog_confirm">Export</string>
     <string name="video_export_all_dialog_cancel">Cancel</string>
+    <string name="video_export_reexport_dialog_title">Export again?</string>
+    <string name="video_export_reexport_dialog_message">«%1$s», episode %2$s is already in the export folder. The existing file will be replaced.</string>
+    <string name="video_export_reexport_dialog_confirm">Export again</string>
+    <string name="video_export_reexport_dialog_cancel">Cancel</string>
     <string name="video_export_directory_error">Unable to write to the selected folder</string>
 </resources>

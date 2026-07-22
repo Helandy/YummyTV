@@ -21,9 +21,12 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStore
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
+import su.afk.yummy.tv.data.videodownload.worker.VideoExportAnalytics
 import su.afk.yummy.tv.data.videodownload.worker.VideoExportWorker
 import su.afk.yummy.tv.data.videodownload.worker.logDownloadWarning
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
+import su.afk.yummy.tv.domain.videodownload.model.VideoExportSource
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
 import javax.inject.Inject
@@ -32,6 +35,7 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsStore: SettingsStore,
     private val store: VideoDownloadStore,
+    private val analytics: VideoExportAnalytics,
 ) : VideoDownloadExportRepository {
     private val orphanReconciliationMutex = Mutex()
 
@@ -63,6 +67,9 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
             .getOrNull()
         if (metadata == null || !metadata.supportsCreate) {
             releasePersistablePermission(parsedUri)
+            analytics.reportDirectoryRejected(
+                reason = if (metadata == null) REASON_UNREADABLE else REASON_READ_ONLY,
+            )
             error(context.getString(R.string.video_export_error_directory_read_only))
         }
         if (previousUri.isNotBlank() && previousUri != uri) {
@@ -70,6 +77,7 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
         }
         val name = metadata.displayName.ifBlank { uri.toDirectoryFallbackName() }
         settingsStore.setVideoExportDirectory(uri, name)
+        analytics.reportDirectorySelected()
         return VideoExportDestination(uri, name)
     }
 
@@ -109,6 +117,19 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
             ?.supportsCreate == true
     }
 
+    override suspend fun exportedFileExists(uri: String): Boolean {
+        if (uri.isBlank()) return false
+        return runCatching {
+            context.contentResolver.query(
+                Uri.parse(uri),
+                arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
+                null,
+                null,
+                null,
+            )?.use { cursor -> cursor.moveToFirst() }
+        }.getOrNull() == true
+    }
+
     private fun releasePersistablePermission(uri: Uri) {
         runCatching {
             context.contentResolver.releasePersistableUriPermission(
@@ -126,11 +147,16 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
     override suspend fun enqueue(
         downloadIds: List<Long>,
         destination: VideoExportDestination,
+        source: VideoExportSource,
     ) {
         val workManager = WorkManager.getInstance(context)
+        var enqueuedCount = 0
+        var firstItem: VideoDownloadItem? = null
         downloadIds.distinct().forEach { id ->
             val entry = store.dao.getById(id) ?: return@forEach
             if (entry.status != "Downloaded") return@forEach
+            enqueuedCount += 1
+            if (firstItem == null) firstItem = entry.toDomain()
             updateState(
                 downloadId = id,
                 status = VideoExportStatus.Queued,
@@ -152,6 +178,7 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
                 request,
             )
         }
+        if (enqueuedCount > 0) analytics.reportEnqueued(enqueuedCount, source, firstItem)
     }
 
     override suspend fun enqueueAutoExportIfEnabled(downloadId: Long) {
@@ -160,15 +187,21 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
         if (uri.isBlank()) return
         if (!isDestinationWritable(uri)) {
             logDownloadWarning { "Auto export skipped: no access to export directory" }
+            analytics.reportDirectoryRejected(reason = REASON_ACCESS_LOST)
             return
         }
         val name = settingsStore.videoExportDirectoryName.first()
             .ifBlank { uri.toDirectoryFallbackName() }
-        enqueue(listOf(downloadId), VideoExportDestination(uri, name))
+        enqueue(
+            downloadIds = listOf(downloadId),
+            destination = VideoExportDestination(uri, name),
+            source = VideoExportSource.Auto,
+        )
     }
 
     override suspend fun cancel(downloadId: Long) {
         WorkManager.getInstance(context).cancelUniqueWork(uniqueWorkName(downloadId)).await()
+        analytics.reportCancelled()
         updateState(
             downloadId = downloadId,
             status = VideoExportStatus.Idle,
@@ -231,6 +264,9 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
 
     companion object {
         private const val ORPHAN_GRACE_PERIOD_MS = 60_000L
+        private const val REASON_READ_ONLY = "read_only"
+        private const val REASON_UNREADABLE = "unreadable"
+        private const val REASON_ACCESS_LOST = "access_lost"
         fun uniqueWorkName(id: Long): String = "video_export_$id"
         fun workTag(id: Long): String = "video_export_tag_$id"
     }

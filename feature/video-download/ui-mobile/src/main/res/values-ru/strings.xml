@@ -18,7 +18,6 @@
     <string name="video_download_delete_confirm_message">Скачанная серия тайтла «%1$s» будет удалена с устройства.</string>
     <string name="video_download_delete_confirm">Удалить</string>
     <string name="video_download_delete_cancel">Отмена</string>
-    <string name="video_export_choose_directory">Выбрать папку экспорта</string>
     <string name="video_export_all">Экспортировать все серии в MP4</string>
     <string name="video_export_item">Экспортировать MP4</string>
     <string name="video_export_cancel">Отменить экспорт MP4</string>
@@ -31,5 +30,9 @@
     <string name="video_export_all_dialog_message">Будет подготовлено MP4-файлов: %1$d. Временно потребуется внутренняя память примерно на размер одной серии.</string>
     <string name="video_export_all_dialog_confirm">Экспортировать</string>
     <string name="video_export_all_dialog_cancel">Отмена</string>
+    <string name="video_export_reexport_dialog_title">Экспортировать заново?</string>
+    <string name="video_export_reexport_dialog_message">«%1$s», серия %2$s уже есть в папке экспорта. Существующий файл будет заменён.</string>
+    <string name="video_export_reexport_dialog_confirm">Экспортировать заново</string>
+    <string name="video_export_reexport_dialog_cancel">Отмена</string>
     <string name="video_export_directory_error">Не удалось получить доступ на запись к выбранной папке</string>
 </resources>

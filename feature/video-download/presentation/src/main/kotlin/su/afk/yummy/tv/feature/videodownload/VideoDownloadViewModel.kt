@@ -9,10 +9,12 @@ import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNe
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
 import su.afk.yummy.tv.core.error.storage.RetryStorage
 import su.afk.yummy.tv.core.navigation.NavigationManager
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 import su.afk.yummy.tv.domain.videodownload.usecase.CancelOrDeleteVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.CancelVideoExportUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.CheckExportedFileExistsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoExportUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
@@ -37,6 +39,7 @@ class VideoDownloadViewModel @Inject constructor(
     private val selectExportDestination: SelectVideoExportDestinationUseCase,
     private val enqueueVideoExport: EnqueueVideoExportUseCase,
     private val cancelVideoExport: CancelVideoExportUseCase,
+    private val checkExportedFileExists: CheckExportedFileExistsUseCase,
     private val playerNavigator: IPlayerNavigator,
     private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModelNew<VideoDownloadState.State, VideoDownloadState.Event, VideoDownloadState.Effect>(
@@ -106,8 +109,24 @@ class VideoDownloadViewModel @Inject constructor(
             }
 
             is VideoDownloadState.Event.ExportSelected -> {
-                requestExport(listOf(event.id))
+                viewModelScope.launch {
+                    val item = currentState.items.firstOrNull { it.id == event.id }
+                    if (item != null && isAlreadyExportedToCurrentDestination(item)) {
+                        setState { copy(pendingReExportItem = item) }
+                    } else {
+                        requestExport(listOf(event.id))
+                    }
+                }
             }
+
+            VideoDownloadState.Event.ReExportConfirmed -> {
+                val id = currentState.pendingReExportItem?.id ?: return
+                setState { copy(pendingReExportItem = null) }
+                requestExport(listOf(id))
+            }
+
+            VideoDownloadState.Event.ReExportDismissed ->
+                setState { copy(pendingReExportItem = null) }
 
             VideoDownloadState.Event.ExportAllSelected -> {
                 val ids = exportableIds()
@@ -125,10 +144,6 @@ class VideoDownloadViewModel @Inject constructor(
             VideoDownloadState.Event.ExportAllDismissed -> {
                 pendingExportIds = emptyList()
                 setState { copy(pendingBulkExportCount = 0) }
-            }
-
-            VideoDownloadState.Event.ExportDirectorySelected -> {
-                setEffect(VideoDownloadState.Effect.OpenExportDirectoryPicker)
             }
 
             is VideoDownloadState.Event.ExportDirectoryGranted -> {
@@ -150,6 +165,14 @@ class VideoDownloadViewModel @Inject constructor(
                 viewModelScope.launch { cancelVideoExport(event.id) }
             }
         }
+    }
+
+    /** Серия уже лежит в текущей папке экспорта — переспрашиваем, прежде чем гонять всё заново. */
+    private suspend fun isAlreadyExportedToCurrentDestination(item: VideoDownloadItem): Boolean {
+        val destinationUri = currentState.exportDestination?.uri ?: return false
+        if (item.exportStatus != VideoExportStatus.Exported) return false
+        if (item.exportDirectoryUri != destinationUri) return false
+        return checkExportedFileExists(item.exportedFileUri)
     }
 
     private fun requestExport(ids: List<Long>) {

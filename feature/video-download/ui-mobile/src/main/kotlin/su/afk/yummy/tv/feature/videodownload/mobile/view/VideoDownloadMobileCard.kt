@@ -11,15 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFolderUpload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -110,6 +112,16 @@ internal fun VideoDownloadMobileCard(
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 7.dp, vertical = 3.dp),
                 )
+                // Зелёная точка: серия уже выгружена в папку экспорта
+                if (item.exportStatus == VideoExportStatus.Exported) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .size(10.dp)
+                            .background(DownloadActiveColor, CircleShape),
+                    )
+                }
                 if (item.hasProgressIndicator) {
                     LinearProgressIndicator(
                         progress = { item.visibleProgress.coerceIn(0f, 1f) },
@@ -232,7 +244,7 @@ internal fun VideoDownloadMobileCard(
                         } else {
                             IconButton(onClick = onExport) {
                                 Icon(
-                                    imageVector = Icons.Filled.SaveAlt,
+                                    imageVector = Icons.Filled.DriveFolderUpload,
                                     contentDescription = stringResource(
                                         R.string.video_export_item,
                                     ),

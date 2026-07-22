@@ -10,6 +10,7 @@ class VideoDownloadState {
     data class State(
         val items: List<VideoDownloadItem> = emptyList(),
         val pendingDeleteItem: VideoDownloadItem? = null,
+        val pendingReExportItem: VideoDownloadItem? = null,
         val exportDestination: VideoExportDestination? = null,
         val pendingBulkExportCount: Int = 0,
     ) : UiState
@@ -25,10 +26,11 @@ class VideoDownloadState {
         data class ResumeSelected(val id: Long) : Event
         data class RestartSelected(val id: Long) : Event
         data class ExportSelected(val id: Long) : Event
+        data object ReExportConfirmed : Event
+        data object ReExportDismissed : Event
         data object ExportAllSelected : Event
         data object ExportAllConfirmed : Event
         data object ExportAllDismissed : Event
-        data object ExportDirectorySelected : Event
         data class ExportDirectoryGranted(val uri: String) : Event
         data class CancelExportSelected(val id: Long) : Event
     }

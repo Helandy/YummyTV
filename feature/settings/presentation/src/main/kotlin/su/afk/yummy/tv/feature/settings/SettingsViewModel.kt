@@ -167,7 +167,9 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             SettingsState.Event.TvPlayerVolumeKeysToggled -> viewModelScope.launch {
-                settingsStore.setTvPlayerVolumeKeysEnabled(!currentState.tvPlayerVolumeKeysEnabled)
+                val enabled = !currentState.tvPlayerVolumeKeysEnabled
+                analytics.eventTvPlayerVolumeKeysToggled(enabled)
+                settingsStore.setTvPlayerVolumeKeysEnabled(enabled)
             }
 
             SettingsState.Event.MobilePlayerGestureTutorialReset -> viewModelScope.launch {
@@ -225,7 +227,9 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             SettingsState.Event.VideoExportAutoToggled -> viewModelScope.launch {
-                settingsStore.setVideoExportAutoEnabled(!currentState.videoExportAutoEnabled)
+                val enabled = !currentState.videoExportAutoEnabled
+                analytics.eventVideoExportAutoToggled(enabled)
+                settingsStore.setVideoExportAutoEnabled(enabled)
             }
 
             is SettingsState.Event.VideoExportDirectoryGranted -> viewModelScope.launch {
