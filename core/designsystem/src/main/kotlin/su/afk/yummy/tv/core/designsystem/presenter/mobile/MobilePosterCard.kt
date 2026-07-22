@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,68 +38,73 @@ fun MobilePosterCard(
     rating: Double? = null,
     titleMinLines: Int = 2,
     posterOverlay: @Composable BoxScope.() -> Unit = {},
+    /** Слот под карточкой — например кнопки голосования. Живёт внутри Card, клик не перехватывает. */
+    footer: @Composable ColumnScope.() -> Unit = {},
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier,
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
-        ) {
-            AsyncImage(
-                model = posterUrl,
-                contentDescription = null,
+        Column(Modifier.clickable(onClick = onClick)) {
+            Box(
                 modifier = Modifier
-                    .matchParentSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop,
-            )
-            if (!badge.isNullOrBlank()) {
-                Text(
-                    text = badge,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    .fillMaxWidth()
+                    .aspectRatio(TITLE_POSTER_ASPECT_RATIO),
+            ) {
+                AsyncImage(
+                    model = posterUrl,
+                    contentDescription = null,
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentScale = ContentScale.Crop,
                 )
+                if (!badge.isNullOrBlank()) {
+                    Text(
+                        text = badge,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
+                }
+                rating?.let { value ->
+                    MobileRatingBadge(
+                        rating = value,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp),
+                    )
+                }
+                posterOverlay()
             }
-            rating?.let { value ->
-                MobileRatingBadge(
-                    rating = value,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp),
-                )
-            }
-            posterOverlay()
-        }
-        Column(Modifier.padding(10.dp)) {
-            Text(
-                text = title,
-                minLines = titleMinLines,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            if (!subtitle.isNullOrBlank()) {
-                Spacer(Modifier.height(4.dp))
+            Column(Modifier.padding(10.dp)) {
                 Text(
-                    text = subtitle,
-                    maxLines = 1,
+                    text = title,
+                    minLines = titleMinLines,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
                 )
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = subtitle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
+        footer()
     }
 }

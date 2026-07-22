@@ -6,7 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -88,39 +87,39 @@ internal fun SimilarRecommendationsGrid(
 
             is SimilarUiState.Content -> {
                 items(similarState.items, key = { it.animeId }) { item ->
-                    Column {
-                        MobilePosterCard(
-                            title = item.title,
-                            posterUrl = item.poster.bestUrl(),
-                            rating = item.rating,
-                            posterOverlay = {
-                                item.year?.let { year ->
-                                    Text(
-                                        text = year.toString(),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.inverseSurface,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .padding(4.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.inverseOnSurface,
-                                                RoundedCornerShape(4.dp),
-                                            )
-                                            .padding(horizontal = 6.dp, vertical = 3.dp),
-                                    )
-                                }
-                            },
-                            onClick = { onAnimeSelected(item.animeId) },
-                        )
-                        if (showVoting) {
-                            MobileSimilarVoteButtons(
-                                item = item,
-                                enabled = item.animeId !in pendingVoteAnimeIds,
-                                onVote = { vote -> onVote(item.animeId, vote) },
-                            )
-                        }
-                    }
+                    MobilePosterCard(
+                        title = item.title,
+                        posterUrl = item.poster.bestUrl(),
+                        rating = item.rating,
+                        posterOverlay = {
+                            item.year?.let { year ->
+                                Text(
+                                    text = year.toString(),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.inverseSurface,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.inverseOnSurface,
+                                            RoundedCornerShape(4.dp),
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                                )
+                            }
+                        },
+                        footer = {
+                            if (showVoting) {
+                                MobileSimilarVoteButtons(
+                                    item = item,
+                                    enabled = item.animeId !in pendingVoteAnimeIds,
+                                    onVote = { vote -> onVote(item.animeId, vote) },
+                                )
+                            }
+                        },
+                        onClick = { onAnimeSelected(item.animeId) },
+                    )
                 }
             }
         }
