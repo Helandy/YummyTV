@@ -18,6 +18,7 @@ data class SettingsSnapshot(
     val suggestNextEpisodeOnWatched: Boolean,
     val refreshContinueWatchingProgressOnLaunch: Boolean,
     val tvPlayerVolumeKeysEnabled: Boolean,
+    val videoExportAutoEnabled: Boolean,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,
@@ -73,6 +74,7 @@ interface SettingsStore {
     val supportPromptSnapshot: Flow<SupportPromptSnapshot>
     val videoExportDirectoryUri: Flow<String>
     val videoExportDirectoryName: Flow<String>
+    val videoExportAutoEnabled: Flow<Boolean>
 
     fun playerResizeSettings(
         animeId: Int,
@@ -138,6 +140,7 @@ interface SettingsStore {
     suspend fun ensureSupportPromptInstallTimeInitialized()
     suspend fun dismissSupportPrompt()
     suspend fun setVideoExportDirectory(uri: String, displayName: String)
+    suspend fun setVideoExportAutoEnabled(enabled: Boolean)
 
     /** Returns `true` when [versionCode] differs from the previously started one. */
     suspend fun markStartedVersion(versionCode: Int): Boolean

@@ -64,6 +64,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         booleanPreferencesKey("legacy_streaming_cache_pruned")
     private val videoExportDirectoryUriKey = stringPreferencesKey("video_export_directory_uri")
     private val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
+    private val videoExportAutoEnabledKey = booleanPreferencesKey("video_export_auto_enabled")
 
     @Volatile
     private var previewCacheSizeSnapshot = PreviewCacheSize.MB_100
@@ -264,6 +265,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             refreshContinueWatchingProgressOnLaunch =
                 prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
+            videoExportAutoEnabled = prefs[videoExportAutoEnabledKey] ?: false,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: YaniContentLanguage.fromSystemLocale(context),
@@ -305,6 +307,10 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
 
     override val videoExportDirectoryName: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[videoExportDirectoryNameKey].orEmpty()
+    }
+
+    override val videoExportAutoEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[videoExportAutoEnabledKey] ?: false
     }
 
     init {
@@ -517,6 +523,12 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         context.dataStore.edit { prefs ->
             prefs[videoExportDirectoryUriKey] = uri
             prefs[videoExportDirectoryNameKey] = displayName
+        }
+    }
+
+    override suspend fun setVideoExportAutoEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[videoExportAutoEnabledKey] = enabled
         }
     }
 

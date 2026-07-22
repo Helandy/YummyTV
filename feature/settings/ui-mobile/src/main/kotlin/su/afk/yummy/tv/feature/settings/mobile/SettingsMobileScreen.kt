@@ -299,6 +299,16 @@ fun SettingsMobileScreen(
                             onEvent(SettingsState.Event.VideoExportDirectorySelected)
                         },
                     )
+                    SettingsMobileToggleRow(
+                        label = stringResource(R.string.settings_video_export_auto_label),
+                        hint = if (state.videoExportAutoEnabled) {
+                            stringResource(R.string.settings_video_export_auto_enabled)
+                        } else {
+                            stringResource(R.string.settings_disabled)
+                        },
+                        enabled = state.videoExportAutoEnabled,
+                        onClick = { onEvent(SettingsState.Event.VideoExportAutoToggled) },
+                    )
                 }
             }
 

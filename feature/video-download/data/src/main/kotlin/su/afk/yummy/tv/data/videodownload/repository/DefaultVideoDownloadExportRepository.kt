@@ -20,7 +20,9 @@ import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStore
 import su.afk.yummy.tv.data.videodownload.R
+import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
 import su.afk.yummy.tv.data.videodownload.worker.VideoExportWorker
+import su.afk.yummy.tv.data.videodownload.worker.logDownloadWarning
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
@@ -48,8 +50,33 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
 
     override suspend fun selectDestination(uri: String): VideoExportDestination {
         val parsedUri = Uri.parse(uri)
-        val metadata = context.contentResolver.query(
+        val previousUri = settingsStore.videoExportDirectoryUri.first()
+        // Права берём до запроса метаданных: временный грант из пикера живёт только до перезапуска
+        context.contentResolver.takePersistableUriPermission(
             parsedUri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+        )
+        val metadata = runCatching { readDirectoryMetadata(parsedUri) }
+            .onFailure { throwable ->
+                logDownloadWarning(throwable) { "Failed to read export directory metadata" }
+            }
+            .getOrNull()
+        if (metadata == null || !metadata.supportsCreate) {
+            releasePersistablePermission(parsedUri)
+            error(context.getString(R.string.video_export_error_directory_read_only))
+        }
+        if (previousUri.isNotBlank() && previousUri != uri) {
+            releasePersistablePermission(Uri.parse(previousUri))
+        }
+        val name = metadata.displayName.ifBlank { uri.toDirectoryFallbackName() }
+        settingsStore.setVideoExportDirectory(uri, name)
+        return VideoExportDestination(uri, name)
+    }
+
+    /** Метаданные читаются по document-URI папки: по tree-URI провайдер запрос не поддерживает. */
+    private fun readDirectoryMetadata(treeUri: Uri): DirectoryMetadata? =
+        context.contentResolver.query(
+            treeUri.treeDocumentUri(),
             arrayOf(
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
                 DocumentsContract.Document.COLUMN_FLAGS,
@@ -58,21 +85,43 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
             null,
             null,
         )?.use { cursor ->
-            if (cursor.moveToFirst()) cursor.getString(0) to cursor.getLong(1) else null
+            if (!cursor.moveToFirst()) return@use null
+            val nameIndex =
+                cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+            val flagsIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_FLAGS)
+            val flags = cursor.getLong(flagsIndex)
+            DirectoryMetadata(
+                displayName = if (nameIndex >= 0) cursor.getString(nameIndex).orEmpty() else "",
+                supportsCreate = flags and
+                        DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE.toLong() != 0L,
+            )
         }
-        check(
-            metadata != null &&
-                    metadata.second and
-                    DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE.toLong() != 0L
-        ) { context.getString(R.string.video_export_error_directory_read_only) }
-        context.contentResolver.takePersistableUriPermission(
-            parsedUri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-        )
-        val name = metadata.first.orEmpty().ifBlank { uri.toDirectoryFallbackName() }
-        settingsStore.setVideoExportDirectory(uri, name)
-        return VideoExportDestination(uri, name)
+
+    override suspend fun isDestinationWritable(uri: String): Boolean {
+        if (uri.isBlank()) return false
+        val parsedUri = Uri.parse(uri)
+        val hasPersistedWrite = context.contentResolver.persistedUriPermissions
+            .any { it.uri == parsedUri && it.isWritePermission }
+        if (!hasPersistedWrite) return false
+        // Носитель могли извлечь, папку — удалить: проверяем, что каталог ещё отвечает
+        return runCatching { readDirectoryMetadata(parsedUri) }
+            .getOrNull()
+            ?.supportsCreate == true
     }
+
+    private fun releasePersistablePermission(uri: Uri) {
+        runCatching {
+            context.contentResolver.releasePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        }
+    }
+
+    private data class DirectoryMetadata(
+        val displayName: String,
+        val supportsCreate: Boolean,
+    )
 
     override suspend fun enqueue(
         downloadIds: List<Long>,
@@ -103,6 +152,19 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
                 request,
             )
         }
+    }
+
+    override suspend fun enqueueAutoExportIfEnabled(downloadId: Long) {
+        if (!settingsStore.videoExportAutoEnabled.first()) return
+        val uri = settingsStore.videoExportDirectoryUri.first()
+        if (uri.isBlank()) return
+        if (!isDestinationWritable(uri)) {
+            logDownloadWarning { "Auto export skipped: no access to export directory" }
+            return
+        }
+        val name = settingsStore.videoExportDirectoryName.first()
+            .ifBlank { uri.toDirectoryFallbackName() }
+        enqueue(listOf(downloadId), VideoExportDestination(uri, name))
     }
 
     override suspend fun cancel(downloadId: Long) {

@@ -41,6 +41,7 @@ class SettingsState {
         val suggestNextEpisodeOnWatched: Boolean = true,
         val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val tvPlayerVolumeKeysEnabled: Boolean = false,
+        val videoExportAutoEnabled: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: List<DetailsButtonAction> = SettingsStore.defaultDetailsButtonOrder,
@@ -130,6 +131,9 @@ class SettingsState {
         data object DetailsButtonOrderReset : Event
 
         data object VideoExportDirectorySelected : Event
+
+        /** Пользователь переключил автоматическую выгрузку серии после скачивания. */
+        data object VideoExportAutoToggled : Event
         data class VideoExportDirectoryGranted(val uri: String) : Event
     }
 

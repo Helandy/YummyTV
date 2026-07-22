@@ -141,5 +141,7 @@
     <string name="settings_video_export_directory">MP4 export folder</string>
     <string name="settings_video_export_directory_not_selected">Not selected</string>
     <string name="settings_video_export_directory_hint">Choose internal storage, MicroSD, USB, or a compatible document provider</string>
+    <string name="settings_video_export_auto_label">Export after download</string>
+    <string name="settings_video_export_auto_enabled">Copy an episode to the selected folder as soon as it finishes downloading</string>
     <string name="settings_video_export_directory_error">Unable to write to the selected folder</string>
 </resources>

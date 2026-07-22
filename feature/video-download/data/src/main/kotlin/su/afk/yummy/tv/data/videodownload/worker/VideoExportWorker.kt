@@ -34,6 +34,7 @@ import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.notification.VideoExportNotificationService
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
+import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -82,6 +83,10 @@ class VideoExportWorker @AssistedInject internal constructor(
         val tempFile = File(tempDirectory, "$downloadId.mp4")
         var createdDocumentUri: Uri? = null
         return try {
+            // Проверяем доступ до перекодирования: иначе пользователь ждёт минуты ради SecurityException
+            check(exportRepository.isDestinationWritable(destinationUri)) {
+                applicationContext.getString(R.string.video_export_error_directory_unavailable)
+            }
             ensureTemporarySpace(item)
             tempDirectory.mkdirs()
             tempFile.delete()
@@ -94,7 +99,7 @@ class VideoExportWorker @AssistedInject internal constructor(
             transformCachedMedia(item, tempFile)
             createdDocumentUri = createUniqueDocument(
                 treeUri = Uri.parse(destinationUri),
-                requestedName = item.exportFileName(),
+                item = item,
             )
             copyToDocument(item, tempFile, createdDocumentUri)
             exportRepository.updateState(
@@ -210,26 +215,16 @@ class VideoExportWorker @AssistedInject internal constructor(
         }
     }
 
-    private fun createUniqueDocument(treeUri: Uri, requestedName: String): Uri {
+    /** Каждый тайтл получает свою подпапку, внутри — файл вида «Серия N_Озвучка_Качество_Балансер». */
+    private fun createUniqueDocument(treeUri: Uri, item: VideoDownloadItem): Uri {
         val resolver = applicationContext.contentResolver
-        val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
-            treeUri,
-            DocumentsContract.getTreeDocumentId(treeUri),
+        val titleDirectoryUri = findOrCreateDirectory(
+            treeUri = treeUri,
+            parentDocumentUri = treeUri.treeDocumentUri(),
+            name = item.exportDirectoryName(),
         )
-        val existingNames = mutableSetOf<String>()
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            treeUri,
-            DocumentsContract.getTreeDocumentId(treeUri),
-        )
-        resolver.query(
-            childrenUri,
-            arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME),
-            null,
-            null,
-            null,
-        )?.use { cursor ->
-            while (cursor.moveToNext()) existingNames += cursor.getString(0)
-        }
+        val requestedName = item.exportFileName()
+        val existingNames = readChildNames(treeUri, titleDirectoryUri).map { it.name }.toSet()
         val baseName = requestedName.removeSuffix(MP4_EXTENSION)
         var candidate = requestedName
         var suffix = 2
@@ -240,12 +235,70 @@ class VideoExportWorker @AssistedInject internal constructor(
         return checkNotNull(
             DocumentsContract.createDocument(
                 resolver,
-                parentDocumentUri,
+                titleDirectoryUri,
                 MP4_MIME_TYPE,
                 candidate,
             )
         ) { applicationContext.getString(R.string.video_export_error_create_file) }
     }
+
+    private fun findOrCreateDirectory(treeUri: Uri, parentDocumentUri: Uri, name: String): Uri {
+        val existing = readChildNames(treeUri, parentDocumentUri)
+            .firstOrNull { it.name == name && it.mimeType == DocumentsContract.Document.MIME_TYPE_DIR }
+        if (existing != null) {
+            return DocumentsContract.buildDocumentUriUsingTree(treeUri, existing.documentId)
+        }
+        return checkNotNull(
+            DocumentsContract.createDocument(
+                applicationContext.contentResolver,
+                parentDocumentUri,
+                DocumentsContract.Document.MIME_TYPE_DIR,
+                name,
+            )
+        ) { applicationContext.getString(R.string.video_export_error_create_directory) }
+    }
+
+    private fun readChildNames(treeUri: Uri, parentDocumentUri: Uri): List<DocumentChild> {
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
+            treeUri,
+            DocumentsContract.getDocumentId(parentDocumentUri),
+        )
+        return applicationContext.contentResolver.query(
+            childrenUri,
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+            ),
+            null,
+            null,
+            null,
+        )?.use { cursor ->
+            val idIndex =
+                cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+            val nameIndex =
+                cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+            val mimeIndex =
+                cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        DocumentChild(
+                            documentId = cursor.getString(idIndex).orEmpty(),
+                            name = cursor.getString(nameIndex).orEmpty(),
+                            mimeType = cursor.getString(mimeIndex).orEmpty(),
+                        )
+                    )
+                }
+            }
+        }.orEmpty()
+    }
+
+    private data class DocumentChild(
+        val documentId: String,
+        val name: String,
+        val mimeType: String,
+    )
 
     private suspend fun copyToDocument(item: VideoDownloadItem, source: File, destination: Uri) =
         withContext(Dispatchers.IO) {
@@ -299,18 +352,36 @@ class VideoExportWorker @AssistedInject internal constructor(
         )
     }
 
+    private fun VideoDownloadItem.exportDirectoryName(): String =
+        animeTitle.toSafeName().ifBlank { DEFAULT_DIRECTORY_NAME }
+
     private fun VideoDownloadItem.exportFileName(): String {
-        val raw = "$animeTitle — серия $episode — ${dubbing.ifBlank { playerName }} — $qualityLabel"
-        val safe = raw
-            .replace(FORBIDDEN_FILE_NAME_CHARS, " ")
+        val balancer = playerName.balancerLabel()
+        val safe = listOf(
+            "Серия $episode",
+            dubbing.ifBlank { balancer },
+            qualityLabel,
+            balancer,
+        )
+            .map { it.toSafeName() }
+            .filter { it.isNotBlank() }
+            .joinToString("_")
+            .take(MAX_FILE_NAME_BASE_LENGTH)
+            .trim(' ', '.', '_')
+            .ifBlank { "Серия $episode".toSafeName().ifBlank { DEFAULT_DIRECTORY_NAME } }
+        return "$safe$MP4_EXTENSION"
+    }
+
+    private fun String.balancerLabel(): String =
+        trim().removePrefix("Плеер ").removePrefix("Player ")
+
+    private fun String.toSafeName(): String =
+        replace(FORBIDDEN_FILE_NAME_CHARS, " ")
             .replace(CONTROL_CHARS, " ")
             .replace(WHITESPACE, " ")
             .trim(' ', '.')
             .take(MAX_FILE_NAME_BASE_LENGTH)
             .trim()
-            .ifBlank { "YummyTV — серия $episode" }
-        return "$safe$MP4_EXTENSION"
-    }
 
     private fun Throwable.userFacingExportError(): String {
         val message = message?.takeIf(String::isNotBlank).orEmpty()
@@ -330,6 +401,7 @@ class VideoExportWorker @AssistedInject internal constructor(
         private const val MP4_EXTENSION = ".mp4"
         private const val MP4_MIME_TYPE = "video/mp4"
         private const val MAX_FILE_NAME_BASE_LENGTH = 180
+        private const val DEFAULT_DIRECTORY_NAME = "YummyTV"
         private const val COPY_BUFFER_BYTES = 256 * 1024
         private const val PROGRESS_POLL_INTERVAL_MS = 500L
         private const val TRANSFORM_PROGRESS_SHARE = 0.85f

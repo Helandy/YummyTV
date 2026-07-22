@@ -103,7 +103,7 @@
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_preferred_player_title">Предпочитаемый плеер</string>
     <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
-    <string name="settings_preferred_video_quality_best">Лучшее доступное</string>
+    <string name="settings_preferred_video_quality_best">Лучшее</string>
     <string name="settings_preferred_video_quality_best_hint">Использовать максимальное качество потока</string>
     <string name="settings_preferred_video_quality_2160">2160p</string>
     <string name="settings_preferred_video_quality_1440">1440p</string>

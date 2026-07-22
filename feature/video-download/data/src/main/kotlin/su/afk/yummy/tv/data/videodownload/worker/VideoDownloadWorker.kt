@@ -41,6 +41,7 @@ import su.afk.yummy.tv.data.videodownload.worker.utils.userAgent
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import su.afk.yummy.tv.domain.videodownload.usecase.RefreshVideoDownloadStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.UpdateVideoDownloadPreparedStreamUseCase
@@ -54,6 +55,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     private val repository: VideoDownloadRepository,
+    private val exportRepository: VideoDownloadExportRepository,
     private val refreshVideoDownloadStream: RefreshVideoDownloadStreamUseCase,
     private val updateVideoDownloadPreparedStream: UpdateVideoDownloadPreparedStreamUseCase,
     private val strategyResolver: DownloadPlayerStrategyResolver,
@@ -122,6 +124,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                 )
                 analytics.reportSucceeded(item)
                 logDownloadInfo { "Completed download id=$id retryUsed=$retriedAfterForbidden" }
+                exportRepository.enqueueAutoExportIfEnabled(id)
                 return Result.success()
             } catch (throwable: Throwable) {
                 if (throwable is CancellationException) throw throwable

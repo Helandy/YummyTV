@@ -61,6 +61,7 @@ class SettingsViewModel @Inject internal constructor(
                         refreshContinueWatchingProgressOnLaunch =
                             snapshot.refreshContinueWatchingProgressOnLaunch,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
+                        videoExportAutoEnabled = snapshot.videoExportAutoEnabled,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
                         detailsButtonOrder = snapshot.detailsButtonOrder,
@@ -221,6 +222,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.VideoExportDirectorySelected -> {
                 setEffect(SettingsState.Effect.OpenVideoExportDirectoryPicker)
+            }
+
+            SettingsState.Event.VideoExportAutoToggled -> viewModelScope.launch {
+                settingsStore.setVideoExportAutoEnabled(!currentState.videoExportAutoEnabled)
             }
 
             is SettingsState.Event.VideoExportDirectoryGranted -> viewModelScope.launch {

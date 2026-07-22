@@ -27,7 +27,7 @@
     <string name="settings_show_top_title_year_enabled">Год отображается на карточках тайтлов в топе</string>
     <string name="settings_mobile_default_player">Плеер по умолчанию</string>
     <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
-    <string name="settings_preferred_video_quality_best">Лучшее доступное</string>
+    <string name="settings_preferred_video_quality_best">Лучшее</string>
     <string name="settings_preferred_video_quality_best_hint">Использовать максимальное качество потока</string>
     <string name="settings_preferred_video_quality_2160">2160p</string>
     <string name="settings_preferred_video_quality_1440">1440p</string>
@@ -141,5 +141,7 @@
     <string name="settings_video_export_directory">Папка экспорта MP4</string>
     <string name="settings_video_export_directory_not_selected">Не выбрана</string>
     <string name="settings_video_export_directory_hint">Внутренняя память, MicroSD, USB или совместимый файловый provider</string>
+    <string name="settings_video_export_auto_label">Выгружать после скачивания</string>
+    <string name="settings_video_export_auto_enabled">Копировать серию в выбранную папку сразу после загрузки</string>
     <string name="settings_video_export_directory_error">Не удалось получить доступ на запись к выбранной папке</string>
 </resources>
