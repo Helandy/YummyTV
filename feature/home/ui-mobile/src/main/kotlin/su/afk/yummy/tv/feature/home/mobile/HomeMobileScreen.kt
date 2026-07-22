@@ -176,11 +176,9 @@ fun HomeMobileScreen(
 
             feed?.sections
                 .orEmpty()
-                .filter {
-                    it.items.isNotEmpty() &&
-                            it.type != HomeFeedSectionType.RECOMMENDATIONS &&
-                            it.type != HomeFeedSectionType.SCHEDULE
-                }
+                // Расписание на мобилке живёт в блоке быстрых действий, отдельным рядом
+                // его не показываем. Остальные секции, включая рекомендации, — рядами.
+                .filter { it.items.isNotEmpty() && it.type != HomeFeedSectionType.SCHEDULE }
                 .forEach { section ->
                     item(key = "section_${section.type.name}") {
                         val isCollections = section.type == HomeFeedSectionType.COLLECTIONS

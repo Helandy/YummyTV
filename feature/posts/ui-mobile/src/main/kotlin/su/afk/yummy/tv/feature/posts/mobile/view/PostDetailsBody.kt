@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.components.CachedAsyncImage
 import su.afk.yummy.tv.domain.posts.model.PostDetails
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
 import su.afk.yummy.tv.feature.posts.mobile.R
@@ -52,7 +53,7 @@ internal fun PostDetailsBody(
         }
         details.previewImageUrl?.takeIf(String::isNotBlank)?.let { url ->
             item {
-                AsyncImage(
+                CachedAsyncImage(
                     url,
                     details.title,
                     Modifier
@@ -71,7 +72,7 @@ internal fun PostDetailsBody(
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                is PostContentBlock.Image -> AsyncImage(
+                is PostContentBlock.Image -> CachedAsyncImage(
                     block.url,
                     block.description,
                     Modifier

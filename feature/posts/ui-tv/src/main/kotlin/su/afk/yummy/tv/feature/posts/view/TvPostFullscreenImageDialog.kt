@@ -12,7 +12,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.components.CachedAsyncImage
 
 @Composable
 internal fun TvPostFullscreenImageDialog(
@@ -30,8 +30,8 @@ internal fun TvPostFullscreenImageDialog(
                 .background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
-            AsyncImage(
-                model = imageUrl,
+            CachedAsyncImage(
+                url = imageUrl,
                 contentDescription = contentDescription,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier

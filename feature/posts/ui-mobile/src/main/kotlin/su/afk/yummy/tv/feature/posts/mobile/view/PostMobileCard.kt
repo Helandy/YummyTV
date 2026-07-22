@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.presenter.components.CachedAsyncImage
 import su.afk.yummy.tv.core.utils.formatFeedDateTime
 import su.afk.yummy.tv.domain.posts.model.PostSummary
 
@@ -27,8 +27,8 @@ fun PostMobileCard(post: PostSummary, onClick: () -> Unit, modifier: Modifier = 
             .clickable(onClick = onClick)
     ) {
         post.previewImageUrl?.takeIf(String::isNotBlank)?.let {
-            AsyncImage(
-                model = it,
+            CachedAsyncImage(
+                url = it,
                 contentDescription = post.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

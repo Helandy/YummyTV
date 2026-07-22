@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.presenter.components.rememberCachedImageRequest
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileFullscreenImageDialog
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileTopBar
@@ -30,7 +31,7 @@ fun PostDetailsMobileScreen(
 
     fullscreenImageUrl?.let { imageUrl ->
         MobileFullscreenImageDialog(
-            model = imageUrl,
+            model = rememberCachedImageRequest(imageUrl),
             contentDescription = state.details?.title,
             closeContentDescription = stringResource(R.string.posts_close_image),
             onDismiss = { fullscreenImageUrl = null },

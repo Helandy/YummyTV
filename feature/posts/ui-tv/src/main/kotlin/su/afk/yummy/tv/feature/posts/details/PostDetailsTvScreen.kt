@@ -58,9 +58,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.presenter.components.CachedAsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.loader.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.presenter.focus.tvFocusableClick
@@ -169,7 +169,7 @@ fun PostDetailsTvScreen(
                         val focused by interactionSource.collectIsFocusedAsState()
                         val bringIntoViewRequester = remember { BringIntoViewRequester() }
                         val shape = RoundedCornerShape(12.dp)
-                        AsyncImage(
+                        CachedAsyncImage(
                             url,
                             details.title,
                             Modifier
@@ -230,7 +230,7 @@ fun PostDetailsTvScreen(
                             val focused by interactionSource.collectIsFocusedAsState()
                             val bringIntoViewRequester = remember { BringIntoViewRequester() }
                             val shape = RoundedCornerShape(12.dp)
-                            AsyncImage(
+                            CachedAsyncImage(
                                 block.url,
                                 block.description,
                                 Modifier
@@ -350,7 +350,7 @@ fun PostDetailsTvScreen(
                                     ),
                                 ) {
                                     anime.posterUrl?.let {
-                                        AsyncImage(
+                                        CachedAsyncImage(
                                             it,
                                             anime.title,
                                             Modifier
