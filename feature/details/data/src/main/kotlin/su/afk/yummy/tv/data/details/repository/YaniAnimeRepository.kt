@@ -178,7 +178,11 @@ class YaniAnimeRepository(
                 api.restoreAnimeRecommendation(animeId)
             }
             response.response.also { updated ->
-                if (updated) invalidateRecommendationCache()
+                if (updated) {
+                    invalidateRecommendationCache()
+                    // Единая точка правды для всех экранов: главная фильтрует ленту по этому набору.
+                    settingsStore.setRecommendationHidden(animeId, ignored)
+                }
             }
         }
 

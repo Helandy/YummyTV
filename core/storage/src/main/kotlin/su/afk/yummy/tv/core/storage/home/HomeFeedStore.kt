@@ -18,11 +18,4 @@ class HomeFeedStore(private val dao: HomeFeedDao) {
             itemId = animeId,
         )
     }
-
-    suspend fun deleteRecommendationByAnimeId(animeId: Int) {
-        dao.deleteItemsByContainerAndItemId(
-            container = HOME_FEED_CONTAINER_RECOMMENDATIONS,
-            itemId = animeId,
-        )
-    }
 }

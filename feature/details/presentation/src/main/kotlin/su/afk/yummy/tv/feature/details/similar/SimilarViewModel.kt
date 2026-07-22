@@ -6,6 +6,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseViewModel.BaseViewModelNew
 import su.afk.yummy.tv.core.error.IErrorHandlerUseCase
@@ -48,6 +50,14 @@ class SimilarViewModel @AssistedInject internal constructor(
 
     init {
         analytics.eventSimilarScreenOpened(animeId)
+        // Скрытие живёт в сторе и переживает перезапуск — кнопка должна показывать его состояние.
+        settingsStore.hiddenRecommendationIds
+            .onEach { hiddenIds ->
+                if (!currentState.isRecommendationMutationPending) {
+                    setState { copy(isRecommendationIgnored = animeId in hiddenIds) }
+                }
+            }
+            .launchIn(viewModelScope)
         viewModelScope.launch { load() }
     }
 

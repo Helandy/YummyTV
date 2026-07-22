@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,7 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
     private val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     private val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     private val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
+    private val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
     private val appThemeKey = stringPreferencesKey("app_theme")
     private val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
     private val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
@@ -193,6 +195,10 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         context.dataStore.data.map { prefs ->
             prefs[detailsButtonOrderKey].toDetailsButtonOrder()
         }
+
+    override val hiddenRecommendationIds: Flow<Set<Int>> = context.dataStore.data.map { prefs ->
+        prefs[hiddenRecommendationIdsKey].orEmpty().mapNotNull(String::toIntOrNull).toSet()
+    }
 
     override val yaniApplicationToken: Flow<String> = context.dataStore.data.map { prefs ->
         prefs.yaniApplicationToken()
@@ -476,6 +482,14 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
         }
     }
 
+    override suspend fun setRecommendationHidden(animeId: Int, hidden: Boolean) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[hiddenRecommendationIdsKey].orEmpty()
+            val id = animeId.toString()
+            prefs[hiddenRecommendationIdsKey] = if (hidden) current + id else current - id
+        }
+    }
+
     override suspend fun clearYaniAccount() {
         context.dataStore.edit { prefs ->
             prefs.remove(yaniAccessTokenKey)
@@ -484,6 +498,8 @@ class DataStoreSettingsStore(private val context: Context) : SettingsStore {
             prefs.remove(yaniAvatarUrlKey)
             prefs.remove(yaniTokenRefreshAtKey)
             prefs.remove(yaniUnreadNotificationsCountKey)
+            // Скрытые рекомендации привязаны к аккаунту — новому пользователю они не нужны.
+            prefs.remove(hiddenRecommendationIdsKey)
         }
     }
 

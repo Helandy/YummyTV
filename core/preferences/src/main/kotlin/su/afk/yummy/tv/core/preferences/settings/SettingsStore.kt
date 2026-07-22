@@ -61,6 +61,10 @@ interface SettingsStore {
     val playerZoomLevel: Flow<PlayerZoomLevel>
     val appTheme: Flow<AppTheme>
     val detailsButtonOrder: Flow<List<DetailsButtonAction>>
+
+    /** Тайтлы, которые пользователь попросил больше не рекомендовать. */
+    val hiddenRecommendationIds: Flow<Set<Int>>
+
     val yaniApplicationToken: Flow<String>
     val yaniApplicationTokenState: Flow<YaniApplicationTokenState>
     val yaniUserId: Flow<Int>
@@ -133,6 +137,7 @@ interface SettingsStore {
     )
 
     suspend fun clearLegacyYaniAccessToken()
+    suspend fun setRecommendationHidden(animeId: Int, hidden: Boolean)
     suspend fun clearYaniAccount()
     suspend fun setYaniUnreadNotificationsCount(count: Int)
     suspend fun setYaniContentLanguage(language: YaniContentLanguage)

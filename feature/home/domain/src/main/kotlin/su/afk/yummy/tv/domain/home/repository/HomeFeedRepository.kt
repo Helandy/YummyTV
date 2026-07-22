@@ -10,7 +10,6 @@ interface HomeFeedRepository {
     suspend fun getCachedHomeFeed(): HomeFeed?
     suspend fun refreshHomeFeed(): HomeFeed
     suspend fun removeCachedContinueWatching(animeId: Int)
-    suspend fun removeCachedRecommendation(animeId: Int)
     suspend fun getContinueWatchingVideoIds(animeId: Int): List<Int>
     suspend fun migrateContinueWatchingProgress(migration: ContinueWatchingProgressMigration)
     fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>>

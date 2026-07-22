@@ -24,7 +24,6 @@ import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
-import su.afk.yummy.tv.domain.home.usecase.RemoveCachedRecommendationUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -56,7 +55,6 @@ class HomeViewModel @Inject internal constructor(
     private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
-    private val removeCachedRecommendation: RemoveCachedRecommendationUseCase,
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val stringProvider: StringProvider,
@@ -86,6 +84,7 @@ class HomeViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        observeHiddenRecommendations()
         observeSupportPrompt()
         loadBloggerVideos()
         load()
@@ -146,6 +145,16 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    // Скрытия приходят и с других экранов («Похожее» в деталях), поэтому набор берём из стора.
+    private fun observeHiddenRecommendations() {
+        settingsStore.hiddenRecommendationIds
+            .onEach { hiddenIds ->
+                setState { copy(hiddenRecommendationIds = hiddenIds) }
+                applyHiddenRecommendations()
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun setRecommendationHidden(animeId: Int, hidden: Boolean) {
         if (animeId in currentState.pendingRecommendationIds) return
         viewModelScope.launch {
@@ -173,7 +182,6 @@ class HomeViewModel @Inject internal constructor(
                     if (success) {
                         if (hidden) {
                             analytics.eventRecommendationHidden(animeId)
-                            removeCachedRecommendation(animeId)
                             setEffect(
                                 HomeState.Effect.ShowRecommendationUndo(
                                     message = stringProvider.get(
