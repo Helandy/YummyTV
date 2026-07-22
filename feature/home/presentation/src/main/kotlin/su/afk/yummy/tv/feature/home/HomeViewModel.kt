@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.navigation.NavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.utils.runSuspendCatching
+import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
@@ -23,6 +24,7 @@ import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.RemoveCachedRecommendationUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -30,6 +32,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.toToastTimeString
+import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
@@ -53,6 +56,8 @@ class HomeViewModel @Inject internal constructor(
     private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
+    private val removeCachedRecommendation: RemoveCachedRecommendationUseCase,
+    private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
@@ -65,6 +70,9 @@ class HomeViewModel @Inject internal constructor(
 
     private var supportPromptTimerJob: Job? = null
     private var supportPromptDisplayedThisSession = false
+
+    /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
+    private var rawFeed: HomeFeed? = null
 
     init {
         analytics.eventScreenOpened()
@@ -129,7 +137,91 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(bloggerVideosNavigator.video(event.video.id))
 
             HomeState.Event.SupportPromptDismissed -> dismissSupportPrompt()
+
+            is HomeState.Event.RecommendationHideRequested ->
+                setRecommendationHidden(event.animeId, hidden = true)
+
+            is HomeState.Event.RecommendationRestoreRequested ->
+                setRecommendationHidden(event.animeId, hidden = false)
         }
+    }
+
+    private fun setRecommendationHidden(animeId: Int, hidden: Boolean) {
+        if (animeId in currentState.pendingRecommendationIds) return
+        viewModelScope.launch {
+            if (settingsStore.yaniUserId.first() <= 0) {
+                setEffect(
+                    HomeState.Effect.ShowToast(
+                        stringProvider.get(R.string.home_recommendation_auth_required)
+                    )
+                )
+                return@launch
+            }
+            setState {
+                copy(
+                    hiddenRecommendationIds = if (hidden) {
+                        hiddenRecommendationIds + animeId
+                    } else {
+                        hiddenRecommendationIds - animeId
+                    },
+                    pendingRecommendationIds = pendingRecommendationIds + animeId,
+                )
+            }
+            applyHiddenRecommendations()
+            runSuspendCatching { setAnimeRecommendationIgnored(animeId, hidden) }.fold(
+                onSuccess = { success ->
+                    if (success) {
+                        if (hidden) {
+                            analytics.eventRecommendationHidden(animeId)
+                            removeCachedRecommendation(animeId)
+                            setEffect(
+                                HomeState.Effect.ShowRecommendationUndo(
+                                    message = stringProvider.get(
+                                        R.string.home_recommendation_hidden
+                                    ),
+                                    animeId = animeId,
+                                )
+                            )
+                        } else {
+                            analytics.eventRecommendationRestored(animeId)
+                        }
+                        setState {
+                            copy(pendingRecommendationIds = pendingRecommendationIds - animeId)
+                        }
+                    } else {
+                        rollbackRecommendation(animeId, hidden)
+                    }
+                },
+                onFailure = { rollbackRecommendation(animeId, hidden) },
+            )
+        }
+    }
+
+    /** Возвращает тайтл в исходное состояние, если сервер не принял изменение. */
+    private fun rollbackRecommendation(animeId: Int, hidden: Boolean) {
+        setState {
+            copy(
+                hiddenRecommendationIds = if (hidden) {
+                    hiddenRecommendationIds - animeId
+                } else {
+                    hiddenRecommendationIds + animeId
+                },
+                pendingRecommendationIds = pendingRecommendationIds - animeId,
+            )
+        }
+        applyHiddenRecommendations()
+        setEffect(
+            HomeState.Effect.ShowToast(
+                stringProvider.get(R.string.home_recommendation_error)
+            )
+        )
+    }
+
+    /** Пересобирает видимую ленту из [rawFeed] с учётом скрытых рекомендаций. */
+    private fun applyHiddenRecommendations() {
+        val feed = rawFeed ?: return
+        val hiddenIds = currentState.hiddenRecommendationIds
+        setState { copy(feed = feed.withoutHiddenRecommendations(hiddenIds)) }
     }
 
     private fun observeSupportPrompt() {
@@ -294,7 +386,7 @@ class HomeViewModel @Inject internal constructor(
         if (currentState.feed == null) return
         viewModelScope.launch {
             val cachedFeed = runSuspendCatching { getCachedHomeFeed() }.getOrNull() ?: return@launch
-            val currentFeed = currentState.feed
+            val currentFeed = rawFeed
             applyFeed(
                 feed = currentFeed?.copy(continueWatchingItems = cachedFeed.continueWatchingItems)
                     ?: cachedFeed,
@@ -304,10 +396,11 @@ class HomeViewModel @Inject internal constructor(
     }
 
     private fun applyFeed(feed: HomeFeed, isLoading: Boolean) {
+        rawFeed = feed
         setState {
             copy(
                 isLoading = isLoading,
-                feed = feed,
+                feed = feed.withoutHiddenRecommendations(hiddenRecommendationIds),
             )
         }
     }

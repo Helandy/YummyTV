@@ -28,16 +28,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TvCardSpacing
@@ -50,6 +44,7 @@ import su.afk.yummy.tv.feature.details.details.SimilarUiState
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
 
 private val RelatedCardWidth = 188.dp
+private val SimilarPosterHeight = 214.dp
 
 @Composable
 internal fun SimilarTab(
@@ -65,21 +60,32 @@ internal fun SimilarTab(
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
 ) {
+    // Вертикальная навигация связывается явно: кнопки голосования перекрывают карточку по
+    // границам, из-за чего focus search вверх уходил на них и фокус запирался внизу экрана.
+    val visibilityButtonFocusRequester = remember { FocusRequester() }
+    val sourceToggleFocusRequester = remember { FocusRequester() }
+
     Column(
-        modifier = modifier.padding(vertical = 40.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.padding(vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TvSimilarRecommendationVisibilityButton(
             ignored = ignored,
             enabled = !recommendationMutationPending,
             onClick = onRecommendationVisibilityToggled,
+            modifier = Modifier
+                .focusRequester(visibilityButtonFocusRequester)
+                .focusProperties { down = sourceToggleFocusRequester },
         )
 
         SourceToggle(
             fromAi = fromAi,
             onToggle = onToggle,
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .focusProperties { up = visibilityButtonFocusRequester },
+            focusRequester = sourceToggleFocusRequester,
         )
 
         when (state) {
@@ -115,10 +121,12 @@ internal fun SimilarTab(
             }
 
             is SimilarUiState.Content -> {
-                val focusManager = LocalFocusManager.current
                 val listState = rememberLazyListState()
                 val itemIds = remember(state.items) { state.items.map { it.animeId } }
                 val focusRequesters = remember(itemIds) {
+                    List(state.items.size) { FocusRequester() }
+                }
+                val voteFocusRequesters = remember(itemIds) {
                     List(state.items.size) { FocusRequester() }
                 }
                 var lastFocusedItemId by rememberSaveable(fromAi) { mutableStateOf<Int?>(null) }
@@ -138,20 +146,6 @@ internal fun SimilarTab(
                     lastFocusedItemId = state.items.getOrNull(index)?.animeId
                 }
 
-                val directionKeyModifier = Modifier.onPreviewKeyEvent { event ->
-                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                    when (event.key) {
-                        Key.DirectionUp -> {
-                            focusManager.moveFocus(FocusDirection.Up); true
-                        }
-
-                        Key.DirectionDown -> {
-                            focusManager.moveFocus(FocusDirection.Down); true
-                        }
-
-                        else -> false
-                    }
-                }
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                     val sideInset = ((maxWidth - RelatedCardWidth) / 2).coerceAtLeast(24.dp)
                     LazyRow(
@@ -172,27 +166,41 @@ internal fun SimilarTab(
                             val posterUrl = item.poster?.run { big ?: medium ?: fullsize ?: small }
                             val meta =
                                 listOfNotNull(item.type).joinToString(" · ")
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                RelatedTitleCard(
-                                    title = item.title,
-                                    posterUrl = posterUrl,
-                                    onClick = { onAnimeSelected(item.animeId) },
-                                    rating = item.rating,
-                                    year = item.year,
-                                    meta = meta,
-                                    onFocused = { rememberFocusedItem(index) },
-                                    modifier = Modifier
-                                        .focusRequester(focusRequesters[index])
-                                        .then(directionKeyModifier),
-                                )
-                                if (!fromAi) {
-                                    TvSimilarVoteButtons(
-                                        item = item,
-                                        enabled = item.animeId !in pendingVoteAnimeIds,
-                                        onVote = { vote -> onVote(item.animeId, vote) },
-                                    )
-                                }
-                            }
+                            RelatedTitleCard(
+                                title = item.title,
+                                posterUrl = posterUrl,
+                                onClick = { onAnimeSelected(item.animeId) },
+                                rating = item.rating,
+                                year = item.year,
+                                meta = meta,
+                                onFocused = { rememberFocusedItem(index) },
+                                // Постер ниже дефолтного: карточке нужно место под голосование,
+                                // иначе ряд не влезает в экран и футер обрезается.
+                                posterHeight = SimilarPosterHeight,
+                                modifier = Modifier
+                                    .focusRequester(focusRequesters[index])
+                                    .focusProperties {
+                                        up = sourceToggleFocusRequester
+                                        if (!fromAi) down = voteFocusRequesters[index]
+                                    },
+                                footer = {
+                                    if (!fromAi) {
+                                        TvSimilarVoteButtons(
+                                            item = item,
+                                            enabled = item.animeId !in pendingVoteAnimeIds,
+                                            onVote = { vote -> onVote(item.animeId, vote) },
+                                            modifier = Modifier
+                                                .focusProperties {
+                                                    up = focusRequesters[index]
+                                                    // Ниже голосования ничего нет — не даём
+                                                    // фокусу перескочить в начало экрана.
+                                                    down = FocusRequester.Cancel
+                                                },
+                                            focusRequester = voteFocusRequesters[index],
+                                        )
+                                    }
+                                },
+                            )
                         }
                     }
                 }
@@ -202,8 +210,15 @@ internal fun SimilarTab(
 }
 
 @Composable
-private fun SourceToggle(fromAi: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+private fun SourceToggle(
+    fromAi: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** Точка входа фокуса — активный чип, чтобы фокус не приходил на неактивный источник. */
+    focusRequester: FocusRequester? = null,
+) {
     val shape = RoundedCornerShape(24.dp)
+    val selectedModifier = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
     Row(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceVariant, shape)
@@ -214,11 +229,13 @@ private fun SourceToggle(fromAi: Boolean, onToggle: () -> Unit, modifier: Modifi
             label = stringResource(R.string.details_similar_users),
             selected = !fromAi,
             onClick = { if (fromAi) onToggle() },
+            modifier = if (fromAi) Modifier else selectedModifier,
         )
         ToggleChip(
             label = stringResource(R.string.details_similar_ai),
             selected = fromAi,
             onClick = { if (!fromAi) onToggle() },
+            modifier = if (fromAi) selectedModifier else Modifier,
         )
     }
 }
@@ -228,10 +245,11 @@ private fun ToggleChip(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(20.dp)
     Surface(
-        modifier = Modifier.tvFocusableClick(onClick = onClick, shape = shape),
+        modifier = modifier.tvFocusableClick(onClick = onClick, shape = shape),
         shape = shape,
         color = if (selected) MaterialTheme.colorScheme.primary
         else Color.Transparent,

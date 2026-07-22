@@ -46,6 +46,7 @@ internal fun HomeFeedCard(
     onClick: () -> Unit,
     onFocused: (displayId: Int, animeId: Int?) -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     leftFocusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
@@ -77,6 +78,7 @@ internal fun HomeFeedCard(
                 onClick = onClick,
                 shape = shape,
                 interactionSource = interactionSource,
+                onLongClick = onLongClick,
                 focusedScale = focusedScale,
             )
             .border(

@@ -1,7 +1,8 @@
 package su.afk.yummy.tv.core.designsystem.presenter.mobile
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.presenter.dimensions.currentMobilePosterWidth
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MobilePosterCard(
     title: String,
@@ -40,6 +42,8 @@ fun MobilePosterCard(
     posterOverlay: @Composable BoxScope.() -> Unit = {},
     /** Слот под карточкой — например кнопки голосования. Живёт внутри Card, клик не перехватывает. */
     footer: @Composable ColumnScope.() -> Unit = {},
+    /** Долгое нажатие по карточке — например контекстное меню тайтла. */
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     Card(
@@ -47,7 +51,12 @@ fun MobilePosterCard(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
-        Column(Modifier.clickable(onClick = onClick)) {
+        Column(
+            Modifier.combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

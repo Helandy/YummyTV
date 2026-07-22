@@ -51,6 +51,7 @@ internal fun HomeDashboard(
     continueWatching: List<HomeContinueWatchingItem>,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
+    onRecommendationLongClick: (HomeFeedItem) -> Unit = {},
 ) {
     val lazyColumnState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -349,6 +350,9 @@ internal fun HomeDashboard(
                             items = section.items,
                             showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                             onItemSelected = onItemSelected,
+                            // Управлять видимостью можно только рекомендациями.
+                            onItemLongClick = onRecommendationLongClick
+                                .takeIf { section.type == HomeFeedSectionType.RECOMMENDATIONS },
                             rowFocusRequester = sectionFocusRequesters[index],
                             registerFocusHandler = { handler ->
                                 registerRowFocusHandler(rowKey, handler)

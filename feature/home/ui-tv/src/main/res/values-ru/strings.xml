@@ -9,4 +9,8 @@
     <string name="home_support_prompt_title">Нравится приложение? Поддержи автора - оцени репозиторий на GitHub</string>
     <string name="home_support_prompt_message">Это бесплатно и займет меньше минуты</string>
     <string name="home_support_prompt_ok">Окей</string>
+    <string name="home_tv_recommendation_hide_title">Не рекомендовать «%1$s»?</string>
+    <string name="home_tv_recommendation_hide_message">Тайтл пропадёт из блока рекомендаций. Вернуть его можно на экране «Похожее» этого аниме</string>
+    <string name="home_tv_recommendation_hide">Не рекомендовать</string>
+    <string name="home_tv_recommendation_cancel">Отмена</string>
 </resources>

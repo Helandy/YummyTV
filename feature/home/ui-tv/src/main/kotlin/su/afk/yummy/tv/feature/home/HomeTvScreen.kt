@@ -5,7 +5,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
@@ -22,6 +25,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
 import su.afk.yummy.tv.feature.home.view.HomeSupportPromptDialog
+import su.afk.yummy.tv.feature.home.view.TvRecommendationActionsDialog
 
 @Preview(
     name = "Default",
@@ -73,6 +77,8 @@ fun HomeTvScreen(
     onEvent: (HomeState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    var recommendationActionItem by remember { mutableStateOf<HomeFeedItem?>(null) }
+
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
     }
@@ -85,6 +91,11 @@ fun HomeTvScreen(
                 }
 
                 is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
+
+                // На ТВ откат недоступен — показываем обычное уведомление.
+                is HomeState.Effect.ShowRecommendationUndo -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -142,6 +153,18 @@ fun HomeTvScreen(
                 onEvent(HomeState.Event.ContinueWatchingSelected(entry))
             },
             onItemSelected = onItemSelected,
+            onRecommendationLongClick = { item -> recommendationActionItem = item },
+        )
+    }
+
+    recommendationActionItem?.let { item ->
+        TvRecommendationActionsDialog(
+            title = item.title,
+            onHide = {
+                recommendationActionItem = null
+                onEvent(HomeState.Event.RecommendationHideRequested(item.id))
+            },
+            onDismiss = { recommendationActionItem = null },
         )
     }
 

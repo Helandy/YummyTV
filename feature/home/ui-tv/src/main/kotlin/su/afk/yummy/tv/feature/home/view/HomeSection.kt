@@ -48,6 +48,7 @@ internal fun HomeSection(
     items: List<HomeFeedItem>,
     showYear: Boolean,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
+    onItemLongClick: ((HomeFeedItem) -> Unit)? = null,
     rowFocusRequester: FocusRequester? = null,
     registerFocusHandler: ((suspend () -> Boolean)?) -> Unit = {},
     rowIsFocused: Boolean = false,
@@ -69,6 +70,8 @@ internal fun HomeSection(
     var focusMoveJob by remember { mutableStateOf<Job?>(null) }
     var lastFocusedIndex by rememberSaveable(rowKey.ifBlank { title }) { mutableIntStateOf(0) }
     var currentFocusedIndex by remember { mutableIntStateOf(-1) }
+    // Размер ряда на момент длинного нажатия: если карточку скрыли, фокус нужно вернуть в ряд.
+    var itemsSizeBeforeLongClick by remember { mutableIntStateOf(-1) }
     var lastFocusedItemKey by rememberSaveable(rowKey.ifBlank { title }) {
         mutableStateOf<String?>(
             null
@@ -149,6 +152,18 @@ internal fun HomeSection(
         if (listState.layoutInfo.visibleItemsInfo.none { it.index == target }) {
             listState.scrollToItem(target)
         }
+    }
+
+    // Карточка, на которой стоял фокус, могла исчезнуть после длинного нажатия (скрытая
+    // рекомендация) — вместе с ней ряд теряет фокус, поэтому возвращаем его на соседа.
+    LaunchedEffect(items) {
+        val sizeBefore = itemsSizeBeforeLongClick
+        if (sizeBefore < 0 || items.size >= sizeBefore) return@LaunchedEffect
+        itemsSizeBeforeLongClick = -1
+        if (items.isEmpty()) return@LaunchedEffect
+        val target = restoreIndex()
+        requestItemFocus(target)
+        rememberFocusedItem(target)
     }
 
     Column {
@@ -246,6 +261,13 @@ internal fun HomeSection(
                     onClick = {
                         rememberFocusedItem(index)
                         onItemSelected(rowKey, item)
+                    },
+                    onLongClick = onItemLongClick?.let { handler ->
+                        {
+                            rememberFocusedItem(index)
+                            itemsSizeBeforeLongClick = items.size
+                            handler(item)
+                        }
                     },
                     onFocused = wrappedOnFocused,
                     leftFocusRequester = mainMenuFocusRequester.takeIf { index == 0 },

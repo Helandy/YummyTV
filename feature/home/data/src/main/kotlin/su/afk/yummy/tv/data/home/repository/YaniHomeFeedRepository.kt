@@ -57,6 +57,12 @@ class YaniHomeFeedRepository(
         }
     }
 
+    override suspend fun removeCachedRecommendation(animeId: Int) {
+        withContext(Dispatchers.IO) {
+            homeFeedStore.deleteRecommendationByAnimeId(animeId)
+        }
+    }
+
     override suspend fun getContinueWatchingVideoIds(animeId: Int): List<Int> =
         withContext(Dispatchers.IO) {
             watchProgressStore.continueWatching()

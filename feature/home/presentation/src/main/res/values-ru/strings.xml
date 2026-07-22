@@ -2,5 +2,8 @@
 <resources>
     <string name="home_blogger_videos_load_error">Не удалось загрузить видео блогеров</string>
     <string name="home_load_error">Не удалось загрузить главную страницу</string>
+    <string name="home_recommendation_auth_required">Войдите, чтобы управлять рекомендациями</string>
+    <string name="home_recommendation_error">Не удалось обновить рекомендации</string>
+    <string name="home_recommendation_hidden">Больше не рекомендуем это аниме</string>
     <string name="home_remote_continue_progress_toast">Найден удалённый прогресс. Серия %1$s (%2$s)</string>
 </resources>

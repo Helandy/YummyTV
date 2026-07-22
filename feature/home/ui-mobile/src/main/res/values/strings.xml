@@ -7,6 +7,9 @@
     <string name="home_mobile_search_hint">Search anime</string>
     <string name="home_mobile_retry">Retry</string>
     <string name="home_mobile_all">All</string>
+    <string name="home_mobile_recommendation_hide">Do not recommend this anime</string>
+    <string name="home_mobile_recommendation_cancel">Cancel</string>
+    <string name="home_mobile_recommendation_undo">Undo</string>
     <string name="home_mobile_continue_watching">Continue watching</string>
     <string name="home_mobile_episode_unknown">Episode</string>
     <string name="home_mobile_episode">Episode %1$s</string>

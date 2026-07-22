@@ -52,6 +52,30 @@ internal class HomeAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь скрыл тайтл из блока рекомендаций.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventRecommendationHidden(animeId: Int) {
+        tracker.track(
+            EVENT_RECOMMENDATION_HIDDEN,
+            analyticsParamsOf(PARAM_ANIME_ID to animeId),
+        )
+    }
+
+    /**
+     * Пользователь вернул тайтл в блок рекомендаций.
+     *
+     * Параметры: anime_id.
+     */
+    fun eventRecommendationRestored(animeId: Int) {
+        tracker.track(
+            EVENT_RECOMMENDATION_RESTORED,
+            analyticsParamsOf(PARAM_ANIME_ID to animeId),
+        )
+    }
+
+    /**
      * Пользователь повторил загрузку главного экрана.
      */
     fun eventRetry() {
@@ -82,6 +106,8 @@ internal class HomeAnalytics @Inject constructor(
         const val EVENT_ANIME_SELECTED = "home_anime_selected"
         const val EVENT_COLLECTION_SELECTED = "home_collection_selected"
         const val EVENT_CONTINUE_WATCHING_SELECTED = "home_continue_watching_selected"
+        const val EVENT_RECOMMENDATION_HIDDEN = "home_recommendation_hidden"
+        const val EVENT_RECOMMENDATION_RESTORED = "home_recommendation_restored"
         const val EVENT_RETRY = "home_retry"
         const val EVENT_LOAD_ERROR = "home_load_error"
     }

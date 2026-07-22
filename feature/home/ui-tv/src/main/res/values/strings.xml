@@ -9,4 +9,8 @@
     <string name="home_support_prompt_title">Like the app? Support the author by rating the repository on GitHub</string>
     <string name="home_support_prompt_message">It is free and takes less than a minute</string>
     <string name="home_support_prompt_ok">Okay</string>
+    <string name="home_tv_recommendation_hide_title">Do not recommend "%1$s"?</string>
+    <string name="home_tv_recommendation_hide_message">The title will disappear from the recommendations row. You can restore it on the Similar screen of this anime</string>
+    <string name="home_tv_recommendation_hide">Do not recommend</string>
+    <string name="home_tv_recommendation_cancel">Cancel</string>
 </resources>

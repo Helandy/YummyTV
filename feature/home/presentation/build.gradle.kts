@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":feature:bloggers:api"))
     implementation(project(":feature:bloggers:domain"))
     implementation(project(":feature:details:api"))
+    implementation(project(":feature:details:domain"))
     implementation(project(":feature:player:api"))
     implementation(project(":feature:reviews:api"))
     implementation(project(":feature:schedule:api"))

@@ -2,5 +2,8 @@
 <resources>
     <string name="home_blogger_videos_load_error">Failed to load blogger videos</string>
     <string name="home_load_error">Could not load the home page</string>
+    <string name="home_recommendation_auth_required">Sign in to manage recommendations</string>
+    <string name="home_recommendation_error">Could not update recommendations</string>
+    <string name="home_recommendation_hidden">We will not recommend this anime anymore</string>
     <string name="home_remote_continue_progress_toast">Remote progress found. Episode %1$s (%2$s)</string>
 </resources>

@@ -21,6 +21,7 @@ internal fun HomeFeedSectionRow(
     onItemSelected: (HomeFeedItem) -> Unit,
     actionLabel: String? = null,
     onActionClick: (() -> Unit)? = null,
+    onItemLongClick: ((HomeFeedItem) -> Unit)? = null,
 ) {
     val showCardMetadata = section.type.showMobileCardMetadata()
 
@@ -41,6 +42,7 @@ internal fun HomeFeedSectionRow(
                     showMetadata = showCardMetadata,
                     showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                     onClick = { onItemSelected(item) },
+                    onLongClick = onItemLongClick?.let { { it(item) } },
                 )
             }
         }

@@ -20,6 +20,7 @@ internal fun HomeItemCard(
     showMetadata: Boolean,
     showYear: Boolean,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
 ) {
     MobilePosterCard(
         title = item.title,
@@ -47,6 +48,7 @@ internal fun HomeItemCard(
                 }
             }
         },
+        onLongClick = onLongClick,
         onClick = onClick,
     )
 }

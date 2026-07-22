@@ -18,6 +18,10 @@ class HomeState {
         val bloggerVideos: List<BloggerVideo> = emptyList(),
         val isBloggerVideosLoading: Boolean = true,
         val bloggerVideosError: String? = null,
+        /** Тайтлы, скрытые из блока рекомендаций в текущей сессии. */
+        val hiddenRecommendationIds: Set<Int> = emptySet(),
+        /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
+        val pendingRecommendationIds: Set<Int> = emptySet(),
     ) : UiState
 
     /** Пользовательские действия на главном экране. */
@@ -57,10 +61,19 @@ class HomeState {
 
         /** Пользователь отказался от предложения поддержать проект. */
         data object SupportPromptDismissed : Event
+
+        /** Пользователь попросил больше не рекомендовать тайтл. */
+        data class RecommendationHideRequested(val animeId: Int) : Event
+
+        /** Пользователь вернул скрытый тайтл в рекомендации. */
+        data class RecommendationRestoreRequested(val animeId: Int) : Event
     }
 
     sealed interface Effect : UiEffect {
         data class ShowToast(val message: String) : Effect
         data class OpenUri(val uri: String) : Effect
+
+        /** Тайтл скрыт из рекомендаций, действие можно откатить. */
+        data class ShowRecommendationUndo(val message: String, val animeId: Int) : Effect
     }
 }

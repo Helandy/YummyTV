@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.presenter.components.MarqueeTitleText
@@ -45,6 +47,9 @@ internal fun RelatedTitleCard(
     relation: String? = null,
     meta: String? = null,
     onFocused: () -> Unit = {},
+    posterHeight: Dp = DefaultPosterHeight,
+    /** Слот под текстом карточки — например кнопки голосования. Живёт внутри Card. */
+    footer: @Composable ColumnScope.() -> Unit = {},
 ) {
     val shape = RoundedCornerShape(8.dp)
     val posterShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
@@ -68,7 +73,7 @@ internal fun RelatedTitleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(258.dp)
+                    .height(posterHeight)
                     .background(MaterialTheme.colorScheme.surfaceVariant, posterShape),
             ) {
                 AsyncImage(
@@ -162,7 +167,10 @@ internal fun RelatedTitleCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f),
                     )
                 }
+                footer()
             }
         }
     }
 }
+
+private val DefaultPosterHeight = 258.dp

@@ -2,15 +2,25 @@ package su.afk.yummy.tv.feature.home.mobile
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -21,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.presenter.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.presenter.mobile.MobileBottomBarDefaults
@@ -36,6 +47,7 @@ import su.afk.yummy.tv.feature.home.mobile.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.mobile.view.HomeQuickActionsSection
+import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
@@ -77,6 +89,11 @@ fun HomeMobileScreen(
     onEvent: (HomeState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarScope = rememberCoroutineScope()
+    val undoLabel = stringResource(R.string.home_mobile_recommendation_undo)
+    var recommendationActionItem by remember { mutableStateOf<HomeFeedItem?>(null) }
+
     LaunchedEffect(Unit) {
         onEvent(HomeState.Event.ScreenResumed)
     }
@@ -89,6 +106,18 @@ fun HomeMobileScreen(
                 }
 
                 is HomeState.Effect.OpenUri -> context.openExternalUri(event.uri)
+
+                is HomeState.Effect.ShowRecommendationUndo -> {
+                    snackbarScope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = event.message,
+                            actionLabel = undoLabel,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            onEvent(HomeState.Event.RecommendationRestoreRequested(event.animeId))
+                        }
+                    }
+                }
             }
         }
     }
@@ -119,121 +148,152 @@ fun HomeMobileScreen(
         }
     }
 
-    BaseScreen(
-        isScroll = false,
-        isLoading = state.isLoading || state.feed == null || !state.isContinueWatchingLoaded,
-        error = state.error?.let { ErrorItem(title = it, message = it) },
-        onRetry = { onEvent(HomeState.Event.RetrySelected) },
-        errorContent = state.error?.let { message ->
-            { _, retry ->
-                MobileMessage(
-                    title = message,
-                    actionLabel = stringResource(R.string.home_mobile_retry),
-                    onAction = retry,
-                )
-            }
-        },
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = 12.dp,
-                bottom = MobileBottomBarDefaults.ContentBottomPadding +
-                        MobileBottomBarDefaults.ExtraContentBottomPadding,
-            ),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+    Box(modifier = Modifier.fillMaxSize()) {
+        BaseScreen(
+            isScroll = false,
+            isLoading = state.isLoading || state.feed == null || !state.isContinueWatchingLoaded,
+            error = state.error?.let { ErrorItem(title = it, message = it) },
+            onRetry = { onEvent(HomeState.Event.RetrySelected) },
+            errorContent = state.error?.let { message ->
+                { _, retry ->
+                    MobileMessage(
+                        title = message,
+                        actionLabel = stringResource(R.string.home_mobile_retry),
+                        onAction = retry,
+                    )
+                }
+            },
         ) {
-            val feed = state.feed
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = 12.dp,
+                    bottom = MobileBottomBarDefaults.ContentBottomPadding +
+                            MobileBottomBarDefaults.ExtraContentBottomPadding,
+                ),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                val feed = state.feed
 
-            if (mainActions != null) {
-                item(key = "search") {
-                    HomeSearchEntry(
-                        text = stringResource(R.string.home_mobile_search_hint),
-                        onClick = mainActions.onSearchClick,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
+                if (mainActions != null) {
+                    item(key = "search") {
+                        HomeSearchEntry(
+                            text = stringResource(R.string.home_mobile_search_hint),
+                            onClick = mainActions.onSearchClick,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
                 }
-            }
 
-            if (feed != null && feed.heroItems.isNotEmpty()) {
-                item(key = "hero") {
-                    HomeHeroCarousel(
-                        items = feed.heroItems,
-                        onItemSelected = onItemSelected,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                }
-            }
-
-            if (state.continueWatching.isNotEmpty()) {
-                item(key = "continue_watching") {
-                    ContinueWatchingSection(
-                        entries = state.continueWatching,
-                        onEntrySelected = { onEvent(HomeState.Event.ContinueWatchingSelected(it)) },
-                    )
-                }
-            }
-
-            feed?.sections
-                .orEmpty()
-                // Расписание на мобилке живёт в блоке быстрых действий, отдельным рядом
-                // его не показываем. Остальные секции, включая рекомендации, — рядами.
-                .filter { it.items.isNotEmpty() && it.type != HomeFeedSectionType.SCHEDULE }
-                .forEach { section ->
-                    item(key = "section_${section.type.name}") {
-                        val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
-                        HomeFeedSectionRow(
-                            section = section,
+                if (feed != null && feed.heroItems.isNotEmpty()) {
+                    item(key = "hero") {
+                        HomeHeroCarousel(
+                            items = feed.heroItems,
                             onItemSelected = onItemSelected,
-                            actionLabel = if (isCollections) {
-                                stringResource(R.string.home_mobile_all)
-                            } else {
-                                null
-                            },
-                            onActionClick = if (isCollections) {
-                                { onEvent(HomeState.Event.CollectionsCatalogSelected) }
-                            } else {
-                                null
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
+                }
+
+                if (state.continueWatching.isNotEmpty()) {
+                    item(key = "continue_watching") {
+                        ContinueWatchingSection(
+                            entries = state.continueWatching,
+                            onEntrySelected = {
+                                onEvent(HomeState.Event.ContinueWatchingSelected(it))
                             },
                         )
                     }
                 }
 
-            if (state.bloggerVideos.isNotEmpty()) {
-                item(key = "blogger_videos") {
-                    MobileHomeBloggerVideosSection(
-                        title = stringResource(R.string.home_mobile_blogger_videos),
-                        allLabel = stringResource(R.string.home_mobile_all),
-                        videos = state.bloggerVideos,
-                        onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
-                        onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                feed?.sections
+                    .orEmpty()
+                    // Расписание на мобилке живёт в блоке быстрых действий, отдельным рядом
+                    // его не показываем. Остальные секции, включая рекомендации, — рядами.
+                    .filter { it.items.isNotEmpty() && it.type != HomeFeedSectionType.SCHEDULE }
+                    .forEach { section ->
+                        item(key = "section_${section.type.name}") {
+                            val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
+                            val isRecommendations =
+                                section.type == HomeFeedSectionType.RECOMMENDATIONS
+                            HomeFeedSectionRow(
+                                section = section,
+                                onItemSelected = onItemSelected,
+                                actionLabel = if (isCollections) {
+                                    stringResource(R.string.home_mobile_all)
+                                } else {
+                                    null
+                                },
+                                onActionClick = if (isCollections) {
+                                    { onEvent(HomeState.Event.CollectionsCatalogSelected) }
+                                } else {
+                                    null
+                                },
+                                // Управлять видимостью можно только рекомендациями.
+                                onItemLongClick = if (isRecommendations) {
+                                    { item -> recommendationActionItem = item }
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    }
+
+                if (state.bloggerVideos.isNotEmpty()) {
+                    item(key = "blogger_videos") {
+                        MobileHomeBloggerVideosSection(
+                            title = stringResource(R.string.home_mobile_blogger_videos),
+                            allLabel = stringResource(R.string.home_mobile_all),
+                            videos = state.bloggerVideos,
+                            onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
+                            onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                        )
+                    }
+                }
+
+                state.bloggerVideosError?.let { message ->
+                    item(key = "blogger_videos_error") {
+                        MobileMessage(
+                            title = message,
+                            actionLabel = stringResource(R.string.home_mobile_retry),
+                            onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
+                        )
+                    }
+                }
+
+                item(key = "quick_actions") {
+                    HomeQuickActionsSection(
+                        title = stringResource(R.string.home_mobile_more),
+                        scheduleTitle = stringResource(R.string.home_mobile_schedule),
+                        reviewsTitle = stringResource(R.string.home_mobile_reviews),
+                        showSchedule = feed?.sections?.any {
+                            it.type == HomeFeedSectionType.SCHEDULE
+                        } == true,
+                        onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
+                        onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
                     )
                 }
-            }
-
-            state.bloggerVideosError?.let { message ->
-                item(key = "blogger_videos_error") {
-                    MobileMessage(
-                        title = message,
-                        actionLabel = stringResource(R.string.home_mobile_retry),
-                        onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
-                    )
-                }
-            }
-
-            item(key = "quick_actions") {
-                HomeQuickActionsSection(
-                    title = stringResource(R.string.home_mobile_more),
-                    scheduleTitle = stringResource(R.string.home_mobile_schedule),
-                    reviewsTitle = stringResource(R.string.home_mobile_reviews),
-                    showSchedule = feed?.sections?.any {
-                        it.type == HomeFeedSectionType.SCHEDULE
-                    } == true,
-                    onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
-                    onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
-                )
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = MobileBottomBarDefaults.ContentBottomPadding),
+        )
+    }
+
+    recommendationActionItem?.let { item ->
+        HomeRecommendationActionsSheet(
+            title = item.title,
+            onHide = {
+                recommendationActionItem = null
+                onEvent(HomeState.Event.RecommendationHideRequested(item.id))
+            },
+            onDismiss = { recommendationActionItem = null },
+        )
     }
 
     if (state.supportPromptVisible) {
