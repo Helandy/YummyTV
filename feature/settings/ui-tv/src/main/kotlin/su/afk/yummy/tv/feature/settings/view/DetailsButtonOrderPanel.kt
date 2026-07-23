@@ -12,7 +12,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.preferences.settings.DetailsButtonAction
-import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
+import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
 
 @Composable
@@ -30,7 +30,7 @@ internal fun DetailsButtonOrderPanel(
             onReset = onReset,
             modifier = Modifier
                 .focusRequester(contentFocusRequester)
-                .restoreTabFocusOnUp(upFocusRequester),
+                .restoreCategoryFocusOnLeft(upFocusRequester),
         )
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 8.dp),

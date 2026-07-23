@@ -251,11 +251,15 @@ internal fun YaniContentLanguage.label(): String = stringResource(
     },
 )
 
-internal fun Modifier.restoreTabFocusOnUp(
+/**
+ * Возврат фокуса из панели контента к списку категорий слева (D-pad влево).
+ * Навешивается на первый пункт панели; между строками контента вверх/вниз работает штатно.
+ */
+internal fun Modifier.restoreCategoryFocusOnLeft(
     focusRequester: FocusRequester,
     enabled: Boolean = true,
 ): Modifier = if (enabled) {
-    focusProperties { up = focusRequester }
+    focusProperties { left = focusRequester }
 } else {
     this
 }

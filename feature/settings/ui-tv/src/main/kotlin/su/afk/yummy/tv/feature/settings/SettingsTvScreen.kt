@@ -2,11 +2,12 @@ package su.afk.yummy.tv.feature.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,8 +31,8 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.utils.restartApplication
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.utils.label
+import su.afk.yummy.tv.feature.settings.view.SettingsTvCategoryList
 import su.afk.yummy.tv.feature.settings.view.SettingsTvPanelHost
-import su.afk.yummy.tv.feature.settings.view.SettingsTvTabRow
 import su.afk.yummy.tv.feature.settings.view.TvInterfaceModeConfirmationDialog
 
 @Preview(
@@ -83,21 +84,24 @@ fun SettingsTvScreen(
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
     }
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = TvScreenPadding.Horizontal, vertical = TvScreenPadding.Vertical),
     ) {
-        SettingsTvTabRow(
+        SettingsTvCategoryList(
             selectedTab = selectedTab,
             tabFocusRequesters = tabFocusRequesters,
             contentFocusRequesters = contentFocusRequesters,
             mainMenuFocusRequester = mainMenuFocusRequester,
             onSelectedTabChanged = { selectedTab = it },
+            modifier = Modifier
+                .width(280.dp)
+                .fillMaxHeight(),
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.width(32.dp))
 
         SettingsTvPanelHost(
             state = state,
@@ -110,7 +114,9 @@ fun SettingsTvScreen(
                 }
             },
             onEvent = onEvent,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
         )
     }
 

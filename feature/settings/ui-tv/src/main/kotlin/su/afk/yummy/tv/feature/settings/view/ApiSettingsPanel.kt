@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.R
-import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
+import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 
 @Composable
 internal fun ApiSettingsPanel(
@@ -58,7 +58,7 @@ internal fun ApiSettingsPanel(
                 )
                 .then(
                     if (restoreUpToTab) {
-                        Modifier.restoreTabFocusOnUp(upFocusRequester)
+                        Modifier.restoreCategoryFocusOnLeft(upFocusRequester)
                     } else {
                         Modifier
                     },

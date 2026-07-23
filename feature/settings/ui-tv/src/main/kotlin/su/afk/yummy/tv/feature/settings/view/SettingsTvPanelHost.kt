@@ -19,8 +19,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,8 +46,9 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.label
-import su.afk.yummy.tv.feature.settings.utils.restoreTabFocusOnUp
+import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun SettingsTvPanelHost(
     state: SettingsState.State,
@@ -58,8 +62,19 @@ internal fun SettingsTvPanelHost(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            // Выход фокуса влево из панели всегда ведёт к текущей категории слева
+            // (иначе пространственный поиск с нижних строк уводит в соседнюю категорию).
+            .focusProperties {
+                exit = { direction ->
+                    if (direction == FocusDirection.Left) {
+                        tabFocusRequesters.getValue(selectedTab)
+                    } else {
+                        FocusRequester.Default
+                    }
+                }
+            }
             .focusGroup(),
-        contentAlignment = Alignment.TopCenter,
+        contentAlignment = Alignment.TopStart,
     ) {
         AnimatedContent(
             targetState = selectedTab,
@@ -91,7 +106,7 @@ internal fun SettingsTvPanelHost(
                                         Modifier
                                     },
                                 )
-                                .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                         )
                         if (index < AppInterfaceMode.entries.lastIndex) {
                             SettingsDivider()
@@ -112,7 +127,7 @@ internal fun SettingsTvPanelHost(
                                         Modifier
                                     },
                                 )
-                                .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                         )
                         if (index < AppTheme.entries.lastIndex) {
                             SettingsDivider()
@@ -141,7 +156,7 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             if (index < PosterCardSize.entries.lastIndex) {
                                 SettingsDivider()
@@ -171,13 +186,15 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             if (index < PosterQuality.entries.lastIndex) {
                                 SettingsDivider()
                             }
                         }
-                        SettingsDivider()
+                    }
+
+                    SettingsTab.TOP_TITLE_YEAR -> {
                         ToggleRow(
                             label = stringResource(R.string.settings_show_top_title_year),
                             hint = if (state.showTopTitleYear) {
@@ -187,6 +204,9 @@ internal fun SettingsTvPanelHost(
                             },
                             enabled = state.showTopTitleYear,
                             onClick = { onEvent(SettingsState.Event.ShowTopTitleYearToggled) },
+                            modifier = Modifier
+                                .focusRequester(tabContentFocusRequester)
+                                .restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
                     }
 
@@ -216,7 +236,7 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             if (index < LibraryContinueWatchingCardSize.entries.lastIndex) {
                                 SettingsDivider()
@@ -247,7 +267,7 @@ internal fun SettingsTvPanelHost(
                         onReset = { onEvent(SettingsState.Event.DetailsButtonOrderReset) },
                     )
 
-                    SettingsTab.PLAYER -> {
+                    SettingsTab.PLAYER_QUALITY -> {
                         SettingsSectionTitle(text = stringResource(R.string.settings_preferred_video_quality_title))
                         PreferredVideoQuality.entries.forEachIndexed { index, quality ->
                             QualityRow(
@@ -269,10 +289,15 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
-                            SettingsDivider()
+                            if (index < PreferredVideoQuality.entries.lastIndex) {
+                                SettingsDivider()
+                            }
                         }
+                    }
+
+                    SettingsTab.PLAYER -> {
                         SettingsSectionTitle(text = stringResource(R.string.settings_player_playback_title))
                         ToggleRow(
                             label = stringResource(R.string.settings_auto_skip_label),
@@ -283,6 +308,9 @@ internal fun SettingsTvPanelHost(
                             },
                             enabled = state.autoSkipOpeningsEndings,
                             onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
+                            modifier = Modifier
+                                .focusRequester(tabContentFocusRequester)
+                                .restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
                         SettingsDivider()
                         ToggleRow(
@@ -338,10 +366,9 @@ internal fun SettingsTvPanelHost(
                                 onEvent(SettingsState.Event.TvPlayerVolumeKeysToggled)
                             },
                         )
-                        SettingsDivider()
-                        SettingsSectionTitle(
-                            text = stringResource(R.string.settings_preferred_player_title),
-                        )
+                    }
+
+                    SettingsTab.PLAYER_SOURCE -> {
                         PreferredPlayer.entries.forEachIndexed { index, player ->
                             QualityRow(
                                 label = player.label(),
@@ -354,6 +381,15 @@ internal fun SettingsTvPanelHost(
                                         )
                                     )
                                 },
+                                modifier = Modifier
+                                    .then(
+                                        if (index == 0) {
+                                            Modifier.focusRequester(tabContentFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             if (index < PreferredPlayer.entries.lastIndex) {
                                 SettingsDivider()
@@ -383,7 +419,7 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             if (index < PreviewCacheSize.entries.lastIndex) {
                                 SettingsDivider()
@@ -407,7 +443,7 @@ internal fun SettingsTvPanelHost(
                                             Modifier
                                         },
                                     )
-                                    .restoreTabFocusOnUp(tabFocusRequester, index == 0),
+                                    .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                             )
                             SettingsDivider()
                         }
@@ -444,7 +480,7 @@ internal fun SettingsTvPanelHost(
                             },
                             modifier = Modifier
                                 .focusRequester(tabContentFocusRequester)
-                                .restoreTabFocusOnUp(tabFocusRequester),
+                                .restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
                         SettingsDivider()
                         ToggleRow(
@@ -466,7 +502,7 @@ internal fun SettingsTvPanelHost(
                         AboutRow(
                             label = stringResource(R.string.settings_version_label),
                             hint = BuildConfig.VERSION_NAME,
-                            modifier = Modifier.restoreTabFocusOnUp(tabFocusRequester),
+                            modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
                         SettingsDivider()
                         AboutRow(
@@ -474,7 +510,7 @@ internal fun SettingsTvPanelHost(
                             hint = repositoryUrl,
                             modifier = Modifier
                                 .focusRequester(tabContentFocusRequester)
-                                .restoreTabFocusOnUp(tabFocusRequester),
+                                .restoreCategoryFocusOnLeft(tabFocusRequester),
                             onClick = { context.openExternalUri(repositoryUrl) },
                         )
                     }

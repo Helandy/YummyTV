@@ -8,6 +8,9 @@
     <string name="settings_tab_theme">Тема</string>
     <string name="settings_tab_details">Деталка</string>
     <string name="settings_tab_player">Плеер</string>
+    <string name="settings_tab_player_quality">Качество видео</string>
+    <string name="settings_tab_player_source">Предпочитаемый плеер</string>
+    <string name="settings_tab_top_title_year">Год у тайтлов</string>
     <string name="settings_tab_account">Аккаунт</string>
     <string name="settings_account_sign_in_short">Войти</string>
     <string name="settings_tab_cache">Кэш</string>

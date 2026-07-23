@@ -1,12 +1,15 @@
 package su.afk.yummy.tv.feature.settings.view
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -18,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
@@ -28,41 +32,58 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
+/** Пункт левого списка категорий настроек. Активирование (вправо/Enter) уводит фокус в панель справа. */
 @Composable
-internal fun SettingsTabItem(
+internal fun SettingsCategoryItem(
     label: String,
     selected: Boolean,
-    modifier: Modifier = Modifier,
     contentFocusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+    upFocusRequester: FocusRequester? = null,
+    downFocusRequester: FocusRequester? = null,
     leftFocusRequester: FocusRequester? = null,
-    rightFocusRequester: FocusRequester? = null,
     onSelected: () -> Unit,
     onActivated: () -> Unit = onSelected,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
+    val colors = MaterialTheme.colorScheme
 
-    val contentColor = when {
-        focused -> MaterialTheme.colorScheme.primary
-        selected -> MaterialTheme.colorScheme.onBackground
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val indicatorColor = when {
-        focused -> MaterialTheme.colorScheme.primary
-        selected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+    val background by animateColorAsState(
+        targetValue = when {
+            focused -> colors.primary
+            selected -> colors.primary.copy(alpha = 0.15f)
+            else -> Color.Transparent
+        },
+        animationSpec = tween(150),
+        label = "settingsCategoryItemBackground",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = when {
+            focused -> colors.onPrimary
+            selected -> colors.primary
+            else -> colors.onSurfaceVariant
+        },
+        animationSpec = tween(150),
+        label = "settingsCategoryItemContent",
+    )
+    val accentColor = when {
+        focused -> colors.onPrimary
+        selected -> colors.primary
         else -> Color.Transparent
     }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Row(
         modifier = modifier
+            .fillMaxWidth()
             .focusProperties {
+                upFocusRequester?.let { up = it }
+                downFocusRequester?.let { down = it }
                 leftFocusRequester?.let { left = it }
-                rightFocusRequester?.let { right = it }
-                down = contentFocusRequester
+                right = contentFocusRequester
             }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
@@ -74,14 +95,7 @@ internal fun SettingsTabItem(
                         } ?: false
                     }
 
-                    Key.DirectionRight -> {
-                        rightFocusRequester?.let {
-                            runCatching { it.requestFocus() }
-                        }
-                        true
-                    }
-
-                    Key.DirectionDown, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
+                    Key.DirectionRight, Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
                         onActivated()
                         true
                     }
@@ -90,25 +104,28 @@ internal fun SettingsTabItem(
                 }
             }
             .onFocusChanged { if (it.isFocused) onSelected() }
-            .background(
-                color = if (focused) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
-                shape = RoundedCornerShape(8.dp),
-            )
+            .clip(RoundedCornerShape(10.dp))
+            .background(background)
             .clickable(interactionSource = interactionSource, indication = null) { onActivated() }
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = contentColor,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
         Box(
             modifier = Modifier
-                .width(24.dp)
-                .height(2.dp)
-                .background(color = indicatorColor, shape = RoundedCornerShape(1.dp)),
+                .width(3.dp)
+                .height(20.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(accentColor),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
         )
     }
 }

@@ -8,6 +8,9 @@
     <string name="settings_tab_theme">Theme</string>
     <string name="settings_tab_details">Details</string>
     <string name="settings_tab_player">Player</string>
+    <string name="settings_tab_player_quality">Video quality</string>
+    <string name="settings_tab_player_source">Preferred player</string>
+    <string name="settings_tab_top_title_year">Title year</string>
     <string name="settings_tab_account">Account</string>
     <string name="settings_account_sign_in_short">Sign in</string>
     <string name="settings_tab_cache">Cache</string>
