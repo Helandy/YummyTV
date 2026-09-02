@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="schedule_mobile_title">Розклад</string>
+    <string name="schedule_mobile_retry">Повторити</string>
+    <string name="schedule_mobile_episode_aired">%1$d серія вже вийшла</string>
+    <string name="schedule_mobile_episode_future">%1$d серія вийде через %2$s</string>
+    <string name="schedule_mobile_day_one">день</string>
+    <string name="schedule_mobile_day_few">дні</string>
+    <string name="schedule_mobile_day_many">днів</string>
+    <string name="schedule_mobile_hour_one">година</string>
+    <string name="schedule_mobile_hour_few">години</string>
+    <string name="schedule_mobile_hour_many">годин</string>
+    <string name="schedule_mobile_minute_one">хвилина</string>
+    <string name="schedule_mobile_minute_few">хвилини</string>
+    <string name="schedule_mobile_minute_many">хвилин</string>
+    <string name="schedule_mobile_less_than_minute">менше хвилини</string>
+</resources>

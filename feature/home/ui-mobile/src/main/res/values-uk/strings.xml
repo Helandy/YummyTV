@@ -1,0 +1,21 @@
+<resources>
+    <string name="home_mobile_schedule">Розклад</string>
+    <string name="home_mobile_reviews">Рецензії</string>
+    <string name="home_mobile_more">Ще</string>
+    <string name="home_mobile_blogger_videos">Від блогерів</string>
+    <string name="home_mobile_title">Головна</string>
+    <string name="home_mobile_search_hint">Знайти аніме</string>
+    <string name="home_mobile_retry">Повторити</string>
+    <string name="home_mobile_all">Усі</string>
+    <string name="home_mobile_recommendation_hide">Не рекомендувати це аніме</string>
+    <string name="home_mobile_recommendation_cancel">Скасувати</string>
+    <string name="home_mobile_recommendation_undo">Повернути</string>
+    <string name="home_mobile_season_title">Аніме сезону</string>
+    <string name="home_mobile_continue_watching">Продовжити перегляд</string>
+    <string name="home_mobile_episode_unknown">Серія</string>
+    <string name="home_mobile_episode">Серія %1$s</string>
+    <string name="home_support_prompt_title">Подобається застосунок? Підтримай автора - постав оцінку репозиторію на GitHub</string>
+    <string name="home_support_prompt_message">Це безкоштовно і займе менше хвилини</string>
+    <string name="home_support_prompt_ok">Гаразд</string>
+    <string name="home_announcement_ok">ОК</string>
+</resources>

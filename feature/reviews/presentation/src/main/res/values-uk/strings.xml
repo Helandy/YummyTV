@@ -1,0 +1,5 @@
+<resources>
+    <string name="reviews_auth_required">Увійдіть, щоб проголосувати</string>
+    <string name="reviews_vote_error">Не вдалося зберегти голос</string>
+    <string name="reviews_delete_error">Не вдалося видалити відгук</string>
+</resources>

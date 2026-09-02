@@ -1,0 +1,11 @@
+<resources>
+    <string name="comments_load_error">Не вдалося завантажити коментарі</string>
+    <string name="comments_action_error">Не вдалося виконати дію</string>
+    <string name="comments_auth_required">Увійдіть, щоб писати коментарі</string>
+    <string name="comments_permission_denied">Ви не можете змінити цей коментар</string>
+    <string name="comments_empty_text">Спочатку напишіть коментар</string>
+    <string name="comments_report_sent">Скаргу надіслано</string>
+    <string name="comments_delete_error">Не вдалося видалити коментар</string>
+    <string name="comments_report_error">Не вдалося надіслати скаргу</string>
+    <string name="comments_vote_error">Не вдалося оцінити коментар</string>
+</resources>

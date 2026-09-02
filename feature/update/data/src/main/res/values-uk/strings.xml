@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_install_unknown_sources_required">Дозвольте встановлення застосунків із цього джерела та запустіть оновлення ще раз</string>
+    <string name="update_install_confirmation_error">Не вдалося відкрити підтвердження встановлення</string>
+    <string name="update_install_error_aborted">Встановлення скасовано</string>
+    <string name="update_install_error_blocked">Встановлення заблоковано системою</string>
+    <string name="update_install_error_conflict">Конфлікт із уже встановленим пакетом</string>
+    <string name="update_install_error_incompatible">APK несумісний із цим пристроєм</string>
+    <string name="update_install_error_invalid">Некоректний APK-файл</string>
+    <string name="update_install_error_storage">Недостатньо місця для встановлення</string>
+    <string name="update_install_error_unknown">Не вдалося встановити оновлення</string>
+</resources>

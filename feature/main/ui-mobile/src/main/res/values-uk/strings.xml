@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_mobile_tab_profile">Профіль</string>
+    <string name="main_mobile_tab_home">Головна</string>
+    <string name="main_mobile_tab_news">Новини</string>
+    <string name="main_mobile_tab_top">Топ</string>
+    <string name="main_mobile_tab_library">Бібліотека</string>
+</resources>

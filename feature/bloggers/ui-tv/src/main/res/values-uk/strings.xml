@@ -1,0 +1,28 @@
+<resources>
+    <string name="blogger_video_comments">Коментарі (%1$d)</string>
+    <string name="blogger_details_title">Блогер</string>
+    <string name="blogger_details_loading">Завантажуємо сторінку блогера…</string>
+    <string name="blogger_subscribers">Підписників: %1$d</string>
+    <string name="blogger_videos_count">Відео: %1$d</string>
+    <string name="blogger_subscribers_tv">Підписників: %1$s</string>
+    <string name="blogger_videos_count_tv">Відео: %1$s</string>
+    <string name="blogger_subscribe">Підписатися</string>
+    <string name="blogger_unsubscribe">Відписатися</string>
+    <string name="blogger_videos_section">Відео</string>
+    <string name="blogger_video_loading">Завантажуємо відео…</string>
+    <string name="blogger_video_watch">Дивитися</string>
+    <string name="blogger_video_spoiler">Містить спойлери</string>
+    <string name="blogger_video_views_tv">Переглядів: %1$s</string>
+    <string name="blogger_videos_retry">Повторити</string>
+    <string name="blogger_open_page">Сторінка блогера</string>
+    <string name="blogger_videos_title">Відео блогерів</string>
+    <string name="blogger_videos_anime_title">Відео блогерів про це аніме</string>
+    <string name="blogger_videos_loading">Завантажуємо відео блогерів…</string>
+    <string name="blogger_videos_error">Не вдалося завантажити відео блогерів</string>
+    <string name="blogger_videos_empty">Відео блогерів не знайдено</string>
+    <string name="blogger_videos_all">Усі</string>
+    <string name="blogger_videos_all_bloggers">Усі блогери</string>
+    <string name="blogger_videos_sort_new">Нові</string>
+    <string name="blogger_videos_sort_top">Популярні</string>
+    <string name="blogger_videos_sort_old">Старі</string>
+</resources>

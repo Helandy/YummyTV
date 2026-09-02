@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_available_title">Доступне оновлення</string>
+    <string name="update_required_title">Потрібне оновлення</string>
+    <string name="update_version">Вийшла нова версія %1$s</string>
+    <string name="update_required_message">Ваша версія більше не підтримується. Оновіть застосунок, щоб продовжити.</string>
+    <string name="update_changelog_title">Що нового:</string>
+    <string name="update_later">Не зараз</string>
+    <string name="update_install">Оновити</string>
+    <string name="update_auto_update_unsupported">Ваш пристрій не підтримує автооновлення. Встановіть нову версію вручну.</string>
+    <string name="update_manual_hint">Або ви можете завантажити APK-файл вручну з %1$s</string>
+    <string name="update_manual_open_releases">Відкрити GitHub Releases</string>
+    <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>
+    <string name="update_downloading">Завантаження оновлення...</string>
+    <string name="update_installing">Встановлення...</string>
+    <string name="update_retry">Повторити</string>
+    <string name="update_close">Закрити</string>
+    <string name="update_error_title">Помилка оновлення</string>
+    <plurals name="update_updates_count">
+        <item quantity="one">%1$d оновлення з часу вашої версії</item>
+        <item quantity="few">%1$d оновлення з часу вашої версії</item>
+        <item quantity="many">%1$d оновлень з часу вашої версії</item>
+        <item quantity="other">%1$d оновлення з часу вашої версії</item>
+    </plurals>
+</resources>

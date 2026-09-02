@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_blogger_videos_load_error">Не вдалося завантажити відео блогерів</string>
+    <string name="home_error_status_hint">Якщо помилка повторюється, перевірте статус сервісу: %1$s</string>
+    <string name="home_error_status_url">https://yummystatus.me/</string>
+    <string name="home_load_error">Не вдалося завантажити головну сторінку</string>
+    <string name="home_recommendation_auth_required">Увійдіть, щоб керувати рекомендаціями</string>
+    <string name="home_recommendation_error">Не вдалося оновити рекомендації</string>
+    <string name="home_recommendation_hidden">Більше не рекомендуватимемо це аніме</string>
+    <string name="home_remote_continue_progress_toast">Знайдено віддалений прогрес. Серія %1$s (%2$s)</string>
+</resources>

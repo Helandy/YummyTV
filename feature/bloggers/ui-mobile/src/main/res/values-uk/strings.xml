@@ -1,0 +1,37 @@
+<resources>
+    <string name="blogger_video_comments">Коментарі (%1$s)</string>
+    <string name="blogger_details_title">Блогер</string>
+    <string name="blogger_details_loading">Завантажуємо сторінку блогера…</string>
+    <string name="blogger_subscribers">Підписників: %1$d</string>
+    <string name="blogger_videos_count">Відео: %1$d</string>
+    <string name="blogger_subscribe">Підписатися</string>
+    <string name="blogger_unsubscribe">Відписатися</string>
+    <string name="blogger_videos_section">Відео</string>
+    <string name="blogger_video_details_title">Відео</string>
+    <string name="blogger_video_loading">Завантажуємо відео…</string>
+    <string name="blogger_video_watch">Дивитися</string>
+    <string name="blogger_video_spoiler">Містить спойлери</string>
+    <string name="blogger_video_spoiler_short">Спойлери</string>
+    <string name="blogger_video_views">Перегляди: %1$s</string>
+    <string name="blogger_video_reactions_title">Оцініть відео</string>
+    <string name="blogger_video_about">Про відео</string>
+    <string name="blogger_open_page">Сторінка блогера</string>
+    <string name="blogger_videos_title">Відео блогерів</string>
+    <string name="blogger_videos_anime_title">Відео про аніме</string>
+    <string name="blogger_videos_retry">Повторити</string>
+    <string name="blogger_videos_loading">Завантажуємо відео блогерів…</string>
+    <string name="blogger_videos_error">Не вдалося завантажити відео блогерів</string>
+    <string name="blogger_videos_empty">Відео блогерів не знайдено</string>
+    <string name="blogger_videos_all">Усі</string>
+    <string name="blogger_videos_all_bloggers">Усі блогери</string>
+    <string name="blogger_videos_sort_new">Нові</string>
+    <string name="blogger_videos_sort_top">Популярні</string>
+    <string name="blogger_videos_sort_old">Старі</string>
+    <string name="blogger_filters">Фільтри</string>
+    <string name="blogger_filters_count">Фільтри · %1$d</string>
+    <string name="blogger_filters_title">Фільтри відео</string>
+    <string name="blogger_filters_category">Категорія</string>
+    <string name="blogger_filters_blogger">Блогер</string>
+    <string name="blogger_filters_reset">Скинути</string>
+    <string name="blogger_filters_done">Готово</string>
+</resources>

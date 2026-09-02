@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="top_mobile_title">Топ</string>
+    <string name="top_mobile_retry">Повторити</string>
+    <string name="top_mobile_retry_error">Повторити: %1$s</string>
+    <string name="top_mobile_loading">Завантаження...</string>
+    <string name="top_mobile_load_more">Показати ще</string>
+    <string name="top_type_tv">Серіали</string>
+    <string name="top_type_movie">Фільми</string>
+    <string name="top_type_ona">ONA</string>
+</resources>

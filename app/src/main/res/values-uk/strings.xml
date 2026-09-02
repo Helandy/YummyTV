@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">YummyTV</string>
+    <string name="search_hint">Пошук аніме</string>
+    <string name="search_settings_description">Пошук по каталогу YummyTV</string>
+    <string name="interface_mode_title">Виберіть інтерфейс</string>
+    <string name="interface_mode_message">Виберіть інтерфейс, яким буде зручно керувати на цьому пристрої.</string>
+    <string name="interface_mode_tv">ТБ-інтерфейс</string>
+    <string name="interface_mode_tv_hint">Великі елементи та зручна навігація з пульта</string>
+    <string name="interface_mode_mobile">Мобільний інтерфейс</string>
+    <string name="interface_mode_mobile_hint">Компактне компонування для сенсорного керування</string>
+    <string name="episode_push_notification_channel">Нові серії</string>
+</resources>

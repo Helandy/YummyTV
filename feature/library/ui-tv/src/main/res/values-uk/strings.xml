@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_empty_continue_watching">Список поки порожній - саме час щось додати</string>
+    <string name="library_empty_list">Список поки порожній - саме час щось додати</string>
+    <string name="library_episode">Серія</string>
+    <string name="library_episode_number">Серія %1$s</string>
+    <string name="library_details">Деталі</string>
+    <string name="library_delete">Видалити</string>
+    <string name="library_remove_success">Видалено</string>
+    <string name="library_retry">Повторити</string>
+    <string name="library_tab_continue_watching">Продовжити</string>
+    <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_tab_history">Історія</string>
+    <string name="library_tab_history_short">Іс</string>
+    <string name="library_history_sign_in">Увійдіть, щоб побачити історію переглядів</string>
+    <string name="library_history_empty">Історія переглядів порожня</string>
+    <string name="library_history_error">Не вдалося завантажити історію переглядів</string>
+    <string name="library_history_episode">Серія %1$s</string>
+    <string name="library_tab_favorites">Улюблені</string>
+    <string name="library_tab_favorites_short">Ул</string>
+    <string name="library_tab_watching">Дивлюся</string>
+    <string name="library_tab_watching_short">Ди</string>
+    <string name="library_tab_planned">У планах</string>
+    <string name="library_tab_planned_short">Пл</string>
+    <string name="library_tab_completed">Переглянуто</string>
+    <string name="library_tab_completed_short">Пе</string>
+    <string name="library_tab_postponed">Відкладено</string>
+    <string name="library_tab_postponed_short">Ві</string>
+    <string name="library_tab_dropped">Кинуто</string>
+    <string name="library_tab_dropped_short">Ки</string>
+    <plurals name="library_release_in_days">
+        <item quantity="one">До виходу серії %1$d день</item>
+        <item quantity="few">До виходу серії %1$d дні</item>
+        <item quantity="many">До виходу серії %1$d днів</item>
+        <item quantity="other">До виходу серії %1$d дня</item>
+    </plurals>
+    <plurals name="library_release_in_hours">
+        <item quantity="one">До виходу серії %1$d година</item>
+        <item quantity="few">До виходу серії %1$d години</item>
+        <item quantity="many">До виходу серії %1$d годин</item>
+        <item quantity="other">До виходу серії %1$d години</item>
+    </plurals>
+    <plurals name="library_release_in_minutes">
+        <item quantity="one">До виходу серії %1$d хвилина</item>
+        <item quantity="few">До виходу серії %1$d хвилини</item>
+        <item quantity="many">До виходу серії %1$d хвилин</item>
+        <item quantity="other">До виходу серії %1$d хвилини</item>
+    </plurals>
+    <string name="library_season_winter">Зима</string>
+    <string name="library_season_spring">Весна</string>
+    <string name="library_season_summer">Літо</string>
+    <string name="library_season_fall">Осінь</string>
+    <string name="library_year_season">%1$s · %2$s</string>
+</resources>

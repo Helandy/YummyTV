@@ -1,0 +1,39 @@
+<resources>
+
+    <string name="err_title_generic">Помилка</string>
+    <string name="err_msg_generic">Щось пішло не так. Спробуй ще раз.</string>
+
+    <string name="err_title_no_connection">Немає з\'єднання</string>
+    <string name="err_msg_no_connection">Перевір інтернет і спробуй знову.</string>
+
+    <string name="err_title_timeout">Занадто довго відповідає</string>
+    <string name="err_msg_timeout">Схоже, сервер гальмує. Спробуй ще раз.</string>
+
+    <string name="err_title_unauthorized">Не авторизовано</string>
+    <string name="err_msg_unauthorized">Потрібно увійти знову.</string>
+
+    <string name="err_title_forbidden">Доступ заборонено</string>
+    <string name="err_msg_forbidden">У тебе немає прав на цю дію.</string>
+
+    <string name="err_title_not_found">Не знайдено</string>
+    <string name="err_msg_not_found">Ресурс не знайдено.</string>
+
+    <string name="err_title_too_many_requests">Забагато запитів</string>
+    <string name="err_msg_too_many_requests">Сервіс обмежив частоту запитів. Зачекай трохи і повтори.</string>
+
+    <string name="err_title_server_error">Помилка сервера</string>
+    <string name="err_msg_server_error">На сервері сталася помилка. Спробуй пізніше.</string>
+
+    <string name="err_title_bad_gateway_502">Поганий шлюз (502)</string>
+    <string name="err_msg_bad_gateway_502">Сервер зараз повертає 502. Спробуй пізніше.</string>
+
+    <string name="err_title_service_unavailable_503">Сервіс недоступний (503)</string>
+    <string name="err_msg_service_unavailable_503">Сервіс тимчасово недоступний. Спробуй пізніше.
+    </string>
+
+    <string name="err_title_gateway_timeout_504">Шлюз не відповів (504)</string>
+    <string name="err_msg_gateway_timeout_504">Сервер не відповів вчасно. Спробуй пізніше.</string>
+
+    <string name="err_title_http_generic">HTTP помилка (%1$d)</string>
+    <string name="err_msg_http_generic">Помилка запиту. Спробуй ще раз.</string>
+</resources>

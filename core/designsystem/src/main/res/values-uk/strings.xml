@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Назад</string>
+    <string name="retry">Повторити</string>
+    <string name="empty_screen">Поки нічого немає</string>
+    <string name="notification_permission_explanation">Щоб бачити прогрес завантаження, потрібно дозволити показ сповіщень.</string>
+    <string name="notification_permission_decline">Ні, мені байдуже</string>
+    <string name="notification_permission_enable">Так, давай увімкнемо</string>
+    <string name="notification_permission_settings_reminder">Ну якщо що, ви можете увімкнути сповіщення в налаштуваннях пізніше.</string>
+    <string name="notification_permission_changed_mind">Я передумав, давай зараз увімкнемо</string>
+    <string name="notification_permission_ok">Ок</string>
+    <string name="error_title_fallback">Помилка</string>
+    <string name="copy">Скопіювати</string>
+    <string name="details">Деталі</string>
+    <string name="hide_details">Приховати деталі</string>
+    <string name="error_http_code">HTTP: %1$s</string>
+    <string name="error_method">Метод: %1$s</string>
+    <string name="error_url">URL: %1$s</string>
+    <string name="error_request_id">Request ID: %1$s</string>
+    <string name="error_body">Тіло:\n%1$s</string>
+</resources>

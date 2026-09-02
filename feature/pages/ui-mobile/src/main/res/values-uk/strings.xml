@@ -1,0 +1,15 @@
+<resources>
+    <string name="site_pages_title">Сторінки сайту</string>
+    <string name="site_page_faq">FAQ сайту</string>
+    <string name="site_page_about">Про сайт</string>
+    <string name="site_page_rules">Правила сайту</string>
+    <string name="site_page_review_rules">Правила рецензій</string>
+    <string name="site_page_collections_rules">Правила колекцій</string>
+    <string name="site_page_post_rules">Правила публікацій</string>
+    <string name="site_page_edit_rules">Правила правок</string>
+    <string name="site_page_privacy">Конфіденційність</string>
+    <string name="site_page_copyright">Авторські права</string>
+    <string name="site_page_help">Хочу допомогти</string>
+    <string name="site_page_fallback">Сторінка сайту тимчасово недоступна. Сервер не повернув читабельний текст, тому застосунок показує локальне повідомлення, а не застарілі чи вигадані правила.</string>
+    <string name="site_page_retry">Повторити</string>
+</resources>

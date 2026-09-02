@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_download_notification_channel">Завантаження відео</string>
+    <string name="video_download_notification_title">YummyTV</string>
+    <string name="video_download_notification_progress">Серія %1$s • %2$d%%</string>
+    <string name="video_download_notification_paused">Серія %1$s • пауза на %2$d%%</string>
+    <string name="video_download_notification_pause">Пауза</string>
+    <string name="video_download_notification_resume">Продовжити</string>
+    <string name="video_download_worker_stopped">Завантаження зупинилося. Натисніть, щоб перезапустити.</string>
+    <string name="video_export_notification_channel">Експорт відео</string>
+    <string name="video_export_notification_title">Експорт серії %1$s</string>
+    <string name="video_export_notification_progress">Підготовка MP4 • %1$d%%</string>
+    <string name="video_export_error_no_space">Недостатньо внутрішньої пам\'яті для підготовки MP4.</string>
+    <string name="video_export_error_create_file">Не вдалося створити файл у вибраній папці.</string>
+    <string name="video_export_error_create_directory">Не вдалося створити папку тайтла у вибраній папці.</string>
+    <string name="video_export_error_open_file">Вибраний накопичувач недоступний або захищений від запису.</string>
+    <string name="video_export_error_unknown">Не вдалося експортувати серію. Підключіть накопичувач і повторіть спробу.</string>
+    <string name="video_export_error_directory_read_only">У вибраній папці не можна створювати файли.</string>
+    <string name="video_export_error_directory_unavailable">Немає доступу до вибраної папки. Виберіть її знову в налаштуваннях.</string>
+    <string name="video_export_worker_stopped">Експорт MP4 зупинився. Підключіть накопичувач і повторіть спробу.</string>
+    <string name="video_export_selected_directory">Вибрана папка</string>
+</resources>

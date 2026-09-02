@@ -1,0 +1,26 @@
+<resources>
+    <string name="review_comments">Коментарі (%1$s)</string>
+    <string name="reviews_title">Рецензії</string>
+    <string name="reviews_new">Нові</string>
+    <string name="reviews_old">Старі</string>
+    <string name="reviews_top">Найкращі</string>
+    <string name="reviews_empty">Рецензій поки немає</string>
+    <string name="reviews_error">Не вдалося завантажити рецензії</string>
+    <string name="review_like">Подобається</string>
+    <string name="review_dislike">Не подобається</string>
+    <string name="review_views">Перегляди: %1$s</string>
+    <string name="review_count_thousands">%1$sтис.</string>
+    <string name="review_count_millions">%1$sмлн</string>
+    <string name="review_details_title">Рецензія</string>
+    <string name="review_anime_label">Тайтл</string>
+    <string name="review_anime_open">Перейти до тайтлу</string>
+    <string name="review_rating_title">Оцінки</string>
+    <string name="review_reactions_title">Рецензія була корисною?</string>
+    <string name="review_waiting">Очікує модерації</string>
+    <string name="review_declined">Відхилено</string>
+    <string name="review_approved">Опубліковано</string>
+    <string name="review_delete">Видалити</string>
+    <string name="review_delete_confirm">Видалити цей відгук?</string>
+    <string name="review_cancel">Скасувати</string>
+    <string name="review_retry">Повторити</string>
+</resources>

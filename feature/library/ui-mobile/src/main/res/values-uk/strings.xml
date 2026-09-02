@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_mobile_tab_history">Історія</string>
+    <string name="library_mobile_history_sign_in">Увійдіть, щоб побачити історію переглядів</string>
+    <string name="library_mobile_history_empty">Історія переглядів порожня</string>
+    <string name="library_mobile_history_error">Не вдалося завантажити історію переглядів</string>
+    <string name="library_mobile_history_episode">Серія %1$s</string>
+    <string name="library_mobile_title">Бібліотека</string>
+    <string name="library_mobile_tab_continue_watching">Продовжити</string>
+    <string name="library_mobile_tab_favorites">Улюблене</string>
+    <string name="library_mobile_tab_watching">Дивлюся</string>
+    <string name="library_mobile_tab_planned">У планах</string>
+    <string name="library_mobile_tab_completed">Переглянуто</string>
+    <string name="library_mobile_tab_postponed">Відкладено</string>
+    <string name="library_mobile_tab_dropped">Кинуто</string>
+    <string name="library_mobile_episode">Серія %1$s</string>
+    <string name="library_mobile_added_date">Додано %1$s</string>
+    <string name="library_mobile_empty_list">Список поки порожній - саме час щось додати</string>
+    <string name="library_mobile_retry">Повторити</string>
+    <string name="library_mobile_remove_title">Видалити тайтл?</string>
+    <string name="library_mobile_remove_message">“%1$s” буде видалено з розділу “%2$s”.</string>
+    <string name="library_mobile_remove_confirm">Видалити</string>
+    <string name="library_mobile_remove_cancel">Скасувати</string>
+    <string name="library_mobile_remove_success">Видалено</string>
+    <string name="library_mobile_details_content_description">Відкрити деталі</string>
+    <string name="library_mobile_remove_content_description">Видалити</string>
+    <string name="library_mobile_sort_label">Сортування: %1$s</string>
+    <string name="library_mobile_sort_added_date">за датою додавання</string>
+    <string name="library_mobile_sort_year">за роком</string>
+    <string name="library_mobile_sort_rating">за рейтингом</string>
+    <string name="library_mobile_sort_user_rating">за моєю оцінкою</string>
+    <string name="library_mobile_sort_title">за назвою</string>
+    <string name="library_mobile_sort_direction_content_description">Розгорнути порядок</string>
+    <plurals name="library_mobile_release_in_days">
+        <item quantity="one">До виходу серії %1$d день</item>
+        <item quantity="few">До виходу серії %1$d дні</item>
+        <item quantity="many">До виходу серії %1$d днів</item>
+        <item quantity="other">До виходу серії %1$d дня</item>
+    </plurals>
+    <plurals name="library_mobile_release_in_hours">
+        <item quantity="one">До виходу серії %1$d година</item>
+        <item quantity="few">До виходу серії %1$d години</item>
+        <item quantity="many">До виходу серії %1$d годин</item>
+        <item quantity="other">До виходу серії %1$d години</item>
+    </plurals>
+    <plurals name="library_mobile_release_in_minutes">
+        <item quantity="one">До виходу серії %1$d хвилина</item>
+        <item quantity="few">До виходу серії %1$d хвилини</item>
+        <item quantity="many">До виходу серії %1$d хвилин</item>
+        <item quantity="other">До виходу серії %1$d хвилини</item>
+    </plurals>
+    <string name="library_mobile_season_winter">Зима</string>
+    <string name="library_mobile_season_spring">Весна</string>
+    <string name="library_mobile_season_summer">Літо</string>
+    <string name="library_mobile_season_fall">Осінь</string>
+    <string name="library_mobile_year_season">%1$s · %2$s</string>
+</resources>

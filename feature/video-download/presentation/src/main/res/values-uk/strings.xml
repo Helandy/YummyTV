@@ -1,0 +1,4 @@
+<resources>
+    <string name="video_download_quality_auto">Авто</string>
+    <string name="video_download_refresh_error">Не вдалося оновити посилання для завантаження</string>
+</resources>

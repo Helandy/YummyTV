@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_section_new">Новинки</string>
+    <string name="home_section_schedule">Розклад</string>
+    <string name="home_section_recommends">Рекомендації</string>
+    <string name="home_section_collections">Колекції</string>
+    <string name="home_episode_number">Серія %1$s</string>
+</resources>

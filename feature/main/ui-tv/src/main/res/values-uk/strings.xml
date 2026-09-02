@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_tab_search">Пошук</string>
+    <string name="main_tab_home">Головна</string>
+    <string name="main_tab_schedule">Розклад</string>
+    <string name="main_tab_news">Новини</string>
+    <string name="main_tab_collections">Колекції</string>
+    <string name="main_tab_top">Топ</string>
+    <string name="main_tab_library">Бібліотека</string>
+    <string name="main_settings_content_description">Налаштування</string>
+    <string name="main_account_content_description">Акаунт</string>
+    <string name="main_account_sign_in">Увійти</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="collection_load_error">Не вдалося завантажити колекцію</string>
+    <string name="collection_catalog_load_error">Не вдалося завантажити колекції</string>
+    <string name="collection_vote_auth_required">Увійдіть, щоб оцінювати колекції</string>
+    <string name="collection_vote_error">Не вдалося оцінити колекцію</string>
+    <string name="collection_create_auth_required">Увійдіть, щоб створити колекцію</string>
+    <string name="collection_create_error">Не вдалося створити колекцію</string>
+    <string name="collection_update_error">Не вдалося змінити колекцію</string>
+    <string name="collection_delete_error">Не вдалося видалити колекцію</string>
+</resources>

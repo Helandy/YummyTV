@@ -1,0 +1,17 @@
+<resources>
+    <string name="review_comments">Коментарі (%1$d)</string>
+    <string name="review_comments_tv">Коментарі (%1$s)</string>
+    <string name="reviews_title">Відгуки</string>
+    <string name="reviews_new">Нові</string>
+    <string name="reviews_old">Старі</string>
+    <string name="reviews_top">Найкращі</string>
+    <string name="reviews_empty">Відгуків поки немає</string>
+    <string name="reviews_error">Не вдалося завантажити відгуки</string>
+    <string name="review_retry">Повторити</string>
+    <string name="review_like">Подобається</string>
+    <string name="review_dislike">Не подобається</string>
+    <string name="review_waiting">Очікує модерації</string>
+    <string name="review_declined">Відхилено</string>
+    <string name="review_approved">Опубліковано</string>
+    <string name="review_views">Перегляди: %1$d</string>
+</resources>

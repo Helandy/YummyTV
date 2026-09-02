@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_error_title">Головна не завантажилась</string>
+    <string name="retry">Повторити</string>
+    <string name="continue_watching">Продовжити перегляд</string>
+    <string name="home_season_title">Аніме сезону</string>
+    <string name="home_season">Сезон %1$s</string>
+    <string name="home_episode">Серія</string>
+    <string name="home_episode_number">Серія %1$s</string>
+    <string name="home_support_prompt_title">Подобається застосунок? Підтримай автора - оціни репозиторій на GitHub</string>
+    <string name="home_support_prompt_message">Це безкоштовно і займе менше хвилини</string>
+    <string name="home_support_prompt_ok">Гаразд</string>
+    <string name="home_announcement_ok">ОК</string>
+    <string name="home_tv_recommendation_hide_title">Не рекомендувати «%1$s»?</string>
+    <string name="home_tv_recommendation_hide_message">Тайтл зникне з блоку рекомендацій. Повернути його можна на екрані «Схоже» цього аніме</string>
+    <string name="home_tv_recommendation_hide">Не рекомендувати</string>
+    <string name="home_tv_recommendation_cancel">Скасувати</string>
+</resources>

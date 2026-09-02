@@ -1,0 +1,20 @@
+<resources>
+    <string name="collection_comments">Коментарі</string>
+    <string name="collection_reactions_title">Оцініть колекцію</string>
+    <string name="collection_mobile_title">Колекція</string>
+    <string name="collection_catalog_mobile_title">Колекції</string>
+    <string name="collection_mobile_retry">Повторити</string>
+    <string name="collection_create_button">Створити</string>
+    <string name="collection_create_dialog_title">Нова колекція</string>
+    <string name="collection_create_title_label">Назва</string>
+    <string name="collection_create_description_label">Опис</string>
+    <string name="collection_create_public_label">Публічна колекція</string>
+    <string name="collection_create_confirm">Створити</string>
+    <string name="collection_create_cancel">Скасувати</string>
+    <string name="collection_edit">Редагувати</string>
+    <string name="collection_delete">Видалити</string>
+    <string name="collection_edit_dialog_title">Редагування колекції</string>
+    <string name="collection_save">Зберегти</string>
+    <string name="collection_delete_dialog_title">Видалити колекцію?</string>
+    <string name="collection_delete_dialog_message">Колекцію буде видалено без можливості відновлення.</string>
+</resources>

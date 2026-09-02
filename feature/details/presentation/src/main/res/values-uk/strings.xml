@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_similar_auth_required">Увійдіть, щоб керувати рекомендаціями</string>
+    <string name="details_similar_mutation_error">Не вдалося оновити рекомендації</string>
+    <string name="details_load_error">Не вдалося завантажити деталі</string>
+    <string name="details_rating_auth_required">Для оцінки потрібно авторизуватися</string>
+    <string name="details_quality_auto">авто</string>
+    <string name="details_download_resolving_quality">Отримуємо доступні якості...</string>
+    <string name="details_download_resolve_error">Не вдалося підготувати серію до завантаження</string>
+    <string name="details_download_dubbing_unavailable">Вибачте, вказане озвучення недоступне. Спробуйте вибрати інше озвучення.</string>
+    <string name="details_download_enqueue_error">Не вдалося поставити завантаження в чергу</string>
+    <string name="details_download_replace_delete_error">Нове завантаження додано, але попереднє не вдалося видалити</string>
+    <string name="details_episode_watched_sync_failed">Не вдалося синхронізувати позначку про перегляд із сервером</string>
+    <string name="details_episode_watch_later_added">Серію додано до відкладеного перегляду</string>
+    <string name="details_episode_watch_later_removed">Серію прибрано з відкладеного перегляду</string>
+</resources>
