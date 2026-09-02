@@ -7,6 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -34,6 +35,10 @@ object NetworkModule {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
             requestTimeoutMillis = REQUEST_TIMEOUT_MS
         }
+        install(ContentEncoding) {
+            gzip()
+            deflate()
+        }
     }
 
     /**
@@ -51,6 +56,10 @@ object NetworkModule {
                 requestTimeoutMillis = REQUEST_TIMEOUT_MS
             }
             install(ContentNegotiation) { json(json) }
+            install(ContentEncoding) {
+                gzip()
+                deflate()
+            }
         }
 
     private const val CONNECT_TIMEOUT_MS = 15_000L

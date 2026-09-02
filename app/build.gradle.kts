@@ -90,6 +90,7 @@ dependencies {
     implementation(project(":feature:comments:data"))
     implementation(project(":feature:reviews:api"))
     implementation(project(":feature:reviews:data"))
+    implementation(project(":feature:reviews:domain"))
     implementation(project(":feature:reviews:ui-mobile"))
     implementation(project(":feature:reviews:ui-tv"))
     implementation(project(":feature:posts:api"))

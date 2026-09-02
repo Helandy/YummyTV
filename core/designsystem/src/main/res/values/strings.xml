@@ -18,4 +18,5 @@
     <string name="error_url">URL: %1$s</string>
     <string name="error_request_id">Request ID: %1$s</string>
     <string name="error_body">Body:\n%1$s</string>
+    <string name="offline_banner_message">Offline — showing saved data</string>
 </resources>

@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.analytics.api.coroutine.ErrorCoroutineAnalytics
 import su.afk.yummy.tv.core.error.api.ErrorDestinationFactory
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import java.io.IOException
@@ -72,14 +73,6 @@ internal class ErrorHandlerImpl @Inject constructor(
 
         return item
     }
-
-    /**
-     * Сетевые/оффлайн-ошибки (нет DNS, нет соединения, таймаут) — не баги приложения,
-     * поэтому их не репортим в аналитику. UnknownHostException, ConnectException,
-     * SocketTimeoutException и прочие обрывы соединения — наследники IOException,
-     * который код и так маппит на «нет соединения»/«таймаут».
-     */
-    private fun Throwable.isNetworkError(): Boolean = this is IOException
 
     private fun parseKtorResponse(e: ResponseException): ErrorItem {
         val code = e.response.status.value

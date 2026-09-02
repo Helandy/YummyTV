@@ -64,6 +64,8 @@ import su.afk.yummy.tv.core.storage.library.LibraryDao
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibrarySyncStateEntry
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanupDao
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationDao
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleCacheEntry
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleDao
 import su.afk.yummy.tv.core.storage.schedule.AnimeScheduleItemEntry
@@ -154,8 +156,9 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         VideoDownloadEntry::class,
         AllohaTrackPreferenceEntry::class,
         WatchLaterEntry::class,
+        PendingMutationEntry::class,
     ],
-    version = 53,
+    version = 54,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -174,4 +177,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun storageCleanupDao(): StorageCleanupDao
     abstract fun allohaTrackPreferenceDao(): AllohaTrackPreferenceDao
     abstract fun watchLaterDao(): WatchLaterDao
+    abstract fun pendingMutationDao(): PendingMutationDao
 }

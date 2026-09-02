@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.compression.ContentEncoding
 import javax.inject.Singleton
 
 @Module
@@ -22,6 +23,10 @@ internal object KodikNetworkModule {
     @KodikHttpClient
     fun provideKodikHttpClient(): HttpClient = HttpClient(OkHttp) {
         install(HttpTimeout)
+        install(ContentEncoding) {
+            gzip()
+            deflate()
+        }
     }
 
     /**

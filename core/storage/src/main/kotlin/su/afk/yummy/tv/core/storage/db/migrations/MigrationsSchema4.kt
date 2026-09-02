@@ -243,3 +243,19 @@ internal val MIGRATION_52_53 = object : Migration(52, 53) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_watch_later_addedAt ON watch_later (addedAt)")
     }
 }
+
+internal val MIGRATION_53_54 = object : Migration(53, 54) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS pending_mutations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                type TEXT NOT NULL,
+                payloadJson TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                attemptCount INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+}

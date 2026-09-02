@@ -5,6 +5,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
+import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
@@ -54,6 +55,10 @@ fun buildYaniHttpClient(
         }
         install(ContentNegotiation) {
             json(YaniApiJson)
+        }
+        install(ContentEncoding) {
+            gzip()
+            deflate()
         }
         install(createClientPlugin("YaniApplicationHeader") {
             onRequest { request, _ ->

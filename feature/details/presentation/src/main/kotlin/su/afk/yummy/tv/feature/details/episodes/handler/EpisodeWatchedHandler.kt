@@ -1,8 +1,14 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
 import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
+import su.afk.yummy.tv.core.storage.outbox.RemoveWatchedPayload
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.ClearEpisodeWatchProgressUseCase
@@ -21,6 +27,8 @@ internal class EpisodeWatchedHandler @Inject constructor(
     private val clearEpisodeWatchProgress: ClearEpisodeWatchProgressUseCase,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
     private val removeWatchedVideos: RemoveWatchedVideosUseCase,
+    private val pendingMutationOutbox: PendingMutationOutbox,
+    private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
 ) {
 
     /** Метаданные тайтла и серии для карточки Continue Watching. */
@@ -61,10 +69,22 @@ internal class EpisodeWatchedHandler @Inject constructor(
 
         if (!isSignedIn || target.id <= 0) return true
         val durationSeconds = (durationMs / 1_000L).toInt()
-        return runCatchingMutation {
+        val timeSeconds = (durationSeconds - WATCH_END_TOLERANCE_SECONDS).coerceAtLeast(0)
+        return runCatchingMutation(
+            onNetworkFailure = {
+                pendingMutationOutbox.enqueue(
+                    type = PendingMutationTypes.MARK_WATCHED,
+                    payloadJson = MarkWatchedPayload(
+                        target.id,
+                        timeSeconds,
+                        durationSeconds
+                    ).encode(),
+                )
+            },
+        ) {
             saveVideoWatchProgress(
                 videoId = target.id,
-                timeSeconds = (durationSeconds - WATCH_END_TOLERANCE_SECONDS).coerceAtLeast(0),
+                timeSeconds = timeSeconds,
                 durationSeconds = durationSeconds,
                 // Серия не просматривалась фактически, поэтому просмотренных секунд не добавляем:
                 // сервер считает spent_time именно из times.
@@ -88,16 +108,37 @@ internal class EpisodeWatchedHandler @Inject constructor(
         if (!isSignedIn) return true
         val videoIds = videos.map { it.id }.filter { it > 0 }
         if (videoIds.isEmpty()) return true
-        return runCatchingMutation { removeWatchedVideos(videoIds) }
+        return runCatchingMutation(
+            onNetworkFailure = {
+                pendingMutationOutbox.enqueue(
+                    type = PendingMutationTypes.REMOVE_WATCHED,
+                    payloadJson = RemoveWatchedPayload(videoIds).encode(),
+                )
+            },
+        ) { removeWatchedVideos(videoIds) }
     }
 
-    private suspend fun runCatchingMutation(block: suspend () -> Boolean): Boolean =
+    /**
+     * Сетевые сбои ставятся в offline-очередь и считаются успехом — локальная отметка уже
+     * применена, а [PendingMutationSyncScheduler] дошлёт мутацию, как только появится сеть.
+     * Остальные ошибки (не связанные с сетью) по-прежнему возвращают false.
+     */
+    private suspend fun runCatchingMutation(
+        onNetworkFailure: suspend () -> Unit,
+        block: suspend () -> Boolean,
+    ): Boolean =
         try {
             block()
         } catch (error: CancellationException) {
             throw error
-        } catch (_: Throwable) {
-            false
+        } catch (error: Throwable) {
+            if (error.isNetworkError()) {
+                onNetworkFailure()
+                pendingMutationSyncScheduler.scheduleFlush()
+                true
+            } else {
+                false
+            }
         }
 
     /**

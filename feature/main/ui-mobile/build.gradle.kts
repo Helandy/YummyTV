@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":feature:update:api"))
     implementation(project(":core:utils"))

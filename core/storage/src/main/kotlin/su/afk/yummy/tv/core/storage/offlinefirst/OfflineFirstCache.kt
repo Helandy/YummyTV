@@ -17,6 +17,7 @@ import kotlinx.coroutines.CancellationException
  */
 suspend fun <Cache, Domain> offlineFirstCache(
     forceRefresh: Boolean = false,
+    isOnline: () -> Boolean = { true },
     read: suspend () -> Cache?,
     isFresh: (Cache) -> Boolean,
     toDomain: (Cache) -> Domain,
@@ -25,7 +26,7 @@ suspend fun <Cache, Domain> offlineFirstCache(
     onMissing: suspend (Throwable) -> Domain = { throw it },
 ): Domain {
     val stored = if (forceRefresh) null else read()
-    if (stored != null && isFresh(stored)) {
+    if (stored != null && (isFresh(stored) || !isOnline())) {
         return transform(toDomain(stored))
     }
 

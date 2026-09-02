@@ -10,12 +10,17 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.error.api.isNetworkError
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
+import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
+import su.afk.yummy.tv.core.storage.outbox.VoteReviewPayload
 import su.afk.yummy.tv.core.utils.paging.PagedSource
 import su.afk.yummy.tv.core.utils.paging.pagingSource
 import su.afk.yummy.tv.domain.reviews.ReviewMutationNotifier
@@ -41,6 +46,8 @@ class ReviewsListViewModel @AssistedInject constructor(
     private val getAnimeReviews: GetAnimeReviewsUseCase,
     private val voteReview: VoteReviewUseCase,
     private val strings: StringProvider,
+    private val pendingMutationOutbox: PendingMutationOutbox,
+    private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
     mutationNotifier: ReviewMutationNotifier,
     settingsStore: YaniAccountSettingsStore,
 ) : BaseViewModel<ReviewsListState.State, ReviewsListState.Event, ReviewsListState.Effect>() {
@@ -106,9 +113,18 @@ class ReviewsListViewModel @AssistedInject constructor(
         viewModelScope.launch {
             runCatching { voteReview(review.id, target) }.fold(
                 { saved -> setState { copy(reactionOverrides = reactionOverrides + (review.id to saved)) } },
-                {
-                    setState { copy(reactionOverrides = reactionOverrides + (review.id to old)) }
-                    toast(strings.get(R.string.reviews_vote_error))
+                { error ->
+                    if (error.isNetworkError()) {
+                        // Офлайн: оптимистичная реакция остаётся, мутация уйдёт из очереди сама.
+                        pendingMutationOutbox.enqueue(
+                            PendingMutationTypes.VOTE_REVIEW,
+                            VoteReviewPayload(review.id, target.apiValue).encode(),
+                        )
+                        pendingMutationSyncScheduler.scheduleFlush()
+                    } else {
+                        setState { copy(reactionOverrides = reactionOverrides + (review.id to old)) }
+                        toast(strings.get(R.string.reviews_vote_error))
+                    }
                 },
             )
         }

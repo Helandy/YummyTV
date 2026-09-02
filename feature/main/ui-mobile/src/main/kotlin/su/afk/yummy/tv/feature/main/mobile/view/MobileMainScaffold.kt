@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -29,6 +30,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
@@ -45,6 +48,12 @@ internal fun <T> MobileMainScaffold(
     val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
+        topBar = {
+            OfflineBanner(
+                isOffline = LocalIsOffline.current,
+                modifier = Modifier.statusBarsPadding(),
+            )
+        },
         bottomBar = {
             AnimatedVisibility(
                 visible = showBars,

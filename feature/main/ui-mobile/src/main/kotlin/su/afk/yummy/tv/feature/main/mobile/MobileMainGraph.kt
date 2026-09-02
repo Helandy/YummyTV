@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalMarkNotificationPermissionRequested
 import su.afk.yummy.tv.core.designsystem.locals.LocalNotificationPermissionRequested
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
@@ -44,6 +46,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.MobileUi
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.core.navigation.root.RootTab
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
@@ -71,6 +74,7 @@ class MobileMainGraph @Inject internal constructor(
     @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
+    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : MainGraph {
 
     @Composable
@@ -86,6 +90,7 @@ class MobileMainGraph @Inject internal constructor(
             var toastJob by remember { mutableStateOf<Job?>(null) }
             val coroutineScope = rememberCoroutineScope()
             val accountSettingsFocusRequester = remember { FocusRequester() }
+            val isOnline by networkConnectivityMonitor.isOnline.collectAsStateWithLifecycle()
 
             DisposableEffect(Unit) {
                 onDispose { toastJob?.cancel() }
@@ -160,6 +165,7 @@ class MobileMainGraph @Inject internal constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
+                    LocalIsOffline provides !isOnline,
                     LocalResolveKodikThumbnailUrl provides resolveKodikThumbnailUrl::invoke,
                     LocalNotificationPermissionRequested provides
                             appLifecycleSettingsStore.notificationPermissionRequested,

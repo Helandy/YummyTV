@@ -26,10 +26,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
@@ -38,6 +40,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.core.navigation.registrar.TvUi
 import su.afk.yummy.tv.core.navigation.root.RootTab
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.model.TvMenuItem
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
@@ -52,6 +55,7 @@ class TvMainGraph @Inject constructor(
     private val navManager: INavigationManager,
     private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
     @param:TvUi private val tvRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : MainGraph {
 
     private val menuItems = listOf(
@@ -82,6 +86,7 @@ class TvMainGraph @Inject constructor(
             var toastMessage by remember { mutableStateOf<String?>(null) }
             var toastJob by remember { mutableStateOf<Job?>(null) }
             val coroutineScope = rememberCoroutineScope()
+            val isOnline by networkConnectivityMonitor.isOnline.collectAsStateWithLifecycle()
 
             DisposableEffect(Unit) {
                 onDispose { toastJob?.cancel() }
@@ -127,6 +132,7 @@ class TvMainGraph @Inject constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
+                    LocalIsOffline provides !isOnline,
                 ) {
                     TvMainScaffold(
                         selectedRoot = navManager.currentRoot,
