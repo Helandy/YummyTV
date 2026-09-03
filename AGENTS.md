@@ -7,6 +7,13 @@
 
 - Keep every public domain model, enum, sealed contract, repository contract, and use case in its
   own same-named Kotlin file.
+- Split each feature's `.domain` package into `.domain.model`, `.domain.repository`, and
+  `.domain.usecase`. Never leave files directly in `.domain`.
+    - `.domain.model` — domain models, enums, sealed contracts, and their extension helpers
+      (e.g. sorting).
+    - `.domain.repository` — repository interfaces only (`XxxRepository`).
+    - `.domain.usecase` — use cases only (`XxxUseCase`).
+    - Do not create a sub-package that would stay empty.
 - Add KDoc to every use case describing the domain operation it performs.
 
 ## Data Layer Structure

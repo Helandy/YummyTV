@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -96,13 +97,16 @@ internal fun EpisodeMobileCard(
             }
         },
         trailingAction = {
-            EpisodeDownloadButton(
-                status = downloadStatus,
-                resolving = downloadResolving,
-                awaitingQualitySelection = downloadAwaitingQualitySelection,
-                onClick = onDownloadClick,
-                onOpenDownloadsClick = onOpenDownloadsClick,
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                EpisodeActionsButton(onClick = onLongClick)
+                EpisodeDownloadButton(
+                    status = downloadStatus,
+                    resolving = downloadResolving,
+                    awaitingQualitySelection = downloadAwaitingQualitySelection,
+                    onClick = onDownloadClick,
+                    onOpenDownloadsClick = onOpenDownloadsClick,
+                )
+            }
         },
         bottomContent = if (episodeTitle.isNullOrBlank() && episodeDescription.isNullOrBlank()) {
             null
@@ -174,6 +178,21 @@ private fun EpisodeInfoBlock(
                 modifier = Modifier.padding(8.dp),
             )
         }
+    }
+}
+
+/** Троеточие — то же меню действий над серией, что и по долгому нажатию на карточку. */
+@Composable
+private fun EpisodeActionsButton(onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(48.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.MoreVert,
+            contentDescription = stringResource(R.string.details_mobile_episode_actions_action),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
