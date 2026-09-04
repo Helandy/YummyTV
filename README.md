@@ -37,6 +37,10 @@
 
 ---
 
+
+> [!IMPORTANT]
+> В поиске работы [@Etozhesandy](https://t.me/Etozhesandy) (Android, compose, kotlin). Не пишите туда с вопросами по программе - для этого есть Issues
+
 ## Что это
 
 **YummyTV** — нативное Android-приложение для просмотра аниме с YummyAnime. Проект поддерживает два
