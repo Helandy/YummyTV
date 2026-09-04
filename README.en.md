@@ -239,7 +239,7 @@ You can also support the project for free:
 
 * ⭐ **Star the repository** — it helps others discover the project
 * 🐞 **Report bugs** via [Issues](https://github.com/Helandy/YummyTV/issues)
-* 💡 **Suggest improvements** via [Discussions](https://github.com/Helandy/YummyTV/discussions) or [Issues](https://github.com/Helandy/YummyTV/issues)
+* 💡 **Suggest improvements** via [Issues](https://github.com/Helandy/YummyTV/issues)
 
 ---
 
