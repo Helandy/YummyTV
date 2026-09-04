@@ -226,12 +226,19 @@ YummyTV зависит от доступности YummyAnime и сторонн�
 
 ---
 
-## Поддержка
+## ☕ Поддержать проект
 
-- ⭐ Поставь звезду репозиторию.
-- 🐞 Открой issue, если нашёл баг.
-- 💡 Предложи улучшение через Issues.
-- https://boosty.to/etozhesandy
+YummyTV разрабатывается и поддерживается независимо.
+
+Если вам нравится приложение и вы хотите помочь его дальнейшему развитию:
+
+[![Поддержать на Boosty](https://img.shields.io/badge/Поддержать%20на-Boosty-orange?style=for-the-badge)](https://boosty.to/etozhesandy)
+
+Также можно поддержать проект бесплатно:
+
+* ⭐ **Поставить Star репозиторию** — это помогает другим узнать о проекте
+* 🐞 **Сообщить об ошибке** через [Issues](https://github.com/Helandy/YummyTV/issues)
+* 💡 **Предложить улучшение** через [Issues](https://github.com/Helandy/YummyTV/issues)
 
 ---
 
