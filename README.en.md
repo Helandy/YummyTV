@@ -227,12 +227,19 @@ restrictions or IP blocks.
 
 ---
 
-## Support
+## ☕ Support the project
 
-- ⭐ Star the repository.
-- 🐞 Open an issue if you found a bug.
-- 💡 Suggest improvements through Issues.
-- https://boosty.to/etozhesandy
+YummyTV is developed and maintained independently.
+
+If you enjoy using the app and want to support its future development:
+
+[![Support on Boosty](https://img.shields.io/badge/Support%20on-Boosty-orange?style=for-the-badge)](https://boosty.to/etozhesandy)
+
+You can also support the project for free:
+
+* ⭐ **Star the repository** — it helps others discover the project
+* 🐞 **Report bugs** via [Issues](https://github.com/Helandy/YummyTV/issues)
+* 💡 **Suggest improvements** via [Discussions](https://github.com/Helandy/YummyTV/discussions) or [Issues](https://github.com/Helandy/YummyTV/issues)
 
 ---
 
