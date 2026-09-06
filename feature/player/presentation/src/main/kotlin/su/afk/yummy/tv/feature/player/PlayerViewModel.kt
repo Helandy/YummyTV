@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -20,6 +21,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
@@ -40,12 +42,17 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamResumeMode
 import su.afk.yummy.tv.feature.player.mapper.PlayerDestinationStateMapper
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
+import su.afk.yummy.tv.feature.player.navigator.PLAYER_CONTENT_KEY
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.PlayerResizeSettingsScope
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbingName
+import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.activePlayerId
+import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
+import su.afk.yummy.tv.feature.player.utils.activeVideoId
 
 @HiltViewModel(assistedFactory = PlayerViewModel.Factory::class)
 class PlayerViewModel @AssistedInject internal constructor(
@@ -68,6 +75,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val playbackRetry: PlayerPlaybackRetryHandler,
     private val allohaSession: PlayerAllohaSessionHandler,
     private val allohaTrackPreference: PlayerAllohaTrackPreferenceHandler,
+    @IoApplicationScope private val ioScope: CoroutineScope,
 ) : BaseViewModel<PlayerState.State, PlayerState.Event, PlayerState.Effect>() {
 
     @AssistedFactory
@@ -678,14 +686,8 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
-    private fun saveCurrentProgressThenNavigate(
-        syncRemote: Boolean = true,
-        navigate: () -> Unit,
-    ) {
-        val request = playbackProgressHandler.currentProgressSaveRequest(
-            state = currentState,
-            syncRemote = syncRemote,
-        )
+    private fun saveCurrentProgressThenNavigate(navigate: () -> Unit) {
+        val request = playbackProgressHandler.currentProgressSaveRequest(state = currentState)
         if (request == null) {
             navigate()
             return
@@ -699,21 +701,35 @@ class PlayerViewModel @AssistedInject internal constructor(
         }
     }
 
+    /**
+     * Убирает плеер со стека, когда приложение уходит в фон.
+     *
+     * Навигация выполняется синхронно, прямо в обработке `ON_STOP`: `onSaveInstanceState`
+     * вызывается сразу за `onStop`, и отложенная в корутину замена ключа не успевает попасть
+     * в сохранённый back stack — после смерти процесса приложение восстанавливалось в плеере
+     * на той серии, с которой его когда-то открыли. Сохранение прогресса уезжает в
+     * [ioScope]: `nav.replace` уничтожает NavEntry плеера, и `viewModelScope` вместе с ним.
+     */
     private fun returnToDetailsAfterTvBackground() {
         val animeId = currentState.animeId
-        saveCurrentProgressThenNavigate(syncRemote = false) {
-            allohaSession.close()
-            if (animeId <= 0) {
+        val request = playbackProgressHandler.currentProgressSaveRequest(state = currentState)
+
+        allohaSession.close()
+        if (animeId <= 0) {
+            nav.back()
+        } else {
+            val detailsDestination = detailsNavigator.getDetailsDest(animeId)
+            val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
+            if (previousDestination == detailsDestination) {
                 nav.back()
             } else {
-                val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-                val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
-                if (previousDestination == detailsDestination) {
-                    nav.back()
-                } else {
-                    nav.replace(detailsDestination)
-                }
+                nav.replace(detailsDestination)
             }
+        }
+
+        if (request == null) return
+        ioScope.launch {
+            runCatching { playbackProgressHandler.saveProgress(request) }
         }
     }
 
@@ -726,6 +742,45 @@ class PlayerViewModel @AssistedInject internal constructor(
             nav.replace(detailsDestination)
             nav.navigate(childDestination)
         }
+    }
+
+    /**
+     * Приводит ключ плеера в back stack к серии, которая реально играет.
+     *
+     * NavKey переживает смерть процесса (`rememberNavBackStack`), а смена серии внутри плеера
+     * меняла только state ViewModel — после перезапуска приложение возвращалось на серию, с
+     * которой плеер когда-то открыли. Запись делит [PLAYER_CONTENT_KEY] с текущей
+     * (см. `PlayerNavRegistrar`), поэтому подмена ключа не пересоздаёт NavEntry и не рвёт
+     * воспроизведение.
+     */
+    private fun syncBackStackDestination() {
+        if (activeDest.downloadId > 0L || activeDest.localFileUri.isNotBlank()) return
+        val state = currentState
+        val iframeUrl = activeIframeUrl(state)
+        val episode = activeEpisode(state)
+        if (iframeUrl.isBlank() || episode.isBlank()) return
+
+        val destination = activeDest.copy(
+            iframeUrl = iframeUrl,
+            episode = episode,
+            playerName = activeBalancerName(state),
+            dubbing = activeDubbingName(state),
+            selectedVideoId = activeVideoId(state),
+            selectedPlayerId = activePlayerId(state),
+            selectedScreenshotUrl = activeScreenshotUrl(state),
+            // Позицию не дублируем в ключ: её вернёт локальный прогресс
+            // (PlayerStreamHandler.loadResumePosition), иначе ключ пришлось бы переписывать
+            // на каждом тике воспроизведения.
+            resumeFromMs = 0L,
+        )
+        if (destination == activeDest) return
+        // Ключ и activeDest двигаются только вместе: разъехавшись, они дадут повторный
+        // NavigateToDestination со старой серией, если запись пересоздадут.
+        if (nav.backStack.lastOrNull() !is PlayerDestination) return
+        // activeDest обновляем до replace: экран пришлёт NavigateToDestination с новым ключом,
+        // и loadDestination должен схлопнуться на guard, а не перезапустить загрузку.
+        activeDest = destination
+        nav.replace(destination)
     }
 
     private fun saveContinueTarget(state: PlayerState.State) {
@@ -1067,6 +1122,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                             showChangePlayerHint = false,
                         )
                     }
+                    if (!resolveFailed) syncBackStackDestination()
                     if (!resolveFailed && currentState.isAllohaSource()) {
                         restoreAllohaTrackPreference(
                             audioTracks = result.state.allohaAudioTracks,

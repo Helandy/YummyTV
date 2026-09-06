@@ -8,15 +8,16 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.player.PlayerTvScreen
 import su.afk.yummy.tv.feature.player.PlayerViewModel
+import su.afk.yummy.tv.feature.player.navigator.PLAYER_CONTENT_KEY
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import javax.inject.Inject
 
 class PlayerNavRegistrar @Inject constructor() : NavRegistrar {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
-            entry<PlayerDestination> { dest ->
+            entry<PlayerDestination>(clazzContentKey = { PLAYER_CONTENT_KEY }) { dest ->
                 val viewModel = hiltViewModel<PlayerViewModel, PlayerViewModel.Factory>(
-                    key = "player",
+                    key = PLAYER_CONTENT_KEY,
                     creationCallback = { factory -> factory.create(dest) },
                 )
                 ScreenNavigator(viewModel) { state, effect, onEvent ->

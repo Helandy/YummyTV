@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:model"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:details:domain"))
