@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
+import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +44,8 @@ internal fun MobilePlayerDubbingSheet(
     onDismiss: () -> Unit,
 ) {
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
+        HideSheetWindowSystemBars()
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()

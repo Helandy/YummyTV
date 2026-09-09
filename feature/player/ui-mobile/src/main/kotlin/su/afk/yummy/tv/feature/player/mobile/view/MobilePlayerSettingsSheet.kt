@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
+import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
@@ -85,6 +86,8 @@ internal fun MobilePlayerSettingsSheet(
     val scope = rememberCoroutineScope()
 
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
+        HideSheetWindowSystemBars()
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,6 +121,7 @@ internal fun MobilePlayerSettingsSheet(
                                 value = qualityIndex,
                                 valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
                                 onValueChange = { index -> onQualitySelected(qualities[index]) },
+                                tickLabels = qualities,
                             )
                         }
                     }

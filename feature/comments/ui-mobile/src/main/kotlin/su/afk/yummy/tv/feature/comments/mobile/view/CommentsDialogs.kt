@@ -87,6 +87,7 @@ internal fun CommentsDialogs(
             },
             contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
+            scrollableContent = true,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),

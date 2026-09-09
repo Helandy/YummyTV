@@ -29,6 +29,7 @@ internal fun EpisodeActionsSheet(
         title = stringResource(R.string.details_mobile_episode_actions_title, action.episode),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
+        scrollableContent = true,
     ) {
         EpisodeSheetActionButton(
             text = if (action.isWatched) {

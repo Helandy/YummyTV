@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.cast.MediaRouteButton
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 
@@ -48,7 +49,9 @@ internal fun PlayerMobileActionsSheet(
     onPictureInPicture: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    BaseBottomSheet(onDismissRequest = onDismiss) {
+    BaseBottomSheet(onDismissRequest = onDismiss, scrollableContent = true) {
+        HideSheetWindowSystemBars()
+
         if (showDetails) {
             ActionRow(
                 icon = Icons.Filled.Info,

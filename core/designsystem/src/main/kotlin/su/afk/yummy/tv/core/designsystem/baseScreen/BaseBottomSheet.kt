@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -45,7 +48,19 @@ private fun rememberBottomOverscrollGuard(): NestedScrollConnection = remember {
     }
 }
 
-/** Общая обёртка над [ModalBottomSheet]: заголовок, стандартные отступы и высота не более 95% экрана. */
+/**
+ * Общая обёртка над [ModalBottomSheet]: заголовок, стандартные отступы и высота не более
+ * [rememberBottomSheetMaxHeight].
+ *
+ * `contentWindowInsets` у материала отключены: по умолчанию он сам вешает внутрь шторки
+ * `windowInsetsPadding(safeDrawing.only(Top + Bottom))`, и этот паддинг лежит снаружи нашего
+ * `heightIn(max)` — появившийся статус-бар просто прибавлялся бы к лимиту, и шторка уезжала бы
+ * вверх (заметнее всего в ландшафте). Нижний инсет поэтому применяем сами.
+ *
+ * [scrollableContent] включать, если [content] не содержит собственного скролла: тогда контент,
+ * не влезающий в лимит высоты, можно будет прокрутить, а не обрежется. С `LazyColumn` внутри
+ * включать нельзя — краш "infinity maximum height constraints".
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseBottomSheet(
@@ -56,14 +71,17 @@ fun BaseBottomSheet(
     titleContent: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    scrollableContent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val maxHeight = rememberBottomSheetMaxHeight()
+    val scrollState = rememberScrollState()
 
     ModalBottomSheet(
         modifier = modifier,
         sheetState = sheetState,
         onDismissRequest = onDismissRequest,
+        contentWindowInsets = { WindowInsets(0.dp) },
     ) {
         Column(
             modifier = Modifier
@@ -71,7 +89,10 @@ fun BaseBottomSheet(
                 .heightIn(max = maxHeight)
                 .navigationBarsPadding()
                 .padding(contentPadding)
-                .nestedScroll(rememberBottomOverscrollGuard()),
+                .nestedScroll(rememberBottomOverscrollGuard())
+                .then(
+                    if (scrollableContent) Modifier.verticalScroll(scrollState) else Modifier,
+                ),
             verticalArrangement = verticalArrangement,
         ) {
             when {

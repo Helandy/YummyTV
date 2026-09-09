@@ -36,6 +36,7 @@ internal fun HomeRecommendationActionsSheet(
         title = title,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
+        scrollableContent = true,
     ) {
         RecommendationSheetActionButton(
             text = stringResource(R.string.home_mobile_recommendation_hide),

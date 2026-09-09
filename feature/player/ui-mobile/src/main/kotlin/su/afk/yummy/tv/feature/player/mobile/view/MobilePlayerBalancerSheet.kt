@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
+import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +48,8 @@ internal fun MobilePlayerBalancerSheet(
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
 
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
+        HideSheetWindowSystemBars()
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()

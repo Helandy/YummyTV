@@ -45,6 +45,7 @@ internal fun EpisodeDownloadedActionSheet(
         ),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
+        scrollableContent = true,
     ) {
         Text(
             text = action.downloadedDubbing,
