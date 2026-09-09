@@ -9,6 +9,68 @@ repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 
 cd "$repo_root"
 
+# ---------------------------------------------------------------------------
+# ktlint over the staged Kotlin files only
+# ---------------------------------------------------------------------------
+ktlint_status=0
+
+if [ "${SKIP_KTLINT:-0}" = "1" ]; then
+  echo "ktlint: skipped (SKIP_KTLINT=1)."
+else
+  staged_list=$(mktemp) || exit 1
+  dirty_list=$(mktemp) || exit 1
+  full_list=$(mktemp) || exit 1
+  partial_list=$(mktemp) || exit 1
+  trap 'rm -f "$staged_list" "$dirty_list" "$full_list" "$partial_list"' EXIT
+
+  git diff --cached --name-only --diff-filter=ACMR -z -- '*.kt' '*.kts' > "$staged_list"
+
+  if [ ! -s "$staged_list" ]; then
+    echo "ktlint: no staged Kotlin files, skipping."
+  else
+    # Files that also have unstaged changes: formatting them would drag those
+    # changes into the commit, so they are only checked, never auto-fixed.
+    git diff --name-only -z -- '*.kt' '*.kts' > "$dirty_list"
+
+    awk -v partial="$partial_list" 'BEGIN { RS = "\0"; ORS = "\0" }
+         FILENAME == ARGV[1] { if (length($0)) dirty[$0] = 1; next }
+         length($0) == 0 { next }
+         { if ($0 in dirty) print > partial; else print }' \
+      "$dirty_list" "$staged_list" > "$full_list"
+
+    if [ -s "$full_list" ]; then
+      echo "Running ktlint --format on staged Kotlin files..."
+      .githooks/ktlint.sh -F --patterns-from-stdin='' < "$full_list" || ktlint_status=1
+      xargs -0 git add -- < "$full_list"
+    fi
+
+    if [ -s "$partial_list" ]; then
+      echo "Running ktlint (check only) on partially staged Kotlin files..."
+      if ! .githooks/ktlint.sh --patterns-from-stdin='' < "$partial_list"; then
+        ktlint_status=1
+        cat >&2 <<'EOF'
+
+These files have unstaged changes, so ktlint did not auto-fix them.
+Fix the violations by hand, or stage the whole file and commit again.
+EOF
+      fi
+    fi
+  fi
+fi
+
+if [ "$ktlint_status" -ne 0 ]; then
+  cat >&2 <<'EOF'
+
+ktlint found violations it could not fix. Commit blocked.
+Fix the errors above, or bypass this check with:
+  git commit --no-verify
+EOF
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Android Lint
+# ---------------------------------------------------------------------------
 echo "Running :app:lintDebug before commit..."
 ./gradlew :app:lintDebug --stacktrace
 status=$?

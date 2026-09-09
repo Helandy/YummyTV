@@ -9,7 +9,7 @@ repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 
 cd "$repo_root"
 
-for hook_file in ".githooks/commit-msg" ".githooks/pre-commit"; do
+for hook_file in ".githooks/commit-msg" ".githooks/pre-commit" ".githooks/ktlint.sh"; do
   if [ ! -f "$hook_file" ]; then
     echo "install-git-hooks: missing $hook_file." >&2
     exit 1
