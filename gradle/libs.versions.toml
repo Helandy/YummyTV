@@ -6,7 +6,7 @@ agp = "9.4.0"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 kotlin-metadata-jvm = "2.4.0"
 kotlinx-collections-immutable = "0.5.2"
 stability-analyzer = "0.13.0"
@@ -41,7 +41,7 @@ room = "2.8.4"
 work = "2.11.2"
 
 # Media / Images
-coil = "3.6.1"
+coil = "3.6.2"
 jsoup = "1.23.2"
 media3 = "1.11.0"
 
