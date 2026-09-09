@@ -25,6 +25,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -133,10 +137,13 @@ private fun EpisodeInfoBlock(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
+    // Переполнение защёлкиваем: в раскрытом виде maxLines не ограничен и hasVisualOverflow всегда false.
+    var canExpand by remember(description) { mutableStateOf(false) }
+    val toggleable = description != null && (canExpand || expanded)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (description == null) Modifier else Modifier.clickable(onClick = onToggle))
+            .then(if (toggleable) Modifier.clickable(onClick = onToggle) else Modifier)
             .padding(start = 12.dp, end = 4.dp, bottom = 10.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -161,10 +168,13 @@ private fun EpisodeInfoBlock(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
                     maxLines = if (expanded) Int.MAX_VALUE else 3,
                     overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { layout ->
+                        if (!expanded && layout.hasVisualOverflow) canExpand = true
+                    },
                 )
             }
         }
-        if (description != null) {
+        if (toggleable) {
             Icon(
                 imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                 contentDescription = stringResource(
@@ -172,7 +182,7 @@ private fun EpisodeInfoBlock(
                         R.string.details_mobile_episode_description_collapse
                     } else {
                         R.string.details_mobile_episode_description_expand
-                    }
+                    },
                 ),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
                 modifier = Modifier.padding(8.dp),
@@ -224,7 +234,7 @@ private fun EpisodeDownloadButton(
                                 R.string.details_mobile_episode_download_resolving_quality
                             } else {
                                 R.string.details_mobile_download_quality_prompt
-                            }
+                            },
                         ),
                         tint = DownloadResolvingColor,
                     )
@@ -281,7 +291,7 @@ private fun downloadStatusText(
         awaitingQualitySelection -> stringResource(R.string.details_mobile_download_quality_prompt)
 
         uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-                uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloading -> {
+            uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloading -> {
             val percent = (status.progress.coerceIn(0f, 1f) * 100).roundToInt()
             stringResource(R.string.details_mobile_episode_download_progress, percent)
         }
