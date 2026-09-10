@@ -34,6 +34,7 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
         pluginManager.apply("com.github.skydoves.compose.stability.analyzer")
         configureComposeCompiler()
+        addComposeBom()
         dependencies.add("implementation", libs.findLibrary("compose-uiToolingPreview").get())
         dependencies.add("debugImplementation", libs.findLibrary("compose-uiTooling").get())
         dependencies.add("api", libs.findLibrary("kotlinx-collections-immutable").get())
@@ -47,6 +48,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
         pluginManager.apply("com.github.skydoves.compose.stability.analyzer")
         configureComposeCompiler()
+        addComposeBom()
         extensions.configure<ApplicationExtension> {
             compileSdk = libs.versionInt("android-compileSdk")
             defaultConfig {
@@ -118,12 +120,21 @@ private fun Project.enforceLayering() {
             val target = (this as? ProjectDependency)?.path
             if (target != null && target.startsWith(":feature:")) {
                 val message = "Нарушение слоёв: $consumer зависит от $target. " +
-                        "core-модули не должны знать про feature-модули — объявите порт " +
-                        "в core и реализуйте его в фиче."
+                    "core-модули не должны знать про feature-модули — объявите порт " +
+                    "в core и реализуйте его в фиче."
                 if (strict) throw GradleException(message) else log.warn("w: $message")
             }
         }
     }
+}
+
+// Единственный источник версий Compose: артефакты в каталоге объявлены без версий,
+// их проставляет androidx.compose:compose-bom. debugImplementation не наследует implementation,
+// но debug-вариант резолвит обе конфигурации одним classpath, поэтому ui-tooling тоже покрыт.
+private fun Project.addComposeBom() {
+    val bom = dependencies.platform(libs.findLibrary("androidx-compose-bom").get())
+    dependencies.add("implementation", bom)
+    dependencies.add("androidTestImplementation", bom)
 }
 
 private fun Project.addCoreLibraryDesugaring() {
