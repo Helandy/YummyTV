@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.RemoteCastPlayer
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
@@ -67,7 +68,7 @@ class PlayerMediaSessionService : MediaSessionService() {
     // за тем же паттерном рантайм-детекта TV, поскольку :app - один манифест/APK на обе платформы).
     private val isTelevision: Boolean
         get() = resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-                Configuration.UI_MODE_TYPE_TELEVISION
+            Configuration.UI_MODE_TYPE_TELEVISION
 
     private val loudnessNormalizer = PlayerLoudnessNormalizer()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -89,7 +90,7 @@ class PlayerMediaSessionService : MediaSessionService() {
             // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
             // принудительного максимума: меньше нагрузка на декодер и на буфер по памяти.
             setParameters(
-                buildUponParameters().setForceHighestSupportedBitrate(!isLowRamDevice)
+                buildUponParameters().setForceHighestSupportedBitrate(!isLowRamDevice),
             )
         }
         // enableDecoderFallback: если аппаратный AVC-декодер не может инициализироваться
@@ -103,9 +104,20 @@ class PlayerMediaSessionService : MediaSessionService() {
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(
                 DefaultMediaSourceFactory(playbackConfig.dataSourceFactory())
-                    .setLoadErrorHandlingPolicy(PlayerLoadErrorHandlingPolicy(playbackConfig))
+                    .setLoadErrorHandlingPolicy(PlayerLoadErrorHandlingPolicy(playbackConfig)),
             )
             .setLoadControl(PlayerLoadControlFactory.create(readBufferProfile()))
+            // Фокус нужен, чтобы чужая музыка вставала на паузу при старте серии, а звонок или
+            // навигатор ставили на паузу/приглушали нас. MOVIE, а не SPEECH: при duck-потере
+            // ExoPlayer приглушает звук вместо паузы.
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                /* handleAudioFocus = */
+                true,
+            )
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
@@ -135,13 +147,13 @@ class PlayerMediaSessionService : MediaSessionService() {
                         .setPreferredVideoMimeType(MimeTypes.VIDEO_H264)
                         .setRendererDisabled(AUDIO_RENDERER_INDEX, false)
                         .setOverrideForType(TrackSelectionOverride(firstAudioGroup, 0))
-                        .build()
+                        .build(),
                 )
                 Log.i(
                     LOG_TAG,
                     "Alloha audio selected groups=${audioGroups.size} " +
-                            "tracksInFirstGroup=${firstAudioGroup.length} group=0 track=0 " +
-                            "offline=${selection.isOfflinePlayback}",
+                        "tracksInFirstGroup=${firstAudioGroup.length} group=0 track=0 " +
+                        "offline=${selection.isOfflinePlayback}",
                 )
             }
 
@@ -154,7 +166,7 @@ class PlayerMediaSessionService : MediaSessionService() {
                         .setPreferredTextLanguage(null)
                         .setPreferredVideoMimeType(null)
                         .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                        .build()
+                        .build(),
                 )
                 Log.i(LOG_TAG, "Alloha audio override cleared")
             }
@@ -190,7 +202,7 @@ class PlayerMediaSessionService : MediaSessionService() {
                 .setRemotePlayer(
                     RemoteCastPlayer.Builder(this)
                         .setMediaItemConverter(YummyTvCastMediaItemConverter())
-                        .build()
+                        .build(),
                 )
                 .build()
         } catch (e: Exception) {
@@ -223,7 +235,7 @@ class PlayerMediaSessionService : MediaSessionService() {
                 .setAvailableSessionCommands(
                     MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
                         .add(PlayerSessionCommands.STOP_SERVICE)
-                        .build()
+                        .build(),
                 )
                 .build()
 
@@ -247,7 +259,10 @@ class PlayerMediaSessionService : MediaSessionService() {
         loudnessNormalizer.release()
         // mediaSession.player - это castPlayer, если он собрался, а CastPlayer.release()
         // сам освобождает и обёрнутый localPlayer (exoPlayer) - отдельный exoPlayer.release() не нужен.
-        mediaSession?.run { player.release(); release() }
+        mediaSession?.run {
+            player.release()
+            release()
+        }
         mediaSession = null
         player = null
         castPlayer = null
