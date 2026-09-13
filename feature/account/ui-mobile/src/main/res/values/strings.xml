@@ -16,6 +16,7 @@
     <string name="account_login">Sign in</string>
     <string name="account_login_placeholder">Email or nickname</string>
     <string name="account_password_placeholder">Password</string>
+    <string name="account_mobile_register_hint">No account? Sign up on yummyani.me — registration isn\'t available in the app. Then sign in here with the same email or nickname and password.</string>
     <string name="account_loading">Loading...</string>
     <string name="account_captcha_hint">Complete the captcha to continue signing in. If it does not open here, sign in from the TV flow.</string>
     <string name="account_tab_stats">Statistics</string>

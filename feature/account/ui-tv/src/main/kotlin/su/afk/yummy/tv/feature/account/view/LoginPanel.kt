@@ -164,6 +164,13 @@ internal fun LoginPanel(
             onClick = { onEvent(AccountState.Event.LoginSelected) },
             modifier = Modifier.focusRequester(loginButtonFocusRequester),
         )
+        Text(
+            text = stringResource(R.string.account_tv_register_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
         if (state.isCaptchaRequired) {
             key(state.captchaChallengeId) {
                 CaptchaChallenge(

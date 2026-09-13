@@ -16,6 +16,7 @@
     <string name="account_login">Войти</string>
     <string name="account_login_placeholder">Email или никнейм</string>
     <string name="account_password_placeholder">Пароль</string>
+    <string name="account_mobile_register_hint">Нет аккаунта? Зарегистрируйтесь на сайте yummyani.me — в приложении регистрации нет. После этого войдите здесь с теми же email или никнеймом и паролем.</string>
     <string name="account_loading">Загрузка...</string>
     <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход. Если она не открылась здесь, используйте TV-поток входа.</string>
     <string name="account_tab_stats">Статистика</string>

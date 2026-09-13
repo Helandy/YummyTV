@@ -100,6 +100,13 @@ internal fun AccountMobileLoginCard(
             ) {
                 Text(stringResource(R.string.account_forgot_password))
             }
+            Text(
+                text = stringResource(R.string.account_mobile_register_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
             if (state.isCaptchaRequired) {
                 key(state.captchaChallengeId) {
                     AccountMobileInfoText(stringResource(R.string.account_captcha_hint))

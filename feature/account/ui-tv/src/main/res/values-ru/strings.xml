@@ -13,6 +13,7 @@
     <string name="account_login_hint">Используйте email или никнейм и пароль</string>
     <string name="account_login_placeholder">Email или никнейм</string>
     <string name="account_password_placeholder">Пароль</string>
+    <string name="account_tv_register_hint">Нет аккаунта? Зарегистрируйтесь на сайте yummyani.me — в приложении регистрации нет. После этого войдите здесь с теми же email или никнеймом и паролем.</string>
     <string name="account_loading">Загрузка...</string>
     <string name="account_captcha_title">Подтвердите, что вы не робот</string>
     <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход.</string>

@@ -20,7 +20,8 @@ class NewEpisodePushNotificationService @Inject constructor(
     fun showNewEpisode(notification: ProfileNotification, animeId: Int?) {
         ensureChannel()
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setSmallIcon(R.drawable.ic_notification_app)
+            .setColor(ACCENT_COLOR)
             .setContentTitle(notification.title.ifBlank { notification.type })
             .setContentText(notification.text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(notification.text))
@@ -53,7 +54,7 @@ class NewEpisodePushNotificationService @Inject constructor(
                 CHANNEL_ID,
                 context.getString(R.string.episode_push_notification_channel),
                 NotificationManager.IMPORTANCE_DEFAULT,
-            )
+            ),
         )
     }
 
@@ -63,5 +64,6 @@ class NewEpisodePushNotificationService @Inject constructor(
         const val CONTENT_REQUEST_CODE = 61_000
         const val DETAILS_DEEP_LINK_PREFIX = "yummytv://details/"
         const val HOME_DEEP_LINK = "yummytv://home"
+        const val ACCENT_COLOR = 0xFFFF6666.toInt()
     }
 }
