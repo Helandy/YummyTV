@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
@@ -136,7 +137,7 @@ fun ReviewsListTvScreen(
                     ) {
                         items(
                             reviews.itemCount,
-                            key = { index -> reviews[index]?.id ?: index }) { index ->
+                            key = reviews.itemKey { it.id }) { index ->
                             reviews[index]?.let { review ->
                                 ReviewTvCard(
                                     review = review,

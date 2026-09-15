@@ -297,7 +297,7 @@ class SearchViewModel @Inject internal constructor(
                 enablePlaceholders = false,
             ),
             pagingSourceFactory = {
-                OffsetPagingSource { limit, offset ->
+                OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
                     loadSearchPage(query, filters, limit, offset)
                 }
             },

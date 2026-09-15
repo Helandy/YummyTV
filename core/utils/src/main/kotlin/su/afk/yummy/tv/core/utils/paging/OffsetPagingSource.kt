@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
@@ -66,19 +67,21 @@ class PagedSource<T : Any>(
  * @param scope         скоуп для `cachedIn` (обычно `viewModelScope`).
  * @param pageSize      размер страницы (он же `initialLoadSize`).
  * @param initialOffset offset первой страницы.
+ * @param itemKey       уникальный ID для удаления повторов внутри и между страницами.
  * @param load          доменная загрузка `(limit, offset) -> List<T>`.
  */
 fun <T : Any> pagingSource(
     scope: CoroutineScope,
     pageSize: Int = DEFAULT_PAGE_SIZE,
     initialOffset: Int = 0,
+    itemKey: ((T) -> Any)? = null,
     load: suspend (limit: Int, offset: Int) -> List<T>,
 ): PagedSource<T> {
     var current: PagingSource<Int, T>? = null
     val flow = Pager(
         PagingConfig(pageSize = pageSize, initialLoadSize = pageSize, enablePlaceholders = false),
     ) {
-        OffsetPagingSource(initialOffset) { limit, offset ->
+        OffsetPagingSource(initialOffset, itemKey) { limit, offset ->
             val items = load(limit, offset)
             OffsetPage(items, offset + items.size, items.size >= limit)
         }.also { current = it }
@@ -99,8 +102,9 @@ fun <T : Any> pagingFlow(
     scope: CoroutineScope,
     pageSize: Int = DEFAULT_PAGE_SIZE,
     initialOffset: Int = 0,
+    itemKey: ((T) -> Any)? = null,
     load: suspend (limit: Int, offset: Int) -> List<T>,
-): Flow<PagingData<T>> = pagingSource(scope, pageSize, initialOffset, load).flow
+): Flow<PagingData<T>> = pagingSource(scope, pageSize, initialOffset, itemKey, load).flow
 
 /**
  * Дженерик [PagingSource] с offset-ключами. Низкоуровневый строительный блок — предпочитайте
@@ -112,24 +116,44 @@ fun <T : Any> pagingFlow(
  * обрывали список.
  *
  * @param initialOffset offset первой страницы (и нижняя граница refresh-ключа).
+ * @param itemKey       уникальный ID; повторы удаляются в пределах одного источника,
+ *                      серверные offset и признак конца страницы сохраняются.
  * @param loadPage      загрузка страницы `(limit, offset) -> OffsetPage<T>`.
  */
 class OffsetPagingSource<T : Any>(
     private val initialOffset: Int = 0,
+    private val itemKey: ((T) -> Any)? = null,
     private val loadPage: suspend (limit: Int, offset: Int) -> OffsetPage<T>,
 ) : PagingSource<Int, T>() {
+
+    private val seenKeys = mutableSetOf<Any>()
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> =
         runCatching {
             val offset = params.key ?: initialOffset
+            val loadedKeys = mutableSetOf<Any>()
+            val previousKeys = if (params is LoadParams.Refresh) emptySet() else seenKeys
+            suspend fun loadUniquePage(pageOffset: Int): OffsetPage<T> {
+                val page = loadPage(params.loadSize, pageOffset)
+                val keyOf = itemKey ?: return page
+                return page.copy(
+                    items = page.items.filter { item ->
+                        val key = keyOf(item)
+                        key !in previousKeys && loadedKeys.add(key)
+                    },
+                )
+            }
             var currentOffset = offset
-            var page = loadPage(params.loadSize, currentOffset)
+            var page = loadUniquePage(currentOffset)
 
             while (page.items.isEmpty() && page.canLoadMore && page.nextOffset > currentOffset) {
                 currentOffset = page.nextOffset
-                page = loadPage(params.loadSize, currentOffset)
+                page = loadUniquePage(currentOffset)
             }
 
+            // Commit keys only after the entire load succeeds, so retry cannot lose items.
+            if (params is LoadParams.Refresh) seenKeys.clear()
+            seenKeys.addAll(loadedKeys)
             LoadResult.Page(
                 data = page.items,
                 prevKey = null,
@@ -139,7 +163,10 @@ class OffsetPagingSource<T : Any>(
                     null
                 },
             )
-        }.getOrElse { error -> LoadResult.Error(error) }
+        }.getOrElse { error ->
+            if (error is CancellationException) throw error
+            LoadResult.Error(error)
+        }
 
     override fun getRefreshKey(state: PagingState<Int, T>): Int? =
         state.anchorPosition?.let { anchorPosition ->

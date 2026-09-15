@@ -97,7 +97,7 @@ class ReviewsListViewModel @AssistedInject constructor(
     }
 
     private fun createFlow(sort: ReviewSort) =
-        pagingSource(viewModelScope) { limit, offset ->
+        pagingSource(viewModelScope, itemKey = { it.id }) { limit, offset ->
             val page = animeId?.let { getAnimeReviews(it, sort, limit, offset) }
                 ?: getReviewFeed(sort, limit, offset)
             page.reviews

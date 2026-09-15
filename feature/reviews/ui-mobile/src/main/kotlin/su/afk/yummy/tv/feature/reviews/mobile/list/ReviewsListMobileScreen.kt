@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
@@ -117,7 +118,7 @@ private fun ReviewsListContent(
         ) {
             items(
                 items.itemCount,
-                key = { index -> items[index]?.id ?: index },
+                key = items.itemKey { it.id },
             ) { index ->
                 items[index]?.let { review ->
                     ReviewMobileCard(

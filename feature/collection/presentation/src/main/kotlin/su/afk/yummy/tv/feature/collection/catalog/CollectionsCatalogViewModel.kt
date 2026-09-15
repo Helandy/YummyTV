@@ -7,10 +7,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
@@ -136,7 +136,7 @@ class CollectionsCatalogViewModel @Inject internal constructor(
                 enablePlaceholders = false,
             ),
             pagingSourceFactory = {
-                OffsetPagingSource { limit, offset ->
+                OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
                     val page = getCollections(limit, offset)
                     OffsetPage(
                         items = page.items,

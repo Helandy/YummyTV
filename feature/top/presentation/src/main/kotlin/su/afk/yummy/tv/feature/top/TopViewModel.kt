@@ -6,9 +6,9 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
@@ -74,14 +74,8 @@ class TopViewModel @Inject internal constructor(
                 enablePlaceholders = false,
             ),
             pagingSourceFactory = {
-                val seenAnimeIds = mutableSetOf<Int>()
-                OffsetPagingSource { limit, offset ->
-                    val page = loadTopPage(type, limit, offset)
-                    page.copy(
-                        items = page.items.filter { item ->
-                            seenAnimeIds.add(item.id)
-                        },
-                    )
+                OffsetPagingSource(itemKey = { it.id }) { limit, offset ->
+                    loadTopPage(type, limit, offset)
                 }
             },
         ).flow.cachedIn(viewModelScope)
