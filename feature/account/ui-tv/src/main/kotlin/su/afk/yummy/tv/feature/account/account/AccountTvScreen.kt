@@ -36,15 +36,17 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
+import su.afk.yummy.tv.feature.account.view.LocalAuthPanel
 import su.afk.yummy.tv.feature.account.view.LoginPanel
 
 @Preview(
     name = "Default",
     device = "spec:width=1920dp,height=1080dp,dpi=160",
     uiMode = android.content.res.Configuration.UI_MODE_TYPE_TELEVISION,
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 private fun AccountTvScreenDefaultPreview() = ScreenPreviewTheme {
@@ -70,9 +72,13 @@ fun AccountTvScreen(
     }
     val scope = rememberCoroutineScope()
     var isStatsContentFocused by remember { mutableStateOf(false) }
+    // Панель входа сама разруливает DPAD-влево между своими кнопками.
+    var isLoginPanelHandlingLeft by remember { mutableStateOf(false) }
 
     fun shouldOpenMainMenuFromLeft(): Boolean =
-        state.selectedTab == AccountState.AccountTab.STATS && !isStatsContentFocused
+        !isLoginPanelHandlingLeft &&
+            state.selectedTab == AccountState.AccountTab.STATS &&
+            !isStatsContentFocused
 
     fun requestMainMenuFocus(): Boolean {
         val requester = mainMenuFocusRequester ?: return false
@@ -104,12 +110,23 @@ fun AccountTvScreen(
             .padding(horizontal = horizontalPadding, vertical = TvScreenPadding.Vertical),
     ) {
         if (!state.isSignedIn) {
-            LoginPanel(
-                state = state,
-                onEvent = onEvent,
-                initialFocusRequester = preferredFocusRequester,
-                modifier = Modifier.align(Alignment.Center),
-            )
+            if (state.localAuthServerState != LocalAuthServerState.Idle) {
+                LocalAuthPanel(
+                    state = state.localAuthServerState,
+                    onBack = { onEvent(AccountState.Event.StopLocalAuthServerSelected) },
+                    onRefreshPin = { onEvent(AccountState.Event.RefreshLocalAuthPinSelected) },
+                    initialFocusRequester = preferredFocusRequester,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            } else {
+                LoginPanel(
+                    state = state,
+                    onEvent = onEvent,
+                    initialFocusRequester = preferredFocusRequester,
+                    onHandlesDirectionLeftChanged = { isLoginPanelHandlingLeft = it },
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
         } else {
             AccountHubPanel(
                 state = state,

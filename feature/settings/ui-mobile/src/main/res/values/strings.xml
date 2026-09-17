@@ -3,6 +3,9 @@
     <string name="settings_mobile_title">Settings</string>
     <string name="settings_mobile_section_interface">Interface</string>
     <string name="settings_mobile_section_search">Search</string>
+    <string name="settings_mobile_section_devices">Devices</string>
+    <string name="settings_mobile_login_on_tv">Sign in on TV</string>
+    <string name="settings_mobile_login_on_tv_hint">Transfer this session to the TV app over the local network</string>
     <string name="settings_mobile_section_appearance">Appearance</string>
     <string name="settings_mobile_section_player">Player</string>
     <string name="settings_mobile_section_player_advanced">Player (Advanced)</string>

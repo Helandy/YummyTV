@@ -115,13 +115,7 @@ class YaniAccountApi(
 
         if (!response.status.isSuccess()) {
             val error = response.toYaniError()
-            if (response.status == HttpStatusCode(
-                    420,
-                    "Captcha Required"
-                ) || error.errorCode == CAPTCHA_ERROR_CODE
-            ) {
-                throw YaniCaptchaRequiredException()
-            }
+            if (error.isCaptchaRequired(response.status)) throw YaniCaptchaRequiredException()
             throw YaniAccountException(
                 message = error.error.ifBlank { error.errorTitle.ifBlank { "Could not sign in" } },
                 code = error.errorCode,
@@ -144,6 +138,16 @@ class YaniAccountApi(
             }
             throw error
         }
+
+        if (!response.status.isSuccess()) {
+            val error = response.toYaniError()
+            if (error.isCaptchaRequired(response.status)) throw YaniCaptchaRequiredException()
+            throw YaniAccountException(
+                message = error.error.ifBlank { error.errorTitle.ifBlank { "Could not register user" } },
+                code = error.errorCode,
+            )
+        }
+
         if (!response.body<YaniSuccessObjectResponseDto>().response.success) {
             throw YaniAccountException("Could not register user")
         }
@@ -280,6 +284,14 @@ class YaniAccountApi(
             if (error.response.status.value == CAPTCHA_ERROR_CODE) throw YaniCaptchaRequiredException()
             throw error
         }
+        if (!response.status.isSuccess()) {
+            val error = response.toYaniError()
+            if (error.isCaptchaRequired(response.status)) throw YaniCaptchaRequiredException()
+            throw YaniAccountException(
+                message = error.error.ifBlank { error.errorTitle.ifBlank { "Could not request password reset" } },
+                code = error.errorCode,
+            )
+        }
         if (!response.body<YaniSuccessObjectResponseDto>().response.success) {
             throw YaniAccountException("Could not request password reset")
         }
@@ -362,8 +374,8 @@ class YaniAccountApi(
                 YaniPutVideoBodyDto(
                     time = timeSeconds,
                     duration = durationSeconds,
-                    times = times
-                )
+                    times = times,
+                ),
             )
         }.body<YaniBooleanResponseDto>().response
 
@@ -408,7 +420,7 @@ class YaniAccountApi(
     suspend fun getAnimeCollections(
         animeId: Int,
         limit: Int,
-        offset: Int
+        offset: Int,
     ): List<YaniCollectionSummaryDto> =
         clientProvider.get().get("$YANI_BASE_URL/anime/$animeId/collections") {
             parameter("limit", limit)
@@ -488,6 +500,14 @@ class YaniAccountApi(
             .body<YaniBooleanResponseDto>()
             .response
 
+    /**
+     * Бэкенд сигналит о капче то статусом 420, то кодом в теле, то только текстом — проверяем всё.
+     */
+    private fun YaniErrorResponseDto.isCaptchaRequired(status: HttpStatusCode): Boolean =
+        status.value == CAPTCHA_ERROR_CODE ||
+            errorCode == CAPTCHA_ERROR_CODE ||
+            CAPTCHA_ERROR_MARKERS.any { error.contains(it, ignoreCase = true) }
+
     private suspend fun HttpResponse.toYaniError(): YaniErrorResponseDto =
         runCatching {
             YaniApiJson.decodeFromString<YaniErrorResponseDto>(bodyAsText())
@@ -498,6 +518,7 @@ class YaniAccountApi(
     private companion object {
         const val TAG = "YaniAccountApi"
         const val CAPTCHA_ERROR_CODE = 420
+        val CAPTCHA_ERROR_MARKERS = listOf("капч", "captcha")
         const val YANI_AUTHORIZATION_PREFIX = "Bearer "
     }
 }

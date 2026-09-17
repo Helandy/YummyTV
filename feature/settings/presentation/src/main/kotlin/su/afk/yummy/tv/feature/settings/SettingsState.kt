@@ -183,6 +183,9 @@ class SettingsState {
         /** Пользователь подтвердил текущий порядок кнопок деталей. */
         data object DetailsButtonOrderSelected : Event
 
+        /** Передача сессии на ТВ по локальной сети. */
+        data object LoginOnTvSelected : Event
+
         /** Пользователь сбросил порядок кнопок деталей к стандартному. */
         data object DetailsButtonOrderReset : Event
 

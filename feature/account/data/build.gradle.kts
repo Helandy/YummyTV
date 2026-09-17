@@ -17,6 +17,10 @@ dependencies {
     implementation(project(":feature:account:domain"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.serialization.kotlinxJson)
 
     testImplementation(libs.junit)
     testImplementation(libs.bundles.unit.test)

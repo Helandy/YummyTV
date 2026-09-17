@@ -7,6 +7,7 @@ import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
+import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
@@ -39,7 +40,9 @@ class AccountState {
         val captchaChallengeId: Int = 0,
         val captchaError: AccountUiError? = null,
         val error: AccountUiError? = null,
+        val errorMessage: String? = null,
         val hubError: AccountUiError? = null,
+        val localAuthServerState: LocalAuthServerState = LocalAuthServerState.Idle,
     ) : UiState {
         val unreadNotificationCounts: ImmutableList<NotificationCount>
             get() = notificationCounts.filterNot { it.type.equals("message", ignoreCase = true) }
@@ -107,6 +110,7 @@ class AccountState {
         data object EpisodePushToggled : Event
         data object ProfileEditSelected : Event
         data object PasswordResetSelected : Event
+        data object RegistrationSelected : Event
 
         /** Пользователь открыл уведомление с указанным идентификатором. */
         data class NotificationSelected(val id: Int) : Event
@@ -122,7 +126,17 @@ class AccountState {
 
         /** Пользователь удалил уведомление с указанным идентификатором. */
         data class NotificationDeleteSelected(val id: Int) : Event
+
+        /** ТВ: поднять локальный сервер и показать PIN для передачи сессии с телефона. */
+        data object StartLocalAuthServerSelected : Event
+        data object StopLocalAuthServerSelected : Event
+
+        /** ТВ: перевыпустить PIN после истечения срока или исчерпания попыток. */
+        data object RefreshLocalAuthPinSelected : Event
     }
 
-    sealed interface Effect : UiEffect
+    sealed interface Effect : UiEffect {
+        data object ShowCaptchaHint : Effect
+        data object HideKeyboard : Effect
+    }
 }

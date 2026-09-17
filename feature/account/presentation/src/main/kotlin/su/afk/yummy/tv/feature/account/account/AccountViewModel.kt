@@ -13,11 +13,13 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.account.handler.AccountHubHandler
+import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountLoginResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationHandler
 import su.afk.yummy.tv.feature.account.account.handler.AccountNotificationMutationHandler
@@ -27,6 +29,7 @@ import su.afk.yummy.tv.feature.account.account.handler.AccountOpenNotificationRe
 import su.afk.yummy.tv.feature.account.account.handler.AccountRefreshResult
 import su.afk.yummy.tv.feature.account.account.handler.AccountSessionHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.account.utils.totalUnreadCount
@@ -53,7 +56,9 @@ class AccountViewModel @Inject internal constructor(
     private val hubHandler: AccountHubHandler,
     private val notificationHandler: AccountNotificationHandler,
     private val notificationMutationHandler: AccountNotificationMutationHandler,
+    private val localAuthHandler: AccountLocalAuthHandler,
     private val analytics: AccountAnalytics,
+    private val localAuthAnalytics: LocalAuthAnalytics,
 ) : BaseViewModel<AccountState.State, AccountState.Event, AccountState.Effect>() {
 
     override fun createInitialState() = AccountState.State()
@@ -75,6 +80,7 @@ class AccountViewModel @Inject internal constructor(
                             notificationCounts = persistentListOf(),
                             isNotificationOpening = false,
                             hubError = null,
+                            localAuthServerState = LocalAuthServerState.Idle,
                         )
                     } else {
                         copy(
@@ -115,6 +121,7 @@ class AccountViewModel @Inject internal constructor(
                 copy(
                     login = event.login,
                     error = null,
+                    errorMessage = null,
                     isCaptchaRequired = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
                     captchaError = null,
@@ -125,6 +132,7 @@ class AccountViewModel @Inject internal constructor(
                 copy(
                     password = event.password,
                     error = null,
+                    errorMessage = null,
                     isCaptchaRequired = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
                     captchaError = null,
@@ -137,8 +145,9 @@ class AccountViewModel @Inject internal constructor(
             }
 
             is AccountState.Event.CaptchaSolved -> {
+                setState { copy(error = null, errorMessage = null, captchaError = null) }
                 if (event.token.isBlank()) {
-                    setState { copy(captchaError = AccountUiError.CAPTCHA_RESPONSE_EMPTY) }
+                    setState { copy(error = AccountUiError.CAPTCHA_RESPONSE_EMPTY) }
                 } else {
                     login(captchaResponse = event.token)
                 }
@@ -185,7 +194,7 @@ class AccountViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = AccountUiError.LOGOUT_FAILED
+                            error = AccountUiError.LOGOUT_FAILED,
                         )
                     }
                 }
@@ -205,7 +214,7 @@ class AccountViewModel @Inject internal constructor(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = AccountUiError.REFRESH_FAILED
+                                error = AccountUiError.REFRESH_FAILED,
                             )
                         }
                     }
@@ -252,6 +261,9 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.PasswordResetSelected ->
                 nav.navigate(accountNavigator.getPasswordResetDest())
 
+            AccountState.Event.RegistrationSelected ->
+                nav.navigate(accountNavigator.getRegistrationDest())
+
             is AccountState.Event.NotificationSelected -> openNotification(event.id)
             is AccountState.Event.NotificationReadSelected -> {
                 analytics.eventNotificationReadSelected(event.id)
@@ -271,6 +283,54 @@ class AccountViewModel @Inject internal constructor(
                 analytics.eventNotificationDeleteSelected(event.id)
                 deleteNotificationOptimistically(event.id)
             }
+
+            AccountState.Event.StartLocalAuthServerSelected -> {
+                localAuthAnalytics.eventTvPairingStarted()
+                startLocalAuthServer()
+            }
+
+            AccountState.Event.RefreshLocalAuthPinSelected -> {
+                localAuthAnalytics.eventTvPinRefreshed()
+                startLocalAuthServer()
+            }
+
+            AccountState.Event.StopLocalAuthServerSelected -> {
+                localAuthAnalytics.eventTvPairingCancelled()
+                localAuthHandler.stopServer(viewModelScope)
+                setState { copy(localAuthServerState = LocalAuthServerState.Idle) }
+            }
+        }
+    }
+
+    private fun startLocalAuthServer() {
+        localAuthHandler.startServer(viewModelScope) { serverState ->
+            setState { copy(localAuthServerState = serverState) }
+            when (serverState) {
+                is LocalAuthServerState.Pairing -> trackPairingState(serverState)
+
+                is LocalAuthServerState.Success -> {
+                    localAuthAnalytics.eventTvTransferSuccess()
+                    // Сессия уже сохранена — сервер и NSD-регистрация больше не нужны.
+                    localAuthHandler.cancelServer()
+                }
+
+                is LocalAuthServerState.Error -> {
+                    localAuthAnalytics.eventTvPairingFailed(serverState.reason)
+                    // PIN больше не примут: гасим сервер, панель предложит выпустить новый код.
+                    localAuthHandler.cancelServer()
+                }
+
+                else -> Unit
+            }
+        }
+    }
+
+    /** Первый [LocalAuthServerState.Pairing] — код на экране, последующие — неудачные попытки. */
+    private fun trackPairingState(state: LocalAuthServerState.Pairing) {
+        if (state.lastError == null) {
+            localAuthAnalytics.eventTvPinShown()
+        } else {
+            localAuthAnalytics.eventTvWrongPin(state.attemptsLeft)
         }
     }
 
@@ -319,7 +379,22 @@ class AccountViewModel @Inject internal constructor(
             return
         }
         viewModelScope.launch {
-            setState { copy(isLoading = true, error = null, captchaError = null) }
+            val isCaptchaAttempt = captchaResponse != null
+            setState {
+                copy(
+                    isLoading = true,
+                    error = null,
+                    errorMessage = null,
+                    captchaError = null,
+                    // Капчу не размонтируем, пока проверяем её же токен.
+                    isCaptchaRequired = if (isCaptchaAttempt) isCaptchaRequired else false,
+                    captchaChallengeId = if (isCaptchaAttempt) {
+                        captchaChallengeId
+                    } else {
+                        currentState.captchaChallengeId + 1
+                    },
+                )
+            }
             when (val result = sessionHandler.login(credentials, captchaResponse)) {
                 is AccountLoginResult.Success -> {
                     analytics.eventLoginSuccess()
@@ -355,11 +430,19 @@ class AccountViewModel @Inject internal constructor(
                             error = null,
                         )
                     }
+                    setEffect(AccountState.Effect.HideKeyboard)
+                    setEffect(AccountState.Effect.ShowCaptchaHint)
                 }
 
-                AccountLoginResult.Failure -> {
+                is AccountLoginResult.Failure -> {
                     analytics.eventLoginFailure()
-                    setState { copy(isLoading = false, error = AccountUiError.SIGN_IN_FAILED) }
+                    setState {
+                        copy(
+                            isLoading = false,
+                            error = AccountUiError.SIGN_IN_FAILED,
+                            errorMessage = result.message,
+                        )
+                    }
                 }
             }
         }
@@ -395,7 +478,7 @@ class AccountViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             isSignedIn = false,
-                            error = AccountUiError.REFRESH_FAILED
+                            error = AccountUiError.REFRESH_FAILED,
                         )
                     }
                 }
@@ -565,5 +648,4 @@ class AccountViewModel @Inject internal constructor(
             settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
         }
     }
-
 }

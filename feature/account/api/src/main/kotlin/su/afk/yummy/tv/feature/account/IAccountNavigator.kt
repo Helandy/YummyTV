@@ -10,4 +10,10 @@ interface IAccountNavigator {
     fun getMySubscriptionsDest(): NavKey
     fun getProfileEditDest(): NavKey
     fun getPasswordResetDest(): NavKey
+
+    /** Экран регистрации есть только в мобильной сборке — на ТВ entry не зарегистрирован. */
+    fun getRegistrationDest(): NavKey
+
+    /** Передача сессии на ТВ по локальной сети — только мобильная сборка. */
+    fun getLocalAuthDest(): NavKey
 }

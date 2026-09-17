@@ -52,6 +52,8 @@ internal fun AccountMobileLoginCard(
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                     )
+                    val errorMessage = state.errorMessage ?: state.error.accountErrorMessage()
+                    errorMessage?.let { AccountMobileInfoText(it, isError = true) }
                 }
             }
             Text(
@@ -80,25 +82,34 @@ internal fun AccountMobileLoginCard(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth(),
             )
-            Button(
-                onClick = { onEvent(AccountState.Event.LoginSelected) },
-                enabled = !state.isLoading,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(stringResource(R.string.account_login))
+            if (!state.isCaptchaRequired) {
+                Button(
+                    onClick = { onEvent(AccountState.Event.LoginSelected) },
+                    enabled = !state.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(stringResource(R.string.account_login))
+                    }
                 }
-            }
-            TextButton(
-                onClick = { onEvent(AccountState.Event.PasswordResetSelected) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.account_forgot_password))
+                TextButton(
+                    onClick = { onEvent(AccountState.Event.PasswordResetSelected) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.account_forgot_password))
+                }
+                Button(
+                    onClick = { onEvent(AccountState.Event.RegistrationSelected) },
+                    enabled = !state.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.account_mobile_register))
+                }
             }
             Text(
                 text = stringResource(R.string.account_mobile_register_hint),
@@ -109,10 +120,14 @@ internal fun AccountMobileLoginCard(
             )
             if (state.isCaptchaRequired) {
                 key(state.captchaChallengeId) {
-                    AccountMobileInfoText(stringResource(R.string.account_captcha_hint))
+                    AccountMobileHCaptcha(
+                        siteKey = state.captchaSiteKey,
+                        onSolved = { onEvent(AccountState.Event.CaptchaSolved(it)) },
+                        onExpired = { onEvent(AccountState.Event.CaptchaExpired) },
+                        onFailed = { onEvent(AccountState.Event.CaptchaFailed()) },
+                    )
                 }
             }
-            state.error.accountErrorMessage()?.let { AccountMobileInfoText(it, isError = true) }
         }
     }
 }
@@ -126,5 +141,7 @@ private fun AccountMobileInfoText(
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
     )
 }

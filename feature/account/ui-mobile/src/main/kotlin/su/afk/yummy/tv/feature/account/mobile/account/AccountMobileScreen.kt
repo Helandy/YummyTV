@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.mobile.account
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +14,8 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,7 +85,24 @@ fun AccountMobileScreen(
     effect: Flow<AccountState.Effect>,
     onEvent: (AccountState.Event) -> Unit,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val captchaHint = stringResource(R.string.account_captcha_required_toast)
     LaunchedEffect(Unit) { onEvent(AccountState.Event.ScreenShown) }
+
+    LaunchedEffect(effect) {
+        effect.collect { effectItem ->
+            when (effectItem) {
+                AccountState.Effect.HideKeyboard -> {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+
+                AccountState.Effect.ShowCaptchaHint -> Toast.makeText(context, captchaHint, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     var showLogoutConfirm by remember { mutableStateOf(false) }
     val mainActions = LocalMobileMainActions.current

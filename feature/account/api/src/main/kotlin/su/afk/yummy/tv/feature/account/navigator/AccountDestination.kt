@@ -23,3 +23,9 @@ data object ProfileEditDestination : NavKey
 
 @Serializable
 data object PasswordResetDestination : NavKey
+
+@Serializable
+data object RegistrationDestination : NavKey
+
+@Serializable
+data object LocalAuthDestination : NavKey

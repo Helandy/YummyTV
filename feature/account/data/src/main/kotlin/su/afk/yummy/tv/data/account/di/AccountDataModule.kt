@@ -11,8 +11,13 @@ import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.data.account.localauth.LocalAuthServer
+import su.afk.yummy.tv.data.account.localauth.NsdAdvertiser
+import su.afk.yummy.tv.data.account.localauth.NsdDeviceDiscovery
+import su.afk.yummy.tv.data.account.localauth.SessionTransferClient
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.repository.DefaultAccountMutationErrorNotifier
+import su.afk.yummy.tv.data.account.repository.NsdLocalAuthRepository
 import su.afk.yummy.tv.data.account.repository.YaniAccountRepository
 import su.afk.yummy.tv.data.account.repository.YaniAnimeExtrasRepository
 import su.afk.yummy.tv.data.account.repository.YaniProfileNotificationsRepository
@@ -27,6 +32,7 @@ import su.afk.yummy.tv.data.account.repository.YaniVideoWatchesRepository
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
+import su.afk.yummy.tv.domain.account.repository.LocalAuthRepository
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
 import su.afk.yummy.tv.domain.account.repository.ProfileSettingsRepository
 import su.afk.yummy.tv.domain.account.repository.UserDirectoryRepository
@@ -175,4 +181,18 @@ object AccountDataModule {
         yaniAuthPreferences: YaniAuthPreferences,
     ): ProfileSettingsRepository =
         YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences)
+
+    @Provides
+    @Singleton
+    internal fun provideLocalAuthRepository(
+        server: LocalAuthServer,
+        advertiser: NsdAdvertiser,
+        discovery: NsdDeviceDiscovery,
+        transferClient: SessionTransferClient,
+    ): LocalAuthRepository = NsdLocalAuthRepository(
+        server,
+        advertiser,
+        discovery,
+        transferClient,
+    )
 }

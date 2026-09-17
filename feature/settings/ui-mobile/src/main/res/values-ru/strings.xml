@@ -3,6 +3,9 @@
     <string name="settings_mobile_title">Настройки</string>
     <string name="settings_mobile_section_interface">Интерфейс</string>
     <string name="settings_mobile_section_search">Поиск</string>
+    <string name="settings_mobile_section_devices">Устройства</string>
+    <string name="settings_mobile_login_on_tv">Войти на ТВ</string>
+    <string name="settings_mobile_login_on_tv_hint">Передать текущую сессию в приложение на ТВ по локальной сети</string>
     <string name="settings_mobile_section_appearance">Внешний вид</string>
     <string name="settings_mobile_section_player">Плеер</string>
     <string name="settings_mobile_section_player_advanced">Плеер (расширенные)</string>

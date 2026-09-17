@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account.account.handler
 
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
+import su.afk.yummy.tv.domain.account.model.LoginException
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
@@ -38,8 +39,10 @@ internal class AccountAuthHandler @Inject constructor(
             onFailure = { error ->
                 if (error is AccountCaptchaRequiredException) {
                     AccountLoginResult.CaptchaRequired(rejected = captchaResponse != null)
+                } else if (error is LoginException) {
+                    AccountLoginResult.Failure(error.message)
                 } else {
-                    AccountLoginResult.Failure
+                    AccountLoginResult.Failure()
                 }
             },
         )
@@ -88,7 +91,7 @@ internal class AccountAuthHandler @Inject constructor(
 internal sealed interface AccountLoginResult {
     data class Success(val account: YaniAccount) : AccountLoginResult
     data class CaptchaRequired(val rejected: Boolean) : AccountLoginResult
-    data object Failure : AccountLoginResult
+    data class Failure(val message: String? = null) : AccountLoginResult
 }
 
 /** Outcome of refreshing the stored account session. */

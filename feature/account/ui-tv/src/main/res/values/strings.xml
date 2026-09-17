@@ -98,4 +98,29 @@
     <string name="account_tv_section_lists">My lists</string>
     <string name="account_tv_section_social">Community</string>
     <string name="account_tv_section_about">About me</string>
+    <string name="account_tv_error_registration_failed">Registration failed. Please try again.</string>
+    <string name="account_tv_error_invalid_email">Enter a valid email address.</string>
+    <string name="account_tv_error_password_too_short">Password must be at least 6 characters.</string>
+    <string name="account_local_auth_login_from_mobile">Login from mobile</string>
+    <string name="account_local_auth_login_from_mobile_hint">Discovery and PIN-based transfer via local network</string>
+    <string name="account_local_auth_pairing_title">Login via mobile app</string>
+    <string name="account_local_auth_pairing_subtitle">Make sure both devices are on the same Wi-Fi. On your mobile, go to Account -> Login on TV and enter this PIN:</string>
+    <string name="account_local_auth_transferring">Receiving session...</string>
+    <string name="account_local_auth_success">Success! Logging in...</string>
+    <string name="account_local_auth_error_invalid_pin">Wrong PIN. Check the code on the TV screen.</string>
+    <string name="account_local_auth_error_pin_expired">The PIN has expired.</string>
+    <string name="account_local_auth_error_too_many_attempts">Too many wrong attempts.</string>
+    <string name="account_local_auth_error_service_unavailable">Could not announce the TV on the local network.</string>
+    <string name="account_local_auth_error_sign_in_failed">The PIN is correct, but signing in failed. Try again.</string>
+    <string name="account_local_auth_refresh_pin">Get a new PIN</string>
+    <string name="account_local_auth_refresh_pin_hint">Get a new PIN and enter it on your phone again.</string>
+    <plurals name="account_local_auth_attempts_left">
+        <item quantity="one">%d attempt left</item>
+        <item quantity="other">%d attempts left</item>
+    </plurals>
+    <string name="account_tv_error_transfer_failed">Session transfer failed</string>
+    <string name="account_tv_error_local_auth_invalid_pin">Wrong PIN.</string>
+    <string name="account_tv_error_local_auth_pin_expired">The PIN has expired.</string>
+    <string name="account_tv_error_local_auth_too_many_attempts">Too many wrong attempts.</string>
+    <string name="account_tv_error_local_auth_sign_in_failed">The PIN is correct, but signing in failed.</string>
 </resources>

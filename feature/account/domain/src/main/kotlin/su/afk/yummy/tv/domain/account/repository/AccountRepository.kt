@@ -10,6 +10,9 @@ import su.afk.yummy.tv.domain.account.model.YaniAccount
 interface AccountRepository {
     suspend fun login(login: String, password: String, captchaResponse: String? = null): YaniAccount
     suspend fun register(registration: UserRegistration)
+
+    /** Завершает вход по уже полученному токену: профиль, настройки аккаунта, очистка чужого кэша. */
+    suspend fun signInWithToken(token: String): YaniAccount
     suspend fun verifyRegistration(hash: String): YaniAccount
     suspend fun refreshToken(): YaniAccount?
     fun observeSession(): Flow<AccountSession>

@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
+import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.moved
 import javax.inject.Inject
@@ -28,6 +29,7 @@ class SettingsViewModel @Inject internal constructor(
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val tvIntegration: ITvIntegration,
     private val nav: INavigationManager,
+    private val accountNavigator: IAccountNavigator,
     private val analytics: SettingsAnalytics,
     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
@@ -304,6 +306,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.DetailsButtonOrderSelected -> {
                 nav.navigate(SettingsDetailsButtonOrderDestination)
+            }
+
+            SettingsState.Event.LoginOnTvSelected -> {
+                nav.navigate(accountNavigator.getLocalAuthDest())
             }
 
             SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {

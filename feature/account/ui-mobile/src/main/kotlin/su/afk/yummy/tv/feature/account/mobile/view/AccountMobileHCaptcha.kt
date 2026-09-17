@@ -10,15 +10,18 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -30,9 +33,16 @@ internal fun AccountMobileHCaptcha(
     onFailed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val currentOnSolved by rememberUpdatedState(onSolved)
+    val currentOnExpired by rememberUpdatedState(onExpired)
+    val currentOnFailed by rememberUpdatedState(onFailed)
+
     val html = remember(siteKey) { mobileCaptchaHtml(siteKey) }
     var loading by remember(siteKey) { mutableStateOf(true) }
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier.defaultMinSize(minHeight = 450.dp),
+        contentAlignment = Alignment.Center,
+    ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
@@ -52,7 +62,11 @@ internal fun AccountMobileHCaptcha(
                     settings.domStorageEnabled = true
                     settings.cacheMode = WebSettings.LOAD_DEFAULT
                     addJavascriptInterface(
-                        MobileCaptchaBridge(onSolved, onExpired, onFailed),
+                        MobileCaptchaBridge(
+                            onSolvedState = { currentOnSolved },
+                            onExpiredState = { currentOnExpired },
+                            onFailedState = { currentOnFailed },
+                        ),
                         "YummyCaptcha"
                     )
                     loadDataWithBaseURL("https://yummyani.me/", html, "text/html", "utf-8", null)
@@ -64,25 +78,25 @@ internal fun AccountMobileHCaptcha(
 }
 
 private class MobileCaptchaBridge(
-    private val onSolved: (String) -> Unit,
-    private val onExpired: () -> Unit,
-    private val onFailed: () -> Unit,
+    private val onSolvedState: () -> (String) -> Unit,
+    private val onExpiredState: () -> () -> Unit,
+    private val onFailedState: () -> () -> Unit,
 ) {
     private val handler = Handler(Looper.getMainLooper())
 
     @JavascriptInterface
     fun onSolved(token: String) {
-        handler.post { onSolved(token) }
+        handler.post { onSolvedState()(token) }
     }
 
     @JavascriptInterface
     fun onExpired() {
-        handler.post { onExpired() }
+        handler.post { onExpiredState()() }
     }
 
     @JavascriptInterface
     fun onError() {
-        handler.post { onFailed() }
+        handler.post { onFailedState()() }
     }
 }
 

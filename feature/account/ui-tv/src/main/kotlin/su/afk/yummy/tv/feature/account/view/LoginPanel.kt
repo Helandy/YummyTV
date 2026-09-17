@@ -3,9 +3,12 @@ package su.afk.yummy.tv.feature.account.view
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,12 +17,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -46,6 +51,7 @@ internal fun LoginPanel(
     state: AccountState.State,
     onEvent: (AccountState.Event) -> Unit,
     initialFocusRequester: FocusRequester? = null,
+    onHandlesDirectionLeftChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -67,6 +73,11 @@ internal fun LoginPanel(
         keyboardController?.hide()
     }
 
+    // Панель ушла с экрана вместе с сфокусированной кнопкой — не блокируем меню навсегда.
+    DisposableEffect(Unit) {
+        onDispose { onHandlesDirectionLeftChanged(false) }
+    }
+
     Column(
         modifier = modifier
             .offset(y = panelOffsetY)
@@ -74,8 +85,15 @@ internal fun LoginPanel(
             .widthIn(max = 680.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        AppBrandIcon(modifier = Modifier.size(92.dp))
-        AccountTitle()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            AppBrandIcon(modifier = Modifier.size(92.dp))
+            Spacer(Modifier.width(16.dp))
+            AccountTitle()
+        }
         Text(
             text = stringResource(R.string.account_signed_out),
             style = MaterialTheme.typography.bodyLarge,
@@ -156,14 +174,35 @@ internal fun LoginPanel(
                     },
                 ),
         )
-        AccountAction(
-            label = stringResource(R.string.account_login),
-            hint = if (state.isLoading) stringResource(R.string.account_loading) else stringResource(
-                R.string.account_login_hint
-            ),
-            onClick = { onEvent(AccountState.Event.LoginSelected) },
-            modifier = Modifier.focusRequester(loginButtonFocusRequester),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            AccountAction(
+                label = stringResource(R.string.account_login),
+                hint = if (state.isLoading) {
+                    stringResource(R.string.account_loading)
+                } else {
+                    stringResource(
+                        R.string.account_login_hint,
+                    )
+                },
+                onClick = { onEvent(AccountState.Event.LoginSelected) },
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(loginButtonFocusRequester),
+            )
+            AccountAction(
+                label = stringResource(R.string.account_local_auth_login_from_mobile),
+                hint = stringResource(R.string.account_local_auth_login_from_mobile_hint),
+                onClick = { onEvent(AccountState.Event.StartLocalAuthServerSelected) },
+                // Без явного перехода DPAD-влево уходит из панели и открывает боковое меню.
+                onDirectionLeft = { loginButtonFocusRequester.requestFocus() },
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged { onHandlesDirectionLeftChanged(it.isFocused) },
+            )
+        }
         Text(
             text = stringResource(R.string.account_tv_register_hint),
             style = MaterialTheme.typography.bodyMedium,
@@ -194,7 +233,8 @@ private fun Modifier.editableTextFieldKeyEvents(
     when (event.key) {
         Key.DirectionCenter,
         Key.Enter,
-        Key.NumPadEnter -> {
+        Key.NumPadEnter,
+        -> {
             if (!isEditing) {
                 onStartEditing()
                 true

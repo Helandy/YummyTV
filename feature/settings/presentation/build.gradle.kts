@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:tv"))
     implementation(project(":core:utils"))
+    implementation(project(":feature:account:api"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:video-download:domain"))
 

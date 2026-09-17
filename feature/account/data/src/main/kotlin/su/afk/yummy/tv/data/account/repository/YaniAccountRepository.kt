@@ -20,12 +20,15 @@ import su.afk.yummy.tv.data.account.dto.YaniRegistrationBodyDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.mapper.toEditableProfile
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
+import su.afk.yummy.tv.data.account.network.YaniAccountException
 import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
 import su.afk.yummy.tv.data.account.storage.mapper.toProfileEntry
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.model.EditableProfile
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
+import su.afk.yummy.tv.domain.account.model.LoginException
+import su.afk.yummy.tv.domain.account.model.RegistrationException
 import su.afk.yummy.tv.domain.account.model.UserRegistration
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
@@ -49,14 +52,24 @@ class YaniAccountRepository(
             api.login(login, password, captchaResponse)
         } catch (e: YaniCaptchaRequiredException) {
             throw AccountCaptchaRequiredException()
+        } catch (e: YaniAccountException) {
+            throw LoginException(e.message ?: "Could not sign in")
         }
+        signInWithTokenInternal(token)
+    }
+
+    override suspend fun signInWithToken(token: String): YaniAccount = withContext(Dispatchers.IO) {
+        signInWithTokenInternal(token)
+    }
+
+    private suspend fun signInWithTokenInternal(token: String): YaniAccount {
         if (token.isBlank()) error("Empty access token")
         val profileDto = api.getProfile(token)
         val savedProfile = saveProfile(profileDto)
         clearPreviousDocumentCacheIfNeeded(savedProfile.id)
         settingsStore.setYaniAccount(savedProfile.id, savedProfile.nickname, savedProfile.avatarUrl)
         yaniAuthPreferences.setRefreshToken(token)
-        savedProfile
+        return savedProfile
     }
 
     override suspend fun register(registration: UserRegistration) = withContext(Dispatchers.IO) {
@@ -70,10 +83,12 @@ class YaniAccountRepository(
                     hash = registration.hash,
                     shiki = registration.shikimori,
                     vk = registration.vk,
-                )
+                ),
             )
         } catch (_: YaniCaptchaRequiredException) {
             throw AccountCaptchaRequiredException()
+        } catch (e: YaniAccountException) {
+            throw RegistrationException(e.message ?: "Could not register user")
         }
     }
 
@@ -185,7 +200,7 @@ class YaniAccountRepository(
 
     private suspend fun saveProfile(
         profile: YaniProfileDto,
-        cachedAt: Long = System.currentTimeMillis()
+        cachedAt: Long = System.currentTimeMillis(),
     ): YaniAccount {
         if (profile.id <= 0) return profile.toAccount()
         val entry = profile.toProfileEntry(ACCOUNT_PROFILE_KEY_CURRENT, cachedAt)
@@ -193,8 +208,8 @@ class YaniAccountRepository(
         accountStorage.saveProfile(
             profile.toProfileEntry(
                 accountProfileUserKey(profile.id),
-                cachedAt
-            )
+                cachedAt,
+            ),
         )
         // Возвращаем через тот же cache->domain маппер, что и при чтении из кэша, чтобы
         // свежая загрузка не расходилась с последующим чтением.

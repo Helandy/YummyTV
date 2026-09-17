@@ -98,4 +98,31 @@
     <string name="account_tv_section_lists">Мои списки</string>
     <string name="account_tv_section_social">Сообщество</string>
     <string name="account_tv_section_about">О себе</string>
+    <string name="account_tv_error_registration_failed">Ошибка регистрации. Пожалуйста, попробуйте снова.</string>
+    <string name="account_tv_error_invalid_email">Введите корректный email.</string>
+    <string name="account_tv_error_password_too_short">Пароль должен содержать минимум 6 символов.</string>
+    <string name="account_local_auth_login_from_mobile">Войти с телефона</string>
+    <string name="account_local_auth_login_from_mobile_hint">Поиск устройства и передача через локальную сеть по PIN-коду</string>
+    <string name="account_local_auth_pairing_title">Вход через мобильное приложение</string>
+    <string name="account_local_auth_pairing_subtitle">Убедитесь, что оба устройства в одной сети Wi-Fi. На телефоне перейдите в Аккаунт -> Войти на ТВ и введите этот код:</string>
+    <string name="account_local_auth_transferring">Получение сессии...</string>
+    <string name="account_local_auth_success">Успешно! Входим...</string>
+    <string name="account_local_auth_error_invalid_pin">Неверный код. Проверьте PIN на экране ТВ.</string>
+    <string name="account_local_auth_error_pin_expired">Срок действия кода истёк.</string>
+    <string name="account_local_auth_error_too_many_attempts">Слишком много неудачных попыток.</string>
+    <string name="account_local_auth_error_service_unavailable">Не удалось объявить ТВ в локальной сети.</string>
+    <string name="account_local_auth_error_sign_in_failed">Код верный, но войти не удалось. Попробуйте ещё раз.</string>
+    <string name="account_local_auth_refresh_pin">Обновить код</string>
+    <string name="account_local_auth_refresh_pin_hint">Получите новый код и введите его на телефоне заново.</string>
+    <plurals name="account_local_auth_attempts_left">
+        <item quantity="one">Осталась %d попытка</item>
+        <item quantity="few">Осталось %d попытки</item>
+        <item quantity="many">Осталось %d попыток</item>
+        <item quantity="other">Осталось %d попыток</item>
+    </plurals>
+    <string name="account_tv_error_transfer_failed">Не удалось передать сессию</string>
+    <string name="account_tv_error_local_auth_invalid_pin">Неверный код.</string>
+    <string name="account_tv_error_local_auth_pin_expired">Срок действия кода истёк.</string>
+    <string name="account_tv_error_local_auth_too_many_attempts">Слишком много неудачных попыток.</string>
+    <string name="account_tv_error_local_auth_sign_in_failed">Код верный, но войти не удалось.</string>
 </resources>

@@ -91,7 +91,7 @@ fun SettingsMobileScreen(
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val interfaceModeFocusRequester = remember { FocusRequester() }
     val videoExportDirectoryPicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
+        ActivityResultContracts.OpenDocumentTree(),
     ) { uri ->
         uri?.let {
             onEvent(SettingsState.Event.VideoExportDirectoryGranted(it.toString()))
@@ -167,6 +167,16 @@ fun SettingsMobileScreen(
                         },
                         enabled = state.saveLastSearchEnabled,
                         onClick = { onEvent(SettingsState.Event.SaveLastSearchToggled) },
+                    )
+                }
+            }
+
+            item {
+                SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_devices)) {
+                    SettingsMobileNavigationRow(
+                        label = stringResource(R.string.settings_mobile_login_on_tv),
+                        hint = stringResource(R.string.settings_mobile_login_on_tv_hint),
+                        onClick = { onEvent(SettingsState.Event.LoginOnTvSelected) },
                     )
                 }
             }
@@ -572,7 +582,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },
@@ -589,7 +599,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },
@@ -606,7 +616,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },
@@ -623,7 +633,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },
@@ -640,7 +650,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },
@@ -657,7 +667,7 @@ fun SettingsMobileScreen(
                 SettingsMobilePickerOption(
                     it,
                     it.label(),
-                    it.hint()
+                    it.hint(),
                 )
             },
             onDismiss = { activePicker = null },

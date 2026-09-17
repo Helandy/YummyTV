@@ -7,23 +7,29 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.account.account.AccountViewModel
+import su.afk.yummy.tv.feature.account.localauth.LocalAuthViewModel
 import su.afk.yummy.tv.feature.account.mobile.account.AccountMobileScreen
+import su.afk.yummy.tv.feature.account.mobile.localauth.LocalAuthMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.mysubscriptions.MySubscriptionsMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.passwordreset.PasswordResetMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.profileedit.ProfileEditMobileScreen
+import su.afk.yummy.tv.feature.account.mobile.registration.RegistrationMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.userprofile.UserProfileMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.userprofile.UserProfileResolverMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.usersearch.UserSearchMobileScreen
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
+import su.afk.yummy.tv.feature.account.navigator.LocalAuthDestination
 import su.afk.yummy.tv.feature.account.navigator.MySubscriptionsDestination
 import su.afk.yummy.tv.feature.account.navigator.PasswordResetDestination
 import su.afk.yummy.tv.feature.account.navigator.ProfileEditDestination
+import su.afk.yummy.tv.feature.account.navigator.RegistrationDestination
 import su.afk.yummy.tv.feature.account.navigator.UserProfileByNicknameDestination
 import su.afk.yummy.tv.feature.account.navigator.UserProfileDestination
 import su.afk.yummy.tv.feature.account.navigator.UserSearchDestination
 import su.afk.yummy.tv.feature.account.passwordreset.PasswordResetViewModel
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditViewModel
+import su.afk.yummy.tv.feature.account.registration.RegistrationViewModel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileResolverViewModel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileViewModel
 import su.afk.yummy.tv.feature.account.usersearch.UserSearchViewModel
@@ -49,9 +55,9 @@ class AccountNavRegistrar @Inject constructor() : NavRegistrar {
             }
             entry<UserProfileByNicknameDestination> { dest ->
                 val viewModel = hiltViewModel<
-                        UserProfileResolverViewModel,
-                        UserProfileResolverViewModel.Factory,
-                        >(
+                    UserProfileResolverViewModel,
+                    UserProfileResolverViewModel.Factory,
+                    >(
                     key = "mobile-user-profile-nickname-${dest.nickname}",
                     creationCallback = { factory -> factory.create(dest.nickname) },
                 )
@@ -81,6 +87,18 @@ class AccountNavRegistrar @Inject constructor() : NavRegistrar {
                 val viewModel = hiltViewModel<PasswordResetViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     PasswordResetMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<LocalAuthDestination> {
+                val viewModel = hiltViewModel<LocalAuthViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    LocalAuthMobileScreen(state, effect, onEvent)
+                }
+            }
+            entry<RegistrationDestination> {
+                val viewModel = hiltViewModel<RegistrationViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    RegistrationMobileScreen(state, effect, onEvent)
                 }
             }
         }
