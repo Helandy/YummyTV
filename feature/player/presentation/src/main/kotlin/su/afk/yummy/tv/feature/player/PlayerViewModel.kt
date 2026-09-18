@@ -308,7 +308,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                         Log.w(
                             LOG_TAG,
                             "Ignoring duplicate Alloha playback error during fresh-session recovery " +
-                                    "positionMs=${event.positionMs.coerceAtLeast(0L)}",
+                                "positionMs=${event.positionMs.coerceAtLeast(0L)}",
                         )
                         return
                     }
@@ -359,14 +359,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                     Log.i(
                         LOG_TAG,
                         "Background Alloha playback recovery ready " +
-                                "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
+                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
                     )
                     setState { copy(isPlaybackRecovering = false) }
                 } else if (currentState.isPlaybackRecovering && !allohaRecovery.isRecovering) {
                     Log.i(
                         LOG_TAG,
                         "Silent playback retry recovered " +
-                                "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
+                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
                     )
                     setState { copy(isPlaybackRecovering = false) }
                 }
@@ -556,11 +556,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 val snapshot = event.snapshot
                 viewModelScope.launch {
                     playbackProgressHandler.saveProgress(
-                        playbackProgressHandler.progressSaveRequest(s, snapshot)
+                        playbackProgressHandler.progressSaveRequest(s, snapshot),
                     )
                 }
             }
-
         }
     }
 
@@ -592,11 +591,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                                         number = item.episode,
                                         iframeUrl = item.iframeUrl,
                                         screenshotUrl = item.screenshotUrl,
-                                    )
+                                    ),
                                 ),
-                            )
+                            ),
                         ),
-                    )
+                    ),
                 ),
             )
             setState {
@@ -647,11 +646,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                                     number = "",
                                     iframeUrl = uri,
                                     screenshotUrl = "",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
-                )
+                ),
             ),
         )
         setState {
@@ -875,14 +874,16 @@ class PlayerViewModel @AssistedInject internal constructor(
         val destination = activeDest
         sourceGraphJob?.cancel()
         sourceGraphJob = viewModelScope.launch {
-            when (val result = sourceStreamHandler.loadSourceGraph(
-                state = currentState,
-                forceRefreshVideos = forceRefreshVideos,
-                loadStreamOnFailure = loadStreamOnFailure,
-                loadStreamAfterRefresh = loadStreamAfterRefresh,
-                resumeMode = resumeMode,
-                refreshStreamOnFailure = refreshStreamOnFailure,
-            )) {
+            when (
+                val result = sourceStreamHandler.loadSourceGraph(
+                    state = currentState,
+                    forceRefreshVideos = forceRefreshVideos,
+                    loadStreamOnFailure = loadStreamOnFailure,
+                    loadStreamAfterRefresh = loadStreamAfterRefresh,
+                    resumeMode = resumeMode,
+                    refreshStreamOnFailure = refreshStreamOnFailure,
+                )
+            ) {
                 PlayerSourceGraphLoadResult.Ignore -> Unit
 
                 is PlayerSourceGraphLoadResult.LoadStream -> {
@@ -985,9 +986,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     /** Возвращает ключ хранения, общий для TV-настроек размера и мобильного transform. */
-    private fun currentPlayerResizeSettingsScope(): PlayerResizeSettingsScope {
-        return sourceSelectionHandler.resizeSettingsScope(currentState)
-    }
+    private fun currentPlayerResizeSettingsScope(): PlayerResizeSettingsScope = sourceSelectionHandler.resizeSettingsScope(currentState)
 
     /**
      * Запускает получение потока для активного источника.
@@ -1010,8 +1009,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             val preserveStreamDuringAllohaRecovery =
                 allohaRecovery.isRecovering && currentState.streamUrl != null
             val wasAlreadyResolving = currentState.streamUrl == null &&
-                    currentState.playerError == null &&
-                    currentState.kodikBlockedError == null
+                currentState.playerError == null &&
+                currentState.kodikBlockedError == null
             val hintTimerAlreadyRunning =
                 wasAlreadyResolving && streamLoadingHintJob?.isActive == true
             if (!hintTimerAlreadyRunning && !preserveStreamDuringAllohaRecovery) {
@@ -1030,30 +1029,32 @@ class PlayerViewModel @AssistedInject internal constructor(
                 )
             }
             val s = currentState
-            val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it >= 0L }
+            val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it > 0L }
                 ?: destinationResumeMs
                 ?: stateResumeMs
-            when (val result = sourceStreamHandler.resolveStream(
-                state = s,
-                pendingResume = pendingResume,
-                destinationResumeMs = destinationResumeMs,
-                resumeMode = resumeMode,
-                refreshSourcesOnFailure = refreshSourcesOnFailure,
-                reuseAllohaPlaybackSession = !forceFreshAllohaSession,
-                selectedQualityOverride = selectedQualityOverride,
-                forceRefresh = forceRefresh,
-            )) {
+            when (
+                val result = sourceStreamHandler.resolveStream(
+                    state = s,
+                    pendingResume = pendingResume,
+                    destinationResumeMs = destinationResumeMs,
+                    resumeMode = resumeMode,
+                    refreshSourcesOnFailure = refreshSourcesOnFailure,
+                    reuseAllohaPlaybackSession = !forceFreshAllohaSession,
+                    selectedQualityOverride = selectedQualityOverride,
+                    forceRefresh = forceRefresh,
+                )
+            ) {
                 is PlayerStreamLoadResult.RefreshSources -> {
                     refreshSourceGraphThenLoadStream(result.resumeMode)
                 }
 
                 is PlayerStreamLoadResult.State -> {
                     val resolveFailed = result.state.playerError != null ||
-                            result.state.kodikBlockedError != null
+                        result.state.kodikBlockedError != null
                     val completedAllohaPlaybackRecovery =
                         allohaRecovery.isRecovering &&
-                                !currentState.isOfflinePlayback &&
-                                currentState.isAllohaSource()
+                            !currentState.isOfflinePlayback &&
+                            currentState.isAllohaSource()
                     if (!resolveFailed) {
                         allohaSession.activate(result.allohaSession, viewModelScope)
                         result.state.selectedQuality?.let { quality ->
@@ -1087,14 +1088,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                             Log.w(
                                 LOG_TAG,
                                 "Background Alloha playback recovery failed " +
-                                        "attempts=$completedRecoveryAttempts",
+                                    "attempts=$completedRecoveryAttempts",
                             )
                         } else {
                             Log.i(
                                 LOG_TAG,
                                 "Background Alloha playback recovery stream resolved " +
-                                        "attempts=$completedRecoveryAttempts " +
-                                        "positionMs=${result.state.resumeFromMs.coerceAtLeast(0L)}",
+                                    "attempts=$completedRecoveryAttempts " +
+                                    "positionMs=${result.state.resumeFromMs.coerceAtLeast(0L)}",
                             )
                         }
                     }
@@ -1118,7 +1119,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                                 retryKey
                             },
                             isPlaybackRecovering =
-                                completedAllohaPlaybackRecovery && !resolveFailed,
+                            completedAllohaPlaybackRecovery && !resolveFailed,
                             showChangePlayerHint = false,
                         )
                     }
@@ -1255,7 +1256,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         Log.i(
             LOG_TAG,
             "Starting fresh Alloha playback recovery positionMs=$resumePosition " +
-                    "quality=${selectedQuality ?: "auto"}",
+                "quality=${selectedQuality ?: "auto"}",
         )
         scheduleFreshAllohaPlaybackAttempt(initialDelayMs)
     }
@@ -1268,7 +1269,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             Log.w(
                 LOG_TAG,
                 "Alloha playback recovery giving up after " +
-                        "${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} attempts",
+                    "${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} attempts",
             )
             allohaRecovery.reset()
             streamLoadingHintJob?.cancel()
@@ -1299,8 +1300,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 Log.i(
                     LOG_TAG,
                     "Opening fresh Alloha playback session " +
-                            "attempt=$attempt/${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} " +
-                            "positionMs=${allohaRecovery.positionMs}",
+                        "attempt=$attempt/${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} " +
+                        "positionMs=${allohaRecovery.positionMs}",
                 )
                 loadStream(
                     refreshSourcesOnFailure = false,
@@ -1369,5 +1370,4 @@ class PlayerViewModel @AssistedInject internal constructor(
         private const val CHANGE_PLAYER_HINT_DELAY_MS = 10_000L
         private const val ALLOHA_RECOVERY_HINT_DELAY_MS = 15_000L
     }
-
 }

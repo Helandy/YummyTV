@@ -64,7 +64,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         if (selection == currentSelection.toDubbingSource()) return null
 
         return state.copy(
-            dubbingResumeMs = (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L),
+            dubbingResumeMs = resumeOverrideMs(currentPosMs),
             sourceSelection = PlayerSourceSelection(
                 balancerIndex = selection.balancerIndex,
                 dubbingIndex = selection.dubbingIndex,
@@ -98,7 +98,7 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
             ?: return null
 
         return state.copy(
-            dubbingResumeMs = (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L),
+            dubbingResumeMs = resumeOverrideMs(currentPosMs),
             sourceSelection = PlayerSourceSelection(
                 balancerIndex = index,
                 dubbingIndex = newDubbingIdx,
@@ -111,6 +111,20 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
         )
     }
 
+    /**
+     * Позиция, с которой продолжаем после смены озвучки/балансера.
+     *
+     * Плеер мог ещё не стартовать - например, переключение идёт с оверлея ошибки resolve, где
+     * позиция в state уже обнулена. Тогда возвращаем сентинел "позиции нет", чтобы ViewModel
+     * откатился на resume из destination или на локальный прогресс, а не начал серию с нуля.
+     */
+    private fun resumeOverrideMs(currentPosMs: Long): Long =
+        if (currentPosMs > 0L) {
+            (currentPosMs - RESUME_BACKOFF_MS).coerceAtLeast(0L)
+        } else {
+            NO_RESUME_MS
+        }
+
     fun resizeSettingsScope(state: PlayerState.State): PlayerResizeSettingsScope =
         PlayerResizeSettingsScope(
             animeId = state.animeId,
@@ -120,5 +134,6 @@ internal class PlayerSourceSelectionHandler @Inject constructor() {
 
     private companion object {
         const val RESUME_BACKOFF_MS = 3_000L
+        const val NO_RESUME_MS = -1L
     }
 }
