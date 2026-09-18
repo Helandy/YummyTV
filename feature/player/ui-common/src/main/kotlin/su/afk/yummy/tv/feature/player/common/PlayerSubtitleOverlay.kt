@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.Player
-import androidx.media3.common.text.Cue
 import androidx.media3.common.text.CueGroup
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
@@ -22,6 +21,8 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
  * (см. [PlayerTrackSelectionState.selectText]) — здесь только отображение [Player.Listener.onCues]
  * и пользовательское оформление из [style]. Явные line/position реплик (в т.ч. \pos из
  * AllohaAssPositionFix) сбрасываем — иначе они перебивают [style.offset], заданный пользователем.
+ * А одновременные реплики склеиваем в один блок ([mergeSimultaneousCues]): SubtitleView не разводит
+ * cue по вертикали, и без склейки они рисовались бы поверх друг друга (issue #23).
  */
 @Composable
 fun PlayerSubtitleOverlay(
@@ -57,7 +58,7 @@ fun PlayerSubtitleOverlay(
             }
         },
         update = { view ->
-            view.setCues(cueGroup?.cues.orEmpty().map { it.withDefaultPosition() })
+            view.setCues(cueGroup?.cues.orEmpty().mergeSimultaneousCues())
             view.setFractionalTextSize(
                 SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * (style.textSize / 100f)
             )
@@ -74,17 +75,4 @@ fun PlayerSubtitleOverlay(
             )
         },
     )
-}
-
-/**
- * Сбрасывает line/position текстовых cue на DIMEN_UNSET, чтобы [SubtitleView] позиционировал их
- * через `bottomPaddingFraction`, а не через координаты, зашитые в исходной дорожке. Битмап-cue
- * (например, DVB) не трогаем — там позиция обычно осмысленная и не сводится к «снизу по центру».
- */
-private fun Cue.withDefaultPosition(): Cue {
-    if (bitmap != null) return this
-    return buildUpon()
-        .setLine(Cue.DIMEN_UNSET, Cue.TYPE_UNSET)
-        .setPosition(Cue.DIMEN_UNSET)
-        .build()
 }

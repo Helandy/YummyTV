@@ -22,4 +22,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
 }
