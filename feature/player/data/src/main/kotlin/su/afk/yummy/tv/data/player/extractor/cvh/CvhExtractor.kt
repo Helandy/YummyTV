@@ -57,37 +57,52 @@ internal class CvhExtractor @Inject constructor(
             val params = parseQuery(query)
 
             val animeId = params["anime_id"] ?: run {
+                logFailure(iframeUrl, "missing anime_id")
                 return@withContext null
             }
             val episodeStr = params["episode"] ?: "1"
             val episodeNum = episodeStr.toIntOrNull() ?: 1
             val dubbingCode = params["dubbing_code"] ?: ""
+            val dubbingLabel = params["dubbing"] ?: ""
 
             val playlistJson = httpClient.fetchJson(
                 url = "$PLAYLIST_URL?pub=$PUBLISHER_ID&id=$animeId&aggr=$AGGREGATOR",
                 headers = jsonHeaders(REFERER),
             )
             val items = playlistJson.optJSONArray("items") ?: run {
+                logFailure(iframeUrl, "playlist has no items")
+                return@withContext null
+            }
+            // Default true keeps the pre-existing episode filtering if the field ever disappears.
+            val isSerial = playlistJson.optBoolean("isSerial", true)
+
+            val playlistItems = (0 until items.length()).mapNotNull { index ->
+                val item = items.optJSONObject(index) ?: return@mapNotNull null
+                CvhPlaylistItem(
+                    vkId = item.optStringOrEmpty("vkId"),
+                    voiceStudio = item.optStringOrEmpty("voiceStudio"),
+                    voiceType = item.optStringOrEmpty("voiceType"),
+                    episode = if (item.isNull("episode")) null else item.optInt("episode"),
+                )
+            }
+
+            val item = selectCvhItem(
+                items = playlistItems,
+                isSerial = isSerial,
+                episodeNum = episodeNum,
+                dubbingCode = dubbingCode,
+                dubbingLabel = dubbingLabel,
+            ) ?: run {
+                logFailure(
+                    iframeUrl,
+                    "no playlist item for episode $episodeNum " +
+                        "(isSerial=$isSerial, items=${playlistItems.size})",
+                )
                 return@withContext null
             }
 
-            // Collect items matching the episode number
-            val candidates = mutableListOf<JSONObject>()
-            for (i in 0 until items.length()) {
-                val item = items.optJSONObject(i) ?: continue
-                if (item.optInt("episode") == episodeNum) candidates += item
-            }
-
-            if (candidates.isEmpty()) {
-                return@withContext null
-            }
-
-            // Prefer item whose voiceStudio matches dubbing code
-            val item = candidates.firstOrNull { item ->
-                item.optString("voiceStudio").equals(dubbingCode, ignoreCase = true)
-            } ?: candidates.first()
-
-            val vkId = item.optString("vkId").takeIf { it.isNotEmpty() } ?: run {
+            val vkId = item.vkId.takeIf { it.isNotEmpty() } ?: run {
+                logFailure(iframeUrl, "playlist item has no vkId")
                 return@withContext null
             }
 
@@ -95,6 +110,7 @@ internal class CvhExtractor @Inject constructor(
                 httpClient.fetchJson(url = "$VIDEO_URL/$vkId", headers = jsonHeaders(REFERER))
             val failoverHost = videoJson.optString("failoverHost").takeIf { it.isNotBlank() }
             val sources = videoJson.optJSONObject("sources") ?: run {
+                logFailure(iframeUrl, "video response has no sources")
                 return@withContext null
             }
 
@@ -109,6 +125,7 @@ internal class CvhExtractor @Inject constructor(
             qualities.putCvhQuality("1080p", sources.optString("mpegFullHdUrl"), failoverHost)
 
             if (qualities.isEmpty()) {
+                logFailure(iframeUrl, "no mp4 qualities in sources")
                 return@withContext null
             }
             qualities
@@ -118,11 +135,23 @@ internal class CvhExtractor @Inject constructor(
         }
     }
 
+    // optString maps an explicit JSON null to the literal "null" - the subtitles entry ships
+    // "voiceStudio": null, and that string would otherwise leak into the voice matching.
+    private fun JSONObject.optStringOrEmpty(key: String): String =
+        if (isNull(key)) "" else optString(key)
+
+    private fun logFailure(iframeUrl: String, reason: String) {
+        analyticsTracker.logExtractorFailure("CVH", iframeUrl, reason)
+    }
+
     private fun parseQuery(query: String): Map<String, String> =
         query.split("&").mapNotNull { pair ->
             val eq = pair.indexOf('=')
-            if (eq < 0) null
-            else pair.substring(0, eq) to URLDecoder.decode(pair.substring(eq + 1), "UTF-8")
+            if (eq < 0) {
+                null
+            } else {
+                pair.substring(0, eq) to URLDecoder.decode(pair.substring(eq + 1), "UTF-8")
+            }
         }.toMap()
 
     private fun jsonHeaders(referer: String): Map<String, String> = mapOf(
