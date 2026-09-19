@@ -87,11 +87,12 @@ private fun MobilePlayerDubbingRow(
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f)
     }
-    val textColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
+    // Названия озвучек — акцентным цветом, как в шторках выбора озвучки и скачивания.
+    // Выбранная отличается подложкой, жирностью и галочкой.
+    val textColor = MaterialTheme.colorScheme.primary
+        .let { if (enabled) it else it.copy(alpha = 0.42f) }
+    val metaColor = MaterialTheme.colorScheme.onSurfaceVariant
+        .let { if (enabled) it else it.copy(alpha = 0.42f) }
 
     Row(
         modifier = Modifier
@@ -124,7 +125,7 @@ private fun MobilePlayerDubbingRow(
                 Text(
                     text = stringResource(R.string.player_episode_unavailable),
                     style = MaterialTheme.typography.labelSmall,
-                    color = textColor.copy(alpha = 0.68f),
+                    color = metaColor,
                 )
             }
         }

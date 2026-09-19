@@ -33,7 +33,8 @@ internal fun BalancerOptionItem(
     val shape = RoundedCornerShape(10.dp)
     if (isSupported) {
         val bgColor = if (focused) Color.White else Color.White.copy(alpha = 0.12f)
-        val textColor = if (focused) Color.Black else Color.White
+        // Вне фокуса название плеера — акцентным цветом, как в мобильных шторках.
+        val textColor = if (focused) Color.Black else MaterialTheme.colorScheme.primary
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,

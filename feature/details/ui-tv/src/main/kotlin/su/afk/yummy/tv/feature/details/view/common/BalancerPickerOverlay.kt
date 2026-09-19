@@ -197,7 +197,8 @@ private fun BalancerOptionItem(
                     text = label,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = textColor,
+                    // Вне фокуса название плеера — акцентным цветом, как в мобильных шторках.
+                    color = if (focused) textColor else MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

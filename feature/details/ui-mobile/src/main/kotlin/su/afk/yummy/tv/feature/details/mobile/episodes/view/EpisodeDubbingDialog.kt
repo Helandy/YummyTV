@@ -26,6 +26,7 @@ internal fun EpisodeDubbingDialog(
                     title = option.item.name,
                     subtitle = option.item.supportedBalancers,
                     views = option.item.views,
+                    accentTitle = true,
                     onClick = { onSelected(option.video) },
                 )
             },

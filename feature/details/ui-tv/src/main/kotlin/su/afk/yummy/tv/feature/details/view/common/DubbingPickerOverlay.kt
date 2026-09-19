@@ -196,7 +196,8 @@ private fun DubbingOptionItem(
             text = option.item.name,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
-            color = contentColor,
+            // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
+            color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

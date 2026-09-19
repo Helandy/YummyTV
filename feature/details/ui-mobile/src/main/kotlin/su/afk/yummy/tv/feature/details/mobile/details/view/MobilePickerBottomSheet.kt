@@ -74,7 +74,11 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
     } else {
         colorScheme.surfaceVariant.copy(alpha = 0.34f)
     }
-    val titleColor = if (item.enabled) colorScheme.onSurface else colorScheme.onSurfaceVariant
+    val titleColor = when {
+        !item.enabled -> colorScheme.onSurfaceVariant
+        item.accentTitle -> colorScheme.primary
+        else -> colorScheme.onSurface
+    }
 
     Column(
         modifier = Modifier

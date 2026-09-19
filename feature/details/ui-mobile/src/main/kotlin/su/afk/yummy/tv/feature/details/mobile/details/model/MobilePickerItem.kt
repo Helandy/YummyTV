@@ -9,5 +9,7 @@ internal data class MobilePickerItem(
     val views: Int? = null,
     val color: Color? = null,
     val enabled: Boolean = true,
+    /** Название пункта акцентным цветом — как в шторках скачивания. */
+    val accentTitle: Boolean = false,
     val onClick: () -> Unit,
 )

@@ -185,6 +185,7 @@ internal fun MobilePlayerSettingsSheet(
                                             label = name,
                                             selected = index == selectedDubbingIndex,
                                             enabled = enabled,
+                                            accentLabel = true,
                                             metaContent = { contentColor ->
                                                 if (enabled) {
                                                     MobilePlayerDubbingMeta(
@@ -218,6 +219,7 @@ internal fun MobilePlayerSettingsSheet(
                                             label = name,
                                             selected = index == selectedBalancerIndex,
                                             enabled = enabled,
+                                            accentLabel = true,
                                             metaContent = { contentColor ->
                                                 if (!enabled) {
                                                     Text(

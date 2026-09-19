@@ -98,11 +98,12 @@ private fun MobilePlayerBalancerRow(
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f)
     }
-    val textColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }.let { if (enabled) it else it.copy(alpha = 0.42f) }
+    // Названия плееров — акцентным цветом, как в шторках выбора озвучки и скачивания.
+    // Выбранный отличается подложкой, жирностью и галочкой.
+    val textColor = MaterialTheme.colorScheme.primary
+        .let { if (enabled) it else it.copy(alpha = 0.42f) }
+    val metaColor = MaterialTheme.colorScheme.onSurfaceVariant
+        .let { if (enabled) it else it.copy(alpha = 0.42f) }
 
     Row(
         modifier = Modifier
@@ -135,7 +136,7 @@ private fun MobilePlayerBalancerRow(
                 Text(
                     text = metaLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = textColor.copy(alpha = 0.68f),
+                    color = metaColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

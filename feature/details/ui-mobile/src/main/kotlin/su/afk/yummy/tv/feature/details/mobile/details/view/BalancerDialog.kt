@@ -45,6 +45,7 @@ internal fun BalancerDialog(
                     subtitle = option.video.dubbing,
                     views = option.video.views,
                     enabled = option.isSupported,
+                    accentTitle = true,
                     onClick = { onConfirmed(option.video) },
                 )
             },

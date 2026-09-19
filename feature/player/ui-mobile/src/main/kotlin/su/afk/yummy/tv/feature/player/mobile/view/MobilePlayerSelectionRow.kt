@@ -30,6 +30,8 @@ internal fun MobilePlayerSelectionRow(
     label: String,
     selected: Boolean,
     enabled: Boolean = true,
+    /** Название строки акцентным цветом независимо от выбора — как в шторках скачивания. */
+    accentLabel: Boolean = false,
     metaContent: @Composable ColumnScope.(contentColor: Color) -> Unit = {},
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
@@ -40,11 +42,18 @@ internal fun MobilePlayerSelectionRow(
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f)
     }
-    val textColor = if (selected) {
+    val textColor = if (selected || accentLabel) {
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
     }.let { if (enabled) it else it.copy(alpha = 0.42f) }
+    // Акцент только на названии: просмотры, число серий и список балансеров остаются
+    // нейтральными, как в шторках выбора на экране деталей.
+    val metaColor = if (accentLabel) {
+        MaterialTheme.colorScheme.onSurfaceVariant.let { if (enabled) it else it.copy(alpha = 0.42f) }
+    } else {
+        textColor
+    }
 
     Row(
         modifier = Modifier
@@ -73,7 +82,7 @@ internal fun MobilePlayerSelectionRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            metaContent(textColor)
+            metaContent(metaColor)
         }
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = textColor)

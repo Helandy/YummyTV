@@ -58,6 +58,8 @@ internal fun TvPlayerSelectionPanel(
     modifier: Modifier = Modifier,
     enabledItems: List<Boolean> = emptyList(),
     disabledItemMeta: String? = null,
+    /** Названия пунктов вне фокуса — акцентным цветом (озвучки и балансеры). */
+    accentLabel: Boolean = false,
     itemMeta: @Composable (index: Int) -> String? = { null },
     itemMetaContent: @Composable (index: Int, contentColor: Color) -> Unit = { index, contentColor ->
         val meta = itemMeta(index)
@@ -136,6 +138,7 @@ internal fun TvPlayerSelectionPanel(
                         },
                         selected = selected,
                         enabled = enabled,
+                        accentLabel = accentLabel,
                         modifier = if (selected) Modifier.focusRequester(selectedFocusRequester) else Modifier,
                         onExitDown = if (idx == lastEnabledIndex) onExitDown else null,
                         onClick = { onItemSelected(idx) },
@@ -153,6 +156,7 @@ internal fun PlayerSelectionItem(
     selected: Boolean,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    accentLabel: Boolean = false,
     onExitDown: (() -> Unit)?,
     onClick: () -> Unit,
 ) {
@@ -180,6 +184,19 @@ internal fun PlayerSelectionItem(
             .let { if (enabled) it else it.copy(alpha = 0.42f) },
         animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
         label = "playerSelectionItemContent",
+    )
+    // Акцент только на названии: мета остаётся нейтральной, как и на мобилке.
+    val labelColor by animateColorAsState(
+        targetValue = (
+            when {
+                focused -> colors.onPrimary
+                selected -> Color.Black
+                accentLabel -> colors.primary
+                else -> Color.White
+            }
+            ).let { if (enabled) it else it.copy(alpha = 0.42f) },
+        animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
+        label = "playerSelectionItemLabel",
     )
     Box(
         modifier = Modifier
@@ -224,7 +241,7 @@ internal fun PlayerSelectionItem(
                     text = label,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = contentColor,
+                    color = labelColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

@@ -70,6 +70,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         selectedIndex = playback.currentDubbingIndex,
         selectedFocusRequester = focus.selectedDubbing,
         enabledItems = playback.dubbingAvailability,
+        accentLabel = true,
         disabledItemMeta = stringResource(R.string.player_episode_unavailable),
         modifier = Modifier
             .align(Alignment.BottomStart)
@@ -126,6 +127,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
         selectedIndex = playback.currentBalancerIndex,
         selectedFocusRequester = focus.selectedBalancer,
         enabledItems = playback.balancerAvailability,
+        accentLabel = true,
         disabledItemMeta = stringResource(R.string.player_episode_unavailable),
         modifier = Modifier
             .align(Alignment.BottomStart)
