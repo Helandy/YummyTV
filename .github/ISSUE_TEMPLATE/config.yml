@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    -   name: Последняя версия APK
+        url: https://github.com/Helandy/YummyTV/releases/latest
+        about: Перед созданием issue проверь, что проблема есть на свежей версии.
+    -   name: Поддержать проект
+        url: https://boosty.to/etozhesandy
+        about: Boosty.

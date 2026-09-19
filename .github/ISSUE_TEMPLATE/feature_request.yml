@@ -1,0 +1,50 @@
+name: "💡 Предложение"
+description: "Идея новой возможности или улучшения"
+title: "[Идея]: "
+labels: [ "enhancement" ]
+body:
+    -   type: checkboxes
+        id: preflight
+        attributes:
+            label: Перед отправкой
+            options:
+                -   label: Я поискал среди открытых issue и не нашёл похожего предложения
+                    required: true
+
+    -   type: dropdown
+        id: surface
+        attributes:
+            label: Где это нужно
+            options:
+                - Android TV
+                - Мобильный интерфейс
+                - Оба
+        validations:
+            required: true
+
+    -   type: textarea
+        id: problem
+        attributes:
+            label: Какую задачу это решает
+            description: Что сейчас неудобно или чего не хватает
+        validations:
+            required: true
+
+    -   type: textarea
+        id: solution
+        attributes:
+            label: Как это должно работать
+        validations:
+            required: true
+
+    -   type: textarea
+        id: alternatives
+        attributes:
+            label: Альтернативы
+            description: Как ты обходишься сейчас, какие ещё варианты рассматривал
+
+    -   type: textarea
+        id: extra
+        attributes:
+            label: Скриншоты и примеры
+            description: Например, как похожее сделано в других приложениях

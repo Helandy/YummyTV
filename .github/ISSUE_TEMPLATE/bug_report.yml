@@ -1,0 +1,73 @@
+name: "🐞 Баг в приложении"
+description: "Что-то работает не так, как ожидается"
+title: "[Баг]: "
+labels: [ "bug" ]
+body:
+    -   type: checkboxes
+        id: preflight
+        attributes:
+            label: Перед отправкой
+            options:
+                -   label: Я проверил, что баг воспроизводится на последней версии из Releases
+                    required: true
+                -   label: Я поискал среди открытых issue и не нашёл такой же проблемы
+                    required: true
+
+    -   type: input
+        id: version
+        attributes:
+            label: Версия приложения
+            description: Указана в настройках приложения и в имени APK
+            placeholder: "1.23"
+        validations:
+            required: true
+
+    -   type: dropdown
+        id: surface
+        attributes:
+            label: Интерфейс
+            options:
+                - Android TV / ТВ-приставка
+                - Телефон / планшет
+                - Оба
+        validations:
+            required: true
+
+    -   type: input
+        id: device
+        attributes:
+            label: Устройство и версия Android
+            placeholder: "Xiaomi Mi Box S, Android 9"
+        validations:
+            required: true
+
+    -   type: textarea
+        id: what-happens
+        attributes:
+            label: Что происходит
+            description: Опиши проблему в одном-двух предложениях
+        validations:
+            required: true
+
+    -   type: textarea
+        id: steps
+        attributes:
+            label: Шаги воспроизведения
+            placeholder: |
+                1. Открыть ...
+                2. Нажать ...
+                3. Увидеть ...
+        validations:
+            required: true
+
+    -   type: textarea
+        id: expected
+        attributes:
+            label: Ожидаемое поведение
+            description: Как, по-твоему, должно было быть
+
+    -   type: textarea
+        id: extra
+        attributes:
+            label: Логи, скриншоты, видео
+            description: Файлы можно просто перетащить в это поле

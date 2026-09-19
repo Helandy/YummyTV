@@ -1,0 +1,109 @@
+name: "▶️ Видео не играет / проблема с балансером"
+description: "Ошибка воспроизведения, вечная загрузка, чёрный экран, нет озвучки или качества"
+title: "[Видео]: "
+labels: [ "bug" ]
+body:
+    -   type: markdown
+        attributes:
+            value: |
+                YummyTV зависит от доступности YummyAnime и сторонних видеобалансеров.
+                Если сайт, API или источник временно недоступны, воспроизведение может не работать.
+                За пределами СНГ часть балансеров блокируется по IP-адресу.
+
+    -   type: input
+        id: version
+        attributes:
+            label: Версия приложения
+            placeholder: "1.23"
+        validations:
+            required: true
+
+    -   type: dropdown
+        id: surface
+        attributes:
+            label: Интерфейс
+            options:
+                - Android TV / ТВ-приставка
+                - Телефон / планшет
+                - Оба
+        validations:
+            required: true
+
+    -   type: input
+        id: device
+        attributes:
+            label: Устройство и версия Android
+            placeholder: "Xiaomi Mi Box S, Android 9"
+        validations:
+            required: true
+
+    -   type: input
+        id: title-episode
+        attributes:
+            label: Тайтл и серия
+            placeholder: "Naruto, 12 серия"
+        validations:
+            required: true
+
+    -   type: input
+        id: dubbing
+        attributes:
+            label: Озвучка
+            placeholder: "AniLibria"
+
+    -   type: dropdown
+        id: balancer
+        attributes:
+            label: Балансер
+            multiple: true
+            options:
+                - Kodik
+                - Aksor
+                - Alloha
+                - CVH
+                - VK
+                - Rutube
+                - Sibnet
+                - Zedfilm
+                - Не знаю / все сразу
+        validations:
+            required: true
+
+    -   type: dropdown
+        id: works-on-site
+        attributes:
+            label: Играет ли эта серия на сайте yummyani.me в браузере
+            options:
+                - Да
+                - Нет
+                - Не проверял
+        validations:
+            required: true
+
+    -   type: input
+        id: region
+        attributes:
+            label: Страна / регион
+            placeholder: "Россия"
+
+    -   type: dropdown
+        id: vpn
+        attributes:
+            label: VPN
+            options:
+                - Без VPN
+                - С VPN
+
+    -   type: textarea
+        id: what-happens
+        attributes:
+            label: Что видно на экране
+            description: Текст ошибки, бесконечная загрузка, чёрный экран, звук без картинки и т.п.
+        validations:
+            required: true
+
+    -   type: textarea
+        id: extra
+        attributes:
+            label: Логи, скриншоты, видео
+            description: Файлы можно просто перетащить в это поле
