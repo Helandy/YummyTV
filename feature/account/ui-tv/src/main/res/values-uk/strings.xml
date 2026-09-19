@@ -60,6 +60,8 @@
     <string name="account_profile_social_collections">Колекції</string>
     <string name="account_mark_read">Прочитати</string>
     <string name="account_mark_all_read">Прочитати всі</string>
+    <string name="account_mark_all_read_title">Прочитати всі сповіщення?</string>
+    <string name="account_mark_all_read_message">Усі сповіщення буде позначено прочитаними.</string>
     <string name="account_delete_all_notifications">Видалити всі</string>
     <string name="account_delete_all_notifications_title">Видалити всі сповіщення?</string>
     <string name="account_delete_all_notifications_message">Цю дію не можна скасувати.</string>

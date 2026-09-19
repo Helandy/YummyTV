@@ -60,6 +60,8 @@
     <string name="account_profile_social_collections">Коллекции</string>
     <string name="account_mark_read">Прочитать</string>
     <string name="account_mark_all_read">Прочитать все</string>
+    <string name="account_mark_all_read_title">Прочитать все уведомления?</string>
+    <string name="account_mark_all_read_message">Все уведомления будут помечены прочитанными.</string>
     <string name="account_delete_all_notifications">Удалить все</string>
     <string name="account_delete_all_notifications_title">Удалить все уведомления?</string>
     <string name="account_delete_all_notifications_message">Это действие нельзя отменить.</string>

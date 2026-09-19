@@ -26,21 +26,27 @@ internal fun AccountMobileNotificationTypeBadges(counts: List<NotificationCount>
         counts.filter { it.count > 0 }.forEach { item ->
             Surface(
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = MaterialTheme.colorScheme.surfaceContainer,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(
-                        horizontal = 10.dp,
+                        horizontal = 12.dp,
                         vertical = 6.dp
                     ),
                 ) {
                     Text(
-                        notificationTypeLabel(item.type),
-                        style = MaterialTheme.typography.labelLarge
+                        text = notificationTypeLabel(item.type),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Badge { Text(if (item.count > 99) "99+" else item.count.toString()) }
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ) {
+                        Text(if (item.count > 99) "99+" else item.count.toString())
+                    }
                 }
             }
         }

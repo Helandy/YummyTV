@@ -60,6 +60,8 @@
     <string name="account_profile_social_collections">Collections</string>
     <string name="account_mark_read">Mark read</string>
     <string name="account_mark_all_read">Mark all read</string>
+    <string name="account_mark_all_read_title">Mark all as read?</string>
+    <string name="account_mark_all_read_message">All notifications will be marked as read.</string>
     <string name="account_delete_all_notifications">Delete all</string>
     <string name="account_delete_all_notifications_title">Delete all notifications?</string>
     <string name="account_delete_all_notifications_message">This cannot be undone.</string>

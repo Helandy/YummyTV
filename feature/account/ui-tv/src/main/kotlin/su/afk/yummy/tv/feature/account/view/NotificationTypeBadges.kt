@@ -27,15 +27,24 @@ internal fun NotificationTypeBadges(counts: List<NotificationCount>) {
         counts.filter { it.count > 0 }.forEach { item ->
             Surface(
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(notificationTypeTitle(item.type))
-                    Badge { Text(if (item.count > 99) "99+" else item.count.toString()) }
+                    Text(
+                        text = notificationTypeTitle(item.type),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ) {
+                        Text(if (item.count > 99) "99+" else item.count.toString())
+                    }
                 }
             }
         }

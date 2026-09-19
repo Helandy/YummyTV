@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,8 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
@@ -35,6 +37,7 @@ internal fun AccountMobileNotificationsTab(
     onEvent: (AccountState.Event) -> Unit,
 ) {
     var showDeleteAllConfirm by remember { mutableStateOf(false) }
+    var showReadAllConfirm by remember { mutableStateOf(false) }
     val unreadCount = state.unreadNotificationCount
     val notificationPermissionGate = rememberNotificationPermissionGate()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -55,36 +58,48 @@ internal fun AccountMobileNotificationsTab(
         if (unreadCount > 0 || state.notifications.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             ) {
                 if (unreadCount > 0) {
-                    OutlinedButton(
-                        onClick = { onEvent(AccountState.Event.AllNotificationsReadSelected) },
-                        modifier = Modifier.weight(1f),
+                    TextButton(
+                        onClick = { showReadAllConfirm = true },
+                        modifier = Modifier.weight(1f, fill = false),
                         enabled = !state.isNotificationsLoading,
+                        contentPadding = ButtonDefaults.TextButtonWithIconContentPadding,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.DoneAll,
                             contentDescription = null,
-                            modifier = Modifier.size(ButtonDefaults.IconSize),
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                        Text(stringResource(R.string.account_mark_all_read))
+                        Text(
+                            text = stringResource(R.string.account_mark_all_read),
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
                 if (state.notifications.isNotEmpty()) {
-                    OutlinedButton(
+                    TextButton(
                         onClick = { showDeleteAllConfirm = true },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f, fill = false),
                         enabled = !state.isNotificationsLoading,
+                        contentPadding = ButtonDefaults.TextButtonWithIconContentPadding,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.DeleteSweep,
                             contentDescription = null,
-                            modifier = Modifier.size(ButtonDefaults.IconSize),
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                        Text(stringResource(R.string.account_delete_all_notifications))
+                        Text(
+                            text = stringResource(R.string.account_delete_all_notifications),
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
             }
@@ -115,6 +130,24 @@ internal fun AccountMobileNotificationsTab(
                 }
             }
         }
+    }
+    if (showReadAllConfirm) {
+        AlertDialog(
+            onDismissRequest = { showReadAllConfirm = false },
+            title = { Text(stringResource(R.string.account_mark_all_read_title)) },
+            text = { Text(stringResource(R.string.account_mark_all_read_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showReadAllConfirm = false
+                    onEvent(AccountState.Event.AllNotificationsReadSelected)
+                }) { Text(stringResource(R.string.account_mark_all_read)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReadAllConfirm = false }) {
+                    Text(stringResource(R.string.account_cancel))
+                }
+            },
+        )
     }
     if (showDeleteAllConfirm) {
         AlertDialog(

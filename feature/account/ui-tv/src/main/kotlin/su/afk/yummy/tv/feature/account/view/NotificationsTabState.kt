@@ -89,6 +89,7 @@ internal class NotificationsTabState internal constructor(
     var showOpeningOverlayImmediately by mutableStateOf(false)
         private set
     var showDeleteAllConfirm by mutableStateOf(false)
+    var showReadAllConfirm by mutableStateOf(false)
 
     // Never read reactively (only cancelled/reassigned), so plain vars are enough - no need to
     // pay for snapshot-state tracking on these.

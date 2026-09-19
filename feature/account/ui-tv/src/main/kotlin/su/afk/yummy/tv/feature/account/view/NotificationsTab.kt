@@ -124,7 +124,7 @@ internal fun NotificationsTab(
                                 AccountAction(
                                     label = stringResource(R.string.account_mark_all_read),
                                     icon = Icons.Filled.DoneAll,
-                                    onClick = onMarkAllRead,
+                                    onClick = { notificationsTabState.showReadAllConfirm = true },
                                     modifier = Modifier
                                         .weight(1f)
                                         .focusRequester(notificationsTabState.markAllReadFocusRequester)
@@ -229,6 +229,25 @@ internal fun NotificationsTab(
                     .focusable(),
             )
         }
+    }
+
+    if (notificationsTabState.showReadAllConfirm) {
+        AlertDialog(
+            onDismissRequest = { notificationsTabState.showReadAllConfirm = false },
+            title = { Text(stringResource(R.string.account_mark_all_read_title)) },
+            text = { Text(stringResource(R.string.account_mark_all_read_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    notificationsTabState.showReadAllConfirm = false
+                    onMarkAllRead?.invoke()
+                }) { Text(stringResource(R.string.account_mark_all_read)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
+                    Text(stringResource(R.string.account_cancel))
+                }
+            },
+        )
     }
 
     if (notificationsTabState.showDeleteAllConfirm) {

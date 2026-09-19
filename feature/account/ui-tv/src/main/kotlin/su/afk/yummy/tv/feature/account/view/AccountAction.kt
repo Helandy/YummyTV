@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,6 +48,7 @@ internal fun AccountAction(
     hint: String? = null,
     selected: Boolean = false,
     enabled: Boolean = true,
+    iconOnly: Boolean = false,
     onDirectionLeft: (() -> Boolean)? = null,
     onDirectionRight: (() -> Boolean)? = null,
 ) {
@@ -70,7 +72,7 @@ internal fun AccountAction(
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val actionModifier = modifier
-        .fillMaxWidth()
+        .let { if (iconOnly) it else it.fillMaxWidth() }
         .let {
             if (enabled) {
                 it.tvFocusableClick(
@@ -100,7 +102,23 @@ internal fun AccountAction(
             else Color.Transparent,
             shape = shape,
         )
-        .padding(horizontal = 16.dp, vertical = 14.dp)
+        .padding(
+            horizontal = if (iconOnly) 12.dp else 16.dp,
+            vertical = 14.dp,
+        )
+    if (iconOnly) {
+        Box(modifier = actionModifier, contentAlignment = Alignment.Center) {
+            icon?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = label,
+                    tint = contentColor,
+                    modifier = Modifier.size(26.dp),
+                )
+            }
+        }
+        return
+    }
     Row(
         modifier = actionModifier,
         verticalAlignment = Alignment.CenterVertically,
