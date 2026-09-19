@@ -19,6 +19,8 @@ const val YANI_HCAPTCHA_SITE_KEY = "b1847961-208e-4a90-9671-1e6bba9e0b36"
 class AccountState {
     @Immutable
     data class State(
+        /** false, пока не пришёл первый снапшот сессии: экран ещё не знает, авторизован ли пользователь. */
+        val isSessionResolved: Boolean = false,
         val isSignedIn: Boolean = false,
         val userId: Int = 0,
         val nickname: String = "",

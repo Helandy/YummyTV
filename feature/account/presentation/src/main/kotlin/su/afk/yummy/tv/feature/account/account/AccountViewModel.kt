@@ -72,6 +72,7 @@ class AccountViewModel @Inject internal constructor(
                 setState {
                     if (!isAuthorized) {
                         copy(
+                            isSessionResolved = true,
                             isSignedIn = false,
                             userId = 0,
                             profileSummary = null,
@@ -84,6 +85,7 @@ class AccountViewModel @Inject internal constructor(
                         )
                     } else {
                         copy(
+                            isSessionResolved = true,
                             isSignedIn = session.userId > 0,
                             userId = session.userId,
                         )

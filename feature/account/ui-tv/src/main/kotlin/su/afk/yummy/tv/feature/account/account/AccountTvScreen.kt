@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
@@ -50,7 +51,7 @@ import su.afk.yummy.tv.feature.account.view.LoginPanel
 )
 @Composable
 private fun AccountTvScreenDefaultPreview() = ScreenPreviewTheme {
-    AccountTvScreen(AccountState.State(), emptyFlow()) {}
+    AccountTvScreen(AccountState.State(isSessionResolved = true), emptyFlow()) {}
 }
 
 @Composable
@@ -109,7 +110,10 @@ fun AccountTvScreen(
             }
             .padding(horizontal = horizontalPadding, vertical = TvScreenPadding.Vertical),
     ) {
-        if (!state.isSignedIn) {
+        if (!state.isSessionResolved) {
+            // Пока не пришёл первый снапшот сессии, не мигаем панелью входа авторизованному пользователю.
+            TvLoadingScreen()
+        } else if (!state.isSignedIn) {
             if (state.localAuthServerState != LocalAuthServerState.Idle) {
                 LocalAuthPanel(
                     state = state.localAuthServerState,

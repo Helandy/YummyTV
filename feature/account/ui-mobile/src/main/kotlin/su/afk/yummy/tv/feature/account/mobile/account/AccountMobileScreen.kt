@@ -60,21 +60,21 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 @OptIn(ExperimentalMaterial3Api::class)
 private fun AccountMobileScreenDefaultPreview() =
     ScreenPreviewTheme {
-        AccountMobileScreen(AccountState.State(), emptyFlow()) {}
+        AccountMobileScreen(AccountState.State(isSessionResolved = true), emptyFlow()) {}
     }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 private fun AccountMobileScreenLoadingPreview() = ScreenPreviewTheme {
-    AccountMobileScreen(AccountState.State(isLoading = true), emptyFlow()) {}
+    AccountMobileScreen(AccountState.State(isSessionResolved = true, isLoading = true), emptyFlow()) {}
 }
 
 @Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
 private fun AccountMobileScreenErrorPreview() = ScreenPreviewTheme {
     AccountMobileScreen(
-        AccountState.State(error = AccountUiError.SIGN_IN_FAILED),
+        AccountState.State(isSessionResolved = true, error = AccountUiError.SIGN_IN_FAILED),
         emptyFlow(),
     ) {}
 }
@@ -127,7 +127,10 @@ fun AccountMobileScreen(
     BaseScreen(
         isScroll = false,
     ) {
-        if (!state.isSignedIn) {
+        if (!state.isSessionResolved) {
+            // Пока не пришёл первый снапшот сессии, не мигаем формой входа авторизованному пользователю.
+            AccountMobileLoadingIndicator(modifier = Modifier.fillMaxSize())
+        } else if (!state.isSignedIn) {
             val quickActions = buildList {
                 if (mainActions != null) {
                     add(
