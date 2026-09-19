@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
@@ -294,6 +295,18 @@ class AccountViewModel @Inject internal constructor(
             AccountState.Event.RefreshLocalAuthPinSelected -> {
                 localAuthAnalytics.eventTvPinRefreshed()
                 startLocalAuthServer()
+            }
+
+            AccountState.Event.LocalAuthPermissionDenied -> {
+                localAuthAnalytics.eventTvPairingFailed(LocalAuthError.PERMISSION_DENIED)
+                localAuthHandler.cancelServer()
+                setState {
+                    copy(
+                        localAuthServerState = LocalAuthServerState.Error(
+                            LocalAuthError.PERMISSION_DENIED,
+                        ),
+                    )
+                }
             }
 
             AccountState.Event.StopLocalAuthServerSelected -> {

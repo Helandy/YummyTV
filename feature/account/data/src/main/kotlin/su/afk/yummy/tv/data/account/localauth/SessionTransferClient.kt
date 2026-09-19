@@ -9,7 +9,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
+import su.afk.yummy.tv.data.account.di.LocalAuthHttpClient
 import su.afk.yummy.tv.data.account.dto.SessionTransferDto
 import su.afk.yummy.tv.data.account.dto.SessionTransferErrorDto
 import su.afk.yummy.tv.data.account.utils.LocalAuthCrypto
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 /** Отправка зашифрованной сессии на выбранный ТВ. */
 internal class SessionTransferClient @Inject constructor(
-    @UnauthenticatedJsonClient private val httpClient: HttpClient,
+    @LocalAuthHttpClient private val httpClient: HttpClient,
 ) {
     suspend fun transfer(device: DiscoveredDevice, pin: String, refreshToken: String) {
         withContext(Dispatchers.IO) {

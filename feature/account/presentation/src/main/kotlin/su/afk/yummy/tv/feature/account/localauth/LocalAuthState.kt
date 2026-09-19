@@ -16,6 +16,8 @@ class LocalAuthState {
         val devices: ImmutableList<DiscoveredDevice> = persistentListOf(),
         val selectedDevice: DiscoveredDevice? = null,
         val pin: String = "",
+        val isSearching: Boolean = false,
+        val isPermissionDenied: Boolean = false,
         val isTransferring: Boolean = false,
         val isTransferred: Boolean = false,
         val error: AccountUiError? = null,
@@ -30,6 +32,9 @@ class LocalAuthState {
 
         /** Итог запроса разрешения на поиск устройств: поиск стартует только при `granted`. */
         data class PermissionResult(val granted: Boolean) : Event
+
+        /** Повтор поиска с самого экрана: сам запуск придёт из [PermissionResult]. */
+        data object RetrySearchSelected : Event
         data class DeviceSelected(val device: DiscoveredDevice) : Event
         data class PinChanged(val pin: String) : Event
         data object TransferSelected : Event

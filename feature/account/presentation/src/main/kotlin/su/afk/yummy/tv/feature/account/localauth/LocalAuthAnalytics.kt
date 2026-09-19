@@ -127,6 +127,11 @@ internal class LocalAuthAnalytics @Inject constructor(
         tracker.track(EVENT_MOBILE_DISCOVERY_FAILED)
     }
 
+    /** Пользователь перезапустил поиск, не выходя с экрана. */
+    fun eventMobileSearchRetry() {
+        tracker.track(EVENT_MOBILE_SEARCH_RETRY)
+    }
+
     private fun LocalAuthError?.param(): String = this?.name?.lowercase() ?: REASON_UNKNOWN
 
     internal companion object {
@@ -148,6 +153,7 @@ internal class LocalAuthAnalytics @Inject constructor(
         const val EVENT_MOBILE_PERMISSION_RESULT = "local_auth_mobile_permission_result"
         const val EVENT_MOBILE_DISCOVERY_FINISHED = "local_auth_mobile_discovery_finished"
         const val EVENT_MOBILE_DISCOVERY_FAILED = "local_auth_mobile_discovery_failed"
+        const val EVENT_MOBILE_SEARCH_RETRY = "local_auth_mobile_search_retry"
         const val EVENT_MOBILE_DEVICE_SELECTED = "local_auth_mobile_device_selected"
         const val EVENT_MOBILE_TRANSFER_SELECTED = "local_auth_mobile_transfer_selected"
         const val EVENT_MOBILE_TRANSFER_SUCCESS = "local_auth_mobile_transfer_success"

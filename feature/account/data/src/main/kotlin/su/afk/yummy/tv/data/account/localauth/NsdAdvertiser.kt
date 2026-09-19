@@ -25,7 +25,10 @@ internal class NsdAdvertiser @Inject constructor(
             serviceType = LocalAuthContract.SERVICE_TYPE
             setPort(port)
         }
-        nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, listener)
+        // Без разрешения на локальную сеть (Android 16+) вызов кидает SecurityException
+        // синхронно, минуя onRegistrationFailed.
+        runCatching { nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, listener) }
+            .onFailure { onFailed() }
 
         return Registration(nsdManager, listener)
     }

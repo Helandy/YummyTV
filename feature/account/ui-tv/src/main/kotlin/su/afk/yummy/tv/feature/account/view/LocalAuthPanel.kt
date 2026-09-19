@@ -161,6 +161,7 @@ private fun LocalAuthError.message(): String = stringResource(
         LocalAuthError.PIN_EXPIRED -> R.string.account_local_auth_error_pin_expired
         LocalAuthError.TOO_MANY_ATTEMPTS -> R.string.account_local_auth_error_too_many_attempts
         LocalAuthError.SERVICE_UNAVAILABLE -> R.string.account_local_auth_error_service_unavailable
+        LocalAuthError.PERMISSION_DENIED -> R.string.account_local_auth_error_permission_denied
         LocalAuthError.SIGN_IN_FAILED -> R.string.account_local_auth_error_sign_in_failed
     },
 )

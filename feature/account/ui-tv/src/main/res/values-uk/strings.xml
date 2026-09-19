@@ -113,6 +113,13 @@
     <string name="account_local_auth_error_pin_expired">Термін дії коду минув.</string>
     <string name="account_local_auth_error_too_many_attempts">Забагато невдалих спроб.</string>
     <string name="account_local_auth_error_service_unavailable">Не вдалося оголосити ТВ у локальній мережі.</string>
+    <string name="account_local_auth_error_permission_denied">Немає дозволу на роботу в локальній мережі. Увімкніть його в налаштуваннях застосунку.</string>
+    <string name="account_local_network_permission_title">Дозвольте доступ до локальної мережі</string>
+    <string name="account_local_network_permission_message">Щоб телефон знайшов цей ТВ у вашій Wi-Fi-мережі та передав сесію, застосунку потрібен доступ до локальної мережі. Дані не залишають вашу мережу.</string>
+    <string name="account_local_network_permission_blocked_message">Доступ до локальної мережі заборонено. Увімкніть його в налаштуваннях застосунку, інакше телефон не побачить цей ТВ.</string>
+    <string name="account_local_network_permission_allow">Дозволити</string>
+    <string name="account_local_network_permission_later">Не зараз</string>
+    <string name="account_local_network_permission_open_settings">Відкрити налаштування</string>
     <string name="account_local_auth_error_sign_in_failed">Код правильний, але увійти не вдалося. Спробуйте ще раз.</string>
     <string name="account_local_auth_refresh_pin">Оновити код</string>
     <string name="account_local_auth_refresh_pin_hint">Отримайте новий код і введіть його на телефоні знову.</string>

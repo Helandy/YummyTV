@@ -34,7 +34,16 @@ class LocalAuthViewModel @Inject internal constructor(
 
             is LocalAuthState.Event.PermissionResult -> {
                 analytics.eventMobilePermissionResult(event.granted)
-                if (event.granted) startDiscovery()
+                if (event.granted) {
+                    startDiscovery()
+                } else {
+                    setState { copy(isSearching = false, isPermissionDenied = true) }
+                }
+            }
+
+            LocalAuthState.Event.RetrySearchSelected -> {
+                analytics.eventMobileSearchRetry()
+                setState { copy(error = null, isPermissionDenied = false) }
             }
 
             is LocalAuthState.Event.DeviceSelected -> {
@@ -54,7 +63,14 @@ class LocalAuthViewModel @Inject internal constructor(
     }
 
     private fun startDiscovery() {
-        setState { copy(error = null, devices = persistentListOf()) }
+        setState {
+            copy(
+                error = null,
+                devices = persistentListOf(),
+                isSearching = true,
+                isPermissionDenied = false,
+            )
+        }
         localAuthHandler.startDiscovery(
             scope = viewModelScope,
             onDevicesDiscovered = { devices ->
@@ -62,7 +78,7 @@ class LocalAuthViewModel @Inject internal constructor(
             },
             onFailure = {
                 analytics.eventMobileDiscoveryFailed()
-                setState { copy(error = AccountUiError.TRANSFER_FAILED) }
+                setState { copy(isSearching = false, error = AccountUiError.TRANSFER_FAILED) }
             },
         )
     }
@@ -77,7 +93,15 @@ class LocalAuthViewModel @Inject internal constructor(
                 .onSuccess {
                     analytics.eventMobileTransferSuccess()
                     localAuthHandler.stopDiscovery()
-                    setState { copy(isTransferring = false, isTransferred = true) }
+                    setState {
+                        copy(
+                            pin = "",
+                            selectedDevice = null,
+                            isSearching = false,
+                            isTransferring = false,
+                            isTransferred = true,
+                        )
+                    }
                     setEffect(LocalAuthState.Effect.TransferSuccess)
                 }
                 .onFailure { error ->

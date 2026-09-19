@@ -135,6 +135,9 @@ class AccountState {
 
         /** ТВ: перевыпустить PIN после истечения срока или исчерпания попыток. */
         data object RefreshLocalAuthPinSelected : Event
+
+        /** ТВ: пользователь не дал разрешение на работу в локальной сети — сервер не поднимаем. */
+        data object LocalAuthPermissionDenied : Event
     }
 
     sealed interface Effect : UiEffect {

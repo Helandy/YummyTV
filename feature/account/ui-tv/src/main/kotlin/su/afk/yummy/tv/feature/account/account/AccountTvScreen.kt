@@ -35,12 +35,14 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import su.afk.yummy.tv.feature.account.view.AccountHubPanel
 import su.afk.yummy.tv.feature.account.view.LocalAuthPanel
+import su.afk.yummy.tv.feature.account.view.LocalNetworkPermissionTvDialog
 import su.afk.yummy.tv.feature.account.view.LoginPanel
 
 @Preview(
@@ -87,6 +89,33 @@ fun AccountTvScreen(
         return true
     }
 
+    // Без ACCESS_LOCAL_NETWORK (Android 16+) NSD молча не стартует, поэтому спрашиваем заранее
+    // и сначала объясняем, зачем приложению локальная сеть.
+    var awaitingPermissionEvent by remember { mutableStateOf<AccountState.Event?>(null) }
+    val permissionGate = rememberLocalNetworkPermissionGate(
+        onGranted = {
+            awaitingPermissionEvent?.let(onEvent)
+            awaitingPermissionEvent = null
+        },
+        onDenied = {
+            awaitingPermissionEvent = null
+            onEvent(AccountState.Event.LocalAuthPermissionDenied)
+        },
+    )
+
+    /** Старт и перевыпуск PIN одинаково упираются в разрешение — пускаем их через гейт. */
+    fun requestLocalAuth(event: AccountState.Event) {
+        awaitingPermissionEvent = event
+        permissionGate.start()
+    }
+
+    fun onLoginEvent(event: AccountState.Event) {
+        when (event) {
+            AccountState.Event.StartLocalAuthServerSelected -> requestLocalAuth(event)
+            else -> onEvent(event)
+        }
+    }
+
     DisposableEffect(preferredFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
@@ -118,14 +147,16 @@ fun AccountTvScreen(
                 LocalAuthPanel(
                     state = state.localAuthServerState,
                     onBack = { onEvent(AccountState.Event.StopLocalAuthServerSelected) },
-                    onRefreshPin = { onEvent(AccountState.Event.RefreshLocalAuthPinSelected) },
+                    onRefreshPin = {
+                        requestLocalAuth(AccountState.Event.RefreshLocalAuthPinSelected)
+                    },
                     initialFocusRequester = preferredFocusRequester,
                     modifier = Modifier.align(Alignment.Center),
                 )
             } else {
                 LoginPanel(
                     state = state,
-                    onEvent = onEvent,
+                    onEvent = ::onLoginEvent,
                     initialFocusRequester = preferredFocusRequester,
                     onHandlesDirectionLeftChanged = { isLoginPanelHandlingLeft = it },
                     modifier = Modifier.align(Alignment.Center),
@@ -141,5 +172,12 @@ fun AccountTvScreen(
                 modifier = Modifier.align(Alignment.TopCenter),
             )
         }
+
+        LocalNetworkPermissionTvDialog(
+            step = permissionGate.step,
+            onConfirm = permissionGate::confirm,
+            onOpenSettings = permissionGate::openSettings,
+            onDismiss = permissionGate::dismiss,
+        )
     }
 }

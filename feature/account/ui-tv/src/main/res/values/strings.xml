@@ -113,6 +113,13 @@
     <string name="account_local_auth_error_pin_expired">The PIN has expired.</string>
     <string name="account_local_auth_error_too_many_attempts">Too many wrong attempts.</string>
     <string name="account_local_auth_error_service_unavailable">Could not announce the TV on the local network.</string>
+    <string name="account_local_auth_error_permission_denied">The app has no local network permission. Enable it in the app settings.</string>
+    <string name="account_local_network_permission_title">Allow local network access</string>
+    <string name="account_local_network_permission_message">The app needs local network access so your phone can find this TV on your Wi-Fi and hand over the session. Nothing leaves your network.</string>
+    <string name="account_local_network_permission_blocked_message">Local network access is blocked. Enable it in the app settings, otherwise the phone will not see this TV.</string>
+    <string name="account_local_network_permission_allow">Allow</string>
+    <string name="account_local_network_permission_later">Not now</string>
+    <string name="account_local_network_permission_open_settings">Open settings</string>
     <string name="account_local_auth_error_sign_in_failed">The PIN is correct, but signing in failed. Try again.</string>
     <string name="account_local_auth_refresh_pin">Get a new PIN</string>
     <string name="account_local_auth_refresh_pin_hint">Get a new PIN and enter it on your phone again.</string>
