@@ -100,6 +100,10 @@ class EpisodesState {
         val subtitle: String?,
         val status: EpisodeDownloadUiState?,
         val resolving: Boolean,
+        /** Просмотры озвучки по всему тайтлу — как в пикере запуска. */
+        val views: Int = 0,
+        /** Число серий озвучки по всему тайтлу. */
+        val episodeCount: Int = 0,
     )
 
     @Immutable

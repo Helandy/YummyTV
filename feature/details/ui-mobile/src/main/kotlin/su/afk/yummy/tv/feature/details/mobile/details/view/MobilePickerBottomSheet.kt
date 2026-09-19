@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.utils.formatCompactCount
+import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,9 +110,33 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (!item.subtitle.isNullOrBlank()) {
-            val subtitleColor =
-                colorScheme.onSurfaceVariant.copy(alpha = if (item.enabled) 1f else 0.6f)
+        val subtitleColor =
+            colorScheme.onSurfaceVariant.copy(alpha = if (item.enabled) 1f else 0.6f)
+        val episodeCount = item.episodeCount
+        if (episodeCount != null) {
+            // Озвучка: просмотры и число серий отдельной строкой, балансеры под ними —
+            // как в шторке настроек плеера.
+            MobileDubbingMeta(
+                views = item.views ?: 0,
+                episodeCount = episodeCount,
+                color = subtitleColor,
+                modifier = Modifier.padding(top = 5.dp),
+            )
+            if (!item.subtitle.isNullOrBlank()) {
+                Text(
+                    text = item.subtitle,
+                    style = if (item.emphasizedSubtitle) {
+                        MaterialTheme.typography.bodyMedium
+                    } else {
+                        MaterialTheme.typography.labelSmall
+                    },
+                    color = subtitleColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 3.dp),
+                )
+            }
+        } else if (!item.subtitle.isNullOrBlank()) {
             Row(
                 modifier = Modifier.padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(5.dp),

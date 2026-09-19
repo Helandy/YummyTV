@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.blocksNewDownload
+import su.afk.yummy.tv.feature.details.mobile.view.MobileDubbingMeta
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,12 +68,21 @@ internal fun EpisodeDownloadDubbingSheet(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(text = option.title, modifier = Modifier.fillMaxWidth())
+                                // Просмотры и число серий — как в пикере запуска и в плеере.
+                                MobileDubbingMeta(
+                                    views = option.views,
+                                    episodeCount = option.episodeCount,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 3.dp),
+                                )
                                 option.subtitle?.let { subtitle ->
                                     Text(
                                         text = subtitle,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 3.dp),
                                     )
                                 }
                             }

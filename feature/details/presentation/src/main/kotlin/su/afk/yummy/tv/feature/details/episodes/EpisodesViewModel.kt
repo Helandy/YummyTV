@@ -472,6 +472,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             statuses = currentState.downloadStatuses,
             resolvingKeys = currentState.resolvingDownloadKeys,
             excludedDubbing = excludedDubbing,
+            allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: videos,
         )
         setState {
             copy(pendingDownloadDubbingSelection = selection)

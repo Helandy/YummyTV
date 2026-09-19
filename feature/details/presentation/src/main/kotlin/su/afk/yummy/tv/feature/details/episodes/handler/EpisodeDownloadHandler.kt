@@ -4,8 +4,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
-import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
+import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
@@ -19,6 +19,8 @@ import su.afk.yummy.tv.feature.details.episodes.utils.aggregateDubbingDownloadSt
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadDubbingName
 import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
+import su.afk.yummy.tv.feature.details.utils.dubbingViews
 import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 import javax.inject.Inject
@@ -57,10 +59,13 @@ internal class EpisodeDownloadHandler @Inject constructor(
         statuses: Map<String, EpisodesState.EpisodeDownloadUiState>,
         resolvingKeys: Set<String>,
         excludedDubbing: String? = null,
+        /** Все видео тайтла — по ним считаются просмотры и число серий озвучки. */
+        allVideos: List<AnimeVideo> = videos,
     ): EpisodesState.EpisodeDownloadDubbingSelection {
         val availableVideos = videos.filter { video ->
             excludedDubbing == null || video.toDownloadDubbingName() != excludedDubbing
         }
+        val titleVideosByDubbing = allVideos.groupBy { it.toDownloadDubbingName() }
         val options = availableVideos
             .groupBy { it.toDownloadDubbingName() }
             .entries
@@ -70,6 +75,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                 }.thenBy { (dubbing, _) -> dubbing }
             )
             .map { (dubbing, group) ->
+                val titleVideos = titleVideosByDubbing[dubbing].orEmpty()
                 EpisodesState.EpisodeDownloadDubbingOption(
                     videos = group.toImmutableList(),
                     title = dubbing,
@@ -79,6 +85,8 @@ internal class EpisodeDownloadHandler @Inject constructor(
                         .takeIf { it.isNotBlank() && it != dubbing },
                     status = group.aggregateDubbingDownloadStatus(statuses),
                     resolving = group.all { it.toDownloadStatusKey() in resolvingKeys },
+                    views = titleVideos.dubbingViews(),
+                    episodeCount = titleVideos.dubbingEpisodeCount(),
                 )
             }
         return EpisodesState.EpisodeDownloadDubbingSelection(

@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
+import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
@@ -46,6 +47,13 @@ internal fun resolveDetailsPlayerSelection(
                 playerName = playerName,
                 video = representative,
                 isSupported = representative.iframeUrl.isSupportedPlayerUrl(),
+                // Серии считаем по всему тайтлу: у балансера может быть двадцать серий,
+                // хотя в пикер он попал из-за одной выбранной.
+                episodeCount = allVideos
+                    .filter {
+                        it.player == playerName && it.dubbing == representative.dubbing
+                    }
+                    .dubbingEpisodeCount(),
             )
         }
         .sortedBy { option ->
@@ -73,15 +81,9 @@ internal fun resolveDetailsPlayerSelection(
                 episodeNumber = video.episode,
                 options = options.toImmutableList(),
                 preferredPlayerUnavailable = preferredPlayer != PreferredPlayer.NONE,
-            )
+            ),
         )
     } else {
         DetailsPlayerSelection.Navigate(targetVideo)
     }
-}
-
-/** UI action produced by details/episodes player source selection. */
-internal sealed interface DetailsPlayerSelection {
-    data class Navigate(val video: AnimeVideo) : DetailsPlayerSelection
-    data class ShowPicker(val picker: BalancerPickerState) : DetailsPlayerSelection
 }

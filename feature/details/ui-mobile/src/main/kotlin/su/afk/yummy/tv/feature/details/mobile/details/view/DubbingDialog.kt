@@ -24,6 +24,7 @@ internal fun DubbingDialog(
                     title = option.item.name,
                     subtitle = option.item.supportedBalancers,
                     views = option.item.views,
+                    episodeCount = option.item.episodeCount,
                     onClick = { onSelected(option) },
                 )
             },

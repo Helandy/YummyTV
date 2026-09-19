@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.details.mapper
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
+import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
+import su.afk.yummy.tv.feature.details.utils.dubbingViews
 import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
 
@@ -40,15 +42,6 @@ internal fun List<AnimeVideo>.episodeDubbingItems(
         )
         .toList()
 }
-
-private fun List<AnimeVideo>.dubbingViews(): Int =
-    groupBy { it.player }
-        .values
-        .maxOfOrNull { videos -> videos.sumOf { it.views ?: 0 } }
-        ?: 0
-
-private fun List<AnimeVideo>.dubbingEpisodeCount(): Int =
-    map { it.episode.episodeGroupKey() }.distinct().size
 
 private fun List<AnimeVideo>.supportedBalancersLabel(): String =
     asSequence()
