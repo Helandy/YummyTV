@@ -81,8 +81,8 @@ internal fun LoginPanel(
     Column(
         modifier = modifier
             .offset(y = panelOffsetY)
-            .fillMaxWidth(0.74f)
-            .widthIn(max = 680.dp),
+            .fillMaxWidth(0.82f)
+            .widthIn(max = 780.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Row(
@@ -187,6 +187,7 @@ internal fun LoginPanel(
                         R.string.account_login_hint,
                     )
                 },
+                hintMinLines = 2,
                 onClick = { onEvent(AccountState.Event.LoginSelected) },
                 modifier = Modifier
                     .weight(1f)
@@ -195,6 +196,7 @@ internal fun LoginPanel(
             AccountAction(
                 label = stringResource(R.string.account_local_auth_login_from_mobile),
                 hint = stringResource(R.string.account_local_auth_login_from_mobile_hint),
+                hintMinLines = 2,
                 onClick = { onEvent(AccountState.Event.StartLocalAuthServerSelected) },
                 // Без явного перехода DPAD-влево уходит из панели и открывает боковое меню.
                 onDirectionLeft = { loginButtonFocusRequester.requestFocus() },

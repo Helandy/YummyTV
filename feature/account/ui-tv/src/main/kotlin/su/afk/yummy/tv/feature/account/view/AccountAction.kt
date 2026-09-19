@@ -46,6 +46,8 @@ internal fun AccountAction(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     hint: String? = null,
+    // Кнопки в ряд: без резерва строк хинта соседи разъезжаются по высоте.
+    hintMinLines: Int = 1,
     selected: Boolean = false,
     enabled: Boolean = true,
     iconOnly: Boolean = false,
@@ -146,7 +148,8 @@ internal fun AccountAction(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = hintColor,
-                    maxLines = 2,
+                    minLines = hintMinLines,
+                    maxLines = maxOf(2, hintMinLines),
                     overflow = TextOverflow.Ellipsis,
                 )
             }
