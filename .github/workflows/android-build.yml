@@ -1,105 +1,113 @@
 name: Android Build
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - master
+    pull_request:
+    push:
+        branches:
+            - main
+            - master
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: true
+    group: android-build-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build app
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
+    build:
+        name: Build app
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
+            -   name: Set up JDK
+                uses: actions/setup-java@v4
+                with:
+                    distribution: temurin
+                    java-version: 21
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+            -   name: Set up Gradle
+                uses: gradle/actions/setup-gradle@v4
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+            -   name: Set up Android SDK
+                uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK platform
-        run: |
-          (yes || true) | sdkmanager --licenses >/dev/null
-          sdkmanager --install "platforms;android-36"
+            -   name: Install Android SDK platform
+                run: |
+                    # версия берётся из каталога, чтобы CI не разъезжался с compileSdk
+                    compile_sdk=$(grep -m1 '^android-compileSdk' gradle/libs.versions.toml | cut -d'"' -f2)
+                    # начиная с API 36 платформы публикуются с минорной версией: android-37 нет, есть android-37.0
+                    case "$compile_sdk" in
+                      *.*) platform_version="$compile_sdk" ;;
+                      *)   platform_version="$compile_sdk.0" ;;
+                    esac
+                    echo "compileSdk=$compile_sdk -> platforms;android-$platform_version"
+                    (yes || true) | sdkmanager --licenses >/dev/null
+                    sdkmanager --install "platforms;android-$platform_version" "build-tools;$platform_version.0"
 
-      - name: Lint
-        id: lint
-        continue-on-error: true
-        run: ./gradlew :app:lintDebug --stacktrace
+            -   name: Lint
+                id: lint
+                continue-on-error: true
+                run: ./gradlew :app:lintDebug --stacktrace
 
-      - name: Run unit tests
-        id: tests
-        continue-on-error: true
-        run: ./gradlew testDebugUnitTest --stacktrace
+            -   name: Run unit tests
+                id: tests
+                continue-on-error: true
+                run: ./gradlew testDebugUnitTest --stacktrace
 
-      - name: Build debug APK
-        id: build_debug
-        run: ./gradlew :app:assembleDebug --stacktrace
+            -   name: Build debug APK
+                id: build_debug
+                run: ./gradlew :app:assembleDebug --stacktrace
 
-      - name: Build release APK
-        id: build_release
-        run: ./gradlew :app:assembleRelease --stacktrace
+            -   name: Build release APK
+                id: build_release
+                run: ./gradlew :app:assembleRelease --stacktrace
 
-      - name: Write job summary
-        if: always()
-        run: |
-          {
-            echo "## Build Summary"
-            echo ""
-            echo "| Step | Result |"
-            echo "|---|---|"
-            echo "| Lint | ${{ steps.lint.outcome == 'success' && '✅ passed' || steps.lint.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
-            echo "| Unit tests | ${{ steps.tests.outcome == 'success' && '✅ passed' || steps.tests.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
-            echo "| Debug build | ${{ steps.build_debug.outcome == 'success' && '✅ passed' || steps.build_debug.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
-            echo "| Release build | ${{ steps.build_release.outcome == 'success' && '✅ passed' || steps.build_release.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
-            echo ""
+            -   name: Write job summary
+                if: always()
+                run: |
+                    {
+                      echo "## Build Summary"
+                      echo ""
+                      echo "| Step | Result |"
+                      echo "|---|---|"
+                      echo "| Lint | ${{ steps.lint.outcome == 'success' && '✅ passed' || steps.lint.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
+                      echo "| Unit tests | ${{ steps.tests.outcome == 'success' && '✅ passed' || steps.tests.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
+                      echo "| Debug build | ${{ steps.build_debug.outcome == 'success' && '✅ passed' || steps.build_debug.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
+                      echo "| Release build | ${{ steps.build_release.outcome == 'success' && '✅ passed' || steps.build_release.outcome == 'failure' && '❌ failed' || '⏭️ skipped' }} |"
+                      echo ""
 
-            total=0
-            failed=0
-            while IFS= read -r f; do
-              t=$(grep -o 'tests="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
-              fl=$(grep -o 'failures="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
-              er=$(grep -o 'errors="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
-              total=$((total + ${t:-0}))
-              failed=$((failed + ${fl:-0} + ${er:-0}))
-            done < <(find . -path "*/build/test-results/testDebugUnitTest/TEST-*.xml" 2>/dev/null)
-            echo "**Unit tests:** ${total} run, ${failed} failed"
-            echo ""
+                      total=0
+                      failed=0
+                      while IFS= read -r f; do
+                        t=$(grep -o 'tests="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
+                        fl=$(grep -o 'failures="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
+                        er=$(grep -o 'errors="[0-9]*"' "$f" | head -1 | grep -o '[0-9]*' || true)
+                        total=$((total + ${t:-0}))
+                        failed=$((failed + ${fl:-0} + ${er:-0}))
+                      done < <(find . -path "*/build/test-results/testDebugUnitTest/TEST-*.xml" 2>/dev/null)
+                      echo "**Unit tests:** ${total} run, ${failed} failed"
+                      echo ""
 
-            lintxml="app/build/reports/lint-results-debug.xml"
-            if [ -f "$lintxml" ]; then
-              errs=$(grep -c 'severity="Error"' "$lintxml" || true)
-              warns=$(grep -c 'severity="Warning"' "$lintxml" || true)
-              echo "**Lint:** ${errs} errors, ${warns} warnings"
-              echo ""
-            fi
+                      lintxml="app/build/reports/lint-results-debug.xml"
+                      if [ -f "$lintxml" ]; then
+                        errs=$(grep -c 'severity="Error"' "$lintxml" || true)
+                        warns=$(grep -c 'severity="Warning"' "$lintxml" || true)
+                        echo "**Lint:** ${errs} errors, ${warns} warnings"
+                        echo ""
+                      fi
 
-            apk=$(find app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
-            if [ -n "$apk" ]; then
-              size=$(du -h "$apk" | cut -f1)
-              echo "**Debug APK size:** ${size} ($(basename "$apk"))"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+                      apk=$(find app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+                      if [ -n "$apk" ]; then
+                        size=$(du -h "$apk" | cut -f1)
+                        echo "**Debug APK size:** ${size} ($(basename "$apk"))"
+                      fi
+                    } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Fail if checks failed
-        if: always() && (steps.lint.outcome == 'failure' || steps.tests.outcome == 'failure')
-        run: exit 1
+            -   name: Fail if checks failed
+                if: always() && (steps.lint.outcome == 'failure' || steps.tests.outcome == 'failure')
+                run: exit 1
