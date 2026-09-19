@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -122,7 +123,7 @@ internal fun BalancerPickerOverlay(
                     Text(
                         text = stringResource(
                             R.string.details_balancer_title,
-                            picker.episodeNumber
+                            picker.episodeNumber,
                         ),
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White.copy(alpha = 0.70f),
@@ -141,6 +142,7 @@ internal fun BalancerPickerOverlay(
                             label = option.playerName.removePrefix(stringResource(R.string.details_player_prefix)),
                             dubbing = option.video.dubbing,
                             views = option.video.views,
+                            episodeCount = option.episodeCount,
                             focusRequester = if (idx == firstSupportedIdx) firstFocusRequester else null,
                             isSupported = option.isSupported,
                             onFocused = { focusedOptionIndex = idx },
@@ -158,6 +160,7 @@ private fun BalancerOptionItem(
     label: String,
     dubbing: String,
     views: Int?,
+    episodeCount: Int,
     focusRequester: FocusRequester?,
     isSupported: Boolean,
     onFocused: () -> Unit,
@@ -202,34 +205,46 @@ private fun BalancerOptionItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                // Просмотры и число серий отдельной строкой, озвучка под ними — как на мобилке.
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Visibility,
+                        contentDescription = null,
+                        tint = textColor.copy(alpha = 0.62f),
+                        modifier = Modifier.size(13.dp),
+                    )
+                    Text(
+                        text = (views ?: 0).formatCompactCount(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.62f),
+                        maxLines = 1,
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.VideoLibrary,
+                        contentDescription = null,
+                        tint = textColor.copy(alpha = 0.62f),
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(13.dp),
+                    )
+                    Text(
+                        text = episodeCount.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = textColor.copy(alpha = 0.62f),
+                        maxLines = 1,
+                    )
+                }
                 if (dubbing.isNotBlank()) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = dubbing,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.62f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        if (views != null && views > 0) {
-                            Icon(
-                                imageVector = Icons.Filled.Visibility,
-                                contentDescription = null,
-                                tint = textColor.copy(alpha = 0.62f),
-                                modifier = Modifier.size(13.dp),
-                            )
-                            Text(
-                                text = views.formatCompactCount(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = textColor.copy(alpha = 0.62f),
-                                maxLines = 1,
-                            )
-                        }
-                    }
+                    Text(
+                        text = dubbing,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textColor.copy(alpha = 0.62f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
             Text(
