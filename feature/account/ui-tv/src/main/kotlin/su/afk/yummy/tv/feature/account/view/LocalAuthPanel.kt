@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.R
@@ -66,7 +67,7 @@ internal fun LocalAuthPanel(
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = state.pin.chunked(3).joinToString(" "),
+                    text = state.pin.chunked(LocalAuthCode.GROUP_SIZE).joinToString(" "),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontSize = 72.sp,
                         letterSpacing = 8.sp,

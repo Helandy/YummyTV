@@ -23,6 +23,9 @@
     <string name="account_username_placeholder">Username</string>
     <string name="account_registration_success_hint">Registration successful! Please check your email to verify your account.</string>
     <string name="account_registration_back_to_login">Back to sign in</string>
+    <string name="account_registration_terms_notice">By signing up you accept the terms of %1$s.</string>
+    <string name="account_registration_terms_link_text">ru.yummyani.me</string>
+    <string name="account_registration_site_fallback_hint">If registration fails, try signing up on the website.</string>
     <string name="account_error_registration_failed">Registration failed. Please try again.</string>
     <string name="account_error_invalid_email">Enter a valid email address.</string>
     <string name="account_error_password_too_short">Password must be at least 6 characters.</string>
@@ -212,9 +215,9 @@
     <string name="account_local_auth_login_on_tv">Login on TV</string>
     <string name="account_local_auth_login_on_tv_hint">Transfer session to a TV app on local network</string>
     <string name="account_local_auth_discovery_title">Find TV device</string>
-    <string name="account_local_auth_discovery_hint">On your TV open Account and choose "Login from mobile", then pick the device below and enter the PIN.</string>
+    <string name="account_local_auth_discovery_hint">On your TV open Account and choose "Login from mobile", then pick the device below and enter the code.</string>
     <string name="account_local_auth_discovery_empty">No devices found. Make sure the TV app is in "Login from mobile" mode and both devices are on the same Wi-Fi.</string>
-    <string name="account_local_auth_enter_pin">Enter PIN from TV</string>
+    <string name="account_local_auth_enter_pin">Enter the code from TV</string>
     <string name="account_local_auth_transfer_button">Transfer session</string>
     <string name="account_local_auth_transfer_success">Session transferred successfully</string>
     <string name="account_local_auth_permission_denied">Permission to find devices on the local network is required to sign in on TV.</string>
@@ -232,8 +235,8 @@
     <string name="account_mobile_local_network_permission_later">Not now</string>
     <string name="account_mobile_local_network_permission_open_settings">Open settings</string>
     <string name="account_error_transfer_failed">Session transfer failed</string>
-    <string name="account_error_local_auth_invalid_pin">Wrong PIN. Check the code on the TV screen.</string>
-    <string name="account_error_local_auth_pin_expired">The PIN has expired. Get a new one on the TV.</string>
-    <string name="account_error_local_auth_too_many_attempts">Too many wrong attempts. Get a new PIN on the TV.</string>
-    <string name="account_error_local_auth_sign_in_failed">The PIN is correct, but the TV could not sign in. Try again.</string>
+    <string name="account_error_local_auth_invalid_pin">Wrong code. Check the code on the TV screen.</string>
+    <string name="account_error_local_auth_pin_expired">The code has expired. Get a new one on the TV.</string>
+    <string name="account_error_local_auth_too_many_attempts">Too many wrong attempts. Get a new code on the TV.</string>
+    <string name="account_error_local_auth_sign_in_failed">The code is correct, but the TV could not sign in. Try again.</string>
 </resources>

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.account.utils
 
 import android.util.Base64
+import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
@@ -11,9 +12,9 @@ import javax.crypto.spec.SecretKeySpec
 /**
  * Шифрование сессии для передачи по локальной сети.
  *
- * PIN короткий (6 цифр), поэтому ключ нельзя выводить простым хэшем: пространство перебора
- * всего 10^6. Используем PBKDF2 со случайной солью и большим числом итераций, чтобы сделать
- * оффлайн-перебор перехваченного трафика дорогим.
+ * Ключ выводится из кода сопряжения ([LocalAuthCode]) — PBKDF2 со случайной солью и большим
+ * числом итераций. Сам код длинный не просто так: шифртекст может оказаться у чужого в той же
+ * сети, а перебирать его он будет офлайн, где лимит попыток на ТВ уже ничего не ограничивает.
  */
 object LocalAuthCrypto {
     private const val ALGORITHM = "AES/GCM/NoPadding"
@@ -22,14 +23,14 @@ object LocalAuthCrypto {
     private const val KEY_LENGTH = 256
     private const val SALT_LENGTH = 16
     private const val ITERATIONS = 200_000
-    private const val PIN_LENGTH = 6
 
     private val secureRandom = SecureRandom()
 
-    /** Криптостойкий 6-значный PIN. */
+    /** Криптостойкий код сопряжения в алфавите [LocalAuthCode]. */
     fun generatePin(): String {
-        val digits = CharArray(PIN_LENGTH) { ('0' + secureRandom.nextInt(10)) }
-        return String(digits)
+        val alphabet = LocalAuthCode.ALPHABET
+        val chars = CharArray(LocalAuthCode.LENGTH) { alphabet[secureRandom.nextInt(alphabet.length)] }
+        return String(chars)
     }
 
     /** @return зашифрованные данные, IV и соль — всё в Base64. */

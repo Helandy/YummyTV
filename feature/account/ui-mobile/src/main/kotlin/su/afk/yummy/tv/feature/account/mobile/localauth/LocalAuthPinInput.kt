@@ -32,16 +32,19 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
 
 /**
- * Ввод PIN с ТВ: шесть ячеек с акцентом темы вместо обычного поля.
+ * Ввод кода с ТВ: ячейки с акцентом темы вместо обычного поля.
  *
  * Само поле невидимо — оно нужно только ради системной клавиатуры и каретки, а рисуем мы
- * ячейки в `decorationBox`. Разбивка 3+3 повторяет то, как код показан на ТВ.
+ * ячейки в `decorationBox`. Разбивка по [LocalAuthCode.GROUP_SIZE] повторяет то, как код показан
+ * на ТВ, а ячейки узкие: десять штук должны поместиться в ширину телефона.
  */
 @Composable
 internal fun LocalAuthPinInput(
@@ -62,10 +65,10 @@ internal fun LocalAuthPinInput(
         // Каретку всегда держим в конце: пользователь вводит код слева направо.
         value = TextFieldValue(text = pin, selection = TextRange(pin.length)),
         onValueChange = { value ->
-            val digits = value.text.filter(Char::isDigit).take(LocalAuthState.PIN_LENGTH)
-            if (digits != pin) {
-                onPinChange(digits)
-                if (digits.length == LocalAuthState.PIN_LENGTH) onCompleted()
+            val code = LocalAuthCode.normalize(value.text).take(LocalAuthState.PIN_LENGTH)
+            if (code != pin) {
+                onPinChange(code)
+                if (code.length == LocalAuthState.PIN_LENGTH) onCompleted()
             }
         },
         enabled = enabled,
@@ -73,7 +76,10 @@ internal fun LocalAuthPinInput(
         textStyle = TextStyle(color = Color.Transparent),
         cursorBrush = SolidColor(Color.Transparent),
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.NumberPassword,
+            // Код теперь буквенно-цифровой, но без подсказок и автозамены: это не слово.
+            keyboardType = KeyboardType.Ascii,
+            capitalization = KeyboardCapitalization.Characters,
+            autoCorrectEnabled = false,
             imeAction = ImeAction.Done,
         ),
         keyboardActions = KeyboardActions(onDone = { onCompleted() }),
@@ -87,12 +93,12 @@ internal fun LocalAuthPinInput(
                 contentAlignment = Alignment.Center,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     repeat(LocalAuthState.PIN_LENGTH) { index ->
-                        if (index == LocalAuthState.PIN_LENGTH / 2) {
-                            Spacer(modifier = Modifier.width(12.dp))
+                        if (index != 0 && index % LocalAuthCode.GROUP_SIZE == 0) {
+                            Spacer(modifier = Modifier.width(10.dp))
                         }
                         PinCell(
                             digit = pin.getOrNull(index),
@@ -123,16 +129,16 @@ private fun PinCell(
 
     Box(
         modifier = Modifier
-            .size(width = 44.dp, height = 56.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .size(width = 26.dp, height = 44.dp)
+            .clip(RoundedCornerShape(8.dp))
             .background(colorScheme.surfaceVariant.copy(alpha = 0.34f))
-            .border(borderWidth, borderColor, RoundedCornerShape(12.dp)),
+            .border(borderWidth, borderColor, RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center,
     ) {
         if (digit != null) {
             Text(
                 text = digit.toString(),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface,
             )
@@ -140,7 +146,7 @@ private fun PinCell(
             // Пустая ячейка: короткое тире вместо цифры, чтобы блок не «скакал» по высоте.
             Box(
                 modifier = Modifier
-                    .size(width = 12.dp, height = 2.dp)
+                    .size(width = 8.dp, height = 2.dp)
                     .clip(RoundedCornerShape(1.dp))
                     .background(colorScheme.outlineVariant),
             )

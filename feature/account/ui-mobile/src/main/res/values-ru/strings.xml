@@ -23,6 +23,9 @@
     <string name="account_username_placeholder">Имя пользователя</string>
     <string name="account_registration_success_hint">Регистрация прошла успешно! Пожалуйста, проверьте вашу почту для подтверждения аккаунта.</string>
     <string name="account_registration_back_to_login">Вернуться ко входу</string>
+    <string name="account_registration_terms_notice">Регистрируясь, вы принимаете соглашение %1$s.</string>
+    <string name="account_registration_terms_link_text">ru.yummyani.me</string>
+    <string name="account_registration_site_fallback_hint">Если регистрация не прошла успешно, попробуйте зарегистрироваться через сайт.</string>
     <string name="account_error_registration_failed">Ошибка регистрации. Пожалуйста, попробуйте снова.</string>
     <string name="account_error_invalid_email">Введите корректный email.</string>
     <string name="account_error_password_too_short">Пароль должен содержать минимум 6 символов.</string>
@@ -212,7 +215,7 @@
     <string name="account_local_auth_login_on_tv">Войти на ТВ</string>
     <string name="account_local_auth_login_on_tv_hint">Передать сессию в приложение на ТВ через локальную сеть</string>
     <string name="account_local_auth_discovery_title">Поиск ТВ устройства</string>
-    <string name="account_local_auth_discovery_hint">На ТВ откройте Аккаунт и выберите «Войти с телефона», затем выберите устройство ниже и введите PIN.</string>
+    <string name="account_local_auth_discovery_hint">На ТВ откройте Аккаунт и выберите «Войти с телефона», затем выберите устройство ниже и введите код.</string>
     <string name="account_local_auth_discovery_empty">Устройства не найдены. Убедитесь, что на ТВ выбран режим "Войти с телефона" и оба устройства в одной сети Wi-Fi.</string>
     <string name="account_local_auth_enter_pin">Введите код с экрана ТВ</string>
     <string name="account_local_auth_transfer_button">Передать сессию</string>
@@ -232,7 +235,7 @@
     <string name="account_mobile_local_network_permission_later">Не сейчас</string>
     <string name="account_mobile_local_network_permission_open_settings">Открыть настройки</string>
     <string name="account_error_transfer_failed">Не удалось передать сессию</string>
-    <string name="account_error_local_auth_invalid_pin">Неверный код. Проверьте PIN на экране ТВ.</string>
+    <string name="account_error_local_auth_invalid_pin">Неверный код. Проверьте код на экране ТВ.</string>
     <string name="account_error_local_auth_pin_expired">Срок действия кода истёк. Обновите код на ТВ.</string>
     <string name="account_error_local_auth_too_many_attempts">Слишком много неудачных попыток. Обновите код на ТВ.</string>
     <string name="account_error_local_auth_sign_in_failed">Код верный, но ТВ не смог войти. Попробуйте ещё раз.</string>

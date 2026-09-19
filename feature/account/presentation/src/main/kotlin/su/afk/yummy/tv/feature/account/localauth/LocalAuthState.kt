@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
+import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 
 class LocalAuthState {
@@ -45,6 +46,6 @@ class LocalAuthState {
     }
 
     companion object {
-        const val PIN_LENGTH = 6
+        const val PIN_LENGTH = LocalAuthCode.LENGTH
     }
 }

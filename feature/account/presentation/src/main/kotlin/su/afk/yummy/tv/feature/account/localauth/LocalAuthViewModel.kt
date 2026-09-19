@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.domain.account.model.SessionTransferException
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -53,7 +54,7 @@ class LocalAuthViewModel @Inject internal constructor(
 
             is LocalAuthState.Event.PinChanged -> setState {
                 copy(
-                    pin = event.pin.filter(Char::isDigit).take(LocalAuthState.PIN_LENGTH),
+                    pin = LocalAuthCode.normalize(event.pin).take(LocalAuthState.PIN_LENGTH),
                     error = null,
                 )
             }

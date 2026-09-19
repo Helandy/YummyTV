@@ -104,12 +104,12 @@
     <string name="account_tv_error_invalid_email">Введіть коректний email.</string>
     <string name="account_tv_error_password_too_short">Пароль має містити щонайменше 6 символів.</string>
     <string name="account_local_auth_login_from_mobile">Увійти з телефону</string>
-    <string name="account_local_auth_login_from_mobile_hint">Пошук пристрою та передача через локальну мережу за PIN-кодом</string>
+    <string name="account_local_auth_login_from_mobile_hint">Пошук пристрою та передача через локальну мережу за кодом</string>
     <string name="account_local_auth_pairing_title">Вхід через мобільний додаток</string>
     <string name="account_local_auth_pairing_subtitle">Переконайтеся, що обидва пристрої в одній мережі Wi-Fi. На телефоні перейдіть в Акаунт -> Увійти на ТВ та введіть цей код:</string>
     <string name="account_local_auth_transferring">Отримання сесії...</string>
     <string name="account_local_auth_success">Успішно! Входимо...</string>
-    <string name="account_local_auth_error_invalid_pin">Невірний код. Перевірте PIN на екрані ТВ.</string>
+    <string name="account_local_auth_error_invalid_pin">Невірний код. Перевірте код на екрані ТВ.</string>
     <string name="account_local_auth_error_pin_expired">Термін дії коду минув.</string>
     <string name="account_local_auth_error_too_many_attempts">Забагато невдалих спроб.</string>
     <string name="account_local_auth_error_service_unavailable">Не вдалося оголосити ТВ у локальній мережі.</string>

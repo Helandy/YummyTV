@@ -2,7 +2,7 @@
 
 Вводить логин и пароль пультом неудобно, поэтому приложение умеет переносить уже существующую
 сессию с телефона на ТВ по локальной сети. Сервер yani в этом не участвует: телефон и ТВ
-договариваются напрямую, а подтверждением служит 6-значный PIN, который ТВ показывает на экране.
+договариваются напрямую, а подтверждением служит 10-значный код, который ТВ показывает на экране.
 
 ## Роли
 
@@ -18,14 +18,15 @@
 ```
 ТВ                                          Телефон
 │ StartLocalAuthServerSelected               │
-│ PIN = SecureRandom (6 цифр)                │
+│ запрос доступа к локальной сети            │
+│ код = SecureRandom (10 символов)           │
 │ embeddedServer(CIO, port = 0)              │
 │ NSD register _yummytv_auth._tcp.           │
 │──────── Pairing(pin, port) → UI ───────────│
 │                                            │ DiscoveryStarted
 │                                            │ NSD discover + resolve
-│                                            │ выбор устройства, ввод PIN
-│                                            │ PBKDF2(pin, salt) → AES-GCM(refreshToken)
+│                                            │ выбор устройства, ввод кода
+│                                            │ PBKDF2(код, salt) → AES-GCM(refreshToken)
 │◀──────── POST /transfer {token, iv, salt} ─│
 │ decrypt → signInWithToken(token)           │
 │──────── 200 {"status":"ok"} ──────────────▶│
@@ -42,17 +43,51 @@
 `engine.resolvedConnectors()`. Предварительный `ServerSocket(0)` здесь был бы гонкой — между
 закрытием сокета и стартом Ktor порт может занять другой процесс.
 
+Регистрация анонса обёрнута в `runCatching`: без разрешения на локальную сеть `registerService`
+кидает `SecurityException` синхронно, мимо `onRegistrationFailed`, и без перехвата это уронило бы
+`callbackFlow` наружу вместо понятной ошибки на экране.
+
 На стороне телефона резолв идёт строго по одному через `Mutex`: `NsdManager.resolveService` не
 переносит параллельных вызовов и на старых API падает с «listener already in use». На API 34+
 используется `registerServiceInfoCallback` и `hostAddresses`, ниже — устаревшие `resolveService` и
 `host`. Тип сервиса сравнивается после `trim('.')`, потому что Android нормализует концевые точки
 по-разному.
 
-### Разрешение
+### Разрешения
 
-На Android 13+ `NsdManager.discoverServices()` требует `NEARBY_WIFI_DEVICES`. Разрешение объявлено в
-манифесте с `usesPermissionFlags="neverForLocation"` и запрашивается при открытии экрана «Войти на
-ТВ». Без него поиск молча не находит ничего.
+Нужны два, и оба запрашиваются в рантайме:
+
+* `NEARBY_WIFI_DEVICES` — с Android 13 без него `NsdManager.discoverServices()` молча ничего не
+  находит. Объявлено с `usesPermissionFlags="neverForLocation"`;
+* `ACCESS_LOCAL_NETWORK` — с Android 16 работает Local Network Protection, и без этого разрешения
+  режется вообще весь доступ к локальной подсети, включая mDNS. Симптом характерный: в logcat
+  `AppOps: Operation not found … op=ACCESS_LOCAL_NETWORK`, `registerService` уходит в
+  `onRegistrationFailed`, а на ТВ вместо кода появляется «Не удалось объявить ТВ в локальной сети».
+  Разрешение требуется обеим сторонам: телефону — чтобы искать и достучаться, ТВ — чтобы анонс и
+  входящие соединения вообще жили.
+
+Список для текущего SDK собирает `localNetworkPermissions()` в `core:designsystem`, там же лежит
+`rememberLocalNetworkPermissionGate` — общая для ТВ и телефона последовательность «своё объяснение →
+системный запрос → при отказе навсегда настройки приложения». Диалоги рисует каждый UI сам: на ТВ
+нужен FocusRequester, иначе фокус уходит в боковое меню.
+
+Отказ — это не сбой сети, у него отдельная причина `LocalAuthError.PERMISSION_DENIED` и свой текст,
+иначе пользователь видел бы «не удалось объявить ТВ» и шёл чинить роутер.
+
+## Транспорт
+
+Передача идёт на `http://<ip>:<порт>` — обычный HTTP внутри локальной сети. Общий Ktor-клиент
+приложения здесь не подходит: он собран на OkHttp, а тот сверяется с `network_security_config.xml`,
+где cleartext разрешён только для `127.0.0.1` и `localhost`. Запрос на `192.168.x.x` в этом случае
+не доходит даже до сокета — на ТВ в логах пусто, на телефоне мгновенный отказ без внятной причины.
+
+Поэтому у сопряжения свой клиент на движке **Ktor CIO** (`@LocalAuthHttpClient`, собирается в
+`AccountDataModule`): CIO работает на сырых сокетах и политику не спрашивает, так что `base-config`
+остаётся строгим для всего остального приложения. Таймауты короткие — 5 секунд на соединение и 10 на
+запрос: ТВ стоит в той же сети, долго ждать тут нечего.
+
+Клиент намеренно узкого назначения. Если однажды отправить в него внешний URL, проверка TLS-политики
+к такому запросу не применится.
 
 ## Протокол
 
@@ -71,31 +106,58 @@
 | Код   | Когда                                           |
 |-------|-------------------------------------------------|
 | `200` | `{"status":"ok"}`, сессия принята               |
-| `400` | не расшифровалось — неверный PIN или битое тело |
-| `410` | PIN истёк (TTL 3 минуты)                        |
+| `400` | не расшифровалось — неверный код или битое тело |
+| `410` | код истёк (TTL 3 минуты)                        |
 | `429` | исчерпан лимит в 5 неудачных попыток            |
 | `502` | токен принят, но `signInWithToken` упал         |
 
 В теле ошибки приходит имя константы `LocalAuthError`, а не текст для показа: локализацию собирает
-UI. Телефон разбирает это имя и показывает конкретную причину — PIN вводит человек у телефона,
+UI. Телефон разбирает это имя и показывает конкретную причину — код вводит человек у телефона,
 поэтому «Неверный код» и «Срок действия кода истёк» должны быть видны именно там.
 
-## Криптография
+## Код сопряжения
 
-Ключ выводится из PIN, а PIN короткий — всего 10⁶ комбинаций. Простой хэш здесь не годится:
-перехваченный по открытому HTTP трафик перебирался бы оффлайн за миллисекунды. Поэтому:
+Формат задаёт `LocalAuthCode` в domain — им пользуются и генерация, и фильтр ввода, и вёрстка обоих
+UI:
+
+* длина 10, показ и ввод группами по 5;
+* алфавит `0123456789ACDEFHJKMNPRTUVWXY` — 28 символов. Выброшены `B`, `G`, `I`, `L`, `O`, `Q`, `S`,
+  `Z`: их путают с цифрами, когда читают код с экрана телевизора через комнату;
+* `normalize()` поднимает регистр, приводит те же двойники к цифрам (`B`→8, `I`/`L`→1, `O`/`Q`→0,
+  `S`→5, `Z`→2) и отбрасывает всё остальное.
+
+Ловушка, на которой легко ошибиться: буква из алфавита обязана переживать `normalize()` неизменной.
+Если добавить символ в алфавит и одновременно в таблицу двойников, верный код начнёт отвергаться —
+на это есть unit-тест.
+
+### Шифрование
+
+Ключ выводится из кода:
 
 * KDF — `PBKDF2WithHmacSHA256`, 200 000 итераций, случайная 16-байтная соль, ключ 256 бит;
 * шифр — `AES/GCM/NoPadding`, тег 128 бит, IV генерирует сам `Cipher`;
 * соль и IV передаются рядом с шифротекстом, всё в Base64 `NO_WRAP`;
-* PIN генерируется через `SecureRandom`.
+* код генерируется через `SecureRandom`.
 
-Тег GCM заодно аутентифицирует сообщение: неверный PIN — это `AEADBadTagException`, то есть
-отдельная
-проверка PIN не нужна.
+Тег GCM заодно аутентифицирует сообщение: неверный код — это `AEADBadTagException`, то есть
+отдельная проверка кода не нужна.
 
-Ограничения по времени (3 минуты) и числу попыток (5) сужают окно онлайн-перебора; оффлайн-перебор
-упирается в стоимость PBKDF2.
+### Почему код длинный
+
+Ограничения по времени (3 минуты) и числу попыток (5) сужают окно онлайн-перебора, но на перехват
+они не действуют: шифротекст едет открытым HTTP, и получивший его перебирает код **офлайн**, где
+лимит попыток не работает вовсе. Добыть шифротекст можно и без сниффинга — достаточно поднять в той
+же сети поддельный сервис mDNS с похожим именем и дождаться, пока пользователь выберет его в списке.
+
+Отсюда и длина. Шесть цифр — это 10⁶ вариантов, то есть порядка получаса работы одной видеокарты
+даже с 200 000 итераций PBKDF2. Десять символов этого алфавита дают 28¹⁰ ≈ 3·10¹⁴ (~2⁴⁸), и полный
+перебор уходит за сотни лет на том же железе. Оценки грубые, но разница здесь в порядках, а не в
+процентах.
+
+Протокол при этом остаётся «зашифруем ключом из кода»: перехваченный трафик теоретически перебираем,
+просто теперь это бессмысленно дорого. Принципиально другой уровень дал бы PAKE (обмен, после
+которого перехват не даёт материала для перебора вовсе) — но это заметно больше работы и здесь
+сознательно не сделано.
 
 ## Что происходит на ТВ после приёма токена
 
@@ -111,15 +173,16 @@ UI. Телефон разбирает это имя и показывает ко
 
 Ошибки разделены на два класса:
 
-* **восстановимые** — неверный PIN. Сервер продолжает работать, состояние возвращается в `Pairing` с
-  тем же кодом, но с `lastError = INVALID_PIN` и уменьшенным `attemptsLeft`. На ТВ под PIN-ом
+* **восстановимые** — неверный код. Сервер продолжает работать, состояние возвращается в `Pairing` с
+  тем же кодом, но с `lastError = INVALID_PIN` и уменьшенным `attemptsLeft`. На ТВ под кодом
   появляется «Неверный код» и счётчик оставшихся попыток;
-* **терминальные** — `PIN_EXPIRED`, `TOO_MANY_ATTEMPTS`, `SERVICE_UNAVAILABLE`, `SIGN_IN_FAILED`.
-  Этот PIN больше не примут, поэтому ViewModel сразу гасит сервер, а панель показывает причину и
-  кнопку «Обновить код», которая поднимает сервер заново с новым PIN. Автоматически код не
+* **терминальные** — `PIN_EXPIRED`, `TOO_MANY_ATTEMPTS`, `SERVICE_UNAVAILABLE`, `PERMISSION_DENIED`,
+  `SIGN_IN_FAILED`.
+  Этот код больше не примут, поэтому ViewModel сразу гасит сервер, а панель показывает причину и
+  кнопку «Обновить код», которая поднимает сервер заново с новым кодом. Автоматически код не
   перевыпускается намеренно: ручное действие на ТВ не даёт набивать попытки удалённо.
 
-Срок жизни PIN и лимит попыток живут в `PairingSession` — это чистая логика без Android и сети,
+Срок жизни кода и лимит попыток живут в `PairingSession` — это чистая логика без Android и сети,
 покрытая unit-тестом. Счётчик — `AtomicInteger`: CIO обрабатывает запросы конкурентно, обычная `var`
 позволила бы проскочить лимит гонкой.
 
@@ -146,29 +209,29 @@ UI. Телефон разбирает это имя и показывает ко
 ## Аналитика
 
 События живут в `LocalAuthAnalytics` и делятся по сторонам: `local_auth_tv_*` — там, где показывают
-PIN, `local_auth_mobile_*` — там, где его вводят.
+код, `local_auth_mobile_*` — там, где его вводят.
 
-| Событие                                | Когда                              | Параметры       |
-|----------------------------------------|------------------------------------|-----------------|
-| `local_auth_tv_pairing_started`        | выбрано «Войти с телефона»         | —               |
-| `local_auth_tv_pin_shown`              | сервис объявлен, код на экране     | —               |
-| `local_auth_tv_wrong_pin`              | пришёл неверный код                | `attempts_left` |
-| `local_auth_tv_pin_refreshed`          | нажато «Обновить код»              | —               |
-| `local_auth_tv_transfer_success`       | сессия принята, ТВ авторизован     | —               |
-| `local_auth_tv_pairing_failed`         | терминальная ошибка                | `reason`        |
-| `local_auth_tv_pairing_cancelled`      | пользователь закрыл панель         | —               |
-| `local_auth_mobile_screen`             | открыт экран «Войти на ТВ»         | —               |
-| `local_auth_mobile_permission_result`  | итог запроса `NEARBY_WIFI_DEVICES` | `granted`       |
-| `local_auth_mobile_discovery_failed`   | поиск не запустился                | —               |
-| `local_auth_mobile_discovery_finished` | экран закрыт, итог поиска          | `device_count`  |
-| `local_auth_mobile_device_selected`    | выбран ТВ из списка                | —               |
-| `local_auth_mobile_transfer_selected`  | нажато «Передать сессию»           | —               |
-| `local_auth_mobile_transfer_success`   | ТВ подтвердил приём                | —               |
-| `local_auth_mobile_transfer_failure`   | передача не удалась                | `reason`        |
+| Событие                                | Когда                          | Параметры       |
+|----------------------------------------|--------------------------------|-----------------|
+| `local_auth_tv_pairing_started`        | выбрано «Войти с телефона»     | —               |
+| `local_auth_tv_pin_shown`              | сервис объявлен, код на экране | —               |
+| `local_auth_tv_wrong_pin`              | пришёл неверный код            | `attempts_left` |
+| `local_auth_tv_pin_refreshed`          | нажато «Обновить код»          | —               |
+| `local_auth_tv_transfer_success`       | сессия принята, ТВ авторизован | —               |
+| `local_auth_tv_pairing_failed`         | терминальная ошибка            | `reason`        |
+| `local_auth_tv_pairing_cancelled`      | пользователь закрыл панель     | —               |
+| `local_auth_mobile_screen`             | открыт экран «Войти на ТВ»     | —               |
+| `local_auth_mobile_permission_result`  | итог запроса доступа к сети    | `granted`       |
+| `local_auth_mobile_discovery_failed`   | поиск не запустился            | —               |
+| `local_auth_mobile_discovery_finished` | экран закрыт, итог поиска      | `device_count`  |
+| `local_auth_mobile_device_selected`    | выбран ТВ из списка            | —               |
+| `local_auth_mobile_transfer_selected`  | нажато «Передать сессию»       | —               |
+| `local_auth_mobile_transfer_success`   | ТВ подтвердил приём            | —               |
+| `local_auth_mobile_transfer_failure`   | передача не удалась            | `reason`        |
 
 `reason` — имя `LocalAuthError` в нижнем регистре либо `unknown`, если ТВ не ответил вовсе.
 
-**В трекер не уходят PIN, refresh-токен, адреса и имена найденных устройств** — это либо секреты,
+**В трекер не уходят код, refresh-токен, адреса и имена найденных устройств** — это либо секреты,
 либо данные локальной сети пользователя.
 
 Две пары событий дают воронку: `tv_pin_shown` → `tv_transfer_success` и `mobile_screen` →
@@ -183,25 +246,31 @@ PIN, `local_auth_mobile_*` — там, где его вводят.
   не сработает даже на реальном железе.
 * **Окно после исчерпания попыток.** Сервер гасится по состоянию, но уже начатые в этот момент
   запросы получат `429` — это ожидаемо и на UI не влияет.
+* **Старые сборки несовместимы.** Формат кода менялся вместе с длиной, а до Android 16 приложению не
+  требовалось `ACCESS_LOCAL_NETWORK`. Пара «новый телефон + старый ТВ» работать не будет; версия
+  протокола по сети не передаётся, так что диагностируется это только по логам.
 
 ## Где смотреть код
 
 Механика разнесена по `feature/account/data/.../localauth/`, репозиторий остался тонким
 оркестратором: заводит сеанс, поднимает сервер, вешает анонс и следит за временем жизни.
 
-| Слой         | Файл                                                                                                                 |
-|--------------|----------------------------------------------------------------------------------------------------------------------|
-| Оркестрация  | `feature/account/data/.../repository/NsdLocalAuthRepository.kt`                                                      |
-| Протокол     | `feature/account/data/.../localauth/LocalAuthContract.kt`                                                            |
-| Политика PIN | `feature/account/data/.../localauth/PairingSession.kt`                                                               |
-| HTTP-сервер  | `feature/account/data/.../localauth/LocalAuthServer.kt`                                                              |
-| Анонс NSD    | `feature/account/data/.../localauth/NsdAdvertiser.kt`                                                                |
-| Поиск NSD    | `feature/account/data/.../localauth/NsdDeviceDiscovery.kt`                                                           |
-| Клиент       | `feature/account/data/.../localauth/SessionTransferClient.kt`                                                        |
-| Криптография | `feature/account/data/.../utils/LocalAuthCrypto.kt`                                                                  |
-| DTO          | `feature/account/data/.../dto/SessionTransferDto.kt`                                                                 |
-| Контракт     | `feature/account/domain/.../repository/LocalAuthRepository.kt`                                                       |
-| Состояния    | `feature/account/domain/.../model/LocalAuthServerState.kt`, `.../model/LocalAuthError.kt`                            |
-| Presentation | `feature/account/presentation/.../account/handler/AccountLocalAuthHandler.kt`, `.../localauth/LocalAuthViewModel.kt` |
-| UI ТВ        | `feature/account/ui-tv/.../view/LocalAuthPanel.kt`                                                                   |
-| UI телефона  | `feature/account/ui-mobile/.../localauth/LocalAuthMobileScreen.kt`                                                   |
+| Слой          | Файл                                                                                                                 |
+|---------------|----------------------------------------------------------------------------------------------------------------------|
+| Оркестрация   | `feature/account/data/.../repository/NsdLocalAuthRepository.kt`                                                      |
+| Протокол      | `feature/account/data/.../localauth/LocalAuthContract.kt`                                                            |
+| Политика кода | `feature/account/data/.../localauth/PairingSession.kt`                                                               |
+| HTTP-сервер   | `feature/account/data/.../localauth/LocalAuthServer.kt`                                                              |
+| Анонс NSD     | `feature/account/data/.../localauth/NsdAdvertiser.kt`                                                                |
+| Поиск NSD     | `feature/account/data/.../localauth/NsdDeviceDiscovery.kt`                                                           |
+| Клиент        | `feature/account/data/.../localauth/SessionTransferClient.kt`                                                        |
+| HTTP-клиент   | `feature/account/data/.../di/LocalAuthHttpClient.kt`, `.../di/AccountDataModule.kt`                                  |
+| Криптография  | `feature/account/data/.../utils/LocalAuthCrypto.kt`                                                                  |
+| DTO           | `feature/account/data/.../dto/SessionTransferDto.kt`                                                                 |
+| Контракт      | `feature/account/domain/.../repository/LocalAuthRepository.kt`                                                       |
+| Формат кода   | `feature/account/domain/.../model/LocalAuthCode.kt`                                                                  |
+| Состояния     | `feature/account/domain/.../model/LocalAuthServerState.kt`, `.../model/LocalAuthError.kt`                            |
+| Разрешения    | `core/designsystem/.../permissions/LocalNetworkPermissions.kt`                                                       |
+| Presentation  | `feature/account/presentation/.../account/handler/AccountLocalAuthHandler.kt`, `.../localauth/LocalAuthViewModel.kt` |
+| UI ТВ         | `feature/account/ui-tv/.../view/LocalAuthPanel.kt`, `.../view/LocalNetworkPermissionTvDialog.kt`                     |
+| UI телефона   | `feature/account/ui-mobile/.../localauth/LocalAuthMobileScreen.kt`, `.../localauth/LocalAuthPinInput.kt`             |

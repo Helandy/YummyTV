@@ -32,9 +32,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
@@ -43,6 +49,8 @@ import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.registration.RegistrationState
+
+private const val YANI_SITE_URL = "https://ru.yummyani.me"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -190,6 +198,16 @@ private fun RegistrationForm(
             }
         }
 
+        RegistrationTermsNotice()
+
+        Text(
+            text = stringResource(R.string.account_registration_site_fallback_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         val errorMessage = state.errorMessage ?: state.error.accountErrorMessage()
         if (errorMessage != null) {
             Text(
@@ -201,4 +219,37 @@ private fun RegistrationForm(
             )
         }
     }
+}
+
+@Composable
+private fun RegistrationTermsNotice() {
+    val linkText = stringResource(R.string.account_registration_terms_link_text)
+    val notice = stringResource(R.string.account_registration_terms_notice, linkText)
+    val linkStart = notice.indexOf(linkText)
+    val linkStyles = TextLinkStyles(
+        style = SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+        ),
+    )
+    val annotated = buildAnnotatedString {
+        if (linkStart < 0) {
+            append(notice)
+            return@buildAnnotatedString
+        }
+        append(notice.substring(0, linkStart))
+        withLink(
+            LinkAnnotation.Url(url = YANI_SITE_URL, styles = linkStyles),
+        ) {
+            append(linkText)
+        }
+        append(notice.substring(linkStart + linkText.length))
+    }
+    Text(
+        text = annotated,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
