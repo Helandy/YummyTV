@@ -94,6 +94,8 @@
     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
     <string name="settings_theme_graphite">Graphite</string>
     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Compact</string>
     <string name="settings_poster_card_size_compact_hint">Fits more cards in each row</string>
     <string name="settings_poster_card_size_standard">Standard</string>
@@ -157,7 +159,7 @@
     <string name="settings_refresh_continue_watching_progress_label">Latest progress from other devices</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
     <string name="settings_tv_volume_keys_label">Volume keys in the player</string>
-    <string name="settings_tv_volume_keys_enabled">The player handles volume keys in 1% steps</string>
+    <string name="settings_tv_volume_keys_enabled" formatted="false">The player handles volume keys in 1% steps</string>
     <string name="settings_tv_volume_keys_disabled">Volume is handled by the system as usual</string>
     <string name="settings_tv_advanced_volume_label">Advanced volume in the player</string>
     <string name="settings_tv_advanced_volume_enabled">The player has its own volume (0–100%, 1% steps), independent of the system</string>

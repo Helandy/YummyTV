@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -51,6 +50,7 @@ import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
+import su.afk.yummy.tv.feature.settings.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.utils.color
 import su.afk.yummy.tv.feature.settings.utils.detailsText
 import su.afk.yummy.tv.feature.settings.utils.hint
@@ -140,7 +140,7 @@ internal fun SettingsTvPanelHost(
                         )
                     }
 
-                    SettingsTab.THEME -> AppTheme.entries.forEachIndexed { index, theme ->
+                    SettingsTab.THEME -> availableAppThemes.forEachIndexed { index, theme ->
                         QualityRow(
                             label = theme.label(),
                             hint = theme.hint(),
@@ -156,7 +156,7 @@ internal fun SettingsTvPanelHost(
                                 )
                                 .restoreCategoryFocusOnLeft(tabFocusRequester, index == 0),
                         )
-                        if (index < AppTheme.entries.lastIndex) {
+                        if (index < availableAppThemes.lastIndex) {
                             SettingsDivider()
                         }
                     }

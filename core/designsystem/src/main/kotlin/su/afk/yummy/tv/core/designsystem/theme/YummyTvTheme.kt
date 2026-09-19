@@ -4,14 +4,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import su.afk.yummy.tv.core.model.settings.AppTheme
@@ -159,19 +164,22 @@ fun YummyTvTheme(
     content: @Composable () -> Unit,
 ) {
     val useTvTypography = isTelevision ?: (
-            LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-                    Configuration.UI_MODE_TYPE_TELEVISION
-            )
+        LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+            Configuration.UI_MODE_TYPE_TELEVISION
+        )
     val darkTheme = when (backgroundStyle) {
         BackgroundStyle.SYSTEM -> isSystemInDarkTheme()
         BackgroundStyle.LIGHT -> false
         BackgroundStyle.DARK -> true
     }
+    val context = LocalContext.current
     val palette = appTheme.palette
-    val colorScheme = if (darkTheme) {
-        palette.toDarkColorScheme()
-    } else {
-        palette.toLightColorScheme(LightNeutralsWhite)
+    val colorScheme = when {
+        appTheme == AppTheme.DYNAMIC && isDynamicColorSupported ->
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+        darkTheme -> palette.toDarkColorScheme()
+        else -> palette.toLightColorScheme(LightNeutralsWhite)
     }
 
     // Иконки статус-бара и навигационной полосы: тёмные на светлом фоне, светлые на тёмном.
@@ -203,9 +211,21 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     else -> null
 }
 
+/**
+ * Системная палитра (Material You) появилась в Android 12; ниже [AppTheme.DYNAMIC]
+ * откатывается на обычную палитру, поэтому выбор темы прячем на старых версиях.
+ */
+@get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+val isDynamicColorSupported: Boolean
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
 private val AppTheme.palette: YummyTvPalette
     get() = when (this) {
-        AppTheme.WARM_AMBER -> WarmAmberPalette
+        // DYNAMIC цвета берёт у системы; палитра нужна лишь как фолбэк до Android 12.
+        AppTheme.DYNAMIC,
+        AppTheme.WARM_AMBER,
+        -> WarmAmberPalette
+
         AppTheme.SAKURA -> SakuraPalette
         AppTheme.MINT -> MintPalette
         AppTheme.OCEAN -> OceanPalette

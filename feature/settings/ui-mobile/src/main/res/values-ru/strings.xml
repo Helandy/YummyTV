@@ -15,6 +15,18 @@
     <string name="settings_mobile_section_language">Язык</string>
     <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">О приложении</string>
+    <string name="settings_cache_storage_title">Размер кеша</string>
+    <string name="settings_cache_storage_button_hint">Показать размеры папок кеша</string>
+    <string name="settings_cache_storage_total">Всего</string>
+    <string name="settings_cache_storage_refresh">Обновить</string>
+    <string name="settings_cache_storage_close">Закрыть</string>
+    <string name="settings_cache_storage_empty">Кеш пуст</string>
+    <string name="settings_cache_storage_loading">Подсчёт…</string>
+    <string name="settings_cache_storage_folder_images">Изображения постеров</string>
+    <string name="settings_cache_storage_folder_player">Буфер стриминга</string>
+    <string name="settings_cache_storage_folder_downloads">Скачанные серии</string>
+    <string name="settings_cache_storage_folder_exports">Временные файлы экспорта</string>
+    <string name="settings_cache_storage_folder_database">Локальная база данных</string>
     <string name="settings_mobile_theme">Тема</string>
     <string name="settings_mobile_background">Фон</string>
     <string name="settings_background_system">Как в системе</string>
@@ -95,6 +107,8 @@
     <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
     <string name="settings_theme_graphite">Графит</string>
     <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Палитра Material You из обоев системы (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактный</string>
     <string name="settings_poster_card_size_compact_hint">Больше карточек в строке</string>
     <string name="settings_poster_card_size_standard">Стандартный</string>

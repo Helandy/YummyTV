@@ -32,7 +32,6 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -49,6 +48,7 @@ import su.afk.yummy.tv.core.utils.system.restartApplication
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePickerOption
+import su.afk.yummy.tv.feature.settings.mobile.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.mobile.utils.color
 import su.afk.yummy.tv.feature.settings.mobile.utils.detailsText
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
@@ -578,7 +578,7 @@ fun SettingsMobileScreen(
         SettingsMobilePicker.THEME -> SettingsMobilePickerSheet(
             title = stringResource(R.string.settings_mobile_theme),
             selectedValue = state.appTheme,
-            options = AppTheme.entries.map {
+            options = availableAppThemes.map {
                 SettingsMobilePickerOption(
                     it,
                     it.label(),

@@ -27,6 +27,18 @@
     <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
     <string name="settings_tab_about">О приложении</string>
+    <string name="settings_cache_storage_title">Размер кеша</string>
+    <string name="settings_cache_storage_button_hint">Показать размеры папок кеша</string>
+    <string name="settings_cache_storage_total">Всего</string>
+    <string name="settings_cache_storage_refresh">Обновить</string>
+    <string name="settings_cache_storage_close">Закрыть</string>
+    <string name="settings_cache_storage_empty">Кеш пуст</string>
+    <string name="settings_cache_storage_loading">Подсчёт…</string>
+    <string name="settings_cache_storage_folder_images">Изображения постеров</string>
+    <string name="settings_cache_storage_folder_player">Буфер стриминга</string>
+    <string name="settings_cache_storage_folder_downloads">Скачанные серии</string>
+    <string name="settings_cache_storage_folder_exports">Временные файлы экспорта</string>
+    <string name="settings_cache_storage_folder_database">Локальная база данных</string>
     <string name="settings_poster_size_title">Размер постеров на экране</string>
     <string name="settings_interface_mobile">Мобильный</string>
     <string name="settings_interface_mobile_hint">Управление с сенсорного экрана</string>
@@ -82,6 +94,8 @@
     <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
     <string name="settings_theme_graphite">Графит</string>
     <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Палитра Material You из обоев системы (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактный</string>
     <string name="settings_poster_card_size_compact_hint">Больше карточек в строке</string>
     <string name="settings_poster_card_size_standard">Стандартный</string>
@@ -145,7 +159,7 @@
     <string name="settings_refresh_continue_watching_progress_label">Свежий прогресс с других устройств</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Проверять прогресс аккаунта при запуске из «Продолжить просмотр» на главной или в библиотеке, чтобы продолжать с более свежего устройства</string>
     <string name="settings_tv_volume_keys_label">Кнопки громкости в плеере</string>
-    <string name="settings_tv_volume_keys_enabled">Плеер сам меняет громкость шагом 1%</string>
+    <string name="settings_tv_volume_keys_enabled" formatted="false">Плеер сам меняет громкость шагом 1%</string>
     <string name="settings_tv_volume_keys_disabled">Громкостью управляет система как обычно</string>
     <string name="settings_tv_advanced_volume_label">Продвинутая громкость в плеере</string>
     <string name="settings_tv_advanced_volume_enabled">У плеера своя громкость (0–100%, шаг 1%), независимо от системы</string>

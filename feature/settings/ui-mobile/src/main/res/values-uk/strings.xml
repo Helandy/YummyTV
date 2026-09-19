@@ -107,6 +107,8 @@
     <string name="settings_theme_ocean_hint">Глибокі сині поверхні та прохолодний світлий акцент</string>
     <string name="settings_theme_graphite">Графіт</string>
     <string name="settings_theme_graphite_hint">Мінімальна сіра тема зі стриманим контрастом</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактний</string>
     <string name="settings_poster_card_size_compact_hint">Більше карток у рядку</string>
     <string name="settings_poster_card_size_standard">Стандартний</string>

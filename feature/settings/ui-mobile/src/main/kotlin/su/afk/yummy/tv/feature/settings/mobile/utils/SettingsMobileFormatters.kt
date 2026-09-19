@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.settings.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
@@ -67,6 +68,17 @@ internal fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<Details
         }
     }
 
+/**
+ * Темы, доступные в мобильном выборе: системная палитра есть только с Android 12,
+ * на более старых версиях её прячем, чтобы не предлагать пустой выбор.
+ */
+internal val availableAppThemes: List<AppTheme>
+    get() = if (isDynamicColorSupported) {
+        AppTheme.entries
+    } else {
+        AppTheme.entries.filter { it != AppTheme.DYNAMIC }
+    }
+
 @Composable
 internal fun AppTheme.label(): String = stringResource(
     when (this) {
@@ -75,6 +87,7 @@ internal fun AppTheme.label(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint
         AppTheme.OCEAN -> R.string.settings_theme_ocean
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite
+        AppTheme.DYNAMIC -> R.string.settings_theme_dynamic
     },
 )
 
@@ -86,6 +99,7 @@ internal fun AppTheme.hint(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint_hint
         AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
+        AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
     },
 )
 

@@ -107,6 +107,8 @@
     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
     <string name="settings_theme_graphite">Graphite</string>
     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Compact</string>
     <string name="settings_poster_card_size_compact_hint">Fits more cards in each row</string>
     <string name="settings_poster_card_size_standard">Standard</string>

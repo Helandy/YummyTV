@@ -6,6 +6,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
@@ -69,6 +70,17 @@ internal fun List<DetailsButtonAction>.toDetailsButtonOrderItems(): List<Details
         }
     }
 
+/**
+ * Темы, доступные в ТВ-выборе. ТВ-интерфейс включают и на планшете/телефоне, поэтому системную
+ * палитру показываем везде, где её поддерживает система (Android 12+).
+ */
+internal val availableAppThemes: List<AppTheme>
+    get() = if (isDynamicColorSupported) {
+        AppTheme.entries
+    } else {
+        AppTheme.entries.filter { it != AppTheme.DYNAMIC }
+    }
+
 @Composable
 internal fun AppTheme.label(): String = stringResource(
     when (this) {
@@ -77,6 +89,7 @@ internal fun AppTheme.label(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint
         AppTheme.OCEAN -> R.string.settings_theme_ocean
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite
+        AppTheme.DYNAMIC -> R.string.settings_theme_dynamic
     },
 )
 
@@ -88,6 +101,7 @@ internal fun AppTheme.hint(): String = stringResource(
         AppTheme.MINT -> R.string.settings_theme_mint_hint
         AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
         AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
+        AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
     },
 )
 

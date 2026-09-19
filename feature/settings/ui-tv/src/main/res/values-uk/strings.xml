@@ -94,6 +94,8 @@
     <string name="settings_theme_ocean_hint">Глибокі сині поверхні з прохолодним світлим акцентом</string>
     <string name="settings_theme_graphite">Графіт</string>
     <string name="settings_theme_graphite_hint">Мінімалістична сіра тема зі стриманим контрастом</string>
+    <string name="settings_theme_dynamic">Dynamic color</string>
+    <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
     <string name="settings_poster_card_size_compact">Компактний</string>
     <string name="settings_poster_card_size_compact_hint">Більше карток у рядку</string>
     <string name="settings_poster_card_size_standard">Стандартний</string>
@@ -157,7 +159,7 @@
     <string name="settings_refresh_continue_watching_progress_label">Свіжий прогрес з інших пристроїв</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Перевіряти прогрес акаунта під час запуску з «Продовжити перегляд» на головній або в бібліотеці, щоб продовжити з найновішого пристрою</string>
     <string name="settings_tv_volume_keys_label">Кнопки гучності в плеєрі</string>
-    <string name="settings_tv_volume_keys_enabled">Плеєр сам змінює гучність кроком 1%</string>
+    <string name="settings_tv_volume_keys_enabled" formatted="false">Плеєр сам змінює гучність кроком 1%</string>
     <string name="settings_tv_volume_keys_disabled">Гучністю керує система як зазвичай</string>
     <string name="settings_tv_advanced_volume_label">Розширена гучність у плеєрі</string>
     <string name="settings_tv_advanced_volume_enabled">У плеєра своя гучність (0–100%, крок 1%), незалежно від системи</string>
