@@ -41,6 +41,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
@@ -73,7 +74,7 @@ private fun AccountMobileScreenLoadingPreview() = ScreenPreviewTheme {
 @Composable
 private fun AccountMobileScreenErrorPreview() = ScreenPreviewTheme {
     AccountMobileScreen(
-        AccountState.State(error = su.afk.yummy.tv.feature.account.account.model.AccountUiError.SIGN_IN_FAILED),
+        AccountState.State(error = AccountUiError.SIGN_IN_FAILED),
         emptyFlow(),
     ) {}
 }
@@ -90,6 +91,13 @@ fun AccountMobileScreen(
     val context = LocalContext.current
     val captchaHint = stringResource(R.string.account_captcha_required_toast)
     LaunchedEffect(Unit) { onEvent(AccountState.Event.ScreenShown) }
+
+    val openNotificationFailed = AccountUiError.OPEN_NOTIFICATION_FAILED.accountErrorMessage()
+    LaunchedEffect(state.hubError) {
+        if (state.hubError == AccountUiError.OPEN_NOTIFICATION_FAILED && openNotificationFailed != null) {
+            Toast.makeText(context, openNotificationFailed, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(effect) {
         effect.collect { effectItem ->
@@ -282,7 +290,8 @@ fun AccountMobileScreen(
                         onSelected = { tab -> tabsState.selectPage(accountTabs.indexOf(tab)) },
                     )
                 }
-                if (state.hubError != null) {
+                // Ошибку открытия уведомления показываем тостом, а не блоком с «Повторить».
+                if (state.hubError != null && state.hubError != AccountUiError.OPEN_NOTIFICATION_FAILED) {
                     item(key = "hub_error") {
                         state.hubError.accountErrorMessage()?.let { error ->
                             MobileMessage(

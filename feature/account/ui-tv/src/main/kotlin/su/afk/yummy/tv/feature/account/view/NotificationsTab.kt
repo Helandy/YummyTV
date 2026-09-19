@@ -2,6 +2,7 @@
 
 package su.afk.yummy.tv.feature.account.view
 
+import android.widget.Toast
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -31,6 +33,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -38,6 +41,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable
@@ -57,6 +61,15 @@ internal fun NotificationsTab(
         remember(state.notifications) { state.notifications.map { it.viewed } }
     val showOpeningOverlay =
         state.isNotificationOpening || notificationsTabState.showOpeningOverlayImmediately
+    val hubErrorWithoutOpenFailure =
+        state.hubError.takeIf { it != AccountUiError.OPEN_NOTIFICATION_FAILED }
+    val context = LocalContext.current
+    val openNotificationFailed = AccountUiError.OPEN_NOTIFICATION_FAILED.accountErrorMessage()
+    LaunchedEffect(state.hubError) {
+        if (state.hubError == AccountUiError.OPEN_NOTIFICATION_FAILED && openNotificationFailed != null) {
+            Toast.makeText(context, openNotificationFailed, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     NotificationsTabEffects(
         notificationsTabState = notificationsTabState,
@@ -159,8 +172,9 @@ internal fun NotificationsTab(
                 }
             }
             item {
+                // Ошибку открытия уведомления показываем тостом, а не блоком с «Повторить».
                 AccountHubError(
-                    error = (state.error ?: state.hubError).accountErrorMessage(),
+                    error = (state.error ?: hubErrorWithoutOpenFailure).accountErrorMessage(),
                     onRetry = { onEvent(AccountState.Event.RefreshHubSelected) },
                 )
             }

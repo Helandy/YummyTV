@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,8 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
+import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.R
 
@@ -38,6 +45,25 @@ internal fun AccountMobileNotificationsTab(
 ) {
     var showDeleteAllConfirm by remember { mutableStateOf(false) }
     var showReadAllConfirm by remember { mutableStateOf(false) }
+    // Защёлка: VM гасит isNotificationOpening за кадр до navigate, иначе лоадер мигает.
+    var isOpeningNotification by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) isOpeningNotification = false
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(state.isNotificationOpening, state.hubError) {
+        if (!state.isNotificationOpening && state.hubError != null) isOpeningNotification = false
+    }
+    LaunchedEffect(isOpeningNotification) {
+        if (isOpeningNotification) {
+            delay(OPENING_LOADER_TIMEOUT_MS)
+            isOpeningNotification = false
+        }
+    }
     val unreadCount = state.unreadNotificationCount
     val notificationPermissionGate = rememberNotificationPermissionGate()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -117,7 +143,10 @@ internal fun AccountMobileNotificationsTab(
                 state.notifications.forEach { notification ->
                     AccountMobileNotificationRow(
                         notification = notification,
-                        onClick = { onEvent(AccountState.Event.NotificationSelected(notification.id)) },
+                        onClick = {
+                            isOpeningNotification = true
+                            onEvent(AccountState.Event.NotificationSelected(notification.id))
+                        },
                         onRead = { onEvent(AccountState.Event.NotificationReadSelected(notification.id)) },
                         onDelete = {
                             onEvent(
@@ -168,4 +197,9 @@ internal fun AccountMobileNotificationsTab(
         )
     }
     NotificationPermissionGateHost(state = notificationPermissionGate)
+    if (state.isNotificationOpening || isOpeningNotification) {
+        MobileBlockingLoading()
+    }
 }
+
+private const val OPENING_LOADER_TIMEOUT_MS = 15_000L
