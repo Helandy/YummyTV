@@ -114,11 +114,15 @@ internal class SecureYaniAuthPreferences @Inject constructor(
             append(" sdk=").append(Build.VERSION.SDK_INT)
             append(" fingerprint=").append(Build.FINGERPRINT)
         }
-        analyticsTracker.reportError(
-            details,
-            error ?: IllegalStateException(message),
-            STORAGE_GROUP,
-        )
+        // Репорт не должен ронять поток токена: исключение отсюда прилетело бы в
+        // SupervisorJob-скоуп YaniRequestHeaderCache и убило бы процесс.
+        runCatching {
+            analyticsTracker.reportError(
+                details,
+                error ?: IllegalStateException(message),
+                STORAGE_GROUP,
+            )
+        }
     }
 
     companion object {
