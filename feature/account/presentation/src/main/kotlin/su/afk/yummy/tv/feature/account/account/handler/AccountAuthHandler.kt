@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.account.account.handler
 
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.error.api.ErrorHandler
+import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.LoginException
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
@@ -23,6 +25,7 @@ internal class AccountAuthHandler @Inject constructor(
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
     private val watchProgressRepository: WatchProgressRepository,
     private val analyticsTracker: AnalyticsTracker,
+    private val errorHandler: ErrorHandler,
 ) {
     suspend fun login(
         credentials: AccountLoginCredentials,
@@ -37,15 +40,31 @@ internal class AccountAuthHandler @Inject constructor(
                 AccountLoginResult.Success(account)
             },
             onFailure = { error ->
-                if (error is AccountCaptchaRequiredException) {
-                    AccountLoginResult.CaptchaRequired(rejected = captchaResponse != null)
-                } else if (error is LoginException) {
-                    AccountLoginResult.Failure(error.message)
-                } else {
-                    AccountLoginResult.Failure()
+                when {
+                    error is AccountCaptchaRequiredException ->
+                        AccountLoginResult.CaptchaRequired(rejected = captchaResponse != null)
+
+                    error is LoginException -> AccountLoginResult.Failure(error.message)
+                    else -> AccountLoginResult.Failure(describeUnexpectedLoginFailure(error))
                 }
             },
         )
+
+    /**
+     * Причина падения входа за пределами серверного отказа: сеть, Keystore, база, парсинг.
+     * Раньше всё это схлопывалось в безликое "Не удалось войти", из-за чего на кастомных
+     * прошивках было не понять, что именно ломается.
+     */
+    private fun describeUnexpectedLoginFailure(error: Throwable): String {
+        analyticsTracker.reportError("Unexpected login failure", error, LOGIN_FAILURE_GROUP)
+        val parsed = errorHandler.parse(error)
+        val technicalName = error::class.simpleName
+        return if (error.isNetworkError() || technicalName.isNullOrBlank()) {
+            parsed.message
+        } else {
+            "${parsed.message} ($technicalName)"
+        }
+    }
 
     suspend fun logout(): Boolean = runCatching { logoutUseCase() }.isSuccess
 
@@ -84,6 +103,7 @@ internal class AccountAuthHandler @Inject constructor(
 
     private companion object {
         const val TAG = "AccountAuthHandler"
+        const val LOGIN_FAILURE_GROUP = "login_failure"
     }
 }
 

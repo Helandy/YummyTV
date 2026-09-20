@@ -150,7 +150,7 @@ class AccountViewModel @Inject internal constructor(
             is AccountState.Event.CaptchaSolved -> {
                 setState { copy(error = null, errorMessage = null, captchaError = null) }
                 if (event.token.isBlank()) {
-                    setState { copy(error = AccountUiError.CAPTCHA_RESPONSE_EMPTY) }
+                    setState { copy(error = AccountUiError.CAPTCHA_RESPONSE_EMPTY, errorMessage = null) }
                 } else {
                     login(captchaResponse = event.token)
                 }
@@ -174,7 +174,7 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.LogoutSelected -> viewModelScope.launch {
                 analytics.eventLogoutSelected()
-                setState { copy(isLoading = true, error = null) }
+                setState { copy(isLoading = true, error = null, errorMessage = null) }
                 if (sessionHandler.logout()) {
                     setState {
                         copy(
@@ -198,6 +198,7 @@ class AccountViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             error = AccountUiError.LOGOUT_FAILED,
+                            errorMessage = null,
                         )
                     }
                 }
@@ -205,7 +206,7 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.RefreshProfileSelected -> viewModelScope.launch {
                 analytics.eventRefreshProfileSelected()
-                setState { copy(isLoading = true, error = null) }
+                setState { copy(isLoading = true, error = null, errorMessage = null) }
                 when (sessionHandler.refreshProfile()) {
                     is AccountRefreshResult.Success -> {
                         setState { copy(isLoading = false) }
@@ -218,6 +219,7 @@ class AccountViewModel @Inject internal constructor(
                             copy(
                                 isLoading = false,
                                 error = AccountUiError.REFRESH_FAILED,
+                                errorMessage = null,
                             )
                         }
                     }
@@ -386,6 +388,7 @@ class AccountViewModel @Inject internal constructor(
             setState {
                 copy(
                     error = AccountUiError.CREDENTIALS_REQUIRED,
+                    errorMessage = null,
                     isCaptchaRequired = false,
                     captchaChallengeId = currentState.captchaChallengeId + 1,
                     captchaError = null,
@@ -443,6 +446,7 @@ class AccountViewModel @Inject internal constructor(
                                 null
                             },
                             error = null,
+                            errorMessage = null,
                         )
                     }
                     setEffect(AccountState.Effect.HideKeyboard)
@@ -466,7 +470,7 @@ class AccountViewModel @Inject internal constructor(
     private fun recoverMissingProfileIfNeeded() {
         if (!sessionHandler.beginMissingProfileRecoveryIfNeeded(currentState)) return
         viewModelScope.launch {
-            setState { copy(isLoading = true, error = null) }
+            setState { copy(isLoading = true, error = null, errorMessage = null) }
             when (val result = sessionHandler.refreshProfile()) {
                 is AccountRefreshResult.Success -> {
                     sessionHandler.completeMissingProfileRecovery()
@@ -494,6 +498,7 @@ class AccountViewModel @Inject internal constructor(
                             isLoading = false,
                             isSignedIn = false,
                             error = AccountUiError.REFRESH_FAILED,
+                            errorMessage = null,
                         )
                     }
                 }

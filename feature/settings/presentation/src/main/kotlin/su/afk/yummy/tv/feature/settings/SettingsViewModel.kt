@@ -9,6 +9,8 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.auth.TokenStorageMode
+import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -26,6 +28,7 @@ class SettingsViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val settingsStore: SettingsStore,
+    private val yaniAuthPreferences: YaniAuthPreferences,
     private val interfaceModePreferences: AppInterfaceModePreferences,
     private val tvIntegration: ITvIntegration,
     private val nav: INavigationManager,
@@ -90,6 +93,13 @@ class SettingsViewModel @Inject internal constructor(
         settingsStore.tvPlayerControlsTutorialDismissed
             .onEach { dismissed ->
                 setState { copy(tvPlayerControlsTutorialDismissed = dismissed) }
+            }
+            .launchIn(viewModelScope)
+        // Запасной режим хранения сессии показываем в "О приложении": пользователю со сломанным
+        // Keystore на кастомной прошивке иначе нечего сообщить в поддержку.
+        yaniAuthPreferences.storageMode
+            .onEach { mode ->
+                setState { copy(isFallbackSessionStorage = mode == TokenStorageMode.FALLBACK) }
             }
             .launchIn(viewModelScope)
         settingsStore.saveLastSearchEnabled

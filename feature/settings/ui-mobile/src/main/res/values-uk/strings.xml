@@ -187,6 +187,8 @@
     <string name="settings_yani_application_token_placeholder">Токен застосунку</string>
     <string name="settings_yani_application_token_hint">За замовчуванням використовується публічний токен. Вкажіть свій публічний токен із https://yummyani.me/dev/applications/, щоб замінити його.</string>
     <string name="settings_version_label">Версія</string>
+    <string name="settings_session_storage_label">Сховище сесії</string>
+    <string name="settings_session_storage_fallback">Запасне (Keystore недоступний)</string>
     <string name="settings_feedback_label">Питання/Ідеї/Пропозиції</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_video_export_directory">Тека експорту MP4</string>

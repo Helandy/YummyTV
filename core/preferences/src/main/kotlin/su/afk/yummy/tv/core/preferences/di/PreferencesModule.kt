@@ -4,7 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import su.afk.yummy.tv.core.preferences.auth.KeystoreYaniAuthPreferences
+import su.afk.yummy.tv.core.preferences.auth.SecureYaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
@@ -70,7 +70,7 @@ internal interface PreferencesModule {
 
     @Binds
     @Singleton
-    fun bindYaniAuthPreferences(impl: KeystoreYaniAuthPreferences): YaniAuthPreferences
+    fun bindYaniAuthPreferences(impl: SecureYaniAuthPreferences): YaniAuthPreferences
 
     @Binds
     @Singleton

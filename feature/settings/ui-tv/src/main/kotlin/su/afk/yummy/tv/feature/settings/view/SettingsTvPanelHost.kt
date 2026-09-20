@@ -729,6 +729,14 @@ internal fun SettingsTvPanelHost(
                             hint = BuildConfig.VERSION_NAME,
                             modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
+                        if (state.isFallbackSessionStorage) {
+                            SettingsDivider()
+                            AboutRow(
+                                label = stringResource(R.string.settings_session_storage_label),
+                                hint = stringResource(R.string.settings_session_storage_fallback),
+                                modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+                            )
+                        }
                         SettingsDivider()
                         AboutRow(
                             label = stringResource(R.string.settings_feedback_label),

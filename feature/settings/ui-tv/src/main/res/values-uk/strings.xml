@@ -199,6 +199,8 @@
     <string name="settings_account_logout_hint">Локальна бібліотека та прогрес залишаться на пристрої</string>
     <string name="settings_account_captcha_hint">Якщо Yummy попросить капчу, екран акаунта покаже її прямо в застосунку.</string>
     <string name="settings_version_label">Версія</string>
+    <string name="settings_session_storage_label">Сховище сесії</string>
+    <string name="settings_session_storage_fallback">Запасне (Keystore недоступний)</string>
     <string name="settings_feedback_label">Питання/Ідеї/Пропозиції</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_tab_player_subtitles">Субтитри</string>

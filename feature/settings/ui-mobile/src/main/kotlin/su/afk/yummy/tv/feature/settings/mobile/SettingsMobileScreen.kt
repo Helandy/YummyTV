@@ -545,6 +545,12 @@ fun SettingsMobileScreen(
                         label = stringResource(R.string.settings_version_label),
                         hint = BuildConfig.VERSION_NAME,
                     )
+                    if (state.isFallbackSessionStorage) {
+                        SettingsMobileAboutRow(
+                            label = stringResource(R.string.settings_session_storage_label),
+                            hint = stringResource(R.string.settings_session_storage_fallback),
+                        )
+                    }
                     SettingsMobileAboutRow(
                         label = stringResource(R.string.settings_feedback_label),
                         hint = repositoryUrl,

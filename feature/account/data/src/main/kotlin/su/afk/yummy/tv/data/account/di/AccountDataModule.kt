@@ -76,6 +76,7 @@ object AccountDataModule {
         accountStorage: AccountStorage,
         documentCache: DocumentCacheStorage,
         animeStorage: AnimeStorage,
+        analyticsTracker: AnalyticsTracker,
     ): AccountRepository = YaniAccountRepository(
         api,
         settingsStore,
@@ -83,6 +84,7 @@ object AccountDataModule {
         accountStorage,
         documentCache,
         animeStorage,
+        analyticsTracker,
     )
 
     @Provides

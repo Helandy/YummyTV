@@ -70,6 +70,8 @@ class SettingsState {
         val cacheStorageTotalBytes: Long = 0L,
         val isCacheStorageLoading: Boolean = false,
         val saveLastSearchEnabled: Boolean = false,
+        /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
+        val isFallbackSessionStorage: Boolean = false,
     ) : UiState
 
     /** Пользовательские действия на экране настроек. */

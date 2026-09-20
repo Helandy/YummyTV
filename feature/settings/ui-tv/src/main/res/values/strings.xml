@@ -199,6 +199,8 @@
     <string name="settings_account_logout_hint">Local library and progress stay on this device</string>
     <string name="settings_account_captcha_hint">If Yummy requires captcha, the account screen will show it in the app.</string>
     <string name="settings_version_label">Version</string>
+    <string name="settings_session_storage_label">Session storage</string>
+    <string name="settings_session_storage_fallback">Fallback (Keystore unavailable)</string>
     <string name="settings_feedback_label">Questions/Ideas/Suggestions</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
     <string name="settings_tab_player_subtitles">Subtitles</string>

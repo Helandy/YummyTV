@@ -223,6 +223,8 @@ internal fun LoginPanel(
             }
         }
         ErrorText(state.error.accountErrorMessage())
+        // Причина ошибки (сеть, Keystore, отказ сервера) — как в мобильной версии: без неё
+        ErrorText(state.errorMessage)
     }
 }
 
@@ -236,7 +238,7 @@ private fun Modifier.editableTextFieldKeyEvents(
         Key.DirectionCenter,
         Key.Enter,
         Key.NumPadEnter,
-        -> {
+            -> {
             if (!isEditing) {
                 onStartEditing()
                 true

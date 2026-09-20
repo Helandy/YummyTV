@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.ACCOUNT_PROFILE_KEY_CURRENT
@@ -41,6 +42,7 @@ class YaniAccountRepository(
     private val accountStorage: AccountStorage,
     private val documentCache: DocumentCacheStorage,
     private val animeStorage: AnimeStorage,
+    private val analyticsTracker: AnalyticsTracker,
 ) : AccountRepository {
 
     override suspend fun login(
@@ -62,14 +64,58 @@ class YaniAccountRepository(
         signInWithTokenInternal(token)
     }
 
+    /**
+     * Вход атомарен. Токен — единственный носитель [AccountSession.isAuthorized], поэтому он
+     * пишется первым: иначе отказ на записи профиля или настроек оставлял приложение
+     * полувошедшим (запросы уже авторизованы, а экран входа крутится по кругу). Любая ошибка
+     * после записи токена откатывает сессию целиком.
+     */
     private suspend fun signInWithTokenInternal(token: String): YaniAccount {
         if (token.isBlank()) error("Empty access token")
         val profileDto = api.getProfile(token)
-        val savedProfile = saveProfile(profileDto)
-        clearPreviousDocumentCacheIfNeeded(savedProfile.id)
-        settingsStore.setYaniAccount(savedProfile.id, savedProfile.nickname, savedProfile.avatarUrl)
         yaniAuthPreferences.setRefreshToken(token)
-        return savedProfile
+        return try {
+            val savedProfile = saveProfileAfterSignIn(profileDto)
+            // Порядок важен: чистка сравнивает прошлый userId, который затрёт setYaniAccount.
+            clearPreviousDocumentCacheAfterSignIn(savedProfile.id)
+            settingsStore.setYaniAccount(
+                savedProfile.id,
+                savedProfile.nickname,
+                savedProfile.avatarUrl,
+            )
+            savedProfile
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            rollbackSignIn()
+            throw error
+        }
+    }
+
+    /** Кэш профиля не критичен для входа — он всё равно перечитается через [getProfile]. */
+    private suspend fun saveProfileAfterSignIn(profile: YaniProfileDto): YaniAccount =
+        try {
+            saveProfile(profile)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            analyticsTracker.reportError("Sign-in profile cache write failed", error, SIGN_IN_GROUP)
+            profile.toAccount()
+        }
+
+    private suspend fun clearPreviousDocumentCacheAfterSignIn(newUserId: Int) {
+        try {
+            clearPreviousDocumentCacheIfNeeded(newUserId)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            analyticsTracker.reportError("Sign-in cache cleanup failed", error, SIGN_IN_GROUP)
+        }
+    }
+
+    private suspend fun rollbackSignIn() {
+        runCatching { yaniAuthPreferences.clearRefreshToken() }
+        runCatching { settingsStore.clearYaniAccount() }
     }
 
     override suspend fun register(registration: UserRegistration) = withContext(Dispatchers.IO) {
@@ -94,17 +140,7 @@ class YaniAccountRepository(
 
     override suspend fun verifyRegistration(hash: String): YaniAccount =
         withContext(Dispatchers.IO) {
-            val token = api.verifyRegistration(hash)
-            val profileDto = api.getProfile(token)
-            val savedProfile = saveProfile(profileDto)
-            clearPreviousDocumentCacheIfNeeded(savedProfile.id)
-            settingsStore.setYaniAccount(
-                savedProfile.id,
-                savedProfile.nickname,
-                savedProfile.avatarUrl,
-            )
-            yaniAuthPreferences.setRefreshToken(token)
-            savedProfile
+            signInWithTokenInternal(api.verifyRegistration(hash))
         }
 
     override suspend fun refreshToken(): YaniAccount? = withContext(Dispatchers.IO) {
@@ -237,4 +273,8 @@ class YaniAccountRepository(
     }
 
     private fun userDocumentCachePrefix(userId: Int): String = "user:$userId:"
+
+    private companion object {
+        const val SIGN_IN_GROUP = "sign_in"
+    }
 }
