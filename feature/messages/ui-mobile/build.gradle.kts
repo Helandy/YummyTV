@@ -8,6 +8,7 @@ android { namespace = "su.afk.yummy.tv.feature.messages.mobile" }
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:utils"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:messages:api"))
     implementation(project(":feature:messages:domain"))

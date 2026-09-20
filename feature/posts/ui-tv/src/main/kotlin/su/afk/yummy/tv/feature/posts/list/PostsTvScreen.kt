@@ -47,6 +47,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.feature.posts.tv.R
 import su.afk.yummy.tv.feature.posts.utils.label
@@ -200,7 +201,7 @@ fun PostsTvScreen(
             }
 
             else -> {
-                items(posts.itemCount, key = { index -> posts[index]?.id ?: index }) { index ->
+                items(posts.itemCount, key = { index -> lazyKey("post", posts[index]?.id, index) }) { index ->
                     posts[index]?.let { post ->
                         PostTvCard(
                             post,

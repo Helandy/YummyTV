@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
@@ -36,7 +37,7 @@ internal fun HomeFeedSectionRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(section.items, key = { it.id }) { item ->
+            items(section.items, key = { lazyKey("homeitem", it.id) }) { item ->
                 HomeItemCard(
                     item = item,
                     showMetadata = showCardMetadata,

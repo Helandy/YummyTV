@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -220,7 +221,7 @@ internal fun NotificationsTab(
             } else {
                 itemsIndexed(
                     state.notifications,
-                    key = { _, item -> item.id },
+                    key = { index, item -> lazyKey("notification", item.id, index) },
                 ) { index, notification ->
                     NotificationsTabRow(
                         notificationsTabState = notificationsTabState,

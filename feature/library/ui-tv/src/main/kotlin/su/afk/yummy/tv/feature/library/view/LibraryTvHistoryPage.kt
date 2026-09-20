@@ -57,6 +57,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnail
@@ -155,7 +156,7 @@ internal fun LibraryTvHistoryPage(
                 items.itemCount,
                 // Тот же ключ, что и у восстановления фокуса: иначе сверка по itemInfo.key
                 // в launchTvLazyListKeyFocusRestore никогда не совпадает.
-                key = { index -> keys.getOrNull(index) ?: index },
+                key = { index -> keys.getOrNull(index) ?: lazyKey("history", null, index) },
             ) { index ->
                 items[index]?.let { entry ->
                     val entryKey = keys.getOrNull(index)

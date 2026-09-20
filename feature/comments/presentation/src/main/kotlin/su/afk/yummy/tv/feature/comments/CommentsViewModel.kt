@@ -12,10 +12,10 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
@@ -170,7 +170,11 @@ class CommentsViewModel @AssistedInject internal constructor(
     private fun createCommentsFlow(
         sort: CommentSort,
         forceRefreshFirstPage: Boolean = false,
-    ) = pagingFlow(viewModelScope, pageSize = COMMENTS_PAGE_SIZE) { limit, offset ->
+    ) = pagingFlow(
+        viewModelScope,
+        pageSize = COMMENTS_PAGE_SIZE,
+        itemKey = { it.comment.id },
+    ) { limit, offset ->
         loadCommentsPage(
             sort = sort,
             limit = limit,
@@ -266,13 +270,13 @@ class CommentsViewModel @AssistedInject internal constructor(
                             composerText = "",
                             composerMode = ComposerMode.New,
                             commentOverlays = commentOverlays + (
-                                    updated.id to (
-                                            visibleCommentTree()
-                                                .replaceComment(updated)
-                                                .findUi(updated.id)
-                                                ?: updated.toCommentUi()
-                                            )
-                                    ),
+                                updated.id to (
+                                    visibleCommentTree()
+                                        .replaceComment(updated)
+                                        .findUi(updated.id)
+                                        ?: updated.toCommentUi()
+                                    )
+                                ),
                         )
                     }
                 }.onFailure { showMutationError(it) }
@@ -462,12 +466,12 @@ class CommentsViewModel @AssistedInject internal constructor(
                         val current = findCommentUi(commentId) ?: item
                         copy(
                             commentOverlays = commentOverlays + (
-                                    commentId to current.copy(
-                                        childrenLoading = false,
-                                        childrenError = error.message
-                                            ?: stringProvider.get(R.string.comments_load_error),
-                                    )
-                                    )
+                                commentId to current.copy(
+                                    childrenLoading = false,
+                                    childrenError = error.message
+                                        ?: stringProvider.get(R.string.comments_load_error),
+                                )
+                                )
                         )
                     }
                 },

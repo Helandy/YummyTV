@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.tv.R
 import su.afk.yummy.tv.feature.bloggers.utils.labelRes
@@ -158,7 +159,7 @@ fun BloggerVideosListTvScreen(
                 ) {
                     items(
                         videos.itemCount,
-                        key = { index -> videos[index]?.id ?: index },
+                        key = { index -> lazyKey("bloggervideo", videos[index]?.id, index) },
                     ) { index ->
                         videos[index]?.let { video ->
                             BloggerVideoTvCard(

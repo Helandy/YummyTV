@@ -43,7 +43,7 @@ internal fun YaniPostDetailsDto.domain() = PostDetails(
     category = category.domain(),
     createdAt = createdAt,
     editedAt = editedAt,
-    relatedAnime = animes.map {
+    relatedAnime = animes.distinctBy { it.animeId }.map {
         RelatedPostAnime(
             it.animeId,
             it.title,

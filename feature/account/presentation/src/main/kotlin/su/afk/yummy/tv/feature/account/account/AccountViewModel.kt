@@ -538,7 +538,7 @@ class AccountViewModel @Inject internal constructor(
             is AccountNotificationsLoadResult.Success -> {
                 setState {
                     copy(
-                        notifications = result.notifications.toImmutableList(),
+                        notifications = result.notifications.distinctBy { it.id }.toImmutableList(),
                         notificationCounts = result.counts.toImmutableList(),
                         isNotificationsLoading = false,
                     )

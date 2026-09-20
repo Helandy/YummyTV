@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.feature.posts.list.PostsListState
@@ -161,7 +162,7 @@ private fun PostsList(
                 )
             }
 
-            else -> items(posts.itemCount, key = posts.itemKey { it.id }) { index ->
+            else -> items(posts.itemCount, key = posts.itemKey { lazyKey("post", it.id) }) { index ->
                 posts[index]?.let { post ->
                     PostMobileCard(
                         post,

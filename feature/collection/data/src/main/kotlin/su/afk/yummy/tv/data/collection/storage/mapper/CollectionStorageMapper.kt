@@ -66,6 +66,8 @@ internal fun CollectionDetailCache.toCollectionDetail(): CollectionDetail =
         vote = CollectionVote.fromApi(entry.vote),
         animes = items
             .sortedBy { it.position }
+            // Один тайтл может оказаться в подборке дважды — в гриде это дубль ключа и краш.
+            .distinctBy { it.animeId }
             .map {
                 CollectionAnimeItem(
                     id = it.animeId,

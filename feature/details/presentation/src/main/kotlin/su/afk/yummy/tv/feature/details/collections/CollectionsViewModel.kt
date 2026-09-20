@@ -7,9 +7,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
@@ -60,7 +60,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        collections = collections.toImmutableList(),
+                        collections = collections.distinctBy { it.id }.toImmutableList(),
                         error = null
                     )
                 }

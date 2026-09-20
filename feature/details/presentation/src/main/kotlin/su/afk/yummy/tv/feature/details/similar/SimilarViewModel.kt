@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
@@ -89,7 +89,9 @@ class SimilarViewModel @AssistedInject internal constructor(
     private suspend fun load(fromAi: Boolean = currentState.fromAi) {
         setState { copy(similarState = SimilarUiState.Loading) }
         runCatching { getAnimeRecommendations(animeId, fromAi) }.fold(
-            onSuccess = { items ->
+            // Выдача (особенно AI) может повторить тайтл — в lazy-списке это дубль ключа и краш.
+            onSuccess = { loaded ->
+                val items = loaded.distinctBy { it.animeId }
                 setState {
                     if (this.fromAi == fromAi) {
                         val nextState = if (items.isEmpty()) {

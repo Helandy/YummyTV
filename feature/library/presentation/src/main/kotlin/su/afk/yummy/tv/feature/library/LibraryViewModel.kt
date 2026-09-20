@@ -354,7 +354,13 @@ class LibraryViewModel @Inject internal constructor(
     }
 
     private fun createWatchHistoryFlow() =
-        pagingFlow(viewModelScope, pageSize = 100) { limit, offset ->
+        pagingFlow(
+            viewModelScope,
+            pageSize = 100,
+            // Пересмотр и разные озвучки дают повторы animeId+серия, поэтому в ключ входит
+            // время просмотра: дедуплицируется ровно «сервер отдал запись на двух страницах».
+            itemKey = { "${it.animeId}:${it.episode}:${it.watchedAtSeconds}" },
+        ) { limit, offset ->
             getWatchHistoryPage(limit, offset)
         }
 

@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.feature.messages.chat.ChatState
 import su.afk.yummy.tv.feature.messages.mobile.R
@@ -221,7 +222,7 @@ fun ChatMobileScreen(
                                     CircularProgressIndicator()
                                 }
                             }
-                            items(state.messages, key = { it.id }) { message ->
+                            items(state.messages, key = { lazyKey("message", it.id) }) { message ->
                                 ChatMessageMobileBubble(
                                     message = message,
                                     isOwn = message.fromUserId == state.currentUserId,

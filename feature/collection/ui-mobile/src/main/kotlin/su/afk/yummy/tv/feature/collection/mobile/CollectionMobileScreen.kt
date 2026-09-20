@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.collection.CollectionState
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionEngagementPanel
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionMobileHeader
@@ -132,7 +133,7 @@ fun CollectionMobileScreen(
                         onDelete = { onEvent(CollectionState.Event.DeleteSelected) },
                     )
                 }
-                items(collection.animes, key = { it.id }) { item ->
+                items(collection.animes, key = { lazyKey("collectionanime", it.id) }) { item ->
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.posterUrl,

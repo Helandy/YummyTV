@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.PagedSource
 import su.afk.yummy.tv.core.utils.paging.pagingSource
@@ -68,8 +68,10 @@ class DialogsViewModel @Inject constructor(
     }
 
     private fun createDialogsFlow() =
-        pagingSource(viewModelScope, pageSize = DIALOGS_PAGE_SIZE) { limit, offset ->
-            getDialogs(limit, offset)
+        pagingSource(viewModelScope, pageSize = DIALOGS_PAGE_SIZE, itemKey = { it.userId }) { limit, offset ->
+            // Общий чат приклеивается заголовком ниже — из страниц его убираем, иначе в списке
+            // окажутся два элемента с одним ключом.
+            getDialogs(limit, offset).filterNot { it.userId == GLOBAL_CHAT_USER_ID }
         }.also { pagedSource = it }.flow
             // Общий чат сервер не отдаёт в списке диалогов — закрепляем его сверху сами.
             .map { it.insertHeaderItem(item = GLOBAL_CHAT_SUMMARY) }

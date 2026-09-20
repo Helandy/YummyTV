@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.messages.dialogs.DialogsState
 import su.afk.yummy.tv.feature.messages.mobile.R
 import su.afk.yummy.tv.feature.messages.mobile.view.DialogMobileRow
@@ -111,7 +112,7 @@ fun DialogsMobileScreen(
 
                         else -> items(
                             count = dialogs.itemCount,
-                            key = dialogs.itemKey { it.userId },
+                            key = dialogs.itemKey { lazyKey("dialog", it.userId) },
                         ) { index ->
                             dialogs[index]?.let { dialog ->
                                 DialogMobileRow(dialog) {

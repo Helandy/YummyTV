@@ -33,6 +33,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.bloggers.tv.R
 import su.afk.yummy.tv.feature.bloggers.view.BloggerVideoTvCard
 
@@ -135,7 +136,7 @@ fun BloggerDetailsTvScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            items(state.videos, key = { it.id }) { video ->
+            items(state.videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
                 BloggerVideoTvCard(
                     video,
                     { onEvent(BloggerDetailsState.Event.VideoSelected(video.id)) })

@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.posts.list
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.posts.model.PostSort
@@ -62,7 +62,7 @@ class PostsListViewModel @Inject constructor(
     }
 
     private fun createFlow(category: String?, sort: PostSort) =
-        pagingFlow(viewModelScope) { limit, offset ->
+        pagingFlow(viewModelScope, itemKey = { it.id }) { limit, offset ->
             getPosts(category, sort.apiValue, limit, offset)
         }
 }

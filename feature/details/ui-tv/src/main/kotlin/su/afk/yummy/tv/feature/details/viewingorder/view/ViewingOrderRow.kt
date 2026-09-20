@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyListKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.R
 
 private val RelatedCardWidth = 188.dp
@@ -141,7 +142,7 @@ internal fun ViewingOrderRow(
                             ?: FocusRequester.Default,
                     ),
             ) {
-                itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->
+                itemsIndexed(items, key = { index, item -> lazyKey("viewingorder", "${item.animeId}:$index", index) }) { index, item ->
                     ViewingOrderCard(
                         index = index + 1,
                         item = item,

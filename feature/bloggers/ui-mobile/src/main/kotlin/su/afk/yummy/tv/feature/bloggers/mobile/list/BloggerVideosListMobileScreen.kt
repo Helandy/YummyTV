@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
@@ -118,7 +119,7 @@ private fun BloggerVideosListContent(
         ) {
             items(
                 videos.itemCount,
-                key = { index -> videos[index]?.id ?: index },
+                key = { index -> lazyKey("bloggervideo", videos[index]?.id, index) },
             ) { index ->
                 videos[index]?.let { video ->
                     BloggerVideoMobileCard(

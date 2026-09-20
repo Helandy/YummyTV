@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
@@ -113,7 +114,7 @@ internal fun LibraryMobilePage(
             }
         }
 
-        items(libraryItems, key = { it.animeId }) { item ->
+        items(libraryItems, key = { lazyKey("library", it.animeId) }) { item ->
             val yearSeasonText = item.mobileYearSeasonText()
             MobileTitleListCard(
                 title = item.title,

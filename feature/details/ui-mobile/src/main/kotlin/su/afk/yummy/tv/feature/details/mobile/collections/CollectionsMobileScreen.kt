@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.collections.CollectionsState
 import su.afk.yummy.tv.feature.details.mobile.R
 
@@ -70,7 +71,7 @@ fun CollectionsMobileScreen(
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.navigationBarsPadding(),
             ) {
-                items(state.collections, key = { it.id }) { item ->
+                items(state.collections, key = { lazyKey("collection", it.id) }) { item ->
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.poster?.mega ?: item.poster?.fullsize ?: item.posterUrl,

@@ -66,6 +66,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.feature.posts.details.utils.compactCount
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
@@ -205,7 +206,7 @@ fun PostDetailsTvScreen(
                         )
                     }
                 }
-                itemsIndexed(contentBlocks, key = { index, block -> index to block }) { _, block ->
+                itemsIndexed(contentBlocks, key = { index, _ -> lazyKey("postblock", index) }) { _, block ->
                     when (block) {
                         is PostContentBlock.Text -> {
                             val interactionSource = remember { MutableInteractionSource() }
@@ -294,7 +295,7 @@ fun PostDetailsTvScreen(
                         ) {
                             itemsIndexed(
                                 details.relatedAnime,
-                                key = { _, anime -> anime.id },
+                                key = { index, anime -> lazyKey("postanime", anime.id, index) },
                             ) { index, anime ->
                                 val cardShape = RoundedCornerShape(12.dp)
                                 Card(

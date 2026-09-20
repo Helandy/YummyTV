@@ -48,6 +48,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
@@ -210,7 +211,7 @@ internal fun LibraryGrid(
                 verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
-                itemsIndexed(items, key = { _, item -> item.animeId }) { index, item ->
+                itemsIndexed(items, key = { index, item -> lazyKey("library", item.animeId, index) }) { index, item ->
                     val stableOnClick = remember(item.animeId, index) {
                         {
                             rememberFocusedItem(index)

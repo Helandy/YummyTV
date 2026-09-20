@@ -45,6 +45,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
@@ -191,7 +192,7 @@ internal fun SimilarTab(
                         ) {
                             itemsIndexed(
                                 items = state.items,
-                                key = { _, item -> item.animeId },
+                                key = { index, item -> lazyKey("similar", item.animeId, index) },
                             ) { index, item ->
                                 val posterUrl =
                                     item.poster?.run { big ?: medium ?: fullsize ?: small }

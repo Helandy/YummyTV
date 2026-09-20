@@ -17,4 +17,7 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.encoding)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
 }

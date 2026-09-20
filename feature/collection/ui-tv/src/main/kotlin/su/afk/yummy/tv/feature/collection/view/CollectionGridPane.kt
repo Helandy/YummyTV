@@ -48,6 +48,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.R
@@ -267,7 +268,7 @@ private fun CollectionGrid(
                     )
                 }
 
-                itemsIndexed(animes, key = { _, anime -> anime.id }) { index, anime ->
+                itemsIndexed(animes, key = { index, anime -> lazyKey("collectionanime", anime.id, index) }) { index, anime ->
                     val stableOnClick = remember(anime.id, index) {
                         {
                             rememberFocusedAnime(index)

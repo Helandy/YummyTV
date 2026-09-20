@@ -41,6 +41,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.utils.timingLabel
@@ -72,8 +73,9 @@ internal fun LibraryMobileHistoryPage(
             items(
                 items.itemCount,
                 key = { index ->
-                    items[index]?.let { "${it.animeId}_${it.episode}_${it.watchedAtSeconds}" }
-                        ?: index
+                    items[index]?.let {
+                        lazyKey("history", "${it.animeId}_${it.episode}_${it.watchedAtSeconds}")
+                    } ?: lazyKey("history", null, index)
                 },
             ) { index ->
                 items[index]?.let { entry ->

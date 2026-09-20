@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderMobileCard
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderState
@@ -77,7 +78,7 @@ fun ViewingOrderMobileScreen(
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
                 }
-                itemsIndexed(state.items, key = { _, item -> item.animeId }) { index, item ->
+                itemsIndexed(state.items, key = { index, item -> lazyKey("viewingorder", "${item.animeId}:$index", index) }) { index, item ->
                     ViewingOrderMobileCard(
                         index = index + 1,
                         item = item,

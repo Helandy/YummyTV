@@ -40,6 +40,8 @@ internal fun buildLibraryTabItems(
                 items.filter { it.listId == localListId }
             }
         }
+            // Синк списков может отдать два ряда на один тайтл — в гриде это дубль ключа и краш.
+            .distinctBy { it.animeId }
             .sortedWith(librarySortComparator(tab, sort, direction))
             .toImmutableList()
     }.toImmutableMap()

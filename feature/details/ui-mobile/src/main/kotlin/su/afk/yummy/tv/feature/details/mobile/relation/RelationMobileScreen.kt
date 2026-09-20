@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
@@ -120,7 +121,7 @@ fun RelationMobileScreen(
                     }
                 }
                 relation.anime.forEach { item ->
-                    item(key = item.animeId) {
+                    item(key = lazyKey("relation", item.animeId)) {
                         MobilePosterCard(
                             title = item.title,
                             posterUrl = item.posterUrl,

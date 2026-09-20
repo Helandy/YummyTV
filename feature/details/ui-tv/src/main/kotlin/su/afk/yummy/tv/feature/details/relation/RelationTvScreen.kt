@@ -47,6 +47,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
@@ -213,7 +214,7 @@ fun RelationTvScreen(
                                 }
                             }
                         }
-                        items(relation.anime, key = { it.animeId }) { item ->
+                        items(relation.anime, key = { lazyKey("relation", it.animeId) }) { item ->
                             TvTitleCard(
                                 title = item.title,
                                 posterUrl = item.posterUrl,

@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.components.CachedAsyncImage
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostDetails
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
 import su.afk.yummy.tv.feature.posts.mobile.R
@@ -97,7 +98,7 @@ internal fun PostDetailsBody(
             }
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(details.relatedAnime, key = { it.id }) { anime ->
+                    items(details.relatedAnime, key = { lazyKey("postanime", it.id) }) { anime ->
                         ElevatedCard(
                             onClick = { onEvent(PostDetailsState.Event.AnimeSelected(anime.id)) },
                             modifier = Modifier.width(150.dp)

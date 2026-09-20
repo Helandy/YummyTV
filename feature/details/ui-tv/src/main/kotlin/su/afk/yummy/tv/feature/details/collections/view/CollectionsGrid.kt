@@ -35,6 +35,7 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.collections.utils.posterUrl
@@ -133,7 +134,7 @@ internal fun CollectionsGrid(
             }
             itemsIndexed(
                 collections,
-                key = { _, collection -> collection.id }) { index, collection ->
+                key = { index, collection -> lazyKey("collection", collection.id, index) }) { index, collection ->
                 val stableOnClick = remember(collection.id, index) {
                     {
                         rememberFocusedCollection(index)

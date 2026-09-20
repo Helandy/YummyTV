@@ -6,9 +6,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.account.usecase.SearchUsersUseCase
@@ -64,7 +64,7 @@ class UserSearchViewModel @Inject constructor(
     }
 
     private fun setResults(query: String) {
-        val flow = pagingFlow(viewModelScope, pageSize = PAGE_SIZE) { limit, offset ->
+        val flow = pagingFlow(viewModelScope, pageSize = PAGE_SIZE, itemKey = { it.id }) { limit, offset ->
             searchUsers(query, limit, offset)
         }
         setState { copy(results = flow, isSearchActive = true) }

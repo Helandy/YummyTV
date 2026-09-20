@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.similar.utils.bestUrl
@@ -86,7 +87,7 @@ internal fun SimilarRecommendationsGrid(
             }
 
             is SimilarUiState.Content -> {
-                items(similarState.items, key = { it.animeId }) { item ->
+                items(similarState.items, key = { lazyKey("similar", it.animeId) }) { item ->
                     MobilePosterCard(
                         title = item.title,
                         posterUrl = item.poster.bestUrl(),

@@ -9,10 +9,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -65,7 +65,7 @@ class BloggerDetailsViewModel @AssistedInject constructor(
                 setState {
                     copy(
                         blogger = blogger,
-                        videos = videos.toImmutableList(),
+                        videos = videos.distinctBy { it.id }.toImmutableList(),
                         loading = false
                     )
                 }

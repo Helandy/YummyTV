@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.view.UserSearchCard
 import su.afk.yummy.tv.feature.account.usersearch.UserSearchState
@@ -132,7 +133,7 @@ fun UserSearchMobileScreen(
 
                 else -> items(
                     count = results.itemCount,
-                    key = { index -> results[index]?.id ?: "placeholder_$index" },
+                    key = { index -> lazyKey("user", results[index]?.id, index) },
                 ) { index ->
                     results[index]?.let { item ->
                         UserSearchCard(

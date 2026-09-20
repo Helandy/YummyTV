@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 
 @Composable
@@ -40,7 +41,7 @@ internal fun MobileHomeBloggerVideosSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
         ) {
-            items(videos, key = { it.id }) { video ->
+            items(videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
                 ElevatedCard(
                     Modifier
                         .width(260.dp)

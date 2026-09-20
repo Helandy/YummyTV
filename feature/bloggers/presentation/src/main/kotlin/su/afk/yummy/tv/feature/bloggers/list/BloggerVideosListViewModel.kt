@@ -6,9 +6,9 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
@@ -93,7 +93,11 @@ class BloggerVideosListViewModel @AssistedInject constructor(
     }
 
     private fun createFlow(category: String, bloggerId: Int?, sort: BloggerVideoSort) =
-        pagingFlow(viewModelScope, pageSize = BLOGGER_VIDEOS_PAGE_SIZE) { limit, offset ->
+        pagingFlow(
+            viewModelScope,
+            pageSize = BLOGGER_VIDEOS_PAGE_SIZE,
+            itemKey = { it.id },
+        ) { limit, offset ->
             if (animeId != null) {
                 getAnimeVideos(animeId, limit, offset)
             } else {

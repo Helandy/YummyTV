@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
+import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.bloggers.details.BloggerDetailsState
 import su.afk.yummy.tv.feature.bloggers.mobile.R
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoMobileCard
@@ -122,7 +123,7 @@ fun BloggerDetailsMobileScreen(
                     )
                 }
                 if (state.videos.isEmpty()) item { Text(stringResource(R.string.blogger_videos_empty)) }
-                items(state.videos, key = { it.id }) { video ->
+                items(state.videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
                     BloggerVideoMobileCard(
                         video,
                         { onEvent(BloggerDetailsState.Event.VideoSelected(video.id)) })
