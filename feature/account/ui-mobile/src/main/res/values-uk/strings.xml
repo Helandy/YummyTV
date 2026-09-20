@@ -224,7 +224,7 @@
     <string name="account_local_auth_mobile_search_again">Шукати знову</string>
     <string name="account_local_auth_mobile_search_again_cd">Шукати знову</string>
     <string name="account_local_auth_mobile_searching">Триває пошук пристроїв…</string>
-    <string name="account_local_auth_mobile_permission_required">Без дозволу на пошук пристроїв у локальній мережі ТВ не знайти. Натисніть «Шукати знову» та дозвольте доступ.</string>
+    <string name="account_local_auth_mobile_permission_required">Без дозволу на пошук пристроїв у локальній мережі ТВ не знайти. Надайте доступ у налаштуваннях застосунку та поверніться на цей екран.</string>
     <string name="account_local_auth_mobile_transferred_title">Вхід на ТВ виконано</string>
     <string name="account_local_auth_mobile_transferred_hint">Сесію передано на пристрій, на ТВ уже можна користуватися акаунтом.</string>
     <string name="account_local_auth_mobile_done">Готово</string>

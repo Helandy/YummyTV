@@ -34,7 +34,7 @@ class LocalAuthViewModel @Inject internal constructor(
             LocalAuthState.Event.BackSelected -> nav.back()
 
             is LocalAuthState.Event.PermissionResult -> {
-                analytics.eventMobilePermissionResult(event.granted)
+                analytics.eventMobilePermissionResult(event.granted, event.missing)
                 if (event.granted) {
                     startDiscovery()
                 } else {

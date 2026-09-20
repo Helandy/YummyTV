@@ -73,12 +73,19 @@ internal class LocalAuthAnalytics @Inject constructor(
     /**
      * Итог запроса разрешения на поиск устройств в локальной сети.
      *
-     * Параметры: granted.
+     * [missing] — короткие имена невыданных разрешений (`access_local_network`), это имена
+     * системных разрешений, а не данные сети пользователя. Нужны, чтобы на чужих прошивках
+     * видеть, какое именно разрешение не выдаётся.
+     *
+     * Параметры: granted, missing.
      */
-    fun eventMobilePermissionResult(granted: Boolean) {
+    fun eventMobilePermissionResult(granted: Boolean, missing: String) {
         tracker.track(
             EVENT_MOBILE_PERMISSION_RESULT,
-            analyticsParamsOf(PARAM_GRANTED to granted),
+            analyticsParamsOf(
+                PARAM_GRANTED to granted,
+                PARAM_MISSING to missing,
+            ),
         )
     }
 
@@ -138,6 +145,7 @@ internal class LocalAuthAnalytics @Inject constructor(
         private const val PARAM_REASON = "reason"
         private const val PARAM_ATTEMPTS_LEFT = "attempts_left"
         private const val PARAM_GRANTED = "granted"
+        private const val PARAM_MISSING = "missing"
         private const val PARAM_DEVICE_COUNT = "device_count"
         private const val REASON_UNKNOWN = "unknown"
 

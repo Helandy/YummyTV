@@ -224,7 +224,7 @@
     <string name="account_local_auth_mobile_search_again">Искать заново</string>
     <string name="account_local_auth_mobile_search_again_cd">Искать заново</string>
     <string name="account_local_auth_mobile_searching">Идёт поиск устройств…</string>
-    <string name="account_local_auth_mobile_permission_required">Без разрешения на поиск устройств в локальной сети ТВ не найти. Нажмите «Искать заново» и разрешите доступ.</string>
+    <string name="account_local_auth_mobile_permission_required">Без разрешения на поиск устройств в локальной сети ТВ не найти. Выдайте доступ в настройках приложения и вернитесь на этот экран.</string>
     <string name="account_local_auth_mobile_transferred_title">Вход на ТВ выполнен</string>
     <string name="account_local_auth_mobile_transferred_hint">Сессия передана на устройство, на ТВ уже можно пользоваться аккаунтом.</string>
     <string name="account_local_auth_mobile_done">Готово</string>

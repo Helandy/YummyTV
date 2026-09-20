@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissionNames
 import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
@@ -63,7 +64,12 @@ fun LocalAuthMobileScreen(
     val permissionGate = rememberLocalNetworkPermissionGate(
         onGranted = { onEvent(LocalAuthState.Event.PermissionResult(granted = true)) },
         onDenied = {
-            onEvent(LocalAuthState.Event.PermissionResult(granted = false))
+            onEvent(
+                LocalAuthState.Event.PermissionResult(
+                    granted = false,
+                    missing = context.missingLocalNetworkPermissionNames(),
+                ),
+            )
             Toast.makeText(context, permissionDeniedMessage, Toast.LENGTH_LONG).show()
         },
     )
@@ -146,6 +152,7 @@ fun LocalAuthMobileScreen(
                     isSearching = state.isSearching,
                     isPermissionDenied = state.isPermissionDenied,
                     onRetry = restartSearch,
+                    onOpenSettings = permissionGate::openSettings,
                 )
             } else {
                 LazyColumn(
@@ -208,6 +215,7 @@ private fun LocalAuthSearchStatus(
     isSearching: Boolean,
     isPermissionDenied: Boolean,
     onRetry: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (isSearching) {
@@ -235,6 +243,16 @@ private fun LocalAuthSearchStatus(
         }
         OutlinedButton(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.account_local_auth_mobile_search_again))
+        }
+        // Системный диалог второй раз уже не покажут — единственный путь остаётся через настройки.
+        if (isPermissionDenied) {
+            Button(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(
+                        R.string.account_mobile_local_network_permission_open_settings,
+                    ),
+                )
+            }
         }
     }
 }

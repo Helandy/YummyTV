@@ -224,7 +224,7 @@
     <string name="account_local_auth_mobile_search_again">Search again</string>
     <string name="account_local_auth_mobile_search_again_cd">Search again</string>
     <string name="account_local_auth_mobile_searching">Looking for devices…</string>
-    <string name="account_local_auth_mobile_permission_required">Without permission to find devices on the local network the TV cannot be found. Tap \"Search again\" and allow access.</string>
+    <string name="account_local_auth_mobile_permission_required">Without permission to find devices on the local network the TV cannot be found. Allow access in the app settings and come back to this screen.</string>
     <string name="account_local_auth_mobile_transferred_title">Signed in on TV</string>
     <string name="account_local_auth_mobile_transferred_hint">The session has been transferred, you can already use the account on the TV.</string>
     <string name="account_local_auth_mobile_done">Done</string>

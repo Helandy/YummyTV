@@ -31,8 +31,14 @@ class LocalAuthState {
         data object ScreenOpened : Event
         data object BackSelected : Event
 
-        /** Итог запроса разрешения на поиск устройств: поиск стартует только при `granted`. */
-        data class PermissionResult(val granted: Boolean) : Event
+        /**
+         * Итог запроса разрешения на поиск устройств: поиск стартует только при `granted`.
+         *
+         * [missing] — короткие имена невыданных разрешений через запятую: на чужих прошивках
+         * нужное разрешение может вообще не выдаваться, и без этого в аналитике не разобрать,
+         * какое именно.
+         */
+        data class PermissionResult(val granted: Boolean, val missing: String = "") : Event
 
         /** Повтор поиска с самого экрана: сам запуск придёт из [PermissionResult]. */
         data object RetrySearchSelected : Event
