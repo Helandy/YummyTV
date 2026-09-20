@@ -37,6 +37,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGa
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Composable
 internal fun AccountMobileNotificationsTab(
@@ -65,7 +66,8 @@ internal fun AccountMobileNotificationsTab(
         }
     }
     val unreadCount = state.unreadNotificationCount
-    val notificationPermissionGate = rememberNotificationPermissionGate()
+    // Без разрешения пуш о сериях не придёт, поэтому при отказе переключатель не включаем.
+    val notificationPermissionGate = rememberNotificationPermissionGate(runActionWhenDenied = false)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         AccountMobileEpisodePushRow(
             enabled = state.episodePushEnabled,
@@ -196,7 +198,10 @@ internal fun AccountMobileNotificationsTab(
             },
         )
     }
-    NotificationPermissionGateHost(state = notificationPermissionGate)
+    NotificationPermissionGateHost(
+        state = notificationPermissionGate,
+        explanationRes = CoreR.string.notification_permission_explanation_episode_push,
+    )
     if (state.isNotificationOpening || isOpeningNotification) {
         MobileBlockingLoading()
     }

@@ -11,6 +11,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +31,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalNotificationPermissionReque
 @Composable
 fun NotificationPermissionGateHost(
     state: NotificationPermissionGateState,
+    @StringRes explanationRes: Int = R.string.notification_permission_explanation,
 ) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -38,7 +40,7 @@ fun NotificationPermissionGateHost(
     val markNotificationPermissionRequested = LocalMarkNotificationPermissionRequested.current
     val coroutineScope = rememberCoroutineScope()
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) {
         state.complete()
     }
@@ -69,7 +71,7 @@ fun NotificationPermissionGateHost(
         NotificationPermissionDialog.Explanation -> AlertDialog(
             onDismissRequest = state::complete,
             text = {
-                Text(stringResource(R.string.notification_permission_explanation))
+                Text(stringResource(explanationRes))
             },
             confirmButton = {
                 TextButton(onClick = ::requestPermissionOrOpenSettings) {
@@ -121,7 +123,7 @@ private fun Context.openNotificationSettings() {
             Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.fromParts("package", packageName, null),
-            )
+            ),
         )
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,8 +109,8 @@ internal fun MobileNativePlayer(
         !state.mobileGestureTutorialReady || state.showMobileGestureTutorial
     val tutorialVisible =
         state.mobileGestureTutorialReady &&
-                state.showMobileGestureTutorial &&
-                !isInPictureInPictureMode
+            state.showMobileGestureTutorial &&
+            !isInPictureInPictureMode
     val pipSession = remember { MobilePlayerPipController.createSession() }
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val ui = rememberPlayerPlaybackUiState(state, playerNamePrefix)
@@ -122,7 +123,10 @@ internal fun MobileNativePlayer(
     val currentPosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
     val duration = state.playbackDurationMs
     var settingsMode by remember { mutableStateOf<MobilePlayerSettingsMode?>(null) }
-    var settingsTrackTab by remember { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
+    // Шторка настроек дорожек открывается на том табе, который юзер выбрал в прошлый раз,
+    // пока открыт этот экран плеера (и переживает поворот). Недоступный таб шторка сама
+    // откатит на первый.
+    var settingsTrackTab by rememberSaveable { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
     var volumePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
     val resumeAfterLifecyclePause = remember { mutableStateOf(false) }
@@ -174,15 +178,15 @@ internal fun MobileNativePlayer(
     // Пока виден хинт восстановления, оверлей не автоскрываем:
     // кнопки «Сменить плеер/озвучку» и контролы должны оставаться на экране
     val recoveryHintVisible = state.isPlaybackRecovering && state.showChangePlayerHint &&
-            (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
+        (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
     val overlay = rememberMobilePlayerOverlayController(
         canHide = {
             wantsPlay &&
-                    settingsMode == null &&
-                    !isSeeking &&
-                    !recoveryHintVisible &&
-                    !tutorialBlocksPlayback &&
-                    !castConnection.isCasting
+                settingsMode == null &&
+                !isSeeking &&
+                !recoveryHintVisible &&
+                !tutorialBlocksPlayback &&
+                !castConnection.isCasting
         },
         wantsPlay = { wantsPlay },
         isPromptVisible = { nextEpisodePromptState.isVisible },
@@ -591,9 +595,9 @@ internal fun MobileNativePlayer(
             onPictureInPicture = { activity?.let(pipSession::enter) },
             showDetails = state.animeId > 0,
             showPictureInPicture = state.pictureInPictureEnabled &&
-                    supportsPictureInPicture &&
-                    !isInPictureInPictureMode &&
-                    !castConnection.isCasting,
+                supportsPictureInPicture &&
+                !isInPictureInPictureMode &&
+                !castConnection.isCasting,
             showCast = castSupported && !isInPictureInPictureMode,
             visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
         )
@@ -635,7 +639,6 @@ internal fun MobileNativePlayer(
             },
             onTrackSettings = {
                 nextEpisodePromptState = PlayerEndPromptState.Hidden
-                settingsTrackTab = MobilePlayerTrackSettingsTab.Dubbing
                 settingsMode = MobilePlayerSettingsMode.Track
                 overlay.visible = true
                 overlay.cancelHide()
@@ -662,8 +665,8 @@ internal fun MobileNativePlayer(
         MobilePlayerSkipButton(
             skip = activeSkip.takeUnless {
                 state.autoSkipOpeningsEndings ||
-                        isInPictureInPictureMode ||
-                        tutorialBlocksPlayback
+                    isInPictureInPictureMode ||
+                    tutorialBlocksPlayback
             },
             onClick = {
                 skipActiveSegment(reportSelection = true)
@@ -706,8 +709,8 @@ internal fun MobileNativePlayer(
             // Тосты делят одну позицию, поэтому перемотка имеет приоритет.
             text = skipUi.snackbarText?.takeIf {
                 stepSeekToast.text == null &&
-                        !isInPictureInPictureMode &&
-                        !tutorialBlocksPlayback
+                    !isInPictureInPictureMode &&
+                    !tutorialBlocksPlayback
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -716,8 +719,8 @@ internal fun MobileNativePlayer(
 
         MobilePlayerZoomIndicator(
             visible = gestures.transformGestureActive &&
-                    !isInPictureInPictureMode &&
-                    !tutorialBlocksPlayback,
+                !isInPictureInPictureMode &&
+                !tutorialBlocksPlayback,
             scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -726,8 +729,8 @@ internal fun MobileNativePlayer(
 
         MobilePlayerGestureIndicator(
             visible = gestures.brightnessGestureActive &&
-                    !isInPictureInPictureMode &&
-                    !tutorialBlocksPlayback,
+                !isInPictureInPictureMode &&
+                !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
             percentText = gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
@@ -737,8 +740,8 @@ internal fun MobileNativePlayer(
 
         MobilePlayerGestureIndicator(
             visible = gestures.volumeGestureActive &&
-                    !isInPictureInPictureMode &&
-                    !tutorialBlocksPlayback,
+                !isInPictureInPictureMode &&
+                !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Volume.gestureIcon,
             percentText = gestures.volumeLevel.toGesturePercentText(),
             modifier = Modifier
@@ -748,8 +751,8 @@ internal fun MobileNativePlayer(
 
         MobilePlayerSpeedBoostIndicator(
             visible = gestures.isSpeedBoosted &&
-                    !isInPictureInPictureMode &&
-                    !tutorialBlocksPlayback,
+                !isInPictureInPictureMode &&
+                !tutorialBlocksPlayback,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 28.dp),
@@ -910,6 +913,7 @@ internal fun MobileNativePlayer(
                 showSubtitleSection = usesAlloha && alloha.hasSubtitleChoice,
                 onDismiss = { settingsMode = null },
                 initialTrackTab = settingsTrackTab,
+                onTrackTabChanged = { settingsTrackTab = it },
             )
         }
 

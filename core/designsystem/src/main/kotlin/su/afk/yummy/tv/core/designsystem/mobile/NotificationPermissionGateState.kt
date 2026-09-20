@@ -20,6 +20,7 @@ internal enum class NotificationPermissionDialog {
 @Stable
 class NotificationPermissionGateState internal constructor(
     private val needsPermission: () -> Boolean,
+    private val runActionWhenDenied: Boolean,
 ) {
     private var pendingAction: (() -> Unit)? = null
 
@@ -51,15 +52,18 @@ class NotificationPermissionGateState internal constructor(
         dialog = null
         val action = pendingAction
         pendingAction = null
-        action?.invoke()
+        if (runActionWhenDenied || !needsPermission()) action?.invoke()
     }
 }
 
 @Composable
-fun rememberNotificationPermissionGate(): NotificationPermissionGateState {
+fun rememberNotificationPermissionGate(
+    runActionWhenDenied: Boolean = true,
+): NotificationPermissionGateState {
     val context = LocalContext.current
-    return remember(context) {
+    return remember(context, runActionWhenDenied) {
         NotificationPermissionGateState(
+            runActionWhenDenied = runActionWhenDenied,
             needsPermission = {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                         ContextCompat.checkSelfPermission(

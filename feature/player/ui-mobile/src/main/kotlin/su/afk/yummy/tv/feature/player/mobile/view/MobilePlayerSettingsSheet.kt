@@ -17,12 +17,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
@@ -73,17 +76,29 @@ internal fun MobilePlayerSettingsSheet(
     showSubtitleSection: Boolean,
     onDismiss: () -> Unit,
     initialTrackTab: MobilePlayerTrackSettingsTab = MobilePlayerTrackSettingsTab.Dubbing,
+    onTrackTabChanged: (MobilePlayerTrackSettingsTab) -> Unit = {},
 ) {
     val trackTabs = buildList {
         add(MobilePlayerTrackSettingsTab.Dubbing)
         add(MobilePlayerTrackSettingsTab.Player)
         if (showAudioSection || showSubtitleSection) add(MobilePlayerTrackSettingsTab.Alloha)
     }
+    // Запомненный таб может быть недоступен (Alloha - только на Alloha-источнике), тогда
+    // открываемся на первом, то есть на озвучке.
+    val startTab = initialTrackTab.takeIf { it in trackTabs } ?: trackTabs.first()
     val trackPagerState = rememberPagerState(
-        initialPage = trackTabs.indexOf(initialTrackTab).coerceAtLeast(0),
+        initialPage = trackTabs.indexOf(startTab),
         pageCount = { trackTabs.size },
     )
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(trackPagerState, trackTabs) {
+        snapshotFlow { trackPagerState.settledPage }
+            // Первое значение - стартовая страница: если это откат с недоступного таба, он не
+            // должен затирать запомненный выбор. Наверх уходят только переключения юзера.
+            .drop(1)
+            .collect { page -> trackTabs.getOrNull(page)?.let(onTrackTabChanged) }
+    }
 
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
         HideSheetWindowSystemBars()

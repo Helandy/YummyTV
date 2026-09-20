@@ -4,8 +4,9 @@
     <string name="retry">Повторити</string>
     <string name="empty_screen">Поки нічого немає</string>
     <string name="notification_permission_explanation">Щоб бачити прогрес завантаження, потрібно дозволити показ сповіщень.</string>
-    <string name="notification_permission_decline">Ні, мені байдуже</string>
-    <string name="notification_permission_enable">Так, давай увімкнемо</string>
+    <string name="notification_permission_explanation_episode_push">Щоб надсилати сповіщення про нові серії, потрібно дозволити їх показ.</string>
+    <string name="notification_permission_decline">Скасувати</string>
+    <string name="notification_permission_enable">Увімкнути</string>
     <string name="notification_permission_settings_reminder">Ну якщо що, ви можете увімкнути сповіщення в налаштуваннях пізніше.</string>
     <string name="notification_permission_changed_mind">Я передумав, давай зараз увімкнемо</string>
     <string name="notification_permission_ok">Ок</string>
