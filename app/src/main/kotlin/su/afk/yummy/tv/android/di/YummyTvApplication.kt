@@ -10,6 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import su.afk.yummy.tv.BuildConfig
+import su.afk.yummy.tv.android.cast.CastAnalytics
 import su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler
 import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
@@ -19,6 +20,7 @@ import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
+import su.afk.yummy.tv.core.utils.cast.CastSupport
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -53,6 +55,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var startupMaintenanceRunner: AppStartupMaintenanceRunner
+
+    @Inject
+    lateinit var castAnalytics: CastAnalytics
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
@@ -107,6 +112,11 @@ class YummyTvApplication : Application(), Configuration.Provider {
      */
     @OptIn(UnstableApi::class)
     private fun setupCast() {
+        // Сам этот вызов уводит создание CastContext на фоновый поток, где старые GMS роняют
+        // процесс - см. CastSupport.
+        val decision = CastSupport.decision(this)
+        castAnalytics.eventCastUnavailable(decision)
+        if (!decision.isSupported) return
         Cast.getSingletonInstance(this).initialize(
             CastParams.Builder()
                 .setShowSystemOutputSwitcherOnCastButtonClick(true)

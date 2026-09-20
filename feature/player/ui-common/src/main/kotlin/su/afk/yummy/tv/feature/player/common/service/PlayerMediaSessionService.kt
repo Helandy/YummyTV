@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.player.common.service
 import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.OptIn
@@ -40,6 +39,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
 import su.afk.yummy.tv.feature.player.common.PlayerLoudnessNormalizer
@@ -63,12 +63,6 @@ class PlayerMediaSessionService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
     private var player: ExoPlayer? = null
     private var castPlayer: CastPlayer? = null
-
-    // На TV кастуем некуда - Cast нужен только на мобилке (см. DeviceAwareTvIntegration
-    // за тем же паттерном рантайм-детекта TV, поскольку :app - один манифест/APK на обе платформы).
-    private val isTelevision: Boolean
-        get() = resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
 
     private val loudnessNormalizer = PlayerLoudnessNormalizer()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -181,7 +175,10 @@ class PlayerMediaSessionService : MediaSessionService() {
                 loudnessNormalizer.apply(currentAudioSessionId, enabled)
             }
             .launchIn(serviceScope)
-        if (!isTelevision) {
+        // Гейт на TV и на старые GMS - внутри CastSupport: RemoteCastPlayer.Builder сам зовёт
+        // Cast.ensureInitialized(), то есть это второй вход в тот же фоновый путь, что и в
+        // YummyTvApplication.setupCast().
+        if (CastSupport.isSupported(this)) {
             castPlayer = buildCastPlayer(exoPlayer)
         }
         mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)

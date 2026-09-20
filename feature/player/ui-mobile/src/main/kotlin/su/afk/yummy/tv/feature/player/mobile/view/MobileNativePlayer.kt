@@ -35,6 +35,7 @@ import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
+import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImage
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerAllohaTracks
@@ -143,6 +144,7 @@ internal fun MobileNativePlayer(
         buildMobilePlayerPlaybackKey(state = state, url = currentUrl)
     }
     val mediaController = rememberPlayerMediaController()
+    val castSupported = remember(context) { CastSupport.isSupported(context) }
     val castConnection = rememberMobileCastConnectionState()
     // Пока идёт Cast-сессия, локальный экран остаётся как есть (таймлайн/контролы видны) - сворачивать
     // в PiP незачем: видео и так уходит на приёмник, а не рендерится в локальном окне.
@@ -592,7 +594,7 @@ internal fun MobileNativePlayer(
                     supportsPictureInPicture &&
                     !isInPictureInPictureMode &&
                     !castConnection.isCasting,
-            showCast = !isInPictureInPictureMode,
+            showCast = castSupported && !isInPictureInPictureMode,
             visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
         )
 

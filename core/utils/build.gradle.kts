@@ -17,6 +17,9 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.encoding)
+    // Только ради GoogleApiAvailability в CastSupport: у basement уже объявлены <queries>
+    // для com.google.android.gms, поэтому проверка версии GMS работает и на API 30+.
+    implementation(libs.play.services.base)
 
     testImplementation(libs.junit)
     testImplementation(libs.bundles.unit.test)

@@ -42,6 +42,7 @@ work = "2.11.2"
 coil = "3.6.2"
 jsoup = "1.23.2"
 media3 = "1.11.1"
+play-services-base = "18.11.0"
 
 # TV
 androidx-tv-tvprovider = "1.1.0"
@@ -138,6 +139,7 @@ media3-ui-compose = { module = "androidx.media3:media3-ui-compose", version.ref 
 androidx-media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3" }
 media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-base" }
 
 # Storage / Background work
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

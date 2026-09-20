@@ -13,6 +13,7 @@ import androidx.media3.cast.Cast
 import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.SessionManagerListener
+import su.afk.yummy.tv.core.utils.cast.CastSupport
 
 /** Имя подключённого Cast-устройства, или null вне активной сессии. */
 internal data class MobileCastConnectionState(val deviceName: String?) {
@@ -30,6 +31,9 @@ internal fun rememberMobileCastConnectionState(): MobileCastConnectionState {
     val context = LocalContext.current
     var deviceName by remember { mutableStateOf<String?>(null) }
     DisposableEffect(context) {
+        // Без Cast слушать нечего, а на старых GMS любое обращение к media3-Cast роняет процесс
+        // (см. CastSupport).
+        if (!CastSupport.isSupported(context)) return@DisposableEffect onDispose { }
         val cast = Cast.getSingletonInstance(context)
 
         fun applySession(session: CastSession?) {
@@ -62,5 +66,6 @@ internal fun rememberMobileCastConnectionState(): MobileCastConnectionState {
 
 @OptIn(UnstableApi::class)
 internal fun stopCasting(context: Context) {
+    if (!CastSupport.isSupported(context)) return
     Cast.getSingletonInstance(context).endCurrentSession(true)
 }
