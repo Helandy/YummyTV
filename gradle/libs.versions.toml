@@ -39,7 +39,7 @@ room = "2.8.5"
 work = "2.11.2"
 
 # Media / Images
-coil = "3.6.2"
+coil = "3.6.3"
 jsoup = "1.23.2"
 media3 = "1.11.1"
 play-services-base = "18.11.0"
