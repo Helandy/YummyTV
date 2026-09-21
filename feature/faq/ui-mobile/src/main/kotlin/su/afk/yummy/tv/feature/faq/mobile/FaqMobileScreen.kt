@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.faq.mobile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -65,6 +66,7 @@ fun FaqMobileScreen(
     }
 
     BaseScreen(
+        contentModifier = Modifier.navigationBarsPadding(),
         isScroll = false,
         customTopBar = {
             MobileTopBar(

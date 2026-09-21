@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +76,7 @@ fun RelationMobileScreen(
     onEvent: (RelationState.Event) -> Unit,
 ) {
     BaseScreen(
+        contentModifier = Modifier.navigationBarsPadding(),
         isScroll = false,
         topBar = {
             MobileTopBar(

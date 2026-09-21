@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -38,6 +39,7 @@ fun MySubscriptionsMobileScreen(
     LaunchedEffect(Unit) { onEvent(MySubscriptionsState.Event.ScreenShown) }
 
     BaseScreen(
+        contentModifier = Modifier.navigationBarsPadding(),
         isScroll = false,
         customTopBar = {
             MobileTopBar(
@@ -79,7 +81,7 @@ fun MySubscriptionsMobileScreen(
                         subscription = subscription,
                         onClick = {
                             onEvent(
-                                MySubscriptionsState.Event.SubscriptionSelected(subscription.animeId)
+                                MySubscriptionsState.Event.SubscriptionSelected(subscription.animeId),
                             )
                         },
                     )

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.details.mobile.viewingorder
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -64,7 +65,9 @@ fun ViewingOrderMobileScreen(
                 onBack = { onEvent(ViewingOrderState.Event.BackSelected) },
             )
         },
-        contentModifier = Modifier.padding(bottom = 24.dp)
+        contentModifier = Modifier
+            .navigationBarsPadding()
+            .padding(bottom = 24.dp),
     ) {
         MobileStateContent(
             isLoading = state.isLoading,

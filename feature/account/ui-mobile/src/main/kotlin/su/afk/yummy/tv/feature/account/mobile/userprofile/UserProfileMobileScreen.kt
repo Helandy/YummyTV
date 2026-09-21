@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.mobile.userprofile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -73,6 +74,7 @@ fun UserProfileMobileScreen(
     )
 
     BaseScreen(
+        contentModifier = Modifier.navigationBarsPadding(),
         isScroll = false,
         customTopBar = {
             MobileTopBar(

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -81,6 +82,7 @@ fun ReviewDetailsMobileScreen(
     }
 
     BaseScreen(
+        contentModifier = Modifier.navigationBarsPadding(),
         isScroll = false,
         customTopBar = {
             MobileTopBar(
