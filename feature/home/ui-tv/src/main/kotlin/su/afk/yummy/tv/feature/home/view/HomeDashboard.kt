@@ -39,7 +39,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -242,20 +245,23 @@ internal fun HomeDashboard(
                                 }
                             },
                         ) {
-                            ContinueWatchingSection(
-                                items = continueWatching,
-                                onItemSelected = onContinueWatchingSelected,
-                                rowFocusRequester = continueWatchingFocusRequester,
-                                registerFocusHandler = { handler ->
-                                    registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)
-                                },
-                                downFocusRequester = nextRowFocusRequester(0),
-                                onMoveDown = if (totalLazyItems > 1) {
-                                    { requestRowFocus(1) }
-                                } else {
-                                    null
-                                },
-                            )
+                            Column {
+                                ContinueWatchingSection(
+                                    items = continueWatching,
+                                    onItemSelected = onContinueWatchingSelected,
+                                    rowFocusRequester = continueWatchingFocusRequester,
+                                    registerFocusHandler = { handler ->
+                                        registerRowFocusHandler(ROW_CONTINUE_WATCHING, handler)
+                                    },
+                                    downFocusRequester = nextRowFocusRequester(0),
+                                    onMoveDown = if (totalLazyItems > 1) {
+                                        { requestRowFocus(1) }
+                                    } else {
+                                        null
+                                    },
+                                )
+                                HomeOfflineBanner()
+                            }
                         }
                     }
                 }
@@ -298,6 +304,10 @@ internal fun HomeDashboard(
                             },
                         ) {
                             Column {
+                                // Без «Продолжить просмотр» плашка переезжает в первый ряд
+                                if (!hasContinueWatching) {
+                                    HomeOfflineBanner()
+                                }
                                 HomeSectionHeader(
                                     title = stringResource(R.string.home_season_title),
                                     active = columnHasFocus && lastFocusedRowKey == ROW_HERO,
@@ -424,3 +434,15 @@ private const val SECTION_HERO = "__hero"
 private const val ROW_CONTINUE_WATCHING = "continue_watching"
 private const val ROW_HERO = "hero_carousel"
 private const val ROW_FOCUS_TIMEOUT_MILLIS = 500L
+
+/**
+ * Плашка «нет сети» в строке главной. Не отдельный lazy-item: фокус дашборда завязан на
+ * lazy-индексы рядов. Свои 16dp у плашки уже есть — добираем до отступа экрана.
+ */
+@Composable
+private fun HomeOfflineBanner() {
+    OfflineBanner(
+        isOffline = LocalIsOffline.current,
+        modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
+    )
+}

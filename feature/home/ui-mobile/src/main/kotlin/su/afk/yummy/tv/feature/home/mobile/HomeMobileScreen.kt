@@ -38,6 +38,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
@@ -188,11 +190,16 @@ fun HomeMobileScreen(
 
                 if (mainActions != null) {
                     item(key = "search") {
-                        HomeSearchEntry(
-                            text = stringResource(R.string.home_mobile_search_hint),
-                            onClick = mainActions.onSearchClick,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
+                        // Плашка внутри item'а поиска: отдельный item дал бы лишний
+                        // зазор spacedBy даже со скрытой плашкой
+                        Column {
+                            HomeSearchEntry(
+                                text = stringResource(R.string.home_mobile_search_hint),
+                                onClick = mainActions.onSearchClick,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                            OfflineBanner(isOffline = LocalIsOffline.current)
+                        }
                     }
                 }
 

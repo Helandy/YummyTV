@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.core.designsystem.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +26,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R
 
 /**
- * Плашка «нет сети» поверх контента. Контент экранов рисуется без innerPadding скаффолда,
- * поэтому это осознанно «плавающая» пилюля с отступами, а не полоса во всю ширину впритык.
+ * Плашка «нет сети». Встраивается в вёрстку главной (под поиском на мобилке, под
+ * «Продолжить просмотр» на ТВ), а не рисуется оверлеем: глобальная плашка перекрывала
+ * плеер и другие экраны. Появляясь, раздвигает контент, а не наезжает на него.
  */
 @Composable
 fun OfflineBanner(
@@ -37,8 +38,8 @@ fun OfflineBanner(
     AnimatedVisibility(
         visible = isOffline,
         modifier = modifier,
-        enter = slideInVertically { -it } + fadeIn(),
-        exit = slideOutVertically { -it } + fadeOut(),
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut(),
     ) {
         Surface(
             modifier = Modifier
