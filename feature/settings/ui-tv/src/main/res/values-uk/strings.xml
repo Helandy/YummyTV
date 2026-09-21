@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_tab_posters">Постери</string>
+    <string name="settings_tv_category_general">Загальні</string>
+    <string name="settings_tv_category_appearance">Зовнішній вигляд</string>
+    <string name="settings_tv_category_player">Плеєр</string>
+    <string name="settings_tv_category_playback">Відтворення</string>
+    <string name="settings_tv_category_watch_progress">Прогрес перегляду</string>
+    <string name="settings_tv_category_subtitles">Субтитри</string>
+    <string name="settings_tv_category_storage">Сховище</string>
+    <string name="settings_tv_category_api">API</string>
+    <string name="settings_tv_category_about">Про застосунок</string>
+    <string name="settings_tv_details_buttons_order">Порядок кнопок</string>
+    <string name="settings_tv_section_sound">Звук</string>
     <string name="settings_tab_interface">Інтерфейс</string>
     <string name="settings_tab_search">Пошук</string>
-    <string name="settings_tab_poster_size">Розмір постерів</string>
-    <string name="settings_tab_poster_quality">Якість постерів</string>
-    <string name="settings_tab_continue_watching">Продовжити</string>
     <string name="settings_tab_theme">Тема</string>
     <string name="settings_tab_background">Фон</string>
     <string name="settings_background_system">Як у системі</string>
@@ -15,18 +22,12 @@
     <string name="settings_background_dark">Темний</string>
     <string name="settings_background_dark_hint">Темний фон (за замовчуванням)</string>
     <string name="settings_tab_details">Деталі</string>
-    <string name="settings_tab_player">Плеєр</string>
-    <string name="settings_tab_player_quality">Якість відео</string>
     <string name="settings_tab_player_source">Бажаний плеєр</string>
     <string name="settings_tab_top_title_year">Рік у тайтлів</string>
-    <string name="settings_tab_library_title_year">Рік у бібліотеці</string>
     <string name="settings_tab_account">Акаунт</string>
     <string name="settings_account_sign_in_short">Увійти</string>
-    <string name="settings_tab_cache">Кеш зображень</string>
     <string name="settings_tab_language">Мова</string>
-    <string name="settings_tab_api">API</string>
     <string name="settings_tab_tv_home">TV Home</string>
-    <string name="settings_tab_about">Про застосунок</string>
     <string name="settings_cache_storage_title">Розмір кешу</string>
     <string name="settings_cache_storage_button_hint">Показати розміри тек кешу</string>
     <string name="settings_cache_storage_total">Усього</string>
@@ -204,7 +205,6 @@
     <string name="settings_session_storage_fallback">Запасне (Keystore недоступний)</string>
     <string name="settings_feedback_label">Питання/Ідеї/Пропозиції</string>
     <string name="settings_repository_url">https://github.com/Helandy/YummyTV</string>
-    <string name="settings_tab_player_subtitles">Субтитри</string>
     <string name="settings_subtitle_style_title">Оформлення субтитрів</string>
     <string name="settings_subtitle_style_alloha_hint">Субтитри надає лише плеєр Alloha</string>
     <string name="settings_subtitle_size_title">Розмір тексту</string>
@@ -221,7 +221,6 @@
     <string name="settings_subtitle_background_none">Немає</string>
     <string name="settings_subtitle_background_translucent">Напівпрозорий</string>
     <string name="settings_subtitle_background_solid">Чорний</string>
-    <string name="settings_tab_player_buffer">Розмір буфера</string>
     <string name="settings_player_buffer_title">Розмір буфера плеєра</string>
     <string name="settings_player_buffer_minimal">Мінімальний</string>
     <string name="settings_player_buffer_minimal_hint">5–15 с запасу, до 16 МБ ОЗП. Найшвидший старт, але частіші підвантаження.</string>

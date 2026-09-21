@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.settings.view
 
-import android.text.format.Formatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -28,11 +26,8 @@ internal fun ApiSettingsPanel(
     upFocusRequester: FocusRequester,
     contentFocusRequester: FocusRequester? = null,
     restoreUpToTab: Boolean = true,
-    cacheStorageSize: Long = 0L,
     onTokenChanged: (String) -> Unit,
-    onShowCacheStorage: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -73,11 +68,6 @@ internal fun ApiSettingsPanel(
             text = stringResource(R.string.settings_yani_application_token_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        AboutRow(
-            label = stringResource(R.string.settings_cache_storage_title),
-            hint = Formatter.formatShortFileSize(context, cacheStorageSize),
-            onClick = onShowCacheStorage,
         )
     }
 }

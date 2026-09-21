@@ -254,7 +254,8 @@ internal fun PreferredVideoQuality.hint(): String = stringResource(
         PreferredVideoQuality.P1080,
         PreferredVideoQuality.P720,
         PreferredVideoQuality.P480,
-        PreferredVideoQuality.P360 -> R.string.settings_preferred_video_quality_fallback_hint
+        PreferredVideoQuality.P360,
+            -> R.string.settings_preferred_video_quality_fallback_hint
     },
 )
 

@@ -19,7 +19,7 @@ import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
 internal fun DetailsButtonOrderPanel(
     order: List<DetailsButtonAction>,
     upFocusRequester: FocusRequester,
-    contentFocusRequester: FocusRequester,
+    contentFocusRequester: FocusRequester?,
     onMoveUp: (DetailsButtonAction) -> Unit,
     onMoveDown: (DetailsButtonAction) -> Unit,
     onReset: () -> Unit,
@@ -29,7 +29,13 @@ internal fun DetailsButtonOrderPanel(
         DetailsButtonOrderResetRow(
             onReset = onReset,
             modifier = Modifier
-                .focusRequester(contentFocusRequester)
+                .then(
+                    if (contentFocusRequester != null) {
+                        Modifier.focusRequester(contentFocusRequester)
+                    } else {
+                        Modifier
+                    },
+                )
                 .restoreCategoryFocusOnLeft(upFocusRequester),
         )
         HorizontalDivider(

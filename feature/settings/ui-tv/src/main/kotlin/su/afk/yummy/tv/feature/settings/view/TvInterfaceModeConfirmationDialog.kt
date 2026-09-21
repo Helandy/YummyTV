@@ -29,7 +29,7 @@ internal fun TvInterfaceModeConfirmationDialog(
                 stringResource(
                     R.string.settings_interface_confirm_message,
                     targetModeLabel,
-                )
+                ),
             )
         },
         confirmButton = {

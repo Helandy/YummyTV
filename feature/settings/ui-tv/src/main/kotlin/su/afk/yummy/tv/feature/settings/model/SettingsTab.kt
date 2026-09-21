@@ -3,25 +3,15 @@ package su.afk.yummy.tv.feature.settings.model
 import androidx.annotation.StringRes
 import su.afk.yummy.tv.feature.settings.R
 
+/** Категории ТВ-настроек в левом списке; совпадают с мобильными плюс «О приложении». */
 internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
-    INTERFACE(R.string.settings_tab_interface),
-    THEME(R.string.settings_tab_theme),
-    BACKGROUND(R.string.settings_tab_background),
-    PLAYER(R.string.settings_tab_player),
-    PLAYER_QUALITY(R.string.settings_tab_player_quality),
-    PLAYER_BUFFER(R.string.settings_tab_player_buffer),
-    PLAYER_SOURCE(R.string.settings_tab_player_source),
-    PLAYER_SUBTITLES(R.string.settings_tab_player_subtitles),
-    POSTER_SIZE(R.string.settings_tab_poster_size),
-    POSTERS(R.string.settings_tab_poster_quality),
-    TOP_TITLE_YEAR(R.string.settings_tab_top_title_year),
-    LIBRARY_TITLE_YEAR(R.string.settings_tab_library_title_year),
-    CONTINUE_WATCHING(R.string.settings_tab_continue_watching),
-    DETAILS(R.string.settings_tab_details),
-    SEARCH(R.string.settings_tab_search),
-    CACHE(R.string.settings_tab_cache),
-    LANGUAGE(R.string.settings_tab_language),
-    API(R.string.settings_tab_api),
-    TV_HOME(R.string.settings_tab_tv_home),
-    ABOUT(R.string.settings_tab_about),
+    GENERAL(R.string.settings_tv_category_general),
+    APPEARANCE(R.string.settings_tv_category_appearance),
+    PLAYER(R.string.settings_tv_category_player),
+    PLAYBACK(R.string.settings_tv_category_playback),
+    WATCH_PROGRESS(R.string.settings_tv_category_watch_progress),
+    SUBTITLES(R.string.settings_tv_category_subtitles),
+    STORAGE(R.string.settings_tv_category_storage),
+    API(R.string.settings_tv_category_api),
+    ABOUT(R.string.settings_tv_category_about),
 }

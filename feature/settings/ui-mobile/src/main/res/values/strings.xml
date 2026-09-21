@@ -207,7 +207,6 @@
     <string name="settings_video_export_auto_label">Export after download</string>
     <string name="settings_video_export_auto_enabled">Copy an episode to the selected folder as soon as it finishes downloading</string>
     <string name="settings_video_export_directory_error">Unable to write to the selected folder</string>
-    <string name="settings_tab_player_subtitles">Subtitles</string>
     <string name="settings_subtitle_style_title">Subtitle look</string>
     <string name="settings_subtitle_style_alloha_hint">Subtitles are provided by the Alloha player only</string>
     <string name="settings_subtitle_size_title">Text size</string>

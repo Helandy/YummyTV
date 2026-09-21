@@ -207,7 +207,6 @@
     <string name="settings_video_export_auto_label">Вивантажувати після завантаження</string>
     <string name="settings_video_export_auto_enabled">Копіювати серію до вибраної теки одразу після завантаження</string>
     <string name="settings_video_export_directory_error">Не вдалося отримати доступ на запис до вибраної теки</string>
-    <string name="settings_tab_player_subtitles">Субтитри</string>
     <string name="settings_subtitle_style_title">Оформлення субтитрів</string>
     <string name="settings_subtitle_style_alloha_hint">Субтитри надає лише плеєр Alloha</string>
     <string name="settings_subtitle_size_title">Розмір тексту</string>

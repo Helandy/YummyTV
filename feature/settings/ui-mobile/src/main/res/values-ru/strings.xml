@@ -207,7 +207,6 @@
     <string name="settings_video_export_auto_label">Выгружать после скачивания</string>
     <string name="settings_video_export_auto_enabled">Копировать серию в выбранную папку сразу после загрузки</string>
     <string name="settings_video_export_directory_error">Не удалось получить доступ на запись к выбранной папке</string>
-    <string name="settings_tab_player_subtitles">Субтитры</string>
     <string name="settings_subtitle_style_title">Оформление субтитров</string>
     <string name="settings_subtitle_style_alloha_hint">Субтитры отдаёт только плеер Alloha</string>
     <string name="settings_subtitle_size_title">Размер текста</string>
