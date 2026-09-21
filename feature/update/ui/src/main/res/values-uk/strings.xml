@@ -3,6 +3,7 @@
     <string name="update_available_title">Доступне оновлення</string>
     <string name="update_required_title">Потрібне оновлення</string>
     <string name="update_version">Вийшла нова версія %1$s</string>
+    <string name="update_version_beta">Вийшла нова бета-версія %1$s</string>
     <string name="update_required_message">Ваша версія більше не підтримується. Оновіть застосунок, щоб продовжити.</string>
     <string name="update_changelog_title">Що нового:</string>
     <string name="update_later">Не зараз</string>

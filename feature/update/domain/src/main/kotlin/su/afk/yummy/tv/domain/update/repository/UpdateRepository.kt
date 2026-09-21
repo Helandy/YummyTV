@@ -4,6 +4,9 @@ import su.afk.yummy.tv.domain.update.model.AppRelease
 
 interface UpdateRepository {
 
-    /** Последний опубликованный релиз или null, если релизов нет либо у него нет APK. */
-    suspend fun latestRelease(currentVersion: String): AppRelease?
+    /**
+     * Самый новый опубликованный релиз или null, если релизов нет либо у него нет APK.
+     * Pre-release учитываются только при [includePrerelease].
+     */
+    suspend fun latestRelease(currentVersion: String, includePrerelease: Boolean): AppRelease?
 }

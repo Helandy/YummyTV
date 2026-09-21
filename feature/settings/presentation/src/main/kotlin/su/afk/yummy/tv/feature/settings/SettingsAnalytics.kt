@@ -361,6 +361,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил бета-канал обновлений. */
+    fun eventBetaUpdatesToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_BETA_UPDATES_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     internal companion object {
         private const val PARAM_ACTION = "action"
         private const val PARAM_DIRECTION = "direction"
@@ -423,5 +431,6 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_tv_player_controls_tutorial_reset"
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
         const val EVENT_SAVE_LAST_SEARCH_TOGGLED = "settings_save_last_search_toggled"
+        const val EVENT_BETA_UPDATES_TOGGLED = "settings_beta_updates_toggled"
     }
 }

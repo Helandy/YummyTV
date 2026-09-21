@@ -108,6 +108,9 @@ class SettingsViewModel @Inject internal constructor(
         settingsStore.saveLastSearchEnabled
             .onEach { enabled -> setState { copy(saveLastSearchEnabled = enabled) } }
             .launchIn(viewModelScope)
+        settingsStore.betaUpdatesEnabled
+            .onEach { enabled -> setState { copy(betaUpdatesEnabled = enabled) } }
+            .launchIn(viewModelScope)
         tvIntegration.previewChannelBrowsable
             .onEach { setState { copy(isPreviewChannelBrowsable = it) } }
             .launchIn(viewModelScope)
@@ -367,6 +370,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.saveLastSearchEnabled
                 analytics.eventSaveLastSearchToggled(enabled)
                 settingsStore.setSaveLastSearchEnabled(enabled)
+            }
+
+            SettingsState.Event.BetaUpdatesToggled -> viewModelScope.launch {
+                val enabled = !currentState.betaUpdatesEnabled
+                analytics.eventBetaUpdatesToggled(enabled)
+                settingsStore.setBetaUpdatesEnabled(enabled)
             }
         }
     }

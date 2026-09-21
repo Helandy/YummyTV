@@ -3,6 +3,7 @@
     <string name="update_available_title">Update available</string>
     <string name="update_required_title">Update required</string>
     <string name="update_version">New version %1$s is available</string>
+    <string name="update_version_beta">New beta version %1$s is available</string>
     <string name="update_required_message">Your version is no longer supported. Update the app to continue.</string>
     <string name="update_changelog_title">What is new:</string>
     <string name="update_later">Not now</string>

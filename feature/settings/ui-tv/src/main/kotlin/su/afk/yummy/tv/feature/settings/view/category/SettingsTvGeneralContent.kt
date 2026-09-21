@@ -42,6 +42,18 @@ internal fun SettingsTvGeneralContent(
         onClick = { onEvent(SettingsState.Event.SaveLastSearchToggled) },
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
+    SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_tv_beta_updates_label),
+        hint = if (state.betaUpdatesEnabled) {
+            stringResource(R.string.settings_tv_beta_updates_enabled)
+        } else {
+            stringResource(R.string.settings_tv_beta_updates_disabled)
+        },
+        enabled = state.betaUpdatesEnabled,
+        onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_tab_tv_home))
     ToggleRow(

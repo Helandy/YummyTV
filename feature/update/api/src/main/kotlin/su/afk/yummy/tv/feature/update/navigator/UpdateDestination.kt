@@ -11,4 +11,5 @@ data class UpdateDestination(
     val changelog: String,
     val required: Boolean = false,
     val updatesCount: Int = 0,
+    val isPrerelease: Boolean = false,
 ) : NavKey

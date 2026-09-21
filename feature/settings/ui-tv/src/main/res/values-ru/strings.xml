@@ -85,6 +85,9 @@
     <string name="settings_disabled">Отключено</string>
     <string name="settings_save_last_search_label">Сохранять последний поиск</string>
     <string name="settings_save_last_search_enabled">Запрос и фильтры восстанавливаются при открытии поиска</string>
+    <string name="settings_tv_beta_updates_label">Бета-версии</string>
+    <string name="settings_tv_beta_updates_enabled">Предлагаются и pre-release сборки — они могут быть нестабильны. Применится при следующем запуске</string>
+    <string name="settings_tv_beta_updates_disabled">Только стабильные версии</string>
     <string name="settings_theme_warm_amber">Тёплый янтарь</string>
     <string name="settings_theme_warm_amber_hint">Нейтральная тёмная основа и мягкий янтарный фокус</string>
     <string name="settings_theme_sakura">Сакура</string>

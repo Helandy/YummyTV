@@ -102,6 +102,7 @@ class TvMainGraph @Inject constructor(
                                 eff.changelog,
                                 required = eff.required,
                                 updatesCount = eff.updatesCount,
+                                isPrerelease = eff.isPrerelease,
                             )
                             if (eff.required) {
                                 navManager.replace(destination)

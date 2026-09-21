@@ -7,6 +7,10 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 interface AppLifecycleSettingsStore {
 
     val watchNextEnabled: Flow<Boolean>
+
+    /** Бета-канал: проверка обновлений учитывает и pre-release сборки. */
+    val betaUpdatesEnabled: Flow<Boolean>
+
     val supportPromptSnapshot: Flow<SupportPromptSnapshot>
 
     /** Идентификатор последнего объявления, которое пользователь закрыл кнопкой ОК. */
@@ -16,6 +20,7 @@ interface AppLifecycleSettingsStore {
     val notificationPermissionRequested: Flow<Boolean>
 
     suspend fun setWatchNextEnabled(enabled: Boolean)
+    suspend fun setBetaUpdatesEnabled(enabled: Boolean)
     suspend fun ensureSupportPromptInstallTimeInitialized()
     suspend fun dismissSupportPrompt()
 

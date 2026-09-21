@@ -74,6 +74,7 @@ class SettingsState {
         val cacheStorageTotalBytes: Long = 0L,
         val isCacheStorageLoading: Boolean = false,
         val saveLastSearchEnabled: Boolean = false,
+        val betaUpdatesEnabled: Boolean = false,
         /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
         val isFallbackSessionStorage: Boolean = false,
     ) : UiState
@@ -215,6 +216,7 @@ class SettingsState {
 
         /** Пользователь переключил сохранение последнего поиска. */
         data object SaveLastSearchToggled : Event
+        data object BetaUpdatesToggled : Event
     }
 
     sealed interface Effect : UiEffect {

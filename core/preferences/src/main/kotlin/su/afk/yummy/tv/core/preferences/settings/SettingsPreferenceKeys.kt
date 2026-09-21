@@ -18,6 +18,7 @@ internal object SettingsPreferenceKeys {
     val preferredPlayerKey = stringPreferencesKey("preferred_player")
     val preferredVideoQualityKey = stringPreferencesKey("preferred_video_quality")
     val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
+    val betaUpdatesEnabledKey = booleanPreferencesKey("beta_updates_enabled")
     val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
     val autoSkipDelaySecondsKey = intPreferencesKey("auto_skip_delay_seconds")

@@ -36,6 +36,7 @@ class MainState {
             val changelog: String,
             val required: Boolean = false,
             val updatesCount: Int = 0,
+            val isPrerelease: Boolean = false,
         ) : Effect()
 
         data class ShowToast(val message: String) : Effect()

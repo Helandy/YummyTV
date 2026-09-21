@@ -44,6 +44,16 @@ internal fun SettingsMobileGeneralContent(
                 enabled = state.saveLastSearchEnabled,
                 onClick = { onEvent(SettingsState.Event.SaveLastSearchToggled) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_mobile_beta_updates_label),
+                hint = if (state.betaUpdatesEnabled) {
+                    stringResource(R.string.settings_mobile_beta_updates_enabled)
+                } else {
+                    stringResource(R.string.settings_mobile_beta_updates_disabled)
+                },
+                enabled = state.betaUpdatesEnabled,
+                onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_devices)) {
             SettingsMobileNavigationRow(

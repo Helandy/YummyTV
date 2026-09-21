@@ -106,6 +106,9 @@
     <string name="settings_disabled">Disabled</string>
     <string name="settings_save_last_search_label">Save last search</string>
     <string name="settings_save_last_search_enabled">Query and filters are restored when search opens</string>
+    <string name="settings_mobile_beta_updates_label">Beta versions</string>
+    <string name="settings_mobile_beta_updates_enabled">Pre-release builds are offered too — they may be unstable. Applies on next launch</string>
+    <string name="settings_mobile_beta_updates_disabled">Stable releases only</string>
     <string name="settings_theme_warm_amber">Warm amber</string>
     <string name="settings_theme_warm_amber_hint">Neutral dark surfaces with a soft amber focus</string>
     <string name="settings_theme_sakura">Sakura</string>

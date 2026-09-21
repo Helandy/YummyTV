@@ -37,6 +37,7 @@ class UpdateViewModel @Inject internal constructor(
                 changelog = event.changelog,
                 required = event.required,
                 updatesCount = event.updatesCount,
+                isPrerelease = event.isPrerelease,
             )
 
             UpdateState.Event.Dismiss -> {
@@ -64,6 +65,7 @@ class UpdateViewModel @Inject internal constructor(
         changelog: String,
         required: Boolean,
         updatesCount: Int,
+        isPrerelease: Boolean,
     ) {
         if (currentState.status is UpdateState.State.Status.Idle) {
             updateVersion = version
@@ -75,6 +77,7 @@ class UpdateViewModel @Inject internal constructor(
                         apkUrl = apkUrl,
                         required = required,
                         updatesCount = updatesCount,
+                        isPrerelease = isPrerelease,
                     )
                 )
             }

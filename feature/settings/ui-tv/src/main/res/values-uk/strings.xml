@@ -85,6 +85,9 @@
     <string name="settings_disabled">Вимкнено</string>
     <string name="settings_save_last_search_label">Зберігати останній пошук</string>
     <string name="settings_save_last_search_enabled">Запит і фільтри відновлюються під час відкриття пошуку</string>
+    <string name="settings_tv_beta_updates_label">Бета-версії</string>
+    <string name="settings_tv_beta_updates_enabled">Пропонуються й pre-release збірки — вони можуть бути нестабільні. Застосується під час наступного запуску</string>
+    <string name="settings_tv_beta_updates_disabled">Лише стабільні версії</string>
     <string name="settings_theme_warm_amber">Теплий бурштин</string>
     <string name="settings_theme_warm_amber_hint">Нейтральна темна основа з м\'яким бурштиновим акцентом</string>
     <string name="settings_theme_sakura">Сакура</string>

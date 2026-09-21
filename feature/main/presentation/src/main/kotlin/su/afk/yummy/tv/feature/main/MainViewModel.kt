@@ -144,6 +144,7 @@ class MainViewModel @Inject internal constructor(
                         changelog = result.changelog,
                         required = result.required,
                         updatesCount = result.updatesCount,
+                        isPrerelease = result.isPrerelease,
                     )
                 )
 

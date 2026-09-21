@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.main.handler
 
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.featuretoggle.api.VersionSupportChecker
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -7,8 +8,8 @@ import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetNotificationCountsUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.update.usecase.GetLatestAppReleaseUseCase
+import su.afk.yummy.tv.domain.update.util.isVersionNewer
 import su.afk.yummy.tv.feature.main.utils.firstOrZero
-import su.afk.yummy.tv.feature.main.utils.isNewer
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.time.Duration.Companion.hours
@@ -28,15 +29,16 @@ internal class MainSideEffectsHandler @Inject constructor(
         runCatching {
             val isCurrentVersionSupported = versionSupportChecker.isCurrentVersionSupported()
             val release = withTimeoutOrNull(GITHUB_UPDATE_TIMEOUT) {
-                getLatestAppRelease(versionName)
+                getLatestAppRelease(versionName, includePrerelease = settingsStore.betaUpdatesEnabled.first())
             } ?: return@runCatching MainUpdateCheckResult.NotAvailable
-            if (!isCurrentVersionSupported || isNewer(versionName, release.version)) {
+            if (!isCurrentVersionSupported || isVersionNewer(versionName, release.version)) {
                 MainUpdateCheckResult.Available(
                     version = release.version,
                     apkUrl = release.apkUrl,
                     changelog = release.changelog,
                     required = !isCurrentVersionSupported,
                     updatesCount = release.updatesCount,
+                    isPrerelease = release.isPrerelease,
                 )
             } else {
                 MainUpdateCheckResult.NotAvailable
@@ -71,6 +73,7 @@ internal sealed interface MainUpdateCheckResult {
         val changelog: String,
         val required: Boolean,
         val updatesCount: Int,
+        val isPrerelease: Boolean,
     ) : MainUpdateCheckResult
 
     data object NotAvailable : MainUpdateCheckResult

@@ -71,6 +71,7 @@ fun UpdateDialog(
                 changelog = dest.changelog,
                 required = dest.required,
                 updatesCount = dest.updatesCount,
+                isPrerelease = dest.isPrerelease,
             )
         )
     }
@@ -156,7 +157,11 @@ private fun AvailableContent(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = stringResource(R.string.update_version, status.version),
+            text = if (status.isPrerelease) {
+                stringResource(R.string.update_version_beta, status.version.substringBefore('-'))
+            } else {
+                stringResource(R.string.update_version, status.version)
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
         )
