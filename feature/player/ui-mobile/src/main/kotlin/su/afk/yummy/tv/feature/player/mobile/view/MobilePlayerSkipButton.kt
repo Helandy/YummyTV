@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
+import su.afk.yummy.tv.feature.player.common.view.autoSkipProgressFill
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
 
@@ -44,6 +45,8 @@ internal fun MobilePlayerSkipButton(
     skip: PlayerActiveSkip?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    countdownSeconds: Int? = null,
+    countdownProgress: Float? = null,
 ) {
     // Тип держим отдельно, чтобы подпись не менялась во время анимации исчезновения.
     var lastType by remember { mutableStateOf(PlayerSkipType.Opening) }
@@ -60,6 +63,7 @@ internal fun MobilePlayerSkipButton(
             modifier = Modifier
                 .clip(shape)
                 .background(YummySemanticColors.PanelScrim)
+                .autoSkipProgressFill(countdownProgress, Color.White.copy(alpha = 0.22f), 12.dp)
                 .border(1.dp, Color.White.copy(alpha = 0.18f), shape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -77,12 +81,22 @@ internal fun MobilePlayerSkipButton(
                 modifier = Modifier.size(20.dp),
             )
             Text(
-                text = stringResource(
-                    when (lastType) {
-                        PlayerSkipType.Opening -> UiR.string.player_mobile_skip_opening
-                        PlayerSkipType.Ending -> UiR.string.player_mobile_skip_ending
-                    }
-                ),
+                text = if (countdownSeconds != null) {
+                    stringResource(
+                        when (lastType) {
+                            PlayerSkipType.Opening -> UiR.string.player_mobile_skip_opening_countdown
+                            PlayerSkipType.Ending -> UiR.string.player_mobile_skip_ending_countdown
+                        },
+                        countdownSeconds,
+                    )
+                } else {
+                    stringResource(
+                        when (lastType) {
+                            PlayerSkipType.Opening -> UiR.string.player_mobile_skip_opening
+                            PlayerSkipType.Ending -> UiR.string.player_mobile_skip_ending
+                        }
+                    )
+                },
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.White,
             )

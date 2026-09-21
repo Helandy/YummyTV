@@ -145,6 +145,7 @@
     <string name="settings_player_playback_title">Відтворення</string>
     <string name="settings_auto_skip_label">Автопропуск опенінгу та ендінгу</string>
     <string name="settings_auto_skip_enabled">Пропускати, якщо для серії є таймкоди</string>
+    <string name="settings_tv_auto_skip_delay_label">Затримка автопропуску</string>
     <string name="settings_tv_show_opening_on_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="settings_tv_show_opening_on_timeline_enabled">Ділянка опенінгу підсвічується на смузі прогресу</string>
     <string name="settings_suggest_next_episode_on_watched_label">Наступна серія</string>

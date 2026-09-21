@@ -512,6 +512,9 @@ internal fun MobileNativePlayer(
     MobilePlayerAutoSkipEffect(
         activeSkip = activeSkip,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+        delaySeconds = state.autoSkipDelaySeconds,
+        isPlaying = playbackShouldPlay,
+        skipUi = skipUi,
         onSkipActiveSegment = { skipActiveSegment(reportSelection = false) },
     )
 
@@ -664,10 +667,10 @@ internal fun MobileNativePlayer(
 
         MobilePlayerSkipButton(
             skip = activeSkip.takeUnless {
-                state.autoSkipOpeningsEndings ||
-                    isInPictureInPictureMode ||
-                    tutorialBlocksPlayback
+                isInPictureInPictureMode || tutorialBlocksPlayback
             },
+            countdownSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
+            countdownProgress = skipUi.autoSkipProgress(activeSkip?.key),
             onClick = {
                 skipActiveSegment(reportSelection = true)
                 // Панель не открываем принудительно, но не даём ей скрыться по таймеру.

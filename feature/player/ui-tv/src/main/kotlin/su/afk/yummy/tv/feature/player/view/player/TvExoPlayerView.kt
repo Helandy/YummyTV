@@ -139,7 +139,7 @@ internal fun TvExoPlayerView(
     // Пока виден хинт восстановления, оверлей нельзя автоскрывать:
     // иначе фокус уйдёт на скрытый key-оверлей и кнопки хинта станут недостижимы
     val recoveryHintVisible = state.isPlaybackRecovering && state.showChangePlayerHint &&
-            (canChangePlayer || canChangeDubbing)
+        (canChangePlayer || canChangeDubbing)
     val autoHide = rememberPlayerAutoHideController(
         canHide = { !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible },
         onHide = { controllerVisible = false },
@@ -470,6 +470,8 @@ internal fun TvExoPlayerView(
     TvPlayerAutoSkipEffect(
         activeSkip = activeSkip,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+        delaySeconds = state.autoSkipDelaySeconds,
+        isPlaying = wantsPlay,
         skipUi = skipUi,
         focus = focus,
         autoHide = autoHide,
@@ -521,7 +523,7 @@ internal fun TvExoPlayerView(
                 }
                 if (event.type != KeyEventType.KeyDown) {
                     return@onPreviewKeyEvent event.key == Key.VolumeUp ||
-                            event.key == Key.VolumeDown
+                        event.key == Key.VolumeDown
                 }
                 val up = when (event.key) {
                     Key.VolumeUp -> true
@@ -627,7 +629,8 @@ internal fun TvExoPlayerView(
             playback = playback,
             animeTitle = state.animeTitle,
             activeSkip = activeSkip,
-            autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
+            autoSkipRemainingSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
+            autoSkipProgress = skipUi.autoSkipProgress(activeSkip?.key),
             showOpeningOnTimeline = state.showOpeningOnTimeline,
             highlightedSkipKey = skipUi.highlightedSkipKey,
             qualityCount = qualities.size,

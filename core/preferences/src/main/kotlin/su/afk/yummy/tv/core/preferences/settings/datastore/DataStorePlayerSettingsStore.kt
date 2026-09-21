@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advanced
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumePercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
@@ -56,6 +57,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val autoSkipOpeningsEndings: Flow<Boolean> =
         store.boolean(autoSkipOpeningsEndingsKey, false)
+
+    override val autoSkipDelaySeconds: Flow<Int> = store.data.map { prefs ->
+        (prefs[autoSkipDelaySecondsKey] ?: DEFAULT_AUTO_SKIP_DELAY_SECONDS)
+            .coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+    }
 
     override val showOpeningOnTimeline: Flow<Boolean> =
         store.boolean(showOpeningOnTimelineKey, false)
@@ -158,6 +164,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) =
         store.setBoolean(autoSkipOpeningsEndingsKey, enabled)
 
+    override suspend fun setAutoSkipDelaySeconds(seconds: Int) {
+        store.edit { prefs ->
+            prefs[autoSkipDelaySecondsKey] =
+                seconds.coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+        }
+    }
+
     override suspend fun setShowOpeningOnTimeline(enabled: Boolean) =
         store.setBoolean(showOpeningOnTimelineKey, enabled)
 
@@ -256,6 +269,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     private companion object {
         const val DEFAULT_VOLUME_PERCENT = 100
         const val MAX_VOLUME_PERCENT = 100
+        const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5
+        const val MIN_AUTO_SKIP_DELAY_SECONDS = 1
+        const val MAX_AUTO_SKIP_DELAY_SECONDS = 15
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30
         const val DEFAULT_SUBTITLE_TEXT_SIZE_PERCENT = 100

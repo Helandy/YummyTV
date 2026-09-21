@@ -44,6 +44,8 @@
     <string name="player_mobile_gesture_tutorial_illustration">Анімована підказка жесту</string>
     <string name="player_mobile_skip_opening">Пропустити опенінг</string>
     <string name="player_mobile_skip_ending">Пропустити ендинг</string>
+    <string name="player_mobile_skip_opening_countdown">Пропустити опенінг · %1$d</string>
+    <string name="player_mobile_skip_ending_countdown">Пропустити ендинг · %1$d</string>
     <string name="player_mobile_casting_title">Трансляція</string>
     <string name="player_mobile_casting_to">Відтворюється на %1$s</string>
     <string name="player_mobile_casting_to_unknown">Відтворюється на іншому пристрої</string>

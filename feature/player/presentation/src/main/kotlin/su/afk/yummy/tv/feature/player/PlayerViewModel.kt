@@ -109,6 +109,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             destinationStateMapper.toState(
                 newDest,
                 autoSkipOpeningsEndings = autoSkipOpeningsEndings,
+                autoSkipDelaySeconds = autoSkipDelaySeconds,
                 autoPlayNextEpisode = autoPlayNextEpisode,
                 nextEpisodeSwitchDelaySeconds = nextEpisodeSwitchDelaySeconds,
                 pictureInPictureEnabled = pictureInPictureEnabled,
@@ -144,6 +145,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         analytics.eventScreenOpened(dest.animeId)
         settingsHandler.autoSkipOpeningsEndings
             .onEach { enabled -> setState { copy(autoSkipOpeningsEndings = enabled) } }
+            .launchIn(viewModelScope)
+        settingsHandler.autoSkipDelaySeconds
+            .onEach { seconds -> setState { copy(autoSkipDelaySeconds = seconds) } }
             .launchIn(viewModelScope)
         settingsHandler.showOpeningOnTimeline
             .onEach { enabled -> setState { copy(showOpeningOnTimeline = enabled) } }

@@ -20,6 +20,7 @@ internal object SettingsPreferenceKeys {
     val watchNextEnabledKey = booleanPreferencesKey("watch_next_enabled")
     val previewCacheSizeKey = intPreferencesKey("preview_cache_size")
     val autoSkipOpeningsEndingsKey = booleanPreferencesKey("auto_skip_openings_endings")
+    val autoSkipDelaySecondsKey = intPreferencesKey("auto_skip_delay_seconds")
     val showOpeningOnTimelineKey = booleanPreferencesKey("show_opening_on_timeline_enabled")
     val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
     val nextEpisodeSwitchDelaySecondsKey =

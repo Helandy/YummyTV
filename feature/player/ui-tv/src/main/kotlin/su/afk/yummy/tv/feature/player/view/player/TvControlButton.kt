@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.common.view.autoSkipProgressFill
 
 @Composable
 internal fun TvControlButton(
@@ -30,6 +31,7 @@ internal fun TvControlButton(
     focusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
     primary: Boolean = false,
+    fillProgress: Float? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
     content: @Composable (textColor: Color) -> Unit,
 ) {
@@ -64,6 +66,7 @@ internal fun TvControlButton(
             .tvPlayerFocusScale(focused)
             .border(1.5.dp, borderColor, shape)
             .background(bgColor, shape)
+            .autoSkipProgressFill(fillProgress, textColor.copy(alpha = 0.22f), 8.dp)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .padding(contentPadding),
     ) {

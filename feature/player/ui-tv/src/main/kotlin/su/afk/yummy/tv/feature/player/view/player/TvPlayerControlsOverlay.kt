@@ -38,7 +38,8 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     playback: PlayerPlaybackUiState,
     animeTitle: String,
     activeSkip: PlayerActiveSkip?,
-    autoSkipOpeningsEndings: Boolean,
+    autoSkipRemainingSeconds: Int?,
+    autoSkipProgress: Float?,
     showOpeningOnTimeline: Boolean,
     highlightedSkipKey: String?,
     qualityCount: Int,
@@ -62,7 +63,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleVolume: () -> Unit,
     onToggleAlloha: () -> Unit,
 ) {
-    val visibleSkip = activeSkip.takeUnless { autoSkipOpeningsEndings }
     val progressDownFocusRequester = when {
         playback.dubbingNames.size > 1 -> focus.dubbing
         playback.balancerNames.size > 1 -> focus.balancer
@@ -97,7 +97,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     .padding(horizontal = 48.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (visibleSkip != null) {
+                if (activeSkip != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
@@ -107,10 +107,18 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                             onFocused = onInteraction,
                             focusRequester = focus.skip,
                             modifier = Modifier.focusProperties { down = focus.play },
-                            primary = highlightedSkipKey == visibleSkip.key,
+                            primary = highlightedSkipKey == activeSkip.key,
+                            fillProgress = autoSkipProgress,
                         ) { color ->
                             Text(
-                                text = stringResource(R.string.player_skip_segment),
+                                text = if (autoSkipRemainingSeconds != null) {
+                                    stringResource(
+                                        R.string.player_skip_segment_countdown,
+                                        autoSkipRemainingSeconds,
+                                    )
+                                } else {
+                                    stringResource(R.string.player_skip_segment)
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 color = color,
                             )
@@ -130,7 +138,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     openingEndMs = playback.activeSkips.opening?.endMs
                         ?.takeIf { showOpeningOnTimeline },
                     playFocusRequester = focus.play,
-                    playUpFocusRequester = focus.skip.takeIf { visibleSkip != null },
+                    playUpFocusRequester = focus.skip.takeIf { activeSkip != null },
                     progressFocusRequester = focus.progress,
                     progressDownFocusRequester = progressDownFocusRequester,
                     onPlayPause = onPlayPause,

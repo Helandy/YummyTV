@@ -293,6 +293,19 @@ fun SettingsMobileScreen(
                         enabled = state.autoSkipOpeningsEndings,
                         onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
                     )
+                    SettingsMobileSliderRow(
+                        label = stringResource(R.string.settings_mobile_auto_skip_delay_label),
+                        valueText = stringResource(
+                            R.string.settings_next_episode_switch_delay_seconds,
+                            state.autoSkipDelaySeconds,
+                        ),
+                        value = state.autoSkipDelaySeconds,
+                        valueRange = 1..15,
+                        enabled = state.autoSkipOpeningsEndings,
+                        onValueChange = {
+                            onEvent(SettingsState.Event.AutoSkipDelayChanged(it))
+                        },
+                    )
                     SettingsMobileToggleRow(
                         label = stringResource(R.string.settings_mobile_show_opening_on_timeline_label),
                         hint = if (state.showOpeningOnTimeline) {

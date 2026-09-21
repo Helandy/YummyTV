@@ -470,6 +470,20 @@ internal fun SettingsTvPanelHost(
                                 .restoreCategoryFocusOnLeft(tabFocusRequester),
                         )
                         SettingsDivider()
+                        SettingsSliderRow(
+                            label = stringResource(R.string.settings_tv_auto_skip_delay_label),
+                            valueText = stringResource(
+                                R.string.settings_next_episode_switch_delay_seconds,
+                                state.autoSkipDelaySeconds,
+                            ),
+                            value = state.autoSkipDelaySeconds,
+                            valueRange = 1..15,
+                            enabled = state.autoSkipOpeningsEndings,
+                            onValueChange = {
+                                onEvent(SettingsState.Event.AutoSkipDelayChanged(it))
+                            },
+                        )
+                        SettingsDivider()
                         ToggleRow(
                             label = stringResource(R.string.settings_tv_show_opening_on_timeline_label),
                             hint = if (state.showOpeningOnTimeline) {

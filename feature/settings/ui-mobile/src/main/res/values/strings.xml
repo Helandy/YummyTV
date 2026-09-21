@@ -146,6 +146,7 @@
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
+    <string name="settings_mobile_auto_skip_delay_label">Auto-skip delay</string>
     <string name="settings_mobile_show_opening_on_timeline_label">Show opening on the timeline</string>
     <string name="settings_mobile_show_opening_on_timeline_enabled">The opening segment is highlighted on the progress bar</string>
     <string name="settings_suggest_next_episode_on_watched_label">Next episode</string>

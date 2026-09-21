@@ -146,6 +146,7 @@
     <string name="settings_preferred_player_rutube_hint">Rutube</string>
     <string name="settings_auto_skip_label">Автопропуск опенінгу та ендінгу</string>
     <string name="settings_auto_skip_enabled">Пропускати, якщо для серії є тайм-коди</string>
+    <string name="settings_mobile_auto_skip_delay_label">Затримка автопропуску</string>
     <string name="settings_mobile_show_opening_on_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="settings_mobile_show_opening_on_timeline_enabled">Ділянка опенінгу підсвічується на смузі прогресу</string>
     <string name="settings_suggest_next_episode_on_watched_label">Наступна серія</string>

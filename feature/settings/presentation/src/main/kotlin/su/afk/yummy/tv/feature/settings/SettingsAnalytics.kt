@@ -174,6 +174,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь изменил задержку перед автопропуском опенинга/эндинга. */
+    fun eventAutoSkipDelayChanged(seconds: Int) {
+        tracker.track(
+            EVENT_AUTO_SKIP_DELAY_CHANGED,
+            analyticsParamsOf(PARAM_VALUE to seconds),
+        )
+    }
+
     /** Пользователь включил или выключил автовоспроизведение следующей серии. */
     fun eventAutoPlayNextEpisodeToggled(enabled: Boolean) {
         tracker.track(
@@ -350,6 +358,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_BACKGROUND_STYLE_SELECTED = "settings_background_style_selected"
         const val EVENT_AUTO_SKIP_OPENINGS_ENDINGS_TOGGLED =
             "settings_auto_skip_openings_endings_toggled"
+        const val EVENT_AUTO_SKIP_DELAY_CHANGED = "settings_auto_skip_delay_changed"
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
         const val EVENT_DETAILS_BUTTON_ORDER_MOVED = "settings_details_button_order_moved"
         const val EVENT_DETAILS_BUTTON_ORDER_RESET = "settings_details_button_order_reset"

@@ -145,6 +145,7 @@
     <string name="settings_player_playback_title">Воспроизведение</string>
     <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
+    <string name="settings_tv_auto_skip_delay_label">Задержка автопропуска</string>
     <string name="settings_tv_show_opening_on_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="settings_tv_show_opening_on_timeline_enabled">Участок опенинга подсвечивается на полосе прогресса</string>
     <string name="settings_suggest_next_episode_on_watched_label">Следующая серия</string>

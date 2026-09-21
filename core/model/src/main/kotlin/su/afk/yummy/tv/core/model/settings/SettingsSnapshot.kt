@@ -13,6 +13,7 @@ data class SettingsSnapshot(
     val watchNextEnabled: Boolean,
     val previewCacheSize: Int,
     val autoSkipOpeningsEndings: Boolean,
+    val autoSkipDelaySeconds: Int,
     val showOpeningOnTimeline: Boolean,
     val autoPlayNextEpisode: Boolean,
     val nextEpisodeSwitchDelaySeconds: Int,

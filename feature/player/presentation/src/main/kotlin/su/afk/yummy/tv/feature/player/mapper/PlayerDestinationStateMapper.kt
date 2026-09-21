@@ -13,6 +13,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
     fun toState(
         dest: PlayerDestination,
         autoSkipOpeningsEndings: Boolean = false,
+        autoSkipDelaySeconds: Int = 5,
         autoPlayNextEpisode: Boolean = false,
         nextEpisodeSwitchDelaySeconds: Int = 10,
         pictureInPictureEnabled: Boolean = true,
@@ -27,6 +28,7 @@ internal class PlayerDestinationStateMapper @Inject constructor() {
             sourceSelection = selection,
             resumeFromMs = dest.resumeFromMs.coerceAtLeast(0L),
             autoSkipOpeningsEndings = autoSkipOpeningsEndings,
+            autoSkipDelaySeconds = autoSkipDelaySeconds,
             autoPlayNextEpisode = autoPlayNextEpisode,
             nextEpisodeSwitchDelaySeconds = nextEpisodeSwitchDelaySeconds,
             pictureInPictureEnabled = pictureInPictureEnabled,

@@ -12,11 +12,16 @@ import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import kotlin.time.Duration.Companion.seconds
 
-/** Авто-скип активного сегмента либо подсветка кнопки пропуска с фокусом на 10 секунд. */
+/**
+ * Подсветка кнопки пропуска с фокусом: в ручном режиме на 10 секунд, в авто — на время
+ * отсчёта [delaySeconds] (идёт только пока [isPlaying]), после которого сегмент пропускается.
+ */
 @Composable
 internal fun TvPlayerAutoSkipEffect(
     activeSkip: PlayerActiveSkip?,
     autoSkipOpeningsEndings: Boolean,
+    delaySeconds: Int,
+    isPlaying: Boolean,
     skipUi: PlayerSkipUiState,
     focus: TvPlayerFocusRequesters,
     autoHide: PlayerAutoHideController,
@@ -25,18 +30,20 @@ internal fun TvPlayerAutoSkipEffect(
 ) {
     val currentOnControllerVisibleChange by rememberUpdatedState(onControllerVisibleChange)
     val currentOnSkipActiveSegment by rememberUpdatedState(onSkipActiveSegment)
+    val currentIsPlaying by rememberUpdatedState(isPlaying)
 
-    LaunchedEffect(activeSkip?.key, autoSkipOpeningsEndings) {
+    LaunchedEffect(activeSkip?.key, autoSkipOpeningsEndings, delaySeconds) {
         val skip = activeSkip ?: return@LaunchedEffect
+        skipUi.highlightedSkipKey = skip.key
+        currentOnControllerVisibleChange(true)
+        autoHide.cancel()
+        requestFocusUntilTimeout(focus.skip)
         if (autoSkipOpeningsEndings) {
+            skipUi.runAutoSkipCountdown(skip.key, delaySeconds) { currentIsPlaying }
             currentOnSkipActiveSegment(false)
         } else {
-            skipUi.highlightedSkipKey = skip.key
-            currentOnControllerVisibleChange(true)
-            autoHide.cancel()
-            requestFocusUntilTimeout(focus.skip)
             delay(10.seconds)
-            if (skipUi.highlightedSkipKey == skip.key) skipUi.highlightedSkipKey = null
         }
+        if (skipUi.highlightedSkipKey == skip.key) skipUi.highlightedSkipKey = null
     }
 }

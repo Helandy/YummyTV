@@ -44,6 +44,8 @@
     <string name="player_mobile_gesture_tutorial_illustration">Animated gesture hint</string>
     <string name="player_mobile_skip_opening">Skip opening</string>
     <string name="player_mobile_skip_ending">Skip ending</string>
+    <string name="player_mobile_skip_opening_countdown">Skip opening · %1$d</string>
+    <string name="player_mobile_skip_ending_countdown">Skip ending · %1$d</string>
     <string name="player_mobile_casting_title">Casting</string>
     <string name="player_mobile_casting_to">Playing on %1$s</string>
     <string name="player_mobile_casting_to_unknown">Playing on another device</string>

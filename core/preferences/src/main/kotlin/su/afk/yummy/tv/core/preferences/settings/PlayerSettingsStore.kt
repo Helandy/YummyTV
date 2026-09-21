@@ -18,6 +18,9 @@ interface PlayerSettingsStore {
     val preferredVideoQuality: Flow<PreferredVideoQuality>
     val autoSkipOpeningsEndings: Flow<Boolean>
 
+    /** Задержка перед автопропуском опенинга/эндинга, сек (1..15). */
+    val autoSkipDelaySeconds: Flow<Int>
+
     /** Показывать участок опенинга на полосе прогресса плеера. */
     val showOpeningOnTimeline: Flow<Boolean>
     val autoPlayNextEpisode: Flow<Boolean>
@@ -65,6 +68,7 @@ interface PlayerSettingsStore {
     suspend fun setPreferredPlayer(player: PreferredPlayer)
     suspend fun setPreferredVideoQuality(quality: PreferredVideoQuality)
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean)
+    suspend fun setAutoSkipDelaySeconds(seconds: Int)
     suspend fun setShowOpeningOnTimeline(enabled: Boolean)
     suspend fun setAutoPlayNextEpisode(enabled: Boolean)
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)

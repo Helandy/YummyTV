@@ -61,6 +61,7 @@ class SettingsViewModel @Inject internal constructor(
                         watchNextEnabled = snapshot.watchNextEnabled,
                         previewCacheSize = snapshot.previewCacheSize,
                         autoSkipOpeningsEndings = snapshot.autoSkipOpeningsEndings,
+                        autoSkipDelaySeconds = snapshot.autoSkipDelaySeconds,
                         showOpeningOnTimeline = snapshot.showOpeningOnTimeline,
                         autoPlayNextEpisode = snapshot.autoPlayNextEpisode,
                         nextEpisodeSwitchDelaySeconds = snapshot.nextEpisodeSwitchDelaySeconds,
@@ -218,6 +219,11 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.autoSkipOpeningsEndings
                 analytics.eventAutoSkipOpeningsEndingsToggled(enabled)
                 settingsStore.setAutoSkipOpeningsEndings(enabled)
+            }
+
+            is SettingsState.Event.AutoSkipDelayChanged -> viewModelScope.launch {
+                analytics.eventAutoSkipDelayChanged(event.seconds)
+                settingsStore.setAutoSkipDelaySeconds(event.seconds)
             }
 
             SettingsState.Event.ShowOpeningOnTimelineToggled -> viewModelScope.launch {
