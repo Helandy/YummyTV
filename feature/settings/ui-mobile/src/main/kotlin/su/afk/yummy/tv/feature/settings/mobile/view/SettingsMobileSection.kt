@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun SettingsMobileSection(
-    title: String,
     modifier: Modifier = Modifier,
+    title: String? = null,
     subtitle: String? = null,
     content: @Composable () -> Unit,
 ) {
@@ -24,22 +24,26 @@ internal fun SettingsMobileSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(1.dp),
-            modifier = Modifier.padding(horizontal = 4.dp),
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        if (title != null || subtitle != null) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+                modifier = Modifier.padding(horizontal = 4.dp),
+            ) {
+                if (title != null) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
         Surface(

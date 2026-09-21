@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
+import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
 
 class SettingsState {
     @Immutable
@@ -193,6 +194,9 @@ class SettingsState {
 
         /** Пользователь подтвердил текущий порядок кнопок деталей. */
         data object DetailsButtonOrderSelected : Event
+
+        /** Пользователь открыл категорию настроек (мобильный интерфейс). */
+        data class CategorySelected(val category: SettingsCategory) : Event
 
         /** Передача сессии на ТВ по локальной сети. */
         data object LoginOnTvSelected : Event

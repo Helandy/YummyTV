@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_mobile_title">Налаштування</string>
-    <string name="settings_mobile_section_interface">Інтерфейс</string>
-    <string name="settings_mobile_section_search">Пошук</string>
+    <string name="settings_mobile_category_general">Загальні</string>
+    <string name="settings_mobile_category_general_hint">Тип інтерфейсу, мова контенту, пошук, вхід на ТВ</string>
+    <string name="settings_mobile_category_appearance">Зовнішній вигляд</string>
+    <string name="settings_mobile_category_appearance_hint">Тема, фон, постери, розміри карток</string>
+    <string name="settings_mobile_category_player">Плеєр</string>
+    <string name="settings_mobile_category_player_hint">Плеєр за замовчуванням, якість, буфер, орієнтація, гучність</string>
+    <string name="settings_mobile_category_playback">Відтворення</string>
+    <string name="settings_mobile_category_playback_hint">Пропуск опенінгів, автоплей наступної серії, озвучка</string>
+    <string name="settings_mobile_category_watch_progress">Прогрес перегляду</string>
+    <string name="settings_mobile_category_watch_progress_hint">Коли серія вважається переглянутою</string>
+    <string name="settings_mobile_category_subtitles">Субтитри</string>
+    <string name="settings_mobile_category_subtitles_hint">Розмір, положення, колір і фон</string>
+    <string name="settings_mobile_category_storage">Сховище</string>
+    <string name="settings_mobile_category_storage_hint">Кеш прев’ю, експорт відео, розмір кешу</string>
+    <string name="settings_mobile_category_api">API</string>
+    <string name="settings_mobile_category_api_hint">Токен застосунку yani</string>
     <string name="settings_mobile_section_devices">Пристрої</string>
     <string name="settings_mobile_login_on_tv">Увійти на ТВ</string>
     <string name="settings_mobile_login_on_tv_hint">Передати поточну сесію в застосунок на ТВ локальною мережею</string>
-    <string name="settings_mobile_section_appearance">Зовнішній вигляд</string>
-    <string name="settings_mobile_section_player">Плеєр</string>
-    <string name="settings_mobile_section_player_advanced">Плеєр (розширені)</string>
+    <string name="settings_mobile_section_player_advanced">Додатково</string>
     <string name="settings_mobile_section_details">Деталі</string>
     <string name="settings_mobile_section_tv_home">TV Home</string>
-    <string name="settings_mobile_section_cache">Кеш</string>
-    <string name="settings_mobile_section_language">Мова</string>
-    <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">Про застосунок</string>
     <string name="settings_cache_storage_title">Розмір кешу</string>
     <string name="settings_cache_storage_button_hint">Показати розміри тек кешу</string>

@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.moved
 import javax.inject.Inject
@@ -328,6 +329,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.DetailsButtonOrderSelected -> {
                 nav.navigate(SettingsDetailsButtonOrderDestination)
+            }
+
+            is SettingsState.Event.CategorySelected -> {
+                nav.navigate(SettingsCategoryDestination(event.category))
             }
 
             SettingsState.Event.LoginOnTvSelected -> {

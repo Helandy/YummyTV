@@ -8,7 +8,9 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.settings.SettingsViewModel
 import su.afk.yummy.tv.feature.settings.mobile.SettingsDetailsButtonOrderMobileScreen
+import su.afk.yummy.tv.feature.settings.mobile.SettingsMobileCategoryScreen
 import su.afk.yummy.tv.feature.settings.mobile.SettingsMobileScreen
+import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import javax.inject.Inject
@@ -20,6 +22,17 @@ class SettingsNavRegistrar @Inject constructor() : NavRegistrar {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     SettingsMobileScreen(
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent,
+                    )
+                }
+            }
+            entry<SettingsCategoryDestination> { dest ->
+                val viewModel = hiltViewModel<SettingsViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    SettingsMobileCategoryScreen(
+                        category = dest.category,
                         state = state,
                         effect = effect,
                         onEvent = onEvent,

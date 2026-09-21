@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_mobile_title">Настройки</string>
-    <string name="settings_mobile_section_interface">Интерфейс</string>
-    <string name="settings_mobile_section_search">Поиск</string>
+    <string name="settings_mobile_category_general">Общие</string>
+    <string name="settings_mobile_category_general_hint">Тип интерфейса, язык контента, поиск, вход на ТВ</string>
+    <string name="settings_mobile_category_appearance">Внешний вид</string>
+    <string name="settings_mobile_category_appearance_hint">Тема, фон, постеры, размеры карточек</string>
+    <string name="settings_mobile_category_player">Плеер</string>
+    <string name="settings_mobile_category_player_hint">Плеер по умолчанию, качество, буфер, ориентация, громкость</string>
+    <string name="settings_mobile_category_playback">Воспроизведение</string>
+    <string name="settings_mobile_category_playback_hint">Пропуск опенингов, автоплей следующей серии, озвучка</string>
+    <string name="settings_mobile_category_watch_progress">Прогресс просмотра</string>
+    <string name="settings_mobile_category_watch_progress_hint">Когда серия считается просмотренной</string>
+    <string name="settings_mobile_category_subtitles">Субтитры</string>
+    <string name="settings_mobile_category_subtitles_hint">Размер, положение, цвет и фон</string>
+    <string name="settings_mobile_category_storage">Хранилище</string>
+    <string name="settings_mobile_category_storage_hint">Кэш превью, экспорт видео, размер кэша</string>
+    <string name="settings_mobile_category_api">API</string>
+    <string name="settings_mobile_category_api_hint">Токен приложения yani</string>
     <string name="settings_mobile_section_devices">Устройства</string>
     <string name="settings_mobile_login_on_tv">Войти на ТВ</string>
     <string name="settings_mobile_login_on_tv_hint">Передать текущую сессию в приложение на ТВ по локальной сети</string>
-    <string name="settings_mobile_section_appearance">Внешний вид</string>
-    <string name="settings_mobile_section_player">Плеер</string>
-    <string name="settings_mobile_section_player_advanced">Плеер (расширенные)</string>
+    <string name="settings_mobile_section_player_advanced">Дополнительно</string>
     <string name="settings_mobile_section_details">Деталка</string>
     <string name="settings_mobile_section_tv_home">TV Home</string>
-    <string name="settings_mobile_section_cache">Кэш</string>
-    <string name="settings_mobile_section_language">Язык</string>
-    <string name="settings_mobile_section_api">API</string>
     <string name="settings_mobile_section_about">О приложении</string>
     <string name="settings_cache_storage_title">Размер кеша</string>
     <string name="settings_cache_storage_button_hint">Показать размеры папок кеша</string>
@@ -156,7 +165,7 @@
     <string name="settings_next_episode_switch_delay_label">Задержка перед переключением серии</string>
     <string name="settings_next_episode_switch_delay_instant">Мгновенно</string>
     <string name="settings_next_episode_switch_delay_seconds">%d сек</string>
-    <string name="settings_ask_dubbing_on_watch_label">Выбор озвучки при нажатии "Смотреть"</string>
+    <string name="settings_ask_dubbing_on_watch_label">Выбор озвучки при нажатии «Смотреть»</string>
     <string name="settings_ask_dubbing_on_watch_enabled">Показывать список озвучек вместо автовыбора популярной</string>
     <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
