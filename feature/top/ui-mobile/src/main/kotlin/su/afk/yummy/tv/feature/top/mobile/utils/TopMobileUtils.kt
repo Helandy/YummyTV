@@ -10,6 +10,3 @@ internal fun AnimeTopType.toTopTypePage(): Int =
 
 internal fun Int.toTopType(): AnimeTopType =
     topMobileTypes.getOrElse(this) { AnimeTopType.TV }
-
-internal fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

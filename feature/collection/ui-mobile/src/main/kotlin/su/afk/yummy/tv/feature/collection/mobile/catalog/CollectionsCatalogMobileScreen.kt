@@ -25,6 +25,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -34,7 +35,6 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogState
 import su.afk.yummy.tv.feature.collection.mobile.R
-import su.afk.yummy.tv.feature.collection.mobile.utils.uiMessage
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionLikesBadge
 import su.afk.yummy.tv.feature.collection.mobile.view.CreateCollectionDialog
 
@@ -121,11 +121,11 @@ fun CollectionsCatalogMobileScreen(
             contentPadding = PaddingValues(bottom = 80.dp),
             state = gridState,
         ) {
-            val error = (appendState as? LoadState.Error)?.error?.uiMessage()
+            val error = (appendState as? LoadState.Error)?.error
             if (error != null && pagingItems.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     MobileAppendError(
-                        message = error,
+                        message = error.uiMessage(),
                         onRetry = { pagingItems.retry() },
                     )
                 }

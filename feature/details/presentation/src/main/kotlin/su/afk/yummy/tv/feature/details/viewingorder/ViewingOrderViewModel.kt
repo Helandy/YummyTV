@@ -6,9 +6,9 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -55,7 +55,7 @@ class ViewingOrderViewModel @AssistedInject internal constructor(
             onSuccess = { details ->
                 setState { copy(isLoading = false, items = details.viewingOrder.toImmutableList()) }
             },
-            onFailure = { e -> setState { copy(isLoading = false, error = e.message) } },
+            onFailure = { e -> setState { copy(isLoading = false, error = e.userMessage()) } },
         )
     }
 }

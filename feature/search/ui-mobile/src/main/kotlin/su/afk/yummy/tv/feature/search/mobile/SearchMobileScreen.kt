@@ -41,6 +41,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -49,7 +50,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.search.SearchState
-import su.afk.yummy.tv.feature.search.mobile.utils.uiMessage
 import su.afk.yummy.tv.feature.search.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterPanel
@@ -191,11 +191,11 @@ fun SearchMobileScreen(
                     )
                 }
             }
-            val error = (appendState as? LoadState.Error)?.error?.uiMessage()
+            val error = (appendState as? LoadState.Error)?.error
             if (error != null && results.itemCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     MobileAppendError(
-                        message = error,
+                        message = error.uiMessage(),
                         onRetry = { results.retry() },
                     )
                 }

@@ -13,16 +13,16 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
@@ -401,7 +401,7 @@ class HomeViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             error = if (feed == null) {
-                                e.message ?: stringProvider.get(R.string.home_load_error)
+                                e.userMessage(stringProvider.get(R.string.home_load_error))
                             } else {
                                 error
                             },
@@ -428,8 +428,7 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isBloggerVideosLoading = false,
-                            bloggerVideosError = error.message
-                                ?: stringProvider.get(R.string.home_blogger_videos_load_error)
+                            bloggerVideosError = error.userMessage(stringProvider.get(R.string.home_blogger_videos_load_error))
                         )
                     }
                 },
@@ -452,7 +451,7 @@ class HomeViewModel @Inject internal constructor(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = e.message ?: stringProvider.get(R.string.home_load_error)
+                                error = e.userMessage(stringProvider.get(R.string.home_load_error))
                             )
                         }
                     } else if (showInitialLoading) {

@@ -29,8 +29,6 @@ private val spoilerRegex = Regex(
 )
 private val bbCodeRegex = Regex("\\[/?[^\\]]+]")
 
-internal fun Throwable.uiMessage(): String = message ?: localizedMessage ?: toString()
-
 internal fun parseCommentText(text: String, defaultSpoilerTitle: String): List<CommentTextPart> {
     val result = mutableListOf<CommentTextPart>()
     var cursor = 0

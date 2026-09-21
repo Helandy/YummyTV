@@ -265,7 +265,7 @@ class LibraryViewModel @Inject internal constructor(
                     result.syncError?.let { analytics.eventLoadError(it) }
                     setState {
                         copy(
-                            remoteError = result.syncError?.message,
+                            remoteError = result.syncError?.userMessage(),
                             isRemoteLoading = false,
                         )
                     }
@@ -275,7 +275,7 @@ class LibraryViewModel @Inject internal constructor(
                     analytics.eventLoadError(result.error)
                     setState {
                         copy(
-                            remoteError = result.error.message,
+                            remoteError = result.error.userMessage(),
                             isRemoteLoading = false,
                         )
                     }
@@ -304,7 +304,7 @@ class LibraryViewModel @Inject internal constructor(
                     .onSuccess { removeLocalEntry(event) }
                     .onFailure { error ->
                         analytics.eventRemoveError(event.target, error)
-                        setState { copy(remoteError = error.message) }
+                        setState { copy(remoteError = error.userMessage()) }
                     }
             } else {
                 removeLocalEntry(event)

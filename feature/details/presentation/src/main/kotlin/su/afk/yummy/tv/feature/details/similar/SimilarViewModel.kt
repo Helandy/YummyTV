@@ -108,7 +108,7 @@ class SimilarViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     if (this.fromAi == fromAi) {
-                        copy(similarState = SimilarUiState.Error(it.message))
+                        copy(similarState = SimilarUiState.Error(it.userMessage()))
                     } else {
                         this
                     }

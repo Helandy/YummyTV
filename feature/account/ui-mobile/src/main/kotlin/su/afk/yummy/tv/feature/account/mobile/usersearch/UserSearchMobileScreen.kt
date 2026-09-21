@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.mobile.usersearch
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -110,7 +112,14 @@ fun UserSearchMobileScreen(
                 }
 
                 results.loadState.refresh is LoadState.Loading -> item(key = "loading") {
-                    CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
 
                 results.loadState.refresh is LoadState.Error -> item(key = "error") {
@@ -149,7 +158,11 @@ fun UserSearchMobileScreen(
             }
 
             if (results.loadState.append is LoadState.Loading) {
-                item(key = "append_loading") { CircularProgressIndicator() }
+                item(key = "append_loading") {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
             }
             if (results.loadState.append is LoadState.Error) {
                 item(key = "append_error") {

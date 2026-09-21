@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -57,7 +58,6 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.utils.uiMessage
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -281,7 +281,7 @@ internal fun TopBrowser(
                         TvScreenPadding.Horizontal + TvScreenPadding.Horizontal
                     val gridColumnCount =
                         (((maxWidth - gridHorizontalPadding).value + horizontalSpacing.value) /
-                                (cardWidth.value + horizontalSpacing.value)).toInt()
+                            (cardWidth.value + horizontalSpacing.value)).toInt()
                             .coerceAtLeast(1)
 
                     CompositionLocalProvider(

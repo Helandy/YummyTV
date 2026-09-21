@@ -70,7 +70,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = e.message,
+                        error = e.userMessage(),
                         collections = persistentListOf()
                     )
                 }

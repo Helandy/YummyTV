@@ -396,7 +396,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
             onFailure = {
                 setState {
                     copy(
-                        videosState = VideosUiState.Error(it.message),
+                        videosState = VideosUiState.Error(it.userMessage()),
                         watchProgress = DetailsWatchProgressIndex.Empty
                     )
                 }

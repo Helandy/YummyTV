@@ -20,4 +20,7 @@
     <string name="error_request_id">Request ID: %1$s</string>
     <string name="error_body">Body:\n%1$s</string>
     <string name="offline_banner_message">Offline — showing saved data</string>
+    <string name="error_msg_no_connection">Check your internet connection and try again.</string>
+    <string name="error_msg_timeout">The server is taking too long to respond. Please try again.</string>
+    <string name="error_msg_generic">Something went wrong. Please try again.</string>
 </resources>

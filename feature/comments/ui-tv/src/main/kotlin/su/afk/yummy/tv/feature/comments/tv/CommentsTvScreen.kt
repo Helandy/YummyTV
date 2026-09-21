@@ -31,12 +31,12 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.tv.utils.buildVisibleComments
-import su.afk.yummy.tv.feature.comments.tv.utils.uiMessage
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsDialogs
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsHeader

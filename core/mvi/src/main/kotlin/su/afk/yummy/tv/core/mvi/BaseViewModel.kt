@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.error.api.isNetworkError
 
 /**
  * База MVI-экрана: держит [state], раздаёт одноразовые [effect] и сводит обработку ошибок
@@ -53,4 +54,17 @@ abstract class BaseViewModel<S : UiState, E : UiEvent, F : UiEffect> : Coroutine
     }
 
     protected open fun onRetry() {}
+
+    /**
+     * Текст ошибки для inline-состояния экрана. Сетевые сбои — локализованным сообщением из
+     * [ErrorHandler], а исходный текст (`Unable to resolve host ...`) второй строкой;
+     * остальное — как раньше: текст исключения, иначе [fallback].
+     */
+    protected fun Throwable.userMessage(fallback: String? = null): String =
+        if (isNetworkError()) {
+            val text = errorHandler.parse(this).message
+            message?.takeIf { it.isNotBlank() }?.let { "$text\n$it" } ?: text
+        } else {
+            message ?: fallback ?: errorHandler.parse(this).message
+        }
 }

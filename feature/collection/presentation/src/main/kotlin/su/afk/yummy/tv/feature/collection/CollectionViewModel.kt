@@ -5,10 +5,10 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
@@ -258,7 +258,7 @@ class CollectionViewModel @AssistedInject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = e.message ?: stringProvider.get(R.string.collection_load_error)
+                            error = e.userMessage(stringProvider.get(R.string.collection_load_error))
                         )
                     }
                 },

@@ -33,6 +33,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
@@ -41,7 +42,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.mobile.utils.buildVisibleComments
-import su.afk.yummy.tv.feature.comments.mobile.utils.uiMessage
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentSortRow
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsDialogs
@@ -108,9 +108,9 @@ fun CommentsMobileScreen(
             listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
         }.collect { (index, offset) ->
             val scrollingDown = index > previousScrollIndex ||
-                    (index == previousScrollIndex && offset > previousScrollOffset)
+                (index == previousScrollIndex && offset > previousScrollOffset)
             val scrollingUp = index < previousScrollIndex ||
-                    (index == previousScrollIndex && offset < previousScrollOffset)
+                (index == previousScrollIndex && offset < previousScrollOffset)
             sortRowVisible = when {
                 index == 0 && offset == 0 -> true
                 scrollingUp -> true
@@ -173,8 +173,8 @@ fun CommentsMobileScreen(
                             isLoading = refreshState is LoadState.Loading && visibleComments.isEmpty(),
                             error = initialError,
                             empty = refreshState !is LoadState.Loading &&
-                                    visibleComments.isEmpty() &&
-                                    initialError == null,
+                                visibleComments.isEmpty() &&
+                                initialError == null,
                             emptyText = stringResource(R.string.comments_empty),
                             onRetry = {
                                 onEvent(CommentsState.Event.RetrySelected)

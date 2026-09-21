@@ -29,9 +29,6 @@ private val spoilerRegex = Regex(
 )
 private val bbCodeRegex = Regex("\\[/?[^\\]]+]")
 
-internal fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()
-
 internal fun splitSpoilers(
     text: String,
     defaultTitle: String,

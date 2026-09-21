@@ -24,6 +24,3 @@ internal fun SearchFilters.focusStateKey(): String = buildString {
     append("|forward=")
     append(sortForward)
 }
-
-internal fun Throwable.uiMessage(): String =
-    message ?: localizedMessage ?: toString()

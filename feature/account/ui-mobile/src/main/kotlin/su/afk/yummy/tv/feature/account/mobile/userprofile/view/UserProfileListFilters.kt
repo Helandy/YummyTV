@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserFriend
@@ -40,7 +41,6 @@ import su.afk.yummy.tv.domain.account.model.UserReviewSummary
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.tabCountLabel
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.toMobileListFilterUi
-import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.uiMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileEmptyText
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState

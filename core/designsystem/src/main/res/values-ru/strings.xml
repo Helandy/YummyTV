@@ -20,4 +20,7 @@
     <string name="error_request_id">Request ID: %1$s</string>
     <string name="error_body">Тело:\n%1$s</string>
     <string name="offline_banner_message">Нет сети — показаны сохранённые данные</string>
+    <string name="error_msg_no_connection">Проверь интернет и попробуй снова.</string>
+    <string name="error_msg_timeout">Похоже, сервер тормозит. Попробуй ещё раз.</string>
+    <string name="error_msg_generic">Что-то пошло не так. Попробуй ещё раз.</string>
 </resources>

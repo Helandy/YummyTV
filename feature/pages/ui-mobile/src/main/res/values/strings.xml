@@ -10,6 +10,6 @@
     <string name="site_page_privacy">Privacy</string>
     <string name="site_page_copyright">Copyright</string>
     <string name="site_page_help">Want to help?</string>
-    <string name="site_page_fallback">The site page is temporarily unavailable. The server returned no readable content, so the app is showing this local notice instead of outdated or invented rules.</string>
+    <string name="site_page_fallback">The site page is temporarily unavailable. The server returned no readable content.</string>
     <string name="site_page_retry">Retry</string>
 </resources>

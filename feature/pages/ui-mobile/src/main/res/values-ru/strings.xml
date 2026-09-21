@@ -10,6 +10,6 @@
     <string name="site_page_privacy">Конфиденциальность</string>
     <string name="site_page_copyright">Авторские права</string>
     <string name="site_page_help">Хочу помочь</string>
-    <string name="site_page_fallback">Страница сайта временно недоступна. Сервер не вернул читаемый текст, поэтому приложение показывает локальное сообщение, а не устаревшие или придуманные правила.</string>
+    <string name="site_page_fallback">Страница сайта временно недоступна. Сервер не вернул читаемый текст.</string>
     <string name="site_page_retry">Повторить</string>
 </resources>

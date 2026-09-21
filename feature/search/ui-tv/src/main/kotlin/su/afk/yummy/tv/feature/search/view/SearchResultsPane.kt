@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -41,7 +42,6 @@ import su.afk.yummy.tv.domain.search.model.SearchItem
 import su.afk.yummy.tv.domain.search.model.SearchSort
 import su.afk.yummy.tv.feature.search.R
 import su.afk.yummy.tv.feature.search.utils.focusStateKey
-import su.afk.yummy.tv.feature.search.utils.uiMessage
 
 @Composable
 internal fun SearchResultsPane(

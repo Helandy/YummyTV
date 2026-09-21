@@ -20,4 +20,7 @@
     <string name="error_request_id">Request ID: %1$s</string>
     <string name="error_body">Тіло:\n%1$s</string>
     <string name="offline_banner_message">Немає мережі — показані збережені дані</string>
+    <string name="error_msg_no_connection">Перевір інтернет і спробуй знову.</string>
+    <string name="error_msg_timeout">Схоже, сервер гальмує. Спробуй ще раз.</string>
+    <string name="error_msg_generic">Щось пішло не так. Спробуй ще раз.</string>
 </resources>

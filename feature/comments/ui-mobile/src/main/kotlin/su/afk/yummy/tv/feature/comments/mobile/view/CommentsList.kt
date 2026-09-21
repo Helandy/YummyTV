@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.mobile.R
 import su.afk.yummy.tv.feature.comments.mobile.utils.resolve
-import su.afk.yummy.tv.feature.comments.mobile.utils.uiMessage
 
 @Composable
 internal fun CommentsList(
@@ -40,10 +40,10 @@ internal fun CommentsList(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        (appendState as? LoadState.Error)?.error?.uiMessage()?.let { error ->
+        (appendState as? LoadState.Error)?.error?.let { error ->
             item(key = "soft_error") {
                 MobileAppendError(
-                    message = error,
+                    message = error.uiMessage(),
                     onRetry = { onEvent(CommentsState.Event.RetrySelected) },
                 )
             }
