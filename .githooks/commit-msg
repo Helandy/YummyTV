@@ -37,7 +37,7 @@ case "$title" in
     ;;
 esac
 
-if printf '%s\n' "$title" | grep -Eq '^\[(BUGFIX|CORE|MOBILE|TV|DOCS|CI|RELEASE|FEATURE)\] .+'; then
+if printf '%s\n' "$title" | grep -Eq '^\[(BUGFIX|CORE|MOBILE|TV|DOCS|CI|RELEASE|FEATURE|UI)\] .+'; then
   exit 0
 fi
 
@@ -48,7 +48,7 @@ Expected format:
   [TAG] description
 
 Allowed tags:
-  [BUGFIX] [CORE] [MOBILE] [TV] [DOCS] [CI] [RELEASE] [FEATURE]
+  [BUGFIX] [CORE] [MOBILE] [TV] [DOCS] [CI] [RELEASE] [FEATURE] [UI]
 
 Examples:
   [CORE] refactor catalog loading

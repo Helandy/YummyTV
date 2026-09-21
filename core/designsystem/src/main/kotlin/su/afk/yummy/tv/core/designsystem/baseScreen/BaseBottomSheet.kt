@@ -57,6 +57,10 @@ private fun rememberBottomOverscrollGuard(): NestedScrollConnection = remember {
  * `heightIn(max)` — появившийся статус-бар просто прибавлялся бы к лимиту, и шторка уезжала бы
  * вверх (заметнее всего в ландшафте). Нижний инсет поэтому применяем сами.
  *
+ * Нижние 18dp в дефолтном [contentPadding] нужны на случай нулевого навигационного инсета
+ * (скрытые бары в плеере, ландшафт с боковой 3-кнопочной панелью) - иначе последний элемент
+ * прилипает к краю экрана. Переопределяя [contentPadding], нижний отступ не терять.
+ *
  * [scrollableContent] включать, если [content] не содержит собственного скролла: тогда контент,
  * не влезающий в лимит высоты, можно будет прокрутить, а не обрежется. С `LazyColumn` внутри
  * включать нельзя — краш "infinity maximum height constraints".
@@ -69,7 +73,7 @@ fun BaseBottomSheet(
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     title: String? = null,
     titleContent: (@Composable () -> Unit)? = null,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+    contentPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     scrollableContent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
