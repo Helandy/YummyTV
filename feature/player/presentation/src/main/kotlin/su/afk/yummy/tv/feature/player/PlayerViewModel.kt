@@ -84,6 +84,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     }
 
     private var activeDest: PlayerDestination = dest
+
     private var pendingDestinationResumeMs: Long? = dest.resumeFromMs.takeIf { it > 0L }
     private var sourceGraphJob: Job? = null
     private var allohaPlaybackRecoveryJob: Job? = null
@@ -103,6 +104,10 @@ class PlayerViewModel @AssistedInject internal constructor(
         allohaPlaybackRecoveryJob?.cancel()
         playbackRetry.reset()
         playbackRetryJob?.cancel()
+        // Результаты старой серии отменяем, а не сверяем с activeDest: его переписывает и
+        // syncBackStackDestination, и такая сверка выбрасывала граф, пришедший позже потока.
+        sourceGraphJob?.cancel()
+        streamLoadingHintJob?.cancel()
         activeDest = newDest
         pendingDestinationResumeMs = newDest.resumeFromMs.takeIf { it > 0L }
         setState {
@@ -360,18 +365,16 @@ class PlayerViewModel @AssistedInject internal constructor(
                     !currentState.isOfflinePlayback &&
                     currentState.isAllohaSource()
                 ) {
-                    Log.i(
-                        LOG_TAG,
+                    analytics.debugLog {
                         "Background Alloha playback recovery ready " +
-                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
-                    )
+                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}"
+                    }
                     setState { copy(isPlaybackRecovering = false) }
                 } else if (currentState.isPlaybackRecovering && !allohaRecovery.isRecovering) {
-                    Log.i(
-                        LOG_TAG,
+                    analytics.debugLog {
                         "Silent playback retry recovered " +
-                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}",
-                    )
+                            "positionMs=${currentState.playbackPositionMs.coerceAtLeast(0L)}"
+                    }
                     setState { copy(isPlaybackRecovering = false) }
                 }
             }
@@ -865,8 +868,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     /**
      * Запускает загрузку графа источников и применяет результат handler-а к состоянию экрана.
      *
-     * Проверка активного destination остается здесь, чтобы устаревший результат от старого экрана
-     * не обновил текущий плеер.
+     * Устаревший результат от прошлой серии не применится: [loadDestination] отменяет [sourceGraphJob].
      */
     private fun loadSourceGraph(
         forceRefreshVideos: Boolean = false,
@@ -875,7 +877,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
         refreshStreamOnFailure: Boolean = !forceRefreshVideos,
     ) {
-        val destination = activeDest
         sourceGraphJob?.cancel()
         sourceGraphJob = viewModelScope.launch {
             when (
@@ -898,8 +899,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
 
                 is PlayerSourceGraphLoadResult.SourceGraph -> {
-                    if (destination != activeDest) return@launch
-
                     val previousIframeUrl = activeIframeUrl(currentState)
                     setState {
                         sourceStreamHandler.applySourceGraph(
@@ -1095,12 +1094,11 @@ class PlayerViewModel @AssistedInject internal constructor(
                                     "attempts=$completedRecoveryAttempts",
                             )
                         } else {
-                            Log.i(
-                                LOG_TAG,
+                            analytics.debugLog {
                                 "Background Alloha playback recovery stream resolved " +
                                     "attempts=$completedRecoveryAttempts " +
-                                    "positionMs=${result.state.resumeFromMs.coerceAtLeast(0L)}",
-                            )
+                                    "positionMs=${result.state.resumeFromMs.coerceAtLeast(0L)}"
+                            }
                         }
                     }
                     setState {
@@ -1219,12 +1217,9 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun startChangePlayerHintTimer() {
         streamLoadingHintJob?.cancel()
         setState { copy(showChangePlayerHint = false) }
-        val destination = activeDest
         streamLoadingHintJob = viewModelScope.launch {
             delay(CHANGE_PLAYER_HINT_DELAY_MS)
-            if (destination == activeDest) {
-                setState { copy(showChangePlayerHint = true) }
-            }
+            setState { copy(showChangePlayerHint = true) }
         }
     }
 
@@ -1257,11 +1252,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 setState { copy(showChangePlayerHint = true) }
             }
         }
-        Log.i(
-            LOG_TAG,
+        analytics.debugLog {
             "Starting fresh Alloha playback recovery positionMs=$resumePosition " +
-                "quality=${selectedQuality ?: "auto"}",
-        )
+                "quality=${selectedQuality ?: "auto"}"
+        }
         scheduleFreshAllohaPlaybackAttempt(initialDelayMs)
     }
 
@@ -1288,25 +1282,22 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
             return
         }
-        val destination = activeDest
         val iframeUrl = activeIframeUrl(currentState)
         val attempt = allohaRecovery.nextAttempt()
         allohaPlaybackRecoveryJob = viewModelScope.launch {
             delay(delayMs)
             if (
-                destination == activeDest &&
                 activeIframeUrl(currentState) == iframeUrl &&
                 !currentState.isOfflinePlayback &&
                 currentState.isAllohaSource() &&
                 allohaRecovery.isRecovering
             ) {
                 allohaSession.close()
-                Log.i(
-                    LOG_TAG,
+                analytics.debugLog {
                     "Opening fresh Alloha playback session " +
                         "attempt=$attempt/${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} " +
-                        "positionMs=${allohaRecovery.positionMs}",
-                )
+                        "positionMs=${allohaRecovery.positionMs}"
+                }
                 loadStream(
                     refreshSourcesOnFailure = false,
                     forceFreshAllohaSession = true,
@@ -1322,7 +1313,6 @@ class PlayerViewModel @AssistedInject internal constructor(
      */
     private fun schedulePlaybackRetryAttempt() {
         playbackRetryJob?.cancel()
-        val destination = activeDest
         val iframeUrl = activeIframeUrl(currentState)
         val attempt = playbackRetry.next()
         streamLoadingHintJob?.cancel()
@@ -1333,15 +1323,13 @@ class PlayerViewModel @AssistedInject internal constructor(
                 showChangePlayerHint = false,
             )
         }
-        Log.i(
-            LOG_TAG,
-            "Silent playback retry attempt=$attempt/${PlayerPlaybackRetryHandler.MAX_ATTEMPTS}",
-        )
+        analytics.debugLog {
+            "Silent playback retry attempt=$attempt/${PlayerPlaybackRetryHandler.MAX_ATTEMPTS}"
+        }
         playbackRetryJob = viewModelScope.launch {
             // Re-resolve starts immediately (no artificial delay) so the visible stall is bounded
             // by the resolve+rebuild time only, not padded by a fixed wait before it even begins.
             if (
-                destination == activeDest &&
                 activeIframeUrl(currentState) == iframeUrl &&
                 !currentState.isOfflinePlayback
             ) {

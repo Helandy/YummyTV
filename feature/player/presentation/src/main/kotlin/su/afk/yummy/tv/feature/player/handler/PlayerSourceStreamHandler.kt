@@ -8,6 +8,8 @@ import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.mapper.toPresentationSourceGraph
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.utils.selectionForVideo
 import su.afk.yummy.tv.feature.player.utils.toSourceRequest
 import javax.inject.Inject
 
@@ -83,6 +85,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
     /**
      * Применяет загруженный граф источников.
      *
+     * Выбор привязывается к текущему активному видео: граф мог прийти после того, как
+     * пользователь сменил озвучку, и его selection (посчитанный на момент запроса) откатил бы выбор.
      * Если после обновления меняется активный iframe, сбрасывает UI-поля текущего потока.
      */
     fun applySourceGraph(
@@ -92,7 +96,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         val previousIframeUrl = activeIframeUrl(state)
         val nextState = state.copy(
             sourceGraph = sourceGraph,
-            sourceSelection = sourceGraph.selection,
+            sourceSelection = sourceGraph.selectionForVideo(activeVideoId(state))
+                ?: sourceGraph.selection,
         )
         return if (activeIframeUrl(nextState) != previousIframeUrl) {
             preparingStreamLoad(nextState, PlayerStreamResumeMode.PreserveCurrent)

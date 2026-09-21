@@ -4,6 +4,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
+import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
 
@@ -44,6 +45,24 @@ internal fun PlayerSourceSelection.normalizedFor(
         dubbingIndex = dubbing,
         episodeIndex = episode,
     )
+}
+
+/** Позиция видео [videoId] в графе или null, если id неизвестен (`<= 0`) или видео в графе нет. */
+internal fun PlayerSourceGraph.selectionForVideo(videoId: Int): PlayerSourceSelection? {
+    if (videoId <= 0) return null
+    balancers.forEachIndexed { balancerIndex, balancer ->
+        balancer.dubbings.forEachIndexed { dubbingIndex, dubbing ->
+            val episodeIndex = dubbing.episodes.indexOfFirst { it.id == videoId }
+            if (episodeIndex >= 0) {
+                return PlayerSourceSelection(
+                    balancerIndex = balancerIndex,
+                    dubbingIndex = dubbingIndex,
+                    episodeIndex = episodeIndex,
+                )
+            }
+        }
+    }
+    return null
 }
 
 internal fun activeBalancer(state: PlayerState.State): PlayerSourceBalancer? {

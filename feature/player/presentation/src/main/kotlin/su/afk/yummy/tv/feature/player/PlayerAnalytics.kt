@@ -35,6 +35,11 @@ internal class PlayerAnalytics @Inject constructor(
     // source combo is reported; a successful resolve clears it so a later failure reports again.
     private var lastReportedStreamFailureSource: PlayerAnalyticsSource? = null
 
+    /** Отладочная диагностика плеера: пишется только debug-трекером, в прод-аналитику не уходит. */
+    fun debugLog(message: () -> String) {
+        tracker.log(DEBUG_LOG_TAG, message = message)
+    }
+
     /**
      * Пользователь открыл экран плеера.
      *
@@ -403,6 +408,7 @@ internal class PlayerAnalytics @Inject constructor(
         }
 
     internal companion object {
+        private const val DEBUG_LOG_TAG = "PlayerViewModel"
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_DUBBING = "dubbing"
         private const val PARAM_DURATION_MS = "duration_ms"
