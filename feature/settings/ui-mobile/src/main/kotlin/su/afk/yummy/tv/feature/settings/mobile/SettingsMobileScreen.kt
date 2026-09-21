@@ -41,6 +41,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -356,6 +357,57 @@ fun SettingsMobileScreen(
                         enabled = state.suggestNextEpisodeOnWatched,
                         onClick = {
                             onEvent(SettingsState.Event.SuggestNextEpisodeOnWatchedToggled)
+                        },
+                    )
+                    SettingsMobileSliderRow(
+                        label = stringResource(R.string.settings_mobile_watched_short_label),
+                        valueText = stringResource(
+                            R.string.settings_mobile_watched_minutes_value,
+                            state.watchedThresholds.shortMinutes,
+                        ),
+                        value = state.watchedThresholds.shortMinutes,
+                        valueRange = WatchedThresholds.SHORT_MINUTES_RANGE,
+                        enabled = true,
+                        onValueChange = {
+                            onEvent(
+                                SettingsState.Event.WatchedThresholdsChanged(
+                                    state.watchedThresholds.copy(shortMinutes = it),
+                                ),
+                            )
+                        },
+                    )
+                    SettingsMobileSliderRow(
+                        label = stringResource(R.string.settings_mobile_watched_medium_label),
+                        valueText = stringResource(
+                            R.string.settings_mobile_watched_minutes_value,
+                            state.watchedThresholds.mediumMinutes,
+                        ),
+                        value = state.watchedThresholds.mediumMinutes,
+                        valueRange = WatchedThresholds.MEDIUM_MINUTES_RANGE,
+                        enabled = true,
+                        onValueChange = {
+                            onEvent(
+                                SettingsState.Event.WatchedThresholdsChanged(
+                                    state.watchedThresholds.copy(mediumMinutes = it),
+                                ),
+                            )
+                        },
+                    )
+                    SettingsMobileSliderRow(
+                        label = stringResource(R.string.settings_mobile_watched_long_label),
+                        valueText = stringResource(
+                            R.string.settings_mobile_watched_minutes_value,
+                            state.watchedThresholds.longMinutes,
+                        ),
+                        value = state.watchedThresholds.longMinutes,
+                        valueRange = WatchedThresholds.LONG_MINUTES_RANGE,
+                        enabled = true,
+                        onValueChange = {
+                            onEvent(
+                                SettingsState.Event.WatchedThresholdsChanged(
+                                    state.watchedThresholds.copy(longMinutes = it),
+                                ),
+                            )
                         },
                     )
                     SettingsMobileToggleRow(

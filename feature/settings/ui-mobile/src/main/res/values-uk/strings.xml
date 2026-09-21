@@ -225,4 +225,8 @@
     <string name="settings_player_buffer_large">Великий</string>
     <string name="settings_player_buffer_large_hint">30–120 с запасу, до 96 МБ ОЗП. Для нестабільного з\'єднання.</string>
     <string name="settings_player_buffer_details">%1$s: %2$d–%3$d с, %4$d МБ</string>
+    <string name="settings_mobile_watched_short_label">Переглянуто · серії до 10 хв</string>
+    <string name="settings_mobile_watched_medium_label">Переглянуто · серії до години</string>
+    <string name="settings_mobile_watched_long_label">Переглянуто · серії довше години</string>
+    <string name="settings_mobile_watched_minutes_value">За %d хв до кінця</string>
 </resources>

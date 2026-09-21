@@ -69,6 +69,7 @@ class SettingsViewModel @Inject internal constructor(
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
+                        watchedThresholds = snapshot.watchedThresholds,
                         refreshContinueWatchingProgressOnLaunch =
                             snapshot.refreshContinueWatchingProgressOnLaunch,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
@@ -234,6 +235,11 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.autoPlayNextEpisode
                 analytics.eventAutoPlayNextEpisodeToggled(enabled)
                 settingsStore.setAutoPlayNextEpisode(enabled)
+            }
+
+            is SettingsState.Event.WatchedThresholdsChanged -> viewModelScope.launch {
+                analytics.eventWatchedThresholdsChanged(event.thresholds)
+                settingsStore.setWatchedThresholds(event.thresholds)
             }
 
             is SettingsState.Event.NextEpisodeSwitchDelayChanged -> viewModelScope.launch {

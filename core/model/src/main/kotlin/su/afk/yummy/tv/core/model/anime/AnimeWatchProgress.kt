@@ -1,8 +1,24 @@
 package su.afk.yummy.tv.core.model.anime
 
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
+
 private const val MIN_CONTINUE_WATCHING_POSITION_MS = 30_000L
-private const val WATCHED_REMAINING_MS = 5 * 60 * 1000L
 private const val SHORT_EPISODE_WATCHED_PROGRESS = 0.90f
+
+/**
+ * Пользовательские пороги "просмотрено" для текущего процесса. Правило ниже вызывается
+ * синхронно из storage/presentation, поэтому настройки не протаскиваются параметром, а
+ * синхронизируются сюда из DataStore при старте приложения.
+ */
+object WatchedEpisodeRule {
+    @Volatile
+    var thresholds: WatchedThresholds = WatchedThresholds()
+        private set
+
+    fun update(thresholds: WatchedThresholds) {
+        this.thresholds = thresholds.coerced()
+    }
+}
 
 data class AnimeWatchProgress(
     val animeId: Int,
@@ -37,10 +53,11 @@ fun isMeaningfulProgress(positionMs: Long, durationMs: Long): Boolean =
 
 fun isWatchedProgress(positionMs: Long, durationMs: Long): Boolean {
     if (!isMeaningfulProgress(positionMs, durationMs)) return false
-    return if (durationMs <= WATCHED_REMAINING_MS) {
+    val remainingMs = WatchedEpisodeRule.thresholds.remainingMsFor(durationMs)
+    return if (durationMs <= remainingMs) {
         progress(positionMs, durationMs) >= SHORT_EPISODE_WATCHED_PROGRESS
     } else {
-        positionMs >= durationMs - WATCHED_REMAINING_MS
+        positionMs >= durationMs - remainingMs
     }
 }
 

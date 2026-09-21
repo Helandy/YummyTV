@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
@@ -198,6 +199,18 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
+    fun eventWatchedThresholdsChanged(thresholds: WatchedThresholds) {
+        tracker.track(
+            EVENT_WATCHED_THRESHOLDS_CHANGED,
+            analyticsParamsOf(
+                PARAM_SHORT_MINUTES to thresholds.shortMinutes,
+                PARAM_MEDIUM_MINUTES to thresholds.mediumMinutes,
+                PARAM_LONG_MINUTES to thresholds.longMinutes,
+            ),
+        )
+    }
+
     /** Пользователь включил или выключил запрос выбора озвучки при нажатии "Смотреть". */
     fun eventAskDubbingOnWatchToggled(enabled: Boolean) {
         tracker.track(
@@ -353,6 +366,9 @@ internal class SettingsAnalytics @Inject constructor(
         private const val PARAM_DIRECTION = "direction"
         private const val PARAM_TARGET_STATE = "target_state"
         private const val PARAM_VALUE = "value"
+        private const val PARAM_SHORT_MINUTES = "short_minutes"
+        private const val PARAM_MEDIUM_MINUTES = "medium_minutes"
+        private const val PARAM_LONG_MINUTES = "long_minutes"
 
         const val EVENT_APP_THEME_SELECTED = "settings_app_theme_selected"
         const val EVENT_BACKGROUND_STYLE_SELECTED = "settings_background_style_selected"
@@ -387,6 +403,7 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_suggest_next_episode_on_watched_toggled"
         const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
             "settings_auto_play_next_episode_toggled"
+        const val EVENT_WATCHED_THRESHOLDS_CHANGED = "settings_watched_thresholds_changed"
         const val EVENT_NEXT_EPISODE_SWITCH_DELAY_CHANGED =
             "settings_next_episode_switch_delay_changed"
         const val EVENT_ASK_DUBBING_ON_WATCH_TOGGLED =

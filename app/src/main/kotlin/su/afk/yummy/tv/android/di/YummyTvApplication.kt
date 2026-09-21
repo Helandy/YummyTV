@@ -16,6 +16,7 @@ import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
 import su.afk.yummy.tv.android.startup.AppStartupMaintenanceRunner
 import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
+import su.afk.yummy.tv.android.startup.WatchedEpisodeRuleSync
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
@@ -24,7 +25,9 @@ import su.afk.yummy.tv.core.utils.cast.CastSupport
 import javax.inject.Inject
 
 @HiltAndroidApp
-class YummyTvApplication : Application(), Configuration.Provider {
+class YummyTvApplication :
+    Application(),
+    Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -59,6 +62,9 @@ class YummyTvApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var castAnalytics: CastAnalytics
 
+    @Inject
+    lateinit var watchedEpisodeRuleSync: WatchedEpisodeRuleSync
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -73,6 +79,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
         setupFeatureToggles()
         setupCast()
         coilImageLoaderInstaller.install()
+        watchedEpisodeRuleSync.start()
         onlineStatusCoordinator.start()
         featureToggleRefreshCoordinator.start()
         homeFeedRefreshScheduler.schedule()
@@ -89,7 +96,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
                 .detectDiskWrites()
                 .detectNetwork()
                 .penaltyLog()
-                .build()
+                .build(),
         )
     }
 
@@ -120,7 +127,7 @@ class YummyTvApplication : Application(), Configuration.Provider {
         Cast.getSingletonInstance(this).initialize(
             CastParams.Builder()
                 .setShowSystemOutputSwitcherOnCastButtonClick(true)
-                .build()
+                .build(),
         )
     }
 }

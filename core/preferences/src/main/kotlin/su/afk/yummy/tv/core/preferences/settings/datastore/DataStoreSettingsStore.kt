@@ -112,6 +112,7 @@ internal class DataStoreSettingsStore @Inject constructor(
                 PlayerOrientationMode.SYSTEM,
             ),
             suggestNextEpisodeOnWatched = prefs[suggestNextEpisodeOnWatchedKey] ?: true,
+            watchedThresholds = prefs.watchedThresholds(),
             refreshContinueWatchingProgressOnLaunch =
                 prefs[refreshContinueWatchingProgressOnLaunchKey] ?: false,
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,

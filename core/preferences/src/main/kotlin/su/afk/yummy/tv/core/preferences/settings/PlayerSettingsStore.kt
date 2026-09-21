@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 
 /** Поведение и настройки плеера: воспроизведение, жесты, громкость, размер кадра. */
 interface PlayerSettingsStore {
@@ -35,6 +36,9 @@ interface PlayerSettingsStore {
     /** Принудительная альбомная ориентация плеера, не зависящая от системной блокировки поворота. */
     val playerOrientationMode: Flow<PlayerOrientationMode>
     val suggestNextEpisodeOnWatched: Flow<Boolean>
+
+    /** Сколько минут до конца серии может остаться, чтобы она считалась просмотренной. */
+    val watchedThresholds: Flow<WatchedThresholds>
     val refreshContinueWatchingProgressOnLaunch: Flow<Boolean>
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean>
     val tvPlayerControlsTutorialDismissed: Flow<Boolean>
@@ -76,6 +80,7 @@ interface PlayerSettingsStore {
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
+    suspend fun setWatchedThresholds(thresholds: WatchedThresholds)
     suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean)
     suspend fun dismissMobilePlayerGestureTutorial()
     suspend fun resetMobilePlayerGestureTutorial()

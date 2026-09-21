@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -54,6 +55,7 @@ class SettingsState {
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val tvPlayerControlsTutorialDismissed: Boolean = false,
         val suggestNextEpisodeOnWatched: Boolean = true,
+        val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val refreshContinueWatchingProgressOnLaunch: Boolean = false,
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
@@ -167,6 +169,9 @@ class SettingsState {
 
         /** Пользователь переключил предложение следующей серии после завершения текущей. */
         data object SuggestNextEpisodeOnWatchedToggled : Event
+
+        /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
+        data class WatchedThresholdsChanged(val thresholds: WatchedThresholds) : Event
 
         /** Пользователь переключил запрос последнего прогресса при запуске продолжения просмотра. */
         data object RefreshContinueWatchingProgressOnLaunchToggled : Event

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.preferences.settings.datastore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
@@ -15,6 +16,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
+import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumePercentKey
@@ -41,6 +43,9 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestN
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedLongRemainingMinutesKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedMediumRemainingMinutesKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedShortRemainingMinutesKey
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -85,6 +90,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val suggestNextEpisodeOnWatched: Flow<Boolean> =
         store.boolean(suggestNextEpisodeOnWatchedKey, true)
+
+    override val watchedThresholds: Flow<WatchedThresholds> =
+        store.data.map { prefs -> prefs.watchedThresholds() }.distinctUntilChanged()
 
     override val refreshContinueWatchingProgressOnLaunch: Flow<Boolean> =
         store.boolean(refreshContinueWatchingProgressOnLaunchKey, false)
@@ -195,6 +203,15 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) =
         store.setBoolean(suggestNextEpisodeOnWatchedKey, enabled)
+
+    override suspend fun setWatchedThresholds(thresholds: WatchedThresholds) {
+        val coerced = thresholds.coerced()
+        store.edit { prefs ->
+            prefs[watchedShortRemainingMinutesKey] = coerced.shortMinutes
+            prefs[watchedMediumRemainingMinutesKey] = coerced.mediumMinutes
+            prefs[watchedLongRemainingMinutesKey] = coerced.longMinutes
+        }
+    }
 
     override suspend fun setRefreshContinueWatchingProgressOnLaunch(enabled: Boolean) =
         store.setBoolean(refreshContinueWatchingProgressOnLaunchKey, enabled)
