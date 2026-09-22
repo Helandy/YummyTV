@@ -5,6 +5,9 @@ plugins {
 
 android {
     namespace = "su.afk.yummy.tv.feature.player.presentation"
+
+    // Поведения источников пишут в android.util.Log — в JVM-тестах это no-op.
+    testOptions.unitTests.isReturnDefaultValues = true
 }
 
 dependencies {
