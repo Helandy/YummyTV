@@ -1,14 +1,11 @@
 package su.afk.yummy.tv.feature.main
 
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -22,7 +19,6 @@ import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
 import su.afk.yummy.tv.feature.main.presentation.R
-import su.afk.yummy.tv.feature.main.utils.NOTIFICATION_REFRESH_INTERVAL
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,8 +45,6 @@ class MainViewModel @Inject internal constructor(
             )
         }
     }
-
-    private var notificationCountsJob: Job? = null
 
     init {
         analytics.eventScreenOpened()
@@ -110,18 +104,6 @@ class MainViewModel @Inject internal constructor(
                         unreadNotificationsCount = if (signedIn) unreadNotificationsCount else 0,
                     )
                 }
-                observeNotificationCounts(signedIn)
-            }
-        }
-    }
-
-    private fun observeNotificationCounts(signedIn: Boolean) {
-        notificationCountsJob?.cancel()
-        if (!signedIn) return
-        notificationCountsJob = viewModelScope.launch {
-            while (isActive) {
-                mainSideEffectsHandler.fetchAndPersistNotificationCount()
-                delay(NOTIFICATION_REFRESH_INTERVAL)
             }
         }
     }

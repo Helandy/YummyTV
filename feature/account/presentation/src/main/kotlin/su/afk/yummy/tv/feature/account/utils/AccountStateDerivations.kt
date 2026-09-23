@@ -19,9 +19,6 @@ internal fun AccountState.State.loginCredentialsOrNull(): AccountLoginCredential
     )
 }
 
-internal fun List<NotificationCount>.totalUnreadCount(): Int =
-    filterNot { it.type.equals("message", ignoreCase = true) }.sumOf { it.count }
-
 /** Decrements the counter for [type] by one, used to reflect a notification mutation optimistically. */
 internal fun ImmutableList<NotificationCount>.decrementCount(type: String): ImmutableList<NotificationCount> =
     map { if (it.type == type && it.count > 0) it.copy(count = it.count - 1) else it }.toImmutableList()

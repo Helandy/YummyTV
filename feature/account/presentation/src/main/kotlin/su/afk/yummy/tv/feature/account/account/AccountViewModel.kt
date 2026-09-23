@@ -11,12 +11,12 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
+import su.afk.yummy.tv.domain.account.model.totalUnreadCount
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.account.handler.AccountHubHandler
@@ -33,7 +33,6 @@ import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
-import su.afk.yummy.tv.feature.account.utils.totalUnreadCount
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
@@ -46,7 +45,6 @@ class AccountViewModel @Inject internal constructor(
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
     private val settingsStore: YaniAccountSettingsStore,
-    private val episodePushSettingsStore: EpisodePushSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
@@ -101,9 +99,6 @@ class AccountViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         settingsStore.yaniAvatarUrl
             .onEach { setState { copy(avatarUrl = it) } }
-            .launchIn(viewModelScope)
-        episodePushSettingsStore.pushEnabled
-            .onEach { setState { copy(episodePushEnabled = it) } }
             .launchIn(viewModelScope)
     }
 
@@ -253,10 +248,6 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.MySubscriptionsSelected -> {
                 if (currentState.isSignedIn) nav.navigate(accountNavigator.getMySubscriptionsDest())
-            }
-
-            AccountState.Event.EpisodePushToggled -> viewModelScope.launch {
-                episodePushSettingsStore.setPushEnabled(!currentState.episodePushEnabled)
             }
 
             AccountState.Event.ProfileEditSelected -> {

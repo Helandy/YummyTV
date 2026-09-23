@@ -2,10 +2,8 @@ package su.afk.yummy.tv.core.preferences.settings
 
 import kotlinx.coroutines.flow.Flow
 
-/** Локальный пуш о новых сериях по подпискам — тумблер и уже показанные уведомления. */
+/** Локальный пуш о новых сериях по подпискам — уже учтённые воркером уведомления. */
 interface EpisodePushSettingsStore {
-
-    val pushEnabled: Flow<Boolean>
 
     /**
      * Id уведомлений `ProfileNotification` (лента `GET /profile/notifications`), которые воркер
@@ -15,6 +13,5 @@ interface EpisodePushSettingsStore {
      */
     val knownNotificationIds: Flow<Set<Int>>
 
-    suspend fun setPushEnabled(enabled: Boolean)
     suspend fun addKnownNotificationIds(ids: Set<Int>)
 }

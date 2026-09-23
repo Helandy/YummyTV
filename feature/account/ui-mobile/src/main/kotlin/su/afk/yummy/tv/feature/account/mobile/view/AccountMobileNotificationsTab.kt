@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
+import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGranted
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.R
@@ -66,19 +67,17 @@ internal fun AccountMobileNotificationsTab(
         }
     }
     val unreadCount = state.unreadNotificationCount
-    // Без разрешения пуш о сериях не придёт, поэтому при отказе переключатель не включаем.
+    // Воркер о новых сериях работает всегда, включать нечего: строка — только запрос разрешения,
+    // поэтому при отказе действие не выполняем, а после выдачи прячем её.
     val notificationPermissionGate = rememberNotificationPermissionGate(runActionWhenDenied = false)
+    var permissionCheck by remember { mutableStateOf(0) }
+    val hasNotificationPermission = rememberNotificationPermissionGranted(permissionCheck)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        AccountMobileEpisodePushRow(
-            enabled = state.episodePushEnabled,
-            onClick = {
-                if (state.episodePushEnabled) {
-                    onEvent(AccountState.Event.EpisodePushToggled)
-                } else {
-                    notificationPermissionGate { onEvent(AccountState.Event.EpisodePushToggled) }
-                }
-            },
-        )
+        if (!hasNotificationPermission) {
+            AccountMobileEpisodePushRow(
+                onClick = { notificationPermissionGate { permissionCheck++ } },
+            )
+        }
         AccountMobileMySubscriptionsRow(
             onClick = { onEvent(AccountState.Event.MySubscriptionsSelected) },
         )

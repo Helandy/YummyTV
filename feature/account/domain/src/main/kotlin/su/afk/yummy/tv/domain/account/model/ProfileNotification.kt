@@ -13,3 +13,10 @@ data class ProfileNotification(
     val animeSlug: String? = null,
     val isNewEpisode: Boolean = false,
 )
+
+/**
+ * Сколько непрочитанных в этой выборке ленты — число для бейджа аккаунта. Личные сообщения
+ * исключены так же, как в [totalUnreadCount].
+ */
+fun List<ProfileNotification>.unreadBadgeCount(): Int =
+    count { !it.viewed && !it.type.equals(MESSAGE_NOTIFICATION_TYPE, ignoreCase = true) }

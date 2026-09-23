@@ -90,7 +90,6 @@ internal object SettingsPreferenceKeys {
     val lastSearchToYearKey = intPreferencesKey("last_search_to_year")
     val lastSearchSortKey = stringPreferencesKey("last_search_sort")
     val lastSearchSortForwardKey = booleanPreferencesKey("last_search_sort_forward")
-    val episodePushEnabledKey = booleanPreferencesKey("episode_push_enabled")
     val episodePushKnownNotificationIdsKey =
         stringSetPreferencesKey("episode_push_known_notification_ids")
 }

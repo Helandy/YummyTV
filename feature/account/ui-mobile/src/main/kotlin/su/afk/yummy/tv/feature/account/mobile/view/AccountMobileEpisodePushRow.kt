@@ -10,20 +10,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.mobile.R
 
-/** Тумблер локального пуша о новых сериях по подпискам — над «Мои подписки». */
+/**
+ * Приглашение разрешить пуши о новых сериях по подпискам — над «Мои подписки». Показывается,
+ * только пока разрешения нет: воркер опрашивает ленту всегда, включать тут нечего.
+ */
 @Composable
 internal fun AccountMobileEpisodePushRow(
-    enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -44,7 +44,6 @@ internal fun AccountMobileEpisodePushRow(
                 Text(
                     text = stringResource(R.string.account_episode_push_enabled),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = if (enabled) FontWeight.SemiBold else FontWeight.Normal,
                 )
                 Text(
                     text = stringResource(R.string.account_episode_push_enabled_hint),
@@ -54,12 +53,8 @@ internal fun AccountMobileEpisodePushRow(
             }
             Spacer(modifier = Modifier.width(16.dp))
             Switch(
-                checked = enabled,
+                checked = false,
                 onCheckedChange = null,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                ),
             )
         }
     }
