@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.posts.mobile.list
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +22,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -31,7 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
-import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
@@ -74,22 +76,22 @@ fun PostsMobileScreen(
         inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         inactiveBorderColor = MaterialTheme.colorScheme.outlineVariant,
     )
+    val chipsScrollState = rememberMobileHideOnScrollState()
     BaseScreen(
         isScroll = false,
-        customTopBar = {
-            MobileTopBar(title = stringResource(R.string.posts_title))
-        },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .nestedScroll(chipsScrollState.nestedScrollConnection),
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                SingleChoiceSegmentedButtonRow(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                ) {
                     sorts.forEachIndexed { index, sort ->
                         SegmentedButton(
                             selected = state.sort == sort,
@@ -99,24 +101,32 @@ fun PostsMobileScreen(
                         ) { Text(sort.label()) }
                     }
                 }
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item(key = "all") {
-                        FilterChip(
-                            selected = state.selectedCategory == null,
-                            onClick = { onEvent(PostsListState.Event.CategorySelected(null)) },
-                            label = { Text(stringResource(R.string.posts_all)) },
-                            shape = RoundedCornerShape(6.dp),
-                            colors = categoryChipColors,
-                        )
-                    }
-                    items(state.categories, key = { it.uri }) { category ->
-                        FilterChip(
-                            selected = state.selectedCategory == category.uri,
-                            onClick = { onEvent(PostsListState.Event.CategorySelected(category.uri)) },
-                            label = { Text(category.title) },
-                            shape = RoundedCornerShape(6.dp),
-                            colors = categoryChipColors,
-                        )
+                AnimatedVisibility(visible = chipsScrollState.isVisible) {
+                    LazyRow(
+                        modifier = Modifier.padding(top = 14.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        item(key = "all") {
+                            FilterChip(
+                                selected = state.selectedCategory == null,
+                                onClick = { onEvent(PostsListState.Event.CategorySelected(null)) },
+                                label = { Text(stringResource(R.string.posts_all)) },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = categoryChipColors,
+                            )
+                        }
+                        items(state.categories, key = { it.uri }) { category ->
+                            FilterChip(
+                                selected = state.selectedCategory == category.uri,
+                                onClick = {
+                                    onEvent(PostsListState.Event.CategorySelected(category.uri))
+                                },
+                                label = { Text(category.title) },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = categoryChipColors,
+                            )
+                        }
                     }
                 }
             }
