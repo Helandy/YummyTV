@@ -35,7 +35,14 @@ import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadCacheKeyFactoryFor
 import su.afk.yummy.tv.data.videodownload.notification.VideoExportNotificationService
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
+import su.afk.yummy.tv.data.videodownload.utils.MAX_DIRECTORY_NAME_BYTES
+import su.afk.yummy.tv.data.videodownload.utils.MAX_FILE_NAME_BYTES
+import su.afk.yummy.tv.data.videodownload.utils.isTruncatedSafNameOf
+import su.afk.yummy.tv.data.videodownload.utils.safNameKey
+import su.afk.yummy.tv.data.videodownload.utils.toSafeSafName
 import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
+import su.afk.yummy.tv.data.videodownload.utils.truncateToUtf8Bytes
+import su.afk.yummy.tv.data.videodownload.utils.utf8Size
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -99,11 +106,12 @@ class VideoExportWorker @AssistedInject internal constructor(
                 progress = 0f,
                 destinationUri = destinationUri,
             )
-            transformCachedMedia(item, tempFile)
+            // Создаём документ до перекодирования: иначе отказ провайдера прилетает через минуты
             createdDocumentUri = createExportDocument(
                 treeUri = Uri.parse(destinationUri),
                 item = item,
             )
+            transformCachedMedia(item, tempFile)
             val exportedBytes = tempFile.length()
             copyToDocument(item, tempFile, createdDocumentUri)
             analytics.reportSucceeded(
@@ -242,9 +250,11 @@ class VideoExportWorker @AssistedInject internal constructor(
             name = item.exportDirectoryName(),
         )
         val requestedName = item.exportFileName()
-        // Имя детерминированное, поэтому файл с таким же именем — это та же серия: заменяем его
+        // Имя детерминированное, поэтому файл с таким же именем — это та же серия: заменяем его.
+        // Префиксное совпадение здесь недопустимо: «Серия 1…» — префикс «Серия 12…»
+        val requestedKey = requestedName.safNameKey()
         readChildNames(treeUri, titleDirectoryUri)
-            .firstOrNull { it.name == requestedName }
+            .firstOrNull { it.name.safNameKey() == requestedKey }
             ?.let { existing ->
                 runCatching {
                     DocumentsContract.deleteDocument(
@@ -264,8 +274,13 @@ class VideoExportWorker @AssistedInject internal constructor(
     }
 
     private fun findOrCreateDirectory(treeUri: Uri, parentDocumentUri: Uri, name: String): Uri {
-        val existing = readChildNames(treeUri, parentDocumentUri)
-            .firstOrNull { it.name == name && it.mimeType == DocumentsContract.Document.MIME_TYPE_DIR }
+        val wantedKey = name.safNameKey()
+        val directories = readChildNames(treeUri, parentDocumentUri)
+            .filter { it.mimeType == DocumentsContract.Document.MIME_TYPE_DIR }
+        // Сначала точное совпадение, затем — папки, созданные до байтовой обрезки: провайдер
+        // сохранил их под укороченным именем, и писать надо туда, а не заводить рядом ещё одну
+        val existing = directories.firstOrNull { it.name.safNameKey() == wantedKey }
+            ?: directories.firstOrNull { it.name.isTruncatedSafNameOf(name) }
         if (existing != null) {
             return DocumentsContract.buildDocumentUriUsingTree(treeUri, existing.documentId)
         }
@@ -374,35 +389,32 @@ class VideoExportWorker @AssistedInject internal constructor(
     }
 
     private fun VideoDownloadItem.exportDirectoryName(): String =
-        animeTitle.toSafeName().ifBlank { DEFAULT_DIRECTORY_NAME }
+        animeTitle.toSafeSafName(MAX_DIRECTORY_NAME_BYTES).ifBlank { DEFAULT_DIRECTORY_NAME }
 
     private fun VideoDownloadItem.exportFileName(): String {
         val balancer = playerName.balancerLabel()
+        val episodeName = "Серия $episode"
+        // Обрезаем базу так, чтобы расширение гарантированно влезло в лимит имени
+        val maxBaseBytes = MAX_FILE_NAME_BYTES - MP4_EXTENSION.utf8Size()
         val safe = listOf(
-            "Серия $episode",
+            episodeName,
             dubbing.ifBlank { balancer },
             qualityLabel,
             balancer,
         )
-            .map { it.toSafeName() }
+            .map { it.toSafeSafName(maxBaseBytes) }
             .filter { it.isNotBlank() }
             .joinToString("_")
-            .take(MAX_FILE_NAME_BASE_LENGTH)
+            .truncateToUtf8Bytes(maxBaseBytes)
             .trim(' ', '.', '_')
-            .ifBlank { "Серия $episode".toSafeName().ifBlank { DEFAULT_DIRECTORY_NAME } }
+            .ifBlank {
+                episodeName.toSafeSafName(maxBaseBytes).ifBlank { DEFAULT_DIRECTORY_NAME }
+            }
         return "$safe$MP4_EXTENSION"
     }
 
     private fun String.balancerLabel(): String =
         trim().removePrefix("Плеер ").removePrefix("Player ")
-
-    private fun String.toSafeName(): String =
-        replace(FORBIDDEN_FILE_NAME_CHARS, " ")
-            .replace(CONTROL_CHARS, " ")
-            .replace(WHITESPACE, " ")
-            .trim(' ', '.')
-            .take(MAX_FILE_NAME_BASE_LENGTH)
-            .trim()
 
     private fun Throwable.userFacingExportError(): String {
         val message = message?.takeIf(String::isNotBlank).orEmpty()
@@ -415,13 +427,9 @@ class VideoExportWorker @AssistedInject internal constructor(
         const val KEY_DESTINATION_URI = "destination_uri"
 
         private val exportMutex = Mutex()
-        private val FORBIDDEN_FILE_NAME_CHARS = Regex("""[/\\:*?\"<>|]""")
-        private val CONTROL_CHARS = Regex("[\\u0000-\\u001F\\u007F]")
-        private val WHITESPACE = Regex("\\s+")
         private const val TEMP_DIRECTORY_NAME = "video_exports"
         private const val MP4_EXTENSION = ".mp4"
         private const val MP4_MIME_TYPE = "video/mp4"
-        private const val MAX_FILE_NAME_BASE_LENGTH = 180
         private const val DEFAULT_DIRECTORY_NAME = "YummyTV"
         private const val COPY_BUFFER_BYTES = 256 * 1024
         private const val PROGRESS_POLL_INTERVAL_MS = 500L

@@ -27,4 +27,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     add("ksp", libs.hilt.work.compiler)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
 }
