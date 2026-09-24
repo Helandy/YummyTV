@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.mapper.toDomain
 import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
@@ -248,7 +249,7 @@ class DefaultVideoDownloadExportRepository @Inject constructor(
         store.getUnfinishedExports()
             .filter { now - it.updatedAt >= ORPHAN_GRACE_PERIOD_MS }
             .forEach { entry ->
-                val workInfos = runCatching {
+                val workInfos = runSuspendCatching {
                     workManager.getWorkInfosForUniqueWorkFlow(uniqueWorkName(entry.id)).first()
                 }.getOrNull() ?: return@forEach
                 val hasActiveWork = workInfos.any { workInfo ->

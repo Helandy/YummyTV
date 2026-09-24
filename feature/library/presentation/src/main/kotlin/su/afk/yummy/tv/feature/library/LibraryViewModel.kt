@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -228,7 +229,7 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun loadCachedContinueWatching() {
         viewModelScope.launch {
-            runCatching { getCachedHomeFeed() }
+            runSuspendCatching { getCachedHomeFeed() }
         }
     }
 

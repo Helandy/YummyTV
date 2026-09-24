@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.account.userprofile.handler
 
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.usecase.AddFriendUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
@@ -24,7 +25,7 @@ internal class UserProfileFriendshipHandler @Inject constructor(
     }
 
     suspend fun fetchStatus(sessionUserId: Int, userId: Int): FriendshipFetchResult =
-        runCatching { getFriendship(sessionUserId, userId) }.fold(
+        runSuspendCatching { getFriendship(sessionUserId, userId) }.fold(
             onSuccess = { status -> FriendshipFetchResult.Success(status) },
             onFailure = { FriendshipFetchResult.Failure },
         )
@@ -43,7 +44,7 @@ internal class UserProfileFriendshipHandler @Inject constructor(
             FriendshipStatus.FOLLOWING,
             FriendshipStatus.SENT_REQUESTS -> suspend { removeFriend(sessionUserId, userId) }
         }
-        return runCatching {
+        return runSuspendCatching {
             mutation()
             getFriendship(sessionUserId, userId)
         }.fold(

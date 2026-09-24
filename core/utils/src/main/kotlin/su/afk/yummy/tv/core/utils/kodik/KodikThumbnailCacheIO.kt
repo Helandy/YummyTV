@@ -10,8 +10,10 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import okio.Buffer
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.kodik.di.KodikThumbnailDiskCache
 import javax.inject.Inject
@@ -46,13 +48,7 @@ class KodikThumbnailCacheIO @Inject constructor(
     }
 
     private suspend fun downloadAndCache(cacheKey: String, url: String): SourceFetchResult? {
-        val response = try {
-            httpClient.get(url)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (_: Exception) {
-            return null
-        }
+        val response = runSuspendCatching { httpClient.get(url) }.getOrElse { return null }
         if (!response.status.isSuccess()) return null
         val bytes = response.bodyAsBytes()
         val mimeType = response.contentType()?.toString()
@@ -72,11 +68,9 @@ class KodikThumbnailCacheIO @Inject constructor(
                 mimeType = mimeType,
                 dataSource = DataSource.NETWORK,
             )
-        } catch (error: CancellationException) {
+        } catch (_: Throwable) {
             editor.abort()
-            throw error
-        } catch (_: Exception) {
-            editor.abort()
+            currentCoroutineContext().ensureActive()
             null
         }
     }

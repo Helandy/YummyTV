@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account.userprofile.handler
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
@@ -20,7 +21,7 @@ internal class UserProfileContentHandler @Inject constructor(
     private val getUserAnimeList: GetUserAnimeListUseCase,
 ) {
     suspend fun loadOverview(userId: Int): Result<Pair<UserProfileSummary, UserStats>> =
-        runCatching {
+        runSuspendCatching {
             coroutineScope {
                 val profile = async { getUserProfileSummary(userId) }
                 val stats = async { getUserStats(userId) }
@@ -33,7 +34,7 @@ internal class UserProfileContentHandler @Inject constructor(
         filter: UserProfileState.ListFilter,
         force: Boolean,
     ): Result<List<UserAnimeListItem>> =
-        runCatching {
+        runSuspendCatching {
             if (filter == UserProfileState.ListFilter.FAVORITES) {
                 getUserFavoriteAnimeList(userId, forceRefresh = force)
             } else {

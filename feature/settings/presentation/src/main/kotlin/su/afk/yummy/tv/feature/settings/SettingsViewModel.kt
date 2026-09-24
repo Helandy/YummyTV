@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
@@ -125,7 +126,7 @@ class SettingsViewModel @Inject internal constructor(
     private fun loadCacheStorage() {
         setState { copy(isCacheStorageLoading = true) }
         viewModelScope.launch {
-            val report = runCatching { cacheStorageInspector.inspect() }.getOrNull()
+            val report = runSuspendCatching { cacheStorageInspector.inspect() }.getOrNull()
             setState {
                 copy(
                     isCacheStorageLoading = false,
@@ -358,7 +359,7 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             is SettingsState.Event.VideoExportDirectoryGranted -> viewModelScope.launch {
-                runCatching { selectVideoExportDestination(event.uri) }
+                runSuspendCatching { selectVideoExportDestination(event.uri) }
                     .onFailure {
                         setEffect(SettingsState.Effect.VideoExportDirectorySelectionFailed)
                     }

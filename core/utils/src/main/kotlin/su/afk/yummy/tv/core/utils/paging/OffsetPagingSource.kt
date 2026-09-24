@@ -6,9 +6,9 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 
 /*
  * Дженерик-обвязка над Paging 3 для offset-пагинации.
@@ -129,7 +129,7 @@ class OffsetPagingSource<T : Any>(
     private val seenKeys = mutableSetOf<Any>()
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> =
-        runCatching {
+        runSuspendCatching {
             val offset = params.key ?: initialOffset
             val loadedKeys = mutableSetOf<Any>()
             val previousKeys = if (params is LoadParams.Refresh) emptySet() else seenKeys
@@ -163,10 +163,7 @@ class OffsetPagingSource<T : Any>(
                     null
                 },
             )
-        }.getOrElse { error ->
-            if (error is CancellationException) throw error
-            LoadResult.Error(error)
-        }
+        }.getOrElse { error -> LoadResult.Error(error) }
 
     override fun getRefreshKey(state: PagingState<Int, T>): Int? =
         state.anchorPosition?.let { anchorPosition ->

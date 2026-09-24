@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.account.handler
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.isNetworkError
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.LoginException
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
@@ -31,7 +32,7 @@ internal class AccountAuthHandler @Inject constructor(
         credentials: AccountLoginCredentials,
         captchaResponse: String?,
     ): AccountLoginResult =
-        runCatching {
+        runSuspendCatching {
             loginUseCase(credentials.login, credentials.password, captchaResponse)
         }.fold(
             onSuccess = { account ->
@@ -66,16 +67,16 @@ internal class AccountAuthHandler @Inject constructor(
         }
     }
 
-    suspend fun logout(): Boolean = runCatching { logoutUseCase() }.isSuccess
+    suspend fun logout(): Boolean = runSuspendCatching { logoutUseCase() }.isSuccess
 
     suspend fun refreshProfile(): AccountRefreshResult =
-        runCatching { refreshAccountUseCase() }.fold(
+        runSuspendCatching { refreshAccountUseCase() }.fold(
             onSuccess = { account -> AccountRefreshResult.Success(account) },
             onFailure = { AccountRefreshResult.Failure },
         )
 
     private suspend fun syncLocalWatchesAfterLogin() {
-        runCatching {
+        runSuspendCatching {
             val videos = watchProgressRepository
                 .allMeaningfulVideoProgress()
                 .map {
@@ -94,7 +95,7 @@ internal class AccountAuthHandler @Inject constructor(
     }
 
     private suspend fun refreshHomeFeedAfterLogin() {
-        runCatching {
+        runSuspendCatching {
             refreshHomeFeed()
         }.onFailure { error ->
             analyticsTracker.log(TAG, error) { "Post-login home feed refresh failed" }

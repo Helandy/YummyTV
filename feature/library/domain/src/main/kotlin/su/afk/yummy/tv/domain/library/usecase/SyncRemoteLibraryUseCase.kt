@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.domain.library.usecase
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.domain.library.sync.LocalLibraryChangePusher
@@ -46,9 +47,8 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
             libraryRepository.markSynced(userId)
         }
         RemoteLibrarySyncResult.Success(syncError = pushResult.error)
-    } catch (error: CancellationException) {
-        throw error
     } catch (error: Throwable) {
+        currentCoroutineContext().ensureActive()
         RemoteLibrarySyncResult.Failure(error)
     }
 }

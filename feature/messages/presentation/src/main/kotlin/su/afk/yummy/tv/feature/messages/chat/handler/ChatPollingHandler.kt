@@ -4,6 +4,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.messages.usecase.GetMessagesUseCase
 import javax.inject.Inject
 
@@ -16,7 +17,7 @@ class ChatPollingHandler @Inject constructor(
     fun updates(userId: Int) = flow {
         while (currentCoroutineContext().isActive) {
             delay(POLLING_INTERVAL_MS)
-            runCatching { getMessages(userId, LATEST_MESSAGES_LIMIT) }
+            runSuspendCatching { getMessages(userId, LATEST_MESSAGES_LIMIT) }
                 .getOrNull()
                 ?.let { emit(it) }
         }

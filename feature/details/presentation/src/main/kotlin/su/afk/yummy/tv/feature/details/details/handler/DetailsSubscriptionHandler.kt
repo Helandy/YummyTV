@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.details.details.handler
 
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetVideoSubscriptionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
@@ -35,8 +36,8 @@ internal class DetailsSubscriptionHandler @Inject constructor(
         val session = getAccountSession()
         if (!session.isAuthorized || session.userId <= 0) return ScreenSubscriptionBaseResult.SignedOut
 
-        val details = runCatching { getAnimeDetails(animeId) }.getOrNull()
-        return runCatching { getAnimeVideos(animeId) }.fold(
+        val details = runSuspendCatching { getAnimeDetails(animeId) }.getOrNull()
+        return runSuspendCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 ScreenSubscriptionBaseResult.Content(
                     ScreenSubscriptionBase(
@@ -56,7 +57,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
      * и без принудительного запроса галочка вернулась бы в прежнее состояние.
      */
     suspend fun reloadSubscriptions(animeId: Int): Result<List<SubscriptionOption>> =
-        runCatching {
+        runSuspendCatching {
             refreshAnimeVideos(animeId).toSubscriptionOptions(
                 pendingStates = pendingSubscriptionStates(animeId),
             )
@@ -69,7 +70,7 @@ internal class DetailsSubscriptionHandler @Inject constructor(
     ): Boolean {
         setPendingState(animeId, option.key, subscribed)
         return try {
-            val changed = runCatching {
+            val changed = runSuspendCatching {
                 setVideoSubscription(option.subscriptionVideoId, subscribed)
             }.getOrDefault(false)
             if (changed) delay(SUBSCRIPTION_REFRESH_DELAY)

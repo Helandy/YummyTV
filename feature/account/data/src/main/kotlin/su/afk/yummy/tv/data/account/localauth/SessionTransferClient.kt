@@ -9,6 +9,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.di.LocalAuthHttpClient
 import su.afk.yummy.tv.data.account.dto.SessionTransferDto
 import su.afk.yummy.tv.data.account.dto.SessionTransferErrorDto
@@ -42,5 +43,5 @@ internal class SessionTransferClient @Inject constructor(
 
     /** ТВ присылает имя [LocalAuthError] — телефон показывает причину тому, кто вводит PIN. */
     private suspend fun io.ktor.client.statement.HttpResponse.failureReason(): LocalAuthError? =
-        runCatching { LocalAuthError.valueOf(body<SessionTransferErrorDto>().error) }.getOrNull()
+        runSuspendCatching { LocalAuthError.valueOf(body<SessionTransferErrorDto>().error) }.getOrNull()
 }

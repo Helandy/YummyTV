@@ -33,6 +33,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -45,12 +46,12 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.R
-import androidx.compose.ui.platform.testTag
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -185,7 +186,7 @@ internal fun HomeDashboard(
                 var ok = false
                 while (!ok) {
                     val handler = targetRowKey?.let { rowFocusHandlers[it] }
-                    ok = runCatching {
+                    ok = runSuspendCatching {
                         handler?.invoke()
                             ?: focusRequesterForLazyIndex(target).requestFocus()
                     }.getOrDefault(false)
@@ -282,7 +283,7 @@ internal fun HomeDashboard(
                                     while (heroRowHasFocus) {
                                         val atTop =
                                             lazyColumnState.firstVisibleItemIndex == heroLazyIdx &&
-                                                    lazyColumnState.firstVisibleItemScrollOffset == 0
+                                                lazyColumnState.firstVisibleItemScrollOffset == 0
                                         if (atTop) return@withTimeoutOrNull
                                         lazyColumnState.scrollToItem(heroLazyIdx)
                                         withFrameNanos { }

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
 import su.afk.yummy.tv.core.storage.outbox.SetFavoritePayload
 import su.afk.yummy.tv.core.storage.outbox.SetListPayload
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
@@ -39,7 +40,7 @@ internal class DetailsLibraryHandler @Inject constructor(
     private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
 ) {
     suspend fun refreshAuthorizedState(animeId: Int): Result<DetailsLibraryState?> =
-        runCatching { getAnimeListState(animeId) }
+        runSuspendCatching { getAnimeListState(animeId) }
             .map { state ->
                 state ?: return@map null
                 DetailsLibraryState(
@@ -60,7 +61,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         removeLibraryItem(animeId)
         if (!isSignedIn || previousList == null) return DetailsLibraryMutationResult.Success
 
-        val result = runCatching { removeAnimeList(animeId) }
+        val result = runSuspendCatching { removeAnimeList(animeId) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
         if (result.queueOnNetworkFailure(
@@ -90,7 +91,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         upsertLibraryItem(details.toLibraryItem(list, isFavorite))
         if (!isSignedIn) return DetailsLibraryMutationResult.Success
 
-        val result = runCatching { setAnimeList(animeId, list) }
+        val result = runSuspendCatching { setAnimeList(animeId, list) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
         if (result.queueOnNetworkFailure(
@@ -128,7 +129,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         )
         if (!isSignedIn) return DetailsLibraryMutationResult.Success
 
-        val result = runCatching { setAnimeFavorite(animeId, favorite) }
+        val result = runSuspendCatching { setAnimeFavorite(animeId, favorite) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
         if (result.queueOnNetworkFailure(

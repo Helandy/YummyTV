@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -51,7 +52,7 @@ class ViewingOrderViewModel @AssistedInject internal constructor(
 
     private suspend fun load() {
         setState { copy(isLoading = true, error = null) }
-        runCatching { getAnimeDetails(animeId) }.fold(
+        runSuspendCatching { getAnimeDetails(animeId) }.fold(
             onSuccess = { details ->
                 setState { copy(isLoading = false, items = details.viewingOrder.toImmutableList()) }
             },

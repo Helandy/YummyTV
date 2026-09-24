@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.core.storage.offlinefirst
 
-import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 
 /**
  * Orchestration for the project's offline-first pattern: read a TTL-cached [Cache] entity,
@@ -30,11 +30,9 @@ suspend fun <Cache, Domain> offlineFirstCache(
         return transform(toDomain(stored))
     }
 
-    return try {
+    return runSuspendCatching {
         transform(toDomain(fetchAndSave()))
-    } catch (error: CancellationException) {
-        throw error
-    } catch (error: Throwable) {
+    }.getOrElse { error ->
         // Explicit null-check (not `?.let { } ?: onMissing()`): Domain can itself be a nullable
         // type (e.g. Int?), and a real cache hit whose mapped value happens to be null must not
         // be mistaken for "no cache" and routed into onMissing().

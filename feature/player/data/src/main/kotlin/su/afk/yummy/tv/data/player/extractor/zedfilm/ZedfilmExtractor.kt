@@ -16,6 +16,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.hasKnownUrlScheme
@@ -91,7 +92,7 @@ internal class ZedfilmExtractor @Inject constructor(
         playerUrl: String,
         autoQualityLabel: String,
     ): ExtractedStream? {
-        val html = runCatching { fetchIframeHtml(playerUrl) }
+        val html = runSuspendCatching { fetchIframeHtml(playerUrl) }
             .getOrElse {
                 analyticsTracker.logExtractorFailure(
                     "Zedfilm",

@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.domain.library.sync
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
@@ -65,9 +66,8 @@ internal class LocalLibraryChangePusher @Inject constructor(
     private suspend fun mutationResult(block: suspend () -> Unit): Result<Unit> = try {
         block()
         Result.success(Unit)
-    } catch (error: CancellationException) {
-        throw error
     } catch (error: Throwable) {
+        currentCoroutineContext().ensureActive()
         Result.failure(error)
     }
 

@@ -3,10 +3,11 @@ package su.afk.yummy.tv.feature.account.profileedit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.EditableProfile
 import su.afk.yummy.tv.domain.account.model.ProfileUpdate
 import su.afk.yummy.tv.feature.account.profileedit.handler.ProfileEditHandler
@@ -75,7 +76,7 @@ class ProfileEditViewModel @Inject constructor(
         if (currentState.unlinkingAccount != null) return
         viewModelScope.launch {
             setState { copy(unlinkingAccount = provider) }
-            runCatching { handler.unlinkAccount(provider) }
+            runSuspendCatching { handler.unlinkAccount(provider) }
                 .onSuccess {
                     applyProfile(it)
                     setState { copy(pendingUnlinkAccount = null, unlinkingAccount = null) }
@@ -90,7 +91,7 @@ class ProfileEditViewModel @Inject constructor(
 
     private fun load() = viewModelScope.launch {
         setState { copy(isLoading = true, hasLoadError = false) }
-        runCatching { handler.load() }
+        runSuspendCatching { handler.load() }
             .onSuccess(::applyProfile)
             .onFailure { setState { copy(isLoading = false, hasLoadError = true) } }
     }
@@ -99,7 +100,7 @@ class ProfileEditViewModel @Inject constructor(
         if (currentState.isSaving) return@launch
         val state = currentState
         setState { copy(isSaving = true) }
-        runCatching {
+        runSuspendCatching {
             handler.update(
                 ProfileUpdate(
                     about = state.about.trim(),
@@ -132,7 +133,7 @@ class ProfileEditViewModel @Inject constructor(
                 pendingBannerPreview = if (event.kind == su.afk.yummy.tv.domain.account.model.ProfileImageKind.BANNER) event.previewUri else pendingBannerPreview,
             )
         }
-        runCatching { handler.upload(event.kind, event.bytes) }
+        runSuspendCatching { handler.upload(event.kind, event.bytes) }
             .onSuccess {
                 applyProfile(it)
                 setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.IMAGE_SAVED))
@@ -153,7 +154,7 @@ class ProfileEditViewModel @Inject constructor(
         viewModelScope.launch {
             if (currentState.isImageLoading) return@launch
             setState { copy(isImageLoading = true) }
-            runCatching { handler.delete(event.kind) }
+            runSuspendCatching { handler.delete(event.kind) }
                 .onSuccess {
                     applyProfile(it)
                     setEffect(ProfileEditState.Effect.Message(ProfileEditState.MessageType.IMAGE_SAVED))
@@ -174,7 +175,7 @@ class ProfileEditViewModel @Inject constructor(
             return@launch
         }
         setState { copy(isPasswordSaving = true, passwordValidationError = false) }
-        runCatching { handler.changePassword(state.oldPassword, state.newPassword) }
+        runSuspendCatching { handler.changePassword(state.oldPassword, state.newPassword) }
             .onSuccess {
                 setState {
                     copy(

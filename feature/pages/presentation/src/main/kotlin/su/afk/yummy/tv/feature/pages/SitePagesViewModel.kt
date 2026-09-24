@@ -2,10 +2,11 @@ package su.afk.yummy.tv.feature.pages
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.pages.model.SitePageType
 import su.afk.yummy.tv.domain.pages.usecase.GetSitePageUseCase
 import javax.inject.Inject
@@ -41,7 +42,7 @@ class SitePagesViewModel @Inject constructor(
                     usingFallback = false
                 )
             }
-            runCatching { getSitePage(type) }.fold(
+            runSuspendCatching { getSitePage(type) }.fold(
                 onSuccess = { page -> setState { copy(page = page, loading = false) } },
                 onFailure = { setState { copy(loading = false, usingFallback = true) } },
             )

@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.data.player.repository
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.mapper.toPlayerSourceVideo
 import su.afk.yummy.tv.data.player.mapper.toScreenshotByEpisode
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -26,9 +26,8 @@ class DefaultPlayerSourceRepository @Inject constructor(
             }
         }
         val details = async {
-            runCatching { animeRepository.getAnimeDetails(animeId) }
+            runSuspendCatching { animeRepository.getAnimeDetails(animeId) }
                 .getOrElse { error ->
-                    if (error is CancellationException) throw error
                     null
                 }
         }

@@ -8,6 +8,7 @@ import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.storage.maintenance.StorageCleanup
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.cache.LegacyStreamingCachePruner
 import java.io.File
 import javax.inject.Inject
@@ -34,8 +35,8 @@ class AppStartupMaintenanceRunner @Inject constructor(
             }
             // Без одноразового флага: pruner сам отказывается работать, пока жива хоть одна
             // загрузка со старой схемой ключей, — зато подберёт их данные, как только не останется.
-            runCatching { legacyStreamingCachePruner.pruneOrphanedEntries() }
-            runCatching { storageCleanupStore.purgeStaleCaches() }
+            runSuspendCatching { legacyStreamingCachePruner.pruneOrphanedEntries() }
+            runSuspendCatching { storageCleanupStore.purgeStaleCaches() }
         }
     }
 

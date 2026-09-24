@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.domain.watching.usecase
 
-import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import javax.inject.Inject
@@ -16,19 +16,15 @@ internal class ContinueWatchingVideoLoader @Inject constructor(
         return if (refresh) loadRefreshedOrCached(animeId) else loadCached(animeId)
     }
 
-    private suspend fun loadRefreshedOrCached(animeId: Int): List<AnimeVideo> = try {
+    private suspend fun loadRefreshedOrCached(animeId: Int): List<AnimeVideo> = runSuspendCatching {
         refreshAnimeVideos(animeId)
-    } catch (error: CancellationException) {
-        throw error
-    } catch (_: Throwable) {
+    }.getOrElse {
         loadCached(animeId)
     }
 
-    private suspend fun loadCached(animeId: Int): List<AnimeVideo> = try {
+    private suspend fun loadCached(animeId: Int): List<AnimeVideo> = runSuspendCatching {
         getAnimeVideos(animeId)
-    } catch (error: CancellationException) {
-        throw error
-    } catch (_: Throwable) {
+    }.getOrElse {
         emptyList()
     }
 }

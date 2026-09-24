@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
@@ -97,7 +98,7 @@ internal class TvIntegration @Inject constructor(
             // Задержка, чтобы не соревноваться за сеть/CPU с загрузкой домашнего экрана при холодном
             // старте — синхронизация preview-канала не блокирует ничего и может подождать.
             delay(5.seconds)
-            runCatching { channelContentProvider.newReleases() }
+            runSuspendCatching { channelContentProvider.newReleases() }
                 .onSuccess(previewChannelManager::syncNewContent)
         }
     }

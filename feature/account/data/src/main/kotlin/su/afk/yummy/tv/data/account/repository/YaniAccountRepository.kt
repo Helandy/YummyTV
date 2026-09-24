@@ -1,7 +1,8 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -16,6 +17,7 @@ import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniRegistrationBodyDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
@@ -84,9 +86,8 @@ class YaniAccountRepository(
                 savedProfile.avatarUrl,
             )
             savedProfile
-        } catch (error: CancellationException) {
-            throw error
         } catch (error: Throwable) {
+            currentCoroutineContext().ensureActive()
             rollbackSignIn()
             throw error
         }
@@ -94,28 +95,24 @@ class YaniAccountRepository(
 
     /** Кэш профиля не критичен для входа — он всё равно перечитается через [getProfile]. */
     private suspend fun saveProfileAfterSignIn(profile: YaniProfileDto): YaniAccount =
-        try {
+        runSuspendCatching {
             saveProfile(profile)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             analyticsTracker.reportError("Sign-in profile cache write failed", error, SIGN_IN_GROUP)
             profile.toAccount()
         }
 
     private suspend fun clearPreviousDocumentCacheAfterSignIn(newUserId: Int) {
-        try {
+        runSuspendCatching {
             clearPreviousDocumentCacheIfNeeded(newUserId)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             analyticsTracker.reportError("Sign-in cache cleanup failed", error, SIGN_IN_GROUP)
         }
     }
 
     private suspend fun rollbackSignIn() {
-        runCatching { yaniAuthPreferences.clearRefreshToken() }
-        runCatching { settingsStore.clearYaniAccount() }
+        runSuspendCatching { yaniAuthPreferences.clearRefreshToken() }
+        runSuspendCatching { settingsStore.clearYaniAccount() }
     }
 
     override suspend fun register(registration: UserRegistration) = withContext(Dispatchers.IO) {
@@ -144,9 +141,9 @@ class YaniAccountRepository(
         }
 
     override suspend fun refreshToken(): YaniAccount? = withContext(Dispatchers.IO) {
-        val token = runCatching { api.refreshToken() }.getOrNull().orEmpty()
+        val token = runSuspendCatching { api.refreshToken() }.getOrNull().orEmpty()
         if (token.isBlank()) return@withContext getCachedProfileOrNull()
-        val profile = runCatching {
+        val profile = runSuspendCatching {
             val profileDto = api.getProfile(token)
             saveProfile(profileDto)
         }.getOrElse {
@@ -189,11 +186,9 @@ class YaniAccountRepository(
                 return@withContext stored.toStoredAccount()
             }
 
-            try {
+            runSuspendCatching {
                 saveProfile(api.getProfile())
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
+            }.getOrElse { error ->
                 stored?.toStoredAccount()
                     ?: throw error
             }
@@ -221,7 +216,7 @@ class YaniAccountRepository(
 
     override suspend fun logout() = withContext(Dispatchers.IO) {
         val userId = settingsStore.yaniUserId.first()
-        runCatching { api.logout() }
+        runSuspendCatching { api.logout() }
         documentCache.deleteByPrefix(userDocumentCachePrefix(userId.coerceAtLeast(0)))
         if (userId > 0) {
             accountStorage.clearUserScoped(userId)

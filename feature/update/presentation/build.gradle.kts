@@ -9,6 +9,7 @@ android {
 
 dependencies {
     api(project(":core:mvi"))
+    implementation(project(":core:utils"))
     api(project(":feature:update:domain"))
 
     implementation(project(":core:analytics"))

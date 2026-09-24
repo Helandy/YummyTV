@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeTrailersUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 
@@ -44,7 +45,7 @@ class TrailersViewModel @AssistedInject internal constructor(
 
     private suspend fun load() {
         setState { copy(isLoading = true, error = null) }
-        runCatching { getAnimeTrailers(animeId) }.fold(
+        runSuspendCatching { getAnimeTrailers(animeId) }.fold(
             onSuccess = { trailers ->
                 setState { copy(isLoading = false, trailers = trailers.toImmutableList()) }
             },

@@ -1,12 +1,17 @@
 package su.afk.yummy.tv.core.utils.coroutines
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
-suspend fun <T> runSuspendCatching(block: suspend () -> T): Result<T> =
+/**
+ * Аналог [runCatching] для suspend-кода: отмену текущей корутины пробрасывает дальше,
+ * всё остальное (включая чужую CancellationException, например таймаут внутри блока)
+ * отдаёт в [Result.failure].
+ */
+suspend inline fun <T> runSuspendCatching(block: () -> T): Result<T> =
     try {
         Result.success(block())
-    } catch (error: CancellationException) {
-        throw error
     } catch (error: Throwable) {
+        currentCoroutineContext().ensureActive()
         Result.failure(error)
     }

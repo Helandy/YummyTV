@@ -7,12 +7,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.domain.posts.usecase.GetPostDetailsUseCase
@@ -76,7 +77,7 @@ class PostDetailsViewModel @AssistedInject constructor(
 
     private fun load() = viewModelScope.launch {
         setState { copy(loading = true, error = null) }
-        runCatching { getPostDetails(postId) }.fold(
+        runSuspendCatching { getPostDetails(postId) }.fold(
             { setState { copy(loading = false, details = it) } },
             {
                 setState {
@@ -103,7 +104,7 @@ class PostDetailsViewModel @AssistedInject constructor(
             )
         }
         viewModelScope.launch {
-            runCatching {
+            runSuspendCatching {
                 if (actualTarget == PostVote.NONE) removePostVote(postId) else votePost(
                     postId,
                     actualTarget

@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.network.BROWSER_STREAM_HEADERS
@@ -247,7 +248,7 @@ internal class KodikExtractor @Inject constructor(
     }
 
     private suspend fun isUrlAvailable(url: String): Boolean =
-        runCatching {
+        runSuspendCatching {
             httpClient.head(url = url, headers = mapOf("User-Agent" to CHROME_UA)).isSuccess
         }.getOrDefault(false)
 

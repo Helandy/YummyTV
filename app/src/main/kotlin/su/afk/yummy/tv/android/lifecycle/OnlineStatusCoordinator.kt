@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.android.lifecycle
 
 import androidx.lifecycle.LifecycleOwner
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +12,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator.Companion.HEARTBEAT_INTERVAL_MS
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.system.DeviceHashProvider
 import su.afk.yummy.tv.core.utils.system.ProcessLifecycleCoordinator
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -85,13 +85,8 @@ class OnlineStatusCoordinator @Inject constructor(
             return
         }
 
-        try {
-            updateOnlineStatus(deviceHash)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
-            analyticsTracker.log(TAG, error) { "Failed to update online status" }
-        }
+        runSuspendCatching { updateOnlineStatus(deviceHash) }
+            .onFailure { error -> analyticsTracker.log(TAG, error) { "Failed to update online status" } }
     }
 
     private companion object {

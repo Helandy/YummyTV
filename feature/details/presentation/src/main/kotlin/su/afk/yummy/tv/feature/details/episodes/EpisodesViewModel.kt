@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
@@ -367,7 +368,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun loadMeta() {
-        runCatching { getAnimeDetails(animeId) }.onSuccess { details ->
+        runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
             posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small } ?: ""
             screenshotsByEpisode = details.screenshots
@@ -377,7 +378,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun loadEpisodeInfo() {
-        val info = runCatching { getAnimeEpisodeInfo(animeId) }.getOrDefault(emptyMap())
+        val info = runSuspendCatching { getAnimeEpisodeInfo(animeId) }.getOrDefault(emptyMap())
         if (info.isNotEmpty()) {
             setState { copy(episodeInfo = info.toImmutableMap()) }
         }
@@ -385,7 +386,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private suspend fun loadVideos() {
         setState { copy(videosState = VideosUiState.Loading) }
-        runCatching { getAnimeVideos(animeId) }.fold(
+        runSuspendCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 setVideos(videos)
                 consumePendingEpisode(videos)
@@ -423,7 +424,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun refreshVideosFromNetwork() {
-        runCatching { refreshAnimeVideos(animeId) }
+        runSuspendCatching { refreshAnimeVideos(animeId) }
             .onSuccess { videos -> setVideos(videos) }
     }
 

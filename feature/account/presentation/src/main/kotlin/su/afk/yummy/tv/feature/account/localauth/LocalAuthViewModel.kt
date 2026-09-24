@@ -3,12 +3,12 @@ package su.afk.yummy.tv.feature.account.localauth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.domain.account.model.SessionTransferException
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
@@ -90,7 +90,7 @@ class LocalAuthViewModel @Inject internal constructor(
         analytics.eventMobileTransferSelected()
         viewModelScope.launch {
             setState { copy(isTransferring = true, error = null) }
-            runCatching { localAuthHandler.transferSession(device, pin) }
+            runSuspendCatching { localAuthHandler.transferSession(device, pin) }
                 .onSuccess {
                     analytics.eventMobileTransferSuccess()
                     localAuthHandler.stopDiscovery()
@@ -106,7 +106,6 @@ class LocalAuthViewModel @Inject internal constructor(
                     setEffect(LocalAuthState.Effect.TransferSuccess)
                 }
                 .onFailure { error ->
-                    if (error is CancellationException) throw error
                     analytics.eventMobileTransferFailure(
                         (error as? SessionTransferException)?.reason,
                     )

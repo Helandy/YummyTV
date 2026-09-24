@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.R
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadResourcePrefixes
@@ -286,7 +287,7 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
         store.getUnfinishedDownloads()
             .filter { now - it.updatedAt >= ORPHAN_GRACE_PERIOD_MS }
             .forEach { entry ->
-                val workInfos = runCatching {
+                val workInfos = runSuspendCatching {
                     workManager.getWorkInfosForUniqueWorkFlow(uniqueWorkName(entry.id)).first()
                 }.getOrNull() ?: return@forEach
                 val hasActiveWork = workInfos.any { workInfo ->

@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.network.yani.YANI_BASE_URL
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
 import su.afk.yummy.tv.core.network.yani.YaniHttpClientProvider
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStatDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
 import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateResponseDto
@@ -509,7 +510,7 @@ class YaniAccountApi(
             CAPTCHA_ERROR_MARKERS.any { error.contains(it, ignoreCase = true) }
 
     private suspend fun HttpResponse.toYaniError(): YaniErrorResponseDto =
-        runCatching {
+        runSuspendCatching {
             YaniApiJson.decodeFromString<YaniErrorResponseDto>(bodyAsText())
         }.getOrElse {
             YaniErrorResponseDto(error = status.description.ifBlank { "Could not sign in" })

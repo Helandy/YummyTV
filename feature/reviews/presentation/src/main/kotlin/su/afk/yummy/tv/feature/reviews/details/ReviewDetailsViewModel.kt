@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
 import su.afk.yummy.tv.core.storage.outbox.VoteReviewPayload
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 import su.afk.yummy.tv.domain.reviews.usecase.DeleteReviewUseCase
@@ -86,7 +87,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
                     loading = true,
                     error = null
                 )
-            }; runCatching { getReviewDetails(reviewId) }.fold({
+            }; runSuspendCatching { getReviewDetails(reviewId) }.fold({
             setState {
                 copy(
                     loading = false,
@@ -106,7 +107,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
             old.copy(review = old.review.copy(reactions = old.review.reactions.optimistic(vote)))
         setState { copy(details = optimistic) }
         viewModelScope.launch {
-            runCatching { voteReview(reviewId, vote) }.fold(
+            runSuspendCatching { voteReview(reviewId, vote) }.fold(
                 { saved ->
                     setState {
                         copy(details = details?.let {
@@ -137,7 +138,7 @@ class ReviewDetailsViewModel @AssistedInject constructor(
 
     private fun delete() {
         if (!currentState.isOwner) return; viewModelScope.launch {
-            setState { copy(deleting = true) }; runCatching {
+            setState { copy(deleting = true) }; runSuspendCatching {
             deleteReview(
                 reviewId
             )

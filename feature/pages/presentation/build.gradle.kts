@@ -6,6 +6,7 @@ plugins {
 android { namespace = "su.afk.yummy.tv.feature.pages.presentation" }
 
 dependencies {
+    implementation(project(":core:utils"))
     api(project(":feature:pages:domain"))
     implementation(project(":core:error:api"))
     api(project(":core:mvi"))

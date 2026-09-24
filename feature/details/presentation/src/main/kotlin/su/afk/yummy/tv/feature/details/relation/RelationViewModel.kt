@@ -5,11 +5,12 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationKind
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationReference
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRelationUseCase
@@ -73,7 +74,7 @@ class RelationViewModel @AssistedInject internal constructor(
                 id = id,
                 url = url,
             )
-            runCatching { getAnimeRelation(reference) }.fold(
+            runSuspendCatching { getAnimeRelation(reference) }.fold(
                 onSuccess = { setState { copy(isLoading = false, relation = it) } },
                 onFailure = { error ->
                     setState {

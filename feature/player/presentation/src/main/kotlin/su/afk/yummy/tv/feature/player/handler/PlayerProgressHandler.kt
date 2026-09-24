@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress
 import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
@@ -146,7 +147,7 @@ internal class PlayerProgressHandler @Inject constructor(
         // Дельта — фиксированная копия ДО suspend-вызова; помечаем отправленной только при успехе.
         val synced = syncedSecondsByVideoId.getOrPut(videoId) { sortedSetOf() }
         val delta = (watchedSecondsByVideoId[videoId].orEmpty() - synced).sorted()
-        runCatching {
+        runSuspendCatching {
             saveVideoWatchProgress(
                 videoId = videoId,
                 timeSeconds = timeSeconds,

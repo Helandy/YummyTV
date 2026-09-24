@@ -5,11 +5,11 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -53,14 +53,10 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     private class CacheEntry(val url: String?)
 
     private suspend fun resolve(normalizedUrl: String): String? {
-        return try {
+        return runSuspendCatching {
             val html = fetchHtml(normalizedUrl)
             parsePosterUrl(html)?.let(::toHttpsUrl)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (_: Exception) {
-            null
-        }
+        }.getOrNull()
     }
 
     private suspend fun fetchHtml(url: String): String =

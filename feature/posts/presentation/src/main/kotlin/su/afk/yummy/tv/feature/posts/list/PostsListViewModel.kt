@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.domain.posts.usecase.GetPostCategoriesUseCase
@@ -48,7 +49,7 @@ class PostsListViewModel @Inject constructor(
     }
 
     private fun loadCategories() = viewModelScope.launch {
-        runCatching { getPostCategories() }.fold(
+        runSuspendCatching { getPostCategories() }.fold(
             { loaded ->
                 setState {
                     copy(

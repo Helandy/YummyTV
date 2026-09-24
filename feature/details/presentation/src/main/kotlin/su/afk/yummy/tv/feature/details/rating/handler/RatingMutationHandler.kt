@@ -40,18 +40,18 @@ internal class RatingMutationHandler @Inject constructor(
     }
 
     suspend fun setRating(animeId: Int, rating: Int): RatingMutationResult =
-        runCatching { setAnimeRating(animeId, rating) }
+        runSuspendCatching { setAnimeRating(animeId, rating) }
             .toMutationResult(
                 PendingMutationTypes.SET_RATING,
                 SetRatingPayload(animeId, rating).encode()
             )
 
     suspend fun deleteRating(animeId: Int): RatingMutationResult =
-        runCatching { deleteAnimeRating(animeId) }
+        runSuspendCatching { deleteAnimeRating(animeId) }
             .toMutationResult(PendingMutationTypes.DELETE_RATING, AnimeIdPayload(animeId).encode())
 
     suspend fun refreshSummary(animeId: Int): AnimeRatingSummary? =
-        runCatching { getAnimeRatingSummary(animeId) }.getOrNull()
+        runSuspendCatching { getAnimeRatingSummary(animeId) }.getOrNull()
 
     /**
      * Сетевой сбой ставится в offline-очередь и считается успехом — мутация дойдёт до сервера,

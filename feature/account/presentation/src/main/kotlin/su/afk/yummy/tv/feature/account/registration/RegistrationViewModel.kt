@@ -6,6 +6,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.RegistrationException
 import su.afk.yummy.tv.domain.account.model.UserRegistration
@@ -90,7 +91,7 @@ class RegistrationViewModel @Inject constructor(
                     },
                 )
             }
-            runCatching {
+            runSuspendCatching {
                 registerUserUseCase(
                     UserRegistration(
                         email = email,

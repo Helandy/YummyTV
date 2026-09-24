@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.repository
 
-import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
 import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
@@ -29,7 +29,7 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
         val resolveQualityLabel = item.qualityLabel
             .takeIf { it.hasVideoQualityNumber() }
             ?: normalizedAutoLabel
-        return runCatching {
+        return runSuspendCatching {
             val source = item.refreshSource()
             val refreshedItem = item.copy(
                 videoId = source.episode.id,
@@ -66,7 +66,6 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                 )
             }
         }.getOrElse { throwable ->
-            if (throwable is CancellationException) throw throwable
             VideoDownloadStreamRefreshResult.Failure(
                 throwable.message.takeIf { message ->
                     message == DUBBING_UNAVAILABLE_MESSAGE

@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -71,7 +72,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
     }
 
     private suspend fun loadMeta() {
-        runCatching { getAnimeDetails(animeId) }.onSuccess { details ->
+        runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
             posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small } ?: ""
             screenshotsByEpisode = details.screenshots
@@ -84,7 +85,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
 
     private suspend fun load() {
         setState { copy(isLoading = true, error = null) }
-        runCatching { getAnimeVideos(animeId) }.fold(
+        runSuspendCatching { getAnimeVideos(animeId) }.fold(
             onSuccess = { videos ->
                 loadedVideos = videos
                 val dubbings = videos.episodeDubbingItems(episode)

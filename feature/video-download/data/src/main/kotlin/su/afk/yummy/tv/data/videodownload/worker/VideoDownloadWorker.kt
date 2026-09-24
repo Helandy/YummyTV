@@ -23,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -138,7 +139,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                 exportRepository.enqueueAutoExportIfEnabled(id)
                 return Result.success()
             } catch (throwable: Throwable) {
-                if (throwable is CancellationException) throw throwable
+                currentCoroutineContext().ensureActive()
                 if (isStopped) {
                     analyticsTracker.logDownloadInfo { "Stopped download id=$id retryUsed=$retriedAfterForbidden" }
                     return Result.failure()

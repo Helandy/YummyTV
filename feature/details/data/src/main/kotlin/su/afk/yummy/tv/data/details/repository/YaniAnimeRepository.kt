@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.details.repository
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -15,7 +14,6 @@ import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.storage.document.getOrFetchJson
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.account.AccountStorage
@@ -24,8 +22,10 @@ import su.afk.yummy.tv.core.storage.anime.AnimeTrailersCache
 import su.afk.yummy.tv.core.storage.anime.AnimeVideosCache
 import su.afk.yummy.tv.core.storage.anime.isFresh
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.core.storage.document.getOrFetchJson
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.details.dto.YaniAnimeDetailsDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationItemDto
 import su.afk.yummy.tv.data.details.dto.YaniRecommendationsDto
@@ -76,11 +76,9 @@ class YaniAnimeRepository(
             return@withContext stored.toStoredAnimeDetails()
         }
 
-        try {
+        runSuspendCatching {
             fetchDetailsFromNetwork(animeId, languageCode)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             stored?.toStoredAnimeDetails()
                 ?: throw error
         }
@@ -128,7 +126,7 @@ class YaniAnimeRepository(
         withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             val stored = animeStorage.getRecommendations(animeId, languageCode, fromAi)
-            try {
+            runSuspendCatching {
                 val userId = settingsStore.yaniUserId.first().coerceAtLeast(0)
                 val response = documentCache.getOrFetchJson<YaniRecommendationsDto>(
                     cacheKey = recommendationCacheKey(
@@ -154,9 +152,7 @@ class YaniAnimeRepository(
                     },
                 ).response
                 mapRecommendations(response, animeId, languageCode, fromAi)
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
+            }.getOrElse { error ->
                 stored?.toStoredAnimeRecommendations()
                     ?: emptyList()
             }
@@ -198,16 +194,14 @@ class YaniAnimeRepository(
 
     override suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo> =
         withContext(Dispatchers.IO) {
-            try {
+            runSuspendCatching {
                 val malId = getAnimeDetails(animeId).malId ?: return@withContext emptyMap()
                 documentCache.getOrFetchJson<YummyEpisodesDto>(
                     cacheKey = "$ANIME_EPISODE_INFO_CACHE_NAMESPACE:$malId",
                     ttlMs = ANIME_EPISODE_INFO_TTL_MS,
                     fetch = { episodesApi.getEpisodes(malId) },
                 ).toAnimeEpisodeInfoByNumber()
-            } catch (error: CancellationException) {
-                throw error
-            } catch (_: Throwable) {
+            }.getOrElse {
                 // Названия серий — необязательная надстройка: экран должен работать и без них.
                 emptyMap()
             }

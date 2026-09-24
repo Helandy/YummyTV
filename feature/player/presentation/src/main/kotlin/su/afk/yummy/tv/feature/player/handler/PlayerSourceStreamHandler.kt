@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.player.handler
 
-import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
@@ -54,14 +54,12 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             }
         }
 
-        val sourceGraph = try {
+        val sourceGraph = runSuspendCatching {
             getPlayerSourceGraph(
                 request = request,
                 forceRefreshVideos = forceRefreshVideos,
             ).toPresentationSourceGraph()
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (_: Throwable) {
+        }.getOrElse {
             return if (loadStreamOnFailure) {
                 PlayerSourceGraphLoadResult.LoadStream(
                     resumeMode = resumeMode,
@@ -182,7 +180,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
     ): PlayerStreamLoadResult {
-        val result = try {
+        val result = runSuspendCatching {
             streamHandler.resolve(
                 state = state,
                 pendingResumeMs = pendingResume,
@@ -190,9 +188,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                 selectedQualityOverride = selectedQualityOverride,
                 forceRefresh = forceRefresh,
             )
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Throwable) {
+        }.getOrElse { exception ->
             analytics.eventStreamResolveFailed(
                 state = state,
                 reason = PlayerStreamResult.REASON_EXCEPTION,

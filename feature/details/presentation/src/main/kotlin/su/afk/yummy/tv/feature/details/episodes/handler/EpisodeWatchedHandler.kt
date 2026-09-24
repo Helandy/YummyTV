@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
-import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
@@ -9,6 +8,7 @@ import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
 import su.afk.yummy.tv.core.storage.outbox.RemoveWatchedPayload
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.ClearEpisodeWatchProgressUseCase
@@ -127,11 +127,9 @@ internal class EpisodeWatchedHandler @Inject constructor(
         onNetworkFailure: suspend () -> Unit,
         block: suspend () -> Boolean,
     ): Boolean =
-        try {
+        runSuspendCatching {
             block()
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             if (error.isNetworkError()) {
                 onNetworkFailure()
                 pendingMutationSyncScheduler.scheduleFlush()

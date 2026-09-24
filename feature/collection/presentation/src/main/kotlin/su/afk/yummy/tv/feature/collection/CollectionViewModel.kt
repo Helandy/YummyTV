@@ -196,7 +196,7 @@ class CollectionViewModel @AssistedInject internal constructor(
             if (!canVoteCollection()) return@launch
             setState { copy(isVoteLoading = true) }
             val currentVote = currentState.collection?.vote ?: CollectionVote.NEUTRAL
-            runCatching {
+            runSuspendCatching {
                 if (currentVote == vote) {
                     removeCollectionVote(collectionId) to CollectionVote.NEUTRAL
                 } else {

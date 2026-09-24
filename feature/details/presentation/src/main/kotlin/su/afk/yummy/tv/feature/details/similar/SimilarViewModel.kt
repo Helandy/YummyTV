@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeRecommendationsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.anime.usecase.VoteAnimeRecommendationUseCase
@@ -88,7 +89,7 @@ class SimilarViewModel @AssistedInject internal constructor(
 
     private suspend fun load(fromAi: Boolean = currentState.fromAi) {
         setState { copy(similarState = SimilarUiState.Loading) }
-        runCatching { getAnimeRecommendations(animeId, fromAi) }.fold(
+        runSuspendCatching { getAnimeRecommendations(animeId, fromAi) }.fold(
             // Выдача (особенно AI) может повторить тайтл — в lazy-списке это дубль ключа и краш.
             onSuccess = { loaded ->
                 val items = loaded.distinctBy { it.animeId }
@@ -129,7 +130,7 @@ class SimilarViewModel @AssistedInject internal constructor(
                     isRecommendationMutationPending = true,
                 )
             }
-            runCatching { setAnimeRecommendationIgnored(animeId, target) }.fold(
+            runSuspendCatching { setAnimeRecommendationIgnored(animeId, target) }.fold(
                 onSuccess = { success ->
                     if (!success) {
                         setState { copy(isRecommendationIgnored = previous) }
@@ -169,7 +170,7 @@ class SimilarViewModel @AssistedInject internal constructor(
                     pendingVoteAnimeIds = pendingVoteAnimeIds + similarAnimeId,
                 )
             }
-            runCatching { voteAnimeRecommendation(animeId, similarAnimeId, targetVote) }.fold(
+            runSuspendCatching { voteAnimeRecommendation(animeId, similarAnimeId, targetVote) }.fold(
                 onSuccess = { reaction ->
                     setState {
                         if (!fromAi) {

@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import su.afk.yummy.tv.core.tv.api.TvChannelContentProvider
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 
 @HiltWorker
 class HomeFeedRefreshWorker @AssistedInject constructor(
@@ -16,7 +17,7 @@ class HomeFeedRefreshWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result =
-        runCatching { channelContentProvider.refresh() }.fold(
+        runSuspendCatching { channelContentProvider.refresh() }.fold(
             onSuccess = { Result.success() },
             onFailure = { Result.retry() },
         )

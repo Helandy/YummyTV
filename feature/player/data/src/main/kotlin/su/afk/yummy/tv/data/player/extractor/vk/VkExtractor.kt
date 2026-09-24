@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.player.extractor.vk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.decodeUnicodeEscapes
@@ -87,7 +88,7 @@ internal class VkExtractor @Inject constructor(
             val videoExtUrl = resolveVideoExtUrl(iframeHtml, normalizedUrl)
             val sourceHtml = videoExtUrl?.let {
                 val source = it
-                runCatching { normalizePayload(fetchPageText(source, normalizedUrl)) }
+                runSuspendCatching { normalizePayload(fetchPageText(source, normalizedUrl)) }
                     .getOrElse {
                         analyticsTracker.logExtractorFailure(
                             "VK",

@@ -3,10 +3,11 @@ package su.afk.yummy.tv.feature.schedule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.schedule.mapper.toTimelineUi
@@ -56,7 +57,7 @@ class ScheduleViewModel @Inject internal constructor(
     private fun load() {
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
-            runCatching { getSchedule() }.fold(
+            runSuspendCatching { getSchedule() }.fold(
                 onSuccess = { days ->
                     setState {
                         copy(

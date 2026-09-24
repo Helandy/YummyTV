@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.domain.account.usecase
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorEvent
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
@@ -12,7 +13,7 @@ internal suspend inline fun <T> notifyMutationFailure(
 ): T = try {
     block()
 } catch (error: Throwable) {
-    if (error is CancellationException) throw error
+    currentCoroutineContext().ensureActive()
     notifier.notify(AccountMutationErrorEvent(action = action, message = error.message))
     throw error
 }

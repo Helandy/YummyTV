@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.account.handler
 
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.DeleteAllNotificationsUseCase
 import su.afk.yummy.tv.domain.account.usecase.DeleteNotificationUseCase
 import su.afk.yummy.tv.domain.account.usecase.MarkAllNotificationsReadUseCase
@@ -18,7 +19,7 @@ internal class AccountNotificationHandler @Inject constructor(
     private val deleteAllNotificationsUseCase: DeleteAllNotificationsUseCase,
 ) {
     suspend fun resolveAnimeId(slug: String): AccountOpenNotificationResult =
-        runCatching { resolveNotificationAnimeId(slug) }.fold(
+        runSuspendCatching { resolveNotificationAnimeId(slug) }.fold(
             onSuccess = { animeId ->
                 animeId?.let(AccountOpenNotificationResult::Navigate)
                     ?: AccountOpenNotificationResult.Failure
@@ -27,20 +28,20 @@ internal class AccountNotificationHandler @Inject constructor(
         )
 
     suspend fun markNotificationRead(id: Int): Result<Boolean> =
-        runCatching { markNotificationReadUseCase(id) }
+        runSuspendCatching { markNotificationReadUseCase(id) }
 
     suspend fun deleteNotification(id: Int): Result<Boolean> =
-        runCatching { deleteNotificationUseCase(id) }
+        runSuspendCatching { deleteNotificationUseCase(id) }
 
     suspend fun deleteAllNotifications(): Result<Boolean> =
-        runCatching {
+        runSuspendCatching {
             val deleted = deleteAllNotificationsUseCase()
             if (deleted) settingsStore.setYaniUnreadNotificationsCount(0)
             deleted
         }
 
     suspend fun markAllNotificationsRead(): Result<Boolean> =
-        runCatching {
+        runSuspendCatching {
             val updated = markAllNotificationsReadUseCase()
             if (updated) settingsStore.setYaniUnreadNotificationsCount(0)
             updated

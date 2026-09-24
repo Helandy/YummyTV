@@ -8,6 +8,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.GetVideoSubscriptionsUseCase
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -60,7 +61,7 @@ class MySubscriptionsViewModel @Inject constructor(
             }
             return
         }
-        runCatching { getVideoSubscriptions(session.userId) }.fold(
+        runSuspendCatching { getVideoSubscriptions(session.userId) }.fold(
             onSuccess = { subscriptions ->
                 setState {
                     copy(

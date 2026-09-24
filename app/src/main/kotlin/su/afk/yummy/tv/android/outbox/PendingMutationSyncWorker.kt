@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.storage.outbox.SetFavoritePayload
 import su.afk.yummy.tv.core.storage.outbox.SetListPayload
 import su.afk.yummy.tv.core.storage.outbox.SetRatingPayload
 import su.afk.yummy.tv.core.storage.outbox.VoteReviewPayload
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.DeleteAnimeRatingUseCase
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
@@ -52,7 +53,7 @@ class PendingMutationSyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         var stillPending = false
         outbox.pending().forEach { entry ->
-            val applied = runCatching { apply(entry) }
+            val applied = runSuspendCatching { apply(entry) }
             if (applied.isSuccess) {
                 outbox.remove(entry.id)
             } else {

@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
@@ -189,7 +190,7 @@ class CommentsViewModel @AssistedInject internal constructor(
         skip: Int,
         forceRefresh: Boolean,
     ): List<CommentUi> =
-        runCatching {
+        runSuspendCatching {
             getComments(
                 targetType = targetType,
                 targetId = targetId,
@@ -439,7 +440,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 )
                 copy(commentOverlays = commentOverlays + (commentId to updated))
             }
-            runCatching { getCommentChildren(commentId, skip) }.fold(
+            runSuspendCatching { getCommentChildren(commentId, skip) }.fold(
                 onSuccess = { page ->
                     setState {
                         val current = findCommentUi(commentId) ?: item

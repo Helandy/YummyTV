@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.core.storage.document
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
@@ -33,7 +33,7 @@ internal class DocumentCacheStore(private val dao: DocumentCacheDao) : DocumentC
                 if (!forceRefresh && fresh && decoded != null) return@withLock decoded
 
                 val versionBeforeFetch = invalidationVersion.get()
-                try {
+                runSuspendCatching {
                     fetch().also { value ->
                         if (invalidationVersion.get() == versionBeforeFetch) {
                             dao.save(
@@ -45,11 +45,7 @@ internal class DocumentCacheStore(private val dao: DocumentCacheDao) : DocumentC
                             )
                         }
                     }
-                } catch (error: CancellationException) {
-                    throw error
-                } catch (error: Throwable) {
-                    decoded ?: throw error
-                }
+                }.getOrElse { error -> decoded ?: throw error }
             }
         } finally {
             if (requestLock.users.decrementAndGet() == 0) {

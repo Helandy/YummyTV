@@ -1,6 +1,9 @@
 package su.afk.yummy.tv.core.storage.offlinefirst
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -126,20 +129,20 @@ class OfflineFirstCacheTest {
     fun `cancellation is propagated instead of triggering the fallback`() = runTest {
         var onMissingCalled = false
 
-        try {
+        val job = launch {
             offlineFirstCache<FakeCache, String>(
                 read = { null },
                 isFresh = { false },
                 toDomain = { it.value },
-                fetchAndSave = { throw CancellationException("cancelled") },
+                fetchAndSave = { awaitCancellation() },
                 onMissing = {
                     onMissingCalled = true
                     "fallback"
                 },
             )
-        } catch (_: CancellationException) {
-            // expected
         }
+        runCurrent()
+        job.cancelAndJoin()
 
         assertFalse(onMissingCalled)
     }

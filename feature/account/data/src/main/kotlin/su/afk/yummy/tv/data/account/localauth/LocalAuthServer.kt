@@ -12,8 +12,8 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.dto.SessionTransferDto
 import su.afk.yummy.tv.data.account.dto.SessionTransferErrorDto
 import su.afk.yummy.tv.data.account.dto.SessionTransferOkDto
@@ -69,22 +69,18 @@ internal class LocalAuthServer @Inject constructor(
 
         onState(LocalAuthServerState.Transferring)
 
-        val token = try {
+        val token = runSuspendCatching {
             val dto = call.receive<SessionTransferDto>()
             LocalAuthCrypto.decrypt(dto.encryptedToken, dto.iv, dto.salt, session.pin)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (_: Exception) {
+        }.getOrElse {
             onState(session.onWrongPin(handle.port))
             call.reject(HttpStatusCode.BadRequest, LocalAuthError.INVALID_PIN)
             return
         }
 
-        try {
+        runSuspendCatching {
             accountRepository.signInWithToken(token)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (_: Exception) {
+        }.getOrElse {
             onState(LocalAuthServerState.Error(LocalAuthError.SIGN_IN_FAILED))
             call.reject(HttpStatusCode.BadGateway, LocalAuthError.SIGN_IN_FAILED)
             return

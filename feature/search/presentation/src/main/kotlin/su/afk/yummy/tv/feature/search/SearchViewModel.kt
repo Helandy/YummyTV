@@ -5,9 +5,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -17,6 +18,7 @@ import su.afk.yummy.tv.core.model.settings.LastSearchSnapshot
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.search.model.SearchFilters
@@ -55,7 +57,7 @@ class SearchViewModel @Inject internal constructor(
         analytics.eventScreenOpened()
         viewModelScope.launch {
             setState { copy(isLoadingFilterOptions = true) }
-            runCatching { getSearchFilterOptions() }.onSuccess { options ->
+            runSuspendCatching { getSearchFilterOptions() }.onSuccess { options ->
                 setState { copy(filterOptions = options, isLoadingFilterOptions = false) }
             }.onFailure {
                 setState { copy(isLoadingFilterOptions = false) }
@@ -156,9 +158,8 @@ class SearchViewModel @Inject internal constructor(
                     ?: error("Random anime response is empty")
                 analytics.eventRandomAnimeOpened(anime.id)
                 nav.navigate(detailsNavigator.getDetailsDest(anime.id))
-            } catch (error: CancellationException) {
-                throw error
             } catch (error: Throwable) {
+                currentCoroutineContext().ensureActive()
                 analytics.eventRandomAnimeLoadError(error)
                 throw error
             } finally {
@@ -311,7 +312,7 @@ class SearchViewModel @Inject internal constructor(
         limit: Int,
         offset: Int,
     ): OffsetPage<SearchItem> =
-        runCatching {
+        runSuspendCatching {
             search(query, filters, limit, offset)
         }.fold(
             onSuccess = { page ->

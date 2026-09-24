@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
@@ -73,7 +74,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
 
         if (request == null) return
         ioScope.launch {
-            runCatching { progress.saveProgress(request) }
+            runSuspendCatching { progress.saveProgress(request) }
         }
     }
 
@@ -105,7 +106,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
         }
 
         host.scope.launch {
-            runCatching {
+            runSuspendCatching {
                 progress.saveProgress(request)
             }
             navigate()

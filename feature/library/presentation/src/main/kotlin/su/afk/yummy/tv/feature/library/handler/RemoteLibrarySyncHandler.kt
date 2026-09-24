@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.library.handler
 
-import kotlinx.coroutines.CancellationException
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.library.usecase.RemoteLibrarySyncResult
@@ -20,15 +20,13 @@ internal class RemoteLibrarySyncHandler @Inject constructor(
     ): RemoteLibrarySyncResult = syncRemoteLibrary(userId, forceRefresh)
 
     suspend fun removeRemoteEntry(animeId: Int, target: LibraryRemoveTarget): Result<Unit> =
-        try {
+        runSuspendCatching {
             when (target) {
                 LibraryRemoveTarget.LIST -> removeAnimeList(animeId)
                 LibraryRemoveTarget.FAVORITE -> setAnimeFavorite(animeId, false)
             }
             Result.success(Unit)
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             Result.failure(error)
         }
 }

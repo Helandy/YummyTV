@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:utils"))
     api(project(":feature:schedule:domain"))
 
     implementation(project(":core:analytics"))

@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeCollectionsUseCase
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -55,7 +56,7 @@ class CollectionsViewModel @AssistedInject internal constructor(
 
     private suspend fun load() {
         setState { copy(isLoading = true, error = null) }
-        runCatching { getAnimeCollections(animeId) }.fold(
+        runSuspendCatching { getAnimeCollections(animeId) }.fold(
             onSuccess = { collections ->
                 setState {
                     copy(

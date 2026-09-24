@@ -1,8 +1,9 @@
 package su.afk.yummy.tv.feature.update.handler
 
-import su.afk.yummy.tv.feature.update.UpdateAnalytics
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.update.repository.ApkDownloader
 import su.afk.yummy.tv.domain.update.repository.ApkInstaller
+import su.afk.yummy.tv.feature.update.UpdateAnalytics
 import java.io.File
 import javax.inject.Inject
 
@@ -17,7 +18,7 @@ internal class UpdateInstallHandler @Inject constructor(
         version: String?,
         onProgress: (Float) -> Unit,
     ): UpdateDownloadResult =
-        runCatching {
+        runSuspendCatching {
             apkDownloader.download(apkUrl, onProgress)
         }.fold(
             onSuccess = { file -> UpdateDownloadResult.Success(file) },
@@ -28,7 +29,7 @@ internal class UpdateInstallHandler @Inject constructor(
         )
 
     suspend fun install(file: File, version: String?): UpdateInstallResult =
-        runCatching {
+        runSuspendCatching {
             apkInstaller.install(file)
         }.fold(
             onSuccess = { UpdateInstallResult.Success(file) },

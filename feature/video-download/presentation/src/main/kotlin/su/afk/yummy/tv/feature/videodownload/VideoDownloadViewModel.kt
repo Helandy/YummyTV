@@ -5,10 +5,11 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
@@ -145,7 +146,7 @@ class VideoDownloadViewModel @Inject constructor(
 
             is VideoDownloadState.Event.ExportDirectoryGranted -> {
                 viewModelScope.launch {
-                    runCatching { selectExportDestination(event.uri) }
+                    runSuspendCatching { selectExportDestination(event.uri) }
                         .onSuccess { destination ->
                             if (pendingExportIds.isNotEmpty()) {
                                 enqueueVideoExport(pendingExportIds, destination)
@@ -194,9 +195,9 @@ class VideoDownloadViewModel @Inject constructor(
         return currentState.items
             .filter { item ->
                 item.status == VideoDownloadStatus.Downloaded &&
-                        !item.exportStatus.isActive &&
-                        !(item.exportStatus == VideoExportStatus.Exported &&
-                                item.exportDirectoryUri == destinationUri)
+                    !item.exportStatus.isActive &&
+                    !(item.exportStatus == VideoExportStatus.Exported &&
+                        item.exportDirectoryUri == destinationUri)
             }
             .map { it.id }
     }
@@ -208,5 +209,5 @@ class VideoDownloadViewModel @Inject constructor(
 
 private val VideoExportStatus.isActive: Boolean
     get() = this == VideoExportStatus.Queued ||
-            this == VideoExportStatus.Preparing ||
-            this == VideoExportStatus.Copying
+        this == VideoExportStatus.Preparing ||
+        this == VideoExportStatus.Copying

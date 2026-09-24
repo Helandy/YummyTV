@@ -23,10 +23,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -136,7 +137,7 @@ class VideoExportWorker @AssistedInject internal constructor(
                     )
                 }
             }
-            if (throwable is CancellationException) throw throwable
+            currentCoroutineContext().ensureActive()
             analytics.reportFailed(
                 item = item,
                 details = throwable.userFacingExportError(),

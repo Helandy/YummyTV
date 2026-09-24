@@ -15,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -112,7 +113,7 @@ internal class AllohaStreamProxy(
         scope.launch {
             while (isActive) {
                 runCatching { server.accept() }.getOrNull()
-                    ?.let { socket -> launch { runCatching { handle(socket) } } }
+                    ?.let { socket -> launch { runSuspendCatching { handle(socket) } } }
             }
         }
     }
@@ -410,7 +411,7 @@ internal class AllohaStreamProxy(
                     header(
                         "sec-ch-ua",
                         "\"Chromium\";v=\"$major\", \"Google Chrome\";v=\"$major\", " +
-                                "\"Not_A Brand\";v=\"24\"",
+                            "\"Not_A Brand\";v=\"24\"",
                     )
                     header("sec-ch-ua-mobile", "?0")
                     header("sec-ch-ua-platform", platformHintFor(presentedUa))
@@ -428,13 +429,13 @@ internal class AllohaStreamProxy(
             // own player still loads fine.
             if (verbose) analytics.log(LOG_TAG) {
                 "outgoing " + request.headers.names().joinToString(",") +
-                        " | ua=" + (request.header("User-Agent") ?: "-").take(48) +
-                        " | accept=" + (request.header("Accept") ?: "-") +
-                        " | lang=" + (request.header("Accept-Language") ?: "MISSING") +
-                        " | chUa=" + (request.header("sec-ch-ua") ?: "MISSING") +
-                        " | origin=" + (request.header("Origin") ?: "-") +
-                        " | referer=" + (request.header("Referer") ?: "-") +
-                        " | cookie=" + (if (request.header("Cookie") != null) "yes" else "no")
+                    " | ua=" + (request.header("User-Agent") ?: "-").take(48) +
+                    " | accept=" + (request.header("Accept") ?: "-") +
+                    " | lang=" + (request.header("Accept-Language") ?: "MISSING") +
+                    " | chUa=" + (request.header("sec-ch-ua") ?: "MISSING") +
+                    " | origin=" + (request.header("Origin") ?: "-") +
+                    " | referer=" + (request.header("Referer") ?: "-") +
+                    " | cookie=" + (if (request.header("Cookie") != null) "yes" else "no")
             }
             val requestClient = client
             val requestPool = connectionPool
@@ -450,13 +451,13 @@ internal class AllohaStreamProxy(
                             }
                             analytics.log(LOG_TAG) {
                                 "CDN failure code=${response.code} xVd=$xVd " +
-                                        "closeRetry=$connectionCloseRetry ${state.summary()} " +
-                                        // The only place a rejection's response headers are
-                                        // visible. Set-Cookie in particular answers whether the
-                                        // CDN is handing us a challenge cookie that the proxy's
-                                        // cookie-less OkHttpClient would silently drop.
-                                        "setCookie=${response.headers("Set-Cookie")} " +
-                                        "target=${target.safeTarget()}"
+                                    "closeRetry=$connectionCloseRetry ${state.summary()} " +
+                                    // The only place a rejection's response headers are
+                                    // visible. Set-Cookie in particular answers whether the
+                                    // CDN is handing us a challenge cookie that the proxy's
+                                    // cookie-less OkHttpClient would silently drop.
+                                    "setCookie=${response.headers("Set-Cookie")} " +
+                                    "target=${target.safeTarget()}"
                             }
                             null
                         } else {
@@ -480,7 +481,7 @@ internal class AllohaStreamProxy(
                 }.onFailure {
                     analytics.log(LOG_TAG) {
                         "CDN request failed type=${it::class.java.simpleName} " +
-                                "message=${it.message} ${state.summary()} target=${target.safeTarget()}"
+                            "message=${it.message} ${state.summary()} target=${target.safeTarget()}"
                     }
                 }.getOrNull()
 
@@ -490,7 +491,7 @@ internal class AllohaStreamProxy(
             requestPool.evictAll()
             analytics.log(LOG_TAG) {
                 "Retrying exact 403 request with Connection: close ${state.summary()} " +
-                        "target=${target.safeTarget()}"
+                    "target=${target.safeTarget()}"
             }
             val retryRequest = request.newBuilder().header("Connection", "close").build()
             val retryResult = perform(retryRequest, connectionCloseRetry = true)
@@ -534,7 +535,7 @@ internal class AllohaStreamProxy(
                     noteActiveState(state)
                     analytics.log(LOG_TAG) {
                         "Retrying held segment on refreshed session ${state.summary()} " +
-                                "target=${url.safeTarget()}"
+                            "target=${url.safeTarget()}"
                     }
                     // Prefer the current session's path: the refreshed master usually moves.
                     val target = rewriteToCurrentPath(url, state.masterUrl) ?: url
@@ -659,7 +660,7 @@ internal class AllohaStreamProxy(
             backgroundRefreshScheduled.set(false)
             analytics.log(LOG_TAG) {
                 "Background session refresh already consumed without a successful CDN response " +
-                        "generation=$previousGeneration"
+                    "generation=$previousGeneration"
             }
             return false
         }
@@ -720,12 +721,12 @@ internal class AllohaStreamProxy(
             .toList()
         analytics.log(LOG_TAG) {
             "playlist master=${content.contains("#EXT-X-STREAM-INF")} " +
-                    "audioEntries=${audioEntries.size} audio=$audioEntries " +
-                    "children=${
-                        content.lineSequence().map(String::trim).filter { line ->
-                            line.isNotBlank() && !line.startsWith("#") && line.contains(".m3u8")
-                        }.map { it.substringBefore('?').substringAfterLast('/') }.toList()
-                    }"
+                "audioEntries=${audioEntries.size} audio=$audioEntries " +
+                "children=${
+                    content.lineSequence().map(String::trim).filter { line ->
+                        line.isNotBlank() && !line.startsWith("#") && line.contains(".m3u8")
+                    }.map { it.substringBefore('?').substringAfterLast('/') }.toList()
+                }"
         }
     }
 
@@ -880,10 +881,10 @@ internal class AllohaStreamProxy(
                 }
                 .firstOrNull(String::isNotBlank)
             return "generation=$generation host=$host ttl=${ttlSeconds ?: "none"} " +
-                    "auth=${headers["authorizations"].fingerprint()} " +
-                    "controls=${headers["accepts-controls"].fingerprint()} " +
-                    "ua=${headers["user-agent"].fingerprint()} " +
-                    "cookie=${cookie.fingerprint()}"
+                "auth=${headers["authorizations"].fingerprint()} " +
+                "controls=${headers["accepts-controls"].fingerprint()} " +
+                "ua=${headers["user-agent"].fingerprint()} " +
+                "cookie=${cookie.fingerprint()}"
         }
 
         fun String.safeTarget(): String = runCatching {

@@ -4,7 +4,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -29,24 +28,20 @@ fun <Key : Any> launchTvLazyGridKeyFocusRestore(
 ): Job {
     previousJob?.cancel()
     return scope.launch {
-        try {
-            val targetIndex = restoreState.targetIndex(keys)
-                ?: fallbackIndex.takeIf { it >= 0 && it < keys.size }
-            val focusRestored = targetIndex?.let { index ->
-                restoreTvLazyGridKeyFocus(
-                    itemKey = keys[index],
-                    itemIndex = index + lazyIndexOffset,
-                    gridState = gridState,
-                    itemFocusRequesters = itemFocusRequesters,
-                )
-            } ?: false
-            if (!focusRestored) {
-                requestFocusUntilTimeout(fallbackFocusRequester)
-            }
-            onRestoreFinished()
-        } catch (e: CancellationException) {
-            throw e
+        val targetIndex = restoreState.targetIndex(keys)
+            ?: fallbackIndex.takeIf { it >= 0 && it < keys.size }
+        val focusRestored = targetIndex?.let { index ->
+            restoreTvLazyGridKeyFocus(
+                itemKey = keys[index],
+                itemIndex = index + lazyIndexOffset,
+                gridState = gridState,
+                itemFocusRequesters = itemFocusRequesters,
+            )
+        } ?: false
+        if (!focusRestored) {
+            requestFocusUntilTimeout(fallbackFocusRequester)
         }
+        onRestoreFinished()
     }
 }
 

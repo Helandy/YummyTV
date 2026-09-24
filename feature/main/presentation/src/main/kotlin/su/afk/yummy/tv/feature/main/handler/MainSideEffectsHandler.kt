@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.featuretoggle.api.VersionSupportChecker
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.update.usecase.GetLatestAppReleaseUseCase
@@ -24,11 +25,11 @@ internal class MainSideEffectsHandler @Inject constructor(
     @param:Named("appVersionName") private val versionName: String,
 ) {
     suspend fun checkForUpdates(): MainUpdateCheckResult =
-        runCatching {
+        runSuspendCatching {
             val isCurrentVersionSupported = versionSupportChecker.isCurrentVersionSupported()
             val release = withTimeoutOrNull(GITHUB_UPDATE_TIMEOUT) {
                 getLatestAppRelease(versionName, includePrerelease = settingsStore.betaUpdatesEnabled.first())
-            } ?: return@runCatching MainUpdateCheckResult.NotAvailable
+            } ?: return@runSuspendCatching MainUpdateCheckResult.NotAvailable
             if (!isCurrentVersionSupported || isVersionNewer(versionName, release.version)) {
                 MainUpdateCheckResult.Available(
                     version = release.version,
@@ -48,7 +49,7 @@ internal class MainSideEffectsHandler @Inject constructor(
         val refreshedAt = settingsStore.yaniTokenRefreshAt.firstOrZero()
         val ageMs = System.currentTimeMillis() - refreshedAt
         if (ageMs > maxAge.inWholeMilliseconds) {
-            runCatching { refreshAccount() }
+            runSuspendCatching { refreshAccount() }
         }
     }
 

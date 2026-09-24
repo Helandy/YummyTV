@@ -11,10 +11,11 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.collection.CollectionMutationNotifier
@@ -321,7 +322,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
         ),
         pagingSourceFactory = {
             OffsetPagingSource { limit, offset ->
-                runCatching { fetch(limit, offset) }.fold(
+                runSuspendCatching { fetch(limit, offset) }.fold(
                     onSuccess = { items ->
                         OffsetPage(
                             items = items,

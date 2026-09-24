@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.account.account.handler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
@@ -24,8 +25,8 @@ internal class AccountHubHandler @Inject constructor(
     private val getNotificationCounts: GetNotificationCountsUseCase,
 ) {
     suspend fun loadHub(userId: Int): AccountHubLoadResult = coroutineScope {
-        val profileSummaryDeferred = async { runCatching { getUserProfileSummary(userId) } }
-        val statsDeferred = async { runCatching { getUserStats(userId) } }
+        val profileSummaryDeferred = async { runSuspendCatching { getUserProfileSummary(userId) } }
+        val statsDeferred = async { runSuspendCatching { getUserStats(userId) } }
         val notificationsDeferred = async { loadNotifications() }
 
         val profileSummaryResult = profileSummaryDeferred.await()
@@ -49,7 +50,7 @@ internal class AccountHubHandler @Inject constructor(
     }
 
     suspend fun loadNotifications(): AccountNotificationsLoadResult =
-        runCatching {
+        runSuspendCatching {
             getNotifications(limit = 20) to getNotificationCounts()
         }.fold(
             onSuccess = { (notifications, counts) ->

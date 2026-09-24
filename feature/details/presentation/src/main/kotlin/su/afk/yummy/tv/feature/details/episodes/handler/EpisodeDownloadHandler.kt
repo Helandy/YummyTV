@@ -1,9 +1,9 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
@@ -134,7 +134,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
 
     suspend fun prepare(video: AnimeVideo): EpisodeDownloadPrepareResult {
         val key = video.toDownloadStatusKey()
-        return try {
+        return runSuspendCatching {
             when (val result = resolvePlayerStream(
                 PlayerStreamRequest(
                     iframeUrl = video.iframeUrl,
@@ -158,9 +158,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                     strings.get(R.string.details_download_resolve_error),
                 )
             }
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
+        }.getOrElse { error ->
             EpisodeDownloadPrepareResult.Failure(
                 key,
                 error.localizedMessage ?: strings.get(R.string.details_download_resolve_error),
@@ -254,12 +252,10 @@ internal class EpisodeDownloadHandler @Inject constructor(
         )
     }
 
-    private suspend fun mutationFailed(block: suspend () -> Unit): Boolean = try {
+    private suspend fun mutationFailed(block: suspend () -> Unit): Boolean = runSuspendCatching {
         block()
         false
-    } catch (error: CancellationException) {
-        throw error
-    } catch (_: Throwable) {
+    }.getOrElse {
         true
     }
 

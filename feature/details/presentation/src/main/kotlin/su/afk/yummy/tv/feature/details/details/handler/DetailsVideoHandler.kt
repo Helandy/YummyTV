@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
@@ -23,7 +24,7 @@ internal class DetailsVideoHandler @Inject constructor(
         animeId: Int,
         pendingSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): DetailsVideosResult? =
-        runCatching { getCachedAnimeVideos(animeId) }
+        runSuspendCatching { getCachedAnimeVideos(animeId) }
             .getOrNull()
             ?.toDetailsVideosResult(pendingSubscriptionStates)
 
@@ -31,7 +32,7 @@ internal class DetailsVideoHandler @Inject constructor(
         animeId: Int,
         pendingSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
-        runCatching {
+        runSuspendCatching {
             getAnimeVideos(animeId).toDetailsVideosResult(pendingSubscriptionStates)
         }
 
@@ -39,7 +40,7 @@ internal class DetailsVideoHandler @Inject constructor(
         animeId: Int,
         pendingSubscriptionStates: Map<String, Boolean> = emptyMap(),
     ): Result<DetailsVideosResult> =
-        runCatching {
+        runSuspendCatching {
             refreshAnimeVideos(animeId).toDetailsVideosResult(pendingSubscriptionStates)
         }
 

@@ -15,10 +15,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.messages.MessagesMutationNotifier
 import su.afk.yummy.tv.domain.messages.model.ChatMessage
@@ -150,10 +151,10 @@ class ChatViewModel @AssistedInject constructor(
         if (!currentState.isAuthorized || userId < 0 || currentState.isLoading) return
         viewModelScope.launch {
             setState { copy(isLoading = true, hasLoadError = false) }
-            runCatching {
+            runSuspendCatching {
                 coroutineScope {
                     val peer = async {
-                        runCatching { getDialogs(1, 0, needUserId = userId).firstOrNull() }
+                        runSuspendCatching { getDialogs(1, 0, needUserId = userId).firstOrNull() }
                             .getOrNull()
                     }
                     val messages = async { getMessages(userId, CHAT_PAGE_SIZE) }
@@ -183,10 +184,10 @@ class ChatViewModel @AssistedInject constructor(
         if (!currentState.isAuthorized || currentState.isRefreshing) return
         viewModelScope.launch {
             setState { copy(isRefreshing = true, hasLoadError = false) }
-            runCatching {
+            runSuspendCatching {
                 coroutineScope {
                     val peer = async {
-                        runCatching { getDialogs(1, 0, needUserId = userId).firstOrNull() }
+                        runSuspendCatching { getDialogs(1, 0, needUserId = userId).firstOrNull() }
                             .getOrNull()
                     }
                     val messages = async { getMessages(userId, CHAT_PAGE_SIZE) }
@@ -219,14 +220,14 @@ class ChatViewModel @AssistedInject constructor(
         val cursor = state.messages.minOf { it.id }
         viewModelScope.launch {
             setState { copy(isLoadingOlder = true) }
-            runCatching { getMessages(userId, CHAT_PAGE_SIZE, cursor) }.fold(
+            runSuspendCatching { getMessages(userId, CHAT_PAGE_SIZE, cursor) }.fold(
                 onSuccess = { older ->
                     setState {
                         copy(
                             messages = mergeMessages(messages, older),
                             isLoadingOlder = false,
                             canLoadOlder = older.size >= CHAT_PAGE_SIZE &&
-                                    older.any { it.id < cursor },
+                                older.any { it.id < cursor },
                         )
                     }
                 },
@@ -266,7 +267,7 @@ class ChatViewModel @AssistedInject constructor(
         val answerMessageId = currentState.replyingTo?.id ?: 0
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.send(userId, text, answerMessageId) }.fold(
+            runSuspendCatching { mutationHandler.send(userId, text, answerMessageId) }.fold(
                 onSuccess = { saved ->
                     setState {
                         copy(
@@ -303,7 +304,7 @@ class ChatViewModel @AssistedInject constructor(
         ) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.edit(messageId, text) }.fold(
+            runSuspendCatching { mutationHandler.edit(messageId, text) }.fold(
                 onSuccess = { saved ->
                     setState {
                         copy(
@@ -334,7 +335,7 @@ class ChatViewModel @AssistedInject constructor(
         if (currentState.isMutating) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.delete(messageId) }.fold(
+            runSuspendCatching { mutationHandler.delete(messageId) }.fold(
                 onSuccess = { saved ->
                     setState {
                         copy(
@@ -358,7 +359,7 @@ class ChatViewModel @AssistedInject constructor(
         if (currentState.isMutating || !message.isDeleted || message.fromUserId != currentState.currentUserId) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.restore(messageId) }.fold(
+            runSuspendCatching { mutationHandler.restore(messageId) }.fold(
                 onSuccess = { saved ->
                     setState {
                         copy(
@@ -387,7 +388,7 @@ class ChatViewModel @AssistedInject constructor(
                     hasHistoryError = false,
                 )
             }
-            runCatching { mutationHandler.history(messageId) }.fold(
+            runSuspendCatching { mutationHandler.history(messageId) }.fold(
                 onSuccess = { history ->
                     setState {
                         copy(messageHistory = history.toImmutableList(), isHistoryLoading = false)
@@ -409,7 +410,7 @@ class ChatViewModel @AssistedInject constructor(
         if (currentState.isMutating) return
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.claim(messageId) }.fold(
+            runSuspendCatching { mutationHandler.claim(messageId) }.fold(
                 onSuccess = { sent ->
                     setState { copy(pendingClaimMessageId = null, isMutating = false) }
                     setEffect(
@@ -432,7 +433,7 @@ class ChatViewModel @AssistedInject constructor(
         val shouldBan = !peer.isBanned
         viewModelScope.launch {
             setState { copy(isMutating = true) }
-            runCatching { mutationHandler.setBanned(userId, shouldBan) }.fold(
+            runSuspendCatching { mutationHandler.setBanned(userId, shouldBan) }.fold(
                 onSuccess = { changed ->
                     if (changed) {
                         setState {
@@ -463,7 +464,7 @@ class ChatViewModel @AssistedInject constructor(
             state.messages.none { !it.isRead && it.toUserId == state.currentUserId }
         ) return
         readJob = viewModelScope.launch {
-            runCatching { mutationHandler.markRead(userId) }.fold(
+            runSuspendCatching { mutationHandler.markRead(userId) }.fold(
                 onSuccess = { read ->
                     if (read) {
                         setState {

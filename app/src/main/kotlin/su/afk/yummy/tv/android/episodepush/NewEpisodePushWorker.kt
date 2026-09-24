@@ -10,6 +10,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.unreadBadgeCount
 import su.afk.yummy.tv.domain.account.usecase.GetProfileNotificationsUseCase
@@ -39,7 +40,7 @@ class NewEpisodePushWorker @AssistedInject constructor(
         val userId = accountSettingsStore.yaniUserId.first()
         if (userId <= 0) return Result.success()
 
-        return runCatching {
+        return runSuspendCatching {
             val notifications = getProfileNotifications(limit = NOTIFICATIONS_PAGE_SIZE)
             // Тот же запрос обслуживает бейдж непрочитанных на главной — отдельного опроса
             // счётчиков ради него больше нет.
@@ -53,7 +54,7 @@ class NewEpisodePushWorker @AssistedInject constructor(
                 episodePushSettingsStore.addKnownNotificationIds(
                     newEpisodeNotifications.map(ProfileNotification::id).toSet(),
                 )
-                return@runCatching
+                return@runSuspendCatching
             }
 
             val newOnes = newEpisodeNotifications.filterNot { it.id in knownIds }

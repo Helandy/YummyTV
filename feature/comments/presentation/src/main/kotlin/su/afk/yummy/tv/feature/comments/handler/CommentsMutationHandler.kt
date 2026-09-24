@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.comments.handler
 
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentDraft
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
@@ -27,22 +28,22 @@ class CommentsMutationHandler @Inject constructor(
         targetType: CommentTargetType,
         targetId: Int,
         draft: CommentDraft,
-    ): Result<Comment> = runCatching {
+    ): Result<Comment> = runSuspendCatching {
         addComment(targetType, targetId, draft)
     }
 
-    suspend fun update(commentId: Int, text: String): Result<Comment> = runCatching {
+    suspend fun update(commentId: Int, text: String): Result<Comment> = runSuspendCatching {
         updateComment(commentId, text)
     }
 
-    suspend fun delete(commentId: Int): Result<Boolean> = runCatching {
+    suspend fun delete(commentId: Int): Result<Boolean> = runSuspendCatching {
         deleteComment(commentId)
     }
 
     suspend fun report(
         commentId: Int,
         reason: CommentReportReason,
-    ): Result<Boolean> = runCatching {
+    ): Result<Boolean> = runSuspendCatching {
         reportComment(commentId, reason)
     }
 
@@ -50,7 +51,7 @@ class CommentsMutationHandler @Inject constructor(
         commentId: Int,
         currentVote: CommentVote,
         selectedVote: CommentVote,
-    ): Result<CommentVoteChange> = runCatching {
+    ): Result<CommentVoteChange> = runSuspendCatching {
         if (currentVote == selectedVote) {
             CommentVoteChange(
                 result = removeCommentVote(commentId),

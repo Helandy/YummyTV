@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
@@ -44,7 +45,7 @@ internal class AksorExtractor @Inject constructor(
                 val headers = streamHeaders(playerUrl)
                 val apiUrl = "$PLAYER_ORIGIN/api/video/$hash"
 
-                val qualities = runCatching {
+                val qualities = runSuspendCatching {
                     fetchApiQualities(apiUrl, referer = playerUrl)
                 }.getOrNull()
 
@@ -154,7 +155,7 @@ internal class AksorExtractor @Inject constructor(
             .toList()
 
         val apiPath = scriptUrls.firstNotNullOfOrNull { scriptUrl ->
-            runCatching {
+            runSuspendCatching {
                 Regex("""["']([^"']*/api)["']""")
                     .find(
                         httpClient.fetchText(

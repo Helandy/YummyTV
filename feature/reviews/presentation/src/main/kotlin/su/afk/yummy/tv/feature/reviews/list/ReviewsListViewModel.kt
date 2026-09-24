@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
 import su.afk.yummy.tv.core.storage.outbox.VoteReviewPayload
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.PagedSource
 import su.afk.yummy.tv.core.utils.paging.pagingSource
 import su.afk.yummy.tv.domain.reviews.ReviewMutationNotifier
@@ -111,7 +112,7 @@ class ReviewsListViewModel @AssistedInject constructor(
         val optimistic = old.optimistic(target)
         setState { copy(reactionOverrides = reactionOverrides + (review.id to optimistic)) }
         viewModelScope.launch {
-            runCatching { voteReview(review.id, target) }.fold(
+            runSuspendCatching { voteReview(review.id, target) }.fold(
                 { saved -> setState { copy(reactionOverrides = reactionOverrides + (review.id to saved)) } },
                 { error ->
                     if (error.isNetworkError()) {
