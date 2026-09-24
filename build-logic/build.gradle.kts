@@ -33,6 +33,10 @@ gradlePlugin {
             id = "yummytv.android.application"
             implementationClass = "su.afk.yummy.tv.buildlogic.AndroidApplicationConventionPlugin"
         }
+        register("baselineProfileTasks") {
+            id = "yummytv.baselineprofile.tasks"
+            implementationClass = "su.afk.yummy.tv.buildlogic.BaselineProfileTasksPlugin"
+        }
         register("androidHilt") {
             id = "yummytv.android.hilt"
             implementationClass = "su.afk.yummy.tv.buildlogic.AndroidHiltConventionPlugin"

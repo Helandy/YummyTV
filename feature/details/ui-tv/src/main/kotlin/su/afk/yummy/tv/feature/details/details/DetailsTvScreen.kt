@@ -48,6 +48,7 @@ import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 import su.afk.yummy.tv.feature.details.view.common.DubbingPickerOverlay
+import androidx.compose.ui.platform.testTag
 
 @Preview(
     name = "Default",
@@ -121,7 +122,11 @@ fun DetailsTvScreen(
         error != null -> DetailsScreenState.Error
         else -> DetailsScreenState.Loading
     }
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("details_root"),
+    ) {
         Crossfade(
             targetState = screenState,
             animationSpec = tween(durationMillis = 260),

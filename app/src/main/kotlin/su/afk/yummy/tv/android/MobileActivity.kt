@@ -12,6 +12,10 @@ import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
 import javax.inject.Inject
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 
 @AndroidEntryPoint
 class MobileActivity : ComponentActivity() {
@@ -30,7 +34,11 @@ class MobileActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            mainGraph.MainGraph()
+            // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
+            // baseline profile и бенчмарки (модуль :baselineprofile)
+            Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
+                mainGraph.MainGraph()
+            }
         }
 
         handleIncomingIntent(intent)

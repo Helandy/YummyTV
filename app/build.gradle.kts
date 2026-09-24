@@ -2,6 +2,7 @@ plugins {
     id("yummytv.android.application")
     alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
+    alias(libs.plugins.baselineprofile)
 }
 
 fun String.toBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
@@ -56,10 +57,21 @@ android {
             matchingFallbacks += listOf("release")
         }
     }
+    // Плагин baselineprofile создаёт nonMinifiedRelease/benchmarkRelease на основе release,
+    // а у release своей подписи нет — без debug-ключа эти APK не поставить на устройство.
+    buildTypes.matching { it.name.startsWith("nonMinified") || it.name.startsWith("benchmark") }
+        .configureEach { signingConfig = signingConfigs.getByName("debug") }
     buildFeatures {
         buildConfig = true
         resValues = true
     }
+}
+
+// Профиль генерируется вручную на эмуляторах (см. docs/baseline-profile.md) и коммитится
+// в src/release/generated/baselineProfiles; обычная сборка его только упаковывает.
+baselineProfile {
+    automaticGenerationDuringBuild = false
+    dexLayoutOptimization = true
 }
 
 androidComponents {
@@ -187,5 +199,8 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    // APK ставится мимо Play (самообновление) — без profileinstaller профиль не применится
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
     add("ksp", libs.hilt.work.compiler)
 }

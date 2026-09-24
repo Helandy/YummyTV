@@ -50,6 +50,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.R
+import androidx.compose.ui.platform.testTag
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -216,6 +217,7 @@ internal fun HomeDashboard(
             state = lazyColumnState,
             modifier = Modifier
                 .fillMaxSize()
+                .testTag("home_feed")
                 .focusRequester(homeContentFocusRequester)
                 .background(MaterialTheme.colorScheme.background)
                 .padding(top = 12.dp)

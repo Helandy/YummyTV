@@ -12,6 +12,10 @@ import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.main.TvMainGraph
 import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
 import javax.inject.Inject
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 
 @AndroidEntryPoint
 class TvActivity : ComponentActivity() {
@@ -34,7 +38,11 @@ class TvActivity : ComponentActivity() {
         tvIntegration.bindBrowsableChannelRequests(this, lifecycleScope)
 
         setContent {
-            mainGraph.MainGraph()
+            // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
+            // baseline profile и бенчмарки (модуль :baselineprofile)
+            Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
+                mainGraph.MainGraph()
+            }
         }
 
         tvIntegration.start()

@@ -61,6 +61,7 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.presentation.R as PresentationR
+import androidx.compose.ui.platform.testTag
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -179,7 +180,9 @@ fun HomeMobileScreen(
             },
         ) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("home_feed"),
                 contentPadding = PaddingValues(
                     top = 12.dp,
                     bottom = MobileBottomBarDefaults.contentBottomPadding,
@@ -196,7 +199,9 @@ fun HomeMobileScreen(
                             HomeSearchEntry(
                                 text = stringResource(R.string.home_mobile_search_hint),
                                 onClick = mainActions.onSearchClick,
-                                modifier = Modifier.padding(horizontal = 16.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .testTag("home_search"),
                             )
                             OfflineBanner(isOffline = LocalIsOffline.current)
                         }

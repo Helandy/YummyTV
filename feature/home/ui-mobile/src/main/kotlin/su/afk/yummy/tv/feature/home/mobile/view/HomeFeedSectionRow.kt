@@ -15,6 +15,8 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.mobile.utils.showMobileCardMetadata
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.Box
 
 @Composable
 internal fun HomeFeedSectionRow(
@@ -38,13 +40,15 @@ internal fun HomeFeedSectionRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(section.items, key = { lazyKey("homeitem", it.id) }) { item ->
-                HomeItemCard(
-                    item = item,
-                    showMetadata = showCardMetadata,
-                    showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
-                    onClick = { onItemSelected(item) },
-                    onLongClick = onItemLongClick?.let { { it(item) } },
-                )
+                Box(modifier = Modifier.testTag("anime_card")) {
+                    HomeItemCard(
+                        item = item,
+                        showMetadata = showCardMetadata,
+                        showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
+                        onClick = { onItemSelected(item) },
+                        onLongClick = onItemLongClick?.let { { it(item) } },
+                    )
+                }
             }
         }
     }

@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
+import androidx.compose.ui.platform.testTag
 
 @Composable
 internal fun <T> MobileMainScaffold(
@@ -100,9 +101,11 @@ private fun <T> RowScope.MobileNavigationItem(
     onSelected: () -> Unit,
 ) {
     NavigationBarItem(
-        modifier = Modifier.focusProperties {
-            upFocusRequester?.let { up = it }
-        },
+        modifier = Modifier
+            .testTag("main_tab")
+            .focusProperties {
+                upFocusRequester?.let { up = it }
+            },
         selected = selected,
         onClick = onSelected,
         icon = {

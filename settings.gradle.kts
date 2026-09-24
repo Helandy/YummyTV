@@ -34,6 +34,7 @@ dependencyResolutionManagement {
 }
 
 include(":app")
+include(":baselineprofile")
 
 include(":core:navigation")
 include(":core:analytics")

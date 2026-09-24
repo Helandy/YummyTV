@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
 import su.afk.yummy.tv.feature.details.mobile.details.view.PosterDialog
+import androidx.compose.ui.platform.testTag
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -104,6 +105,7 @@ fun DetailsMobileScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .testTag("details_root")
                 .navigationBarsPadding(),
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
