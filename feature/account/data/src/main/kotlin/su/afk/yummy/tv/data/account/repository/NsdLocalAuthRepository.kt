@@ -38,11 +38,13 @@ internal class NsdLocalAuthRepository @Inject constructor(
 
         val registration = advertiser.register(
             port = serverHandle.port,
-            onRegistered = {
+            onRegistered = { serviceName ->
+                session.serviceName = serviceName
                 trySend(
                     LocalAuthServerState.Pairing(
                         pin = session.pin,
                         port = serverHandle.port,
+                        serviceName = serviceName,
                         attemptsLeft = session.attemptsLeft,
                     ),
                 )

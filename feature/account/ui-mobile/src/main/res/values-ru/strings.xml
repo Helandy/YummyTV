@@ -219,6 +219,10 @@
     <string name="account_local_auth_discovery_empty">Устройства не найдены. Убедитесь, что на ТВ выбран режим "Войти с телефона" и оба устройства в одной сети Wi-Fi.</string>
     <string name="account_local_auth_enter_pin">Введите код с экрана ТВ</string>
     <string name="account_local_auth_transfer_button">Передать сессию</string>
+    <string name="account_local_auth_scan_qr">Отсканировать QR-код с ТВ</string>
+    <string name="account_local_auth_scanner_loading">Загружаем сканер…</string>
+    <string name="account_local_auth_manual_hint">или введите код вручную</string>
+    <string name="account_local_auth_waiting_device">Ищем этот телевизор в сети…</string>
     <string name="account_local_auth_transfer_success">Сессия успешно передана</string>
     <string name="account_local_auth_permission_denied">Для входа на ТВ нужно разрешение на поиск устройств в локальной сети.</string>
     <string name="account_local_auth_mobile_search_again">Искать заново</string>
@@ -239,4 +243,6 @@
     <string name="account_error_local_auth_pin_expired">Срок действия кода истёк. Обновите код на ТВ.</string>
     <string name="account_error_local_auth_too_many_attempts">Слишком много неудачных попыток. Обновите код на ТВ.</string>
     <string name="account_error_local_auth_sign_in_failed">Код верный, но ТВ не смог войти. Попробуйте ещё раз.</string>
+    <string name="account_error_local_auth_invalid_qr">Это не QR-код YummyTV. Отсканируйте код с экрана входа на ТВ.</string>
+    <string name="account_error_local_auth_scanner_unavailable">Сканер QR недоступен: нужны сервисы Google Play. Введите код вручную.</string>
 </resources>

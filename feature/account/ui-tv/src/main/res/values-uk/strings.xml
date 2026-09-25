@@ -106,7 +106,7 @@
     <string name="account_local_auth_login_from_mobile">Увійти з телефону</string>
     <string name="account_local_auth_login_from_mobile_hint">Пошук пристрою та передача через локальну мережу за кодом</string>
     <string name="account_local_auth_pairing_title">Вхід через мобільний додаток</string>
-    <string name="account_local_auth_pairing_subtitle">Переконайтеся, що обидва пристрої в одній мережі Wi-Fi. На телефоні перейдіть в Акаунт -> Увійти на ТВ та введіть цей код:</string>
+    <string name="account_local_auth_pairing_subtitle">Переконайтеся, що обидва пристрої в одній мережі Wi-Fi. На телефоні перейдіть в Акаунт -> Увійти на ТВ та відскануйте QR-код або введіть код:</string>
     <string name="account_local_auth_transferring">Отримання сесії...</string>
     <string name="account_local_auth_success">Успішно! Входимо...</string>
     <string name="account_local_auth_error_invalid_pin">Невірний код. Перевірте код на екрані ТВ.</string>
@@ -134,4 +134,6 @@
     <string name="account_tv_error_local_auth_pin_expired">Термін дії коду минув.</string>
     <string name="account_tv_error_local_auth_too_many_attempts">Забагато невдалих спроб.</string>
     <string name="account_tv_error_local_auth_sign_in_failed">Код правильний, але увійти не вдалося.</string>
+    <string name="account_tv_error_local_auth_invalid_qr">Це не QR-код YummyTV.</string>
+    <string name="account_tv_error_local_auth_scanner_unavailable">Сканер QR недоступний на цьому пристрої.</string>
 </resources>

@@ -100,6 +100,7 @@ internal class LocalAuthServer @Inject constructor(
             LocalAuthServerState.Pairing(
                 pin = pin,
                 port = port,
+                serviceName = serviceName,
                 attemptsLeft = left,
                 lastError = LocalAuthError.INVALID_PIN,
             )

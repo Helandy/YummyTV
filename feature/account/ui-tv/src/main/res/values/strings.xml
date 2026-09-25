@@ -106,7 +106,7 @@
     <string name="account_local_auth_login_from_mobile">Login from mobile</string>
     <string name="account_local_auth_login_from_mobile_hint">Discovery and code-based transfer via local network</string>
     <string name="account_local_auth_pairing_title">Login via mobile app</string>
-    <string name="account_local_auth_pairing_subtitle">Make sure both devices are on the same Wi-Fi. On your mobile, go to Account -> Login on TV and enter this code:</string>
+    <string name="account_local_auth_pairing_subtitle">Make sure both devices are on the same Wi-Fi. On your mobile, go to Account -> Login on TV and scan the QR code or enter the code:</string>
     <string name="account_local_auth_transferring">Receiving session...</string>
     <string name="account_local_auth_success">Success! Logging in...</string>
     <string name="account_local_auth_error_invalid_pin">Wrong code. Check the code on the TV screen.</string>
@@ -132,4 +132,6 @@
     <string name="account_tv_error_local_auth_pin_expired">The code has expired.</string>
     <string name="account_tv_error_local_auth_too_many_attempts">Too many wrong attempts.</string>
     <string name="account_tv_error_local_auth_sign_in_failed">The code is correct, but signing in failed.</string>
+    <string name="account_tv_error_local_auth_invalid_qr">This QR code is not from YummyTV.</string>
+    <string name="account_tv_error_local_auth_scanner_unavailable">QR scanner is unavailable on this device.</string>
 </resources>

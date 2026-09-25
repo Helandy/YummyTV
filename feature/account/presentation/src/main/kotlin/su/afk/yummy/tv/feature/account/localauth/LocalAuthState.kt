@@ -17,6 +17,8 @@ class LocalAuthState {
         val devices: ImmutableList<DiscoveredDevice> = persistentListOf(),
         val selectedDevice: DiscoveredDevice? = null,
         val pin: String = "",
+        /** ТВ из отсканированного QR, которого NSD-поиск ещё не нашёл: перенос стартует при появлении. */
+        val pendingDeviceId: String? = null,
         val isSearching: Boolean = false,
         val isPermissionDenied: Boolean = false,
         val isTransferring: Boolean = false,
@@ -45,6 +47,12 @@ class LocalAuthState {
         data class DeviceSelected(val device: DiscoveredDevice) : Event
         data class PinChanged(val pin: String) : Event
         data object TransferSelected : Event
+
+        /** Сырой текст из сканера QR: разбор и выбор ТВ — во ViewModel. */
+        data class QrScanned(val raw: String) : Event
+
+        /** Сканер не запустился: обычно нет сервисов Google Play. Отмена скана сюда не приходит. */
+        data object QrScanFailed : Event
     }
 
     sealed interface Effect : UiEffect {

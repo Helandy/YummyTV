@@ -219,6 +219,10 @@
     <string name="account_local_auth_discovery_empty">No devices found. Make sure the TV app is in "Login from mobile" mode and both devices are on the same Wi-Fi.</string>
     <string name="account_local_auth_enter_pin">Enter the code from TV</string>
     <string name="account_local_auth_transfer_button">Transfer session</string>
+    <string name="account_local_auth_scan_qr">Scan the QR code on the TV</string>
+    <string name="account_local_auth_scanner_loading">Loading the scanner…</string>
+    <string name="account_local_auth_manual_hint">or enter the code manually</string>
+    <string name="account_local_auth_waiting_device">Looking for this TV on your network…</string>
     <string name="account_local_auth_transfer_success">Session transferred successfully</string>
     <string name="account_local_auth_permission_denied">Permission to find devices on the local network is required to sign in on TV.</string>
     <string name="account_local_auth_mobile_search_again">Search again</string>
@@ -239,4 +243,6 @@
     <string name="account_error_local_auth_pin_expired">The code has expired. Get a new one on the TV.</string>
     <string name="account_error_local_auth_too_many_attempts">Too many wrong attempts. Get a new code on the TV.</string>
     <string name="account_error_local_auth_sign_in_failed">The code is correct, but the TV could not sign in. Try again.</string>
+    <string name="account_error_local_auth_invalid_qr">This QR code is not from YummyTV. Scan the code on the TV login screen.</string>
+    <string name="account_error_local_auth_scanner_unavailable">QR scanner is unavailable: Google Play services are required. Enter the code manually.</string>
 </resources>

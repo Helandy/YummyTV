@@ -9,7 +9,9 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
+import su.afk.yummy.tv.domain.account.model.LocalAuthPairingPayload
 import su.afk.yummy.tv.domain.account.model.SessionTransferException
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -49,7 +51,7 @@ class LocalAuthViewModel @Inject internal constructor(
 
             is LocalAuthState.Event.DeviceSelected -> {
                 analytics.eventMobileDeviceSelected()
-                setState { copy(selectedDevice = event.device, error = null) }
+                setState { copy(selectedDevice = event.device, pendingDeviceId = null, error = null) }
             }
 
             is LocalAuthState.Event.PinChanged -> setState {
@@ -60,7 +62,63 @@ class LocalAuthViewModel @Inject internal constructor(
             }
 
             LocalAuthState.Event.TransferSelected -> transfer()
+
+            is LocalAuthState.Event.QrScanned -> onQrScanned(event.raw)
+
+            LocalAuthState.Event.QrScanFailed -> {
+                analytics.eventMobileQrScanned(LocalAuthAnalytics.QrScanResult.UNAVAILABLE)
+                setState { copy(error = AccountUiError.LOCAL_AUTH_SCANNER_UNAVAILABLE) }
+            }
         }
+    }
+
+    /**
+     * QR несёт код и NSD-имя ТВ: если этот ТВ уже найден — переносим сессию сразу, иначе ждём
+     * его появления в поиске. Голый код без имени только подставляется в поле, как ручной ввод.
+     */
+    private fun onQrScanned(raw: String) {
+        if (currentState.isTransferring) return
+        val payload = LocalAuthPairingPayload.parse(raw)
+        if (payload == null) {
+            analytics.eventMobileQrScanned(LocalAuthAnalytics.QrScanResult.INVALID)
+            setState { copy(error = AccountUiError.LOCAL_AUTH_INVALID_QR) }
+            return
+        }
+        analytics.eventMobileQrScanned(LocalAuthAnalytics.QrScanResult.VALID)
+
+        val deviceId = payload.deviceId
+        if (deviceId == null) {
+            setState {
+                copy(
+                    pin = payload.code,
+                    selectedDevice = selectedDevice ?: devices.singleOrNull(),
+                    pendingDeviceId = null,
+                    error = null,
+                )
+            }
+            if (currentState.canTransfer) transfer()
+            return
+        }
+
+        val device = currentState.devices.findById(deviceId)
+        setState {
+            copy(
+                pin = payload.code,
+                selectedDevice = device,
+                pendingDeviceId = if (device == null) deviceId else null,
+                error = null,
+            )
+        }
+        if (device != null) transfer()
+    }
+
+    private fun onDevicesDiscovered(devices: List<DiscoveredDevice>) {
+        setState { copy(devices = devices.toImmutableList()) }
+        val pendingId = currentState.pendingDeviceId ?: return
+        val device = devices.findById(pendingId) ?: return
+        if (currentState.isTransferring) return
+        setState { copy(selectedDevice = device, pendingDeviceId = null) }
+        transfer()
     }
 
     private fun startDiscovery() {
@@ -74,9 +132,7 @@ class LocalAuthViewModel @Inject internal constructor(
         }
         localAuthHandler.startDiscovery(
             scope = viewModelScope,
-            onDevicesDiscovered = { devices ->
-                setState { copy(devices = devices.toImmutableList()) }
-            },
+            onDevicesDiscovered = ::onDevicesDiscovered,
             onFailure = {
                 analytics.eventMobileDiscoveryFailed()
                 setState { copy(isSearching = false, error = AccountUiError.TRANSFER_FAILED) }
@@ -98,6 +154,7 @@ class LocalAuthViewModel @Inject internal constructor(
                         copy(
                             pin = "",
                             selectedDevice = null,
+                            pendingDeviceId = null,
                             isSearching = false,
                             isTransferring = false,
                             isTransferred = true,
@@ -114,6 +171,12 @@ class LocalAuthViewModel @Inject internal constructor(
                     }
                 }
         }
+    }
+
+    private companion object {
+        /** mDNS-имена регистронезависимы, а Android иногда меняет регистр при резолве. */
+        fun List<DiscoveredDevice>.findById(id: String): DiscoveredDevice? =
+            firstOrNull { it.id.equals(id, ignoreCase = true) }
     }
 
     override fun onCleared() {

@@ -35,4 +35,6 @@ private val AccountUiError.messageRes: Int
         AccountUiError.LOCAL_AUTH_PIN_EXPIRED -> R.string.account_tv_error_local_auth_pin_expired
         AccountUiError.LOCAL_AUTH_TOO_MANY_ATTEMPTS -> R.string.account_tv_error_local_auth_too_many_attempts
         AccountUiError.LOCAL_AUTH_SIGN_IN_FAILED -> R.string.account_tv_error_local_auth_sign_in_failed
+        AccountUiError.LOCAL_AUTH_INVALID_QR -> R.string.account_tv_error_local_auth_invalid_qr
+        AccountUiError.LOCAL_AUTH_SCANNER_UNAVAILABLE -> R.string.account_tv_error_local_auth_scanner_unavailable
     }

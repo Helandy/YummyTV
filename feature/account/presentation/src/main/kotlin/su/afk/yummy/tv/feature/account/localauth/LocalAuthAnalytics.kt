@@ -107,6 +107,20 @@ internal class LocalAuthAnalytics @Inject constructor(
         tracker.track(EVENT_MOBILE_DEVICE_SELECTED)
     }
 
+    /**
+     * Итог скана QR. Содержимое QR не отправляется: в нём код сопряжения.
+     *
+     * Параметры: result (`valid`, `invalid`, `unavailable`).
+     */
+    fun eventMobileQrScanned(result: QrScanResult) {
+        tracker.track(
+            EVENT_MOBILE_QR_SCANNED,
+            analyticsParamsOf(PARAM_RESULT to result.name.lowercase()),
+        )
+    }
+
+    enum class QrScanResult { VALID, INVALID, UNAVAILABLE }
+
     /** Пользователь нажал «Передать сессию». */
     fun eventMobileTransferSelected() {
         tracker.track(EVENT_MOBILE_TRANSFER_SELECTED)
@@ -147,6 +161,7 @@ internal class LocalAuthAnalytics @Inject constructor(
         private const val PARAM_GRANTED = "granted"
         private const val PARAM_MISSING = "missing"
         private const val PARAM_DEVICE_COUNT = "device_count"
+        private const val PARAM_RESULT = "result"
         private const val REASON_UNKNOWN = "unknown"
 
         const val EVENT_TV_PAIRING_STARTED = "local_auth_tv_pairing_started"
@@ -163,6 +178,7 @@ internal class LocalAuthAnalytics @Inject constructor(
         const val EVENT_MOBILE_DISCOVERY_FAILED = "local_auth_mobile_discovery_failed"
         const val EVENT_MOBILE_SEARCH_RETRY = "local_auth_mobile_search_retry"
         const val EVENT_MOBILE_DEVICE_SELECTED = "local_auth_mobile_device_selected"
+        const val EVENT_MOBILE_QR_SCANNED = "local_auth_mobile_qr_scanned"
         const val EVENT_MOBILE_TRANSFER_SELECTED = "local_auth_mobile_transfer_selected"
         const val EVENT_MOBILE_TRANSFER_SUCCESS = "local_auth_mobile_transfer_success"
         const val EVENT_MOBILE_TRANSFER_FAILURE = "local_auth_mobile_transfer_failure"

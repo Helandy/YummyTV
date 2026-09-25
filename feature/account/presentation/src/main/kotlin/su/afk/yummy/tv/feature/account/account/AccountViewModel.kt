@@ -412,10 +412,6 @@ class AccountViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             isSignedIn = result.account.id > 0,
-                            // Очищаем пароль в том же setState, что и isSignedIn: карточка входа уходит
-                            // из композиции, не перерисовываясь с пустым паролем, и autofill
-                            // предлагает сохранить реальную пару.
-                            password = "",
                             isCaptchaRequired = false,
                             captchaChallengeId = captchaChallengeId + 1,
                             captchaError = null,

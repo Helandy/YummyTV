@@ -43,6 +43,8 @@ coil = "3.6.3"
 jsoup = "1.23.2"
 media3 = "1.11.1"
 play-services-base = "18.11.0"
+play-services-code-scanner = "16.1.0"
+zxing-core = "3.5.4"
 
 # TV
 androidx-tv-tvprovider = "1.1.0"
@@ -54,7 +56,7 @@ varioqub = "0.9.0"
 # Performance
 androidx-benchmark = "1.5.0"
 androidx-profileinstaller = "1.4.1"
-androidx-tracing = "1.2.0"
+androidx-tracing = "2.0.3"
 
 # Testing
 androidx-espresso = "3.7.0"
@@ -64,7 +66,6 @@ androidx-uiautomator = "2.4.0"
 
 [libraries]
 stability-analyzer-gradle-plugin = { module = "com.github.skydoves.compose.stability.analyzer:com.github.skydoves.compose.stability.analyzer.gradle.plugin", version.ref = "stability-analyzer" }
-
 
 # Build plugins
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -146,6 +147,8 @@ androidx-media3-datasource-okhttp = { module = "androidx.media3:media3-datasourc
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3" }
 media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-base" }
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "play-services-code-scanner" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 
 # Storage / Background work
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

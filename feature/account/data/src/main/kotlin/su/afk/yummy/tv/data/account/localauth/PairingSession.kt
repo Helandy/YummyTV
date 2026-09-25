@@ -20,6 +20,10 @@ internal class PairingSession(
 
     val attemptsLeft: Int get() = attempts.get()
 
+    /** Имя, под которым NSD зарегистрировал сервис; известно только после регистрации. */
+    @Volatile
+    var serviceName: String = ""
+
     /** @return причину отказа, если запрос принимать уже нельзя. */
     fun rejection(): Rejection? = when {
         now() > deadline -> Rejection.EXPIRED

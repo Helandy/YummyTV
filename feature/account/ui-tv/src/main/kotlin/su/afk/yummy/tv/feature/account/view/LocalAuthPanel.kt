@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
+import su.afk.yummy.tv.domain.account.model.LocalAuthPairingPayload
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.R
 
@@ -66,15 +67,25 @@ internal fun LocalAuthPanel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
-                Text(
-                    text = state.pin.chunked(LocalAuthCode.GROUP_SIZE).joinToString(" "),
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = 72.sp,
-                        letterSpacing = 8.sp,
-                    ),
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LocalAuthQrCode(
+                        content = LocalAuthPairingPayload.encode(state.serviceName, state.pin),
+                        size = 200.dp,
+                    )
+                    Text(
+                        text = state.pin.chunked(LocalAuthCode.GROUP_SIZE).joinToString(" "),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontSize = 56.sp,
+                            letterSpacing = 6.sp,
+                        ),
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                    )
+                }
                 val lastError = state.lastError
                 if (lastError != null) {
                     Text(

@@ -32,7 +32,7 @@ interface LocalAuthRepository {
     /**
      * Transfers the session to the specified device using the PIN for encryption.
      * @param device The target device.
-     * @param pin The 6-digit PIN from the TV.
+     * @param pin Код сопряжения с экрана ТВ.
      * @param refreshToken The session refresh token to transfer.
      */
     suspend fun transferSession(device: DiscoveredDevice, pin: String, refreshToken: String)

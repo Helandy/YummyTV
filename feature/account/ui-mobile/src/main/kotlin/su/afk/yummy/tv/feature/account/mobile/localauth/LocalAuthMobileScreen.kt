@@ -47,6 +47,7 @@ import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
+import su.afk.yummy.tv.feature.account.mobile.localauth.utils.rememberLocalAuthQrScanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +80,11 @@ fun LocalAuthMobileScreen(
         onEvent(LocalAuthState.Event.RetrySearchSelected)
         permissionGate.start()
     }
+
+    val qrScanner = rememberLocalAuthQrScanner(
+        onScanned = { raw -> onEvent(LocalAuthState.Event.QrScanned(raw)) },
+        onFailed = { onEvent(LocalAuthState.Event.QrScanFailed) },
+    )
 
     LaunchedEffect(Unit) {
         onEvent(LocalAuthState.Event.ScreenOpened)
@@ -146,6 +152,16 @@ fun LocalAuthMobileScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            LocalAuthScanQrButton(
+                enabled = !state.isTransferring,
+                isPreparing = qrScanner.isPreparing,
+                onClick = { qrScanner.scan() },
+            )
+
+            if (state.pendingDeviceId != null) {
+                LocalAuthWaitingDevice()
+            }
 
             if (state.devices.isEmpty()) {
                 LocalAuthSearchStatus(

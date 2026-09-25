@@ -12,9 +12,10 @@ internal class NsdAdvertiser @Inject constructor(
 ) {
     private val nsdManager by lazy { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
 
-    fun register(port: Int, onRegistered: () -> Unit, onFailed: () -> Unit): Registration {
+    fun register(port: Int, onRegistered: (serviceName: String) -> Unit, onFailed: () -> Unit): Registration {
         val listener = object : NsdManager.RegistrationListener {
-            override fun onServiceRegistered(serviceInfo: NsdServiceInfo) = onRegistered()
+            override fun onServiceRegistered(serviceInfo: NsdServiceInfo) =
+                onRegistered(serviceInfo.serviceName ?: LocalAuthContract.deviceServiceName())
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) = onFailed()
             override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) = Unit
             override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) = Unit

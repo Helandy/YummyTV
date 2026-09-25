@@ -3,6 +3,8 @@
 Вводить логин и пароль пультом неудобно, поэтому приложение умеет переносить уже существующую
 сессию с телефона на ТВ по локальной сети. Сервер yani в этом не участвует: телефон и ТВ
 договариваются напрямую, а подтверждением служит 10-значный код, который ТВ показывает на экране.
+Рядом с кодом ТВ рисует QR: основной путь на телефоне — отсканировать его, тогда не нужно ни
+выбирать ТВ из списка, ни набирать код. Ручной ввод остаётся запасным путём.
 
 ## Роли
 
@@ -22,10 +24,12 @@
 │ код = SecureRandom (10 символов)           │
 │ embeddedServer(CIO, port = 0)              │
 │ NSD register _yummytv_auth._tcp.           │
-│──────── Pairing(pin, port) → UI ───────────│
+│ onServiceRegistered → serviceName          │
+│──── Pairing(pin, port, serviceName) → UI ──│ QR: yummytv://pair?d=<serviceName>&c=<код>
 │                                            │ DiscoveryStarted
 │                                            │ NSD discover + resolve
-│                                            │ выбор устройства, ввод кода
+│                                            │ скан QR → ТВ и код выбираются сами
+│                                            │ (или выбор устройства и ввод кода руками)
 │                                            │ PBKDF2(код, salt) → AES-GCM(refreshToken)
 │◀──────── POST /transfer {token, iv, salt} ─│
 │ decrypt → signInWithToken(token)           │
@@ -73,6 +77,61 @@
 
 Отказ — это не сбой сети, у него отдельная причина `LocalAuthError.PERMISSION_DENIED` и свой текст,
 иначе пользователь видел бы «не удалось объявить ТВ» и шёл чинить роутер.
+
+## QR-код
+
+ТВ кодирует в QR строку `yummytv://pair?d=<имя NSD-сервиса>&c=<код>`, значения URL-encoded. Формат
+и разбор живут в `LocalAuthPairingPayload` (domain) — одна точка для обеих сторон.
+
+**IP и порт в QR нет намеренно.** У приставки бывает несколько интерфейсов (Ethernet, Wi-Fi,
+VPN), и выбрать «тот самый» адрес на стороне ТВ ненадёжно. Телефон всё равно ведёт NSD-поиск, так
+что по имени сервиса он находит ТВ с уже проверенным адресом. Заодно QR не расширяет поверхность
+атаки: в нём ровно то, что и так видно на экране, плюс публичное имя из mDNS.
+
+**Имя берётся из `onServiceRegistered`, а не из `deviceServiceName()`.** При конфликте имён NSD
+переименовывает сервис (`YummyTv-X (2)`), и телефон увидит именно новое имя. Поэтому
+`NsdAdvertiser` отдаёт реальное имя в колбэк, оно сохраняется в `PairingSession.serviceName` и
+попадает в `LocalAuthServerState.Pairing.serviceName` — в том числе при повторных `Pairing` после
+неверного кода. Имена сравниваются без учёта регистра: mDNS регистронезависим.
+
+### Отрисовка на ТВ
+
+QR генерирует **zxing core** (`ErrorCorrectionLevel.M`, поле в один модуль), рисует `Canvas`
+(`LocalAuthQrCode`). Цвета жёстко чёрный по белому на белой подложке независимо от темы: на тёмной
+теме инвертированный QR многие сканеры не читают, а без светлой рамки теряется «тихая зона».
+
+### Сканирование на телефоне
+
+Используется **Google Code Scanner** (`play-services-code-scanner`): системный экран сканера из
+Play Services сам работает с камерой, поэтому приложению не нужны ни разрешение `CAMERA`, ни
+CameraX.
+
+Модуль сканера качается **по требованию** через `ModuleInstallClient`, а не при установке
+приложения (meta-data `com.google.mlkit.vision.DEPENDENCIES` намеренно не объявлена: APK общий, и
+модуль качался бы на все ТВ и на телефоны, где этим входом не пользуются):
+
+* при открытии экрана «Войти на ТВ» — фоновый `installModules` без слушателя; если модуль уже есть,
+  Play Services ничего не делают. Пока человек идёт к ТВ, модуль обычно успевает скачаться;
+* если на момент нажатия модуля ещё нет — кнопка показывает «Загружаем сканер…», `installModules`
+  идёт со `InstallStatusListener`, и по `STATE_COMPLETED` скан стартует сам. `STATE_FAILED` /
+  `STATE_CANCELED` и отсутствие Play Services сводятся к `QrScanFailed`.
+
+Состояние загрузки живёт в `LocalAuthQrScannerState` (UI), а не во ViewModel: это деталь Play
+Services, presentation о ней не знает.
+
+Что делает `LocalAuthViewModel` с результатом скана:
+
+| Отсканировано                          | Поведение                                                                          |
+|----------------------------------------|------------------------------------------------------------------------------------|
+| QR с именем, ТВ уже найден             | ТВ выбирается, код подставляется, перенос стартует сразу                           |
+| QR с именем, ТВ ещё не найден          | `pendingDeviceId`, на экране «Ищем этот телевизор…»; перенос — при появлении в NSD |
+| голый код (до 12 символов с пробелами) | код подставляется; если в списке ровно один ТВ — он выбирается и перенос стартует  |
+| что угодно другое                      | `LOCAL_AUTH_INVALID_QR` — «Это не QR-код YummyTV»                                  |
+| сканер не запустился                   | `LOCAL_AUTH_SCANNER_UNAVAILABLE` — нет Play Services, предлагаем ручной ввод       |
+
+Отмена скана пользователем ничего не показывает. Ручной выбор ТВ сбрасывает `pendingDeviceId`.
+Ограничение длины для голого кода нужно, чтобы `normalize()` не выцепил десять «валидных» символов
+из чужого URL.
 
 ## Транспорт
 
@@ -168,7 +227,8 @@ UI:
 
 ## Состояния и жизненный цикл сервера
 
-`LocalAuthServerState`: `Idle` → `Pairing(pin, port, attemptsLeft, lastError)` → `Transferring` →
+`LocalAuthServerState`: `Idle` → `Pairing(pin, port, serviceName, attemptsLeft, lastError)` →
+`Transferring` →
 `Success`, плюс терминальный `Error(reason)`.
 
 Ошибки разделены на два класса:
@@ -225,13 +285,16 @@ UI:
 | `local_auth_mobile_discovery_failed`   | поиск не запустился            | —               |
 | `local_auth_mobile_discovery_finished` | экран закрыт, итог поиска      | `device_count`  |
 | `local_auth_mobile_device_selected`    | выбран ТВ из списка            | —               |
+| `local_auth_mobile_qr_scanned`         | итог скана QR                  | `result`        |
 | `local_auth_mobile_transfer_selected`  | нажато «Передать сессию»       | —               |
 | `local_auth_mobile_transfer_success`   | ТВ подтвердил приём            | —               |
 | `local_auth_mobile_transfer_failure`   | передача не удалась            | `reason`        |
 
 `reason` — имя `LocalAuthError` в нижнем регистре либо `unknown`, если ТВ не ответил вовсе.
+`result` — `valid`, `invalid` или `unavailable` (сканер не запустился).
 
-**В трекер не уходят код, refresh-токен, адреса и имена найденных устройств** — это либо секреты,
+**В трекер не уходят код, содержимое QR, refresh-токен, адреса и имена найденных устройств** — это
+либо секреты,
 либо данные локальной сети пользователя.
 
 Две пары событий дают воронку: `tv_pin_shown` → `tv_transfer_success` и `mobile_screen` →
@@ -246,6 +309,8 @@ UI:
   не сработает даже на реальном железе.
 * **Окно после исчерпания попыток.** Сервер гасится по состоянию, но уже начатые в этот момент
   запросы получат `429` — это ожидаемо и на UI не влияет.
+* **Скан QR требует Google Play Services.** На телефонах без них (Huawei, кастомные прошивки)
+  сканер не запустится — остаётся ручной ввод, экран об этом говорит.
 * **Старые сборки несовместимы.** Формат кода менялся вместе с длиной, а до Android 16 приложению не
   требовалось `ACCESS_LOCAL_NETWORK`. Пара «новый телефон + старый ТВ» работать не будет; версия
   протокола по сети не передаётся, так что диагностируется это только по логам.
@@ -269,8 +334,11 @@ UI:
 | DTO           | `feature/account/data/.../dto/SessionTransferDto.kt`                                                                 |
 | Контракт      | `feature/account/domain/.../repository/LocalAuthRepository.kt`                                                       |
 | Формат кода   | `feature/account/domain/.../model/LocalAuthCode.kt`                                                                  |
+| Формат QR     | `feature/account/domain/.../model/LocalAuthPairingPayload.kt`                                                        |
 | Состояния     | `feature/account/domain/.../model/LocalAuthServerState.kt`, `.../model/LocalAuthError.kt`                            |
 | Разрешения    | `core/designsystem/.../permissions/LocalNetworkPermissions.kt`                                                       |
 | Presentation  | `feature/account/presentation/.../account/handler/AccountLocalAuthHandler.kt`, `.../localauth/LocalAuthViewModel.kt` |
 | UI ТВ         | `feature/account/ui-tv/.../view/LocalAuthPanel.kt`, `.../view/LocalNetworkPermissionTvDialog.kt`                     |
+| QR на ТВ      | `feature/account/ui-tv/.../view/LocalAuthQrCode.kt`, `.../utils/LocalAuthQrUtils.kt`                                 |
 | UI телефона   | `feature/account/ui-mobile/.../localauth/LocalAuthMobileScreen.kt`, `.../localauth/LocalAuthPinInput.kt`             |
+| Скан QR       | `feature/account/ui-mobile/.../localauth/utils/LocalAuthQrScanner.kt`, `.../localauth/LocalAuthScanQrButton.kt`      |
