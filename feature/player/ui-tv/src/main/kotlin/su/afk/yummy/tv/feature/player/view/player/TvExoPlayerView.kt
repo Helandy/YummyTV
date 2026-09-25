@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.player.view.player
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -310,13 +309,9 @@ internal fun TvExoPlayerView(
      * Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции.
      * Повторные вызовы гасит endHandled — поллинг тикает каждые 500 мс.
      */
-    fun handleEpisodeEnd(positionMs: Long, durationMs: Long, source: TvPlayerEndSource) {
+    fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
         if (endHandled) return
         endHandled = true
-        Log.i(
-            TV_PLAYER_END_LOG_TAG,
-            "episode end source=${source.name} position=$positionMs duration=$durationMs",
-        )
         completionTracker.onEpisodeEnd(positionMs = positionMs, durationMs = durationMs)
         if (exitState.requested) return
         if (playback.hasNextEpisode || playback.nextEpisodeDubbing != null) {
@@ -347,7 +342,7 @@ internal fun TvExoPlayerView(
         reporter = reporter,
         stepSeekToast = stepSeekToast,
         onEpisodeEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs, TvPlayerEndSource.Seek)
+            handleEpisodeEnd(positionMs, durationMs)
         },
         onBackwardStep = {
             // Ушли от конца серии — конец эпизода должен отработать заново
@@ -430,7 +425,7 @@ internal fun TvExoPlayerView(
         wantsPlay = { wantsPlay },
         onWantsPlayChanged = { wantsPlay = it },
         onEpisodeEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs, TvPlayerEndSource.Ended)
+            handleEpisodeEnd(positionMs, durationMs)
         },
         onEvent = onPlayerEvent,
     )
@@ -452,7 +447,7 @@ internal fun TvExoPlayerView(
         episodeKey = { episodeKey },
         onBufferedProgressChange = { bufferedProgress = it },
         onPositionAtEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs, TvPlayerEndSource.Position)
+            handleEpisodeEnd(positionMs, durationMs)
         },
     )
 
@@ -791,8 +786,3 @@ internal fun TvExoPlayerView(
         )
     }
 }
-
-/** Как поймали конец эпизода — нужно для диагностики проблемных балансеров в логах. */
-internal enum class TvPlayerEndSource { Ended, Position, Seek }
-
-private const val TV_PLAYER_END_LOG_TAG = "TvPlayerEnd"

@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.player.behavior
 
-import android.util.Log
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,11 +49,10 @@ internal class AllohaSourceBehavior @Inject constructor(
 
     override fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean {
         if (recovery.isRecovering) {
-            Log.w(
-                LOG_TAG,
+            analytics.debugLog {
                 "Ignoring duplicate Alloha playback error during fresh-session recovery " +
-                    "positionMs=${event.positionMs.coerceAtLeast(0L)}",
-            )
+                    "positionMs=${event.positionMs.coerceAtLeast(0L)}"
+            }
             return true
         }
         startRecovery(
@@ -120,7 +118,7 @@ internal class AllohaSourceBehavior @Inject constructor(
         recoveryJob?.cancel()
         if (completed) {
             if (failed) {
-                Log.w(LOG_TAG, "Background Alloha playback recovery failed attempts=$attempts")
+                analytics.debugLog { "Background Alloha playback recovery failed attempts=$attempts" }
             } else {
                 analytics.debugLog {
                     "Background Alloha playback recovery stream resolved " +
@@ -221,10 +219,16 @@ internal class AllohaSourceBehavior @Inject constructor(
         if (!recovery.canRetry()) {
             // Попытки исчерпаны: снимаем оверлей восстановления и показываем настоящую ошибку с
             // действиями, вместо того чтобы крутиться дальше без шанса на успех.
-            Log.w(
-                LOG_TAG,
-                "Alloha playback recovery giving up after " +
+            // Пользователь увидит ошибку, а обычный путь PlaybackError сюда не доходит
+            // (ошибку перехватило восстановление) — отправляем её явно.
+            analytics.eventPlaybackError(
+                state = host.state,
+                message = "Alloha playback recovery giving up after " +
                     "${PlayerAllohaRecoveryHandler.MAX_ATTEMPTS} attempts",
+                errorCode = null,
+                errorType = ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE,
+                positionMs = host.state.playbackPositionMs,
+                retryAttempts = PlayerAllohaRecoveryHandler.MAX_ATTEMPTS,
             )
             recovery.reset()
             host.changePlayerHint.cancel()
@@ -346,7 +350,7 @@ internal class AllohaSourceBehavior @Inject constructor(
             activeBalancerName(this).contains(ALLOHA_PLAYER_NAME, ignoreCase = true)
 
         private const val ALLOHA_PLAYER_NAME = "alloha"
-        private const val LOG_TAG = "PlayerViewModel"
+        private const val ALLOHA_RECOVERY_EXHAUSTED_ERROR_TYPE = "alloha_recovery_exhausted"
         private const val PLAYBACK_RECOVERY_DELAY_MS = 1_000L
         private const val RECOVERY_HINT_DELAY_MS = 15_000L
     }

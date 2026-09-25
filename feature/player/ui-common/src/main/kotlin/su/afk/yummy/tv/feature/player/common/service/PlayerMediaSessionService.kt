@@ -4,7 +4,6 @@ import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.RemoteCastPlayer
@@ -64,7 +63,8 @@ class PlayerMediaSessionService : MediaSessionService() {
     private var player: ExoPlayer? = null
     private var castPlayer: CastPlayer? = null
 
-    private val loudnessNormalizer = PlayerLoudnessNormalizer()
+    // lazy: analyticsTracker инжектится только в super.onCreate()
+    private val loudnessNormalizer by lazy { PlayerLoudnessNormalizer(analyticsTracker) }
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     // Источник истины для «стабилизации громкости»: эффект пересобирается при смене либо
@@ -143,12 +143,11 @@ class PlayerMediaSessionService : MediaSessionService() {
                         .setOverrideForType(TrackSelectionOverride(firstAudioGroup, 0))
                         .build(),
                 )
-                Log.i(
-                    LOG_TAG,
+                analyticsTracker.log(LOG_TAG) {
                     "Alloha audio selected groups=${audioGroups.size} " +
                         "tracksInFirstGroup=${firstAudioGroup.length} group=0 track=0 " +
-                        "offline=${selection.isOfflinePlayback}",
-                )
+                        "offline=${selection.isOfflinePlayback}"
+                }
             }
 
             private fun clearAllohaAudioOverride(trackSelector: DefaultTrackSelector) {
@@ -162,7 +161,7 @@ class PlayerMediaSessionService : MediaSessionService() {
                         .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
                         .build(),
                 )
-                Log.i(LOG_TAG, "Alloha audio override cleared")
+                analyticsTracker.log(LOG_TAG) { "Alloha audio override cleared" }
             }
         })
         player = exoPlayer
@@ -203,7 +202,7 @@ class PlayerMediaSessionService : MediaSessionService() {
                 )
                 .build()
         } catch (e: Exception) {
-            Log.w(LOG_TAG, "CastPlayer unavailable", e)
+            analyticsTracker.log(LOG_TAG, e) { "CastPlayer unavailable" }
             null
         }
 

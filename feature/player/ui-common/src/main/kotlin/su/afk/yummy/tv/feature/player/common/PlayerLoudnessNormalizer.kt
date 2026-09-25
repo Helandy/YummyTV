@@ -2,9 +2,9 @@ package su.afk.yummy.tv.feature.player.common
 
 import android.media.audiofx.DynamicsProcessing
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.media3.common.C
+import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 
 /**
  * «Стабилизация громкости» — сжатие динамического диапазона звука через системный аудио-эффект
@@ -18,7 +18,9 @@ import androidx.media3.common.C
  *
  * Не потокобезопасен: все вызовы ожидаются с потока плеер-сервиса (main).
  */
-class PlayerLoudnessNormalizer {
+class PlayerLoudnessNormalizer(
+    private val analyticsTracker: AnalyticsTracker,
+) {
 
     private var effect: DynamicsProcessing? = null
     private var attachedSessionId: Int = C.AUDIO_SESSION_ID_UNSET
@@ -91,11 +93,11 @@ class PlayerLoudnessNormalizer {
             processing.setEnabled(true)
             effect = processing
             attachedSessionId = audioSessionId
-            Log.i(LOG_TAG, "Volume stabilization attached to session=$audioSessionId")
+            analyticsTracker.log(LOG_TAG) { "Volume stabilization attached to session=$audioSessionId" }
         } catch (e: RuntimeException) {
             // Часть устройств не реализует DynamicsProcessing (нет системного эффекта) — тихо
             // деградируем в no-op, не роняя воспроизведение.
-            Log.w(LOG_TAG, "Volume stabilization unavailable on this device", e)
+            analyticsTracker.log(LOG_TAG, e) { "Volume stabilization unavailable on this device" }
             releaseEffect()
         }
     }

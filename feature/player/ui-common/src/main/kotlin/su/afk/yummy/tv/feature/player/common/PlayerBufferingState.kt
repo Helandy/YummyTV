@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.player.common
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -28,11 +27,6 @@ fun rememberPlayerBufferingState(player: Player?): Boolean {
             fun syncBufferingState(playerSnapshot: Player) {
                 val next = playerSnapshot.isVisibleBuffering()
                 if (next != isBuffering) {
-                    Log.d(
-                        BUFFERING_LOG_TAG,
-                        "visible=$next playbackState=${playerSnapshot.playbackState.name()} " +
-                                "playWhenReady=${playerSnapshot.playWhenReady}",
-                    )
                     isBuffering = next
                 }
             }
@@ -58,13 +52,3 @@ fun rememberPlayerBufferingState(player: Player?): Boolean {
 
 private fun Player.isVisibleBuffering(): Boolean =
     playbackState == Player.STATE_BUFFERING && playWhenReady
-
-private fun Int.name(): String = when (this) {
-    Player.STATE_IDLE -> "IDLE"
-    Player.STATE_BUFFERING -> "BUFFERING"
-    Player.STATE_READY -> "READY"
-    Player.STATE_ENDED -> "ENDED"
-    else -> toString()
-}
-
-private const val BUFFERING_LOG_TAG = "PlayerBuffering"
