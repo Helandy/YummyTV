@@ -9,15 +9,15 @@ desugar-jdk-libs = "2.1.5"
 kotlin = "2.4.20"
 kotlin-metadata-jvm = "2.4.0"
 kotlinx-collections-immutable = "0.5.2"
-stability-analyzer = "0.14.0"
+stability-analyzer = "0.15.0"
 
 # AndroidX
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
-androidx-core = "1.19.0"
+androidx-core = "1.19.1"
 androidx-lifecycle = "2.11.0"
 androidx-paging = "3.5.1"
-jetbrains-navigation3 = "1.1.1"
+jetbrains-navigation3 = "1.1.2"
 
 # Compose
 androidx-composeBom = "2026.09.00"
@@ -36,7 +36,7 @@ kotlinx-coroutines = "1.11.0"
 # Storage / Background work
 datastore = "1.2.1"
 room = "2.8.5"
-work = "2.11.2"
+work = "2.12.0"
 
 # Media / Images
 coil = "3.6.3"
