@@ -118,6 +118,7 @@ class RegistrationViewModel @Inject constructor(
                         setEffect(RegistrationState.Effect.HideKeyboard)
                         setEffect(RegistrationState.Effect.ShowCaptchaHint)
                     } else if (error is RegistrationException) {
+                        setEffect(RegistrationState.Effect.DiscardAutofill)
                         setState {
                             copy(
                                 isLoading = false,
@@ -126,6 +127,7 @@ class RegistrationViewModel @Inject constructor(
                             )
                         }
                     } else {
+                        setEffect(RegistrationState.Effect.DiscardAutofill)
                         setState {
                             copy(
                                 isLoading = false,

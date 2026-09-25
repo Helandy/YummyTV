@@ -34,5 +34,8 @@ class RegistrationState {
     sealed interface Effect : UiEffect {
         data object ShowCaptchaHint : Effect
         data object HideKeyboard : Effect
+
+        /** Попытка не удалась — сбросить введённые данные, чтобы менеджер паролей не предложил их сохранить. */
+        data object DiscardAutofill : Effect
     }
 }
