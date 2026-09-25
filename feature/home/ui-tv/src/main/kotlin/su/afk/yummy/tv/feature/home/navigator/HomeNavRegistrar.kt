@@ -5,13 +5,13 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.home.HomeTvScreen
 import su.afk.yummy.tv.feature.home.HomeViewModel
+import su.afk.yummy.tv.feature.home.ITvHomeEntry
 import su.afk.yummy.tv.feature.home.navigator.HomeDestination
 import javax.inject.Inject
 
-class HomeNavRegistrar @Inject constructor() : NavRegistrar {
+class HomeNavRegistrar @Inject constructor() : ITvHomeEntry {
 
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {

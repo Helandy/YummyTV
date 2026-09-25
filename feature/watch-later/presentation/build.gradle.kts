@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:watch-later:api"))
     implementation(project(":core:error:api"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))

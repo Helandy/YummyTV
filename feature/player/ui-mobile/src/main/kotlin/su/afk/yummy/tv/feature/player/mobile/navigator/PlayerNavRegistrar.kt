@@ -5,14 +5,14 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.player.IMobilePlayerEntry
 import su.afk.yummy.tv.feature.player.PlayerViewModel
 import su.afk.yummy.tv.feature.player.mobile.PlayerMobileScreen
 import su.afk.yummy.tv.feature.player.navigator.PLAYER_CONTENT_KEY
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import javax.inject.Inject
 
-class PlayerNavRegistrar @Inject constructor() : NavRegistrar {
+class PlayerNavRegistrar @Inject constructor() : IMobilePlayerEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<PlayerDestination>(clazzContentKey = { PLAYER_CONTENT_KEY }) { dest ->

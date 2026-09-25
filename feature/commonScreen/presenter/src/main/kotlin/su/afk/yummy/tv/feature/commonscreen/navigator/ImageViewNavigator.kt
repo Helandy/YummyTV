@@ -11,7 +11,6 @@ import androidx.navigation3.runtime.NavKey
 import dagger.hilt.android.EntryPointAccessors
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.commonscreen.di.ImageViewNavigatorEntryPoint
 import su.afk.yummy.tv.feature.commonscreen.imageView.ImageViewScreen
 import su.afk.yummy.tv.feature.commonscreen.imageView.ImageViewViewModel
@@ -37,7 +36,7 @@ class ImageViewNavigator @Inject constructor() : IImageViewNavigator {
     }
 }
 
-class ImageViewNavigatorRegister @Inject constructor() : NavRegistrar {
+class ImageViewNavigatorRegister @Inject constructor() : IImageViewEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<CommonScreenDestination.ImageViewDest> { dest ->

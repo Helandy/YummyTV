@@ -6,7 +6,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.account.ITvAccountEntry
 import su.afk.yummy.tv.feature.account.account.AccountTvScreen
 import su.afk.yummy.tv.feature.account.account.AccountViewModel
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsTvScreen
@@ -16,7 +16,7 @@ import su.afk.yummy.tv.feature.account.navigator.MySubscriptionsDestination
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import javax.inject.Inject
 
-class AccountNavRegistrar @Inject constructor() : NavRegistrar {
+class AccountNavRegistrar @Inject constructor() : ITvAccountEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<AccountDestination> {

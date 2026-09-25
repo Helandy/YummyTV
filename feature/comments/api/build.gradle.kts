@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
     api(project(":feature:comments:domain"))
     api(libs.bundles.navigation.serialization)
     implementation(libs.javax.inject)

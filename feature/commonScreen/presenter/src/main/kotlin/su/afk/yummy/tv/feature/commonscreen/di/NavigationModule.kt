@@ -4,14 +4,14 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.IntoSet
 import su.afk.yummy.tv.core.error.api.ErrorDestinationFactory
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.commonscreen.errorScreen.ErrorNavigator
 import su.afk.yummy.tv.feature.commonscreen.errorScreen.ErrorNavigatorRegister
+import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorScreenEntry
+import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewEntry
+import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.ImageViewNavigator
 import su.afk.yummy.tv.feature.commonscreen.navigator.ImageViewNavigatorRegister
-import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import javax.inject.Singleton
 
 @Module
@@ -19,16 +19,14 @@ import javax.inject.Singleton
 interface NavigationModule {
 
     @Binds
-    @IntoSet
-    fun bindErrorNavigatorRegister(impl: ErrorNavigatorRegister): NavRegistrar
+    fun bindErrorNavigatorRegister(impl: ErrorNavigatorRegister): IErrorScreenEntry
 
     @Binds
     @Singleton
     fun bindErrorNavigator(impl: ErrorNavigator): ErrorDestinationFactory
 
     @Binds
-    @IntoSet
-    fun bindImageViewNavigatorRegister(impl: ImageViewNavigatorRegister): NavRegistrar
+    fun bindImageViewNavigatorRegister(impl: ImageViewNavigatorRegister): IImageViewEntry
 
     @Binds
     @Singleton

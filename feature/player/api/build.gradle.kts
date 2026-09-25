@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
     implementation(project(":core:model"))
     implementation(project(":core:utils"))
     implementation(project(":feature:player:domain"))

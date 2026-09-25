@@ -8,6 +8,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:deeplink:api"))
+    implementation(project(":feature:video-download:api"))
     implementation(project(":core:error:api"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))

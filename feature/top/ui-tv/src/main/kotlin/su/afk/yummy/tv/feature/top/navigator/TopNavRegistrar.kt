@@ -6,14 +6,14 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.top.ITvTopEntry
 import su.afk.yummy.tv.feature.top.TopTvScreen
 import su.afk.yummy.tv.feature.top.TopViewModel
 import su.afk.yummy.tv.feature.top.navigator.TopDestination
 import su.afk.yummy.tv.feature.top.utils.LocalTopTvActiveDestination
 import javax.inject.Inject
 
-class TopNavRegistrar @Inject constructor() : NavRegistrar {
+class TopNavRegistrar @Inject constructor() : ITvTopEntry {
 
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {

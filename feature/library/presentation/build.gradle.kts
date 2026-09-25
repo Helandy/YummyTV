@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:library:api"))
 
     implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))

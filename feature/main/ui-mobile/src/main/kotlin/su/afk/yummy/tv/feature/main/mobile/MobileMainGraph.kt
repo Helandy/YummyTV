@@ -43,8 +43,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileMainActions
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.MobileUi
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
@@ -54,6 +52,7 @@ import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
+import su.afk.yummy.tv.feature.main.mobile.navigation.MobileNavigationHolder
 import su.afk.yummy.tv.feature.main.mobile.view.MobileMainScaffold
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
@@ -70,8 +69,7 @@ class MobileMainGraph @Inject internal constructor(
     private val sitePagesNavigator: ISitePagesNavigator,
     private val settingsNavigator: ISettingsNavigator,
     private val searchNavigator: ISearchNavigator,
-    private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
-    @param:MobileUi private val mobileRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    private val navigationHolder: MobileNavigationHolder,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val networkConnectivityMonitor: NetworkConnectivityMonitor,
@@ -199,7 +197,7 @@ class MobileMainGraph @Inject internal constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
-                            registrars = commonRegistrars + mobileRegistrars,
+                            registrars = navigationHolder.registrars,
                             modifier = Modifier.fillMaxSize(),
                             transitionSpec = {
                                 fadeIn(

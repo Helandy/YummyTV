@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:deeplink:api"))
     api(project(":feature:details:domain"))
 
     implementation(project(":core:analytics"))

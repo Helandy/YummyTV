@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
     api(libs.bundles.navigation.serialization)
     implementation(libs.javax.inject)
 }

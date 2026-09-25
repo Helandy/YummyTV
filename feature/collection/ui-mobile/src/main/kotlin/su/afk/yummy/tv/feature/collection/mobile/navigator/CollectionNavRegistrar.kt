@@ -5,8 +5,8 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.collection.CollectionViewModel
+import su.afk.yummy.tv.feature.collection.IMobileCollectionEntry
 import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogViewModel
 import su.afk.yummy.tv.feature.collection.mobile.CollectionMobileScreen
 import su.afk.yummy.tv.feature.collection.mobile.catalog.CollectionsCatalogMobileScreen
@@ -14,7 +14,7 @@ import su.afk.yummy.tv.feature.collection.navigator.CollectionDestination
 import su.afk.yummy.tv.feature.collection.navigator.CollectionsCatalogDestination
 import javax.inject.Inject
 
-class CollectionNavRegistrar @Inject constructor() : NavRegistrar {
+class CollectionNavRegistrar @Inject constructor() : IMobileCollectionEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<CollectionDestination> { dest ->

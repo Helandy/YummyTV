@@ -5,8 +5,8 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.core.navigation.scene.bottomOverlay
+import su.afk.yummy.tv.feature.details.IMobileDetailsEntry
 import su.afk.yummy.tv.feature.details.collections.CollectionsViewModel
 import su.afk.yummy.tv.feature.details.details.DetailsViewModel
 import su.afk.yummy.tv.feature.details.episodes.EpisodesViewModel
@@ -45,7 +45,7 @@ import su.afk.yummy.tv.feature.details.trailers.TrailersViewModel
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderViewModel
 import javax.inject.Inject
 
-class DetailsNavRegistrar @Inject constructor() : NavRegistrar {
+class DetailsNavRegistrar @Inject constructor() : IMobileDetailsEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<DetailsDestination> { dest ->

@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.messages.IMobileMessagesEntry
 import su.afk.yummy.tv.feature.messages.chat.ChatViewModel
 import su.afk.yummy.tv.feature.messages.dialogs.DialogsViewModel
 import su.afk.yummy.tv.feature.messages.mobile.chat.ChatMobileScreen
@@ -14,7 +14,7 @@ import su.afk.yummy.tv.feature.messages.navigator.ChatDestination
 import su.afk.yummy.tv.feature.messages.navigator.DialogsDestination
 import javax.inject.Inject
 
-class MessagesNavRegistrar @Inject constructor() : NavRegistrar {
+class MessagesNavRegistrar @Inject constructor() : IMobileMessagesEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<DialogsDestination> {

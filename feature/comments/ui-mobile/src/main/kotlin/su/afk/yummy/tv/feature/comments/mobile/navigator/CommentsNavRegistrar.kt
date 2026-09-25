@@ -5,14 +5,14 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.domain.comments.model.CommentTargetType
 import su.afk.yummy.tv.feature.comments.CommentsViewModel
+import su.afk.yummy.tv.feature.comments.IMobileCommentsEntry
 import su.afk.yummy.tv.feature.comments.mobile.CommentsMobileScreen
 import su.afk.yummy.tv.feature.comments.navigator.CommentsDestination
 import javax.inject.Inject
 
-class CommentsNavRegistrar @Inject constructor() : NavRegistrar {
+class CommentsNavRegistrar @Inject constructor() : IMobileCommentsEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<CommentsDestination> { dest ->

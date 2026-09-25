@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.bloggers.ITvBloggerVideosEntry
 import su.afk.yummy.tv.feature.bloggers.details.BloggerDetailsTvScreen
 import su.afk.yummy.tv.feature.bloggers.details.BloggerDetailsViewModel
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListTvScreen
@@ -17,7 +17,7 @@ import su.afk.yummy.tv.feature.bloggers.video.BloggerVideoDetailsTvScreen
 import su.afk.yummy.tv.feature.bloggers.video.BloggerVideoDetailsViewModel
 import javax.inject.Inject
 
-class BloggerVideosNavRegistrar @Inject constructor() : NavRegistrar {
+class BloggerVideosNavRegistrar @Inject constructor() : ITvBloggerVideosEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<BloggerVideosDestination> { destination ->

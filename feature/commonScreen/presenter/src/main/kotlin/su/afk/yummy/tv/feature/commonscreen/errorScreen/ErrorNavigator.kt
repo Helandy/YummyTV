@@ -13,9 +13,9 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.error.api.ErrorDestinationFactory
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
 import su.afk.yummy.tv.feature.commonscreen.di.ErrorNavigatorEntryPoint
 import su.afk.yummy.tv.feature.commonscreen.navigator.CommonScreenDestination
+import su.afk.yummy.tv.feature.commonscreen.navigator.IErrorScreenEntry
 import javax.inject.Inject
 
 class ErrorNavigator @Inject constructor() : ErrorDestinationFactory {
@@ -23,7 +23,7 @@ class ErrorNavigator @Inject constructor() : ErrorDestinationFactory {
         CommonScreenDestination.ErrorNavigatorDest(error = error)
 }
 
-class ErrorNavigatorRegister @Inject constructor() : NavRegistrar {
+class ErrorNavigatorRegister @Inject constructor() : IErrorScreenEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<CommonScreenDestination.ErrorNavigatorDest> { dest ->

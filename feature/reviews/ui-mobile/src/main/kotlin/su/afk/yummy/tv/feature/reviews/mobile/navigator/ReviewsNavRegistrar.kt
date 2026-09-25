@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
+import su.afk.yummy.tv.feature.reviews.IMobileReviewsEntry
 import su.afk.yummy.tv.feature.reviews.details.ReviewDetailsViewModel
 import su.afk.yummy.tv.feature.reviews.list.ReviewsListViewModel
 import su.afk.yummy.tv.feature.reviews.mobile.details.ReviewDetailsMobileScreen
@@ -15,7 +15,7 @@ import su.afk.yummy.tv.feature.reviews.navigator.ReviewDetailsDestination
 import su.afk.yummy.tv.feature.reviews.navigator.ReviewsDestination
 import javax.inject.Inject
 
-class ReviewsNavRegistrar @Inject constructor() : NavRegistrar {
+class ReviewsNavRegistrar @Inject constructor() : IMobileReviewsEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<ReviewsDestination> {

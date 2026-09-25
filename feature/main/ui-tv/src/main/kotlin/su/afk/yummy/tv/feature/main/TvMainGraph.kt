@@ -37,12 +37,11 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
-import su.afk.yummy.tv.core.navigation.registrar.TvUi
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.model.TvMenuItem
+import su.afk.yummy.tv.feature.main.navigation.TvNavigationHolder
 import su.afk.yummy.tv.feature.main.view.TvMainScaffold
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
@@ -53,8 +52,7 @@ import kotlin.time.Duration.Companion.seconds
 @Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: INavigationManager,
-    private val commonRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
-    @param:TvUi private val tvRegistrars: Set<@JvmSuppressWildcards NavRegistrar>,
+    private val navigationHolder: TvNavigationHolder,
     private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : MainGraph {
 
@@ -147,7 +145,7 @@ class TvMainGraph @Inject constructor(
                     ) {
                         AppNavHost(
                             navManager = navManager,
-                            registrars = commonRegistrars + tvRegistrars,
+                            registrars = navigationHolder.registrars,
                             modifier = Modifier.fillMaxSize(),
                             transitionSpec = {
                                 fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) +
