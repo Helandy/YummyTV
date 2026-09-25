@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.player.extractor.sibnet
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
@@ -47,6 +49,7 @@ internal class SibnetExtractor @Inject constructor(
                 ),
             )
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure(
                 "Sibnet",
                 playerUrl,

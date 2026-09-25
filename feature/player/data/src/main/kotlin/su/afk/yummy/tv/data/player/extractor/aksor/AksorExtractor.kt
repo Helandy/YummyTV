@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.player.extractor.aksor
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
@@ -59,11 +61,12 @@ internal class AksorExtractor @Inject constructor(
                     qualities = qualities,
                 )
             } catch (e: Exception) {
+                currentCoroutineContext().ensureActive()
                 analyticsTracker.logExtractorFailure(
                     "Aksor",
                     iframeUrl,
                     "unexpected extractor error",
-                    e
+                    e,
                 )
                 null
             }
@@ -88,11 +91,11 @@ internal class AksorExtractor @Inject constructor(
 
     private suspend fun fetchApiQualities(
         apiUrl: String,
-        referer: String
+        referer: String,
     ): LinkedHashMap<String, String>? =
         httpClient.fetchJson(
             url = apiUrl,
-            headers = apiHeaders(referer, accept = "application/json")
+            headers = apiHeaders(referer, accept = "application/json"),
         )
             .optJSONObject("qualities")
             ?.toQualityMap()
@@ -170,14 +173,14 @@ internal class AksorExtractor @Inject constructor(
                     "Aksor",
                     scriptUrl,
                     "failed to inspect player script",
-                    e
+                    e,
                 )
             }.getOrNull()
         } ?: run {
             analyticsTracker.logExtractorFailure(
                 "Aksor",
                 playerUrl,
-                "API path was not found in player scripts"
+                "API path was not found in player scripts",
             )
             return null
         }

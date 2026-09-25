@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.player.extractor.vk
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -123,6 +125,7 @@ internal class VkExtractor @Inject constructor(
                 qualities = qualities,
             )
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure(
                 "VK",
                 normalizedUrl,

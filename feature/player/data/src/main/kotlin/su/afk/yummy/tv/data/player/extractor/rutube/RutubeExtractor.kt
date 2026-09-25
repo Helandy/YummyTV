@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.player.extractor.rutube
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
@@ -89,6 +91,7 @@ internal class RutubeExtractor @Inject constructor(
                 qualities = qualities,
             )
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure(
                 "Rutube",
                 normalizedUrl,

@@ -2,6 +2,8 @@ package su.afk.yummy.tv.data.player.extractor.kodik
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
@@ -185,6 +187,7 @@ internal class KodikExtractor @Inject constructor(
                     statusCode = e.statusCode,
                 )
             } catch (e: Exception) {
+                currentCoroutineContext().ensureActive()
                 analyticsTracker.logExtractorFailure(
                     "Kodik",
                     fullUrl,
@@ -212,6 +215,7 @@ internal class KodikExtractor @Inject constructor(
             }
             qualities.takeIf { it.isNotEmpty() }
         } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
             null
         }
     }
