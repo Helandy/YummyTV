@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    api(project(":core:common"))
     implementation(project(":core:model"))
 
     implementation(libs.androidx.paging.runtime)

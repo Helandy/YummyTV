@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.domain.library.sync
 
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
@@ -42,7 +41,7 @@ internal class LocalLibraryChangePusher @Inject constructor(
                     remoteFetchedAt = remoteFetchedAt,
                 )
             ) {
-                mutationResult { setAnimeList(local.animeId, localList) }
+                runSuspendCatching { setAnimeList(local.animeId, localList) }
                     .onSuccess { changedRemote = true }
                     .onFailure { if (firstError == null) firstError = it }
             }
@@ -55,20 +54,12 @@ internal class LocalLibraryChangePusher @Inject constructor(
                     remoteFetchedAt = remoteFetchedAt,
                 )
             ) {
-                mutationResult { setAnimeFavorite(local.animeId, local.isFavorite) }
+                runSuspendCatching { setAnimeFavorite(local.animeId, local.isFavorite) }
                     .onSuccess { changedRemote = true }
                     .onFailure { if (firstError == null) firstError = it }
             }
         }
         return LocalLibraryPushResult(changedRemote, firstError)
-    }
-
-    private suspend fun mutationResult(block: suspend () -> Unit): Result<Unit> = try {
-        block()
-        Result.success(Unit)
-    } catch (error: Throwable) {
-        currentCoroutineContext().ensureActive()
-        Result.failure(error)
     }
 
     private companion object {

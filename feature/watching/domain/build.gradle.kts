@@ -1,14 +1,16 @@
 plugins {
-    id("yummytv.android.library")
+    alias(libs.plugins.kotlin.jvm)
 }
 
-android {
-    namespace = "su.afk.yummy.tv.feature.watching.domain"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 dependencies {
     implementation(project(":core:model"))
-    implementation(project(":core:utils"))
+    implementation(project(":core:common"))
     implementation(project(":feature:details:domain"))
     implementation(project(":feature:home:domain"))
     implementation(project(":feature:player:domain"))
