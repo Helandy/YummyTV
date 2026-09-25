@@ -19,15 +19,17 @@ import kotlin.math.roundToInt
 class VideoDownloadNotificationService @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
-    fun createForegroundInfo(item: VideoDownloadItem): ForegroundInfo =
+    fun createForegroundInfo(item: VideoDownloadItem, queued: Boolean = false): ForegroundInfo =
         createForegroundInfo(
             item = item,
             progressPercent = item.progress.toPercent(),
+            queued = queued,
         )
 
     fun createForegroundInfo(
         item: VideoDownloadItem,
         progressPercent: Int,
+        queued: Boolean = false,
     ): ForegroundInfo {
         ensureChannel()
         val progress = progressPercent.coerceIn(0, 100)
@@ -36,14 +38,18 @@ class VideoDownloadNotificationService @Inject constructor(
             .setContentTitle(item.animeTitle.ifBlank { context.getString(R.string.video_download_notification_title) })
             .setContentText(
                 context.getString(
-                    R.string.video_download_notification_progress,
+                    if (queued) {
+                        R.string.video_download_notification_queued
+                    } else {
+                        R.string.video_download_notification_progress
+                    },
                     item.episode,
                     progress,
                 )
             )
             .setOnlyAlertOnce(true)
             .setOngoing(true)
-            .setProgress(PROGRESS_MAX, progress, progress <= 0)
+            .setProgress(PROGRESS_MAX, progress, !queued && progress <= 0)
             .setContentIntent(downloadsContentIntent())
             .addAction(
                 0,

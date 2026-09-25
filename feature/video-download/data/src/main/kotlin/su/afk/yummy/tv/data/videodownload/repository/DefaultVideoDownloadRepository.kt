@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -170,8 +172,6 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
     }
 
     override suspend fun restart(id: Long, stream: VideoDownloadRestartStream?) {
-        val workManager = WorkManager.getInstance(context)
-        workManager.cancelUniqueWork(uniqueWorkName(id))
         val entry = store.getById(id) ?: return
         val qualityLabel = stream?.qualityLabel ?: entry.qualityLabel
         // cacheKeyScheme сознательно не пересчитывается: сюда же приходит возобновление с паузы,
@@ -268,6 +268,8 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
                     VideoDownloadWorker.KEY_FORCE_STREAM_REFRESH to forceStreamRefresh,
                 )
             )
+            // Без сети воркер сжёг бы все ретраи на transient-ошибках и ушёл в Failed
+            .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
             .setBackoffCriteria(
                 BackoffPolicy.LINEAR,
                 DOWNLOAD_RETRY_BACKOFF_MS,
