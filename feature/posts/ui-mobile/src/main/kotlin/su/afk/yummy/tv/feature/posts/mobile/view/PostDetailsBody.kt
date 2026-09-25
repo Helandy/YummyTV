@@ -49,7 +49,7 @@ internal fun PostDetailsBody(
             .mobileContentMaxWidth()
             .fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             PostDetailsHeader(
@@ -69,15 +69,15 @@ internal fun PostDetailsBody(
                         .aspectRatio(16f / 9f)
                         .clip(RoundedCornerShape(16.dp))
                         .clickable { onImageClick(url) },
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
                 )
             }
         }
-        items(contentBlocks) { block ->
+        items(contentBlocks, contentType = { block -> block::class }) { block ->
             when (block) {
                 is PostContentBlock.Text -> Text(
                     block.value,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
 
                 is PostContentBlock.Image -> CachedAsyncImage(
@@ -96,7 +96,7 @@ internal fun PostDetailsBody(
             item {
                 Text(
                     stringResource(R.string.posts_related_anime),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
                 )
             }
             item {
@@ -104,7 +104,7 @@ internal fun PostDetailsBody(
                     items(details.relatedAnime, key = { lazyKey("postanime", it.id) }) { anime ->
                         ElevatedCard(
                             onClick = { onEvent(PostDetailsState.Event.AnimeSelected(anime.id)) },
-                            modifier = Modifier.width(150.dp)
+                            modifier = Modifier.width(150.dp),
                         ) {
                             anime.posterUrl?.let {
                                 AsyncImage(
@@ -113,23 +113,24 @@ internal fun PostDetailsBody(
                                     Modifier
                                         .fillMaxWidth()
                                         .aspectRatio(.7f),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Crop,
                                 )
                             }
                             Column(
                                 Modifier.padding(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 Text(
                                     anime.title,
                                     style = MaterialTheme.typography.titleSmall,
-                                    maxLines = 2
+                                    maxLines = 2,
                                 )
                                 Text(
                                     listOfNotNull(
                                         anime.year?.toString(),
-                                        anime.rating?.let { "★ %.1f".format(it) }).joinToString(" · "),
-                                    style = MaterialTheme.typography.labelSmall
+                                        anime.rating?.let { "★ %.1f".format(it) },
+                                    ).joinToString(" · "),
+                                    style = MaterialTheme.typography.labelSmall,
                                 )
                             }
                         }
