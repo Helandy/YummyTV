@@ -40,6 +40,7 @@ import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
+import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.toToastTimeString
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
@@ -48,7 +49,6 @@ import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -181,8 +181,8 @@ class HomeViewModel @Inject internal constructor(
             if (settingsStore.yaniUserId.first() <= 0) {
                 setEffect(
                     HomeState.Effect.ShowToast(
-                        stringProvider.get(R.string.home_recommendation_auth_required)
-                    )
+                        stringProvider.get(R.string.home_recommendation_auth_required),
+                    ),
                 )
                 return@launch
             }
@@ -205,10 +205,10 @@ class HomeViewModel @Inject internal constructor(
                             setEffect(
                                 HomeState.Effect.ShowRecommendationUndo(
                                     message = stringProvider.get(
-                                        R.string.home_recommendation_hidden
+                                        R.string.home_recommendation_hidden,
                                     ),
                                     animeId = animeId,
-                                )
+                                ),
                             )
                         } else {
                             analytics.eventRecommendationRestored(animeId)
@@ -240,8 +240,8 @@ class HomeViewModel @Inject internal constructor(
         applyHiddenRecommendations()
         setEffect(
             HomeState.Effect.ShowToast(
-                stringProvider.get(R.string.home_recommendation_error)
-            )
+                stringProvider.get(R.string.home_recommendation_error),
+            ),
         )
     }
 
@@ -275,8 +275,7 @@ class HomeViewModel @Inject internal constructor(
             return
         }
 
-        val remainingMs =
-            SUPPORT_PROMPT_DELAY_MS - (System.currentTimeMillis() - snapshot.firstEligibleTimeMs)
+        val remainingMs = snapshot.supportPromptRemainingMs(nowMs = System.currentTimeMillis())
         if (remainingMs <= 0L) {
             showSupportPromptOnce()
         } else {
@@ -341,7 +340,7 @@ class HomeViewModel @Inject internal constructor(
                         title = title.ifBlank { null },
                         message = message,
                         buttonText = button.ifBlank { null },
-                    )
+                    ),
                 )
             }
         }
@@ -374,8 +373,8 @@ class HomeViewModel @Inject internal constructor(
                             R.string.home_remote_continue_progress_toast,
                             progress.episode,
                             progress.positionMs.toToastTimeString(),
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
             nav.navigate(playerNavigator.getPlayerDest(result))
@@ -424,7 +423,7 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             bloggerVideos = videos.toImmutableList(),
-                            isBloggerVideosLoading = false
+                            isBloggerVideosLoading = false,
                         )
                     }
                 },
@@ -432,7 +431,7 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isBloggerVideosLoading = false,
-                            bloggerVideosError = error.userMessage(stringProvider.get(R.string.home_blogger_videos_load_error))
+                            bloggerVideosError = error.userMessage(stringProvider.get(R.string.home_blogger_videos_load_error)),
                         )
                     }
                 },
@@ -455,7 +454,7 @@ class HomeViewModel @Inject internal constructor(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = e.userMessage(stringProvider.get(R.string.home_load_error))
+                                error = e.userMessage(stringProvider.get(R.string.home_load_error)),
                             )
                         }
                     } else if (showInitialLoading) {
@@ -492,7 +491,6 @@ class HomeViewModel @Inject internal constructor(
     }
 
     private companion object {
-        val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
         const val TAG_ANNOUNCEMENT = "HomeAnnouncement"
     }
 }

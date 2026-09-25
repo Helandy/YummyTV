@@ -1,8 +1,10 @@
 package su.afk.yummy.tv.feature.home.utils
 
+import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
+import java.util.concurrent.TimeUnit
 
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
 internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFeed {
@@ -36,3 +38,9 @@ internal fun Long.toToastTimeString(): String {
         "%d:%02d".format(minutes, seconds)
     }
 }
+
+private val SUPPORT_PROMPT_DELAY_MS: Long = TimeUnit.DAYS.toMillis(7)
+
+/** Сколько ещё ждать до показа окна поддержки: неделя с момента, когда оно стало доступно. */
+internal fun SupportPromptSnapshot.supportPromptRemainingMs(nowMs: Long): Long =
+    SUPPORT_PROMPT_DELAY_MS - (nowMs - firstEligibleTimeMs)
