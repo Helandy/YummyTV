@@ -4,6 +4,8 @@ import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -27,6 +29,10 @@ abstract class BenchmarkReportTask : DefaultTask() {
     @get:Internal
     abstract val resultsDirectory: DirectoryProperty
 
+    /** Собран ли тестируемый APK с раскладкой DEX — только для заголовка отчёта. */
+    @get:Input
+    abstract val dexLayoutEnabled: Property<Boolean>
+
     @get:OutputFile
     abstract val reportFile: RegularFileProperty
 
@@ -39,7 +45,12 @@ abstract class BenchmarkReportTask : DefaultTask() {
         val report = if (files.isEmpty()) {
             "Результатов бенчмарков нет в ${resultsDirectory.get().asFile}. Сначала: ./gradlew runProfileBenchmarks"
         } else {
-            files.sortedBy { it.path }.joinToString("\n\n") { deviceReport(it) }
+            val layoutNote = if (dexLayoutEnabled.get()) {
+                "APK с раскладкой DEX по startup-профилю."
+            } else {
+                "APK без раскладки DEX (-Pyummytv.profile.dexLayout=false)."
+            }
+            layoutNote + "\n\n" + files.sortedBy { it.path }.joinToString("\n\n") { deviceReport(it) }
         }
         reportFile.get().asFile.apply {
             parentFile.mkdirs()

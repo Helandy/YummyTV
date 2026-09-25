@@ -14,6 +14,8 @@ private const val DEFAULT_AVDS = "37_Pixel_10_Pro_XL,14_Android_TV_1080p"
  * Задачи модуля `:baselineprofile`, которые сами поднимают эмуляторы:
  * - `generateBaselineProfiles` — эмуляторы → генерация профиля в `app/src/release/generated` → гашение;
  * - `runProfileBenchmarks` — эмуляторы → бенчмарки «без профиля / с профилем» → отчёт → гашение.
+ *   С `-Pyummytv.profile.dexLayout=false` тестируемый APK собирается без раскладки DEX,
+ *   отчёт пишется в отдельный файл — так вклад раскладки сравнивается с обычным прогоном.
  *
  * Gradle Managed Devices не годятся: они не умеют образы android-tv, поэтому используются
  * локальные AVD из свойства `yummytv.profile.avds` (через запятую; `-P` или gradle.properties).
@@ -27,6 +29,7 @@ class BaselineProfileTasksPlugin : Plugin<Project> {
         val stateFile = layout.buildDirectory.file("profile-emulators/started.txt")
         val avds = providers.gradleProperty("yummytv.profile.avds").orElse(DEFAULT_AVDS)
             .map { value -> value.split(',').map(String::trim).filter(String::isNotEmpty) }
+        val dexLayout = providers.gradleProperty("yummytv.profile.dexLayout").map { it != "false" }.orElse(true)
 
         val startEmulators = tasks.register<Exec>("startProfileEmulators") {
             group = TASK_GROUP
@@ -63,7 +66,13 @@ class BaselineProfileTasksPlugin : Plugin<Project> {
             resultsDirectory.set(
                 layout.buildDirectory.dir("outputs/connected_android_test_additional_output"),
             )
-            reportFile.set(layout.buildDirectory.file("reports/baseline-profile-benchmark.md"))
+            dexLayoutEnabled.set(dexLayout)
+            reportFile.set(
+                dexLayout.flatMap { enabled ->
+                    val suffix = if (enabled) "" else "-no-dex-layout"
+                    layout.buildDirectory.file("reports/baseline-profile-benchmark$suffix.md")
+                },
+            )
             mustRunAfter(tasks.matching { it.name.startsWith("connected") })
         }
         stopEmulators.configure { mustRunAfter(benchmarkReport) }

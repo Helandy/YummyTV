@@ -66,6 +66,23 @@ Coroutines, Ktor, Coil и т. д. При сборке AGP переводит т�
 
 `./gradlew :baselineprofile:benchmarkReport` — перепечатать таблицу по последнему прогону.
 
+Режимы «без профиля / с профилем» гоняются на одном APK, а раскладка DEX по startup-профилю
+закладывается при сборке и есть в обоих. Поэтому таблица показывает эффект AOT-компиляции,
+а не раскладки. Чтобы померить раскладку, запусти второй прогон на APK без неё
+и сравни с обычным отчётом:
+
+```bash
+./gradlew runProfileBenchmarks -Pyummytv.profile.dexLayout=false
+```
+
+Отчёт пишется в `baselineprofile/build/reports/baseline-profile-benchmark-no-dex-layout.md`,
+обычный остаётся в `baseline-profile-benchmark.md`. Флаг выключает раскладку только у
+`benchmarkRelease`; release он не трогает. Раскладка в первую очередь влияет на холодный старт.
+
+Флаг задаёт свойство AGP `android.experimental.r8.dex-startup-optimization` напрямую: настройку
+`dexLayoutOptimization` плагин baselineprofile применяет только к release/releaseDebug, а
+`benchmarkRelease` берёт дефолт AGP (в AGP 9 раскладка включена по умолчанию).
+
 ### Эмуляторы
 
 - Список AVD — свойство `yummytv.profile.avds` в `gradle.properties` (телефон + Android TV).
