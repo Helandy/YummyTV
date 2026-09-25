@@ -68,11 +68,11 @@ internal fun MobilePlayerMessage(
             if (hasSecondary || hasTertiary) {
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (hasSecondary) {
-                        OutlinedButton(onClick = onSecondaryAction!!) { Text(secondaryActionLabel!!) }
+                    if (secondaryActionLabel != null && onSecondaryAction != null) {
+                        OutlinedButton(onClick = onSecondaryAction) { Text(secondaryActionLabel) }
                     }
-                    if (hasTertiary) {
-                        OutlinedButton(onClick = onTertiaryAction!!) { Text(tertiaryActionLabel!!) }
+                    if (tertiaryActionLabel != null && onTertiaryAction != null) {
+                        OutlinedButton(onClick = onTertiaryAction) { Text(tertiaryActionLabel) }
                     }
                 }
             }

@@ -37,13 +37,13 @@ internal fun FullDetailsChip(
                 shape = shape,
             )
             .then(
-                if (clickable) {
+                if (onClick != null) {
                     Modifier
                         .border(
                             border = BorderStroke(1.dp, primary.copy(alpha = 0.5f)),
                             shape = shape,
                         )
-                        .tvFocusableClick(onClick = onClick!!, shape = shape)
+                        .tvFocusableClick(onClick = onClick, shape = shape)
                 } else {
                     Modifier
                 },
