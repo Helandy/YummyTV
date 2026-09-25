@@ -8,6 +8,7 @@ import coil3.fetch.SourceFetchResult
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
+import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.currentCoroutineContext
@@ -32,9 +33,13 @@ class KodikThumbnailCacheIO @Inject constructor(
     @KodikHttpClient private val httpClient: HttpClient,
 ) {
 
-    suspend fun fetch(cacheKey: String, resolvedUrl: String?): FetchResult? {
+    /**
+     * Сначала отдаёт снапшот с диска; [resolveUrl] (сетевой резолв через HTML iframe) вызывается
+     * только при промахе — иначе после рестарта процесса каждое превью ждало бы запрос к Kodik.
+     */
+    suspend fun fetch(cacheKey: String, resolveUrl: suspend () -> String?): FetchResult? {
         readSnapshot(cacheKey)?.let { return it }
-        val url = resolvedUrl ?: return null
+        val url = resolveUrl() ?: return null
         return downloadAndCache(cacheKey, url)
     }
 
@@ -50,8 +55,12 @@ class KodikThumbnailCacheIO @Inject constructor(
     private suspend fun downloadAndCache(cacheKey: String, url: String): SourceFetchResult? {
         val response = runSuspendCatching { httpClient.get(url) }.getOrElse { return null }
         if (!response.status.isSuccess()) return null
-        val bytes = response.bodyAsBytes()
-        val mimeType = response.contentType()?.toString()
+        val contentType = response.contentType()
+        // Заглушка/капча с кодом 200 иначе осела бы в кэше навсегда: снапшот отдаётся без сети.
+        if (contentType != null && !contentType.match(ContentType.Image.Any)) return null
+        val bytes = runSuspendCatching { response.bodyAsBytes() }.getOrElse { return null }
+        if (bytes.isEmpty()) return null
+        val mimeType = contentType?.toString()
 
         val editor = diskCache.openEditor(cacheKey)
             ?: return SourceFetchResult(

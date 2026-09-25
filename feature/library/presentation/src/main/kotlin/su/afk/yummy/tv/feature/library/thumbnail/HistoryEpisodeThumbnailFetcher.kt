@@ -34,9 +34,8 @@ class HistoryEpisodeThumbnailFetcher(
             it.episode.episodeGroupKey() == data.episode.episodeGroupKey()
         }
         val iframeUrl = episodeVideos.kodikThumbnailIframeUrl()
-        val resolvedUrl = iframeUrl?.let { resolveKodikThumbnailUrl(it) }
         val cacheKey = iframeUrl?.let { KodikThumbnail(it).cacheKey } ?: data.cacheKey
-        return cacheIO.fetch(cacheKey, resolvedUrl)
+        return cacheIO.fetch(cacheKey) { iframeUrl?.let { resolveKodikThumbnailUrl(it) } }
     }
 
     class Factory(

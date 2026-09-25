@@ -15,10 +15,8 @@ class KodikThumbnailFetcher(
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
 ) : Fetcher {
 
-    override suspend fun fetch(): FetchResult? {
-        val resolvedUrl = resolveKodikThumbnailUrl(data.iframeUrl)
-        return cacheIO.fetch(data.cacheKey, resolvedUrl)
-    }
+    override suspend fun fetch(): FetchResult? =
+        cacheIO.fetch(data.cacheKey) { resolveKodikThumbnailUrl(data.iframeUrl) }
 
     class Factory(
         private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
