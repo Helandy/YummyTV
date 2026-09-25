@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:account:domain"))
 
+    implementation(libs.kotlinx.coroutines.playServices)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.contentNegotiation)
@@ -23,6 +24,7 @@ dependencies {
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.serialization.kotlinxJson)
+    implementation(libs.play.services.auth.blockstore)
 
     testImplementation(libs.junit)
     testImplementation(libs.bundles.unit.test)

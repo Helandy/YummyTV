@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
+import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -18,6 +19,7 @@ import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
 import su.afk.yummy.tv.data.account.dto.YaniRegistrationBodyDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
@@ -45,6 +47,7 @@ class YaniAccountRepository(
     private val documentCache: DocumentCacheStorage,
     private val animeStorage: AnimeStorage,
     private val analyticsTracker: AnalyticsTracker,
+    private val authTokenBackup: AuthTokenBackup,
 ) : AccountRepository {
 
     override suspend fun login(
@@ -85,6 +88,7 @@ class YaniAccountRepository(
                 savedProfile.nickname,
                 savedProfile.avatarUrl,
             )
+            authTokenBackup.save(token)
             savedProfile
         } catch (error: Throwable) {
             currentCoroutineContext().ensureActive()
@@ -153,8 +157,31 @@ class YaniAccountRepository(
             clearPreviousDocumentCacheIfNeeded(profile.id)
             settingsStore.setYaniAccount(profile.id, profile.nickname, profile.avatarUrl)
             yaniAuthPreferences.setRefreshToken(token)
+            authTokenBackup.save(token)
         }
         profile
+    }
+
+    /**
+     * Токен из бэкапа проходит тот же атомарный вход, что и обычный: [signInWithTokenInternal]
+     * сначала валидирует его профилем. Запись удаляется, только если сервер токен отверг, —
+     * сетевые сбои оставляют её до следующего запуска.
+     */
+    override suspend fun restoreSessionFromBackup(): YaniAccount? = withContext(Dispatchers.IO) {
+        if (getSession().isAuthorized) return@withContext null
+        val token = authTokenBackup.restore() ?: return@withContext null
+        try {
+            signInWithTokenInternal(token).also {
+                analyticsTracker.track(SESSION_RESTORED_EVENT)
+            }
+        } catch (error: ClientRequestException) {
+            if (error.response.status.value in REJECTED_TOKEN_STATUSES) authTokenBackup.clear()
+            null
+        } catch (error: Throwable) {
+            currentCoroutineContext().ensureActive()
+            analyticsTracker.log(TAG, error) { "Session restore from backup failed" }
+            null
+        }
     }
 
     override fun observeSession() =
@@ -225,6 +252,7 @@ class YaniAccountRepository(
         }
         // В кэше видео лежат привязанные к пользователю watched и subscribed — они больше не наши.
         animeStorage.expireAllVideos()
+        authTokenBackup.clear()
         yaniAuthPreferences.clearRefreshToken()
         settingsStore.clearYaniAccount()
     }
@@ -271,5 +299,8 @@ class YaniAccountRepository(
 
     private companion object {
         const val SIGN_IN_GROUP = "sign_in"
+        const val SESSION_RESTORED_EVENT = "account_session_restored_from_backup"
+        const val TAG = "YaniAccountRepository"
+        val REJECTED_TOKEN_STATUSES = setOf(401, 403)
     }
 }

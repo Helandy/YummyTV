@@ -1,8 +1,10 @@
 package su.afk.yummy.tv.data.account.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -17,6 +19,8 @@ import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
+import su.afk.yummy.tv.data.account.backup.BlockStoreAuthTokenBackup
 import su.afk.yummy.tv.data.account.localauth.LocalAuthServer
 import su.afk.yummy.tv.data.account.localauth.NsdAdvertiser
 import su.afk.yummy.tv.data.account.localauth.NsdDeviceDiscovery
@@ -69,6 +73,13 @@ object AccountDataModule {
 
     @Provides
     @Singleton
+    fun provideAuthTokenBackup(
+        @ApplicationContext context: Context,
+        analyticsTracker: AnalyticsTracker,
+    ): AuthTokenBackup = BlockStoreAuthTokenBackup(context, analyticsTracker)
+
+    @Provides
+    @Singleton
     fun provideAccountRepository(
         api: YaniAccountApi,
         settingsStore: YaniAccountSettingsStore,
@@ -77,6 +88,7 @@ object AccountDataModule {
         documentCache: DocumentCacheStorage,
         animeStorage: AnimeStorage,
         analyticsTracker: AnalyticsTracker,
+        authTokenBackup: AuthTokenBackup,
     ): AccountRepository = YaniAccountRepository(
         api,
         settingsStore,
@@ -85,6 +97,7 @@ object AccountDataModule {
         documentCache,
         animeStorage,
         analyticsTracker,
+        authTokenBackup,
     )
 
     @Provides
@@ -187,8 +200,9 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountRepository: AccountRepository,
         yaniAuthPreferences: YaniAuthPreferences,
+        authTokenBackup: AuthTokenBackup,
     ): ProfileSettingsRepository =
-        YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences)
+        YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences, authTokenBackup)
 
     /** Таймауты короткие: ТВ стоит в той же сети, долгого ожидания тут быть не должно. */
     @Provides

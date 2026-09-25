@@ -15,6 +15,8 @@ interface AccountRepository {
     suspend fun signInWithToken(token: String): YaniAccount
     suspend fun verifyRegistration(hash: String): YaniAccount
     suspend fun refreshToken(): YaniAccount?
+
+    suspend fun restoreSessionFromBackup(): YaniAccount?
     fun observeSession(): Flow<AccountSession>
     suspend fun getSession(): AccountSession
     suspend fun getProfile(): YaniAccount

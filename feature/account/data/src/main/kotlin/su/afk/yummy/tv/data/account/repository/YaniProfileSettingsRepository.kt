@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.account.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
 import su.afk.yummy.tv.data.account.dto.YaniProfileHideBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileNotificationsBodyDto
 import su.afk.yummy.tv.data.account.dto.YaniProfileUpdateBodyDto
@@ -21,6 +22,7 @@ class YaniProfileSettingsRepository(
     private val api: YaniAccountApi,
     private val accountRepository: AccountRepository,
     private val authPreferences: YaniAuthPreferences,
+    private val authTokenBackup: AuthTokenBackup,
 ) : ProfileSettingsRepository {
     override suspend fun getProfile(): EditableProfile = withContext(Dispatchers.IO) {
         accountRepository.refreshProfile()
@@ -71,7 +73,9 @@ class YaniProfileSettingsRepository(
 
     override suspend fun changePassword(oldPassword: String, newPassword: String) =
         withContext(Dispatchers.IO) {
-            authPreferences.setRefreshToken(api.changePassword(oldPassword, newPassword))
+            val token = api.changePassword(oldPassword, newPassword)
+            authPreferences.setRefreshToken(token)
+            authTokenBackup.save(token)
         }
 
     override suspend fun requestPasswordReset(email: String, captchaResponse: String?) =

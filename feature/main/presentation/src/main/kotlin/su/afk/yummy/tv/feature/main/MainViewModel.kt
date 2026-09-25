@@ -137,6 +137,7 @@ class MainViewModel @Inject internal constructor(
 
     private fun refreshAccountIfNeeded() {
         viewModelScope.launch {
+            mainSideEffectsHandler.restoreAccountIfMissing()
             mainSideEffectsHandler.refreshAccountIfStale()
         }
     }

@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
+import su.afk.yummy.tv.domain.account.usecase.RestoreAccountSessionUseCase
 import su.afk.yummy.tv.domain.update.usecase.GetLatestAppReleaseUseCase
 import su.afk.yummy.tv.domain.update.util.isVersionNewer
 import su.afk.yummy.tv.feature.main.utils.firstOrZero
@@ -21,6 +22,7 @@ internal class MainSideEffectsHandler @Inject constructor(
     private val versionSupportChecker: VersionSupportChecker,
     private val getAccountSession: GetAccountSessionUseCase,
     private val refreshAccount: RefreshAccountUseCase,
+    private val restoreAccountSession: RestoreAccountSessionUseCase,
     private val settingsStore: SettingsStore,
     @param:Named("appVersionName") private val versionName: String,
 ) {
@@ -43,6 +45,10 @@ internal class MainSideEffectsHandler @Inject constructor(
                 MainUpdateCheckResult.NotAvailable
             }
         }.getOrDefault(MainUpdateCheckResult.NotAvailable)
+
+    suspend fun restoreAccountIfMissing() {
+        runSuspendCatching { restoreAccountSession() }
+    }
 
     suspend fun refreshAccountIfStale(maxAge: kotlin.time.Duration = FORTY_EIGHT_HOURS) {
         if (!getAccountSession().isAuthorized) return
