@@ -39,7 +39,6 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -48,6 +47,7 @@ import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.utils.timingLabel
 import su.afk.yummy.tv.feature.library.mobile.utils.watchedAtLabel
 import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnail
+import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 
 @Composable
 internal fun LibraryMobileHistoryPage(
@@ -95,7 +95,7 @@ internal fun LibraryMobileHistoryPage(
                         ) {
                             SubcomposeAsyncImage(
                                 model = entry.screenshotUrl
-                                    ?: localProgress["${entry.animeId}:${entry.episode.episodeGroupKey()}"]
+                                    ?: localProgress[entry.historyProgressKey]
                                         ?.let {
                                             resolveContinueWatchingImageModel(
                                                 screenshotUrl = it.screenshotUrl,

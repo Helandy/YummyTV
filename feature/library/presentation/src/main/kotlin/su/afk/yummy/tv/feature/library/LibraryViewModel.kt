@@ -17,7 +17,6 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
@@ -29,7 +28,7 @@ import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
 import su.afk.yummy.tv.domain.library.usecase.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
-import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
+import su.afk.yummy.tv.domain.player.usecase.GetMeaningfulVideoProgressUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
@@ -37,6 +36,7 @@ import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.buildLibraryTabItems
+import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 import su.afk.yummy.tv.feature.library.utils.toToastTimeString
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -61,7 +61,7 @@ class LibraryViewModel @Inject internal constructor(
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
     private val playerNavigator: IPlayerNavigator,
     private val getWatchHistoryPage: GetWatchHistoryPageUseCase,
-    private val watchProgressRepository: WatchProgressRepository,
+    private val getMeaningfulVideoProgress: GetMeaningfulVideoProgressUseCase,
     private val stringProvider: StringProvider,
     private val analytics: LibraryAnalytics,
 ) : BaseViewModel<LibraryState.State, LibraryState.Event, LibraryState.Effect>() {
@@ -71,7 +71,7 @@ class LibraryViewModel @Inject internal constructor(
         selectedTab = savedStateHandle.get<String>(KEY_SELECTED_TAB)
             ?.let { runCatching { LibraryTab.valueOf(it) }.getOrNull() }
             ?.takeIf { it in LibraryTab.visibleEntries }
-            ?: LibraryTab.CONTINUE_WATCHING
+            ?: LibraryTab.CONTINUE_WATCHING,
     )
 
     private companion object {
@@ -214,7 +214,6 @@ class LibraryViewModel @Inject internal constructor(
 
             is LibraryState.Event.RemoveWatchProgress ->
                 removeWatchProgress(event.entry)
-
         }
     }
 
@@ -239,8 +238,8 @@ class LibraryViewModel @Inject internal constructor(
 
     private fun loadHistoryLocalProgress() {
         viewModelScope.launch {
-            val lookup = watchProgressRepository.allMeaningfulVideoProgress()
-                .associateBy { "${it.animeId}:${it.episode.episodeGroupKey()}" }
+            val lookup = getMeaningfulVideoProgress()
+                .associateBy { it.historyProgressKey }
                 .toImmutableMap()
             setState { copy(historyLocalProgress = lookup) }
         }
@@ -342,8 +341,8 @@ class LibraryViewModel @Inject internal constructor(
                             R.string.library_remote_continue_progress_toast,
                             progress.episode,
                             progress.positionMs.toToastTimeString(),
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
             nav.navigate(playerNavigator.getPlayerDest(result))
@@ -364,5 +363,4 @@ class LibraryViewModel @Inject internal constructor(
         ) { limit, offset ->
             getWatchHistoryPage(limit, offset)
         }
-
 }

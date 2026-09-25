@@ -54,7 +54,6 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -62,6 +61,7 @@ import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnail
 import su.afk.yummy.tv.feature.library.utils.historyFocusKeys
+import su.afk.yummy.tv.feature.library.utils.historyProgressKey
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 import su.afk.yummy.tv.feature.library.utils.watchedAtLabel
 
@@ -202,7 +202,7 @@ internal fun LibraryTvHistoryPage(
                         ) {
                             SubcomposeAsyncImage(
                                 model = entry.screenshotUrl
-                                    ?: localProgress["${entry.animeId}:${entry.episode.episodeGroupKey()}"]
+                                    ?: localProgress[entry.historyProgressKey]
                                         ?.let {
                                             resolveContinueWatchingImageModel(
                                                 screenshotUrl = it.screenshotUrl,
