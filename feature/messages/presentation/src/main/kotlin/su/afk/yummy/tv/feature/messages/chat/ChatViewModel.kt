@@ -5,7 +5,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
@@ -22,12 +21,12 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.messages.MessagesMutationNotifier
-import su.afk.yummy.tv.domain.messages.model.ChatMessage
 import su.afk.yummy.tv.domain.messages.usecase.GetDialogsUseCase
 import su.afk.yummy.tv.domain.messages.usecase.GetMessagesUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.messages.chat.handler.ChatMutationHandler
 import su.afk.yummy.tv.feature.messages.chat.handler.ChatPollingHandler
+import su.afk.yummy.tv.feature.messages.utils.mergeMessages
 
 private const val CHAT_PAGE_SIZE = 30
 private const val DRAFT_KEY_PREFIX = "messages_chat_draft_"
@@ -69,7 +68,6 @@ class ChatViewModel @AssistedInject constructor(
         fallbackAvatarUrl = avatarUrl,
         draft = savedStateHandle[draftKey] ?: "",
     )
-
 
     init {
         observeAccountSession()
@@ -263,7 +261,9 @@ class ChatViewModel @AssistedInject constructor(
         if (
             text.isBlank() || currentState.isMutating || !currentState.isAuthorized ||
             currentState.peer?.isBanned == true
-        ) return
+        ) {
+            return
+        }
         val answerMessageId = currentState.replyingTo?.id ?: 0
         viewModelScope.launch {
             setState { copy(isMutating = true) }
@@ -301,7 +301,9 @@ class ChatViewModel @AssistedInject constructor(
         if (
             text.isBlank() || currentState.isMutating || original.isDeleted ||
             original.fromUserId != currentState.currentUserId
-        ) return
+        ) {
+            return
+        }
         viewModelScope.launch {
             setState { copy(isMutating = true) }
             runSuspendCatching { mutationHandler.edit(messageId, text) }.fold(
@@ -364,7 +366,7 @@ class ChatViewModel @AssistedInject constructor(
                     setState {
                         copy(
                             messages = mergeMessages(messages, listOf(saved)),
-                            isMutating = false
+                            isMutating = false,
                         )
                     }
                     mutationNotifier.notifyChanged()
@@ -415,8 +417,8 @@ class ChatViewModel @AssistedInject constructor(
                     setState { copy(pendingClaimMessageId = null, isMutating = false) }
                     setEffect(
                         ChatState.Effect.ShowMessage(
-                            if (sent) ChatState.MessageType.CLAIM_SENT else ChatState.MessageType.CLAIM_FAILED
-                        )
+                            if (sent) ChatState.MessageType.CLAIM_SENT else ChatState.MessageType.CLAIM_FAILED,
+                        ),
                     )
                 },
                 onFailure = {
@@ -462,16 +464,23 @@ class ChatViewModel @AssistedInject constructor(
         if (
             readJob?.isActive == true || state.currentUserId <= 0 ||
             state.messages.none { !it.isRead && it.toUserId == state.currentUserId }
-        ) return
+        ) {
+            return
+        }
         readJob = viewModelScope.launch {
             runSuspendCatching { mutationHandler.markRead(userId) }.fold(
                 onSuccess = { read ->
                     if (read) {
                         setState {
-                            copy(messages = messages.map { message ->
-                                if (message.toUserId == currentUserId) message.copy(isRead = true)
-                                else message
-                            }.toImmutableList())
+                            copy(
+                                messages = messages.map { message ->
+                                    if (message.toUserId == currentUserId) {
+                                        message.copy(isRead = true)
+                                    } else {
+                                        message
+                                    }
+                                }.toImmutableList(),
+                            )
                         }
                         mutationNotifier.notifyChanged()
                     }
@@ -483,11 +492,3 @@ class ChatViewModel @AssistedInject constructor(
         }
     }
 }
-
-private fun mergeMessages(
-    current: List<ChatMessage>,
-    incoming: List<ChatMessage>,
-): ImmutableList<ChatMessage> = buildMap {
-    current.forEach { put(it.id, it) }
-    incoming.forEach { put(it.id, it) }
-}.values.sortedWith(compareBy(ChatMessage::dateSeconds, ChatMessage::id)).toImmutableList()

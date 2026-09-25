@@ -19,6 +19,7 @@ import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.domain.messages.usecase.GetDialogsUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
+import su.afk.yummy.tv.feature.messages.utils.GLOBAL_CHAT_SUMMARY
 import javax.inject.Inject
 
 private const val DIALOGS_PAGE_SIZE = 20
@@ -76,16 +77,3 @@ class DialogsViewModel @Inject constructor(
             // Общий чат сервер не отдаёт в списке диалогов — закрепляем его сверху сами.
             .map { it.insertHeaderItem(item = GLOBAL_CHAT_SUMMARY) }
 }
-
-/** Синтетическая запись общего чата. Имя/подпись подставляет UI по [GLOBAL_CHAT_USER_ID]. */
-private val GLOBAL_CHAT_SUMMARY = DialogSummary(
-    userId = GLOBAL_CHAT_USER_ID,
-    nickname = "",
-    avatarUrl = null,
-    roles = emptyList(),
-    isBanned = false,
-    lastMessage = "",
-    unreadCount = 0,
-    dateSeconds = 0,
-    lastOnlineSeconds = 0,
-)
