@@ -8,8 +8,8 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.utils.PLAYER_PROGRESS_POLL_INTERVAL
 import su.afk.yummy.tv.feature.player.common.utils.updateBufferedProgress
-import kotlin.time.Duration.Companion.seconds
 
 /** Секундный цикл: notify позиции, буферизация и сохранение прогресса каждые 10 секунд. */
 @Composable
@@ -38,7 +38,7 @@ internal fun MobilePlayerProgressPollingEffect(
             if (dur > 0 && now - reporter.lastSaveTimeMs >= 10_000L) {
                 reporter.saveProgress(position, dur)
             }
-            delay(1.seconds)
+            delay(PLAYER_PROGRESS_POLL_INTERVAL)
         }
     }
 }

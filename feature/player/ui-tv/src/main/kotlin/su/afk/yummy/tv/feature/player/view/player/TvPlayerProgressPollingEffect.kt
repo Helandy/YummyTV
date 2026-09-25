@@ -8,12 +8,12 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.utils.isAtPlayerEnd
-import kotlin.time.Duration.Companion.milliseconds
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.utils.PLAYER_PROGRESS_POLL_INTERVAL
 import su.afk.yummy.tv.feature.player.common.utils.updateBufferedProgress
 
 /**
- * Цикл 500ms: позиция (с защитой после seek), длительность, буферизация,
+ * Секундный цикл: позиция (с защитой после seek), длительность, буферизация,
  * notify раз в секунду и сохранение каждые 10 секунд.
  *
  * Здесь же страховка конца эпизода: часть потоков не доигрывает до duration и не даёт
@@ -63,7 +63,7 @@ internal fun TvPlayerProgressPollingEffect(
                     sawPositionBeforeEnd = true
                 }
             }
-            delay(500.milliseconds)
+            delay(PLAYER_PROGRESS_POLL_INTERVAL)
         }
     }
 }
