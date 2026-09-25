@@ -25,6 +25,7 @@ import su.afk.yummy.tv.domain.videodownload.usecase.RestartVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
+import su.afk.yummy.tv.feature.videodownload.utils.isActive
 import javax.inject.Inject
 
 @HiltViewModel
@@ -205,8 +206,10 @@ class VideoDownloadViewModel @Inject constructor(
             .filter { item ->
                 item.status == VideoDownloadStatus.Downloaded &&
                     !item.exportStatus.isActive &&
-                    !(item.exportStatus == VideoExportStatus.Exported &&
-                        item.exportDirectoryUri == destinationUri)
+                    !(
+                        item.exportStatus == VideoExportStatus.Exported &&
+                            item.exportDirectoryUri == destinationUri
+                        )
             }
             .map { it.id }
     }
@@ -215,8 +218,3 @@ class VideoDownloadViewModel @Inject constructor(
         restartVideoDownload(id)
     }
 }
-
-private val VideoExportStatus.isActive: Boolean
-    get() = this == VideoExportStatus.Queued ||
-        this == VideoExportStatus.Preparing ||
-        this == VideoExportStatus.Copying
