@@ -575,89 +575,58 @@ class AccountViewModel @Inject internal constructor(
     private fun markNotificationReadOptimistically(id: Int) {
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
         if (notification.viewed) return
-        val previousNotifications = currentState.notifications
-        val previousCounts = currentState.notificationCounts
-        val updatedCounts = previousCounts.decrementCount(notification.type)
-        setState {
-            copy(
-                notifications = notifications.map {
-                    if (it.id == id) it.copy(viewed = true) else it
-                }.toImmutableList(),
-                notificationCounts = updatedCounts,
-                hubError = null,
-            )
-        }
-        viewModelScope.launch {
-            settingsStore.setYaniUnreadNotificationsCount(updatedCounts.totalUnreadCount())
-            val outcome = notificationMutationHandler.markNotificationRead(id)
-            if (outcome is AccountNotificationMutationOutcome.Failure) {
-                revertNotifications(previousNotifications, previousCounts, outcome.error)
-            }
-        }
+        mutateNotificationsOptimistically(
+            notifications = currentState.notifications.map {
+                if (it.id == id) it.copy(viewed = true) else it
+            }.toImmutableList(),
+            counts = currentState.notificationCounts.decrementCount(notification.type),
+        ) { notificationMutationHandler.markNotificationRead(id) }
     }
 
     private fun deleteNotificationOptimistically(id: Int) {
         val notification = currentState.notifications.firstOrNull { it.id == id } ?: return
-        val previousNotifications = currentState.notifications
-        val previousCounts = currentState.notificationCounts
-        val updatedCounts = if (notification.viewed) {
-            previousCounts
-        } else {
-            previousCounts.decrementCount(notification.type)
-        }
-        setState {
-            copy(
-                notifications = notifications.filterNot { it.id == id }.toImmutableList(),
-                notificationCounts = updatedCounts,
-                hubError = null,
-            )
-        }
-        viewModelScope.launch {
-            if (updatedCounts !== previousCounts) {
-                settingsStore.setYaniUnreadNotificationsCount(updatedCounts.totalUnreadCount())
-            }
-            val outcome = notificationMutationHandler.deleteNotification(id)
-            if (outcome is AccountNotificationMutationOutcome.Failure) {
-                revertNotifications(previousNotifications, previousCounts, outcome.error)
-            }
-        }
+        mutateNotificationsOptimistically(
+            notifications = currentState.notifications.filterNot { it.id == id }.toImmutableList(),
+            counts = if (notification.viewed) {
+                currentState.notificationCounts
+            } else {
+                currentState.notificationCounts.decrementCount(notification.type)
+            },
+            syncUnreadCount = !notification.viewed,
+        ) { notificationMutationHandler.deleteNotification(id) }
     }
 
     private fun markAllNotificationsReadOptimistically() {
-        val previousNotifications = currentState.notifications
-        val previousCounts = currentState.notificationCounts
-        if (previousNotifications.all { it.viewed }) return
-        setState {
-            copy(
-                notifications = notifications.map { it.copy(viewed = true) }.toImmutableList(),
-                notificationCounts = notificationCounts.map { it.copy(count = 0) }
-                    .toImmutableList(),
-                hubError = null,
-            )
-        }
-        viewModelScope.launch {
-            settingsStore.setYaniUnreadNotificationsCount(0)
-            val outcome = notificationMutationHandler.markAllNotificationsRead()
-            if (outcome is AccountNotificationMutationOutcome.Failure) {
-                revertNotifications(previousNotifications, previousCounts, outcome.error)
-            }
-        }
+        if (currentState.notifications.all { it.viewed }) return
+        mutateNotificationsOptimistically(
+            notifications = currentState.notifications.map { it.copy(viewed = true) }.toImmutableList(),
+            counts = currentState.notificationCounts.map { it.copy(count = 0) }.toImmutableList(),
+        ) { notificationMutationHandler.markAllNotificationsRead() }
     }
 
     private fun deleteAllNotificationsOptimistically() {
+        if (currentState.notifications.isEmpty()) return
+        mutateNotificationsOptimistically(
+            notifications = persistentListOf(),
+            counts = persistentListOf(),
+        ) { notificationMutationHandler.deleteAllNotifications() }
+    }
+
+    /** Применяет [notifications]/[counts] сразу, а при ошибке сервера возвращает прежнее состояние. */
+    private fun mutateNotificationsOptimistically(
+        notifications: ImmutableList<ProfileNotification>,
+        counts: ImmutableList<NotificationCount>,
+        syncUnreadCount: Boolean = true,
+        mutation: suspend () -> AccountNotificationMutationOutcome,
+    ) {
         val previousNotifications = currentState.notifications
         val previousCounts = currentState.notificationCounts
-        if (previousNotifications.isEmpty()) return
-        setState {
-            copy(
-                notifications = persistentListOf(),
-                notificationCounts = persistentListOf(),
-                hubError = null,
-            )
-        }
+        setState { copy(notifications = notifications, notificationCounts = counts, hubError = null) }
         viewModelScope.launch {
-            settingsStore.setYaniUnreadNotificationsCount(0)
-            val outcome = notificationMutationHandler.deleteAllNotifications()
+            if (syncUnreadCount) {
+                settingsStore.setYaniUnreadNotificationsCount(counts.totalUnreadCount())
+            }
+            val outcome = mutation()
             if (outcome is AccountNotificationMutationOutcome.Failure) {
                 revertNotifications(previousNotifications, previousCounts, outcome.error)
             }

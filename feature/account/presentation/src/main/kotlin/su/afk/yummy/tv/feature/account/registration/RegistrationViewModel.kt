@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.account.model.RegistrationException
 import su.afk.yummy.tv.domain.account.model.UserRegistration
 import su.afk.yummy.tv.domain.account.usecase.RegisterUserUseCase
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.utils.validateRegistrationForm
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,16 +63,8 @@ class RegistrationViewModel @Inject constructor(
         val username = currentState.username
         val password = currentState.password
 
-        if (email.isBlank() || username.isBlank() || password.isBlank()) {
-            setState { copy(error = AccountUiError.CREDENTIALS_REQUIRED, errorMessage = null) }
-            return
-        }
-        if (!EMAIL_REGEX.matches(email)) {
-            setState { copy(error = AccountUiError.INVALID_EMAIL, errorMessage = null) }
-            return
-        }
-        if (password.length < MIN_PASSWORD_LENGTH) {
-            setState { copy(error = AccountUiError.PASSWORD_TOO_SHORT, errorMessage = null) }
+        validateRegistrationForm(email, username, password)?.let { error ->
+            setState { copy(error = error, errorMessage = null) }
             return
         }
 
@@ -139,10 +132,5 @@ class RegistrationViewModel @Inject constructor(
                 },
             )
         }
-    }
-
-    private companion object {
-        const val MIN_PASSWORD_LENGTH = 6
-        val EMAIL_REGEX = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
     }
 }
