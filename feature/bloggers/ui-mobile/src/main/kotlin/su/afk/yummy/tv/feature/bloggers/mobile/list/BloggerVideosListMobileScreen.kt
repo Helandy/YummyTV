@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
@@ -113,7 +114,9 @@ private fun BloggerVideosListContent(
         emptyText = stringResource(R.string.blogger_videos_empty),
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .mobileContentMaxWidth()
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {

@@ -19,6 +19,7 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.defaultPopTransitionSpec
 import androidx.navigation3.ui.defaultTransitionSpec
@@ -37,6 +38,7 @@ fun AppNavHost(
         defaultTransitionSpec(),
     popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
+    extraSceneStrategies: List<SceneStrategy<NavKey>> = emptyList(),
 ) {
     var savedCurrentRoot by rememberSaveable { mutableStateOf(navManager.currentRoot) }
 
@@ -114,7 +116,7 @@ fun AppNavHost(
 
     NavDisplay(
         entries = entriesToShow,
-        sceneStrategies = listOf(BottomOverlaySceneStrategy()),
+        sceneStrategies = listOf(BottomOverlaySceneStrategy<NavKey>()) + extraSceneStrategies,
         transitionSpec = transitionSpec,
         popTransitionSpec = popTransitionSpec,
         onBack = { navManager.back() },

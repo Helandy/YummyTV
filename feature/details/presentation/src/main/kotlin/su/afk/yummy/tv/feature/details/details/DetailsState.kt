@@ -4,13 +4,13 @@ import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
-import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
@@ -28,7 +28,6 @@ class DetailsState {
         val isInLibrary: Boolean = false,
         val isFavorite: Boolean = false,
         val libraryList: UserAnimeList? = null,
-        val showPosterFullscreen: Boolean = false,
         val watchProgress: DetailsWatchProgressIndex = DetailsWatchProgressIndex.Empty,
         val pendingBalancerSelection: BalancerPickerState? = null,
         val pendingDubbingSelection: DubbingPickerState? = null,
@@ -101,9 +100,6 @@ class DetailsState {
 
         /** Пользователь открыл постер на весь экран. */
         data object PosterClicked : Event
-
-        /** Пользователь закрыл полноэкранный постер. */
-        data object PosterDismissed : Event
 
         /** Пользователь закрыл выбор балансера. */
         data object BalancerPickerDismissed : Event

@@ -23,4 +23,5 @@
     <string name="review_delete_confirm">Видалити цей відгук?</string>
     <string name="review_cancel">Скасувати</string>
     <string name="review_retry">Повторити</string>
+    <string name="reviews_mobile_detail_placeholder">Оберіть рецензію, щоб прочитати її тут</string>
 </resources>

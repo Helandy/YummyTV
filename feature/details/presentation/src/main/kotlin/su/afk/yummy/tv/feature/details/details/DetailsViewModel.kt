@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
+import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.details.details.handler.DetailsLibraryHandler
@@ -45,6 +46,7 @@ import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
+import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 
@@ -58,6 +60,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val commentsNavigator: ICommentsNavigator,
     private val reviewsNavigator: IReviewsNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
+    private val imageViewNavigator: IImageViewNavigator,
     private val stringProvider: StringProvider,
     private val screenDataHandler: DetailsScreenDataHandler,
     private val libraryHandler: DetailsLibraryHandler,
@@ -232,10 +235,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.PosterClicked -> {
                 analytics.eventDetailsPosterClicked(animeId)
-                setState { copy(showPosterFullscreen = true) }
+                currentState.details?.poster?.fullscreenUrl()?.let { url ->
+                    nav.navigate(imageViewNavigator(imageUrl = url))
+                }
             }
-
-            DetailsState.Event.PosterDismissed -> setState { copy(showPosterFullscreen = false) }
 
             DetailsState.Event.SubscriptionsRouteSelected -> {
                 analytics.eventDetailsSubscriptionsMobileSelected(animeId)

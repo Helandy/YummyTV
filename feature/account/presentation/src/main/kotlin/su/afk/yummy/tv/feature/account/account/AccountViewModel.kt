@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
@@ -34,7 +35,10 @@ import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.account.utils.decrementCount
 import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
+import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.messages.IMessagesNavigator
+import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
+import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 import su.afk.yummy.tv.feature.watchlater.IWatchLaterNavigator
 import javax.inject.Inject
@@ -44,6 +48,7 @@ class AccountViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val settingsStore: YaniAccountSettingsStore,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val detailsNavigator: IDetailsNavigator,
@@ -51,6 +56,9 @@ class AccountViewModel @Inject internal constructor(
     private val watchLaterNavigator: IWatchLaterNavigator,
     private val accountNavigator: IAccountNavigator,
     private val messagesNavigator: IMessagesNavigator,
+    private val faqNavigator: IFaqNavigator,
+    private val sitePagesNavigator: ISitePagesNavigator,
+    private val settingsNavigator: ISettingsNavigator,
     private val sessionHandler: AccountSessionHandler,
     private val hubHandler: AccountHubHandler,
     private val notificationHandler: AccountNotificationHandler,
@@ -64,6 +72,9 @@ class AccountViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
         observeAccountSession()
             .onEach { session ->
                 sessionHandler.onSessionSnapshot(session.isAuthorized)
@@ -104,6 +115,10 @@ class AccountViewModel @Inject internal constructor(
 
     override fun onEvent(event: AccountState.Event) {
         when (event) {
+            AccountState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
             AccountState.Event.BackSelected -> {
                 nav.back()
             }
@@ -245,6 +260,12 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.UserSearchSelected ->
                 nav.navigate(accountNavigator.getUserSearchDest())
+
+            AccountState.Event.FaqSelected -> nav.navigate(faqNavigator.getFaqDest())
+
+            AccountState.Event.SitePagesSelected -> nav.navigate(sitePagesNavigator.pages())
+
+            AccountState.Event.SettingsSelected -> nav.navigate(settingsNavigator.getSettingsDest())
 
             AccountState.Event.MySubscriptionsSelected -> {
                 if (currentState.isSignedIn) nav.navigate(accountNavigator.getMySubscriptionsDest())

@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
@@ -65,6 +66,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val getAnimeVideos: GetAnimeVideosUseCase,
@@ -105,6 +107,9 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     init {
         analytics.eventEpisodesScreenOpened(animeId)
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
         viewModelScope.launch { loadMeta() }
         viewModelScope.launch { loadVideos() }
         viewModelScope.launch { loadEpisodeInfo() }
@@ -151,6 +156,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     override fun onEvent(event: EpisodesState.Event) {
         when (event) {
+            EpisodesState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
             EpisodesState.Event.BackSelected -> nav.back()
             EpisodesState.Event.RetryVideosSelected -> viewModelScope.launch { loadVideos() }
             is EpisodesState.Event.EpisodeDescriptionToggled -> setState {

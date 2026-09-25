@@ -65,7 +65,7 @@
 
         <activity
             android:name=".android.MobileActivity"
-            android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize"
+            android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"
             android:launchMode="singleTop"
             android:resizeableActivity="true"

@@ -15,7 +15,6 @@
     <string name="details_next">Следующий</string>
     <string name="details_viewing_order_empty">Порядок просмотра не найден</string>
     <string name="details_unsupported">не поддерживается</string>
-    <string name="details_close">Закрыть</string>
     <string name="details_error_title">Не удалось загрузить</string>
     <string name="retry">Повторить</string>
     <string name="details_back">Назад</string>

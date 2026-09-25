@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.feature.reviews.details.ReviewDetailsState
 import su.afk.yummy.tv.feature.reviews.mobile.R
@@ -87,7 +89,7 @@ fun ReviewDetailsMobileScreen(
         customTopBar = {
             MobileTopBar(
                 title = stringResource(R.string.review_details_title),
-                onBack = { onEvent(ReviewDetailsState.Event.BackSelected) },
+                onBack = { onEvent(ReviewDetailsState.Event.BackSelected) }.takeUnless { isInListDetailPane() },
             )
         },
     ) {
@@ -102,7 +104,9 @@ fun ReviewDetailsMobileScreen(
             val review = details.review
             val blocks = remember(review.html) { parseReviewBlocks(review.html) }
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 8.dp,

@@ -16,29 +16,28 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R
-import su.afk.yummy.tv.core.designsystem.locals.LocalMarkNotificationPermissionRequested
-import su.afk.yummy.tv.core.designsystem.locals.LocalNotificationPermissionRequested
 
+/**
+ * Диалоги объяснения и напоминания вокруг системного запроса разрешения на уведомления.
+ *
+ * @param permissionWasRequested системный запрос уже показывали: если Android больше не даёт
+ *   спросить повторно, ведём в настройки приложения. Хранится в preferences, читает ViewModel.
+ * @param onPermissionRequested показан системный запрос — экран сообщает ViewModel, та сохраняет.
+ */
 @Composable
 fun NotificationPermissionGateHost(
     state: NotificationPermissionGateState,
+    permissionWasRequested: Boolean,
+    onPermissionRequested: () -> Unit,
     @StringRes explanationRes: Int = R.string.notification_permission_explanation,
 ) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
-    val permissionWasRequested by LocalNotificationPermissionRequested.current
-        .collectAsStateWithLifecycle(initialValue = false)
-    val markNotificationPermissionRequested = LocalMarkNotificationPermissionRequested.current
-    val coroutineScope = rememberCoroutineScope()
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) {
@@ -62,7 +61,7 @@ fun NotificationPermissionGateHost(
                 state.complete()
             }
         } else {
-            coroutineScope.launch { markNotificationPermissionRequested() }
+            onPermissionRequested()
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }

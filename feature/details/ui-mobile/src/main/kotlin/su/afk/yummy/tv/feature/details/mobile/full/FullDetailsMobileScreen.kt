@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileMetaRow
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.full.FullDetailsState
@@ -72,7 +73,9 @@ fun FullDetailsMobileScreen(
         ) {
             val details = state.details
             LazyColumn(
-                modifier = Modifier.navigationBarsPadding(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .navigationBarsPadding(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 16.dp,

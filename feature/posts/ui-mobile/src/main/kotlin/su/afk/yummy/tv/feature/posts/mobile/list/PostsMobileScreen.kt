@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileHideOnScrollState
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
@@ -147,7 +148,9 @@ private fun PostsList(
     onEvent: (PostsListState.Event) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .mobileContentMaxWidth()
+            .fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {

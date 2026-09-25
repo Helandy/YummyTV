@@ -62,7 +62,7 @@ class DialogsViewModel @Inject constructor(
             DialogsState.Event.BackSelected -> nav.back()
             DialogsState.Event.LoginSelected -> nav.navigate(accountNavigator.getAccountDest())
             is DialogsState.Event.DialogSelected -> if (event.userId >= 0) {
-                nav.navigate(navigator.chat(event.userId))
+                nav.navigateDetail(navigator.chat(event.userId))
             }
         }
     }

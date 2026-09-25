@@ -17,6 +17,8 @@ class VideoDownloadState {
         val pendingReExportItem: VideoDownloadItem? = null,
         val exportDestination: VideoExportDestination? = null,
         val pendingBulkExportCount: Int = 0,
+        /** Системный запрос разрешения на уведомления уже показывали хотя бы раз. */
+        val notificationPermissionRequested: Boolean = false,
     ) : UiState {
         /** Суммарный объём скачанных данных в байтах по всем загрузкам. */
         val occupiedBytes: Long
@@ -24,6 +26,9 @@ class VideoDownloadState {
     }
 
     sealed interface Event : UiEvent {
+        /** Показан системный запрос разрешения на уведомления: запоминаем это. */
+        data object NotificationPermissionRequested : Event
+
         data object BackSelected : Event
         data class ItemSelected(val id: Long) : Event
         data class DetailsSelected(val animeId: Int) : Event

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -141,7 +142,9 @@ private fun UserProfileTabContent(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .mobileContentMaxWidth()
+            .fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {

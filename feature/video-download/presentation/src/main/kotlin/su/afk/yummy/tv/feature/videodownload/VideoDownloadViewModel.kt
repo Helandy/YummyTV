@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -31,6 +32,7 @@ class VideoDownloadViewModel @Inject constructor(
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
     private val nav: INavigationManager,
+    private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val observeVideoDownloads: ObserveVideoDownloadsUseCase,
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
     private val pauseVideoDownload: PauseVideoDownloadUseCase,
@@ -46,6 +48,9 @@ class VideoDownloadViewModel @Inject constructor(
     private var pendingExportIds: List<Long> = emptyList()
 
     init {
+        appLifecycleSettingsStore.notificationPermissionRequested
+            .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
         observeVideoDownloads()
             .onEach { items ->
                 setState { copy(items = items.toImmutableList()) }
@@ -60,6 +65,10 @@ class VideoDownloadViewModel @Inject constructor(
 
     override fun onEvent(event: VideoDownloadState.Event) {
         when (event) {
+            VideoDownloadState.Event.NotificationPermissionRequested -> viewModelScope.launch {
+                appLifecycleSettingsStore.markNotificationPermissionRequested()
+            }
+
             VideoDownloadState.Event.BackSelected -> nav.back()
             is VideoDownloadState.Event.ItemSelected -> {
                 nav.navigate(playerNavigator.getDownloadedPlayerDest(event.id))

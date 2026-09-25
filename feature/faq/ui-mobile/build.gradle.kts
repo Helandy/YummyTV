@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:utils"))
     implementation(project(":feature:faq:api"))
+    implementation(project(":feature:faq:presentation"))
 
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)

@@ -141,6 +141,7 @@ include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
 
 include(":feature:faq:api")
+include(":feature:faq:presentation")
 include(":feature:faq:ui-mobile")
 
 include(":feature:pages:api")

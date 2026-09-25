@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
@@ -76,7 +77,9 @@ fun BloggerDetailsMobileScreen(
             state.loading -> MobileSectionLoading()
 
             blogger != null -> LazyColumn(
-                modifier = Modifier.navigationBarsPadding(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .navigationBarsPadding(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {

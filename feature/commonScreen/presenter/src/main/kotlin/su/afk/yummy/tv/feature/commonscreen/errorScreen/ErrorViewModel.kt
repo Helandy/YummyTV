@@ -3,13 +3,15 @@ package su.afk.yummy.tv.feature.commonscreen.errorScreen
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import su.afk.yummy.tv.core.mvi.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.commonscreen.CommonScreenAnalytics
 import su.afk.yummy.tv.feature.commonscreen.navigator.CommonScreenDestination
 
+@HiltViewModel(assistedFactory = ErrorViewModel.Factory::class)
 internal class ErrorViewModel @AssistedInject constructor(
     @Assisted private val dest: CommonScreenDestination.ErrorNavigatorDest,
     override val errorHandler: ErrorHandler,

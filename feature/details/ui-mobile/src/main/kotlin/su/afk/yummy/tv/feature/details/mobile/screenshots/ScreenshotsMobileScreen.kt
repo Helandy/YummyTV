@@ -16,11 +16,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.screenshots.utils.screenshotLazyKey
-import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotFullscreenDialog
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotMobileCard
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsState
 
@@ -71,6 +71,7 @@ fun ScreenshotsMobileScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(
@@ -91,15 +92,6 @@ fun ScreenshotsMobileScreen(
                     )
                 }
             }
-        }
-    }
-    state.selectedIndex?.let { index ->
-        val screenshot = state.screenshots.getOrNull(index)
-        if (screenshot != null) {
-            ScreenshotFullscreenDialog(
-                screenshot = screenshot,
-                onDismiss = { onEvent(ScreenshotsState.Event.ScreenshotDismissed) },
-            )
         }
     }
 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissionNames
 import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
@@ -172,7 +173,9 @@ fun LocalAuthMobileScreen(
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier.weight(1f, fill = false),
+                    modifier = Modifier
+                        .mobileContentMaxWidth()
+                        .weight(1f, fill = false),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(items = state.devices, key = { it.id }) { device ->

@@ -105,6 +105,9 @@ compose-ui = { module = "androidx.compose.ui:ui" }
 compose-uiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+compose-material3-adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3" }
+compose-material3-navigationSuite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 
 # Navigation
 jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }

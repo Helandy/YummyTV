@@ -1,17 +1,10 @@
 package su.afk.yummy.tv.feature.commonscreen.navigator
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import dagger.hilt.android.EntryPointAccessors
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.feature.commonscreen.di.ImageViewNavigatorEntryPoint
 import su.afk.yummy.tv.feature.commonscreen.imageView.ImageViewScreen
 import su.afk.yummy.tv.feature.commonscreen.imageView.ImageViewViewModel
 import javax.inject.Inject
@@ -40,31 +33,12 @@ class ImageViewNavigatorRegister @Inject constructor() : IImageViewEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
         with(builder) {
             entry<CommonScreenDestination.ImageViewDest> { dest ->
-                ImageViewEntry(dest)
+                val vm = hiltViewModel<ImageViewViewModel, ImageViewViewModel.Factory>(
+                    key = "ImageViewDest:${dest.selectedIndex}:${dest.imageUrls.firstOrNull()}",
+                ) { it.create(dest) }
+                ScreenNavigator(vm) { state, effect, onEvent ->
+                    ImageViewScreen(state = state, effect = effect, onEvent = onEvent)
+                }
             }
         }
-}
-
-@Composable
-private fun ImageViewEntry(dest: CommonScreenDestination.ImageViewDest) {
-    val appContext = LocalContext.current.applicationContext
-    val entryPoint = EntryPointAccessors.fromApplication(
-        appContext,
-        ImageViewNavigatorEntryPoint::class.java,
-    )
-    val factory = entryPoint.imageViewViewModelFactory()
-
-    val vm: ImageViewViewModel = viewModel(
-        key = "ImageViewDest:${dest.selectedIndex}:${dest.imageUrls.firstOrNull()}",
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                return factory.create(dest) as T
-            }
-        },
-    )
-
-    ScreenNavigator(vm) { state, effect, onEvent ->
-        ImageViewScreen(state = state, effect = effect, onEvent = onEvent)
-    }
 }

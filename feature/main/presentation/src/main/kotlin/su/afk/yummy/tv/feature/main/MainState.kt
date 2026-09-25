@@ -25,20 +25,15 @@ class MainState {
 
     /** Пользовательские действия в корневом контейнере приложения. */
     sealed class Event : UiEvent {
-        /** Корневая TV вкладка выбрана из меню. */
-        data class TvRootSelected(val root: RootTab) : Event()
+        /**
+         * Корневая вкладка выбрана в меню (боковое на TV, бар или рейка на мобильном).
+         * [popToRootOnReselect] — сбросить стек вкладки при повторном выборе текущей.
+         */
+        data class RootSelected(val root: RootTab, val popToRootOnReselect: Boolean) : Event()
     }
 
     sealed class Effect : UiEffect {
-        data class NavigateToUpdate(
-            val version: String,
-            val apkUrl: String,
-            val changelog: String,
-            val required: Boolean = false,
-            val updatesCount: Int = 0,
-            val isPrerelease: Boolean = false,
-        ) : Effect()
-
+        /** Глобальный тост поверх экранов. Эффект, а не state: не всплывает повторно. */
         data class ShowToast(val message: String) : Effect()
     }
 }

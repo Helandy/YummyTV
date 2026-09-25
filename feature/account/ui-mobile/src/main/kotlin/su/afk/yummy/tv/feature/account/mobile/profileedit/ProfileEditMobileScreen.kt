@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.feature.account.mobile.R
@@ -112,6 +113,7 @@ fun ProfileEditMobileScreen(
 
             else -> LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .imePadding(),
                 contentPadding = PaddingValues(16.dp),

@@ -37,6 +37,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
@@ -66,7 +67,9 @@ internal fun LibraryMobileHistoryPage(
         items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_mobile_history_error))
         items.itemCount == 0 -> HistoryMessage(stringResource(R.string.library_mobile_history_empty))
         else -> LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .mobileContentMaxWidth()
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

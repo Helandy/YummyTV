@@ -199,6 +199,8 @@ internal fun AccountMobileNotificationsTab(
     }
     NotificationPermissionGateHost(
         state = notificationPermissionGate,
+        permissionWasRequested = state.notificationPermissionRequested,
+        onPermissionRequested = { onEvent(AccountState.Event.NotificationPermissionRequested) },
         explanationRes = CoreR.string.notification_permission_explanation_episode_push,
     )
     if (state.isNotificationOpening || isOpeningNotification) {

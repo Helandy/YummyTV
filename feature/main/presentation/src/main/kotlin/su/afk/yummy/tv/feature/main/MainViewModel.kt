@@ -19,6 +19,7 @@ import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
 import su.afk.yummy.tv.feature.main.presentation.R
+import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,9 +40,9 @@ class MainViewModel @Inject internal constructor(
 
     override fun onEvent(event: MainState.Event) {
         when (event) {
-            is MainState.Event.TvRootSelected -> nav.switchRoot(
+            is MainState.Event.RootSelected -> nav.switchRoot(
                 root = event.root,
-                reselectPopToRoot = false,
+                reselectPopToRoot = event.popToRootOnReselect,
             )
         }
     }
@@ -58,11 +59,7 @@ class MainViewModel @Inject internal constructor(
     private fun observeAccountMutationErrors() {
         accountMutationErrorNotifier.events
             .onEach {
-                setEffect(
-                    MainState.Effect.ShowToast(
-                        stringProvider.get(R.string.main_mutation_error_toast)
-                    )
-                )
+                setEffect(MainState.Effect.ShowToast(stringProvider.get(R.string.main_mutation_error_toast)))
             }
             .launchIn(viewModelScope)
     }
@@ -119,8 +116,8 @@ class MainViewModel @Inject internal constructor(
     private fun checkForUpdates() {
         viewModelScope.launch {
             when (val result = mainSideEffectsHandler.checkForUpdates()) {
-                is MainUpdateCheckResult.Available -> setEffect(
-                    MainState.Effect.NavigateToUpdate(
+                is MainUpdateCheckResult.Available -> {
+                    val destination = UpdateDestination(
                         version = result.version,
                         apkUrl = result.apkUrl,
                         changelog = result.changelog,
@@ -128,7 +125,9 @@ class MainViewModel @Inject internal constructor(
                         updatesCount = result.updatesCount,
                         isPrerelease = result.isPrerelease,
                     )
-                )
+                    // Обязательное обновление заменяет текущий экран: уйти назад с него нельзя.
+                    if (result.required) nav.replace(destination) else nav.navigate(destination)
+                }
 
                 MainUpdateCheckResult.NotAvailable -> Unit
             }

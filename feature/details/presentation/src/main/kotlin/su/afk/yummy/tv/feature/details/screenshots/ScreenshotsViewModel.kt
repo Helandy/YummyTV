@@ -12,6 +12,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
+import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
 
 @HiltViewModel(assistedFactory = ScreenshotsViewModel.Factory::class)
@@ -22,6 +23,7 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
     private val nav: INavigationManager,
     private val getAnimeDetails: GetAnimeDetailsUseCase,
     private val analytics: DetailsAnalytics,
+    private val imageViewNavigator: IImageViewNavigator,
 ) : BaseViewModel<ScreenshotsState.State, ScreenshotsState.Event, ScreenshotsState.Effect>() {
 
     @AssistedFactory
@@ -38,36 +40,28 @@ class ScreenshotsViewModel @AssistedInject internal constructor(
 
     override fun onEvent(event: ScreenshotsState.Event) {
         when (event) {
-            ScreenshotsState.Event.BackSelected -> {
-                if (currentState.selectedIndex != null) {
-                    setState { copy(selectedIndex = null) }
-                } else {
-                    nav.back()
-                }
-            }
+            ScreenshotsState.Event.BackSelected -> nav.back()
 
             is ScreenshotsState.Event.ScreenshotSelected -> {
                 analytics.eventScreenshotsScreenshotSelected(animeId, event.index)
-                setState { copy(selectedIndex = event.index) }
-            }
-
-            ScreenshotsState.Event.ScreenshotDismissed -> setState { copy(selectedIndex = null) }
-            ScreenshotsState.Event.PreviousSelected -> {
-                analytics.eventScreenshotsPreviousTvSelected(animeId)
-                setState {
-                    copy(selectedIndex = selectedIndex?.let { (it - 1).coerceAtLeast(0) })
-                }
-            }
-
-            ScreenshotsState.Event.NextSelected -> {
-                analytics.eventScreenshotsNextTvSelected(animeId)
-                setState {
-                    copy(selectedIndex = selectedIndex?.let { (it + 1).coerceAtMost(screenshots.lastIndex) })
-                }
+                openScreenshot(event.index)
             }
 
             ScreenshotsState.Event.RetrySelected -> viewModelScope.launch { load() }
         }
+    }
+
+    /** Просмотр всех скриншотов галереей, начиная с выбранного. */
+    private fun openScreenshot(index: Int) {
+        val urls = currentState.screenshots.mapNotNull { it.full ?: it.small }
+        val url = currentState.screenshots.getOrNull(index)?.let { it.full ?: it.small } ?: return
+        nav.navigate(
+            imageViewNavigator(
+                imageUrl = url,
+                imageUrls = urls,
+                selectedIndex = urls.indexOf(url).coerceAtLeast(0),
+            ),
+        )
     }
 
     private suspend fun load() {

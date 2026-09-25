@@ -23,4 +23,5 @@
     <string name="review_delete_confirm">Delete this review?</string>
     <string name="review_cancel">Cancel</string>
     <string name="review_retry">Retry</string>
+    <string name="reviews_mobile_detail_placeholder">Select a review to read it here</string>
 </resources>

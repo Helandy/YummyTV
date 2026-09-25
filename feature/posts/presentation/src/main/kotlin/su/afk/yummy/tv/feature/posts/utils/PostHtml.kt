@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.safety.Safelist
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
+import su.afk.yummy.tv.domain.posts.model.PostDetails
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
 
 private val postSafeList = Safelist.none()
@@ -63,3 +64,12 @@ fun String.parsePostContent(excludedImageUrl: String? = null): List<PostContentB
     body.children().forEach(::add)
     return result
 }
+
+/** Все картинки поста в порядке показа: обложка, затем картинки из текста. */
+fun PostDetails.imageUrls(): List<String> =
+    buildList {
+        previewImageUrl?.takeIf(String::isNotBlank)?.let(::add)
+        contentHtml.parsePostContent(previewImageUrl)
+            .filterIsInstance<PostContentBlock.Image>()
+            .mapTo(this) { it.url }
+    }.distinct()

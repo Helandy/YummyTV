@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -23,12 +24,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import kotlin.time.Duration.Companion.seconds
 
 private val HERO_AUTO_SCROLL_INTERVAL = 5.seconds
+private val HERO_PAGE_SPACING = 12.dp
+
+/** Уже этой ширины карточка сезона выглядит тесно: на телефоне две на экран, шире — три. */
+private val HERO_MIN_PAGE_WIDTH = 150.dp
+private const val HERO_MAX_VISIBLE_PAGES = 3
+
+/**
+ * Сколько карточек влезает в ширину пейджера: одна растянутая карточка выглядит пусто, поэтому
+ * делим ширину на столько карточек, сколько позволяет [HERO_MIN_PAGE_WIDTH].
+ */
+private object HeroPageSize : PageSize {
+    override fun Density.calculateMainAxisPageSize(availableSpace: Int, pageSpacing: Int): Int {
+        val minPage = HERO_MIN_PAGE_WIDTH.roundToPx()
+        val count = ((availableSpace + pageSpacing) / (minPage + pageSpacing))
+            .coerceIn(1, HERO_MAX_VISIBLE_PAGES)
+        return (availableSpace - pageSpacing * (count - 1)) / count
+    }
+}
 
 @Composable
 internal fun HomeHeroCarousel(
@@ -44,7 +64,9 @@ internal fun HomeHeroCarousel(
         while (true) {
             delay(HERO_AUTO_SCROLL_INTERVAL)
             if (!isUserTouchingCarousel && !pagerState.isScrollInProgress) {
-                val nextPage = (pagerState.currentPage + 1) % items.size
+                // При нескольких карточках на экране currentPage в конце упирается раньше
+                // последнего индекса — поэтому на круг уходим, когда вперёд листать некуда.
+                val nextPage = if (pagerState.canScrollForward) pagerState.currentPage + 1 else 0
                 pagerState.animateScrollToPage(nextPage)
             }
         }
@@ -69,7 +91,8 @@ internal fun HomeHeroCarousel(
         HorizontalPager(
             state = pagerState,
             key = { page -> items[page].id },
-            pageSpacing = 12.dp,
+            pageSize = HeroPageSize,
+            pageSpacing = HERO_PAGE_SPACING,
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
             val item = items[page]

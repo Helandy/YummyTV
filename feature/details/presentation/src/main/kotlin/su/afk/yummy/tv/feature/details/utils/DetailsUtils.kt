@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.isContinueWatchingProgress
@@ -97,3 +98,6 @@ private fun List<PlayerVideoSource>.sortedByEpisode(): List<PlayerVideoSource> =
     sortedWith(compareBy<PlayerVideoSource> {
         it.episode.toDoubleOrNull() ?: Double.MAX_VALUE
     }.thenBy { it.episode })
+
+/** Постер в наибольшем доступном размере — для просмотра на весь экран. */
+internal fun AnimePoster.fullscreenUrl(): String? = mega ?: fullsize ?: big ?: medium ?: small

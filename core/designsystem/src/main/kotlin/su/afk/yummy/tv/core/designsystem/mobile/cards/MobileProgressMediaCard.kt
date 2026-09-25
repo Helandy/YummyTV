@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 
 @Composable
 fun MobileProgressMediaCard(
@@ -38,7 +39,9 @@ fun MobileProgressMediaCard(
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier
+            .clickablePointer()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {

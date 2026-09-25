@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
 
 @Composable
 fun MobileTitleListCard(
@@ -44,6 +45,7 @@ fun MobileTitleListCard(
             .height(116.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f))
+            .clickablePointer()
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.Top,
     ) {

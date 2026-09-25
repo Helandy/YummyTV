@@ -44,6 +44,8 @@ class EpisodesState {
         val bestDubbing: String = "",
         /** Приоритетный статус загрузки на серию: busy > paused > downloaded > failed. */
         val resolvedDownloadStatuses: ImmutableMap<String, EpisodeDownloadUiState?> = persistentMapOf(),
+        /** Системный запрос разрешения на уведомления уже показывали хотя бы раз. */
+        val notificationPermissionRequested: Boolean = false,
     ) : UiState
 
     @Immutable
@@ -154,6 +156,9 @@ class EpisodesState {
 
     /** Пользовательские действия на экране эпизодов. */
     sealed interface Event : UiEvent {
+        /** Показан системный запрос разрешения на уведомления: запоминаем это. */
+        data object NotificationPermissionRequested : Event
+
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
 

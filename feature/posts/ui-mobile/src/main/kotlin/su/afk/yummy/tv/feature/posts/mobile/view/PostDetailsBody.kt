@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.components.CachedAsyncImage
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostDetails
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
@@ -44,7 +45,9 @@ internal fun PostDetailsBody(
         details.contentHtml.parsePostContent(details.previewImageUrl)
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .mobileContentMaxWidth()
+            .fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

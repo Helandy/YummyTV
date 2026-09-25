@@ -92,6 +92,14 @@ internal class NavigationManager(
         backStack += dest
     }
 
+    /** Почему деталь заменяется, а не кладётся сверху — см. [INavigationManager.navigateDetail]. */
+    override fun navigateDetail(dest: NavKey) {
+        val top = backStack.lastOrNull()
+        // Другая деталь того же типа сверху бывает только в двухпанельной раскладке, где список
+        // виден рядом: меняем её, чтобы «назад» закрывал деталь, а не листал историю деталей.
+        if (top != null && top != dest && top::class == dest::class) replace(dest) else navigate(dest)
+    }
+
     override fun navigateApp(dest: NavKey) {
         if (appBackStack.lastOrNull() == dest) return
         appBackStack += dest

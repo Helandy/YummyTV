@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
@@ -90,7 +91,9 @@ fun EpisodeDubbingsMobileScreen(
             )
 
             else -> LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .fillMaxWidth(),
                 contentPadding = PaddingValues(bottom = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {

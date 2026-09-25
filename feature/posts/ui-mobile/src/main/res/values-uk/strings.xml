@@ -13,5 +13,5 @@
     <string name="posts_related_anime">Пов\'язане аніме</string>
     <string name="posts_views">Переглядів: %1$s</string>
     <string name="posts_reactions_title">Оцініть публікацію</string>
-    <string name="posts_close_image">Закрити зображення</string>
+    <string name="posts_mobile_detail_placeholder">Оберіть публікацію, щоб прочитати її тут</string>
 </resources>

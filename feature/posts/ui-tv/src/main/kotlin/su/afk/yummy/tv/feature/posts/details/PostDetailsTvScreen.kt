@@ -35,10 +35,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +71,6 @@ import su.afk.yummy.tv.feature.posts.model.PostContentBlock
 import su.afk.yummy.tv.feature.posts.tv.R
 import su.afk.yummy.tv.feature.posts.utils.parsePostContent
 import su.afk.yummy.tv.feature.posts.view.PostVoteButton
-import su.afk.yummy.tv.feature.posts.view.TvPostFullscreenImageDialog
 
 @Composable
 fun PostDetailsTvScreen(
@@ -111,7 +108,6 @@ fun PostDetailsTvScreen(
             val coroutineScope = rememberCoroutineScope()
             val listState = rememberLazyListState()
             val likeFocusRequester = remember { FocusRequester() }
-            var fullscreenImage by remember { mutableStateOf<Pair<String, String?>?>(null) }
             val viewsLabel =
                 stringResource(R.string.posts_views_short, details.views.compactCount())
             val contentBlocks = remember(details.contentHtml, details.previewImageUrl) {
@@ -197,7 +193,7 @@ fun PostDetailsTvScreen(
                                     }
                                 }
                                 .tvFocusableClick(
-                                    onClick = { fullscreenImage = url to details.title },
+                                    onClick = { onEvent(PostDetailsState.Event.ImageSelected(url)) },
                                     shape = shape,
                                     interactionSource = interactionSource,
                                     focusedScale = 1f,
@@ -259,7 +255,7 @@ fun PostDetailsTvScreen(
                                     }
                                     .tvFocusableClick(
                                         onClick = {
-                                            fullscreenImage = block.url to block.description
+                                            onEvent(PostDetailsState.Event.ImageSelected(block.url))
                                         },
                                         shape = shape,
                                         interactionSource = interactionSource,
@@ -421,13 +417,6 @@ fun PostDetailsTvScreen(
                         }
                     }
                 }
-            }
-            fullscreenImage?.let { (url, description) ->
-                TvPostFullscreenImageDialog(
-                    imageUrl = url,
-                    contentDescription = description,
-                    onDismiss = { fullscreenImage = null },
-                )
             }
         }
     }

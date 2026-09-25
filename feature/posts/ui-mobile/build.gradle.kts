@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":feature:posts:domain"))
     implementation(project(":feature:posts:presentation"))
     implementation(libs.bundles.compose.screen)
+    implementation(libs.compose.material3.adaptive.navigation3)
     implementation(libs.bundles.navigation.serialization)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.material.icons.extended)

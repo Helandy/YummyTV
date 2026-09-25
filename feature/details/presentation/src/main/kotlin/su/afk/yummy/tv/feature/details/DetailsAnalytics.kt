@@ -412,24 +412,6 @@ internal class DetailsAnalytics @Inject constructor(
     }
 
     /**
-     * Пользователь перешел к предыдущему скриншоту на TV.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventScreenshotsPreviousTvSelected(animeId: Int) {
-        eventWithAnime(EVENT_SCREENSHOTS_PREVIOUS_TV_SELECTED, animeId)
-    }
-
-    /**
-     * Пользователь перешел к следующему скриншоту на TV.
-     *
-     * Параметры: anime_id.
-     */
-    fun eventScreenshotsNextTvSelected(animeId: Int) {
-        eventWithAnime(EVENT_SCREENSHOTS_NEXT_TV_SELECTED, animeId)
-    }
-
-    /**
      * Пользователь повторил загрузку экрана оценки.
      *
      * Параметры: anime_id.
@@ -581,11 +563,6 @@ internal class DetailsAnalytics @Inject constructor(
         const val EVENT_SCREENSHOTS_SCREEN_OPENED = "details_screenshots_screen"
 
         const val EVENT_SCREENSHOTS_SCREENSHOT_SELECTED = "details_screenshots_screenshot_selected"
-
-        const val EVENT_SCREENSHOTS_PREVIOUS_TV_SELECTED =
-            "details_screenshots_previous_tv_selected"
-
-        const val EVENT_SCREENSHOTS_NEXT_TV_SELECTED = "details_screenshots_next_tv_selected"
 
         const val EVENT_RATING_SCREEN_OPENED = "details_rating_screen"
 

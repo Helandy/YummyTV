@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
@@ -93,7 +94,9 @@ internal fun LibraryMobilePage(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .mobileContentMaxWidth()
+            .fillMaxSize(),
         contentPadding = PaddingValues(
             start = 16.dp,
             top = 12.dp,

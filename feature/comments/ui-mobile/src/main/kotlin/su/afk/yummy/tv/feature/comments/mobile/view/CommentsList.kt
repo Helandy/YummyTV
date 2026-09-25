@@ -21,6 +21,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.mobile.R
@@ -36,7 +37,9 @@ internal fun CommentsList(
 ) {
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .mobileContentMaxWidth()
+            .fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {

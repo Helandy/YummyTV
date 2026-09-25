@@ -44,6 +44,8 @@ class AccountState {
         val errorMessage: String? = null,
         val hubError: AccountUiError? = null,
         val localAuthServerState: LocalAuthServerState = LocalAuthServerState.Idle,
+        /** Системный запрос разрешения на уведомления уже показывали хотя бы раз. */
+        val notificationPermissionRequested: Boolean = false,
     ) : UiState {
         val unreadNotificationCounts: ImmutableList<NotificationCount>
             get() = notificationCounts.filterNot { it.type.equals("message", ignoreCase = true) }
@@ -60,6 +62,9 @@ class AccountState {
 
     /** Пользовательские действия на экране аккаунта. */
     sealed interface Event : UiEvent {
+        /** Показан системный запрос разрешения на уведомления: запоминаем это. */
+        data object NotificationPermissionRequested : Event
+
         /** Пользователь нажал кнопку возврата. */
         data object BackSelected : Event
 
@@ -103,6 +108,15 @@ class AccountState {
         data object ScreenShown : Event
 
         data object UserSearchSelected : Event
+
+        /** Переход к FAQ из быстрых действий аккаунта. */
+        data object FaqSelected : Event
+
+        /** Переход к информационным страницам сайта из быстрых действий аккаунта. */
+        data object SitePagesSelected : Event
+
+        /** Переход к настройкам приложения из быстрых действий аккаунта. */
+        data object SettingsSelected : Event
 
         /** Переход к списку подписок пользователя. */
         data object MySubscriptionsSelected : Event

@@ -5,18 +5,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
-import su.afk.yummy.tv.core.designsystem.components.rememberCachedImageRequest
-import su.afk.yummy.tv.core.designsystem.mobile.MobileFullscreenImageDialog
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
 import su.afk.yummy.tv.feature.posts.mobile.R
@@ -29,17 +24,6 @@ fun PostDetailsMobileScreen(
     effect: Flow<PostDetailsState.Effect>,
     onEvent: (PostDetailsState.Event) -> Unit,
 ) {
-    var fullscreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
-
-    fullscreenImageUrl?.let { imageUrl ->
-        MobileFullscreenImageDialog(
-            model = rememberCachedImageRequest(imageUrl),
-            contentDescription = state.details?.title,
-            closeContentDescription = stringResource(R.string.posts_close_image),
-            onDismiss = { fullscreenImageUrl = null },
-        )
-    }
-
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         effect.collect {
@@ -56,7 +40,7 @@ fun PostDetailsMobileScreen(
         customTopBar = {
             MobileTopBar(
                 title = stringResource(R.string.posts_publication),
-                onBack = { onEvent(PostDetailsState.Event.BackSelected) },
+                onBack = { onEvent(PostDetailsState.Event.BackSelected) }.takeUnless { isInListDetailPane() },
             )
         },
     ) {
@@ -72,7 +56,7 @@ fun PostDetailsMobileScreen(
                 details = requireNotNull(state.details),
                 voting = state.voting,
                 onEvent = onEvent,
-                onImageClick = { fullscreenImageUrl = it },
+                onImageClick = { onEvent(PostDetailsState.Event.ImageSelected(it)) },
             )
         }
     }

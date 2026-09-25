@@ -47,6 +47,7 @@ import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
+import su.afk.yummy.tv.feature.search.ISearchNavigator
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -61,6 +62,7 @@ class HomeViewModel @Inject internal constructor(
     private val reviewsNavigator: IReviewsNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val scheduleNavigator: IScheduleNavigator,
+    private val searchNavigator: ISearchNavigator,
     private val getHomeFeed: GetHomeFeedUseCase,
     private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
@@ -137,6 +139,8 @@ class HomeViewModel @Inject internal constructor(
             HomeState.Event.ScheduleSelected -> {
                 nav.navigate(scheduleNavigator.getScheduleDest())
             }
+
+            HomeState.Event.SearchSelected -> nav.navigate(searchNavigator.getSearchDest())
 
             HomeState.Event.ReviewsSelected -> {
                 nav.navigate(reviewsNavigator.feed())

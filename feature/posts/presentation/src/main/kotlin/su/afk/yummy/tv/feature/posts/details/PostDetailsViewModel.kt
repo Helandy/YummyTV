@@ -21,8 +21,10 @@ import su.afk.yummy.tv.domain.posts.usecase.RemovePostVoteUseCase
 import su.afk.yummy.tv.domain.posts.usecase.VotePostUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
+import su.afk.yummy.tv.feature.commonscreen.navigator.IImageViewNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.posts.presentation.R
+import su.afk.yummy.tv.feature.posts.utils.imageUrls
 
 @HiltViewModel(assistedFactory = PostDetailsViewModel.Factory::class)
 class PostDetailsViewModel @AssistedInject constructor(
@@ -36,6 +38,7 @@ class PostDetailsViewModel @AssistedInject constructor(
     private val accountNavigator: IAccountNavigator,
     private val detailsNavigator: IDetailsNavigator,
     private val commentsNavigator: ICommentsNavigator,
+    private val imageViewNavigator: IImageViewNavigator,
     private val strings: StringProvider,
     settingsStore: YaniAccountSettingsStore,
 ) : BaseViewModel<PostDetailsState.State, PostDetailsState.Event, PostDetailsState.Effect>() {
@@ -50,6 +53,18 @@ class PostDetailsViewModel @AssistedInject constructor(
         settingsStore.yaniUserId.onEach { setState { copy(currentUserId = it) } }
             .launchIn(viewModelScope)
         load()
+    }
+
+    /** Галерея из всех картинок поста в порядке показа, чтобы листать их, не выходя из просмотра. */
+    private fun openImage(url: String) {
+        val images = currentState.details?.imageUrls().orEmpty().ifEmpty { listOf(url) }
+        nav.navigate(
+            imageViewNavigator(
+                imageUrl = url,
+                imageUrls = images,
+                selectedIndex = images.indexOf(url).coerceAtLeast(0),
+            ),
+        )
     }
 
     override fun onEvent(event: PostDetailsState.Event) {
@@ -72,6 +87,8 @@ class PostDetailsViewModel @AssistedInject constructor(
             PostDetailsState.Event.CommentsSelected -> nav.navigate(
                 commentsNavigator.getCommentsDest(CommentTargetType.POST, postId)
             )
+
+            is PostDetailsState.Event.ImageSelected -> openImage(event.url)
         }
     }
 

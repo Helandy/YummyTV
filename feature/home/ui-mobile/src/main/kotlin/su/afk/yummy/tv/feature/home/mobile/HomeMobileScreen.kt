@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,8 +42,8 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
-import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
@@ -148,7 +147,6 @@ fun HomeMobileScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val mainActions = LocalMobileMainActions.current
     val onItemSelected: (HomeFeedItem) -> Unit = remember(onEvent) {
         { item -> item.action.toHomeEventOrNull()?.let(onEvent) }
     }
@@ -185,6 +183,8 @@ fun HomeMobileScreen(
             },
         ) {
             LazyColumn(
+                // Без общего предела ширины: лента почти целиком из горизонтальных рядов, им
+                // ширина окна только на пользу. Ограничены лишь поиск и кнопки внизу.
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag("home_feed"),
@@ -196,20 +196,18 @@ fun HomeMobileScreen(
             ) {
                 val feed = state.feed
 
-                if (mainActions != null) {
-                    item(key = "search") {
-                        // Плашка внутри item'а поиска: отдельный item дал бы лишний
-                        // зазор spacedBy даже со скрытой плашкой
-                        Column {
-                            HomeSearchEntry(
-                                text = stringResource(R.string.home_mobile_search_hint),
-                                onClick = mainActions.onSearchClick,
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .testTag("home_search"),
-                            )
-                            OfflineBanner(isOffline = LocalIsOffline.current)
-                        }
+                item(key = "search") {
+                    // Плашка внутри item'а поиска: отдельный item дал бы лишний
+                    // зазор spacedBy даже со скрытой плашкой
+                    Column(modifier = Modifier.mobileContentMaxWidth()) {
+                        HomeSearchEntry(
+                            text = stringResource(R.string.home_mobile_search_hint),
+                            onClick = { onEvent(HomeState.Event.SearchSelected) },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .testTag("home_search"),
+                        )
+                        OfflineBanner(isOffline = LocalIsOffline.current)
                     }
                 }
 
@@ -301,6 +299,7 @@ fun HomeMobileScreen(
                         showSchedule = state.hasSchedule,
                         onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
                         onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
+                        modifier = Modifier.mobileContentMaxWidth(),
                     )
                 }
             }
@@ -310,8 +309,7 @@ fun HomeMobileScreen(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(bottom = MobileBottomBarDefaults.BarHeight),
+                .padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
         )
     }
 

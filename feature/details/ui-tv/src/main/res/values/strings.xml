@@ -15,7 +15,6 @@
     <string name="details_next">Next</string>
     <string name="details_viewing_order_empty">Viewing order not found</string>
     <string name="details_unsupported">not supported</string>
-    <string name="details_close">Close</string>
     <string name="details_error_title">Could not load</string>
     <string name="retry">Retry</string>
     <string name="details_back">Back</string>

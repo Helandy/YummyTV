@@ -1,45 +1,23 @@
 package su.afk.yummy.tv.feature.details.details
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
@@ -48,7 +26,6 @@ import su.afk.yummy.tv.feature.details.details.view.SubscriptionsPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 import su.afk.yummy.tv.feature.details.view.common.DubbingPickerOverlay
-import androidx.compose.ui.platform.testTag
 
 @Preview(
     name = "Default",
@@ -166,48 +143,6 @@ fun DetailsTvScreen(
                     onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
                     onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
                 )
-            }
-        }
-
-        AnimatedVisibility(
-            visible = state.showPosterFullscreen && details != null,
-            enter = fadeIn(tween(220)) + scaleIn(initialScale = 0.94f, animationSpec = tween(220)),
-            exit = fadeOut(tween(180)) + scaleOut(targetScale = 0.94f, animationSpec = tween(180)),
-        ) {
-            val closeFocusRequester = remember { FocusRequester() }
-            LaunchedEffect(Unit) { closeFocusRequester.requestFocus() }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.92f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                AsyncImage(
-                    model = details?.poster?.run { fullsize ?: big ?: medium ?: small },
-                    contentDescription = details?.title,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(24.dp)
-                        .focusRequester(closeFocusRequester)
-                        .tvFocusableClick(
-                            onClick = { onEvent(DetailsState.Event.PosterDismissed) },
-                            shape = CircleShape,
-                        )
-                        .background(Color.Black.copy(alpha = 0.6f), CircleShape)
-                        .padding(10.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = stringResource(R.string.details_close),
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
             }
         }
 

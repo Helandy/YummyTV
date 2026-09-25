@@ -79,7 +79,7 @@ internal fun TvSideMenu(
     fun enterRootContent(root: RootTab) {
         onMenuNavigationFocusLocked(false)
         if (selectedRoot != root) {
-            onEvent(MainState.Event.TvRootSelected(root))
+            onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = false))
         }
         onMoveToContent(root)
     }

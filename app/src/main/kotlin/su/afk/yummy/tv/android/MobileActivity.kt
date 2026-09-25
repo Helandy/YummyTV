@@ -3,19 +3,21 @@ package su.afk.yummy.tv.android
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.core.view.WindowCompat
-import dagger.hilt.android.AndroidEntryPoint
-import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
-import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
-import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
-import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
-import javax.inject.Inject
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.core.view.WindowCompat
+import dagger.hilt.android.AndroidEntryPoint
+import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
+import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
+import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
+import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
+import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MobileActivity : ComponentActivity() {
@@ -28,6 +30,9 @@ class MobileActivity : ComponentActivity() {
 
     @Inject
     lateinit var searchIntentHandler: SystemSearchIntentHandler
+
+    @Inject
+    lateinit var keyboardShortcuts: MobileKeyboardShortcuts
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +61,10 @@ class MobileActivity : ComponentActivity() {
         }
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
+        keyboardShortcuts.handle(event, onBack = onBackPressedDispatcher::onBackPressed) ||
+            super.onKeyDown(keyCode, event)
+
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         MobilePlayerPipController.enterIfPlaying(this)
@@ -68,5 +77,4 @@ class MobileActivity : ComponentActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         MobilePlayerPipController.updatePictureInPictureMode(isInPictureInPictureMode)
     }
-
 }

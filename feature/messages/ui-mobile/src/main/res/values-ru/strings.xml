@@ -56,4 +56,5 @@
     <string name="messages_unban_confirmation">Вы снова сможете обмениваться сообщениями.</string>
     <string name="messages_ban_failed">Не удалось изменить статус блокировки.</string>
     <string name="messages_banned_notice">Вы заблокировали собеседника. Разблокируйте его, чтобы отправить сообщение.</string>
+    <string name="messages_mobile_detail_placeholder">Выберите диалог, чтобы открыть чат</string>
 </resources>

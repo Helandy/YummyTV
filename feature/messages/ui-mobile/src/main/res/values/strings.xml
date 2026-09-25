@@ -56,4 +56,5 @@
     <string name="messages_unban_confirmation">You will be able to exchange messages again.</string>
     <string name="messages_ban_failed">Couldn’t change the block status.</string>
     <string name="messages_banned_notice">You blocked this user. Unblock them to send a message.</string>
+    <string name="messages_mobile_detail_placeholder">Select a conversation to open the chat</string>
 </resources>

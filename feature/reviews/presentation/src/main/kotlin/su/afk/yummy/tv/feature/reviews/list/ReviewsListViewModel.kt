@@ -78,7 +78,7 @@ class ReviewsListViewModel @AssistedInject constructor(
     override fun onEvent(event: ReviewsListState.Event) {
         when (event) {
             ReviewsListState.Event.BackSelected -> nav.back()
-            is ReviewsListState.Event.ReviewSelected -> nav.navigate(navigator.details(event.id))
+            is ReviewsListState.Event.ReviewSelected -> nav.navigateDetail(navigator.details(event.id))
             is ReviewsListState.Event.AuthorSelected -> nav.navigate(
                 accountNavigator.getUserProfileDest(
                     event.userId

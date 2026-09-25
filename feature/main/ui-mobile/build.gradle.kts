@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:network"))
-    implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:bloggers:api"))
@@ -48,5 +47,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.jetbrains.navigation3.ui)
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.navigation3)
+    implementation(libs.compose.material3.navigationSuite)
     implementation(libs.androidx.material.icons.extended)
 }

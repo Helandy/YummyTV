@@ -1,5 +1,0 @@
-package su.afk.yummy.tv.core.designsystem.locals
-
-import androidx.compose.runtime.compositionLocalOf
-
-val LocalContentRootIsFocused = compositionLocalOf { false }

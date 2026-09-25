@@ -14,13 +14,18 @@ object MobileBottomBarDefaults {
 
     val ExtraContentBottomPadding: Dp = 16.dp
 
-    /** Реальная высота бара на экране — вместе с инсетом системной навигации. */
-    val barHeightWithInsets: Dp
-        @Composable get() = BarHeight + navigationBarsInset()
-
-    /** Отступ снизу для скроллящегося контента, который рисуется под баром. */
+    /**
+     * Отступ снизу для скроллящегося контента корневых экранов табов. Нижний бар сам занимает
+     * место вместе с инсетом системной навигации, поэтому над ним нужен только зазор; при рейке
+     * или скрытой навигации контент доходит до края окна и сам уходит от системного инсета.
+     */
     val contentBottomPadding: Dp
-        @Composable get() = barHeightWithInsets + ExtraContentBottomPadding
+        @Composable get() = when (LocalMobileNavigationLayout.current) {
+            MobileNavigationLayout.BottomBar -> ExtraContentBottomPadding
+            MobileNavigationLayout.Rail,
+            MobileNavigationLayout.Hidden,
+                -> navigationBarsInset() + ExtraContentBottomPadding
+        }
 
     @Composable
     private fun navigationBarsInset(): Dp =

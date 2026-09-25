@@ -47,6 +47,8 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.feature.messages.chat.ChatState
@@ -118,7 +120,7 @@ fun ChatMobileScreen(
         val lastMessageId = state.messages.lastOrNull()?.id ?: 0
         val visibleLastIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
         val wasNearBottom = previousLastMessageId == 0 ||
-                visibleLastIndex >= state.messages.lastIndex - 3
+            visibleLastIndex >= state.messages.lastIndex - 3
         if (lastMessageId != previousLastMessageId && state.messages.isNotEmpty() && wasNearBottom) {
             listState.scrollToItem(state.messages.lastIndex)
         }
@@ -133,7 +135,7 @@ fun ChatMobileScreen(
                     ?: state.fallbackNickname.takeIf { it.isNotBlank() }
                     ?: if (state.userId == 0) stringResource(R.string.messages_global_chat)
                     else stringResource(R.string.messages_unknown_user, state.userId),
-                onBack = { onEvent(ChatState.Event.BackSelected) },
+                onBack = { onEvent(ChatState.Event.BackSelected) }.takeUnless { isInListDetailPane() },
                 actions = {
                     (state.peer?.avatarUrl ?: state.fallbackAvatarUrl)
                         ?.takeIf { it.isNotBlank() }
@@ -205,7 +207,9 @@ fun ChatMobileScreen(
 
                         else -> LazyColumn(
                             state = listState,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .mobileContentMaxWidth()
+                                .fillMaxSize(),
                             contentPadding = PaddingValues(
                                 start = 12.dp,
                                 top = 12.dp,

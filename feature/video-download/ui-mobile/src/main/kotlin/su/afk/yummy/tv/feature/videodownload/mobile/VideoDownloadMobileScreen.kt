@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -122,6 +123,7 @@ fun VideoDownloadMobileScreen(
         } else {
             LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -191,5 +193,9 @@ fun VideoDownloadMobileScreen(
         )
     }
 
-    NotificationPermissionGateHost(state = notificationPermissionGate)
+    NotificationPermissionGateHost(
+        state = notificationPermissionGate,
+        permissionWasRequested = state.notificationPermissionRequested,
+        onPermissionRequested = { onEvent(VideoDownloadState.Event.NotificationPermissionRequested) },
+    )
 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.pages.model.SitePageType
 import su.afk.yummy.tv.feature.pages.SitePagesState
@@ -47,6 +48,7 @@ fun SitePagesMobileScreen(
         when {
             state.selectedType == null -> LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(12.dp),
@@ -67,6 +69,7 @@ fun SitePagesMobileScreen(
 
             loadedPage != null -> LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(20.dp),

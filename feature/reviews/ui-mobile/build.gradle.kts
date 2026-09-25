@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":feature:reviews:domain"))
     implementation(project(":feature:reviews:presentation"))
     implementation(libs.bundles.compose.screen)
+    implementation(libs.compose.material3.adaptive.navigation3)
     implementation(libs.bundles.navigation.serialization)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.paging.compose)

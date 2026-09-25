@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -15,15 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.messages.model.DialogSummary
-import su.afk.yummy.tv.feature.messages.mobile.R
+import su.afk.yummy.tv.feature.messages.mobile.utils.displayName
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
 
 @Composable
@@ -39,23 +34,14 @@ internal fun DialogMobileRow(dialog: DialogSummary, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AsyncImage(
-                model = dialog.avatarUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape),
-            )
+            DialogMobileAvatar(avatarUrl = dialog.avatarUrl, name = dialog.displayName())
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = dialog.nickname.ifBlank {
-                            if (dialog.userId == 0) stringResource(R.string.messages_global_chat)
-                            else stringResource(R.string.messages_unknown_user, dialog.userId)
-                        },
+                        text = dialog.displayName(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,

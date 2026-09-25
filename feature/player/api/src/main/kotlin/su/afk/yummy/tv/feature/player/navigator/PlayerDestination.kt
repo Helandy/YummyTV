@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.navigator
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 
 /**
  * Общий contentKey записи плеера в back stack.
@@ -27,4 +28,4 @@ data class PlayerDestination(
     val resumeFromMs: Long = 0L,
     val downloadId: Long = 0L,
     val localFileUri: String = "",
-) : NavKey
+) : NavKey, FullscreenDestination

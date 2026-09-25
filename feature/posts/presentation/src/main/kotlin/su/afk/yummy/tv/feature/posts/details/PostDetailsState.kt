@@ -22,6 +22,9 @@ class PostDetailsState {
         data class AnimeSelected(val animeId: Int) : Event
         data class AuthorSelected(val userId: Int) : Event
         data object CommentsSelected : Event
+
+        /** Картинка поста (обложка или из текста) открыта на весь экран. */
+        data class ImageSelected(val url: String) : Event
     }
 
     sealed interface Effect : UiEffect {

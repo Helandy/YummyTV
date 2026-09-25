@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.NotificationPermissionGateHost
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGate
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -86,7 +87,9 @@ fun EpisodesMobileScreen(
             emptyIcon = Icons.Filled.PlayArrow,
         ) {
             LazyColumn(
-                modifier = Modifier.navigationBarsPadding(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .navigationBarsPadding(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 12.dp,
@@ -214,5 +217,9 @@ fun EpisodesMobileScreen(
         )
     }
 
-    NotificationPermissionGateHost(state = notificationPermissionGate)
+    NotificationPermissionGateHost(
+        state = notificationPermissionGate,
+        permissionWasRequested = state.notificationPermissionRequested,
+        onPermissionRequested = { onEvent(EpisodesState.Event.NotificationPermissionRequested) },
+    )
 }

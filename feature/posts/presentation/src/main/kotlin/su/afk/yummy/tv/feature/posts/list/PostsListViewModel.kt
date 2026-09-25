@@ -32,7 +32,7 @@ class PostsListViewModel @Inject constructor(
 
     override fun onEvent(event: PostsListState.Event) {
         when (event) {
-            is PostsListState.Event.PostSelected -> nav.navigate(navigator.details(event.postId))
+            is PostsListState.Event.PostSelected -> nav.navigateDetail(navigator.details(event.postId))
             is PostsListState.Event.CategorySelected -> if (event.uri != currentState.selectedCategory) {
                 setState { copy(selectedCategory = event.uri, posts = createFlow(event.uri, sort)) }
             }

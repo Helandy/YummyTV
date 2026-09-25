@@ -36,8 +36,8 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
-import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileMainActions
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -116,7 +116,6 @@ fun AccountMobileScreen(
     }
 
     var showLogoutConfirm by remember { mutableStateOf(false) }
-    val mainActions = LocalMobileMainActions.current
     val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
     val accountTabs = AccountState.AccountTab.entries
     val tabsState = rememberMobileSwipeableTabsState(
@@ -135,33 +134,31 @@ fun AccountMobileScreen(
             AccountMobileLoadingIndicator(modifier = Modifier.fillMaxSize())
         } else if (!state.isSignedIn) {
             val quickActions = buildList {
-                if (mainActions != null) {
-                    add(
-                        AccountMobileQuickAction(
-                            key = "faq",
-                            title = stringResource(R.string.account_faq),
-                            icon = Icons.Filled.Info,
-                            onClick = mainActions.onFaqClick,
-                        ),
-                    )
-                    add(
-                        AccountMobileQuickAction(
-                            key = "site_pages",
-                            title = stringResource(R.string.account_site_pages),
-                            icon = Icons.Filled.Language,
-                            onClick = mainActions.onSitePagesClick,
-                        ),
-                    )
-                    add(
-                        AccountMobileQuickAction(
-                            key = "settings",
-                            title = stringResource(R.string.account_settings),
-                            icon = Icons.Filled.Settings,
-                            onClick = mainActions.onSettingsClick,
-                            focusRequester = bottomBarUpFocusRequester,
-                        ),
-                    )
-                }
+                add(
+                    AccountMobileQuickAction(
+                        key = "faq",
+                        title = stringResource(R.string.account_faq),
+                        icon = Icons.Filled.Info,
+                        onClick = { onEvent(AccountState.Event.FaqSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "site_pages",
+                        title = stringResource(R.string.account_site_pages),
+                        icon = Icons.Filled.Language,
+                        onClick = { onEvent(AccountState.Event.SitePagesSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "settings",
+                        title = stringResource(R.string.account_settings),
+                        icon = Icons.Filled.Settings,
+                        onClick = { onEvent(AccountState.Event.SettingsSelected) },
+                        focusRequester = bottomBarUpFocusRequester,
+                    ),
+                )
                 add(
                     AccountMobileQuickAction(
                         key = "user_search",
@@ -189,6 +186,7 @@ fun AccountMobileScreen(
             }
             LazyColumn(
                 modifier = Modifier
+                    .mobileContentMaxWidth()
                     .fillMaxSize()
                     .imePadding(),
                 contentPadding = PaddingValues(
@@ -208,33 +206,31 @@ fun AccountMobileScreen(
             }
         } else {
             val quickActions = buildList {
-                if (mainActions != null) {
-                    add(
-                        AccountMobileQuickAction(
-                            key = "faq",
-                            title = stringResource(R.string.account_faq),
-                            icon = Icons.Filled.Info,
-                            onClick = mainActions.onFaqClick,
-                        ),
-                    )
-                    add(
-                        AccountMobileQuickAction(
-                            key = "site_pages",
-                            title = stringResource(R.string.account_site_pages),
-                            icon = Icons.Filled.Language,
-                            onClick = mainActions.onSitePagesClick,
-                        ),
-                    )
-                    add(
-                        AccountMobileQuickAction(
-                            key = "settings",
-                            title = stringResource(R.string.account_settings),
-                            icon = Icons.Filled.Settings,
-                            onClick = mainActions.onSettingsClick,
-                            focusRequester = bottomBarUpFocusRequester,
-                        ),
-                    )
-                }
+                add(
+                    AccountMobileQuickAction(
+                        key = "faq",
+                        title = stringResource(R.string.account_faq),
+                        icon = Icons.Filled.Info,
+                        onClick = { onEvent(AccountState.Event.FaqSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "site_pages",
+                        title = stringResource(R.string.account_site_pages),
+                        icon = Icons.Filled.Language,
+                        onClick = { onEvent(AccountState.Event.SitePagesSelected) },
+                    ),
+                )
+                add(
+                    AccountMobileQuickAction(
+                        key = "settings",
+                        title = stringResource(R.string.account_settings),
+                        icon = Icons.Filled.Settings,
+                        onClick = { onEvent(AccountState.Event.SettingsSelected) },
+                        focusRequester = bottomBarUpFocusRequester,
+                    ),
+                )
                 add(
                     AccountMobileQuickAction(
                         key = "user_search",
@@ -269,7 +265,9 @@ fun AccountMobileScreen(
                 )
             }
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 12.dp,

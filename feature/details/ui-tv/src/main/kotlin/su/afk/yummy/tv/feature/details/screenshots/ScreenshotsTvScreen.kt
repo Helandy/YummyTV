@@ -32,7 +32,6 @@ import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotCard
-import su.afk.yummy.tv.feature.details.screenshots.view.ScreenshotPreview
 
 @Preview(
     name = "Default",
@@ -111,14 +110,5 @@ fun ScreenshotsTvScreen(
             }
         }
 
-        val selectedIndex = state.selectedIndex
-        if (selectedIndex != null) {
-            ScreenshotPreview(
-                state = state,
-                index = selectedIndex,
-                onPrevious = { onEvent(ScreenshotsState.Event.PreviousSelected) },
-                onNext = { onEvent(ScreenshotsState.Event.NextSelected) },
-            )
-        }
     }
 }

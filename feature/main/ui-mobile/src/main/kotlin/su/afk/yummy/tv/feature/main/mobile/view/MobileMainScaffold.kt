@@ -1,123 +1,97 @@
 package su.afk.yummy.tv.feature.main.mobile.view
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
+import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileNavigationLayout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileNavigationLayout
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
-import androidx.compose.ui.platform.testTag
 
+/**
+ * Корневой каркас мобильного UI: на компактной ширине — нижний бар, на планшете, развёрнутом
+ * складном и в широком окне — боковая рейка. [showBottomBar] и [showRail] задаются раздельно:
+ * бар занимает высоту контента и уходит вне корня таба, рейка остаётся рядом с деталями.
+ */
 @Composable
 internal fun <T> MobileMainScaffold(
     selectedDestination: T,
     menuItems: List<MobileMenuItem<T>>,
-    showBars: Boolean,
+    showBottomBar: Boolean,
+    showRail: Boolean,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
     content: @Composable () -> Unit,
 ) {
     val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
-    Scaffold(
-        contentWindowInsets = WindowInsets(0.dp),
-        bottomBar = {
-            AnimatedVisibility(
-                visible = showBars,
-                enter = slideInVertically(tween(BOTTOM_BAR_ANIMATION_MILLIS)) { it } +
-                        fadeIn(tween(BOTTOM_BAR_ANIMATION_MILLIS)),
-                exit = slideOutVertically(tween(BOTTOM_BAR_ANIMATION_MILLIS)) { it } +
-                        fadeOut(tween(BOTTOM_BAR_ANIMATION_MILLIS)),
-            ) {
-                val surface = MaterialTheme.colorScheme.surface
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(surface)
-                        .navigationBarsPadding(),
-                ) {
-                    NavigationBar(
-                        modifier = Modifier.height(MobileBottomBarDefaults.BarHeight),
-                        containerColor = surface,
-                        windowInsets = WindowInsets(0.dp),
-                    ) {
-                        menuItems.forEach { item ->
-                            MobileNavigationItem(
-                                item = item,
-                                selected = item.destination == selectedDestination,
-                                upFocusRequester = bottomBarUpFocusRequester.takeIf {
-                                    item.destination == selectedDestination
-                                },
-                                onSelected = { onDestinationSelected(item.destination) },
-                            )
-                        }
-                    }
-                }
+    val suiteType = NavigationSuiteScaffoldDefaults.navigationSuiteType(currentWindowAdaptiveInfoV2())
+    val isRail = suiteType != NavigationSuiteType.NavigationBar &&
+        suiteType != NavigationSuiteType.ShortNavigationBarCompact &&
+        suiteType != NavigationSuiteType.ShortNavigationBarMedium
+    val isVisible = if (isRail) showRail else showBottomBar
+    val layout = when {
+        !isVisible -> MobileNavigationLayout.Hidden
+        isRail -> MobileNavigationLayout.Rail
+        else -> MobileNavigationLayout.BottomBar
+    }
+
+    val suiteState = rememberNavigationSuiteScaffoldState()
+    LaunchedEffect(isVisible) {
+        if (isVisible) suiteState.show() else suiteState.hide()
+    }
+
+    val surface = MaterialTheme.colorScheme.surface
+    NavigationSuiteScaffoldLayout(
+        navigationSuiteType = if (isRail) {
+            NavigationSuiteType.NavigationRail
+        } else {
+            NavigationSuiteType.NavigationBar
+        },
+        state = suiteState,
+        navigationSuite = {
+            if (isRail) {
+                MobileMainNavigationRail(
+                    selectedDestination = selectedDestination,
+                    menuItems = menuItems,
+                    containerColor = surface,
+                    onDestinationSelected = onDestinationSelected,
+                )
+            } else {
+                MobileMainNavigationBar(
+                    selectedDestination = selectedDestination,
+                    menuItems = menuItems,
+                    containerColor = surface,
+                    upFocusRequester = bottomBarUpFocusRequester,
+                    onDestinationSelected = onDestinationSelected,
+                )
             }
         },
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            content()
-            GlobalToastOverlay(
-                text = toastMessage,
-                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
-            )
+    ) {
+        CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+            ) {
+                content()
+                GlobalToastOverlay(
+                    text = toastMessage,
+                    modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                )
+            }
         }
     }
-}
-
-private const val BOTTOM_BAR_ANIMATION_MILLIS = 220
-
-@Composable
-private fun <T> RowScope.MobileNavigationItem(
-    item: MobileMenuItem<T>,
-    selected: Boolean,
-    upFocusRequester: FocusRequester?,
-    onSelected: () -> Unit,
-) {
-    NavigationBarItem(
-        modifier = Modifier
-            .testTag("main_tab")
-            .focusProperties {
-                upFocusRequester?.let { up = it }
-            },
-        selected = selected,
-        onClick = onSelected,
-        icon = {
-            BadgedBox(
-                badge = {
-                    if (item.badgeCount > 0) {
-                        Badge { Text(item.badgeCount.toString()) }
-                    }
-                },
-            ) {
-                Icon(item.icon, contentDescription = item.label)
-            }
-        },
-    )
 }

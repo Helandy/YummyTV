@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -20,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,10 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+
+/** Пропорции постера 2:3, но не выше [HERO_CARD_MAX_HEIGHT]: широкие карточки не вытягиваются. */
+private const val HERO_CARD_HEIGHT_RATIO = 1.5f
+private val HERO_CARD_MAX_HEIGHT = 360.dp
 
 @Composable
 internal fun HomeHeroCard(
@@ -36,7 +41,15 @@ internal fun HomeHeroCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(360.dp)
+            .layout { measurable, constraints ->
+                val width = constraints.maxWidth
+                val height = minOf(
+                    (width * HERO_CARD_HEIGHT_RATIO).toInt(),
+                    HERO_CARD_MAX_HEIGHT.roundToPx(),
+                )
+                val placeable = measurable.measure(Constraints.fixed(width, height))
+                layout(width, height) { placeable.place(0, 0) }
+            }
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -75,12 +88,12 @@ internal fun HomeHeroCard(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = item.title,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
@@ -91,7 +104,7 @@ internal fun HomeHeroCard(
                         text = item.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 3,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

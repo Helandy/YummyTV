@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.commonscreen.navigator
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 
 object CommonScreenDestination {
     @Serializable
@@ -21,5 +22,5 @@ object CommonScreenDestination {
     data class ImageViewDest(
         val imageUrls: List<String>,
         val selectedIndex: Int = 0,
-    ) : NavKey
+    ) : NavKey, FullscreenDestination
 }

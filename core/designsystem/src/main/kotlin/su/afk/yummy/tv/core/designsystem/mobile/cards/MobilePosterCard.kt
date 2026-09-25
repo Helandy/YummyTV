@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
 import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
+import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+import su.afk.yummy.tv.core.designsystem.mobile.input.onSecondaryClick
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -52,10 +54,13 @@ fun MobilePosterCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(
-            Modifier.combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick,
-            )
+            Modifier
+                .clickablePointer()
+                .onSecondaryClick(onLongClick)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                )
         ) {
             Box(
                 modifier = Modifier

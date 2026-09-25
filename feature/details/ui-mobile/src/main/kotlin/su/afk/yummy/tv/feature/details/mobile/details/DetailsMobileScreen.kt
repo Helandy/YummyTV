@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
@@ -35,8 +37,6 @@ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSec
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
-import su.afk.yummy.tv.feature.details.mobile.details.view.PosterDialog
-import androidx.compose.ui.platform.testTag
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -104,6 +104,7 @@ fun DetailsMobileScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
+                .mobileContentMaxWidth()
                 .fillMaxSize()
                 .testTag("details_root")
                 .navigationBarsPadding(),
@@ -182,11 +183,5 @@ fun DetailsMobileScreen(
             onDubbingDismiss = { onEvent(DetailsState.Event.DubbingPickerDismissed) },
         )
 
-        if (state.showPosterFullscreen) {
-            PosterDialog(
-                details = details,
-                onDismiss = { onEvent(DetailsState.Event.PosterDismissed) },
-            )
-        }
     }
 }

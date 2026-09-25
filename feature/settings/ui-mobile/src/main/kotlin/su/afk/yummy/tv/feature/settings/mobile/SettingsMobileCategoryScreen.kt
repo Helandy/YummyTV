@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
@@ -69,7 +70,9 @@ fun SettingsMobileCategoryScreen(
         },
     ) {
         LazyColumn(
-            modifier = Modifier.imePadding(),
+            modifier = Modifier
+                .mobileContentMaxWidth()
+                .imePadding(),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 32.dp),
         ) {
             item(key = category.name) {

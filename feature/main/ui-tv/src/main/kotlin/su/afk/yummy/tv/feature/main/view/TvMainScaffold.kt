@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
-import su.afk.yummy.tv.core.designsystem.locals.LocalContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -97,7 +96,6 @@ fun TvMainScaffold(
 
     CompositionLocalProvider(
         LocalMainMenuFocusRequester provides selectedRootFocusRequester,
-        LocalContentFocusRequester provides focusController.contentFocusRequester,
         LocalPreferredContentFocusRequester provides registerPreferredContentFocusRequester,
     ) {
         Box(

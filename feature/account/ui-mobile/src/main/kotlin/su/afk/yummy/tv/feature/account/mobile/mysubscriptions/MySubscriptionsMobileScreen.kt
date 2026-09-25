@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
 import su.afk.yummy.tv.feature.account.mobile.R
@@ -69,7 +70,9 @@ fun MySubscriptionsMobileScreen(
             )
 
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .mobileContentMaxWidth()
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {

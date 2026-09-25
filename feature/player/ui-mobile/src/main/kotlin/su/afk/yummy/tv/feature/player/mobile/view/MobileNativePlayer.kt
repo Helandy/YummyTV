@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -47,6 +51,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
 import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
+import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
 import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
@@ -70,6 +75,7 @@ import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.mobile.cast.MobileCastingIndicator
 import su.afk.yummy.tv.feature.player.mobile.cast.rememberMobileCastConnectionState
 import su.afk.yummy.tv.feature.player.mobile.cast.stopCasting
+import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerKeyAction
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVerticalGestureZone
@@ -85,6 +91,7 @@ import su.afk.yummy.tv.feature.player.mobile.utils.formatMobilePlayerTime
 import su.afk.yummy.tv.feature.player.mobile.utils.gestureIcon
 import su.afk.yummy.tv.feature.player.mobile.utils.mobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.mobile.utils.toGesturePercentText
+import su.afk.yummy.tv.feature.player.mobile.utils.toMobilePlayerKeyAction
 import su.afk.yummy.tv.feature.player.mobile.view.tutorial.MobilePlayerGestureTutorial
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -529,11 +536,35 @@ internal fun MobileNativePlayer(
         else -> 0f
     }
 
+    // Корень держит фокус, чтобы клавиатура управляла плеером без предварительного клика.
+    val keyboardFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) { keyboardFocusRequester.requestFocus() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .onSizeChanged { gestures.playerSize = it },
+            .onSizeChanged { gestures.playerSize = it }
+            .focusRequester(keyboardFocusRequester)
+            .focusable()
+            .onKeyEvent { event ->
+                if (isInPictureInPictureMode || tutorialBlocksPlayback) return@onKeyEvent false
+                when (event.toMobilePlayerKeyAction()) {
+                    MobilePlayerKeyAction.PlayPause -> {
+                        if (wantsPlay) player.pause() else player.play()
+                    }
+
+                    MobilePlayerKeyAction.SeekBackward ->
+                        seekController.stepSeek(StepSeekDirection.Backward)
+
+                    MobilePlayerKeyAction.SeekForward ->
+                        seekController.stepSeek(StepSeekDirection.Forward)
+
+                    null -> return@onKeyEvent false
+                }
+                overlay.show()
+                true
+            },
     ) {
         Box(
             modifier = Modifier
