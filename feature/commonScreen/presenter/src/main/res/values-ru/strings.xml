@@ -3,4 +3,5 @@
     <string name="back">Назад</string>
     <string name="previous">Предыдущее</string>
     <string name="next">Следующее</string>
+    <string name="image_view_retry">Повторить</string>
 </resources>
