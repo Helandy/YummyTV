@@ -49,7 +49,7 @@ data class LocalAuthPairingPayload(
 
         /**
          * Голый код допускаем с разделителем между группами, но не длиннее: иначе из произвольного
-         * текста (чужой URL) normalize может случайно выцепить десять «валидных» символов.
+         * текста (чужой URL) normalize может случайно выцепить двенадцать «валидных» символов.
          */
         private fun String.toValidCode(): String? {
             if (length > LocalAuthCode.LENGTH + MAX_SEPARATORS) return null

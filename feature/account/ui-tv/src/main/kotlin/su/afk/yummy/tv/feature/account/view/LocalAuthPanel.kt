@@ -78,8 +78,8 @@ internal fun LocalAuthPanel(
                     Text(
                         text = state.pin.chunked(LocalAuthCode.GROUP_SIZE).joinToString(" "),
                         style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 56.sp,
-                            letterSpacing = 6.sp,
+                            fontSize = 48.sp,
+                            letterSpacing = 4.sp,
                         ),
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary,

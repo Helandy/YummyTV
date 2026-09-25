@@ -44,7 +44,7 @@ import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
  *
  * Само поле невидимо — оно нужно только ради системной клавиатуры и каретки, а рисуем мы
  * ячейки в `decorationBox`. Разбивка по [LocalAuthCode.GROUP_SIZE] повторяет то, как код показан
- * на ТВ, а ячейки узкие: десять штук должны поместиться в ширину телефона.
+ * на ТВ, а ячейки узкие: двенадцать штук должны поместиться в ширину телефона.
  */
 @Composable
 internal fun LocalAuthPinInput(
@@ -93,12 +93,12 @@ internal fun LocalAuthPinInput(
                 contentAlignment = Alignment.Center,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     repeat(LocalAuthState.PIN_LENGTH) { index ->
                         if (index != 0 && index % LocalAuthCode.GROUP_SIZE == 0) {
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
                         PinCell(
                             digit = pin.getOrNull(index),
@@ -129,7 +129,7 @@ private fun PinCell(
 
     Box(
         modifier = Modifier
-            .size(width = 26.dp, height = 44.dp)
+            .size(width = 22.dp, height = 44.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(colorScheme.surfaceVariant.copy(alpha = 0.34f))
             .border(borderWidth, borderColor, RoundedCornerShape(8.dp)),

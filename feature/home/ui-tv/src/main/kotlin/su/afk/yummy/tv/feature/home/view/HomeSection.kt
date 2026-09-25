@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.components.lazy.KeepLazyListAtStartOnNewHead
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -80,6 +81,11 @@ internal fun HomeSection(
     val focusRequesters = remember(items.size) {
         List(items.size) { FocusRequester() }
     }
+    KeepLazyListAtStartOnNewHead(
+        state = listState,
+        headKey = items.firstOrNull()?.focusKey(),
+        enabled = !rowHasFocusState.value,
+    )
 
     fun restoreIndex(): Int {
         if (items.isEmpty()) return 0
