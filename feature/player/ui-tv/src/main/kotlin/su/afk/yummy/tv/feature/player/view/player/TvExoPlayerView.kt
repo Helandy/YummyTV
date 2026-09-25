@@ -83,7 +83,6 @@ import su.afk.yummy.tv.feature.player.utils.formatTime
 import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
-import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 
@@ -103,12 +102,8 @@ internal fun TvExoPlayerView(
 ) {
     val context = LocalContext.current
     val episodeKey = playback.activeIframeUrl
-    val qualities = remember(streamUrl, state.streamQualityMap) {
-        state.streamQualityMap ?: deriveQualityUrls(streamUrl)
-    }
     val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
-    val activeQuality = state.selectedQuality?.takeIf { it in qualities }
-        ?: qualities.keys.lastOrNull()
+    val activeQuality = playback.activeQuality
     val activeSpeed = state.selectedSpeed.coerceAtLeast(0.1f)
     var seekOnSwitch by remember(streamUrl, state.retryKey) {
         mutableLongStateOf(state.resumeFromMs)
@@ -158,9 +153,7 @@ internal fun TvExoPlayerView(
         if (recoveryHintVisible) autoHide.cancel()
     }
 
-    val currentUrl = remember(streamUrl, activeQuality, qualities) {
-        activeQuality?.let(qualities::get) ?: streamUrl
-    }
+    val currentUrl = playback.playbackUrl
 
     val playbackSession = rememberPlayerPlaybackSessionClient()
     val player = playbackSession.player
@@ -633,7 +626,7 @@ internal fun TvExoPlayerView(
             autoSkipProgress = skipUi.autoSkipProgress(activeSkip?.key),
             showOpeningOnTimeline = state.showOpeningOnTimeline,
             highlightedSkipKey = skipUi.highlightedSkipKey,
-            qualityCount = qualities.size,
+            qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
             currentSpeedLabel = activeSpeed.speedLabel(),
             showVolumeButton = advancedVolumeEnabled,
@@ -675,7 +668,7 @@ internal fun TvExoPlayerView(
             panels = panels,
             focus = focus,
             playback = playback,
-            qualities = qualities.keys.toList(),
+            qualities = playback.qualityLabels,
             activeQuality = activeQuality,
             speeds = speeds,
             activeSpeed = activeSpeed,
@@ -687,7 +680,7 @@ internal fun TvExoPlayerView(
             subtitleTrackNames = subtitleTrackNames.map(PlayerTrackOption::label),
             selectedSubtitleTrackIndex = selectedSubtitleIndex,
             onQualitySelected = { idx ->
-                val quality = qualities.keys.toList()[idx]
+                val quality = playback.qualityLabels[idx]
                 if (quality != activeQuality) {
                     val position = player.currentPosition.coerceAtLeast(0L)
                     seekOnSwitch = position

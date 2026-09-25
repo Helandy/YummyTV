@@ -16,6 +16,7 @@ import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.availableBalancerIndices
+import su.afk.yummy.tv.feature.player.utils.deriveQualityUrls
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
@@ -50,6 +51,12 @@ data class PlayerPlaybackUiState(
     val availableBalancerIndices: ImmutableList<Int>,
     val balancerAvailability: ImmutableList<Boolean>,
     val currentBalancerIndex: Int,
+    /** Доступные качества стрима: от экстрактора или выведенные из URL. */
+    val qualityLabels: ImmutableList<String>,
+    /** Выбранное качество, а если его нет среди доступных — лучшее доступное. */
+    val activeQuality: String?,
+    /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
+    val playbackUrl: String,
 )
 
 fun PlayerState.State.toPlayerPlaybackUiState(
@@ -83,6 +90,9 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val balancerAvailability = availableBalancerIndices.map { index ->
         isBalancerAvailableForEpisode(this, index, activeDubbingName, activeEpisode)
     }
+    val url = streamUrl.orEmpty()
+    val qualities = streamQualityMap ?: url.takeIf(String::isNotBlank)?.let(::deriveQualityUrls).orEmpty()
+    val activeQuality = selectedQuality?.takeIf { it in qualities } ?: qualities.keys.lastOrNull()
 
     return PlayerPlaybackUiState(
         activeIframeUrl = activeIframeUrl(this),
@@ -122,5 +132,8 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         currentBalancerIndex = availableBalancerIndices.indexOf(selection.balancerIndex)
             .takeIf { it >= 0 }
             ?: 0,
+        qualityLabels = qualities.keys.toImmutableList(),
+        activeQuality = activeQuality,
+        playbackUrl = activeQuality?.let(qualities::get) ?: url,
     )
 }

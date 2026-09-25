@@ -96,7 +96,6 @@ import su.afk.yummy.tv.feature.player.mobile.utils.toMobilePlayerKeyAction
 import su.afk.yummy.tv.feature.player.mobile.view.tutorial.MobilePlayerGestureTutorial
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
 
@@ -122,11 +121,7 @@ internal fun MobileNativePlayer(
     val pipSession = remember { MobilePlayerPipController.createSession() }
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val ui = rememberPlayerPlaybackUiState(state, playerNamePrefix)
-    val qualities = remember(streamUrl, state.streamQualityMap) {
-        state.streamQualityMap ?: deriveQualityUrls(streamUrl)
-    }
-    val selectedQuality = state.selectedQuality?.takeIf { it in qualities }
-        ?: qualities.keys.lastOrNull()
+    val selectedQuality = ui.activeQuality
     val selectedSpeed = state.selectedSpeed
     // Новая серия/стрим начинают со значений из state (позиция возобновления).
     val progress = rememberPlayerPlaybackProgressState(
@@ -147,7 +142,7 @@ internal fun MobileNativePlayer(
         mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
     }
     val skipUi = rememberPlayerSkipUiState(ui.activeIframeUrl)
-    val currentUrl = selectedQuality?.let(qualities::get) ?: streamUrl
+    val currentUrl = ui.playbackUrl
     val playbackConfigKey = remember(
         currentUrl,
         state.streamHeaders,
@@ -865,7 +860,7 @@ internal fun MobileNativePlayer(
         ) {
             MobilePlayerSettingsSheet(
                 mode = activeSettingsMode,
-                qualities = qualities.keys.toList(),
+                qualities = ui.qualityLabels,
                 selectedQuality = selectedQuality,
                 onQualitySelected = { quality ->
                     val position = player.currentPosition.coerceAtLeast(0)
