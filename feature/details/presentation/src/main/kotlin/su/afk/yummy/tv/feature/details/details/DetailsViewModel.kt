@@ -16,13 +16,11 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
-import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
@@ -41,12 +39,15 @@ import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.DubbingOption
 import su.afk.yummy.tv.feature.details.details.model.DubbingPickerState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.episodes.dubbings.sameEpisodeDubbing
 import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLaunchVideo
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.fullscreenUrl
+import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
+import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
 import su.afk.yummy.tv.feature.player.PlayerVideoSource
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 
@@ -176,10 +177,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                     (currentState.videosState as? VideosUiState.Content)?.videos.orEmpty()
                 showBalancerPicker(
                     video = event.video,
-                    candidateVideos = allVideos.filter {
-                        it.episode.episodeGroupKey() == event.video.episode.episodeGroupKey() &&
-                                it.dubbing.trim() == event.video.dubbing.trim()
-                    },
+                    candidateVideos = allVideos.sameEpisodeDubbing(event.video),
                 )
             }
 
@@ -217,8 +215,8 @@ class DetailsViewModel @AssistedInject internal constructor(
             DetailsState.Event.ReviewsSelected -> nav.navigate(reviewsNavigator.list(animeId))
             DetailsState.Event.BloggerVideosSelected -> nav.navigate(
                 bloggerVideosNavigator.anime(
-                    animeId
-                )
+                    animeId,
+                ),
             )
 
             DetailsState.Event.LibraryToggled ->
@@ -244,8 +242,8 @@ class DetailsViewModel @AssistedInject internal constructor(
                 analytics.eventDetailsSubscriptionsMobileSelected(animeId)
                 nav.navigate(
                     detailsNavigator.getSubscriptionsDest(
-                        animeId
-                    )
+                        animeId,
+                    ),
                 )
             }
 
@@ -269,14 +267,16 @@ class DetailsViewModel @AssistedInject internal constructor(
             val wasSignedIn = currentState.isSignedIn
             libraryMutationVersion++
             setState { copy(isInLibrary = false, libraryList = null) }
-            when (val result = libraryHandler.removeFromLibrary(
-                animeId = animeId,
-                details = details,
-                previousList = previousList,
-                wasInLibrary = wasInLibrary,
-                isFavorite = wasFavorite,
-                isSignedIn = wasSignedIn,
-            )) {
+            when (
+                val result = libraryHandler.removeFromLibrary(
+                    animeId = animeId,
+                    details = details,
+                    previousList = previousList,
+                    wasInLibrary = wasInLibrary,
+                    isFavorite = wasFavorite,
+                    isSignedIn = wasSignedIn,
+                )
+            ) {
                 DetailsLibraryMutationResult.Success -> Unit
                 is DetailsLibraryMutationResult.RollbackFavorite -> Unit
                 is DetailsLibraryMutationResult.RollbackLibrary -> setState {
@@ -296,22 +296,24 @@ class DetailsViewModel @AssistedInject internal constructor(
         val wasSignedIn = currentState.isSignedIn
         libraryMutationVersion++
         setState { copy(showLibraryListPicker = false, isInLibrary = true, libraryList = list) }
-        when (val result = libraryHandler.addToLibrary(
-            animeId = animeId,
-            details = details,
-            list = list,
-            wasInLibrary = wasInLibrary,
-            previousList = previousList,
-            isFavorite = wasFavorite,
-            isSignedIn = wasSignedIn,
-        )) {
+        when (
+            val result = libraryHandler.addToLibrary(
+                animeId = animeId,
+                details = details,
+                list = list,
+                wasInLibrary = wasInLibrary,
+                previousList = previousList,
+                isFavorite = wasFavorite,
+                isSignedIn = wasSignedIn,
+            )
+        ) {
             DetailsLibraryMutationResult.Success -> Unit
             is DetailsLibraryMutationResult.RollbackFavorite -> Unit
             is DetailsLibraryMutationResult.RollbackLibrary -> {
                 setState {
                     copy(
                         isInLibrary = result.isInLibrary,
-                        libraryList = result.libraryList
+                        libraryList = result.libraryList,
                     )
                 }
             }
@@ -325,13 +327,15 @@ class DetailsViewModel @AssistedInject internal constructor(
         val wasSignedIn = currentState.isSignedIn
         favoriteMutationVersion++
         setState { copy(isFavorite = nextFavorite) }
-        when (val result = libraryHandler.setFavorite(
-            animeId = animeId,
-            details = details,
-            favorite = nextFavorite,
-            previousFavorite = wasFavorite,
-            isSignedIn = wasSignedIn,
-        )) {
+        when (
+            val result = libraryHandler.setFavorite(
+                animeId = animeId,
+                details = details,
+                favorite = nextFavorite,
+                previousFavorite = wasFavorite,
+                isSignedIn = wasSignedIn,
+            )
+        ) {
             DetailsLibraryMutationResult.Success -> Unit
             is DetailsLibraryMutationResult.RollbackLibrary -> Unit
             is DetailsLibraryMutationResult.RollbackFavorite -> {
@@ -400,7 +404,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         ).fold(
             onSuccess = { result ->
                 setVideos(result)
-                if (loadSubscriptionsAfter || currentState.showSubscriptionsPicker && currentState.isSubscriptionsLoading) {
+                if (loadSubscriptionsAfter || (currentState.showSubscriptionsPicker && currentState.isSubscriptionsLoading)) {
                     loadSubscriptions()
                 }
                 if (currentState.isWatchLaunchPending) {
@@ -477,7 +481,8 @@ class DetailsViewModel @AssistedInject internal constructor(
             is VideosUiState.Content -> openInitialVideo(videosState.videos)
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
-            is VideosUiState.Error -> {
+            is VideosUiState.Error,
+            -> {
                 setState { copy(isWatchLaunchPending = true) }
                 viewModelScope.launch { loadVideos() }
             }
@@ -494,18 +499,21 @@ class DetailsViewModel @AssistedInject internal constructor(
             is VideosUiState.Content -> viewModelScope.launch { loadSubscriptions() }
             VideosUiState.NotLoaded,
             VideosUiState.Empty,
-            is VideosUiState.Error -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
+            is VideosUiState.Error,
+            -> viewModelScope.launch { loadVideos(loadSubscriptionsAfter = true) }
 
             VideosUiState.Loading -> setState { copy(isSubscriptionsLoading = true) }
         }
     }
 
     private fun openInitialVideo(videos: List<AnimeVideo>) {
-        when (val target = videoHandler.resolveWatchTarget(
-            animeId = animeId,
-            videos = videos,
-            watchProgress = currentState.watchProgress,
-        )) {
+        when (
+            val target = videoHandler.resolveWatchTarget(
+                animeId = animeId,
+                videos = videos,
+                watchProgress = currentState.watchProgress,
+            )
+        ) {
             is DetailsWatchTarget.Continue -> {
                 setState { copy(isWatchLaunchPending = false) }
                 navigateToPlayer(target.video)
@@ -574,7 +582,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             copy(
                 subscriptions = subscriptions.map {
                     if (it.key == key) it.copy(isSubscribed = subscribed) else it
-                }.toImmutableList()
+                }.toImmutableList(),
             )
         }
     }
@@ -598,7 +606,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 pendingDubbingSelection = DubbingPickerState(
                     episode = episode,
                     options = options.toImmutableList(),
-                )
+                ),
             )
         }
     }
@@ -607,11 +615,13 @@ class DetailsViewModel @AssistedInject internal constructor(
         val allVideos = candidateVideos
             ?: (currentState.videosState as? VideosUiState.Content)?.videos
             ?: return
-        when (val selection = playerNavigationHandler.selectPlayer(
-            video = video,
-            allVideos = allVideos,
-            preferredPlayer = preferredPlayerState.value,
-        )) {
+        when (
+            val selection = playerNavigationHandler.selectPlayer(
+                video = video,
+                allVideos = allVideos,
+                preferredPlayer = preferredPlayerState.value,
+            )
+        ) {
             is DetailsPlayerSelection.Navigate -> navigateToPlayer(selection.video)
             is DetailsPlayerSelection.ShowPicker -> {
                 reportUnsupportedPlayers(selection.picker)
@@ -639,10 +649,10 @@ class DetailsViewModel @AssistedInject internal constructor(
                 video = video,
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
-                posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
+                posterUrl = details.playerPosterUrl(),
                 screenshotByEpisode = details.screenshotByEpisode(),
                 resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
-            )
+            ),
         )
     }
 
@@ -653,16 +663,10 @@ class DetailsViewModel @AssistedInject internal constructor(
                 video = video,
                 animeTitle = details?.title ?: "",
                 animeId = animeId,
-                posterUrl = details?.poster?.run { medium ?: big ?: fullsize ?: small } ?: "",
+                posterUrl = details.playerPosterUrl(),
                 screenshotByEpisode = details.screenshotByEpisode(),
                 resumeFromMs = currentState.watchProgress.resumeFromMsFor(video),
-            )
+            ),
         )
     }
-
-    private fun AnimeDetails?.screenshotByEpisode(): Map<String, String> =
-        this?.screenshots.orEmpty().mapNotNull { screenshot ->
-            screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
-        }.toMap()
-
 }

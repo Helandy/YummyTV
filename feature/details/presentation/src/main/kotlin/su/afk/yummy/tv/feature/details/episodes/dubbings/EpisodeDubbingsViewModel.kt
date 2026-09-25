@@ -23,6 +23,8 @@ import su.afk.yummy.tv.feature.details.DetailsAnalytics
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
+import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
+import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
 
 @HiltViewModel(assistedFactory = EpisodeDubbingsViewModel.Factory::class)
 class EpisodeDubbingsViewModel @AssistedInject internal constructor(
@@ -74,12 +76,8 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
     private suspend fun loadMeta() {
         runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
-            posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small } ?: ""
-            screenshotsByEpisode = details.screenshots
-                .mapNotNull { screenshot ->
-                    screenshot.episode?.let { episode -> episode to (screenshot.small ?: "") }
-                }
-                .toMap()
+            posterUrl = details.playerPosterUrl()
+            screenshotsByEpisode = details.screenshotByEpisode()
         }
     }
 

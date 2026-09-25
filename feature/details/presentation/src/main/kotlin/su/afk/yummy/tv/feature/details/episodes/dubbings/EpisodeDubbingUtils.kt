@@ -12,9 +12,7 @@ internal fun List<AnimeVideo>.selectEpisodeDubbingLaunchVideo(
     dubbingName: String,
     preferredPlayer: PreferredPlayer,
 ): AnimeVideo? {
-    val candidates = filter {
-        it.episode.episodeGroupKey() == episode.episodeGroupKey() && it.dubbing.trim() == dubbingName
-    }
+    val candidates = filter { it.isEpisodeDubbing(episode, dubbingName) }
     val supported = candidates.filter { it.iframeUrl.isSupportedPlayerUrl() }
     return supported.firstOrNull { it.iframeUrl.matchesPreferredPlayer(preferredPlayer) }
         ?: supported.minWithOrNull(
@@ -27,3 +25,11 @@ internal fun List<AnimeVideo>.selectEpisodeDubbingLaunchVideo(
         )
         ?: candidates.firstOrNull()
 }
+
+/** Видео той же серии (номера сравниваются через [episodeGroupKey]) в озвучке [dubbingName]. */
+internal fun AnimeVideo.isEpisodeDubbing(episode: String, dubbingName: String): Boolean =
+    this.episode.episodeGroupKey() == episode.episodeGroupKey() && dubbing.trim() == dubbingName
+
+/** Все видео той же серии и озвучки, что и [video], — кандидаты для выбора балансера. */
+internal fun List<AnimeVideo>.sameEpisodeDubbing(video: AnimeVideo): List<AnimeVideo> =
+    filter { it.isEpisodeDubbing(video.episode, video.dubbing.trim()) }

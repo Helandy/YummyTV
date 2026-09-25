@@ -42,6 +42,8 @@ import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.handler.DetailsPlayerNavigationHandler
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
+import su.afk.yummy.tv.feature.details.episodes.dubbings.isEpisodeDubbing
+import su.afk.yummy.tv.feature.details.episodes.dubbings.sameEpisodeDubbing
 import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLaunchVideo
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadEnqueueResult
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadHandler
@@ -55,8 +57,10 @@ import su.afk.yummy.tv.feature.details.episodes.utils.uiStatusKey
 import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
 import su.afk.yummy.tv.feature.details.mapper.toUiState
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.utils.mostWatchedDubbing
+import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
+import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
 
 @HiltViewModel(assistedFactory = EpisodesViewModel.Factory::class)
@@ -379,10 +383,8 @@ class EpisodesViewModel @AssistedInject internal constructor(
     private suspend fun loadMeta() {
         runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->
             animeTitle = details.title
-            posterUrl = details.poster?.run { medium ?: big ?: fullsize ?: small } ?: ""
-            screenshotsByEpisode = details.screenshots
-                .mapNotNull { s -> s.episode?.let { ep -> ep to (s.small ?: "") } }
-                .toMap()
+            posterUrl = details.playerPosterUrl()
+            screenshotsByEpisode = details.screenshotByEpisode()
         }
     }
 
@@ -446,18 +448,10 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 ),
                 watchProgress = buildWatchProgressIndex(videos),
                 episodeGroups = groups,
-                bestDubbing = resolveBestDubbing(videos),
+                bestDubbing = videos.mostWatchedDubbing(),
                 resolvedDownloadStatuses = resolveDownloadStatuses(groups, downloadStatuses),
             )
         }
-    }
-
-    /** Озвучка с наибольшим числом просмотров среди kodik-источников. */
-    private fun resolveBestDubbing(videos: List<AnimeVideo>): String {
-        val source = videos.filter { it.iframeUrl.isKodikPlayerUrl() }.ifEmpty { videos }
-        return source.groupBy { it.dubbing }
-            .maxByOrNull { (_, list) -> list.sumOf { it.views ?: 0 } }
-            ?.key ?: source.firstOrNull()?.dubbing ?: ""
     }
 
     private fun updateMergedWatchProgress(
@@ -567,10 +561,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
 
     private fun showBalancerPickerForDubbing(video: AnimeVideo) {
         val allVideos = (currentState.videosState as? VideosUiState.Content)?.videos ?: return
-        val dubbingVideos = allVideos.filter {
-            it.episode.episodeGroupKey() == video.episode.episodeGroupKey() &&
-                    it.dubbing.trim() == video.dubbing.trim()
-        }
+        val dubbingVideos = allVideos.sameEpisodeDubbing(video)
         when (val selection = playerNavigationHandler.selectPlayer(
             video = video,
             allVideos = dubbingVideos,
@@ -599,10 +590,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
         }
         val options = candidateVideos.episodeDubbingItems(episode).mapNotNull { item ->
             val video = if (restrictToBalancer) {
-                candidateVideos.firstOrNull {
-                    it.episode.episodeGroupKey() == episode.episodeGroupKey() &&
-                            it.dubbing.trim() == item.name
-                }
+                candidateVideos.firstOrNull { it.isEpisodeDubbing(episode, item.name) }
             } else {
                 allVideos.selectEpisodeDubbingLaunchVideo(
                     episode = episode,

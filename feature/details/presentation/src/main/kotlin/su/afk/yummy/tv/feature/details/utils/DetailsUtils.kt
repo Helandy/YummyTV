@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
@@ -101,3 +102,13 @@ private fun List<PlayerVideoSource>.sortedByEpisode(): List<PlayerVideoSource> =
 
 /** Постер в наибольшем доступном размере — для просмотра на весь экран. */
 internal fun AnimePoster.fullscreenUrl(): String? = mega ?: fullsize ?: big ?: medium ?: small
+
+/** Постер для плеера: средний размер, если есть, иначе ближайший доступный. */
+internal fun AnimeDetails?.playerPosterUrl(): String =
+    this?.poster?.run { medium ?: big ?: fullsize ?: small }.orEmpty()
+
+/** Превью серий из скриншотов тайтла: номер серии → маленькая картинка. */
+internal fun AnimeDetails?.screenshotByEpisode(): Map<String, String> =
+    this?.screenshots.orEmpty().mapNotNull { screenshot ->
+        screenshot.episode?.let { episode -> episode to screenshot.small.orEmpty() }
+    }.toMap()
