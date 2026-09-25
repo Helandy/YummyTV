@@ -492,10 +492,7 @@ internal fun MobileNativePlayer(
         episodeKey = ui.activeIframeUrl,
         isMediaReady = isMediaReady,
         reporter = reporter,
-        isSeeking = { progress.isSeeking },
-        currentPositionMs = { progress.currentPosition },
-        fallbackDurationMs = { progress.duration },
-        onBufferedProgressChange = { progress.bufferedProgress = it },
+        progress = progress,
     )
 
     // Позиция тикает раз в секунду; через derivedStateOf экран перекомпоновывается только

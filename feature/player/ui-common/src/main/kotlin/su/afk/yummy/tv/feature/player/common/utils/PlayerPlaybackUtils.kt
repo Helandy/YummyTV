@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.common.utils
 
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.model.PlayerPositionSnapshot
 
 fun Player.positionSnapshot(fallbackDurationMs: Long): PlayerPositionSnapshot =
@@ -22,4 +23,17 @@ fun calculateBufferedProgress(
     val playedProgress = currentPosition.toFloat() / duration
     val loadedProgress = bufferedPosition.coerceAtLeast(0L).toFloat() / duration
     return loadedProgress.coerceIn(playedProgress.coerceIn(0f, 1f), 1f)
+}
+
+/** Обновляет долю загруженного буфера по плееру — общий шаг polling-циклов ТВ и мобилки. */
+fun PlayerPlaybackProgressState.updateBufferedProgress(
+    player: Player,
+    currentPositionMs: Long = currentPosition,
+    durationMs: Long = duration,
+) {
+    bufferedProgress = calculateBufferedProgress(
+        bufferedPosition = player.bufferedPosition,
+        currentPosition = currentPositionMs,
+        duration = durationMs,
+    )
 }

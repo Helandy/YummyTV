@@ -452,7 +452,6 @@ internal fun TvExoPlayerView(
         progress = progress,
         reporter = reporter,
         episodeKey = { episodeKey },
-        onBufferedProgressChange = { progress.bufferedProgress = it },
         onPositionAtEnd = { positionMs, durationMs ->
             handleEpisodeEnd(positionMs, durationMs)
         },

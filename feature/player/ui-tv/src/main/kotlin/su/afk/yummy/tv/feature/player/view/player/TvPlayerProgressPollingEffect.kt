@@ -7,10 +7,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
-import su.afk.yummy.tv.feature.player.common.utils.calculateBufferedProgress
 import su.afk.yummy.tv.feature.player.common.utils.isAtPlayerEnd
 import kotlin.time.Duration.Companion.milliseconds
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.utils.updateBufferedProgress
 
 /**
  * Цикл 500ms: позиция (с защитой после seek), длительность, буферизация,
@@ -25,11 +25,9 @@ internal fun TvPlayerProgressPollingEffect(
     progress: PlayerPlaybackProgressState,
     reporter: PlayerProgressReporter,
     episodeKey: () -> String,
-    onBufferedProgressChange: (Float) -> Unit,
     onPositionAtEnd: (positionMs: Long, durationMs: Long) -> Unit,
 ) {
     val currentEpisodeKey by rememberUpdatedState(episodeKey)
-    val currentOnBufferedProgressChange by rememberUpdatedState(onBufferedProgressChange)
     val currentOnPositionAtEnd by rememberUpdatedState(onPositionAtEnd)
 
     LaunchedEffect(player) {
@@ -43,13 +41,7 @@ internal fun TvPlayerProgressPollingEffect(
             }
             val dur = player.duration
             if (dur > 0) progress.duration = dur
-            currentOnBufferedProgressChange(
-                calculateBufferedProgress(
-                    bufferedPosition = player.bufferedPosition,
-                    currentPosition = progress.currentPosition,
-                    duration = progress.duration,
-                )
-            )
+            progress.updateBufferedProgress(player)
             val now = System.currentTimeMillis()
             if (!progress.isSeeking && progress.duration > 0 &&
                 now - progress.lastPositionNotifyTimeMs >= 1_000L
