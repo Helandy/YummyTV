@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -u
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "pre-push hook: not inside a Git repository." >&2
+  exit 1
+}
+
+cd "$repo_root"
+
+# ---------------------------------------------------------------------------
+# Android Lint
+# ---------------------------------------------------------------------------
+echo "Running :app:lintDebug before push..."
+./gradlew :app:lintDebug --stacktrace
+status=$?
+
+lintxml="app/build/reports/lint-results-debug.xml"
+if [ -f "$lintxml" ]; then
+  errs=$(grep -c 'severity="Error"' "$lintxml" 2>/dev/null || true)
+  warns=$(grep -c 'severity="Warning"' "$lintxml" 2>/dev/null || true)
+  echo "Lint: ${errs:-0} error(s), ${warns:-0} warning(s)."
+fi
+
+if [ "$status" -ne 0 ]; then
+  cat >&2 <<'EOF'
+
+Lint failed. Push blocked.
+Fix the errors above, or bypass this check with:
+  git push --no-verify
+EOF
+  exit 1
+fi
+
+exit 0

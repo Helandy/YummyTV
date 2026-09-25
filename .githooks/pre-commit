@@ -68,28 +68,4 @@ EOF
   exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Android Lint
-# ---------------------------------------------------------------------------
-echo "Running :app:lintDebug before commit..."
-./gradlew :app:lintDebug --stacktrace
-status=$?
-
-lintxml="app/build/reports/lint-results-debug.xml"
-if [ -f "$lintxml" ]; then
-  errs=$(grep -c 'severity="Error"' "$lintxml" 2>/dev/null || true)
-  warns=$(grep -c 'severity="Warning"' "$lintxml" 2>/dev/null || true)
-  echo "Lint: ${errs:-0} error(s), ${warns:-0} warning(s)."
-fi
-
-if [ "$status" -ne 0 ]; then
-  cat >&2 <<'EOF'
-
-Lint failed. Commit blocked.
-Fix the errors above, or bypass this check with:
-  git commit --no-verify
-EOF
-  exit 1
-fi
-
 exit 0
