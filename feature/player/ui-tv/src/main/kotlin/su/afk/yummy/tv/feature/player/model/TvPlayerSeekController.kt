@@ -9,12 +9,13 @@ import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.utils.isAtPlayerEnd
+import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 
 /** Перемотка TV-плеера: clamp к длительности, обработка конца эпизода, step-seek. */
 @Stable
 internal class TvPlayerSeekController(
     private val player: Player,
-    private val progress: TvPlaybackProgressState,
+    private val progress: PlayerPlaybackProgressState,
     private val reporter: PlayerProgressReporter,
     private val stepSeekToast: PlayerStepSeekToastState,
     private val onEpisodeEnd: (positionMs: Long, durationMs: Long) -> Unit,
@@ -52,7 +53,7 @@ internal class TvPlayerSeekController(
 @Composable
 internal fun rememberTvPlayerSeekController(
     player: Player,
-    progress: TvPlaybackProgressState,
+    progress: PlayerPlaybackProgressState,
     reporter: PlayerProgressReporter,
     stepSeekToast: PlayerStepSeekToastState,
     onEpisodeEnd: (positionMs: Long, durationMs: Long) -> Unit,

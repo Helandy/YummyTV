@@ -24,15 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 
 @Composable
 internal fun MobilePlayerOverlay(
     visible: Boolean,
     wantsPlay: Boolean,
-    displayTime: Long,
-    duration: Long,
-    seekProgress: Float,
-    bufferedProgress: Float,
+    progress: PlayerPlaybackProgressState,
     openingStartMs: Long?,
     openingEndMs: Long?,
     hasPrevEpisode: Boolean,
@@ -66,10 +64,10 @@ internal fun MobilePlayerOverlay(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         MobilePlayerProgressRow(
-            displayTime = displayTime,
-            duration = duration,
-            seekProgress = seekProgress,
-            bufferedProgress = bufferedProgress,
+            displayTime = progress.displayTimeMs,
+            duration = progress.duration,
+            seekProgress = progress.progressFraction,
+            bufferedProgress = progress.bufferedProgress,
             openingStartMs = openingStartMs,
             openingEndMs = openingEndMs,
             onSeekChange = onSeekChange,

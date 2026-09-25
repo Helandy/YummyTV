@@ -9,8 +9,8 @@ import kotlinx.coroutines.delay
 import su.afk.yummy.tv.feature.player.common.PlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.utils.calculateBufferedProgress
 import su.afk.yummy.tv.feature.player.common.utils.isAtPlayerEnd
-import su.afk.yummy.tv.feature.player.model.TvPlaybackProgressState
 import kotlin.time.Duration.Companion.milliseconds
+import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 
 /**
  * Цикл 500ms: позиция (с защитой после seek), длительность, буферизация,
@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 internal fun TvPlayerProgressPollingEffect(
     player: Player,
-    progress: TvPlaybackProgressState,
+    progress: PlayerPlaybackProgressState,
     reporter: PlayerProgressReporter,
     episodeKey: () -> String,
     onBufferedProgressChange: (Float) -> Unit,

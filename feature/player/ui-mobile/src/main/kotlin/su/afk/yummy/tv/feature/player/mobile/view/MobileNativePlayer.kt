@@ -16,8 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -83,6 +83,7 @@ import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerGestureController
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerOverlayController
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerSeekController
+import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.mobile.utils.buildMobileMediaItemKey
 import su.afk.yummy.tv.feature.player.mobile.utils.buildMobilePlayerMediaItemConfig
@@ -127,8 +128,13 @@ internal fun MobileNativePlayer(
     val selectedQuality = state.selectedQuality?.takeIf { it in qualities }
         ?: qualities.keys.lastOrNull()
     val selectedSpeed = state.selectedSpeed
-    val currentPosition = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs
-    val duration = state.playbackDurationMs
+    // Новая серия/стрим начинают со значений из state (позиция возобновления).
+    val progress = rememberPlayerPlaybackProgressState(
+        ui.activeIframeUrl,
+        streamUrl,
+        initialPositionMs = state.playbackPositionMs.takeIf { it > 0L } ?: state.resumeFromMs,
+        initialDurationMs = state.playbackDurationMs,
+    )
     var settingsMode by remember { mutableStateOf<MobilePlayerSettingsMode?>(null) }
     // Шторка настроек дорожек открывается на том табе, который юзер выбрал в прошлый раз,
     // пока открыт этот экран плеера (и переживает поворот). Недоступный таб шторка сама
@@ -137,12 +143,9 @@ internal fun MobileNativePlayer(
     var volumePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
     val resumeAfterLifecyclePause = remember { mutableStateOf(false) }
-    var isSeeking by remember { mutableStateOf(false) }
     var nextEpisodePromptState by remember(ui.activeIframeUrl, streamUrl) {
         mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
     }
-    var seekProgress by remember { mutableFloatStateOf(0f) }
-    var bufferedProgress by remember(streamUrl, ui.activeIframeUrl) { mutableFloatStateOf(0f) }
     val skipUi = rememberPlayerSkipUiState(ui.activeIframeUrl)
     val currentUrl = selectedQuality?.let(qualities::get) ?: streamUrl
     val playbackConfigKey = remember(
@@ -190,7 +193,7 @@ internal fun MobileNativePlayer(
         canHide = {
             wantsPlay &&
                 settingsMode == null &&
-                !isSeeking &&
+                !progress.isSeeking &&
                 !recoveryHintVisible &&
                 !tutorialBlocksPlayback &&
                 !castConnection.isCasting
@@ -356,7 +359,14 @@ internal fun MobileNativePlayer(
     }
     val reporter = rememberPlayerProgressReporter(
         source = { progressSource },
-        onEvent = onEvent,
+        onEvent = { event ->
+            // Все источники позиции (polling, перемотка, listener, lifecycle) идут через репортер.
+            if (event is PlayerState.Event.PlaybackPositionChanged) {
+                progress.currentPosition = event.positionMs.coerceAtLeast(0L)
+                progress.duration = event.durationMs.coerceAtLeast(0L)
+            }
+            onEvent(event)
+        },
     )
     val completionTracker = rememberPlayerCompletionTracker(
         contentKey = ui.activeIframeUrl,
@@ -386,7 +396,7 @@ internal fun MobileNativePlayer(
 
     val seekController = rememberMobilePlayerSeekController(
         player = player,
-        fallbackDurationMs = { duration },
+        fallbackDurationMs = { progress.duration },
         reporter = reporter,
         stepSeekToast = stepSeekToast,
         onEpisodeEnd = ::handleEpisodeEnd,
@@ -402,7 +412,7 @@ internal fun MobileNativePlayer(
         skipUi = skipUi,
         stepSeekToast = stepSeekToast,
         seekController = seekController,
-        fallbackDurationMs = { duration },
+        fallbackDurationMs = { progress.duration },
         wantsPlay = { playbackShouldPlay },
         onWantsPlayChanged = {
             if (!tutorialBlocksPlayback) wantsPlay = it
@@ -416,7 +426,7 @@ internal fun MobileNativePlayer(
         pipSession = pipSession,
         reporter = reporter,
         resumeAfterPause = resumeAfterLifecyclePause,
-        fallbackDurationMs = { duration },
+        fallbackDurationMs = { progress.duration },
         wantsPlay = { playbackShouldPlay },
         isCasting = { castConnection.isCasting },
         promptState = { nextEpisodePromptState },
@@ -482,16 +492,22 @@ internal fun MobileNativePlayer(
         episodeKey = ui.activeIframeUrl,
         isMediaReady = isMediaReady,
         reporter = reporter,
-        isSeeking = { isSeeking },
-        currentPositionMs = { currentPosition },
-        fallbackDurationMs = { duration },
-        onBufferedProgressChange = { bufferedProgress = it },
+        isSeeking = { progress.isSeeking },
+        currentPositionMs = { progress.currentPosition },
+        fallbackDurationMs = { progress.duration },
+        onBufferedProgressChange = { progress.bufferedProgress = it },
     )
 
-    val activeSkip = if (isMediaReady) {
-        currentSkip(ui.activeSkips, currentPosition, skipUi.dismissedSkipKeys)
-    } else {
-        null
+    // Позиция тикает раз в секунду; через derivedStateOf экран перекомпоновывается только
+    // когда активная заставка реально меняется.
+    val activeSkip by remember(isMediaReady, ui.activeSkips, skipUi.dismissedSkipKeys) {
+        derivedStateOf {
+            if (isMediaReady) {
+                currentSkip(ui.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
+            } else {
+                null
+            }
+        }
     }
 
     fun skipActiveSegment(reportSelection: Boolean) {
@@ -525,16 +541,6 @@ internal fun MobileNativePlayer(
         onSkipActiveSegment = { skipActiveSegment(reportSelection = false) },
     )
 
-    val displayTime = if (isSeeking && duration > 0) {
-        (seekProgress * duration).toLong()
-    } else {
-        currentPosition
-    }
-    val progress = when {
-        isSeeking -> seekProgress
-        duration > 0 -> currentPosition.toFloat() / duration
-        else -> 0f
-    }
 
     // Корень держит фокус, чтобы клавиатура управляла плеером без предварительного клика.
     val keyboardFocusRequester = remember { FocusRequester() }
@@ -640,10 +646,7 @@ internal fun MobileNativePlayer(
             modifier = Modifier.align(Alignment.BottomCenter),
             visible = overlay.visible && !isInPictureInPictureMode && !tutorialBlocksPlayback,
             wantsPlay = wantsPlay,
-            displayTime = displayTime,
-            duration = duration,
-            seekProgress = progress,
-            bufferedProgress = bufferedProgress,
+            progress = progress,
             openingStartMs = ui.activeSkips.opening?.startMs?.takeIf { state.showOpeningOnTimeline },
             openingEndMs = ui.activeSkips.opening?.endMs?.takeIf { state.showOpeningOnTimeline },
             hasPrevEpisode = ui.hasPrevEpisode,
@@ -653,17 +656,18 @@ internal fun MobileNativePlayer(
                 overlay.show()
             },
             onSeekChange = { value ->
-                isSeeking = true
-                seekProgress = value
+                progress.isSeeking = true
+                progress.seekProgress = value
                 overlay.visible = true
                 overlay.cancelHide()
             },
             onSeekFinished = {
+                val duration = progress.duration
                 if (duration > 0) {
-                    val newPosition = (seekProgress * duration).toLong().coerceIn(0L, duration)
+                    val newPosition = (progress.seekProgress * duration).toLong().coerceIn(0L, duration)
                     seekController.seekTo(newPosition)
                 }
-                isSeeking = false
+                progress.isSeeking = false
                 overlay.show()
             },
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
@@ -868,7 +872,7 @@ internal fun MobileNativePlayer(
                 selectedQuality = selectedQuality,
                 onQualitySelected = { quality ->
                     val position = player.currentPosition.coerceAtLeast(0)
-                    reporter.saveProgress(position, duration)
+                    reporter.saveProgress(position, progress.duration)
                     onEvent(PlayerState.Event.QualitySelected(quality, position))
                 },
                 selectedSpeed = selectedSpeed,

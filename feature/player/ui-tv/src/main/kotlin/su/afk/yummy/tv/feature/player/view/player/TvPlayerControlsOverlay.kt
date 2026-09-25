@@ -23,17 +23,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
-import su.afk.yummy.tv.feature.player.model.TvPlaybackProgressState
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 
 /** Нижний блок контролов: кнопка пропуска, прогресс и ряд эпизода/настроек. */
 @Composable
 internal fun BoxScope.TvPlayerControlsOverlay(
     visible: Boolean,
     focus: TvPlayerFocusRequesters,
-    progress: TvPlaybackProgressState,
-    bufferedProgress: Float,
+    progress: PlayerPlaybackProgressState,
     wantsPlay: Boolean,
     playback: PlayerPlaybackUiState,
     animeTitle: String,
@@ -131,7 +130,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     duration = progress.duration,
                     isSeeking = progress.isSeeking,
                     seekProgress = progress.seekProgress,
-                    bufferedProgress = bufferedProgress,
+                    bufferedProgress = progress.bufferedProgress,
                     currentPosition = progress.currentPosition,
                     openingStartMs = playback.activeSkips.opening?.startMs
                         ?.takeIf { showOpeningOnTimeline },

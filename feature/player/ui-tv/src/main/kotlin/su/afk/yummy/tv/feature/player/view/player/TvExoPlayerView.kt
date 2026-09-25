@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,7 +70,6 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
-import su.afk.yummy.tv.feature.player.model.rememberTvPlaybackProgressState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPromptsState
@@ -87,6 +85,7 @@ import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
 import su.afk.yummy.tv.feature.player.view.deriveQualityUrls
 import kotlin.math.roundToInt
+import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -115,8 +114,9 @@ internal fun TvExoPlayerView(
         mutableLongStateOf(state.resumeFromMs)
     }
     var wantsPlay by remember { mutableStateOf(true) }
-    val progress = rememberTvPlaybackProgressState()
-    var bufferedProgress by remember(streamUrl, episodeKey) { mutableFloatStateOf(0f) }
+    val progress = rememberPlayerPlaybackProgressState()
+    // Буфер нового стрима/серии считается с нуля (позиция приходит из polling-цикла).
+    LaunchedEffect(streamUrl, episodeKey) { progress.bufferedProgress = 0f }
     var controllerVisible by remember { mutableStateOf(true) }
     val panels = rememberTvPlayerPanelsState()
     val prompts = rememberTvPlayerPromptsState(episodeKey, streamUrl)
@@ -452,7 +452,7 @@ internal fun TvExoPlayerView(
         progress = progress,
         reporter = reporter,
         episodeKey = { episodeKey },
-        onBufferedProgressChange = { bufferedProgress = it },
+        onBufferedProgressChange = { progress.bufferedProgress = it },
         onPositionAtEnd = { positionMs, durationMs ->
             handleEpisodeEnd(positionMs, durationMs)
         },
@@ -626,7 +626,6 @@ internal fun TvExoPlayerView(
             visible = controllerVisible,
             focus = focus,
             progress = progress,
-            bufferedProgress = bufferedProgress,
             wantsPlay = wantsPlay,
             playback = playback,
             animeTitle = state.animeTitle,
