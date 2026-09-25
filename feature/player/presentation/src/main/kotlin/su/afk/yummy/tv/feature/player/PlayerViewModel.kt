@@ -233,6 +233,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                     message = event.message,
                     errorCode = event.errorCode,
                     errorType = event.errorType,
+                    // После перезагрузки источника ошибка может прилететь до seek'а на позицию
+                    // (currentPosition = 0) — тогда берём последнюю известную позицию.
+                    positionMs = event.positionMs.takeIf { it > 0L }
+                        ?: currentState.playbackPositionMs,
                     retryAttempts = defaultSource.retryAttempts,
                 )
                 defaultSource.reset()

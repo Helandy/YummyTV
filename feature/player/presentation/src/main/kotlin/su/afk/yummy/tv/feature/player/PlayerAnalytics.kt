@@ -14,6 +14,7 @@ import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import su.afk.yummy.tv.feature.player.utils.formatPlaybackTimecode
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import javax.inject.Inject
 
@@ -149,7 +150,7 @@ internal class PlayerAnalytics @Inject constructor(
             sourceParams(state.analyticsSource()) + analyticsParamsOf(
                 PARAM_INDEX to index,
                 PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
-            )
+            ),
         )
     }
 
@@ -164,7 +165,7 @@ internal class PlayerAnalytics @Inject constructor(
             sourceParams(state.analyticsSource()) + analyticsParamsOf(
                 PARAM_INDEX to index,
                 PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
-            )
+            ),
         )
     }
 
@@ -176,7 +177,7 @@ internal class PlayerAnalytics @Inject constructor(
     fun eventQualitySelected(animeId: Int, quality: String) {
         tracker.track(
             EVENT_QUALITY_SELECTED,
-            playerParams(animeId) + analyticsParamsOf(PARAM_QUALITY to quality)
+            playerParams(animeId) + analyticsParamsOf(PARAM_QUALITY to quality),
         )
     }
 
@@ -188,7 +189,7 @@ internal class PlayerAnalytics @Inject constructor(
     fun eventSpeedSelected(animeId: Int, speed: Float) {
         tracker.track(
             EVENT_SPEED_SELECTED,
-            playerParams(animeId) + analyticsParamsOf(PARAM_SPEED to speed)
+            playerParams(animeId) + analyticsParamsOf(PARAM_SPEED to speed),
         )
     }
 
@@ -220,13 +221,14 @@ internal class PlayerAnalytics @Inject constructor(
      * Ошибка воспроизведения в плеере.
      *
      * Параметры: screen, anime_id, video_id, player_id, episode, player, dubbing,
-     * error_code, error_type, error_message.
+     * error_code, error_type, error_message, retry_attempts, position, position_ms.
      */
     fun eventPlaybackError(
         state: PlayerState.State,
         message: String,
         errorCode: String?,
         errorType: String?,
+        positionMs: Long,
         retryAttempts: Int = 0,
     ) {
         // Ошибки сети — ожидаемый транзиентный кейс, не засоряем крэш-репортинг.
@@ -243,6 +245,8 @@ internal class PlayerAnalytics @Inject constructor(
                     PARAM_ERROR_TYPE to errorType,
                     PARAM_ERROR_MESSAGE to errorMessage,
                     PARAM_RETRY_ATTEMPTS to retryAttempts,
+                    PARAM_POSITION to positionMs.formatPlaybackTimecode(),
+                    PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
                 ),
             ),
             throwable = syntheticPlayerError(
@@ -423,6 +427,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_MODE = "mode"
         private const val PARAM_PLAYER = "player"
         private const val PARAM_PLAYER_ID = "player_id"
+        private const val PARAM_POSITION = "position"
         private const val PARAM_POSITION_MS = "position_ms"
         private const val PARAM_QUALITY = "quality"
         private const val PARAM_REASON = "reason"

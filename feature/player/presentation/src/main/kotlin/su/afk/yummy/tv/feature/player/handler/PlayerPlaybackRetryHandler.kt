@@ -22,6 +22,6 @@ internal class PlayerPlaybackRetryHandler @Inject constructor() {
     }
 
     companion object {
-        const val MAX_ATTEMPTS = 3
+        const val MAX_ATTEMPTS = 5
     }
 }

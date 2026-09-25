@@ -5,6 +5,7 @@ import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerProgressContext
 import su.afk.yummy.tv.feature.player.model.PlayerCompletionAnalyticsKey
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
+import java.util.Locale
 
 internal fun PlayerProgressSnapshot.withFullTimingIfWatched(): PlayerProgressSnapshot =
     if (isWatchedProgress(positionMs, durationMs)) {
@@ -51,6 +52,19 @@ internal fun PlayerState.State.completionAnalyticsKey(): PlayerCompletionAnalyti
         episode = episode,
         iframeUrl = iframeUrl,
     )
+}
+
+/** Позиция воспроизведения в виде `мм:сс` (или `ч:мм:сс` для длинных видео). */
+internal fun Long.formatPlaybackTimecode(): String {
+    val totalSeconds = coerceAtLeast(0L) / 1_000L
+    val hours = totalSeconds / 3_600L
+    val minutes = totalSeconds % 3_600L / 60L
+    val seconds = totalSeconds % 60L
+    return if (hours > 0) {
+        String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
+    }
 }
 
 internal fun String.isFirstEpisodeNumber(): Boolean {
