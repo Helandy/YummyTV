@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -386,10 +387,16 @@ internal fun TvExoPlayerView(
         onPlayerEvent(PlayerState.Event.ManageSubscriptions)
     }
 
-    val activeSkip = if (isMediaReady) {
-        currentSkip(playback.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
-    } else {
-        null
+    // Позиция тикает каждые 500 мс; через derivedStateOf экран перекомпоновывается только
+    // когда активная заставка реально меняется, а не на каждом тике.
+    val activeSkip by remember(isMediaReady, playback.activeSkips, skipUi.dismissedSkipKeys) {
+        derivedStateOf {
+            if (isMediaReady) {
+                currentSkip(playback.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
+            } else {
+                null
+            }
+        }
     }
 
     fun skipActiveSegment(reportSelection: Boolean = true) {
@@ -409,7 +416,7 @@ internal fun TvExoPlayerView(
                     type = skip.type,
                     fromMs = fromPosition,
                     toMs = skip.segment.endMs,
-                )
+                ),
             )
         }
         seekController.seekTo(skip.segment.endMs)
@@ -498,7 +505,7 @@ internal fun TvExoPlayerView(
                     TvPlayerPanel.Volume -> PanelReturnFocusTarget.Volume
                     TvPlayerPanel.Alloha -> PanelReturnFocusTarget.Alloha
                     null -> null
-                }
+                },
             )
         } else {
             autoHide.cancel()
@@ -543,7 +550,7 @@ internal fun TvExoPlayerView(
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .background(Color.Black)
+                        .background(Color.Black),
                 )
             },
             modifier = Modifier
@@ -727,7 +734,7 @@ internal fun TvExoPlayerView(
                         val position = player.currentPosition.coerceAtLeast(0L)
                         seekOnSwitch = position
                         onPlayerEvent(
-                            PlayerState.Event.AllohaAudioTrackSelected(id, position)
+                            PlayerState.Event.AllohaAudioTrackSelected(id, position),
                         )
                     }
                 } else {
@@ -740,7 +747,7 @@ internal fun TvExoPlayerView(
                 if (usesAlloha) {
                     seekOnSwitch = player.currentPosition.coerceAtLeast(0L)
                     onPlayerEvent(
-                        PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(idx))
+                        PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(idx)),
                     )
                 } else {
                     trackSelection.selectText(idx)
