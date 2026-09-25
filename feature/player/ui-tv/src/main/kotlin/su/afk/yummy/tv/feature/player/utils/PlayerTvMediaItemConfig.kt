@@ -24,9 +24,10 @@ internal fun buildTvMediaItemKey(
     playbackKey: String,
     animeTitle: String,
     playback: PlayerPlaybackUiState,
+    artworkUrl: String?,
 ): String =
     "$playbackKey|$animeTitle|${playback.activeEpisode}|${playback.activeDubbing}|" +
-            "${playback.activeBalancerName}|${playback.activeScreenshotUrl}"
+            "${playback.activeBalancerName}|${artworkUrl.orEmpty()}"
 
 internal fun buildTvPlayerMediaItemConfig(
     playbackKey: String,
@@ -46,7 +47,7 @@ internal fun buildTvPlayerMediaItemConfig(
         .joinToString(" • "),
     subtitle = playback.activeEpisode.takeIf(String::isNotBlank),
     description = playback.activeBalancerName.takeIf(String::isNotBlank),
-    artworkUrl = playback.activeScreenshotUrl.takeIf(String::isNotBlank),
+    artworkUrl = state.artworkUrl,
     durationMs = durationMs,
     headers = state.streamHeaders,
     offlineCacheKey = state.offlineCacheKey,

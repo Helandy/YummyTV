@@ -38,10 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
-import su.afk.yummy.tv.core.designsystem.locals.LocalResolveKodikThumbnailUrl
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.utils.cast.CastSupport
-import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImage
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerAllohaTracks
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
@@ -239,34 +237,17 @@ internal fun MobileNativePlayer(
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
     }
     val notificationMeta = mobilePlayerNotificationMeta(ui)
-    val resolveKodikThumbnail = LocalResolveKodikThumbnailUrl.current
-    var notificationArtworkUrl by remember { mutableStateOf<String?>(null) }
     val mediaItemKey = remember(
         playbackConfigKey,
         state.animeTitle,
         notificationMeta,
-        notificationArtworkUrl,
+        state.artworkUrl,
     ) {
         buildMobileMediaItemKey(
             playbackKey = playbackConfigKey,
             animeTitle = state.animeTitle,
             meta = notificationMeta,
-            artworkUrl = notificationArtworkUrl,
-        )
-    }
-
-    LaunchedEffect(
-        ui.activeScreenshotUrl,
-        ui.activeIframeUrl,
-        state.posterUrl,
-        resolveKodikThumbnail,
-    ) {
-        notificationArtworkUrl = state.posterUrl.takeIf { it.isNotBlank() }
-        notificationArtworkUrl = resolveContinueWatchingImage(
-            screenshotUrl = ui.activeScreenshotUrl,
-            episodeUrl = ui.activeIframeUrl,
-            posterUrl = state.posterUrl,
-            resolveKodikThumbnail = resolveKodikThumbnail,
+            artworkUrl = state.artworkUrl,
         )
     }
 
@@ -295,7 +276,7 @@ internal fun MobileNativePlayer(
                 episodeUrl = ui.activeIframeUrl,
                 state = state,
                 meta = notificationMeta,
-                artworkUrl = notificationArtworkUrl,
+                artworkUrl = state.artworkUrl,
             ),
         )
         activePlayer.playWhenReady = playbackShouldPlay

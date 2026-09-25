@@ -20,6 +20,8 @@ class PlayerState {
         val animeTitle: String = "",
         val animeId: Int = 0,
         val posterUrl: String = "",
+        /** Обложка медиа-уведомления/медиа-сессии; считает VM через PlayerArtworkHandler. */
+        val artworkUrl: String? = null,
         val sourceGraph: PlayerSourceGraph = PlayerSourceGraph(),
         val sourceSelection: PlayerSourceSelection = PlayerSourceSelection(),
         val dubbingResumeMs: Long = -1L,
@@ -168,13 +170,11 @@ class PlayerState {
         /** TV-приложение ушло в фон с открытым экраном плеера. */
         data object TvAppBackgrounded : Event
 
-        /** Мобильный плеер запросил фоновое обновление подписанного Alloha-потока. */
         /** Пользователь перешёл к оценке текущего тайтла. */
         data object RateTitle : Event
 
         /** Пользователь перешёл к управлению уведомлениями о новых сериях. */
         data object ManageSubscriptions : Event
-
     }
 
     sealed interface Effect : UiEffect {

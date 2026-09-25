@@ -43,6 +43,11 @@ import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
+import su.afk.yummy.tv.feature.player.utils.artworkSource
 
 /**
  * Оркестратор экрана плеера: источники, поток, прогресс.
@@ -61,6 +66,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val preferences: PlayerPreferencesBinder,
     private val displaySettings: PlayerDisplaySettingsHandler,
     private val finalEpisodeActionHandler: PlayerFinalEpisodeActionHandler,
+    private val artworkHandler: PlayerArtworkHandler,
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
     private val offlineSources: PlayerOfflineSourceLoader,
@@ -117,6 +123,7 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     init {
         analytics.eventScreenOpened(dest.animeId)
+        observeArtwork()
         sourceBehaviors.forEach { it.attach(host) }
         preferences.bind(host)
         if (dest.downloadId > 0L) {
@@ -129,6 +136,22 @@ class PlayerViewModel @AssistedInject internal constructor(
             displaySettings.observeActive(host)
             loadSourceGraph()
             loadStream()
+        }
+    }
+
+    /**
+     * Обложка медиа-уведомления: при смене серии/постера сразу постер, затем превью серии
+     * (Kodik резолвится по сети); новый запрос отменяет предыдущий.
+     */
+    private fun observeArtwork() {
+        viewModelScope.launch {
+            state.map { it.artworkSource() }
+                .distinctUntilChanged()
+                .collectLatest { source ->
+                    setState { copy(artworkUrl = source.posterUrl.takeIf(String::isNotBlank)) }
+                    val artwork = artworkHandler.resolve(source)
+                    setState { copy(artworkUrl = artwork) }
+                }
         }
     }
 
@@ -160,6 +183,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 tvPlayerVolumeKeysEnabled = tvPlayerVolumeKeysEnabled,
                 advancedPlayerVolumeEnabled = advancedPlayerVolumeEnabled,
                 showOpeningOnTimeline = showOpeningOnTimeline,
+                // Та же серия/постер — обложку не сбрасываем (observeArtwork её не пересчитает).
+                artworkUrl = artworkUrl,
             )
         }
         loadFinalEpisodeAction(newDest.animeId)

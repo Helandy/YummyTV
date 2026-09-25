@@ -178,12 +178,13 @@ internal fun TvExoPlayerView(
         playback.activeEpisode,
         playback.activeDubbing,
         playback.activeBalancerName,
-        playback.activeScreenshotUrl,
+        state.artworkUrl,
     ) {
         buildTvMediaItemKey(
             playbackKey = playbackKey,
             animeTitle = state.animeTitle,
             playback = playback,
+            artworkUrl = state.artworkUrl,
         )
     }
 
