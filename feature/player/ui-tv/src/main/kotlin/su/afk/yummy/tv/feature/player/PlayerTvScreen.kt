@@ -98,8 +98,6 @@ fun PlayerTvScreen(
     var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
     val selectedErrorDubbingFocusRequester = remember { FocusRequester() }
-    val canChangePlayer = uiState.balancerNames.size > 1
-    val canChangeDubbing = uiState.dubbingNames.size > 1
 
     DisposableEffect(Unit) {
         onDispose {
@@ -107,14 +105,14 @@ fun PlayerTvScreen(
         }
     }
 
-    LaunchedEffect(showErrorBalancerPanel, canChangePlayer) {
-        if (showErrorBalancerPanel && canChangePlayer) {
+    LaunchedEffect(showErrorBalancerPanel, uiState.canChangePlayer) {
+        if (showErrorBalancerPanel && uiState.canChangePlayer) {
             requestFocusUntilTimeout(selectedErrorBalancerFocusRequester)
         }
     }
 
-    LaunchedEffect(showErrorDubbingPanel, canChangeDubbing) {
-        if (showErrorDubbingPanel && canChangeDubbing) {
+    LaunchedEffect(showErrorDubbingPanel, uiState.canChangeDubbing) {
+        if (showErrorDubbingPanel && uiState.canChangeDubbing) {
             requestFocusUntilTimeout(selectedErrorDubbingFocusRequester)
         }
     }
@@ -145,9 +143,6 @@ fun PlayerTvScreen(
     val streamUrl = state.streamUrl
     val kodikBlockedError = state.kodikBlockedError
     val playerError = state.playerError
-    val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
-        ?: state.resumeFromMs.takeIf { it > 0L }
-        ?: 0L
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
@@ -171,12 +166,12 @@ fun PlayerTvScreen(
                     message = playerError,
                     modifier = Modifier.align(Alignment.Center),
                     onRetry = { onEvent(PlayerState.Event.RetryStream) },
-                    onChangePlayer = if (canChangePlayer) {
+                    onChangePlayer = if (uiState.canChangePlayer) {
                         { showErrorBalancerPanel = true }
                     } else {
                         null
                     },
-                    onChangeDubbing = if (canChangeDubbing) {
+                    onChangeDubbing = if (uiState.canChangeDubbing) {
                         { showErrorDubbingPanel = true }
                     } else {
                         null
@@ -207,12 +202,12 @@ fun PlayerTvScreen(
             )
 
             else -> TvStreamLoadingView(
-                onChangePlayer = if (state.showChangePlayerHint && canChangePlayer) {
+                onChangePlayer = if (state.showChangePlayerHint && uiState.canChangePlayer) {
                     { showErrorBalancerPanel = true }
                 } else {
                     null
                 },
-                onChangeDubbing = if (state.showChangePlayerHint && canChangeDubbing) {
+                onChangeDubbing = if (state.showChangePlayerHint && uiState.canChangeDubbing) {
                     { showErrorDubbingPanel = true }
                 } else {
                     null
@@ -220,7 +215,7 @@ fun PlayerTvScreen(
             )
         }
         TvPlayerSelectionPanel(
-            visible = showErrorBalancerPanel && canChangePlayer,
+            visible = showErrorBalancerPanel && uiState.canChangePlayer,
             title = stringResource(R.string.player_balancer_title),
             items = uiState.balancerNames.map { it.removePrefix(playerNamePrefix) },
             selectedIndex = uiState.currentBalancerIndex,
@@ -239,14 +234,14 @@ fun PlayerTvScreen(
                 onEvent(
                     PlayerState.Event.BalancerSelected(
                         balancerIndex,
-                        errorResumePositionMs
+                        uiState.errorResumePositionMs
                     )
                 )
             },
             onExitDown = { showErrorBalancerPanel = false },
         )
         TvPlayerSelectionPanel(
-            visible = showErrorDubbingPanel && canChangeDubbing,
+            visible = showErrorDubbingPanel && uiState.canChangeDubbing,
             title = stringResource(R.string.player_dubbing_title),
             items = uiState.dubbingNames,
             selectedIndex = uiState.currentDubbingIndex,
@@ -259,7 +254,7 @@ fun PlayerTvScreen(
             onItemSelected = { index ->
                 showErrorDubbingPanel = false
                 pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
-                onEvent(PlayerState.Event.DubbingSelected(index, errorResumePositionMs))
+                onEvent(PlayerState.Event.DubbingSelected(index, uiState.errorResumePositionMs))
             },
             onExitDown = { showErrorDubbingPanel = false },
         )

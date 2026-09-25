@@ -111,11 +111,6 @@ fun PlayerMobileScreen(
     )
     val playerNamePrefix = stringResource(R.string.player_name_prefix)
     val uiState = rememberPlayerPlaybackUiState(state, playerNamePrefix)
-    val canChangePlayer = uiState.balancerNames.size > 1
-    val canChangeDubbing = uiState.dubbingNames.size > 1
-    val errorResumePositionMs = state.playbackPositionMs.takeIf { it > 0L }
-        ?: state.resumeFromMs.takeIf { it > 0L }
-        ?: 0L
     val streamUrl = state.streamUrl
     Box(modifier = Modifier.fillMaxSize()) {
         when {
@@ -128,22 +123,22 @@ fun PlayerMobileScreen(
                 title = state.playerError,
                 actionLabel = stringResource(R.string.player_retry),
                 onAction = { onEvent(PlayerState.Event.RetryStream) },
-                secondaryActionLabel = if (canChangePlayer) {
+                secondaryActionLabel = if (uiState.canChangePlayer) {
                     stringResource(R.string.player_change_player)
                 } else {
                     null
                 },
-                onSecondaryAction = if (canChangePlayer) {
+                onSecondaryAction = if (uiState.canChangePlayer) {
                     { showErrorBalancerSheet = true }
                 } else {
                     null
                 },
-                tertiaryActionLabel = if (canChangeDubbing) {
+                tertiaryActionLabel = if (uiState.canChangeDubbing) {
                     stringResource(R.string.player_change_dubbing)
                 } else {
                     null
                 },
-                onTertiaryAction = if (canChangeDubbing) {
+                onTertiaryAction = if (uiState.canChangeDubbing) {
                     { showErrorDubbingSheet = true }
                 } else {
                     null
@@ -153,6 +148,7 @@ fun PlayerMobileScreen(
 
             streamUrl != null -> MobileNativePlayer(
                 state = state,
+                ui = uiState,
                 streamUrl = streamUrl,
                 videoTransform = videoTransform,
                 onVideoTransformChanged = { transform ->
@@ -184,14 +180,14 @@ fun PlayerMobileScreen(
                         CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                         Text(stringResource(R.string.player_loading_stream), color = Color.White)
                     }
-                    if (state.showChangePlayerHint && (canChangePlayer || canChangeDubbing)) {
+                    if (state.showChangePlayerHint && (uiState.canChangePlayer || uiState.canChangeDubbing)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            if (canChangePlayer) {
+                            if (uiState.canChangePlayer) {
                                 OutlinedButton(onClick = { showErrorBalancerSheet = true }) {
                                     Text(stringResource(R.string.player_change_player))
                                 }
                             }
-                            if (canChangeDubbing) {
+                            if (uiState.canChangeDubbing) {
                                 OutlinedButton(onClick = { showErrorDubbingSheet = true }) {
                                     Text(stringResource(R.string.player_change_dubbing))
                                 }
@@ -201,7 +197,7 @@ fun PlayerMobileScreen(
                 }
             }
         }
-        if (showErrorBalancerSheet && canChangePlayer) {
+        if (showErrorBalancerSheet && uiState.canChangePlayer) {
             MobilePlayerBalancerSheet(
                 balancerNames = uiState.balancerNames,
                 balancerAvailability = uiState.balancerAvailability,
@@ -214,21 +210,21 @@ fun PlayerMobileScreen(
                     onEvent(
                         PlayerState.Event.BalancerSelected(
                             balancerIndex,
-                            errorResumePositionMs
+                            uiState.errorResumePositionMs
                         )
                     )
                 },
                 onDismiss = { showErrorBalancerSheet = false },
             )
         }
-        if (showErrorDubbingSheet && canChangeDubbing) {
+        if (showErrorDubbingSheet && uiState.canChangeDubbing) {
             MobilePlayerDubbingSheet(
                 dubbingNames = uiState.dubbingNames,
                 dubbingAvailability = uiState.dubbingAvailability,
                 selectedIndex = uiState.currentDubbingIndex,
                 onDubbingSelected = { index ->
                     showErrorDubbingSheet = false
-                    onEvent(PlayerState.Event.DubbingSelected(index, errorResumePositionMs))
+                    onEvent(PlayerState.Event.DubbingSelected(index, uiState.errorResumePositionMs))
                 },
                 onDismiss = { showErrorDubbingSheet = false },
             )

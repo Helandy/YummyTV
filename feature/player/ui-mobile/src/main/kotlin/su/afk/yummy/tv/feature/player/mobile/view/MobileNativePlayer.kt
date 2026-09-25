@@ -53,7 +53,6 @@ import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
 import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
-import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
@@ -96,11 +95,13 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
 import su.afk.yummy.tv.feature.player.mobile.R as UiR
+import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 
 @OptIn(UnstableApi::class)
 @Composable
 internal fun MobileNativePlayer(
     state: PlayerState.State,
+    ui: PlayerPlaybackUiState,
     streamUrl: String,
     videoTransform: MobileVideoTransform,
     onVideoTransformChanged: (MobileVideoTransform) -> Unit,
@@ -117,8 +118,6 @@ internal fun MobileNativePlayer(
             state.showMobileGestureTutorial &&
             !isInPictureInPictureMode
     val pipSession = remember { MobilePlayerPipController.createSession() }
-    val playerNamePrefix = stringResource(R.string.player_name_prefix)
-    val ui = rememberPlayerPlaybackUiState(state, playerNamePrefix)
     val selectedQuality = ui.activeQuality
     val selectedSpeed = state.selectedSpeed
     // Новая серия/стрим начинают со значений из state (позиция возобновления).
@@ -176,12 +175,9 @@ internal fun MobileNativePlayer(
         streamUrl = streamUrl,
         toastDuration = MOBILE_PLAYER_SEEK_TOAST_DURATION,
     )
-    val canChangePlayer = ui.balancerNames.size > 1
-    val canChangeDubbing = ui.dubbingNames.size > 1
     // Пока виден хинт восстановления, оверлей не автоскрываем:
     // кнопки «Сменить плеер/озвучку» и контролы должны оставаться на экране
-    val recoveryHintVisible = state.isPlaybackRecovering && state.showChangePlayerHint &&
-        (canChangePlayer || canChangeDubbing) && !isInPictureInPictureMode
+    val recoveryHintVisible = ui.showRecoveryHint && !isInPictureInPictureMode
     val overlay = rememberMobilePlayerOverlayController(
         canHide = {
             wantsPlay &&
@@ -771,7 +767,7 @@ internal fun MobileNativePlayer(
 
         if (recoveryHintVisible && !tutorialBlocksPlayback) {
             MobilePlayerRecoveryHint(
-                onChangePlayer = if (canChangePlayer) {
+                onChangePlayer = if (ui.canChangePlayer) {
                     {
                         settingsTrackTab = MobilePlayerTrackSettingsTab.Player
                         settingsMode = MobilePlayerSettingsMode.Track
@@ -780,7 +776,7 @@ internal fun MobileNativePlayer(
                 } else {
                     null
                 },
-                onChangeDubbing = if (canChangeDubbing) {
+                onChangeDubbing = if (ui.canChangeDubbing) {
                     {
                         settingsTrackTab = MobilePlayerTrackSettingsTab.Dubbing
                         settingsMode = MobilePlayerSettingsMode.Track

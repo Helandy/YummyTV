@@ -57,6 +57,12 @@ data class PlayerPlaybackUiState(
     val activeQuality: String?,
     /** URL, который реально проигрывается: выбранное качество или исходный стрим. */
     val playbackUrl: String,
+    val canChangePlayer: Boolean,
+    val canChangeDubbing: Boolean,
+    /** Восстановление затянулось и есть куда переключиться — показать «Сменить плеер/озвучку». */
+    val showRecoveryHint: Boolean,
+    /** Позиция, с которой продолжить после смены источника с экрана ошибки. */
+    val errorResumePositionMs: Long,
 )
 
 fun PlayerState.State.toPlayerPlaybackUiState(
@@ -93,6 +99,11 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val url = streamUrl.orEmpty()
     val qualities = streamQualityMap ?: url.takeIf(String::isNotBlank)?.let(::deriveQualityUrls).orEmpty()
     val activeQuality = selectedQuality?.takeIf { it in qualities } ?: qualities.keys.lastOrNull()
+    val balancerNames = availableBalancerIndices.map { index ->
+        sourceGraph.balancers.getOrNull(index)?.name.orEmpty()
+    }
+    val canChangePlayer = balancerNames.size > 1
+    val canChangeDubbing = displayedDubbingNames.size > 1
 
     return PlayerPlaybackUiState(
         activeIframeUrl = activeIframeUrl(this),
@@ -124,9 +135,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         currentDubbingIndex = displayedDubbingNames.indexOf(activeDubbingName)
             .takeIf { it >= 0 }
             ?: selection.dubbingIndex,
-        balancerNames = availableBalancerIndices.map { index ->
-            sourceGraph.balancers.getOrNull(index)?.name.orEmpty()
-        }.toImmutableList(),
+        balancerNames = balancerNames.toImmutableList(),
         availableBalancerIndices = availableBalancerIndices.toImmutableList(),
         balancerAvailability = balancerAvailability.toImmutableList(),
         currentBalancerIndex = availableBalancerIndices.indexOf(selection.balancerIndex)
@@ -135,5 +144,12 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         qualityLabels = qualities.keys.toImmutableList(),
         activeQuality = activeQuality,
         playbackUrl = activeQuality?.let(qualities::get) ?: url,
+        canChangePlayer = canChangePlayer,
+        canChangeDubbing = canChangeDubbing,
+        showRecoveryHint = isPlaybackRecovering && showChangePlayerHint &&
+            (canChangePlayer || canChangeDubbing),
+        errorResumePositionMs = playbackPositionMs.takeIf { it > 0L }
+            ?: resumeFromMs.takeIf { it > 0L }
+            ?: 0L,
     )
 }

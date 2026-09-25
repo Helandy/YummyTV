@@ -129,12 +129,9 @@ internal fun TvExoPlayerView(
     val volumeKeys = rememberTvPlayerVolumeKeysState(
         indicatorDuration = TV_PLAYER_INLINE_TOAST_DURATION,
     )
-    val canChangePlayer = playback.balancerNames.size > 1
-    val canChangeDubbing = playback.dubbingNames.size > 1
     // Пока виден хинт восстановления, оверлей нельзя автоскрывать:
     // иначе фокус уйдёт на скрытый key-оверлей и кнопки хинта станут недостижимы
-    val recoveryHintVisible = state.isPlaybackRecovering && state.showChangePlayerHint &&
-        (canChangePlayer || canChangeDubbing)
+    val recoveryHintVisible = playback.showRecoveryHint
     val autoHide = rememberPlayerAutoHideController(
         canHide = { !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible },
         onHide = { controllerVisible = false },
@@ -576,12 +573,12 @@ internal fun TvExoPlayerView(
 
         if (recoveryHintVisible) {
             TvPlayerRecoveryHint(
-                onChangePlayer = if (canChangePlayer) {
+                onChangePlayer = if (playback.canChangePlayer) {
                     { togglePanel(TvPlayerPanel.Balancer, PanelReturnFocusTarget.Balancer) }
                 } else {
                     null
                 },
-                onChangeDubbing = if (canChangeDubbing) {
+                onChangeDubbing = if (playback.canChangeDubbing) {
                     { togglePanel(TvPlayerPanel.Dubbing, PanelReturnFocusTarget.Dubbing) }
                 } else {
                     null
