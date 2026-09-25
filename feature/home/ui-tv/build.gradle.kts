@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":feature:settings:api"))
 
     implementation(libs.bundles.compose.screen)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.navigation.serialization)
     implementation(libs.bundles.coil.full)
     implementation(libs.bundles.media3.player)

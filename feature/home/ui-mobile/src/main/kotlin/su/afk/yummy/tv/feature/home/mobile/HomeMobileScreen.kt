@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.home.mobile
 
 import android.widget.Toast
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,8 +62,9 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
 import su.afk.yummy.tv.feature.home.toHomeEventOrNull
+import su.afk.yummy.tv.feature.home.utils.hasInitialContent
+import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.presentation.R as PresentationR
-import androidx.compose.ui.platform.testTag
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -150,10 +153,12 @@ fun HomeMobileScreen(
         { item -> item.action.toHomeEventOrNull()?.let(onEvent) }
     }
 
+    ReportDrawnWhen { state.isFirstScreenSettled() }
+
     Box(modifier = Modifier.fillMaxSize()) {
         BaseScreen(
             isScroll = false,
-            isLoading = state.isLoading || state.feed == null || !state.isContinueWatchingLoaded,
+            isLoading = !state.hasInitialContent(),
             error = state.error?.let { ErrorItem(title = it, message = it) },
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
             errorContent = state.error?.let { message ->

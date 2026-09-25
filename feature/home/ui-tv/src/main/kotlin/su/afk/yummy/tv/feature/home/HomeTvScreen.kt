@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.home
 
 import android.widget.Toast
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,6 +22,8 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.feature.home.utils.hasInitialContent
+import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.view.HomeDashboard
 import su.afk.yummy.tv.feature.home.view.HomeError
@@ -116,16 +119,17 @@ fun HomeTvScreen(
         { _, item -> item.action.toHomeEventOrNull()?.let(onEvent) }
     }
 
+    ReportDrawnWhen { state.isFirstScreenSettled() }
+
     val error = state.error
     val feed = state.feed
-    val isInitialContentReady = feed != null && state.isContinueWatchingLoaded
     when {
         error != null -> HomeError(
             message = error,
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
         )
 
-        state.isLoading || !isInitialContentReady -> TvLoadingScreen()
+        feed == null || !state.hasInitialContent() -> TvLoadingScreen()
         else -> HomeDashboard(
             feed = feed,
             continueWatching = state.continueWatching,

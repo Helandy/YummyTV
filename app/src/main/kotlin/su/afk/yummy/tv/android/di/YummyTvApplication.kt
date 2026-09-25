@@ -2,11 +2,13 @@ package su.afk.yummy.tv.android.di
 
 import android.app.Application
 import android.os.StrictMode
+import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.media3.cast.Cast
 import androidx.media3.cast.CastParams
 import androidx.media3.common.util.UnstableApi
+import androidx.tracing.trace
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import su.afk.yummy.tv.BuildConfig
@@ -16,6 +18,7 @@ import su.afk.yummy.tv.android.lifecycle.OnlineStatusCoordinator
 import su.afk.yummy.tv.android.outbox.AndroidPendingMutationSyncScheduler
 import su.afk.yummy.tv.android.startup.AppStartupMaintenanceRunner
 import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
+import su.afk.yummy.tv.android.startup.StartupMetricsTracker
 import su.afk.yummy.tv.android.startup.WatchedEpisodeRuleSync
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
@@ -65,6 +68,9 @@ class YummyTvApplication :
     @Inject
     lateinit var watchedEpisodeRuleSync: WatchedEpisodeRuleSync
 
+    @Inject
+    lateinit var startupMetricsTracker: StartupMetricsTracker
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -72,20 +78,28 @@ class YummyTvApplication :
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
-        super.onCreate()
+        // Hilt инжектит поля в super.onCreate(), поэтому начало замеряем до него
+        val onCreateStartedAt = SystemClock.uptimeMillis()
+        trace("App.hiltInject") { super.onCreate() }
+        startupMetricsTracker.start(this, onCreateStartedAt)
 
+        // Секции App.* видны в Perfetto и в TraceSectionMetric бенчмарка старта
         installStrictModeIfDebug()
-        setupAnalytics()
-        setupFeatureToggles()
-        setupCast()
-        coilImageLoaderInstaller.install()
-        watchedEpisodeRuleSync.start()
-        onlineStatusCoordinator.start()
-        featureToggleRefreshCoordinator.start()
-        homeFeedRefreshScheduler.schedule()
-        newEpisodePushScheduler.schedule()
-        pendingMutationSyncScheduler.schedule()
-        startupMaintenanceRunner.run()
+        trace("App.analytics") { setupAnalytics() }
+        trace("App.featureToggles") { setupFeatureToggles() }
+        trace("App.cast") { setupCast() }
+        trace("App.coil") { coilImageLoaderInstaller.install() }
+        trace("App.watchedEpisodeRuleSync") { watchedEpisodeRuleSync.start() }
+        trace("App.onlineStatus") { onlineStatusCoordinator.start() }
+        trace("App.featureToggleRefresh") { featureToggleRefreshCoordinator.start() }
+        trace("App.schedulers") {
+            homeFeedRefreshScheduler.schedule()
+            newEpisodePushScheduler.schedule()
+            pendingMutationSyncScheduler.schedule()
+        }
+        trace("App.maintenance") { startupMaintenanceRunner.run() }
+
+        startupMetricsTracker.onApplicationCreated()
     }
 
     private fun installStrictModeIfDebug() {

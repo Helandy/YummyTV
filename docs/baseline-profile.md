@@ -63,6 +63,7 @@ Coroutines, Ktor, Coil и т. д. При сборке AGP переводит т�
 Поднимает эмуляторы, гоняет бенчмарки на минифицированной сборке и печатает таблицу
 «без профиля / с профилем» (копия — `baselineprofile/build/reports/baseline-profile-benchmark.md`).
 На эмуляторе абсолютные цифры шумные — смотреть на разницу между режимами.
+Время старта у реальных пользователей — в [startup-metrics.md](startup-metrics.md).
 
 `./gradlew :baselineprofile:benchmarkReport` — перепечатать таблицу по последнему прогону.
 

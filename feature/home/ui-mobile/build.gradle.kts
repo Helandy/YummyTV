@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":feature:settings:api"))
 
     implementation(libs.bundles.compose.screen)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.navigation.serialization)
 
     implementation(libs.androidx.material.icons.core)

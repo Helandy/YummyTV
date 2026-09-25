@@ -1,8 +1,10 @@
 package su.afk.yummy.tv.baselineprofile.benchmark
 
 import androidx.benchmark.macro.CompilationMode
+import androidx.benchmark.macro.ExperimentalMetricApi
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.StartupTimingMetric
+import androidx.benchmark.macro.TraceSectionMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import org.junit.Rule
 import org.junit.Test
@@ -22,10 +24,16 @@ class StartupBenchmark(
     @get:Rule
     val rule = MacrobenchmarkRule()
 
+    @OptIn(ExperimentalMetricApi::class)
     @Test
     fun startup() = rule.measureRepeated(
         packageName = targetPackageName,
-        metrics = listOf(StartupTimingMetric()),
+        // StartupTimingMetric даёт и timeToFullDisplayMs — главная зовёт reportFullyDrawn;
+        // App.* — шаги Application.onCreate, см. YummyTvApplication
+        metrics = listOf(
+            StartupTimingMetric(),
+            TraceSectionMetric("App.%", TraceSectionMetric.Mode.Sum),
+        ),
         compilationMode = compilationMode,
         startupMode = StartupMode.COLD,
         iterations = 10,
