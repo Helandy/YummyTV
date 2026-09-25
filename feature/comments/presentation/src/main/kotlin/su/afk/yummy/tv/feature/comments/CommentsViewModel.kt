@@ -38,6 +38,7 @@ import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.findUi
 import su.afk.yummy.tv.feature.comments.utils.replaceComment
 import su.afk.yummy.tv.feature.comments.utils.updateVote
+import su.afk.yummy.tv.feature.comments.utils.withOverlays
 
 private const val COMMENTS_PAGE_SIZE = 20
 
@@ -137,7 +138,7 @@ class CommentsViewModel @AssistedInject internal constructor(
             is CommentsState.Event.ChildrenToggleSelected -> toggleChildren(event.commentId)
             is CommentsState.Event.LoadMoreChildrenSelected -> loadChildren(
                 event.commentId,
-                append = true
+                append = true,
             )
 
             is CommentsState.Event.AuthorSelected -> {
@@ -341,7 +342,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 onFailure = {
                     showMutationError(
                         R.string.comments_delete_error,
-                        keepDialog = true
+                        keepDialog = true,
                     )
                 },
             )
@@ -366,7 +367,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 onFailure = {
                     showMutationError(
                         R.string.comments_report_error,
-                        keepDialog = true
+                        keepDialog = true,
                     )
                 },
             )
@@ -471,7 +472,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                                     childrenLoading = false,
                                     childrenError = error.userMessage(stringProvider.get(R.string.comments_load_error)),
                                 )
-                                )
+                                ),
                         )
                     }
                 },
@@ -509,18 +510,7 @@ class CommentsViewModel @AssistedInject internal constructor(
 
     private fun visibleCommentTree(): List<CommentUi> =
         (currentState.prependedComments + visibleComments.values)
-            .filterNot { it.comment.id in currentState.deletedCommentIds }
-            .map(::withCurrentOverlays)
-
-    private fun withCurrentOverlays(item: CommentUi): CommentUi {
-        val overlaid = currentState.commentOverlays[item.comment.id] ?: item
-        return overlaid.copy(
-            children = overlaid.children
-                .filterNot { it.comment.id in currentState.deletedCommentIds }
-                .map(::withCurrentOverlays)
-                .toImmutableList(),
-        )
-    }
+            .withOverlays(currentState.commentOverlays, currentState.deletedCommentIds)
 
     private fun updateCommentOverlay(
         commentId: Int,

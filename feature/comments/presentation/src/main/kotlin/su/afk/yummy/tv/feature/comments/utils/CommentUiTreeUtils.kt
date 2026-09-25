@@ -68,3 +68,22 @@ internal fun List<CommentUi>.updateVote(
             ),
         )
     }
+
+/**
+ * Накладывает локальные правки (голоса, редактирования) из [overlays] на дерево и скрывает
+ * удалённые комментарии — так UI видит изменения до перезагрузки страницы.
+ */
+internal fun List<CommentUi>.withOverlays(
+    overlays: Map<Int, CommentUi>,
+    deletedIds: Set<Int>,
+): List<CommentUi> =
+    filterNot { it.comment.id in deletedIds }
+        .map { it.withOverlays(overlays, deletedIds) }
+
+private fun CommentUi.withOverlays(
+    overlays: Map<Int, CommentUi>,
+    deletedIds: Set<Int>,
+): CommentUi {
+    val overlaid = overlays[comment.id] ?: this
+    return overlaid.copy(children = overlaid.children.withOverlays(overlays, deletedIds).toImmutableList())
+}
