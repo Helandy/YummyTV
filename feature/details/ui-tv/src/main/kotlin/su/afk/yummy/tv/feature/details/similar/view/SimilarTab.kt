@@ -51,7 +51,6 @@ import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
 
 private val RelatedCardWidth = 188.dp
-private val SimilarPosterHeight = 214.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -68,9 +67,6 @@ internal fun SimilarTab(
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null,
 ) {
-    // Вертикальная навигация связывается явно: кнопки голосования перекрывают карточку по
-    // границам, из-за чего focus search вверх уходил на них и фокус запирался внизу экрана.
-    val visibilityButtonFocusRequester = remember { FocusRequester() }
     val sourceToggleFocusRequester = remember { FocusRequester() }
 
     Column(
@@ -78,23 +74,25 @@ internal fun SimilarTab(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        TvSimilarRecommendationVisibilityButton(
-            ignored = ignored,
-            enabled = !recommendationMutationPending,
-            onClick = onRecommendationVisibilityToggled,
-            modifier = Modifier
-                .focusRequester(visibilityButtonFocusRequester)
-                .focusProperties { down = sourceToggleFocusRequester },
-        )
+        // Кнопка и переключатель в одном ряду — освобождённая высота уходит на постеры
+        // тех же пропорций, что в «Порядке просмотра».
+        Row(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TvSimilarRecommendationVisibilityButton(
+                ignored = ignored,
+                enabled = !recommendationMutationPending,
+                onClick = onRecommendationVisibilityToggled,
+            )
 
-        SourceToggle(
-            fromAi = fromAi,
-            onToggle = onToggle,
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .focusProperties { up = visibilityButtonFocusRequester },
-            focusRequester = sourceToggleFocusRequester,
-        )
+            SourceToggle(
+                fromAi = fromAi,
+                onToggle = onToggle,
+                focusRequester = sourceToggleFocusRequester,
+            )
+        }
 
         when (state) {
             SimilarUiState.Loading -> SimilarLoadingState(
@@ -168,7 +166,7 @@ internal fun SimilarTab(
 
                 DisposableEffect(
                     preferredContentFocusRequester,
-                    registerPreferredContentFocusRequester
+                    registerPreferredContentFocusRequester,
                 ) {
                     registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
                     onDispose { registerPreferredContentFocusRequester?.invoke(null) }
@@ -206,9 +204,6 @@ internal fun SimilarTab(
                                     year = item.year,
                                     meta = meta,
                                     onFocused = { rememberFocusedItem(index) },
-                                    // Постер ниже дефолтного: карточке нужно место под голосование,
-                                    // иначе ряд не влезает в экран и футер обрезается.
-                                    posterHeight = SimilarPosterHeight,
                                     modifier = Modifier
                                         .focusRequester(focusRequesters[index])
                                         .focusProperties {
@@ -284,14 +279,20 @@ private fun ToggleChip(
     Surface(
         modifier = modifier.tvFocusableClick(onClick = onClick, shape = shape),
         shape = shape,
-        color = if (selected) MaterialTheme.colorScheme.primary
-        else Color.Transparent,
+        color = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
     }
