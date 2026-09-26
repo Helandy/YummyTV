@@ -2,7 +2,11 @@ package su.afk.yummy.tv.feature.main.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -14,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileNavigationLayout
@@ -81,9 +86,17 @@ internal fun <T> MobileMainScaffold(
         },
     ) {
         CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
+            // Низ контента уже занят баром вместе с системным инсетом: без консьюма imePadding
+            // в экранах табов отступал бы на полную высоту клавиатуры и оставлял пустую полосу.
+            val barInsets = if (layout == MobileNavigationLayout.BottomBar) {
+                WindowInsets.navigationBars.add(WindowInsets(bottom = MobileBottomBarDefaults.BarHeight))
+            } else {
+                WindowInsets(0.dp)
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .consumeWindowInsets(barInsets)
                     .background(MaterialTheme.colorScheme.background),
             ) {
                 content()
