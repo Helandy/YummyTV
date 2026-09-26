@@ -26,8 +26,10 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.focus.TvPivotedGridBringIntoViewSpec
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.tv.TvStateContent
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
@@ -78,7 +80,9 @@ private fun MySubscriptionsGrid(
                     (cardWidth.value + horizontalSpacing.value)).toInt()
                 .coerceAtLeast(1)
 
-        CompositionLocalProvider(LocalBringIntoViewSpec provides TvPivotedGridBringIntoViewSpec) {
+        val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
+
+        CompositionLocalProvider(LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical)) {
             LazyVerticalGrid(
                 state = gridState,
                 columns = GridCells.Adaptive(minSize = cardWidth),
@@ -99,20 +103,23 @@ private fun MySubscriptionsGrid(
                         text = stringResource(R.string.account_my_subscriptions),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface,
+                        modifier = gridStartExtent.measure,
                     )
                 }
 
                 itemsIndexedSubscriptions(state, onEvent, itemFocusRequesters) { index, modifier ->
-                    modifier.tvLazyGridRowFocusNavigation(
-                        index = index,
-                        columnCount = columnCount,
-                        itemCount = itemCount,
-                        gridState = gridState,
-                        scope = scope,
-                        focusRequesterAt = itemFocusRequesters::getOrNull,
-                        // нулевой lazy-индекс занимает заголовок экрана
-                        lazyIndexOffset = 1,
-                    )
+                    modifier
+                        .tvWholeItemBringIntoView(gridStartExtent.takeIf { index < columnCount })
+                        .tvLazyGridRowFocusNavigation(
+                            index = index,
+                            columnCount = columnCount,
+                            itemCount = itemCount,
+                            gridState = gridState,
+                            scope = scope,
+                            focusRequesterAt = itemFocusRequesters::getOrNull,
+                            // нулевой lazy-индекс занимает заголовок экрана
+                            lazyIndexOffset = 1,
+                        )
                 }
             }
         }

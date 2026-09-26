@@ -40,11 +40,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.focus.TvPivotedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
@@ -219,8 +221,10 @@ private fun CollectionGrid(
             (((maxWidth - TvScreenPadding.Horizontal - TvScreenPadding.Horizontal).value + horizontalSpacing.value) /
                     (cardWidth.value + horizontalSpacing.value)).toInt().coerceAtLeast(1)
 
+        val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
+
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides TvPivotedGridBringIntoViewSpec,
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -265,6 +269,7 @@ private fun CollectionGrid(
                         onComments = onComments,
                         titleFocusRequester = headerFocusRequester,
                         downFocusRequester = focusRequesters.firstOrNull(),
+                        modifier = gridStartExtent.measure,
                     )
                 }
 
@@ -280,6 +285,7 @@ private fun CollectionGrid(
                     CollectionAnimeCard(
                         modifier = Modifier
                             .focusRequester(focusRequesters[index])
+                            .tvWholeItemBringIntoView(gridStartExtent.takeIf { index < gridColumnCount })
                             .tvLazyGridRowFocusNavigation(
                                 index = index,
                                 columnCount = gridColumnCount,

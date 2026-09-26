@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Warning
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -35,8 +37,10 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
@@ -118,13 +122,19 @@ fun ReviewsListTvScreen(
             }
 
             else -> {
-                val firstCardFocus = remember { FocusRequester() }
+                val gridState = rememberLazyGridState()
+                val scope = rememberCoroutineScope()
+                val reviewCount = reviews.itemCount
+                val focusRequesters =
+                    remember(reviewCount) { List(reviewCount) { FocusRequester() } }
+                val firstCardFocus = focusRequesters.first()
                 LaunchedEffect(Unit) { runCatching { firstCardFocus.requestFocus() } }
                 CompositionLocalProvider(
-                    LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
+                    LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
                 ) {
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
+                        state = gridState,
+                        columns = GridCells.Fixed(ReviewsGridColumnCount),
                         horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
                         verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical),
                         contentPadding = PaddingValues(
@@ -145,11 +155,17 @@ fun ReviewsListTvScreen(
                                         ?: review.reactions,
                                     showAnime = state.isGeneralFeed,
                                     onOpen = { onEvent(ReviewsListState.Event.ReviewSelected(review.id)) },
-                                    modifier = if (index == 0) {
-                                        Modifier.focusRequester(firstCardFocus)
-                                    } else {
-                                        Modifier
-                                    },
+                                    modifier = Modifier
+                                        .focusRequester(focusRequesters[index])
+                                        .tvWholeItemBringIntoView()
+                                        .tvLazyGridRowFocusNavigation(
+                                            index = index,
+                                            columnCount = ReviewsGridColumnCount,
+                                            itemCount = reviewCount,
+                                            gridState = gridState,
+                                            scope = scope,
+                                            focusRequesterAt = focusRequesters::getOrNull,
+                                        ),
                                 )
                             }
                         }
@@ -173,3 +189,5 @@ fun ReviewsListTvScreen(
         }
     }
 }
+
+private const val ReviewsGridColumnCount = 2

@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -34,8 +35,10 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.domain.search.model.SearchItem
@@ -60,6 +63,7 @@ internal fun SearchResultsGrid(
 ) {
     val cardWidth = currentTvTitleCardDimensions().width
     val itemCount = results.itemCount
+    val scope = rememberCoroutineScope()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
@@ -68,7 +72,7 @@ internal fun SearchResultsGrid(
                     (cardWidth.value + horizontalSpacing.value)).toInt()
                 .coerceAtLeast(1)
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -117,6 +121,15 @@ internal fun SearchResultsGrid(
                         onFocused = stableOnFocused,
                         modifier = Modifier
                             .focusRequester(focusRequesters[index])
+                            .tvWholeItemBringIntoView()
+                            .tvLazyGridRowFocusNavigation(
+                                index = index,
+                                columnCount = gridColumnCount,
+                                itemCount = itemCount,
+                                gridState = gridState,
+                                scope = scope,
+                                focusRequesterAt = focusRequesters::getOrNull,
+                            )
                             .focusProperties {
                                 if (index % gridColumnCount == 0) {
                                     mainMenuFocusRequester?.let { left = it }

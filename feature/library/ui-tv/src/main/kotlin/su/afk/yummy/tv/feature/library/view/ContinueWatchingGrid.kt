@@ -34,11 +34,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
-import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -163,7 +165,7 @@ internal fun ContinueWatchingGrid(
         val adaptiveCardWidth =
             (maxWidth - gridHorizontalPadding - gridSpacingWidth) / gridColumnCount
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(8.dp),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -244,6 +246,7 @@ internal fun ContinueWatchingGrid(
                         onDelete = stableOnDelete,
                         cardWidth = adaptiveCardWidth,
                         modifier = Modifier
+                            .tvWholeItemBringIntoView()
                             .onFocusChanged { state ->
                                 if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
                                     rememberFocusedEntry(index)
@@ -268,13 +271,29 @@ internal fun ContinueWatchingGrid(
                                 if (index % gridColumnCount == 0) {
                                     mainMenuFocusRequester?.let { left = it }
                                 }
-                            },
+                            }
+                            .tvLazyGridRowFocusNavigation(
+                                index = index,
+                                columnCount = gridColumnCount,
+                                itemCount = entries.size,
+                                gridState = gridState,
+                                scope = scope,
+                                focusRequesterAt = focusRequesters::getOrNull,
+                            ),
                         deleteModifier = Modifier
                             .focusRequester(deleteFocusRequesters[index])
                             .focusProperties {
                                 left = detailsFocusRequesters[index]
                                 up = focusRequesters[index]
-                            },
+                            }
+                            .tvLazyGridRowFocusNavigation(
+                                index = index,
+                                columnCount = gridColumnCount,
+                                itemCount = entries.size,
+                                gridState = gridState,
+                                scope = scope,
+                                focusRequesterAt = focusRequesters::getOrNull,
+                            ),
                         leftFocusRequester = if (index % gridColumnCount == 0) {
                             mainMenuFocusRequester
                         } else {

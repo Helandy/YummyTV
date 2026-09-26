@@ -40,11 +40,13 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
@@ -177,7 +179,7 @@ internal fun LibraryGrid(
             (maxWidth - gridHorizontalPadding - gridSpacingWidth) / gridColumnCount
 
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -268,6 +270,7 @@ internal fun LibraryGrid(
                             }
                         },
                         modifier = Modifier
+                            .tvWholeItemBringIntoView()
                             .onFocusChanged { state ->
                                 if (state.hasFocus && gridHasFocus && !isRestoringFocus) {
                                     rememberFocusedItem(index)
@@ -284,12 +287,23 @@ internal fun LibraryGrid(
                                     up = selectedTabFocusRequester
                                 }
                             },
-                        deleteModifier = Modifier.focusProperties {
-                            if (index % gridColumnCount == 0) {
-                                mainMenuFocusRequester?.let { left = it }
+                        // Под постером стоит кнопка удаления: DPAD-вниз с карточки ведёт в неё,
+                        // а на следующий ряд уходит уже с кнопки — страховка колонки здесь.
+                        deleteModifier = Modifier
+                            .focusProperties {
+                                if (index % gridColumnCount == 0) {
+                                    mainMenuFocusRequester?.let { left = it }
+                                }
+                                up = focusRequesters[index]
                             }
-                            up = focusRequesters[index]
-                        },
+                            .tvLazyGridRowFocusNavigation(
+                                index = index,
+                                columnCount = gridColumnCount,
+                                itemCount = items.size,
+                                gridState = gridState,
+                                scope = scope,
+                                focusRequesterAt = focusRequesters::getOrNull,
+                            ),
                     )
                 }
             }

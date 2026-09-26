@@ -14,17 +14,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Страховка для DPAD-вниз в вертикальном гриде: переход на ряд ниже с сохранением колонки.
+ * Страховка для DPAD вверх/вниз в вертикальном гриде: переход на соседний ряд с сохранением колонки.
  *
  * Штатный focus search Compose, упираясь в ещё не скомпонованный ряд, подтягивает beyond-bounds
  * ровно один элемент (`addNextInterval` двигает границу на один индекс) и отдаёт фокус первому же
- * найденному — то есть первой карточке ряда: с 3-й карточки фокус прыгает на 1-ю.
+ * найденному — с 3-й карточки фокус прыгает на 1-ю (вверх — на последнюю).
  *
- * Штатно этого не происходит, пока грид использует [TvPivotedGridBringIntoViewSpec]: ряд всегда
- * встаёт на 12% от верхней кромки, и под ним заведомо остаётся начало следующего ряда. Модификатор
- * нужен на случай, когда ряд ещё не доехал до пивота — например при удержании DPAD, когда события
- * приходят быстрее анимации скролла. Вверх такой страховки не требуется: ряд над сфокусированным
- * при пивоте всегда частично виден, а значит скомпонован.
+ * При [rememberTvTopAnchoredGridBringIntoViewSpec] ряд над сфокусированным всегда за верхней
+ * кромкой, то есть не скомпонован — вверх страховка срабатывает на каждом шаге. Вниз — когда ряд
+ * ещё не доехал до пивота, например при удержании DPAD.
  *
  * Если целевая карточка уже скомпонована, событие не перехватывается — работает обычный поиск
  * фокуса с анимированным bringIntoView.
@@ -45,20 +43,28 @@ fun Modifier.tvLazyGridRowFocusNavigation(
     lazyIndexOffset: Int = 0,
 ): Modifier = onPreviewKeyEvent { event ->
     if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-    if (event.key != Key.DirectionDown) return@onPreviewKeyEvent false
-    val targetIndex = index + columnCount
-    if (targetIndex >= itemCount) return@onPreviewKeyEvent false
+    val targetIndex = when (event.key) {
+        Key.DirectionDown -> index + columnCount
+        Key.DirectionUp -> index - columnCount
+        else -> return@onPreviewKeyEvent false
+    }
+    if (targetIndex !in 0 until itemCount) return@onPreviewKeyEvent false
     val targetLazyIndex = targetIndex + lazyIndexOffset
     if (gridState.isItemComposed(targetLazyIndex)) return@onPreviewKeyEvent false
     val targetFocusRequester = focusRequesterAt(targetIndex) ?: return@onPreviewKeyEvent false
 
     scope.launch {
-        // Отрицательный scrollOffset ставит ряд не вплотную к верхней кромке, а на тот же пивот,
-        // куда его довёл бы TvPivotedGridBringIntoViewSpec — иначе переход выглядел бы рывком.
-        gridState.scrollToItem(
-            index = targetLazyIndex,
-            scrollOffset = -gridState.focusPivotOffsetPx(),
-        )
+        if (targetIndex < columnCount) {
+            // Первый ряд — к самому началу, чтобы над ним снова показалась шапка грида.
+            gridState.scrollToItem(0)
+        } else {
+            // Ряд встаёт туда же, куда его довёл бы спек: на межрядный отступ от кромки.
+            gridState.scrollToItem(
+                index = targetLazyIndex,
+                scrollOffset = gridState.layoutInfo.beforeContentPadding -
+                    gridState.layoutInfo.mainAxisItemSpacing,
+            )
+        }
         snapshotFlow { gridState.isItemComposed(targetLazyIndex) }.first { it }
         requestFocusUntilTimeout(targetFocusRequester)
     }
@@ -67,6 +73,3 @@ fun Modifier.tvLazyGridRowFocusNavigation(
 
 private fun LazyGridState.isItemComposed(lazyIndex: Int): Boolean =
     layoutInfo.visibleItemsInfo.any { it.index == lazyIndex }
-
-private fun LazyGridState.focusPivotOffsetPx(): Int =
-    (layoutInfo.viewportSize.height * FocusedItemPivotFraction).toInt()

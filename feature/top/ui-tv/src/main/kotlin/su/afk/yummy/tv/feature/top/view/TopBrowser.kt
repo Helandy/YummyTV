@@ -45,11 +45,13 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
-import su.afk.yummy.tv.core.designsystem.focus.TvFocusedGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
+import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
@@ -285,7 +287,7 @@ internal fun TopBrowser(
                             .coerceAtLeast(1)
 
                     CompositionLocalProvider(
-                        LocalBringIntoViewSpec provides TvFocusedGridBringIntoViewSpec,
+                        LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
                     ) {
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = cardWidth),
@@ -345,6 +347,15 @@ internal fun TopBrowser(
                                     onFocused = stableOnFocused,
                                     modifier = Modifier
                                         .focusRequester(focusRequesters[index])
+                                        .tvWholeItemBringIntoView()
+                                        .tvLazyGridRowFocusNavigation(
+                                            index = index,
+                                            columnCount = gridColumnCount,
+                                            itemCount = itemCount,
+                                            gridState = gridState,
+                                            scope = scope,
+                                            focusRequesterAt = focusRequesters::getOrNull,
+                                        )
                                         .focusProperties {
                                             if (index % gridColumnCount == 0) {
                                                 mainMenuFocusRequester?.let { left = it }

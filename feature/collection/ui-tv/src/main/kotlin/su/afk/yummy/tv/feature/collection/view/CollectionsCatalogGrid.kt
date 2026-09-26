@@ -43,8 +43,10 @@ import androidx.paging.compose.itemKey
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
-import su.afk.yummy.tv.core.designsystem.focus.TvPivotedGridBringIntoViewSpec
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvLazyGridRowFocusNavigation
+import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
@@ -67,6 +69,7 @@ internal fun CollectionsCatalogGrid(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val cardWidth = currentTvTitleCardDimensions().width
     val itemCount = pagingItems.itemCount
+    val gridStartExtent = rememberTvGridStartExtent(TvScreenPadding.Vertical, TvCardSpacing.Vertical)
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val horizontalSpacing = TvCardSpacing.Horizontal
@@ -76,7 +79,7 @@ internal fun CollectionsCatalogGrid(
                 .coerceAtLeast(1)
 
         CompositionLocalProvider(
-            LocalBringIntoViewSpec provides TvPivotedGridBringIntoViewSpec,
+            LocalBringIntoViewSpec provides rememberTvTopAnchoredGridBringIntoViewSpec(TvCardSpacing.Vertical),
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -98,6 +101,7 @@ internal fun CollectionsCatalogGrid(
                         text = stringResource(R.string.collection_catalog_tv_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface,
+                        modifier = gridStartExtent.measure,
                     )
                 }
 
@@ -110,11 +114,12 @@ internal fun CollectionsCatalogGrid(
                         title = item.title,
                         posterUrl = item.posterUrl,
                         onClick = { onCollectionSelected(item.id) },
-                        // Подскролл к заголовку вручную больше не нужен: пивот-спек сам
-                        // оставляет над верхним рядом 12% высоты, и "Коллекции" видно целиком.
+                        // Заголовок "Коллекции" над верхним рядом показывает
+                        // tvBringIntoViewWithGridStart, подскролл вручную не нужен.
                         onFocused = { onCollectionFocused(item.id) },
                         modifier = Modifier
                             .focusRequester(itemFocusRequesters[index])
+                            .tvWholeItemBringIntoView(gridStartExtent.takeIf { index < gridColumnCount })
                             .tvLazyGridRowFocusNavigation(
                                 index = index,
                                 columnCount = gridColumnCount,
