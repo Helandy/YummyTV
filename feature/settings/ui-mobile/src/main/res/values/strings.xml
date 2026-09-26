@@ -168,8 +168,9 @@
     <string name="settings_next_episode_switch_delay_label">Next episode switch delay</string>
     <string name="settings_next_episode_switch_delay_instant">Instant</string>
     <string name="settings_next_episode_switch_delay_seconds">%d sec</string>
-    <string name="settings_ask_dubbing_on_watch_label">Choose voice-over on Watch</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">Show the voice-over list instead of auto-picking the most popular one</string>
+    <string name="settings_ask_dubbing_on_watch_label">Ask for voice-over before watching</string>
+    <string name="settings_ask_dubbing_on_watch_enabled">We\'ll show the voice-over list before playback</string>
+    <string name="settings_ask_dubbing_on_watch_disabled">The most popular one starts right away</string>
     <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
     <string name="settings_mobile_advanced_volume_label">Advanced volume in the player</string>

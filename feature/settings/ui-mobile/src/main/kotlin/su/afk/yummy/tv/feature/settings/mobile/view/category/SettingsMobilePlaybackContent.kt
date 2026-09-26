@@ -24,7 +24,7 @@ internal fun SettingsMobilePlaybackContent(
                 hint = if (state.askDubbingOnWatch) {
                     stringResource(R.string.settings_ask_dubbing_on_watch_enabled)
                 } else {
-                    stringResource(R.string.settings_disabled)
+                    stringResource(R.string.settings_ask_dubbing_on_watch_disabled)
                 },
                 enabled = state.askDubbingOnWatch,
                 onClick = { onEvent(SettingsState.Event.AskDubbingOnWatchToggled) },

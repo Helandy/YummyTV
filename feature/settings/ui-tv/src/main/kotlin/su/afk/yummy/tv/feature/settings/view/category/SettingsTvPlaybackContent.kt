@@ -25,7 +25,7 @@ internal fun SettingsTvPlaybackContent(
         hint = if (state.askDubbingOnWatch) {
             stringResource(R.string.settings_ask_dubbing_on_watch_enabled)
         } else {
-            stringResource(R.string.settings_disabled)
+            stringResource(R.string.settings_ask_dubbing_on_watch_disabled)
         },
         enabled = state.askDubbingOnWatch,
         onClick = {

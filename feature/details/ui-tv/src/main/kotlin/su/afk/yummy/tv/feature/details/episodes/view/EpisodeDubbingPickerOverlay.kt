@@ -118,7 +118,7 @@ internal fun EpisodeDubbingPickerOverlay(
                     Text(
                         text = stringResource(
                             R.string.details_episode_dubbings_title,
-                            selection.episode
+                            selection.episode,
                         ),
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White.copy(alpha = 0.70f),
@@ -183,12 +183,12 @@ private fun EpisodeDubbingOptionItem(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
             text = option.item.name,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             // Вне фокуса название — акцентным цветом, как в мобильных шторках выбора.
             color = if (focused) contentColor else MaterialTheme.colorScheme.primary,
@@ -196,7 +196,7 @@ private fun EpisodeDubbingOptionItem(
             overflow = TextOverflow.Ellipsis,
         )
         Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

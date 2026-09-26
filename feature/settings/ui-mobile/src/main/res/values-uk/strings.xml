@@ -168,8 +168,9 @@
     <string name="settings_next_episode_switch_delay_label">Затримка перед перемиканням серії</string>
     <string name="settings_next_episode_switch_delay_instant">Миттєво</string>
     <string name="settings_next_episode_switch_delay_seconds">%d с</string>
-    <string name="settings_ask_dubbing_on_watch_label">Вибір озвучення під час натискання «Дивитися»</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">Показувати список озвучень замість автовибору популярної</string>
+    <string name="settings_ask_dubbing_on_watch_label">Питати озвучення перед переглядом</string>
+    <string name="settings_ask_dubbing_on_watch_enabled">Перед запуском покажемо список озвучень</string>
+    <string name="settings_ask_dubbing_on_watch_disabled">Одразу ввімкнеться найпопулярніше</string>
     <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
     <string name="settings_mobile_advanced_volume_label">Розширена гучність у плеєрі</string>

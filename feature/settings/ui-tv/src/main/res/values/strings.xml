@@ -159,8 +159,9 @@
     <string name="settings_next_episode_switch_delay_label">Next episode switch delay</string>
     <string name="settings_next_episode_switch_delay_instant">Instant</string>
     <string name="settings_next_episode_switch_delay_seconds">%d sec</string>
-    <string name="settings_ask_dubbing_on_watch_label">Choose voice-over on Watch</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">Show the voice-over list instead of auto-picking the most popular one</string>
+    <string name="settings_ask_dubbing_on_watch_label">Ask for voice-over before watching</string>
+    <string name="settings_ask_dubbing_on_watch_enabled">We\'ll show the voice-over list before playback</string>
+    <string name="settings_ask_dubbing_on_watch_disabled">The most popular one starts right away</string>
     <string name="settings_refresh_continue_watching_progress_label">Latest progress from other devices</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Check account progress when opening Continue Watching from Home or Library to resume from the latest device</string>
     <string name="settings_tv_volume_keys_label">Volume keys in the player</string>

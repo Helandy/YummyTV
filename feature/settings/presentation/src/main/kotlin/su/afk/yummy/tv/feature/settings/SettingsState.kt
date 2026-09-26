@@ -49,7 +49,7 @@ class SettingsState {
         val showOpeningOnTimeline: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
-        val askDubbingOnWatch: Boolean = false,
+        val askDubbingOnWatch: Boolean = true,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),

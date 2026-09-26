@@ -80,7 +80,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             .coerceIn(0, MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS)
     }
 
-    override val askDubbingOnWatch: Flow<Boolean> = store.boolean(askDubbingOnWatchKey, false)
+    override val askDubbingOnWatch: Flow<Boolean> = store.boolean(askDubbingOnWatchKey, true)
 
     override val pictureInPictureEnabled: Flow<Boolean> =
         store.boolean(pictureInPictureEnabledKey, true)

@@ -159,8 +159,9 @@
     <string name="settings_next_episode_switch_delay_label">Затримка перед перемиканням серії</string>
     <string name="settings_next_episode_switch_delay_instant">Миттєво</string>
     <string name="settings_next_episode_switch_delay_seconds">%d сек</string>
-    <string name="settings_ask_dubbing_on_watch_label">Вибір озвучення при натисканні «Дивитися»</string>
-    <string name="settings_ask_dubbing_on_watch_enabled">Показувати список озвучень замість автовибору популярного</string>
+    <string name="settings_ask_dubbing_on_watch_label">Питати озвучення перед переглядом</string>
+    <string name="settings_ask_dubbing_on_watch_enabled">Перед запуском покажемо список озвучень</string>
+    <string name="settings_ask_dubbing_on_watch_disabled">Одразу ввімкнеться найпопулярніше</string>
     <string name="settings_refresh_continue_watching_progress_label">Свіжий прогрес з інших пристроїв</string>
     <string name="settings_refresh_continue_watching_progress_enabled">Перевіряти прогрес акаунта під час запуску з «Продовжити перегляд» на головній або в бібліотеці, щоб продовжити з найновішого пристрою</string>
     <string name="settings_tv_volume_keys_label">Кнопки гучності в плеєрі</string>
