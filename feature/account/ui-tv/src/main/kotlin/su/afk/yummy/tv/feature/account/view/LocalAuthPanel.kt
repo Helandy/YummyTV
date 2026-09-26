@@ -19,11 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
-import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
-import su.afk.yummy.tv.domain.account.model.LocalAuthPairingPayload
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
 import su.afk.yummy.tv.feature.account.R
 
@@ -48,7 +45,8 @@ internal fun LocalAuthPanel(
     Column(
         modifier = modifier
             .fillMaxWidth(0.8f)
-            .padding(24.dp),
+            // По вертикали отступ уже даёт экран: второй съедал высоту у QR с кодом.
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -67,25 +65,12 @@ internal fun LocalAuthPanel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(32.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    LocalAuthQrCode(
-                        content = LocalAuthPairingPayload.encode(state.serviceName, state.pin),
-                        size = 200.dp,
-                    )
-                    Text(
-                        text = state.pin.chunked(LocalAuthCode.GROUP_SIZE).joinToString(" "),
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 48.sp,
-                            letterSpacing = 4.sp,
-                        ),
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                    )
-                }
+                LocalAuthPairingCode(
+                    serviceName = state.serviceName,
+                    pin = state.pin,
+                    // Остаток высоты после текста и кнопки: блок ужмётся, а не кнопка.
+                    modifier = Modifier.weight(1f, fill = false),
+                )
                 val lastError = state.lastError
                 if (lastError != null) {
                     Text(
