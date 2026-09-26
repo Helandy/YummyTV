@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.ksp.gradle.plugin)
     implementation(libs.hilt.gradle.plugin)
     implementation(libs.stability.analyzer.gradle.plugin)
+    implementation(libs.baselineprofile.gradle.plugin)
 }
 
 gradlePlugin {
@@ -32,6 +33,10 @@ gradlePlugin {
         register("androidApplication") {
             id = "yummytv.android.application"
             implementationClass = "su.afk.yummy.tv.buildlogic.AndroidApplicationConventionPlugin"
+        }
+        register("androidApplicationBaselineProfile") {
+            id = "yummytv.android.application.baselineprofile"
+            implementationClass = "su.afk.yummy.tv.buildlogic.AndroidApplicationBaselineProfileConventionPlugin"
         }
         register("baselineProfileTasks") {
             id = "yummytv.baselineprofile.tasks"

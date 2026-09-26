@@ -1,17 +1,15 @@
+import su.afk.yummy.tv.buildlogic.buildConfigSecret
+
 plugins {
     id("yummytv.android.application")
     alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
-    alias(libs.plugins.baselineprofile)
+    id("yummytv.android.application.baselineprofile")
 }
-
-fun String.toBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 val baseApplicationId = providers.gradleProperty("yummytv.applicationId").get()
 val appVersionName = providers.gradleProperty("yummytv.versionName").get()
 val appVersionCode = providers.gradleProperty("yummytv.versionCode").get().toInt()
-val appmetricaApiKey = providers.gradleProperty("yummytv.appmetricaApiKey").get()
-val varioqubClientId = providers.gradleProperty("yummytv.varioqubClientId").get()
 
 android {
     namespace = "su.afk.yummy.tv"
@@ -23,8 +21,8 @@ android {
         versionName = appVersionName
         versionCode = appVersionCode
 
-        buildConfigField("String", "APPMETRICA_API_KEY", appmetricaApiKey.toBuildConfigString())
-        buildConfigField("String", "VARIOQUB_CLIENT_ID", varioqubClientId.toBuildConfigString())
+        buildConfigField("String", "APPMETRICA_API_KEY", buildConfigSecret("yummytv.appmetricaApiKey"))
+        buildConfigField("String", "VARIOQUB_CLIENT_ID", buildConfigSecret("yummytv.varioqubClientId"))
     }
 
     buildTypes {
@@ -57,33 +55,14 @@ android {
             matchingFallbacks += listOf("release")
         }
     }
-    // Плагин baselineprofile создаёт nonMinifiedRelease/benchmarkRelease на основе release,
-    // а у release своей подписи нет — без debug-ключа эти APK не поставить на устройство.
-    buildTypes.matching { it.name.startsWith("nonMinified") || it.name.startsWith("benchmark") }
-        .configureEach { signingConfig = signingConfigs.getByName("debug") }
     buildFeatures {
         buildConfig = true
         resValues = true
     }
 }
 
-// Профиль генерируется вручную на эмуляторах (см. docs/baseline-profile.md) и коммитится
-// в src/release/generated/baselineProfiles; обычная сборка его только упаковывает.
-baselineProfile {
-    automaticGenerationDuringBuild = false
-    dexLayoutOptimization = true
-}
-
-// -Pyummytv.profile.dexLayout=false выключает раскладку DEX у benchmark-сборки, чтобы бенчмарками
-// померить её вклад (docs/baseline-profile.md). Через свойство AGP, а не dexLayoutOptimization:
-// плагин baselineprofile настраивает только release/releaseDebug, benchmarkRelease берёт дефолт AGP.
-val benchmarkDexLayout = providers.gradleProperty("yummytv.profile.dexLayout").orNull != "false"
-
 androidComponents {
     onVariants { variant ->
-        if (!benchmarkDexLayout && variant.buildType.orEmpty().startsWith("benchmark")) {
-            variant.experimentalProperties.put("android.experimental.r8.dex-startup-optimization", false)
-        }
         variant.outputs.forEach { output ->
             val fileName = "YummyTV-${output.versionName.orNull ?: "1.0"}-${variant.buildType}.apk"
             (output as? com.android.build.api.variant.impl.VariantOutputImpl)?.outputFileName?.set(fileName)
