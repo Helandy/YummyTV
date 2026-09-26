@@ -6,7 +6,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -26,6 +30,7 @@ import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.hintRes
 import su.afk.yummy.tv.feature.settings.mobile.model.icon
 import su.afk.yummy.tv.feature.settings.mobile.model.titleRes
+import su.afk.yummy.tv.feature.settings.mobile.view.ReleaseNotesMobileSheet
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileAboutRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileEffects
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
@@ -51,8 +56,18 @@ fun SettingsMobileScreen(
     val context = LocalContext.current
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val firstCategoryFocusRequester = remember { FocusRequester() }
+    var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
 
     SettingsMobileEffects(effect = effect, onEvent = onEvent)
+
+    if (showReleaseNotes) {
+        LaunchedEffect(Unit) { onEvent(SettingsState.Event.ReleaseNotesRequested) }
+        ReleaseNotesMobileSheet(
+            status = state.releaseNotes,
+            onRetry = { onEvent(SettingsState.Event.ReleaseNotesRequested) },
+            onDismiss = { showReleaseNotes = false },
+        )
+    }
 
     LaunchedEffect(Unit) {
         requestFocusUntilTimeout(firstCategoryFocusRequester)
@@ -92,6 +107,11 @@ fun SettingsMobileScreen(
 
             item(key = "about") {
                 SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_about)) {
+                    SettingsMobileAboutRow(
+                        label = stringResource(R.string.settings_mobile_release_notes_label),
+                        hint = stringResource(R.string.settings_mobile_release_notes_hint),
+                        onClick = { showReleaseNotes = true },
+                    )
                     SettingsMobileAboutRow(
                         label = stringResource(R.string.settings_version_label),
                         hint = BuildConfig.VERSION_NAME,

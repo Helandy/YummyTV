@@ -9,6 +9,7 @@ data class GitHubReleaseDto(
     @SerialName("body") val body: String? = null,
     @SerialName("prerelease") val prerelease: Boolean = false,
     @SerialName("draft") val draft: Boolean = false,
+    @SerialName("published_at") val publishedAt: String? = null,
     @SerialName("assets") val assets: List<Asset> = emptyList(),
 ) {
     @Serializable

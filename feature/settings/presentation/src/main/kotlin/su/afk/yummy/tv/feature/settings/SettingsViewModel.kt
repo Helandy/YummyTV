@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.settings
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -17,13 +18,17 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
+import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
+import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
+import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.moved
 import javax.inject.Inject
+import javax.inject.Named
 
 @HiltViewModel
 class SettingsViewModel @Inject internal constructor(
@@ -39,6 +44,8 @@ class SettingsViewModel @Inject internal constructor(
     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
     private val cacheStorageInspector: CacheStorageInspector,
+    private val getAppReleaseHistory: GetAppReleaseHistoryUseCase,
+    @param:Named("appVersionName") private val versionName: String,
 ) : BaseViewModel<SettingsState.State, SettingsState.Event, SettingsState.Effect>() {
 
     override fun createInitialState() = SettingsState.State(
@@ -377,7 +384,30 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.betaUpdatesEnabled
                 analytics.eventBetaUpdatesToggled(enabled)
                 settingsStore.setBetaUpdatesEnabled(enabled)
+                // История зависит от бета-канала — при следующем открытии загрузим заново.
+                setState { copy(releaseNotes = ReleaseNotesStatus.Idle) }
             }
+
+            SettingsState.Event.ReleaseNotesRequested -> loadReleaseNotes()
+        }
+    }
+
+    private fun loadReleaseNotes() {
+        when (currentState.releaseNotes) {
+            ReleaseNotesStatus.Loading, is ReleaseNotesStatus.Loaded -> return
+            ReleaseNotesStatus.Idle, ReleaseNotesStatus.Error -> Unit
+        }
+        setState { copy(releaseNotes = ReleaseNotesStatus.Loading) }
+        viewModelScope.launch {
+            val status = runSuspendCatching {
+                getAppReleaseHistory(versionName, includePrerelease = settingsStore.betaUpdatesEnabled.first())
+            }.fold(
+                onSuccess = { releases ->
+                    ReleaseNotesStatus.Loaded(releases.map { it.toReleaseNoteItem(versionName) }.toImmutableList())
+                },
+                onFailure = { ReleaseNotesStatus.Error },
+            )
+            setState { copy(releaseNotes = status) }
         }
     }
 }

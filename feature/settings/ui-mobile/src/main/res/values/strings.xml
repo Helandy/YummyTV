@@ -241,4 +241,13 @@
     <string name="settings_mobile_watched_medium_label">Watched · episodes up to 1 hour</string>
     <string name="settings_mobile_watched_long_label">Watched · episodes over 1 hour</string>
     <string name="settings_mobile_watched_minutes_value">%d min before the end</string>
+    <string name="settings_mobile_release_notes_label">What\'s new</string>
+    <string name="settings_mobile_release_notes_hint">Changes in previous versions</string>
+    <string name="settings_mobile_release_notes_title">What\'s new</string>
+    <string name="settings_mobile_release_notes_error">Couldn\'t load the release history</string>
+    <string name="settings_mobile_release_notes_retry">Retry</string>
+    <string name="settings_mobile_release_notes_empty">No release notes yet</string>
+    <string name="settings_mobile_release_notes_current">Installed</string>
+    <string name="settings_mobile_release_notes_beta">Beta</string>
+    <string name="settings_mobile_release_notes_no_notes">No description</string>
 </resources>

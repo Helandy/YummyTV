@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
+import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.update.UpdateState
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
@@ -317,25 +318,6 @@ private fun AvailableContent(
         ManualUpdateHint(isTelevision = isTelevision)
     }
 }
-
-private fun String.formatReleaseNotes(): String =
-    lines()
-        .joinToString(separator = "\n") { line ->
-            val trimmedEnd = line.trimEnd()
-            val content = trimmedEnd.trimStart()
-            val indent = trimmedEnd.take(trimmedEnd.length - content.length)
-            when {
-                content.startsWith("#") -> content.replace(Regex("^#{1,6}\\s*"), "")
-                content.startsWith("* ") -> indent + "- " + content.removePrefix("* ")
-                else -> trimmedEnd
-            }
-        }
-        .replace(Regex("""\[(.*?)]\((.*?)\)"""), "$1")
-        .replace("**", "")
-        .replace("*", "")
-        .replace("`", "")
-        .replace(Regex("\n{3,}"), "\n\n")
-        .trim()
 
 @Composable
 private fun ManualUpdateHint(isTelevision: Boolean) {

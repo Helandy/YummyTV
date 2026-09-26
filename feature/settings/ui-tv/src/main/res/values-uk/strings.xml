@@ -239,4 +239,14 @@
     <string name="settings_tv_watched_medium_label">Переглянуто · серії до години</string>
     <string name="settings_tv_watched_long_label">Переглянуто · серії довше години</string>
     <string name="settings_tv_watched_minutes_value">За %d хв до кінця</string>
+    <string name="settings_tv_release_notes_label">Що нового</string>
+    <string name="settings_tv_release_notes_hint">Зміни в попередніх версіях</string>
+    <string name="settings_tv_release_notes_title">Що нового</string>
+    <string name="settings_tv_release_notes_error">Не вдалося завантажити історію релізів</string>
+    <string name="settings_tv_release_notes_retry">Повторити</string>
+    <string name="settings_tv_release_notes_empty">Історії змін поки немає</string>
+    <string name="settings_tv_release_notes_current">Встановлена</string>
+    <string name="settings_tv_release_notes_beta">Бета</string>
+    <string name="settings_tv_release_notes_no_notes">Без опису</string>
+    <string name="settings_tv_release_notes_close">Закрити</string>
 </resources>

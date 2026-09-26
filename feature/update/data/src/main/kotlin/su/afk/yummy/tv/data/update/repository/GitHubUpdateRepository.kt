@@ -11,14 +11,17 @@ import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import su.afk.yummy.tv.data.update.UpdateConfig
 import su.afk.yummy.tv.data.update.dto.GitHubReleaseDto
 import su.afk.yummy.tv.data.update.mapper.toDomain
+import su.afk.yummy.tv.data.update.mapper.toReleaseNotes
 import su.afk.yummy.tv.domain.update.model.AppRelease
+import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
 import su.afk.yummy.tv.domain.update.util.compareVersions
 import su.afk.yummy.tv.domain.update.util.isVersionNewer
 import javax.inject.Inject
 
 /**
- * Самый новый релиз из GitHub Releases (pre-release — только для бета-канала).
+ * Релизы из GitHub Releases: самый новый для проверки обновлений и история изменений
+ * (pre-release — только для бета-канала).
  * Клиент намеренно неавторизованный: api.github.com — публичный сторонний сервис, токен приложения ему отправлять незачем.
  */
 internal class GitHubUpdateRepository @Inject constructor(
@@ -26,19 +29,30 @@ internal class GitHubUpdateRepository @Inject constructor(
 ) : UpdateRepository {
 
     override suspend fun latestRelease(currentVersion: String, includePrerelease: Boolean): AppRelease? {
+        val releases = fetchReleases()
+            ?.mapNotNull { it.toDomain() }
+            ?.filter { includePrerelease || !it.isPrerelease }
+            ?: return null
+        val latest = releases.maxWithOrNull { a, b -> compareVersions(a.version, b.version) } ?: return null
+        val updatesCount = releases.count { isVersionNewer(currentVersion, it.version) }
+        return latest.copy(updatesCount = updatesCount)
+    }
+
+    override suspend fun releaseHistory(currentVersion: String, includePrerelease: Boolean): List<AppReleaseNotes> =
+        (fetchReleases() ?: error("GitHub releases are unavailable"))
+            .mapNotNull { it.toReleaseNotes() }
+            .filter { (includePrerelease || !it.isPrerelease) && !isVersionNewer(currentVersion, it.version) }
+            .sortedWith { a, b -> compareVersions(b.version, a.version) }
+
+    /** null, когда репозиторий обновлений не сконфигурирован или GitHub ответил ошибкой. */
+    private suspend fun fetchReleases(): List<GitHubReleaseDto>? {
         val url = RELEASES_URL ?: return null
         val response: HttpResponse = httpClient.get(url) {
             header("Accept", GITHUB_ACCEPT)
             parameter("per_page", RELEASES_PER_PAGE)
         }
         if (!response.status.isSuccess()) return null
-
-        val releases = response.body<List<GitHubReleaseDto>>()
-            .mapNotNull { it.toDomain() }
-            .filter { includePrerelease || !it.isPrerelease }
-        val latest = releases.maxWithOrNull { a, b -> compareVersions(a.version, b.version) } ?: return null
-        val updatesCount = releases.count { isVersionNewer(currentVersion, it.version) }
-        return latest.copy(updatesCount = updatesCount)
+        return response.body<List<GitHubReleaseDto>>()
     }
 
     private companion object {

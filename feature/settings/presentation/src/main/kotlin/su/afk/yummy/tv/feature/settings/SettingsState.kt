@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
+import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
 
 class SettingsState {
@@ -77,6 +78,7 @@ class SettingsState {
         val betaUpdatesEnabled: Boolean = false,
         /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
         val isFallbackSessionStorage: Boolean = false,
+        val releaseNotes: ReleaseNotesStatus = ReleaseNotesStatus.Idle,
     ) : UiState
 
     /** Пользовательские действия на экране настроек. */
@@ -217,6 +219,9 @@ class SettingsState {
         /** Пользователь переключил сохранение последнего поиска. */
         data object SaveLastSearchToggled : Event
         data object BetaUpdatesToggled : Event
+
+        /** Пользователь открыл «Что нового»: загрузить историю релизов, если её ещё нет. */
+        data object ReleaseNotesRequested : Event
     }
 
     sealed interface Effect : UiEffect {

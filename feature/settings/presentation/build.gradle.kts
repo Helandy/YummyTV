@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:settings:api"))
+    implementation(project(":feature:update:domain"))
     implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.lifecycle.viewmodelCompose)

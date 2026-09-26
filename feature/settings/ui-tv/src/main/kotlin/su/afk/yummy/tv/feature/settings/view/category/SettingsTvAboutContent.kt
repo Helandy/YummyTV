@@ -1,6 +1,11 @@
 package su.afk.yummy.tv.feature.settings.view.category
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -12,6 +17,7 @@ import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.AboutRow
+import su.afk.yummy.tv.feature.settings.view.ReleaseNotesTvDialog
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 
 @Composable
@@ -23,7 +29,17 @@ internal fun SettingsTvAboutContent(
 ) {
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val context = LocalContext.current
+    var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
 
+    AboutRow(
+        label = stringResource(R.string.settings_tv_release_notes_label),
+        hint = stringResource(R.string.settings_tv_release_notes_hint),
+        modifier = Modifier
+            .focusRequester(tabContentFocusRequester)
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
+        onClick = { showReleaseNotes = true },
+    )
+    SettingsDivider()
     AboutRow(
         label = stringResource(R.string.settings_version_label),
         hint = BuildConfig.VERSION_NAME,
@@ -41,9 +57,16 @@ internal fun SettingsTvAboutContent(
     AboutRow(
         label = stringResource(R.string.settings_feedback_label),
         hint = repositoryUrl,
-        modifier = Modifier
-            .focusRequester(tabContentFocusRequester)
-            .restoreCategoryFocusOnLeft(tabFocusRequester),
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
         onClick = { context.openExternalUri(repositoryUrl) },
     )
+
+    if (showReleaseNotes) {
+        LaunchedEffect(Unit) { onEvent(SettingsState.Event.ReleaseNotesRequested) }
+        ReleaseNotesTvDialog(
+            status = state.releaseNotes,
+            onRetry = { onEvent(SettingsState.Event.ReleaseNotesRequested) },
+            onDismiss = { showReleaseNotes = false },
+        )
+    }
 }
