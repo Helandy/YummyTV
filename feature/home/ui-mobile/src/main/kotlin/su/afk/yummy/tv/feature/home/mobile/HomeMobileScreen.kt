@@ -72,7 +72,7 @@ private fun HomeMobileScreenDefaultPreview() =
     ScreenPreviewTheme {
         HomeMobileScreen(
             HomeState.State(isLoading = false, isContinueWatchingLoaded = true),
-            emptyFlow()
+            emptyFlow(),
         ) {}
     }
 
@@ -89,8 +89,9 @@ private fun HomeMobileScreenErrorPreview() = ScreenPreviewTheme {
         HomeState.State(
             isLoading = false,
             isContinueWatchingLoaded = true,
-            error = "Не удалось загрузить главную"
-        ), emptyFlow()
+            error = "Не удалось загрузить главную",
+        ),
+        emptyFlow(),
     ) {}
 }
 
@@ -221,7 +222,6 @@ fun HomeMobileScreen(
                             HomeHeroCarousel(
                                 items = feed.heroItems,
                                 onItemSelected = onItemSelected,
-                                modifier = Modifier.padding(horizontal = 16.dp),
                             )
                         }
                     }
