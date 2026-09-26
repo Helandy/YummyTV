@@ -56,6 +56,7 @@ internal fun LibraryMobilePage(
     if (tab == LibraryTab.CONTINUE_WATCHING) {
         LibraryMobileContinueWatchingGrid(
             entries = state.continueWatching,
+            launchingAnimeId = state.launchingContinueWatchingAnimeId,
             cardSize = state.continueWatchingCardSize,
             showRemoteLoader = showRemoteLoader,
             isEmpty = isEmpty,

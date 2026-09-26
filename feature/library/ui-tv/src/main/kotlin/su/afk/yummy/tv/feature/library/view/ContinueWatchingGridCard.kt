@@ -32,6 +32,7 @@ internal fun ContinueWatchingGridCard(
     onDetails: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
     cardModifier: Modifier = Modifier,
     detailsModifier: Modifier = Modifier,
     deleteModifier: Modifier = Modifier,
@@ -77,6 +78,7 @@ internal fun ContinueWatchingGridCard(
             downFocusRequester = downFocusRequester,
             onFocused = onFocused,
             focusedScale = 1f,
+            isLoading = isLoading,
         )
         Row(
             modifier = Modifier

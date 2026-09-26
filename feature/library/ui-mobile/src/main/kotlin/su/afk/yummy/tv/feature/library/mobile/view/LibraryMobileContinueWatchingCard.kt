@@ -37,6 +37,7 @@ internal fun LibraryMobileContinueWatchingCard(
     onDetails: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
 ) {
     val imageModel = resolveContinueWatchingImageModel(
         screenshotUrl = entry.screenshotUrl,
@@ -52,6 +53,7 @@ internal fun LibraryMobileContinueWatchingCard(
         trailingSubtitle = entry.timingLabel(),
         progress = entry.watchProgress(),
         modifier = modifier,
+        isLoading = isLoading,
         imageOverlay = {
             ContinueWatchingOverlayButton(
                 contentDescription = stringResource(

@@ -51,6 +51,7 @@ import su.afk.yummy.tv.feature.library.utils.continueWatchingFocusKey
 @Composable
 internal fun ContinueWatchingGrid(
     entries: List<HomeContinueWatchingItem>,
+    launchingAnimeId: Int?,
     cardSize: LibraryContinueWatchingCardSize,
     gridFocusRequester: FocusRequester,
     selectedTabFocusRequester: FocusRequester,
@@ -240,6 +241,7 @@ internal fun ContinueWatchingGrid(
                     ContinueWatchingGridCard(
                         entry = entry,
                         episodeLabel = episodeLabel,
+                        isLoading = entry.animeId == launchingAnimeId,
                         onClick = stableOnClick,
                         onFocused = stableOnFocused,
                         onDetails = stableOnDetails,

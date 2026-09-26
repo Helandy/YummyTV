@@ -231,6 +231,7 @@ fun HomeMobileScreen(
                     item(key = "continue_watching") {
                         ContinueWatchingSection(
                             entries = state.continueWatching,
+                            launchingAnimeId = state.launchingContinueWatchingAnimeId,
                             onEntrySelected = {
                                 onEvent(HomeState.Event.ContinueWatchingSelected(it))
                             },

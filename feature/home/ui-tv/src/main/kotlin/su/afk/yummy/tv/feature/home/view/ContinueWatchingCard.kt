@@ -23,6 +23,7 @@ internal fun ContinueWatchingCard(
     entry: HomeContinueWatchingItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
     onFocused: () -> Unit = {},
     leftFocusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
@@ -65,5 +66,6 @@ internal fun ContinueWatchingCard(
         downFocusRequester = downFocusRequester,
         onFocused = onFocused,
         progressColor = InProgressColor,
+        isLoading = isLoading,
     )
 }

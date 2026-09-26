@@ -167,6 +167,7 @@ fun LibraryTvScreen(
             when (state.selectedTab) {
                 LibraryTab.CONTINUE_WATCHING -> ContinueWatchingGrid(
                     entries = state.continueWatching,
+                    launchingAnimeId = state.launchingContinueWatchingAnimeId,
                     cardSize = state.continueWatchingCardSize,
                     gridFocusRequester = gridFocusRequester,
                     selectedTabFocusRequester = selectedTabFocusRequester,

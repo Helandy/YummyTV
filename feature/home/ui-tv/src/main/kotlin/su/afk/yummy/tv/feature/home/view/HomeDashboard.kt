@@ -59,6 +59,7 @@ import su.afk.yummy.tv.feature.home.R
 internal fun HomeDashboard(
     feed: HomeFeed,
     continueWatching: List<HomeContinueWatchingItem>,
+    launchingContinueWatchingAnimeId: Int?,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     requestInitialFocus: Boolean,
@@ -262,6 +263,7 @@ internal fun HomeDashboard(
                             Column {
                                 ContinueWatchingSection(
                                     items = continueWatching,
+                                    launchingAnimeId = launchingContinueWatchingAnimeId,
                                     onItemSelected = onContinueWatchingSelected,
                                     rowFocusRequester = continueWatchingFocusRequester,
                                     registerFocusHandler = { handler ->

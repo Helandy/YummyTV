@@ -26,6 +26,7 @@ import su.afk.yummy.tv.feature.home.mobile.utils.watchProgress
 @Composable
 internal fun ContinueWatchingSection(
     entries: List<HomeContinueWatchingItem>,
+    launchingAnimeId: Int?,
     onEntrySelected: (HomeContinueWatchingItem) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -60,6 +61,7 @@ internal fun ContinueWatchingSection(
                     subtitle = entry.episodeSubtitle(),
                     trailingSubtitle = entry.timingSubtitle(),
                     progress = entry.watchProgress(),
+                    isLoading = entry.animeId == launchingAnimeId,
                     onClick = { onEntrySelected(entry) },
                 )
             }

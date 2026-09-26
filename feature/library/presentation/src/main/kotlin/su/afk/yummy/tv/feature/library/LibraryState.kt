@@ -27,6 +27,8 @@ class LibraryState {
         val items: ImmutableList<LibraryItem> = persistentListOf(),
         val tabItems: ImmutableMap<LibraryTab, ImmutableList<LibraryItem>> = persistentMapOf(),
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),
+        /** Тайтл, для которого сейчас резолвится запуск плеера из «Продолжить просмотр». */
+        val launchingContinueWatchingAnimeId: Int? = null,
         val watchHistory: Flow<PagingData<WatchHistoryEntry>> = flowOf(PagingData.empty()),
         val historyLocalProgress: ImmutableMap<String, AnimeWatchProgress> = persistentMapOf(),
         val isSignedIn: Boolean = false,

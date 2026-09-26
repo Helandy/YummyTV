@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.home.R
 @Composable
 internal fun ContinueWatchingSection(
     items: List<HomeContinueWatchingItem>,
+    launchingAnimeId: Int?,
     onItemSelected: (HomeContinueWatchingItem) -> Unit,
     rowFocusRequester: FocusRequester? = null,
     registerFocusHandler: ((suspend () -> Boolean)?) -> Unit = {},
@@ -191,6 +192,7 @@ internal fun ContinueWatchingSection(
             itemsIndexed(items = items, key = { _, e -> e.focusKey() }) { index, entry ->
                 ContinueWatchingCard(
                     entry = entry,
+                    isLoading = entry.animeId == launchingAnimeId,
                     onFocused = {
                         currentFocusedIndex = index
                         if (rowHasFocus.value && !isRestoring.value) rememberFocusedItem(index)

@@ -21,6 +21,7 @@ import su.afk.yummy.tv.feature.library.mobile.R
 @Composable
 internal fun LibraryMobileContinueWatchingGrid(
     entries: List<HomeContinueWatchingItem>,
+    launchingAnimeId: Int?,
     cardSize: LibraryContinueWatchingCardSize,
     showRemoteLoader: Boolean,
     isEmpty: Boolean,
@@ -66,6 +67,7 @@ internal fun LibraryMobileContinueWatchingGrid(
             LibraryMobileContinueWatchingCard(
                 entry = entry,
                 episodeLabel = episodeLabel,
+                isLoading = entry.animeId == launchingAnimeId,
                 modifier = Modifier.fillMaxWidth(),
                 onDetails = { onDetailsSelected(entry) },
                 onDelete = { onDeleteSelected(entry) },

@@ -24,6 +24,8 @@ class HomeState {
         val error: String? = null,
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),
         val isContinueWatchingLoaded: Boolean = false,
+        /** Тайтл, для которого сейчас резолвится запуск плеера из «Продолжить просмотр». */
+        val launchingContinueWatchingAnimeId: Int? = null,
         val supportPromptVisible: Boolean = false,
         val announcement: HomeAnnouncement? = null,
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),

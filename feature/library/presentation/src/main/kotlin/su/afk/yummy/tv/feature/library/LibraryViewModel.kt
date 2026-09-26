@@ -327,25 +327,31 @@ class LibraryViewModel @Inject internal constructor(
     }
 
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
+        if (currentState.launchingContinueWatchingAnimeId != null) return
+        setState { copy(launchingContinueWatchingAnimeId = entry.animeId) }
         viewModelScope.launch {
-            val result = resolveContinueWatchingLaunch(
-                entry = entry,
-                refreshProgressOnLaunch = settingsStore
-                    .refreshContinueWatchingProgressOnLaunch
-                    .first(),
-            )
-            result.remoteProgressSwitch?.let { progress ->
-                setEffect(
-                    LibraryState.Effect.ShowToast(
-                        stringProvider.get(
-                            R.string.library_remote_continue_progress_toast,
-                            progress.episode,
-                            progress.positionMs.toToastTimeString(),
-                        ),
-                    ),
+            try {
+                val result = resolveContinueWatchingLaunch(
+                    entry = entry,
+                    refreshProgressOnLaunch = settingsStore
+                        .refreshContinueWatchingProgressOnLaunch
+                        .first(),
                 )
+                result.remoteProgressSwitch?.let { progress ->
+                    setEffect(
+                        LibraryState.Effect.ShowToast(
+                            stringProvider.get(
+                                R.string.library_remote_continue_progress_toast,
+                                progress.episode,
+                                progress.positionMs.toToastTimeString(),
+                            ),
+                        ),
+                    )
+                }
+                nav.navigate(playerNavigator.getPlayerDest(result))
+            } finally {
+                setState { copy(launchingContinueWatchingAnimeId = null) }
             }
-            nav.navigate(playerNavigator.getPlayerDest(result))
         }
     }
 

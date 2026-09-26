@@ -150,6 +150,7 @@ fun HomeTvScreen(
         else -> HomeDashboard(
             feed = feed,
             continueWatching = state.continueWatching,
+            launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
             requestInitialFocus = focusHandoff.shouldFocusContent,
             onInitialFocusHandled = focusHandoff::onContentFocused,
             onContinueWatchingSelected = { entry ->
