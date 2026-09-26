@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
@@ -110,6 +111,18 @@ internal fun LoginPanel(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
+        // Ошибка входа — над полями, чтобы не терялась под кнопками и капчей.
+        ErrorText(
+            error = state.error.accountErrorMessage(),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        // Причина ошибки (сеть, Keystore, отказ сервера) — как в мобильной версии: без неё
+        ErrorText(
+            error = state.errorMessage,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
         OutlinedTextField(
             value = state.login,
             onValueChange = { onEvent(AccountState.Event.LoginChanged(it)) },
@@ -125,7 +138,8 @@ internal fun LoginPanel(
                 keyboardController?.show()
             }),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(FIELD_WIDTH_FRACTION)
+                .align(Alignment.CenterHorizontally)
                 .focusRequester(loginFocusRequester)
                 .onFocusChanged {
                     if (it.isFocused && !loginEditing) {
@@ -161,8 +175,11 @@ internal fun LoginPanel(
                 loginButtonFocusRequester.requestFocus()
             }),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(FIELD_WIDTH_FRACTION)
+                .align(Alignment.CenterHorizontally)
                 .focusRequester(passwordFocusRequester)
+                // По геометрии вниз ближе «Войти с телефона» — ведём на основную кнопку.
+                .focusProperties { down = loginButtonFocusRequester }
                 .onFocusChanged {
                     if (it.isFocused && !passwordEditing) {
                         keyboardController?.hide()
@@ -231,11 +248,10 @@ internal fun LoginPanel(
                 )
             }
         }
-        ErrorText(state.error.accountErrorMessage())
-        // Причина ошибки (сеть, Keystore, отказ сервера) — как в мобильной версии: без неё
-        ErrorText(state.errorMessage)
     }
 }
+
+private const val FIELD_WIDTH_FRACTION = 0.7f
 
 private fun Modifier.editableTextFieldKeyEvents(
     isEditing: Boolean,
