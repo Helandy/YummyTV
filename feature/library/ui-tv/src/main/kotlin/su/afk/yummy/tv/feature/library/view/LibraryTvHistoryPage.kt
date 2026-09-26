@@ -198,7 +198,7 @@ internal fun LibraryTvHistoryPage(
                     ) {
                         Row(
                             Modifier.padding(14.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             SubcomposeAsyncImage(
                                 model = entry.screenshotUrl
@@ -232,12 +232,14 @@ internal fun LibraryTvHistoryPage(
                             }
                             Column(Modifier.weight(1f)) {
                                 Text(entry.title, style = MaterialTheme.typography.titleLarge)
-                                if (entry.episode.isNotBlank()) Text(
-                                    stringResource(
-                                        R.string.library_history_episode,
-                                        entry.episode
+                                if (entry.episode.isNotBlank()) {
+                                    Text(
+                                        stringResource(
+                                            R.string.library_history_episode,
+                                            entry.episode,
+                                        ),
                                     )
-                                )
+                                }
                                 entry.timingLabel()?.let { Text(it) }
                                 Row(
                                     Modifier
@@ -273,6 +275,14 @@ internal fun LibraryTvHistoryPage(
 @Composable
 private fun HistoryMessage(text: String?, loading: Boolean = false) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        if (loading) CircularProgressIndicator() else Text(text.orEmpty())
+        if (loading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text = text.orEmpty(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
