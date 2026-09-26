@@ -39,7 +39,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvAppendErrorFooter
@@ -66,6 +70,13 @@ fun PostsTvScreen(
 
     val itemCount = posts.itemCount
     val hasContent = posts.loadState.refresh !is LoadState.Loading && itemCount > 0
+    val focusHandoff = rememberTvStateFocusHandoff(
+        placeholder = when (posts.loadState.refresh) {
+            is LoadState.Loading -> TvStatePlaceholder.Loading
+            is LoadState.Error -> TvStatePlaceholder.Error
+            else -> null
+        },
+    )
     val itemIds = remember(posts.itemSnapshotList.items) {
         posts.itemSnapshotList.items.map { it.id }
     }
@@ -111,10 +122,14 @@ fun PostsTvScreen(
             val index = itemIds.indexOf(it)
             listState.scrollToItem((index + HEADER_ITEM_COUNT).coerceAtLeast(0))
         }
+        // Ключи карточек — lazyKey("post", id), а не сырой id: сравнение с id не совпадало
+        // никогда, эффект зависал и фокус на карточку не ставился.
+        val targetKey = lazyKey(POST_KEY_PREFIX, targetId)
         snapshotFlow {
-            listState.layoutInfo.visibleItemsInfo.any { it.key == targetId }
+            listState.layoutInfo.visibleItemsInfo.any { it.key == targetKey }
         }.first { it }
         requestFocusUntilTimeout(cardFocusRequester(targetId))
+        focusHandoff.onContentFocused()
         isRestoringFocus = false
     }
 
@@ -180,15 +195,17 @@ fun PostsTvScreen(
                         .fillParentMaxHeight(.55f)
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center,
-                ) { TvLoadingScreen() }
+                ) { TvLoadingScreen(modifier = Modifier.tvFocusablePlaceholder(focusHandoff)) }
             }
 
             posts.loadState.refresh is LoadState.Error -> item {
                 TvStateMessage(
                     title = stringResource(R.string.posts_error),
+                    modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
                     icon = Icons.Filled.Warning,
                     fillMaxSize = false,
                     onRetry = posts::retry,
+                    retryFocusRequester = focusHandoff.placeholderFocusRequester,
                 )
             }
 
@@ -201,7 +218,7 @@ fun PostsTvScreen(
             }
 
             else -> {
-                items(posts.itemCount, key = { index -> lazyKey("post", posts[index]?.id, index) }) { index ->
+                items(posts.itemCount, key = { index -> lazyKey(POST_KEY_PREFIX, posts[index]?.id, index) }) { index ->
                     posts[index]?.let { post ->
                         PostTvCard(
                             post,
@@ -238,3 +255,5 @@ fun PostsTvScreen(
 
 // Ряды-заголовки (заголовок+сортировка, ряд категорий) перед карточками в LazyColumn.
 private const val HEADER_ITEM_COUNT = 2
+
+private const val POST_KEY_PREFIX = "post"

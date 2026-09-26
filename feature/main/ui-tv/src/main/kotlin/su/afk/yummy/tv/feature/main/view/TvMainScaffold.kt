@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.main.view
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -17,7 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.focusProperties
 import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
@@ -25,6 +29,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.model.TvMenuItem
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TvMainScaffold(
     selectedRoot: RootTab,
@@ -101,7 +106,19 @@ fun TvMainScaffold(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.background)
+                .focusProperties {
+                    // Удалили узел с фокусом (лоадер сменился ошибкой или контентом) — Android
+                    // возвращает фокус в Compose «на вход», и без этого он садится в первый по
+                    // порядку элемент — боковое меню, которое тут же раскрывается. Отдаём фокус
+                    // контенту; если там нечего фокусировать, вход идёт как обычно.
+                    onEnter = {
+                        if (showMainMenu && requestedFocusDirection == FocusDirection.Enter) {
+                            runCatching { focusController.contentFocusRequester.requestFocus() }
+                        }
+                    }
+                }
+                .focusGroup(),
         ) {
             Box(
                 modifier = topSafeDrawingModifier.fillMaxSize(),

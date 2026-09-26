@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,8 @@ internal fun HomeDashboard(
     continueWatching: List<HomeContinueWatchingItem>,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
+    requestInitialFocus: Boolean,
+    onInitialFocusHandled: () -> Unit,
     onRecommendationLongClick: (HomeFeedItem) -> Unit = {},
 ) {
     val lazyColumnState = rememberLazyListState()
@@ -209,6 +212,14 @@ internal fun HomeDashboard(
     DisposableEffect(preferredContentFocusRequester, registerPreferredContentFocusRequester) {
         registerPreferredContentFocusRequester?.invoke(preferredContentFocusRequester)
         onDispose { registerPreferredContentFocusRequester?.invoke(null) }
+    }
+
+    // Фокус держал лоадер главной — после загрузки переносим его на запомненный ряд
+    // (при первом входе — «Продолжить просмотр»), не полагаясь на стартовую попытку скаффолда.
+    LaunchedEffect(requestInitialFocus) {
+        if (!requestInitialFocus) return@LaunchedEffect
+        requestRowFocus(focusedLazyIndex())
+        onInitialFocusHandled()
     }
 
     CompositionLocalProvider(

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 
 @Composable
-internal fun ScheduleLoadingState() {
+internal fun ScheduleLoadingState(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "schedule_loading")
     val alpha by transition.animateFloat(
         initialValue = 0.42f,
@@ -36,7 +36,7 @@ internal fun ScheduleLoadingState() {
     val brightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(
                 start = TvScreenPadding.Horizontal,

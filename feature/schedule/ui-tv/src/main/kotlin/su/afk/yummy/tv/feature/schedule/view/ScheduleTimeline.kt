@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Job
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyListKeyFocusRestore
+import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
@@ -43,6 +44,8 @@ import su.afk.yummy.tv.feature.schedule.model.ScheduleTimelineUi
 @Composable
 internal fun ScheduleTimeline(
     schedule: ScheduleTimelineUi,
+    requestInitialFocus: Boolean,
+    onInitialFocusHandled: () -> Unit,
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
     val selectedGroup = schedule.selectedGroup ?: return
@@ -118,6 +121,12 @@ internal fun ScheduleTimeline(
                 restoreFocusJob = launchReleaseFocusRestore()
             }
         }
+    }
+
+    LaunchedEffect(requestInitialFocus, selectedChipFocusRequester) {
+        if (!requestInitialFocus) return@LaunchedEffect
+        requestFocusUntilTimeout(selectedChipFocusRequester)
+        onInitialFocusHandled()
     }
 
     val preferredContentFocusRequester = if (focusRestoreState.savedKey == null) {

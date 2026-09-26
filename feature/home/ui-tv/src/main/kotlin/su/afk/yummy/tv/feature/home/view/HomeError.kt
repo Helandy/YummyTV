@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,9 +25,11 @@ import su.afk.yummy.tv.feature.home.presentation.R as PresentationR
 internal fun HomeError(
     message: String,
     onRetry: () -> Unit,
+    retryFocusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -38,6 +41,7 @@ internal fun HomeError(
             icon = Icons.Filled.Warning,
             retryLabel = stringResource(R.string.retry),
             onRetry = onRetry,
+            retryFocusRequester = retryFocusRequester,
             fillMaxSize = false,
         )
         Spacer(Modifier.height(12.dp))

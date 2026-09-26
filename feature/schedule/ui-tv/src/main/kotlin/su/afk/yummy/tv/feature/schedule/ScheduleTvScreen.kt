@@ -15,6 +15,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
+import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.schedule.view.ScheduleLoadingState
@@ -65,6 +69,14 @@ fun ScheduleTvScreen(
     effect: Flow<ScheduleState.Effect>,
     onEvent: (ScheduleState.Event) -> Unit,
 ) {
+    val focusHandoff = rememberTvStateFocusHandoff(
+        placeholder = when {
+            state.isLoading -> TvStatePlaceholder.Loading
+            state.error != null -> TvStatePlaceholder.Error
+            else -> null
+        },
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,11 +84,16 @@ fun ScheduleTvScreen(
         contentAlignment = Alignment.Center,
     ) {
         when {
-            state.isLoading -> ScheduleLoadingState()
+            state.isLoading -> ScheduleLoadingState(
+                modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
+            )
+
             state.error != null -> TvStateMessage(
                 title = state.error.orEmpty(),
+                modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(ScheduleState.Event.RetrySelected) },
+                retryFocusRequester = focusHandoff.placeholderFocusRequester,
             )
 
             state.tvSchedule.dayGroups.isEmpty() -> TvStateMessage(
@@ -84,7 +101,12 @@ fun ScheduleTvScreen(
                 icon = Icons.Filled.DateRange,
             )
 
-            else -> ScheduleTimeline(state.tvSchedule, onEvent)
+            else -> ScheduleTimeline(
+                schedule = state.tvSchedule,
+                requestInitialFocus = focusHandoff.shouldFocusContent,
+                onInitialFocusHandled = focusHandoff::onContentFocused,
+                onEvent = onEvent,
+            )
         }
     }
 }

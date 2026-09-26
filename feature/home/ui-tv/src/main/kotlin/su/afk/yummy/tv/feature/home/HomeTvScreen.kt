@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
@@ -18,6 +19,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
+import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
+import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -123,16 +128,30 @@ fun HomeTvScreen(
 
     val error = state.error
     val feed = state.feed
+    val focusHandoff = rememberTvStateFocusHandoff(
+        placeholder = when {
+            error != null -> TvStatePlaceholder.Error
+            feed == null || !state.hasInitialContent() -> TvStatePlaceholder.Loading
+            else -> null
+        },
+    )
     when {
         error != null -> HomeError(
             message = error,
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
+            retryFocusRequester = focusHandoff.placeholderFocusRequester,
+            modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
         )
 
-        feed == null || !state.hasInitialContent() -> TvLoadingScreen()
+        feed == null || !state.hasInitialContent() -> TvLoadingScreen(
+            modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
+        )
+
         else -> HomeDashboard(
             feed = feed,
             continueWatching = state.continueWatching,
+            requestInitialFocus = focusHandoff.shouldFocusContent,
+            onInitialFocusHandled = focusHandoff::onContentFocused,
             onContinueWatchingSelected = { entry ->
                 onEvent(HomeState.Event.ContinueWatchingSelected(entry))
             },
