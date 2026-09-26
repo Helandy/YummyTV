@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +63,17 @@ fun AccountTvScreen(
     effect: Flow<AccountState.Effect>,
     onEvent: (AccountState.Event) -> Unit,
 ) {
-    BackHandler { onEvent(AccountState.Event.BackSelected) }
+    val isLocalAuthShown = !state.isSignedIn && state.localAuthServerState != LocalAuthServerState.Idle
+    // Пульт «Назад» на панели QR закрывает её, как и кнопка «Назад» на самой панели.
+    BackHandler {
+        onEvent(
+            if (isLocalAuthShown) {
+                AccountState.Event.StopLocalAuthServerSelected
+            } else {
+                AccountState.Event.BackSelected
+            },
+        )
+    }
     val horizontalPadding = if (state.isSignedIn) 32.dp else TvScreenPadding.Horizontal
     val preferredFocusRequester = remember { FocusRequester() }
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
@@ -77,6 +88,8 @@ fun AccountTvScreen(
     var isStatsContentFocused by remember { mutableStateOf(false) }
     // Панель входа сама разруливает DPAD-влево между своими кнопками.
     var isLoginPanelHandlingLeft by remember { mutableStateOf(false) }
+    // Панель QR уже показывали — при возврате к входу фокус на кнопку «Войти с телефона».
+    var returnFocusToLocalAuth by remember { mutableStateOf(false) }
 
     fun shouldOpenMainMenuFromLeft(): Boolean =
         !isLoginPanelHandlingLeft &&
@@ -143,7 +156,8 @@ fun AccountTvScreen(
             // Пока не пришёл первый снапшот сессии, не мигаем панелью входа авторизованному пользователю.
             TvLoadingScreen()
         } else if (!state.isSignedIn) {
-            if (state.localAuthServerState != LocalAuthServerState.Idle) {
+            if (isLocalAuthShown) {
+                SideEffect { returnFocusToLocalAuth = true }
                 LocalAuthPanel(
                     state = state.localAuthServerState,
                     onBack = { onEvent(AccountState.Event.StopLocalAuthServerSelected) },
@@ -159,6 +173,7 @@ fun AccountTvScreen(
                     onEvent = ::onLoginEvent,
                     initialFocusRequester = preferredFocusRequester,
                     onHandlesDirectionLeftChanged = { isLoginPanelHandlingLeft = it },
+                    focusLocalAuthOnStart = returnFocusToLocalAuth,
                     modifier = Modifier.align(Alignment.Center),
                 )
             }

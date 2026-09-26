@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
+import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
@@ -52,12 +53,14 @@ internal fun LoginPanel(
     onEvent: (AccountState.Event) -> Unit,
     initialFocusRequester: FocusRequester? = null,
     onHandlesDirectionLeftChanged: (Boolean) -> Unit = {},
+    focusLocalAuthOnStart: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val loginFocusRequester = initialFocusRequester ?: remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val loginButtonFocusRequester = remember { FocusRequester() }
+    val localAuthFocusRequester = remember { FocusRequester() }
     var loginEditing by remember { mutableStateOf(false) }
     var passwordEditing by remember { mutableStateOf(false) }
     val panelOffsetY by animateDpAsState(
@@ -71,6 +74,11 @@ internal fun LoginPanel(
 
     LaunchedEffect(Unit) {
         keyboardController?.hide()
+    }
+
+    // Вернулись из панели QR: её кнопка ушла из композиции, без запроса фокус упадёт в меню.
+    LaunchedEffect(Unit) {
+        if (focusLocalAuthOnStart) requestFocusUntilTimeout(localAuthFocusRequester)
     }
 
     // Панель ушла с экрана вместе с сфокусированной кнопкой — не блокируем меню навсегда.
@@ -202,6 +210,7 @@ internal fun LoginPanel(
                 onDirectionLeft = { loginButtonFocusRequester.requestFocus() },
                 modifier = Modifier
                     .weight(1f)
+                    .focusRequester(localAuthFocusRequester)
                     .onFocusChanged { onHandlesDirectionLeftChanged(it.isFocused) },
             )
         }
