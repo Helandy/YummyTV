@@ -179,6 +179,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
         reuseAllohaPlaybackSession: Boolean = true,
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
+        retryAttempts: Int = 0,
     ): PlayerStreamLoadResult {
         val result = runSuspendCatching {
             streamHandler.resolve(
@@ -192,6 +193,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             analytics.eventStreamResolveFailed(
                 state = state,
                 reason = PlayerStreamResult.REASON_EXCEPTION,
+                positionMs = pendingResume ?: 0L,
+                retryAttempts = retryAttempts,
                 throwable = exception,
             )
             return if (refreshSourcesOnFailure) {
@@ -241,6 +244,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                 analytics.eventStreamResolveFailed(
                     state = state,
                     reason = PlayerStreamResult.REASON_KODIK_BLOCKED,
+                    positionMs = pendingResume ?: 0L,
+                    retryAttempts = retryAttempts,
                     message = result.message,
                 )
                 if (refreshSourcesOnFailure) {
@@ -257,6 +262,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                 analytics.eventStreamResolveFailed(
                     state = state,
                     reason = result.reason,
+                    positionMs = pendingResume ?: 0L,
+                    retryAttempts = retryAttempts,
                     message = result.message,
                 )
                 if (refreshSourcesOnFailure) {

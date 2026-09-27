@@ -40,6 +40,8 @@ internal class AllohaSourceBehavior @Inject constructor(
 
     override val isRecovering: Boolean get() = recovery.isRecovering
 
+    override val retryAttempts: Int get() = recovery.retryCount
+
     override fun attach(host: PlayerSourceHost) {
         this.host = host
     }

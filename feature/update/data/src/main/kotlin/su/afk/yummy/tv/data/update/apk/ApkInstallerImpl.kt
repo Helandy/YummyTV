@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.update.R
+import su.afk.yummy.tv.domain.update.model.UpdateInstallCancelledException
 import su.afk.yummy.tv.domain.update.model.UpdatePermissionRequiredException
 import su.afk.yummy.tv.domain.update.repository.ApkInstaller
 import java.io.File
@@ -38,7 +39,7 @@ internal class ApkInstallerImpl @Inject constructor(
                 ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
             throw UpdatePermissionRequiredException(
-                context.getString(R.string.update_install_unknown_sources_required)
+                context.getString(R.string.update_install_unknown_sources_required),
             )
         }
 
@@ -77,8 +78,8 @@ internal class ApkInstallerImpl @Inject constructor(
                                 unregisterReceiver(this)
                                 continuation.resumeWithException(
                                     IllegalStateException(
-                                        context.getString(R.string.update_install_confirmation_error)
-                                    )
+                                        context.getString(R.string.update_install_confirmation_error),
+                                    ),
                                 )
                                 return
                             }
@@ -94,7 +95,14 @@ internal class ApkInstallerImpl @Inject constructor(
 
                         else -> {
                             unregisterReceiver(this)
-                            continuation.resumeWithException(IllegalStateException(intent.installErrorMessage(status)))
+                            val message = intent.installErrorMessage(status)
+                            continuation.resumeWithException(
+                                if (status == PackageInstaller.STATUS_FAILURE_ABORTED) {
+                                    UpdateInstallCancelledException(message)
+                                } else {
+                                    IllegalStateException(message)
+                                },
+                            )
                         }
                     }
                 }

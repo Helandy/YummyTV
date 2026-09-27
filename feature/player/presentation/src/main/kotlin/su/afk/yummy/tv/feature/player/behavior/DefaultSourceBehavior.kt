@@ -25,7 +25,7 @@ internal class DefaultSourceBehavior @Inject constructor(
     private var retryJob: Job? = null
 
     /** Сколько тихих повторов потрачено в текущем сеансе — для аналитики финальной ошибки. */
-    val retryAttempts: Int get() = retry.attempts
+    override val retryAttempts: Int get() = retry.attempts
 
     override fun attach(host: PlayerSourceHost) {
         this.host = host

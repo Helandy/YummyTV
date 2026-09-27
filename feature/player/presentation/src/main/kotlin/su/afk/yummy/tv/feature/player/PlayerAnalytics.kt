@@ -20,6 +20,7 @@ import javax.inject.Inject
 
 private data class PlayerAnalyticsSource(
     val animeId: Int,
+    val animeName: String,
     val videoId: Int,
     val playerId: Int?,
     val episode: String,
@@ -220,7 +221,7 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Ошибка воспроизведения в плеере.
      *
-     * Параметры: screen, anime_id, video_id, player_id, episode, player, dubbing,
+     * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing,
      * error_code, error_type, error_message, retry_attempts, position, position_ms.
      */
     fun eventPlaybackError(
@@ -259,12 +260,14 @@ internal class PlayerAnalytics @Inject constructor(
     /**
      * Плееру не удалось получить playable stream URL из выбранного источника.
      *
-     * Параметры: anime_id, video_id, player_id, episode, player, dubbing, reason,
-     * error_type, error_message.
+     * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing, reason,
+     * error_type, error_message, retry_attempts, position, position_ms.
      */
     fun eventStreamResolveFailed(
         state: PlayerState.State,
         reason: String,
+        positionMs: Long,
+        retryAttempts: Int = 0,
         throwable: Throwable? = null,
         message: String? = null,
     ) {
@@ -275,11 +278,19 @@ internal class PlayerAnalytics @Inject constructor(
             PARAM_REASON to reason,
             PARAM_ERROR_TYPE to errorType,
             PARAM_ERROR_MESSAGE to errorMessage,
+            PARAM_RETRY_ATTEMPTS to retryAttempts,
+            PARAM_POSITION to positionMs.formatPlaybackTimecode(),
+            PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
         )
         // Серия/озвучка недоступна на источнике (kodik_blocked / unavailable) — это состояние
         // контента, а не сбой приложения. Шлём обычное аналитическое событие, а не non-fatal.
         if (reason in UNAVAILABLE_REASONS) {
-            tracker.track(EVENT_STREAM_RESOLVE_FAILED, sourceParams(source) + extras)
+            tracker.track(
+                EVENT_STREAM_RESOLVE_FAILED,
+                sourceParams(source) +
+                    analyticsParamsOf(PARAM_ANIME_NAME to source.animeName) +
+                    extras,
+            )
             return
         }
         if (source == lastReportedStreamFailureSource) return
@@ -336,6 +347,7 @@ internal class PlayerAnalytics @Inject constructor(
     private fun PlayerState.State.analyticsSource(): PlayerAnalyticsSource =
         PlayerAnalyticsSource(
             animeId = animeId,
+            animeName = animeTitle,
             videoId = activeVideoId(this),
             playerId = activePlayerId(this),
             episode = activeEpisode(this),
@@ -360,6 +372,9 @@ internal class PlayerAnalytics @Inject constructor(
     ): String {
         val params = mapOf(
             PARAM_ANIME_ID to source.animeId.toString(),
+        ) + analyticsParamsOf(
+            PARAM_ANIME_NAME to source.animeName,
+        ) + mapOf(
             PARAM_VIDEO_ID to source.videoId.toString(),
         ) + analyticsParamsOf(
             PARAM_PLAYER_ID to source.playerId,
@@ -414,6 +429,7 @@ internal class PlayerAnalytics @Inject constructor(
     internal companion object {
         private const val DEBUG_LOG_TAG = "PlayerViewModel"
         private const val PARAM_ANIME_ID = "anime_id"
+        private const val PARAM_ANIME_NAME = "anime_name"
         private const val PARAM_DUBBING = "dubbing"
         private const val PARAM_DURATION_MS = "duration_ms"
         private const val PARAM_EPISODE = "episode"

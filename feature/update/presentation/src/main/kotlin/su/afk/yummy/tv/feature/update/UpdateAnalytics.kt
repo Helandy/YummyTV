@@ -4,6 +4,7 @@ import android.os.Build
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.analytics.utils.analyticsType
+import su.afk.yummy.tv.domain.update.model.UpdateInstallCancelledException
 import su.afk.yummy.tv.domain.update.model.UpdatePermissionRequiredException
 import javax.inject.Inject
 
@@ -42,9 +43,10 @@ internal class UpdateAnalytics @Inject constructor(
     private fun trackError(phase: String, version: String?, error: Throwable) {
         val params = errorParams(phase, version, error)
         tracker.track(EVENT_UPDATE_ERROR, mapOf(PARAM_SCREEN to SCREEN_UPDATE) + params)
-        // «Нет разрешения на установку из неизвестных источников» — не баг, а ожидаемый шаг UX:
-        // оставляем плановое событие update_error, но не репортим как non-fatal ошибку.
-        if (error !is UpdatePermissionRequiredException) {
+        // Нет разрешения на установку из неизвестных источников или пользователь отменил
+        // установку — не баг, а ожидаемый исход: оставляем плановое событие update_error,
+        // но не репортим как non-fatal ошибку.
+        if (!error.isExpectedUserOutcome()) {
             tracker.reportError(
                 groupIdentifier = EVENT_UPDATE_ERROR,
                 message = errorReportMessage(params),
@@ -78,6 +80,9 @@ internal class UpdateAnalytics @Inject constructor(
                 }
             }
         }
+
+    private fun Throwable.isExpectedUserOutcome(): Boolean =
+        this is UpdatePermissionRequiredException || this is UpdateInstallCancelledException
 
     private fun Throwable.analyticsMessage(): String? =
         (localizedMessage ?: message)

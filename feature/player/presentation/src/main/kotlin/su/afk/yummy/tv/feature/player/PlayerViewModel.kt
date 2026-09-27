@@ -6,6 +6,9 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -20,6 +23,7 @@ import su.afk.yummy.tv.feature.player.behavior.PlayerSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
+import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
@@ -43,10 +47,6 @@ import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.utils.artworkSource
 
 /**
@@ -702,6 +702,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     reuseAllohaPlaybackSession = !forceFreshAllohaSession,
                     selectedQualityOverride = selectedQualityOverride,
                     forceRefresh = forceRefresh,
+                    retryAttempts = sourceBehaviors.maxOfOrNull { it.retryAttempts } ?: 0,
                 )
             ) {
                 is PlayerStreamLoadResult.RefreshSources -> {

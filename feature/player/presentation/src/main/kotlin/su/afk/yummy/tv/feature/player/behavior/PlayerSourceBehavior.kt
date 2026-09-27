@@ -23,6 +23,9 @@ internal interface PlayerSourceBehavior {
     /** Идёт фоновое восстановление, при котором новые ошибки плеера — его же отголоски. */
     val isRecovering: Boolean get() = false
 
+    /** Сколько тихих повторов потрачено в текущем сеансе — для аналитики ошибок. */
+    val retryAttempts: Int get() = 0
+
     /** Ошибка ExoPlayer. true — поведение запустило своё восстановление, false — показать ошибку. */
     fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean
 
