@@ -3,9 +3,12 @@ package su.afk.yummy.tv.feature.details.mobile.details.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatViews
@@ -22,7 +25,8 @@ internal fun DetailsMetaChips(details: AnimeDetails) {
     if (chips.isEmpty() && details.views == null) return
 
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         chips.forEach { chip ->
