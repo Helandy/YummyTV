@@ -36,7 +36,7 @@ internal fun AnimeEpisodes.formatAiredProgress(status: String? = null): String? 
         val episodesCount = count ?: aired ?: return null
         return stringResource(R.string.details_released_episodes, episodesCount)
     }
-    val airedCount = aired ?: return null
+    val airedCount = aired ?: return formatReleaseCountdown()
     val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
     val progress = stringResource(
         R.string.details_aired,

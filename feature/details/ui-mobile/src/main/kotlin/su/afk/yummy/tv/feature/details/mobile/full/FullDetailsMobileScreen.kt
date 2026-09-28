@@ -23,6 +23,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.full.FullDetailsState
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.details.utils.formatEpisodesProgress
+import su.afk.yummy.tv.feature.details.mobile.full.utils.formatEpochSeconds
 import su.afk.yummy.tv.feature.details.mobile.full.view.MobileRelationRow
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -133,6 +135,18 @@ fun FullDetailsMobileScreen(
                                 onEvent(FullDetailsState.Event.DirectorSelected(id))
                             }
                         },
+                    )
+                }
+                item {
+                    MobileMetaRow(
+                        stringResource(R.string.details_mobile_full_episodes_progress),
+                        details?.episodes?.formatEpisodesProgress().orEmpty(),
+                    )
+                }
+                item {
+                    MobileMetaRow(
+                        stringResource(R.string.details_mobile_full_next_episode),
+                        details?.episodes?.nextDateEpochSeconds?.formatEpochSeconds().orEmpty(),
                     )
                 }
             }

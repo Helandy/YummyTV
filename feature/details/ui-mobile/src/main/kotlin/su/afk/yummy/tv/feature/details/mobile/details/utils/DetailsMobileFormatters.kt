@@ -39,9 +39,22 @@ internal fun AnimeEpisodes.formatAiredProgress(status: String?): String? {
         val episodesCount = count ?: aired ?: return null
         return stringResource(R.string.details_mobile_released_episodes, episodesCount)
     }
-    val airedCount = aired ?: return null
+    val airedCount = aired ?: return formatReleaseCountdown()
     val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
     val progress = stringResource(R.string.details_mobile_aired, airedCount, totalCount)
+    val releaseCountdown = formatReleaseCountdown() ?: return progress
+    return stringResource(R.string.details_mobile_aired_with_release, progress, releaseCountdown)
+}
+
+/**
+ * Прогресс выхода без префикса «Вышло:» — для строки с отдельной подписью:
+ * «5 из 12 · До выхода серии 3 дня.».
+ */
+@Composable
+internal fun AnimeEpisodes.formatEpisodesProgress(): String? {
+    val airedCount = aired ?: return formatReleaseCountdown()
+    val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
+    val progress = stringResource(R.string.details_mobile_aired_progress, airedCount, totalCount)
     val releaseCountdown = formatReleaseCountdown() ?: return progress
     return stringResource(R.string.details_mobile_aired_with_release, progress, releaseCountdown)
 }
@@ -104,5 +117,5 @@ internal fun UserAnimeList.label(): String = stringResource(
         UserAnimeList.COMPLETED -> R.string.details_mobile_library_completed
         UserAnimeList.POSTPONED -> R.string.details_mobile_library_postponed
         UserAnimeList.DROPPED -> R.string.details_mobile_library_dropped
-    }
+    },
 )

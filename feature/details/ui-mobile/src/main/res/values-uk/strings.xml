@@ -52,6 +52,9 @@
     <string name="details_mobile_cancel">Скасувати</string>
     <string name="details_mobile_aired">Вийшло: %1$d із %2$s</string>
     <string name="details_mobile_released_episodes">Кількість серій: %1$d</string>
+    <string name="details_mobile_aired_progress">%1$d із %2$s</string>
+    <string name="details_mobile_full_episodes_progress">Вийшло</string>
+    <string name="details_mobile_full_next_episode">Наступна серія</string>
     <string name="details_mobile_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_mobile_release_in_days">
         <item quantity="one">До виходу серії %1$d день</item>
