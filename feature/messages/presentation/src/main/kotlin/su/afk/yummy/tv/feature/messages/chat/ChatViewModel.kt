@@ -94,6 +94,10 @@ class ChatViewModel @AssistedInject constructor(
         when (event) {
             ChatState.Event.BackSelected -> nav.back()
             ChatState.Event.LoginSelected -> nav.navigate(accountNavigator.getAccountDest())
+            is ChatState.Event.AuthorSelected -> {
+                if (event.userId > 0) nav.navigate(accountNavigator.getUserProfileDest(event.userId))
+            }
+
             ChatState.Event.ScreenStarted -> {
                 isScreenStarted = true
                 startPolling()

@@ -238,6 +238,7 @@ fun ChatMobileScreen(
                                     showAuthor = state.userId == GLOBAL_CHAT_USER_ID,
                                     onReply = { onEvent(ChatState.Event.ReplySelected(message.id)) },
                                     onReplyClick = { id -> scrollToMessage(id) },
+                                    onAuthorClick = { onEvent(ChatState.Event.AuthorSelected(message.fromUserId)) },
                                     isHighlighted = message.id == highlightedMessageId,
                                 )
                             }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -73,6 +74,7 @@ internal fun ChatMessageMobileBubble(
     showAuthor: Boolean = false,
     onReply: () -> Unit = {},
     onReplyClick: (Int) -> Unit = {},
+    onAuthorClick: () -> Unit = {},
     isHighlighted: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -129,6 +131,7 @@ internal fun ChatMessageMobileBubble(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
+                            .clickable(onClick = onAuthorClick)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                     )
                     Spacer(Modifier.size(8.dp))
@@ -169,6 +172,7 @@ internal fun ChatMessageMobileBubble(
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.primary,
                                     maxLines = 1,
+                                    modifier = Modifier.clickable(onClick = onAuthorClick),
                                 )
                             }
                             message.reply?.let { reply ->
@@ -228,48 +232,55 @@ internal fun ChatMessageMobileBubble(
                             }
                         }
                     }
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                        offset = DpOffset(0.dp, 4.dp),
+                }
+            }
+        }
+        // Якорь нулевой ширины у правого края строки: меню прижимается к правой стороне диалога.
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .wrapContentSize(Alignment.BottomEnd),
+        ) {
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                offset = DpOffset(0.dp, 4.dp),
+            ) {
+                if (!message.isDeleted) {
+                    MessageMenuItem(
+                        R.string.messages_reply_action,
+                        Icons.AutoMirrored.Filled.Reply
                     ) {
-                        if (!message.isDeleted) {
-                            MessageMenuItem(
-                                R.string.messages_reply_action,
-                                Icons.AutoMirrored.Filled.Reply
-                            ) {
-                                menuExpanded = false
-                                onReply()
-                            }
-                        }
-                        if (isOwn && !message.isDeleted) {
-                            MessageMenuItem(R.string.messages_edit, Icons.Filled.Edit) {
-                                menuExpanded = false
-                                onEdit()
-                            }
-                            MessageMenuItem(R.string.messages_delete, Icons.Filled.Delete) {
-                                menuExpanded = false
-                                onDelete()
-                            }
-                        }
-                        if (isOwn && message.isDeleted) {
-                            MessageMenuItem(R.string.messages_restore, Icons.Filled.Restore) {
-                                menuExpanded = false
-                                onRestore()
-                            }
-                        }
-                        if (message.isEdited) {
-                            MessageMenuItem(R.string.messages_history, Icons.Filled.History) {
-                                menuExpanded = false
-                                onHistory()
-                            }
-                        }
-                        if (!isOwn && !message.isDeleted) {
-                            MessageMenuItem(R.string.messages_claim, Icons.Filled.Flag) {
-                                menuExpanded = false
-                                onClaim()
-                            }
-                        }
+                        menuExpanded = false
+                        onReply()
+                    }
+                }
+                if (isOwn && !message.isDeleted) {
+                    MessageMenuItem(R.string.messages_edit, Icons.Filled.Edit) {
+                        menuExpanded = false
+                        onEdit()
+                    }
+                    MessageMenuItem(R.string.messages_delete, Icons.Filled.Delete) {
+                        menuExpanded = false
+                        onDelete()
+                    }
+                }
+                if (isOwn && message.isDeleted) {
+                    MessageMenuItem(R.string.messages_restore, Icons.Filled.Restore) {
+                        menuExpanded = false
+                        onRestore()
+                    }
+                }
+                if (message.isEdited) {
+                    MessageMenuItem(R.string.messages_history, Icons.Filled.History) {
+                        menuExpanded = false
+                        onHistory()
+                    }
+                }
+                if (!isOwn && !message.isDeleted) {
+                    MessageMenuItem(R.string.messages_claim, Icons.Filled.Flag) {
+                        menuExpanded = false
+                        onClaim()
                     }
                 }
             }

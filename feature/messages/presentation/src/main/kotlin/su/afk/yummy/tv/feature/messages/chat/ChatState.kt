@@ -68,6 +68,7 @@ class ChatState {
         data object BanToggleSelected : Event
         data object BanToggleDismissed : Event
         data object BanToggleConfirmed : Event
+        data class AuthorSelected(val userId: Int) : Event
     }
 
     sealed interface Effect : UiEffect {
