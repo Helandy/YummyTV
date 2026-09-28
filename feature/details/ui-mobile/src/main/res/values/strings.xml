@@ -55,6 +55,19 @@
     <string name="details_mobile_aired_progress">%1$d of %2$s</string>
     <string name="details_mobile_full_episodes_progress">Aired</string>
     <string name="details_mobile_full_next_episode">Next episode</string>
+    <string name="details_mobile_full_next_episode_with_countdown">%1$s · %2$s</string>
+    <plurals name="details_mobile_full_next_in_days">
+        <item quantity="one">in %1$d day</item>
+        <item quantity="other">in %1$d days</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_hours">
+        <item quantity="one">in %1$d hour</item>
+        <item quantity="other">in %1$d hours</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_minutes">
+        <item quantity="one">in %1$d minute</item>
+        <item quantity="other">in %1$d minutes</item>
+    </plurals>
     <string name="details_mobile_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_mobile_release_in_days">
         <item quantity="one">Next episode in %1$d day</item>

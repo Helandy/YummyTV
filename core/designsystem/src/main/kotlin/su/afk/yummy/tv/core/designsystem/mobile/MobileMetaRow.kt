@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.designsystem.mobile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -16,12 +17,15 @@ fun MobileMetaRow(
     modifier: Modifier = Modifier,
 ) {
     if (value.isBlank()) return
-    Row(modifier = modifier.fillMaxWidth()) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(120.dp),
+            modifier = Modifier.width(136.dp),
         )
         Text(
             text = value,

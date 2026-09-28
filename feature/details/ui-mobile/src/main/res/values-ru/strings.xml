@@ -55,6 +55,25 @@
     <string name="details_mobile_aired_progress">%1$d из %2$s</string>
     <string name="details_mobile_full_episodes_progress">Вышло</string>
     <string name="details_mobile_full_next_episode">Следующая серия</string>
+    <string name="details_mobile_full_next_episode_with_countdown">%1$s · %2$s</string>
+    <plurals name="details_mobile_full_next_in_days">
+        <item quantity="one">через %1$d день</item>
+        <item quantity="few">через %1$d дня</item>
+        <item quantity="many">через %1$d дней</item>
+        <item quantity="other">через %1$d дня</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_hours">
+        <item quantity="one">через %1$d час</item>
+        <item quantity="few">через %1$d часа</item>
+        <item quantity="many">через %1$d часов</item>
+        <item quantity="other">через %1$d часа</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_minutes">
+        <item quantity="one">через %1$d минуту</item>
+        <item quantity="few">через %1$d минуты</item>
+        <item quantity="many">через %1$d минут</item>
+        <item quantity="other">через %1$d минуты</item>
+    </plurals>
     <string name="details_mobile_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_mobile_release_in_days">
         <item quantity="one">До выхода серии %1$d день</item>

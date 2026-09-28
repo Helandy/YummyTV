@@ -46,21 +46,9 @@ internal fun AnimeEpisodes.formatAiredProgress(status: String?): String? {
     return stringResource(R.string.details_mobile_aired_with_release, progress, releaseCountdown)
 }
 
-/**
- * Прогресс выхода без префикса «Вышло:» — для строки с отдельной подписью:
- * «5 из 12 · До выхода серии 3 дня.».
- */
+/** Отсчёт до [AnimeEpisodes.nextDateEpochSeconds], пересчитывается раз в минуту. */
 @Composable
-internal fun AnimeEpisodes.formatEpisodesProgress(): String? {
-    val airedCount = aired ?: return formatReleaseCountdown()
-    val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
-    val progress = stringResource(R.string.details_mobile_aired_progress, airedCount, totalCount)
-    val releaseCountdown = formatReleaseCountdown() ?: return progress
-    return stringResource(R.string.details_mobile_aired_with_release, progress, releaseCountdown)
-}
-
-@Composable
-private fun AnimeEpisodes.formatReleaseCountdown(): String? {
+internal fun AnimeEpisodes.rememberReleaseCountdown(): EpisodeReleaseCountdown? {
     if (nextDateEpochSeconds == null) return null
     val nowEpochSeconds by produceState(
         initialValue = System.currentTimeMillis() / 1_000L,
@@ -71,7 +59,12 @@ private fun AnimeEpisodes.formatReleaseCountdown(): String? {
             delay(60_000L)
         }
     }
-    val countdown = releaseCountdown(nextDateEpochSeconds, nowEpochSeconds) ?: return null
+    return releaseCountdown(nextDateEpochSeconds, nowEpochSeconds)
+}
+
+@Composable
+private fun AnimeEpisodes.formatReleaseCountdown(): String? {
+    val countdown = rememberReleaseCountdown() ?: return null
     val resource = when (countdown.unit) {
         EpisodeReleaseCountdown.TimeUnit.DAYS -> R.plurals.details_mobile_release_in_days
         EpisodeReleaseCountdown.TimeUnit.HOURS -> R.plurals.details_mobile_release_in_hours

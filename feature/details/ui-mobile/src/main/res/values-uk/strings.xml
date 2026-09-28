@@ -55,6 +55,25 @@
     <string name="details_mobile_aired_progress">%1$d із %2$s</string>
     <string name="details_mobile_full_episodes_progress">Вийшло</string>
     <string name="details_mobile_full_next_episode">Наступна серія</string>
+    <string name="details_mobile_full_next_episode_with_countdown">%1$s · %2$s</string>
+    <plurals name="details_mobile_full_next_in_days">
+        <item quantity="one">через %1$d день</item>
+        <item quantity="few">через %1$d дні</item>
+        <item quantity="many">через %1$d днів</item>
+        <item quantity="other">через %1$d дні</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_hours">
+        <item quantity="one">через %1$d годину</item>
+        <item quantity="few">через %1$d години</item>
+        <item quantity="many">через %1$d годин</item>
+        <item quantity="other">через %1$d години</item>
+    </plurals>
+    <plurals name="details_mobile_full_next_in_minutes">
+        <item quantity="one">через %1$d хвилину</item>
+        <item quantity="few">через %1$d хвилини</item>
+        <item quantity="many">через %1$d хвилин</item>
+        <item quantity="other">через %1$d хвилини</item>
+    </plurals>
     <string name="details_mobile_aired_with_release">%1$s · %2$s.</string>
     <plurals name="details_mobile_release_in_days">
         <item quantity="one">До виходу серії %1$d день</item>
