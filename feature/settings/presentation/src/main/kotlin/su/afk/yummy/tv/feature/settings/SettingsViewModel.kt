@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.analytics.api.AnalyticsDeviceIdProvider
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
@@ -26,6 +27,7 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
+import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.moved
 import javax.inject.Inject
 import javax.inject.Named
@@ -45,6 +47,7 @@ class SettingsViewModel @Inject internal constructor(
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
     private val cacheStorageInspector: CacheStorageInspector,
     private val getAppReleaseHistory: GetAppReleaseHistoryUseCase,
+    private val analyticsDeviceIdProvider: AnalyticsDeviceIdProvider,
     @param:Named("appVersionName") private val versionName: String,
 ) : BaseViewModel<SettingsState.State, SettingsState.Event, SettingsState.Effect>() {
 
@@ -128,6 +131,17 @@ class SettingsViewModel @Inject internal constructor(
             }
             .launchIn(viewModelScope)
         loadCacheStorage()
+        loadAnalyticsDeviceId()
+    }
+
+    private fun loadAnalyticsDeviceId() {
+        viewModelScope.launch {
+            val deviceId = runSuspendCatching { analyticsDeviceIdProvider.deviceId() }
+                .getOrNull()
+                ?.takeIf { it.isNotBlank() }
+                ?: return@launch
+            setState { copy(analyticsDeviceId = deviceId.groupedByThree()) }
+        }
     }
 
     private fun loadCacheStorage() {

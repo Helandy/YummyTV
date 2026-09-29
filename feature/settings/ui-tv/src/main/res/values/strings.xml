@@ -249,4 +249,5 @@
     <string name="settings_tv_release_notes_beta">Beta</string>
     <string name="settings_tv_release_notes_no_notes">No description</string>
     <string name="settings_tv_release_notes_close">Close</string>
+    <string name="settings_tv_analytics_id_label">Analytics ID</string>
 </resources>

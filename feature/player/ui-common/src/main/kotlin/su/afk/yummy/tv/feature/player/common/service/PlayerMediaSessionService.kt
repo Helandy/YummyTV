@@ -72,6 +72,9 @@ class PlayerMediaSessionService : MediaSessionService() {
     private var stabilizationEnabled = false
     private var currentAudioSessionId = C.AUDIO_SESSION_ID_UNSET
 
+    // Ставится до stopSelf(): после него сервис не должен снова уходить в foreground.
+    private var isStopping = false
+
     override fun onCreate() {
         super.onCreate()
         // Фонового воспроизведения без экрана нет, поэтому «user engaged» окно не нужно: с
@@ -79,6 +82,7 @@ class PlayerMediaSessionService : MediaSessionService() {
         // сервис foreground-нужным, а любое завершение сервиса в этом окне система расценивает
         // как startForegroundService() без startForeground() и убивает процесс.
         setForegroundServiceTimeoutMs(0)
+        analyticsTracker.log(LOG_TAG) { "Service onCreate" }
         val isLowRamDevice = isLowRamDevice()
         val trackSelector = DefaultTrackSelector(this).apply {
             // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
@@ -209,11 +213,45 @@ class PlayerMediaSessionService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
         mediaSession
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        analyticsTracker.log(LOG_TAG) {
+            "Service onStartCommand startId=$startId action=${intent?.action} stopping=$isStopping"
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     override fun onTaskRemoved(rootIntent: Intent?) {
         // Видео-плеер не поддерживает воспроизведение звука в фоне без экрана: если пользователь
         // смахнул приложение из Recents, держать ExoPlayer (буфер + стриминг-кэш) в памяти незачем.
-        // Гасим только через pauseAllPlayersAndStopSelf(): голый stopSelf() при ongoing playback
-        // роняет процесс системным RemoteServiceException.
+        stopService(reason = "taskRemoved")
+    }
+
+    /**
+     * Внутренний контроллер уведомлений media3 узнаёт о паузе с задержкой: отложенное обновление
+     * после stopSelf() ещё видит playWhenReady=true и снова зовёт startForegroundService(). Если
+     * запись сервиса к этому моменту уже снесена, система поднимает новый экземпляр с флагом
+     * «обязан выйти в foreground», а startForeground() старого экземпляра игнорирует — процесс
+     * падает с RemoteServiceException. Поэтому после начала остановки уведомление не обновляем.
+     */
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        if (isStopping) {
+            analyticsTracker.log(LOG_TAG) {
+                "Notification update skipped while stopping foreground=$startInForegroundRequired"
+            }
+            return
+        }
+        super.onUpdateNotification(session, startInForegroundRequired)
+    }
+
+    /**
+     * Гасим только через pauseAllPlayersAndStopSelf(): голый stopSelf() при ongoing playback
+     * роняет процесс системным RemoteServiceException.
+     */
+    private fun stopService(reason: String) {
+        analyticsTracker.log(LOG_TAG) {
+            "Service stop reason=$reason ongoing=$isPlaybackOngoing stopping=$isStopping"
+        }
+        isStopping = true
         pauseAllPlayersAndStopSelf()
     }
 
@@ -226,14 +264,21 @@ class PlayerMediaSessionService : MediaSessionService() {
         override fun onConnect(
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
-        ): MediaSession.ConnectionResult =
-            MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+        ): MediaSession.ConnectionResult {
+            // Новый экран плеера успел подключиться к ещё не снесённому экземпляру: он снова
+            // нужен, и запрет на foreground после остановки снимается.
+            if (isStopping && !session.isMediaNotificationController(controller)) {
+                analyticsTracker.log(LOG_TAG) { "Service reused after stop request" }
+                isStopping = false
+            }
+            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(
                     MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
                         .add(PlayerSessionCommands.STOP_SERVICE)
                         .build(),
                 )
                 .build()
+        }
 
         override fun onCustomCommand(
             session: MediaSession,
@@ -244,12 +289,13 @@ class PlayerMediaSessionService : MediaSessionService() {
             if (customCommand.customAction != PlayerSessionCommands.ACTION_STOP_SERVICE) {
                 return super.onCustomCommand(session, controller, customCommand, args)
             }
-            pauseAllPlayersAndStopSelf()
+            stopService(reason = "command")
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
     }
 
     override fun onDestroy() {
+        analyticsTracker.log(LOG_TAG) { "Service onDestroy stopping=$isStopping" }
         allohaSessionManager.closeActive()
         serviceScope.cancel()
         loudnessNormalizer.release()

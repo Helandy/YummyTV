@@ -78,6 +78,8 @@ class SettingsState {
         val betaUpdatesEnabled: Boolean = false,
         /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
         val isFallbackSessionStorage: Boolean = false,
+        /** ID устройства в аналитике, разбитый на группы по 3 цифры; null — ID недоступен. */
+        val analyticsDeviceId: String? = null,
         val releaseNotes: ReleaseNotesStatus = ReleaseNotesStatus.Idle,
     ) : UiState
 

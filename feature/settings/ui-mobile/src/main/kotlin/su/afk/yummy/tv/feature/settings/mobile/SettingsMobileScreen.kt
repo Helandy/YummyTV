@@ -116,6 +116,12 @@ fun SettingsMobileScreen(
                         label = stringResource(R.string.settings_version_label),
                         hint = BuildConfig.VERSION_NAME,
                     )
+                    state.analyticsDeviceId?.let { deviceId ->
+                        SettingsMobileAboutRow(
+                            label = stringResource(R.string.settings_mobile_analytics_id_label),
+                            hint = deviceId,
+                        )
+                    }
                     if (state.isFallbackSessionStorage) {
                         SettingsMobileAboutRow(
                             label = stringResource(R.string.settings_session_storage_label),

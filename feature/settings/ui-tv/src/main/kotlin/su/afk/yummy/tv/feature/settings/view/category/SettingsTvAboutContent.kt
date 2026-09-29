@@ -45,6 +45,14 @@ internal fun SettingsTvAboutContent(
         hint = BuildConfig.VERSION_NAME,
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
+    state.analyticsDeviceId?.let { deviceId ->
+        SettingsDivider()
+        AboutRow(
+            label = stringResource(R.string.settings_tv_analytics_id_label),
+            hint = deviceId,
+            modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        )
+    }
     if (state.isFallbackSessionStorage) {
         SettingsDivider()
         AboutRow(

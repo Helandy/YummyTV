@@ -249,4 +249,5 @@
     <string name="settings_tv_release_notes_beta">Бета</string>
     <string name="settings_tv_release_notes_no_notes">Без описания</string>
     <string name="settings_tv_release_notes_close">Закрыть</string>
+    <string name="settings_tv_analytics_id_label">ID аналитики</string>
 </resources>

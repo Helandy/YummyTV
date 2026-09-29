@@ -57,9 +57,12 @@ fun rememberPlayerPlaybackSessionClient(): PlayerPlaybackSessionClient {
     val client = remember(context) { PlayerPlaybackSessionClient() }
     DisposableEffect(context, client) {
         var active = true
+        // Только Application: release() отвязывается отложенно (до 30 с), а bind'ы Activity-контекста
+        // система снимает сама при её уничтожении — повторный unbindService падает с «Service not registered».
+        val appContext = context.applicationContext
         val token =
-            SessionToken(context, ComponentName(context, PlayerMediaSessionService::class.java))
-        val future = MediaController.Builder(context, token).buildAsync()
+            SessionToken(appContext, ComponentName(appContext, PlayerMediaSessionService::class.java))
+        val future = MediaController.Builder(appContext, token).buildAsync()
         future.addListener(
             {
                 if (active) {

@@ -250,4 +250,5 @@
     <string name="settings_mobile_release_notes_current">Установлена</string>
     <string name="settings_mobile_release_notes_beta">Бета</string>
     <string name="settings_mobile_release_notes_no_notes">Без описания</string>
+    <string name="settings_mobile_analytics_id_label">ID аналитики</string>
 </resources>
