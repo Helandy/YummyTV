@@ -159,6 +159,7 @@
     <string name="settings_next_episode_switch_delay_label">Задержка перед переключением серии</string>
     <string name="settings_next_episode_switch_delay_instant">Мгновенно</string>
     <string name="settings_next_episode_switch_delay_seconds">%d сек</string>
+    <string name="settings_tv_controls_auto_hide_label">Скрывать управление плеером через</string>
     <string name="settings_ask_dubbing_on_watch_label">Спрашивать озвучку перед просмотром</string>
     <string name="settings_ask_dubbing_on_watch_enabled">Перед запуском покажем список озвучек</string>
     <string name="settings_ask_dubbing_on_watch_disabled">Сразу включится самая популярная</string>

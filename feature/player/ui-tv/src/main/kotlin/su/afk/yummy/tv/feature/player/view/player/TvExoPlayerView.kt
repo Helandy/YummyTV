@@ -78,6 +78,7 @@ import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -127,6 +128,7 @@ internal fun TvExoPlayerView(
     // иначе фокус уйдёт на скрытый key-оверлей и кнопки хинта станут недостижимы
     val recoveryHintVisible = playback.showRecoveryHint
     val autoHide = rememberPlayerAutoHideController(
+        hideDelay = state.controlsAutoHideSeconds.seconds,
         canHide = { !panels.isAnyOpen && !prompts.anyVisible && !recoveryHintVisible },
         onHide = { controllerVisible = false },
     )

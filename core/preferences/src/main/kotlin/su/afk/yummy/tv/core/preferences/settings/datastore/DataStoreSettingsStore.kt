@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryC
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
@@ -105,6 +106,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
             nextEpisodeSwitchDelaySeconds =
                 (prefs[nextEpisodeSwitchDelaySecondsKey] ?: 10).coerceIn(0, 30),
+            playerControlsAutoHideSeconds =
+                (prefs[playerControlsAutoHideSecondsKey] ?: 4).coerceIn(1, 10),
             askDubbingOnWatch = prefs[askDubbingOnWatchKey] ?: true,
             pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
             playerOrientationMode = prefs.enum(

@@ -26,6 +26,8 @@ internal object SettingsPreferenceKeys {
     val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
     val nextEpisodeSwitchDelaySecondsKey =
         intPreferencesKey("next_episode_switch_delay_seconds")
+    val playerControlsAutoHideSecondsKey =
+        intPreferencesKey("player_controls_auto_hide_seconds")
 
     // v2: дефолт сменился на true — старое значение ("ask_dubbing_on_watch") сознательно игнорируем.
     val askDubbingOnWatchKey = booleanPreferencesKey("ask_dubbing_on_watch_v2")

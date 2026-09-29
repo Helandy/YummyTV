@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import su.afk.yummy.tv.feature.player.common.PlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerAutoHideController
+import kotlin.time.Duration
 
 /** Видимость оверлея плеера с авто-скрытием через [PlayerAutoHideController]. */
 @Stable
@@ -45,12 +46,14 @@ internal class MobilePlayerOverlayController(
 
 @Composable
 internal fun rememberMobilePlayerOverlayController(
+    hideDelay: Duration,
     canHide: () -> Boolean,
     wantsPlay: () -> Boolean,
     isPromptVisible: () -> Boolean,
 ): MobilePlayerOverlayController {
     val visibleState = remember { mutableStateOf(true) }
     val autoHide = rememberPlayerAutoHideController(
+        hideDelay = hideDelay,
         canHide = canHide,
         onHide = { visibleState.value = false },
     )

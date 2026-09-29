@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePl
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerResizeModeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerZoomLevelKey
@@ -78,6 +79,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val nextEpisodeSwitchDelaySeconds: Flow<Int> = store.data.map { prefs ->
         (prefs[nextEpisodeSwitchDelaySecondsKey] ?: DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS)
             .coerceIn(0, MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS)
+    }
+
+    override val playerControlsAutoHideSeconds: Flow<Int> = store.data.map { prefs ->
+        (prefs[playerControlsAutoHideSecondsKey] ?: DEFAULT_CONTROLS_AUTO_HIDE_SECONDS)
+            .coerceIn(MIN_CONTROLS_AUTO_HIDE_SECONDS, MAX_CONTROLS_AUTO_HIDE_SECONDS)
     }
 
     override val askDubbingOnWatch: Flow<Boolean> = store.boolean(askDubbingOnWatchKey, true)
@@ -192,6 +198,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun setPlayerControlsAutoHideSeconds(seconds: Int) {
+        store.edit { prefs ->
+            prefs[playerControlsAutoHideSecondsKey] =
+                seconds.coerceIn(MIN_CONTROLS_AUTO_HIDE_SECONDS, MAX_CONTROLS_AUTO_HIDE_SECONDS)
+        }
+    }
+
     override suspend fun setAskDubbingOnWatch(enabled: Boolean) =
         store.setBoolean(askDubbingOnWatchKey, enabled)
 
@@ -291,6 +304,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val MAX_AUTO_SKIP_DELAY_SECONDS = 15
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30
+        const val DEFAULT_CONTROLS_AUTO_HIDE_SECONDS = 4
+        const val MIN_CONTROLS_AUTO_HIDE_SECONDS = 1
+        const val MAX_CONTROLS_AUTO_HIDE_SECONDS = 10
         const val DEFAULT_SUBTITLE_TEXT_SIZE_PERCENT = 100
         const val MIN_SUBTITLE_TEXT_SIZE_PERCENT = 50
         const val MAX_SUBTITLE_TEXT_SIZE_PERCENT = 200

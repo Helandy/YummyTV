@@ -49,6 +49,8 @@ class PlayerState {
         val showOpeningOnTimeline: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
+        /** Через сколько секунд бездействия скрываются контролы. */
+        val controlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val mobileGestureTutorialReady: Boolean = false,

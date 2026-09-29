@@ -50,6 +50,7 @@ class SettingsState {
         val showOpeningOnTimeline: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
+        val playerControlsAutoHideSeconds: Int = 4,
         val askDubbingOnWatch: Boolean = true,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
@@ -146,6 +147,9 @@ class SettingsState {
 
         /** Пользователь изменил задержку перед авто-переключением на следующую серию. */
         data class NextEpisodeSwitchDelayChanged(val seconds: Int) : Event
+
+        /** Пользователь изменил время, через которое скрываются контролы плеера. */
+        data class PlayerControlsAutoHideChanged(val seconds: Int) : Event
 
         /** Пользователь переключил запрос выбора озвучки при нажатии "Смотреть". */
         data object AskDubbingOnWatchToggled : Event

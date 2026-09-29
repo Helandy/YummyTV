@@ -94,6 +94,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -164,6 +165,7 @@ internal fun MobileNativePlayer(
     // кнопки «Сменить плеер/озвучку» и контролы должны оставаться на экране
     val recoveryHintVisible = ui.showRecoveryHint && !isInPictureInPictureMode
     val overlay = rememberMobilePlayerOverlayController(
+        hideDelay = state.controlsAutoHideSeconds.seconds,
         canHide = {
             wantsPlay &&
                 settingsMode == null &&

@@ -199,6 +199,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь изменил время, через которое скрываются контролы плеера. */
+    fun eventPlayerControlsAutoHideChanged(seconds: Int) {
+        tracker.track(
+            EVENT_PLAYER_CONTROLS_AUTO_HIDE_CHANGED,
+            analyticsParamsOf(PARAM_VALUE to seconds),
+        )
+    }
+
     /** Пользователь изменил пороги "просмотрено" (минуты до конца по длине серии). */
     fun eventWatchedThresholdsChanged(thresholds: WatchedThresholds) {
         tracker.track(
@@ -414,6 +422,8 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_WATCHED_THRESHOLDS_CHANGED = "settings_watched_thresholds_changed"
         const val EVENT_NEXT_EPISODE_SWITCH_DELAY_CHANGED =
             "settings_next_episode_switch_delay_changed"
+        const val EVENT_PLAYER_CONTROLS_AUTO_HIDE_CHANGED =
+            "settings_player_controls_auto_hide_changed"
         const val EVENT_ASK_DUBBING_ON_WATCH_TOGGLED =
             "settings_ask_dubbing_on_watch_toggled"
         const val EVENT_PICTURE_IN_PICTURE_TOGGLED =

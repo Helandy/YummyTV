@@ -77,6 +77,7 @@ class SettingsViewModel @Inject internal constructor(
                         showOpeningOnTimeline = snapshot.showOpeningOnTimeline,
                         autoPlayNextEpisode = snapshot.autoPlayNextEpisode,
                         nextEpisodeSwitchDelaySeconds = snapshot.nextEpisodeSwitchDelaySeconds,
+                        playerControlsAutoHideSeconds = snapshot.playerControlsAutoHideSeconds,
                         askDubbingOnWatch = snapshot.askDubbingOnWatch,
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
@@ -271,6 +272,13 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.NextEpisodeSwitchDelayChanged -> viewModelScope.launch {
                 analytics.eventNextEpisodeSwitchDelayChanged(event.seconds)
                 settingsStore.setNextEpisodeSwitchDelaySeconds(event.seconds)
+            }
+
+            is SettingsState.Event.PlayerControlsAutoHideChanged -> viewModelScope.launch {
+                // Слайдер шлёт значение на каждый кадр перетаскивания.
+                if (event.seconds == currentState.playerControlsAutoHideSeconds) return@launch
+                analytics.eventPlayerControlsAutoHideChanged(event.seconds)
+                settingsStore.setPlayerControlsAutoHideSeconds(event.seconds)
             }
 
             SettingsState.Event.AskDubbingOnWatchToggled -> viewModelScope.launch {

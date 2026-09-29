@@ -82,6 +82,19 @@ internal fun SettingsMobilePlaybackContent(
                     onEvent(SettingsState.Event.NextEpisodeSwitchDelayChanged(it))
                 },
             )
+            SettingsMobileSliderRow(
+                label = stringResource(R.string.settings_mobile_controls_auto_hide_label),
+                valueText = stringResource(
+                    R.string.settings_next_episode_switch_delay_seconds,
+                    state.playerControlsAutoHideSeconds,
+                ),
+                value = state.playerControlsAutoHideSeconds,
+                valueRange = 1..10,
+                enabled = true,
+                onValueChange = {
+                    onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it))
+                },
+            )
         }
     }
 }

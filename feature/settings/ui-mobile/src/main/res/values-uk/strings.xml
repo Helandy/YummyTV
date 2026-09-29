@@ -168,6 +168,7 @@
     <string name="settings_next_episode_switch_delay_label">Затримка перед перемиканням серії</string>
     <string name="settings_next_episode_switch_delay_instant">Миттєво</string>
     <string name="settings_next_episode_switch_delay_seconds">%d с</string>
+    <string name="settings_mobile_controls_auto_hide_label">Приховувати керування плеєром через</string>
     <string name="settings_ask_dubbing_on_watch_label">Питати озвучення перед переглядом</string>
     <string name="settings_ask_dubbing_on_watch_enabled">Перед запуском покажемо список озвучень</string>
     <string name="settings_ask_dubbing_on_watch_disabled">Одразу ввімкнеться найпопулярніше</string>
