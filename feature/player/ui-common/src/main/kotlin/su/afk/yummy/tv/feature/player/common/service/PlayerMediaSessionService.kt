@@ -1,49 +1,26 @@
 package su.afk.yummy.tv.feature.player.common.service
 
-import android.app.ActivityManager
-import android.app.PendingIntent
 import android.content.Intent
-import android.os.Bundle
 import androidx.annotation.OptIn
-import androidx.media3.cast.CastPlayer
-import androidx.media3.cast.RemoteCastPlayer
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.MimeTypes
-import androidx.media3.common.Player
-import androidx.media3.common.TrackGroup
-import androidx.media3.common.TrackSelectionOverride
-import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import androidx.media3.session.SessionCommand
-import androidx.media3.session.SessionResult
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
-import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
-import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
-import su.afk.yummy.tv.feature.player.common.PlayerLoadControlFactory
-import su.afk.yummy.tv.feature.player.common.PlayerLoudnessNormalizer
+import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
+import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
 import javax.inject.Inject
 
+/**
+ * Сервис медиа-сессии плеера. Сам только связывает компоненты и отвечает за жизненный цикл и
+ * остановку; сборка плеера, подмена дорожек Alloha, стабилизация громкости и Cast вынесены.
+ */
 @OptIn(UnstableApi::class)
 @AndroidEntryPoint
 class PlayerMediaSessionService : MediaSessionService() {
@@ -59,21 +36,16 @@ class PlayerMediaSessionService : MediaSessionService() {
     @Inject
     internal lateinit var analyticsTracker: AnalyticsTracker
 
+    @Inject
+    internal lateinit var exoPlayerFactory: PlayerExoPlayerFactory
+
+    @Inject
+    internal lateinit var castPlayerFactory: PlayerCastPlayerFactory
+
     private var mediaSession: MediaSession? = null
-    private var player: ExoPlayer? = null
-    private var castPlayer: CastPlayer? = null
-
-    // lazy: analyticsTracker инжектится только в super.onCreate()
-    private val loudnessNormalizer by lazy { PlayerLoudnessNormalizer(analyticsTracker) }
+    private var volumeStabilization: PlayerVolumeStabilization? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
-    // Источник истины для «стабилизации громкости»: эффект пересобирается при смене либо
-    // настройки, либо аудио-сессии (новая серия/переподключение плеера пересоздают session id).
-    private var stabilizationEnabled = false
-    private var currentAudioSessionId = C.AUDIO_SESSION_ID_UNSET
-
-    // Ставится до stopSelf(): после него сервис не должен снова уходить в foreground.
-    private var isStopping = false
+    private val stopState = PlayerServiceStopState()
 
     override fun onCreate() {
         super.onCreate()
@@ -82,140 +54,39 @@ class PlayerMediaSessionService : MediaSessionService() {
         // сервис foreground-нужным, а любое завершение сервиса в этом окне система расценивает
         // как startForegroundService() без startForeground() и убивает процесс.
         setForegroundServiceTimeoutMs(0)
-        analyticsTracker.log(LOG_TAG) { "Service onCreate" }
-        val isLowRamDevice = isLowRamDevice()
-        val trackSelector = DefaultTrackSelector(this).apply {
-            // На слабых устройствах отдаём выбор битрейта адаптивному алгоритму вместо
-            // принудительного максимума: меньше нагрузка на декодер и на буфер по памяти.
-            setParameters(
-                buildUponParameters().setForceHighestSupportedBitrate(!isLowRamDevice),
-            )
-        }
-        // enableDecoderFallback: если аппаратный AVC-декодер не может инициализироваться
-        // (например NO_MEMORY при config/start на некоторых устройствах/прошивках), без этого
-        // флага Media3 просто кидает ошибку вместо попытки со следующим декодером в списке -
-        // а для Alloha это уводит в бесконечный fresh-session recovery loop, каждый раз
-        // упирающийся в тот же самый сломанный железный декодер.
-        val renderersFactory = DefaultRenderersFactory(this)
-            .setEnableDecoderFallback(true)
-        val exoPlayer = ExoPlayer.Builder(this, renderersFactory)
-            .setTrackSelector(trackSelector)
-            .setMediaSourceFactory(
-                DefaultMediaSourceFactory(playbackConfig.dataSourceFactory())
-                    .setLoadErrorHandlingPolicy(PlayerLoadErrorHandlingPolicy(playbackConfig)),
-            )
-            .setLoadControl(PlayerLoadControlFactory.create(readBufferProfile()))
-            // Фокус нужен, чтобы чужая музыка вставала на паузу при старте серии, а звонок или
-            // навигатор ставили на паузу/приглушали нас. MOVIE, а не SPEECH: при duck-потере
-            // ExoPlayer приглушает звук вместо паузы.
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                /* handleAudioFocus = */
-                true,
-            )
-            .setHandleAudioBecomingNoisy(true)
-            .build()
-        exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
-        exoPlayer.addListener(object : Player.Listener {
-            private var overriddenAudioGroup: TrackGroup? = null
-
-            override fun onAudioSessionIdChanged(audioSessionId: Int) {
-                currentAudioSessionId = audioSessionId
-                loudnessNormalizer.apply(audioSessionId, stabilizationEnabled)
-            }
-
-            override fun onTracksChanged(tracks: Tracks) {
-                val selection = playbackConfig.trackSelectionConfig()
-                val audioGroups = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
-                if (selection.audioTrackPolicy != PlayerAudioTrackPolicy.FirstAudioGroup ||
-                    audioGroups.isEmpty()
-                ) {
-                    clearAllohaAudioOverride(trackSelector)
-                    return
-                }
-                val firstAudioGroup = audioGroups.first().mediaTrackGroup
-                if (overriddenAudioGroup == firstAudioGroup) return
-                overriddenAudioGroup = firstAudioGroup
-                trackSelector.setParameters(
-                    trackSelector.buildUponParameters()
-                        .setPreferredAudioLanguage(ALLOHA_AUDIO_LANGUAGE)
-                        .setPreferredVideoMimeType(MimeTypes.VIDEO_H264)
-                        .setRendererDisabled(AUDIO_RENDERER_INDEX, false)
-                        .setOverrideForType(TrackSelectionOverride(firstAudioGroup, 0))
-                        .build(),
-                )
-                analyticsTracker.log(LOG_TAG) {
-                    "Alloha audio selected groups=${audioGroups.size} " +
-                        "tracksInFirstGroup=${firstAudioGroup.length} group=0 track=0 " +
-                        "offline=${selection.isOfflinePlayback}"
-                }
-            }
-
-            private fun clearAllohaAudioOverride(trackSelector: DefaultTrackSelector) {
-                if (overriddenAudioGroup == null) return
-                overriddenAudioGroup = null
-                trackSelector.setParameters(
-                    trackSelector.buildUponParameters()
-                        .setPreferredAudioLanguage(null)
-                        .setPreferredTextLanguage(null)
-                        .setPreferredVideoMimeType(null)
-                        .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                        .build(),
-                )
-                analyticsTracker.log(LOG_TAG) { "Alloha audio override cleared" }
-            }
-        })
-        player = exoPlayer
-        // Начальная сессия: onAudioSessionIdChanged приходит не всегда до старта, поэтому
-        // подхватываем текущее значение сразу.
-        currentAudioSessionId = exoPlayer.audioSessionId
-        settingsStore.volumeStabilizationEnabled
-            .onEach { enabled ->
-                stabilizationEnabled = enabled
-                loudnessNormalizer.apply(currentAudioSessionId, enabled)
-            }
-            .launchIn(serviceScope)
-        // Гейт на TV и на старые GMS - внутри CastSupport: RemoteCastPlayer.Builder сам зовёт
-        // Cast.ensureInitialized(), то есть это второй вход в тот же фоновый путь, что и в
-        // YummyTvApplication.setupCast().
-        if (CastSupport.isSupported(this)) {
-            castPlayer = buildCastPlayer(exoPlayer)
-        }
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) { "Service onCreate" }
+        val (exoPlayer, trackSelector) = exoPlayerFactory.create(this)
+        val stabilization = PlayerVolumeStabilization(analyticsTracker)
+        exoPlayer.addListener(stabilization)
+        exoPlayer.addListener(
+            PlayerAllohaAudioOverride(trackSelector, playbackConfig, analyticsTracker),
+        )
+        stabilization.start(
+            scope = serviceScope,
+            enabledFlow = settingsStore.volumeStabilizationEnabled,
+            initialAudioSessionId = exoPlayer.audioSessionId,
+        )
+        volumeStabilization = stabilization
+        val castPlayer = castPlayerFactory.createOrNull(this, exoPlayer)
         mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)
-            .setSessionActivity(createSessionActivityPendingIntent())
-            .setCallback(PlayerSessionCallback())
+            .setSessionActivity(createPlayerSessionActivityIntent())
+            .setCallback(
+                PlayerSessionCallback(
+                    stopState = stopState,
+                    analyticsTracker = analyticsTracker,
+                    onStopRequested = { stopService(reason = "command") },
+                ),
+            )
             .build()
     }
-
-    /**
-     * CastContext доступен только при наличии Google Play Services на устройстве - без них
-     * CastContext.getSharedInstance() кидает исключение, поэтому локальный ExoPlayer остаётся
-     * фолбэком, а не жёстким требованием.
-     */
-    private fun buildCastPlayer(exoPlayer: ExoPlayer): CastPlayer? =
-        try {
-            CastPlayer.Builder(this)
-                .setLocalPlayer(exoPlayer)
-                .setRemotePlayer(
-                    RemoteCastPlayer.Builder(this)
-                        .setMediaItemConverter(YummyTvCastMediaItemConverter())
-                        .build(),
-                )
-                .build()
-        } catch (e: Exception) {
-            analyticsTracker.log(LOG_TAG, e) { "CastPlayer unavailable" }
-            null
-        }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
         mediaSession
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        analyticsTracker.log(LOG_TAG) {
-            "Service onStartCommand startId=$startId action=${intent?.action} stopping=$isStopping"
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
+            "Service onStartCommand startId=$startId action=${intent?.action} " +
+                "stopping=${stopState.isStopping}"
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -234,8 +105,8 @@ class PlayerMediaSessionService : MediaSessionService() {
      * падает с RemoteServiceException. Поэтому после начала остановки уведомление не обновляем.
      */
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        if (isStopping) {
-            analyticsTracker.log(LOG_TAG) {
+        if (stopState.isStopping) {
+            analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
                 "Notification update skipped while stopping foreground=$startInForegroundRequired"
             }
             return
@@ -248,57 +119,21 @@ class PlayerMediaSessionService : MediaSessionService() {
      * роняет процесс системным RemoteServiceException.
      */
     private fun stopService(reason: String) {
-        analyticsTracker.log(LOG_TAG) {
-            "Service stop reason=$reason ongoing=$isPlaybackOngoing stopping=$isStopping"
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
+            "Service stop reason=$reason ongoing=$isPlaybackOngoing stopping=${stopState.isStopping}"
         }
-        isStopping = true
+        stopState.isStopping = true
         pauseAllPlayersAndStopSelf()
     }
 
-    /**
-     * Останавливать сервис снаружи (Context.stopService) нельзя: pause/clearMediaItems едут по IPC
-     * асинхронно и могут прийти уже после сноса сервиса. Поэтому UI присылает команду, а решение
-     * о завершении принимает сам сервис — после выхода из foreground-состояния.
-     */
-    private inner class PlayerSessionCallback : MediaSession.Callback {
-        override fun onConnect(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo,
-        ): MediaSession.ConnectionResult {
-            // Новый экран плеера успел подключиться к ещё не снесённому экземпляру: он снова
-            // нужен, и запрет на foreground после остановки снимается.
-            if (isStopping && !session.isMediaNotificationController(controller)) {
-                analyticsTracker.log(LOG_TAG) { "Service reused after stop request" }
-                isStopping = false
-            }
-            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                .setAvailableSessionCommands(
-                    MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
-                        .add(PlayerSessionCommands.STOP_SERVICE)
-                        .build(),
-                )
-                .build()
-        }
-
-        override fun onCustomCommand(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo,
-            customCommand: SessionCommand,
-            args: Bundle,
-        ): ListenableFuture<SessionResult> {
-            if (customCommand.customAction != PlayerSessionCommands.ACTION_STOP_SERVICE) {
-                return super.onCustomCommand(session, controller, customCommand, args)
-            }
-            stopService(reason = "command")
-            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-        }
-    }
-
     override fun onDestroy() {
-        analyticsTracker.log(LOG_TAG) { "Service onDestroy stopping=$isStopping" }
+        analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
+            "Service onDestroy stopping=${stopState.isStopping}"
+        }
         allohaSessionManager.closeActive()
         serviceScope.cancel()
-        loudnessNormalizer.release()
+        volumeStabilization?.release()
+        volumeStabilization = null
         // mediaSession.player - это castPlayer, если он собрался, а CastPlayer.release()
         // сам освобождает и обёрнутый localPlayer (exoPlayer) - отдельный exoPlayer.release() не нужен.
         mediaSession?.run {
@@ -306,43 +141,6 @@ class PlayerMediaSessionService : MediaSessionService() {
             release()
         }
         mediaSession = null
-        player = null
-        castPlayer = null
         super.onDestroy()
-    }
-
-    /**
-     * ExoPlayer.Builder требует LoadControl синхронно, поэтому профиль читается блокирующе — это
-     * не забытый Dispatchers.IO. Таймаут страхует от подвисшего первого чтения DataStore: в этом
-     * случае берётся то же значение по умолчанию, что и в настройках.
-     */
-    private fun readBufferProfile(): PlayerBufferProfile =
-        runBlocking {
-            withTimeoutOrNull(BUFFER_PROFILE_READ_TIMEOUT_MS) {
-                settingsStore.playerBufferProfile.first()
-            }
-        } ?: PlayerBufferProfile.SMALL
-
-    private fun isLowRamDevice(): Boolean =
-        (getSystemService(ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
-
-    private fun createSessionActivityPendingIntent(): PendingIntent {
-        val intent = packageManager.getLaunchIntentForPackage(packageName)
-            ?: Intent(Intent.ACTION_MAIN).setPackage(packageName)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        return PendingIntent.getActivity(
-            this,
-            REQUEST_CODE_SESSION_ACTIVITY,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-    }
-
-    private companion object {
-        const val LOG_TAG = "PlayerMediaSession"
-        const val ALLOHA_AUDIO_LANGUAGE = "ru"
-        const val AUDIO_RENDERER_INDEX = 1
-        const val REQUEST_CODE_SESSION_ACTIVITY = 40_101
-        const val BUFFER_PROFILE_READ_TIMEOUT_MS = 500L
     }
 }

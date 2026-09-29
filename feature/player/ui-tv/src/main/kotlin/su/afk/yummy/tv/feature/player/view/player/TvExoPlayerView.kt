@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -99,9 +98,6 @@ internal fun TvExoPlayerView(
     val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
     val activeQuality = playback.activeQuality
     val activeSpeed = state.selectedSpeed.coerceAtLeast(0.1f)
-    var seekOnSwitch by remember(streamUrl, state.retryKey) {
-        mutableLongStateOf(state.resumeFromMs)
-    }
     var wantsPlay by remember { mutableStateOf(true) }
     val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
     val progress = rememberPlayerPlaybackProgressState()
@@ -194,8 +190,6 @@ internal fun TvExoPlayerView(
         playbackKey = playbackKey,
         state = state,
         playback = playback,
-        durationMs = { progress.duration },
-        playbackPositionMs = { seekOnSwitch },
         shouldPlay = { playbackShouldPlay },
     )
 
@@ -578,13 +572,9 @@ internal fun TvExoPlayerView(
             subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
             selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
             onQualitySelected = { idx ->
-                val quality = playback.qualityLabels[idx]
-                if (quality != activeQuality) {
-                    val position = player.currentPosition.coerceAtLeast(0L)
-                    seekOnSwitch = position
-                    reporter.saveProgress(position, progress.duration)
-                    onPlayerEvent(PlayerState.Event.QualitySelected(quality, position))
-                }
+                val position = player.currentPosition.coerceAtLeast(0L)
+                reporter.saveProgress(position, progress.duration)
+                onPlayerEvent(PlayerState.Event.QualitySelected(playback.qualityLabels[idx], position))
                 panels.close(PanelReturnFocusTarget.Quality)
                 onInteraction()
             },
@@ -615,14 +605,12 @@ internal fun TvExoPlayerView(
             },
             onVolumeChange = { volumeController.setPercent(it) },
             onAudioTrackSelected = { idx ->
-                val position = player.currentPosition.coerceAtLeast(0L)
-                if (trackMenu.selectAudio(idx, position, onPlayerEvent)) seekOnSwitch = position
+                trackMenu.selectAudio(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)
                 panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },
             onSubtitleTrackSelected = { idx ->
-                val position = player.currentPosition.coerceAtLeast(0L)
-                if (trackMenu.selectSubtitle(idx, onPlayerEvent)) seekOnSwitch = position
+                trackMenu.selectSubtitle(idx, player.currentPosition.coerceAtLeast(0L), onPlayerEvent)
                 panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },

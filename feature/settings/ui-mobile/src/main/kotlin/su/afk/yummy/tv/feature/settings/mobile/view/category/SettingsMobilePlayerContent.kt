@@ -37,11 +37,11 @@ internal fun SettingsMobilePlayerContent(
                 .indexOf(state.preferredVideoQuality).coerceAtLeast(0)
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_preferred_video_quality_title),
-                valueText = videoQualitySliderEntries[videoQualityIndex].label(),
+                valueLabel = { videoQualitySliderEntries[it].label() },
                 value = videoQualityIndex,
                 valueRange = 0..videoQualitySliderEntries.lastIndex,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(
                         SettingsState.Event.PreferredVideoQualitySelected(
                             videoQualitySliderEntries[it],
@@ -51,12 +51,12 @@ internal fun SettingsMobilePlayerContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_player_buffer_title),
-                valueText = state.playerBufferProfile.detailsText(),
+                valueLabel = { PlayerBufferProfile.entries[it].detailsText() },
                 value = PlayerBufferProfile.entries.indexOf(state.playerBufferProfile)
                     .coerceAtLeast(0),
                 valueRange = 0..PlayerBufferProfile.entries.lastIndex,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(
                         SettingsState.Event.PlayerBufferProfileSelected(
                             PlayerBufferProfile.entries[it],

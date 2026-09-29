@@ -131,7 +131,7 @@ class PlayerState {
         data class AllohaAudioTrackSelected(val audioId: String, val currentPosMs: Long) : Event
 
         /** Пользователь выбрал субтитры Alloha (индекс в списке) или выключил их (null). */
-        data class AllohaSubtitleSelected(val index: Int?) : Event
+        data class AllohaSubtitleSelected(val index: Int?, val currentPosMs: Long) : Event
 
         /** Пользователь выбрал скорость воспроизведения. */
         data class SpeedSelected(val speed: Float) : Event

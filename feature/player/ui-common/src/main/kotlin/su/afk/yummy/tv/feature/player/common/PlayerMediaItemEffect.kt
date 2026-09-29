@@ -33,7 +33,8 @@ fun rememberPlayerPlaybackKey(state: PlayerState.State, url: String): String =
  * Отдаёт плееру media item текущего потока, общий для ТВ и мобилки: переподготовка при смене
  * [playbackKey], обновление метаданных медиа-сессии без переподготовки, затем playWhenReady.
  *
- * @param playbackPositionMs позиция, с которой стартует новый поток.
+ * Позиция старта нового потока берётся из ViewModel ([PlayerState.State.playbackPositionMs]):
+ * события, пересобирающие поток (качество, дорожка, субтитры), заранее кладут туда точную позицию.
  */
 @Composable
 fun PlayerMediaItemEffect(
@@ -41,8 +42,6 @@ fun PlayerMediaItemEffect(
     playbackKey: String,
     state: PlayerState.State,
     playback: PlayerPlaybackUiState,
-    durationMs: () -> Long,
-    playbackPositionMs: () -> Long,
     shouldPlay: () -> Boolean,
 ) {
     val playbackConfig = rememberPlayerPlaybackConfig()
@@ -58,8 +57,6 @@ fun PlayerMediaItemEffect(
     }
     val currentState by rememberUpdatedState(state)
     val currentPlayback by rememberUpdatedState(playback)
-    val currentDuration by rememberUpdatedState(durationMs)
-    val currentPosition by rememberUpdatedState(playbackPositionMs)
     val currentShouldPlay by rememberUpdatedState(shouldPlay)
 
     LaunchedEffect(player, playbackKey, mediaItemKey, playback.activeIframeUrl) {
@@ -74,8 +71,8 @@ fun PlayerMediaItemEffect(
                 state = currentState,
                 playback = currentPlayback,
                 meta = meta,
-                durationMs = currentDuration(),
-                playbackPositionMs = currentPosition(),
+                durationMs = currentState.playbackDurationMs,
+                playbackPositionMs = currentState.playbackPositionMs,
             ),
         )
         activePlayer.playWhenReady = currentShouldPlay()

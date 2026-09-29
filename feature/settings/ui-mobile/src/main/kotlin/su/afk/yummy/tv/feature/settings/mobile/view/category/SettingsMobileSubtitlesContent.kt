@@ -24,11 +24,11 @@ internal fun SettingsMobileSubtitlesContent(
         SettingsMobileSection(subtitle = stringResource(R.string.settings_subtitle_style_alloha_hint)) {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_subtitle_size_title),
-                valueText = state.subtitleStyle.textSize.toSubtitlePercentText(),
+                valueLabel = { it.toSubtitlePercentText() },
                 value = state.subtitleStyle.textSize,
                 valueRange = 50..200,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(
                         SettingsState.Event.SubtitleStyleSelected(
                             state.subtitleStyle.copy(textSize = it),
@@ -38,11 +38,11 @@ internal fun SettingsMobileSubtitlesContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_subtitle_offset_title),
-                valueText = state.subtitleStyle.offset.toSubtitlePercentText(),
+                valueLabel = { it.toSubtitlePercentText() },
                 value = state.subtitleStyle.offset,
                 valueRange = 0..20,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(
                         SettingsState.Event.SubtitleStyleSelected(
                             state.subtitleStyle.copy(offset = it),

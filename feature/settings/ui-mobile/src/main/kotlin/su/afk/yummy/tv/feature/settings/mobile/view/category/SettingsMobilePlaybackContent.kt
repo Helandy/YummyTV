@@ -41,14 +41,11 @@ internal fun SettingsMobilePlaybackContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_mobile_auto_skip_delay_label),
-                valueText = stringResource(
-                    R.string.settings_next_episode_switch_delay_seconds,
-                    state.autoSkipDelaySeconds,
-                ),
+                valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
                 value = state.autoSkipDelaySeconds,
                 valueRange = 1..15,
                 enabled = state.autoSkipOpeningsEndings,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(SettingsState.Event.AutoSkipDelayChanged(it))
                 },
             )
@@ -74,24 +71,21 @@ internal fun SettingsMobilePlaybackContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_next_episode_switch_delay_label),
-                valueText = state.nextEpisodeSwitchDelaySeconds.toNextEpisodeSwitchDelayText(),
+                valueLabel = { it.toNextEpisodeSwitchDelayText() },
                 value = state.nextEpisodeSwitchDelaySeconds,
                 valueRange = 0..30,
                 enabled = state.autoPlayNextEpisode,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(SettingsState.Event.NextEpisodeSwitchDelayChanged(it))
                 },
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_mobile_controls_auto_hide_label),
-                valueText = stringResource(
-                    R.string.settings_next_episode_switch_delay_seconds,
-                    state.playerControlsAutoHideSeconds,
-                ),
+                valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
                 value = state.playerControlsAutoHideSeconds,
                 valueRange = 1..10,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it))
                 },
             )

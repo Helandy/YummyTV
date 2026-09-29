@@ -380,7 +380,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 allohaSource.onAudioTrackSelected(event.audioId, event.currentPosMs)
 
             is PlayerState.Event.AllohaSubtitleSelected ->
-                allohaSource.onSubtitleSelected(event.index)
+                allohaSource.onSubtitleSelected(event.index, event.currentPosMs)
 
             is PlayerState.Event.SpeedSelected -> {
                 val speed = event.speed.coerceAtLeast(0.1f)

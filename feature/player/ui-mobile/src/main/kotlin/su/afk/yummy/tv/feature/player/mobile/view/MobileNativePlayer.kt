@@ -237,8 +237,6 @@ internal fun MobileNativePlayer(
         playbackKey = playbackConfigKey,
         state = state,
         playback = ui,
-        durationMs = { state.playbackDurationMs },
-        playbackPositionMs = { state.playbackPositionMs },
         shouldPlay = { playbackShouldPlay },
     )
 
@@ -848,7 +846,9 @@ internal fun MobileNativePlayer(
                 showAudioSection = trackMenu.showAudioChoice,
                 subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
                 selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
-                onSubtitleTrackSelected = { index -> trackMenu.selectSubtitle(index, onEvent) },
+                onSubtitleTrackSelected = { index ->
+                    trackMenu.selectSubtitle(index, player.currentPosition.coerceAtLeast(0L), onEvent)
+                },
                 showSubtitleSection = trackMenu.showSubtitleChoice,
                 onDismiss = { settingsMode = null },
                 initialTrackTab = settingsTrackTab,

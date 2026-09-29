@@ -27,12 +27,12 @@ internal fun SettingsMobileStorageContent(
         SettingsMobileSection {
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_mobile_preview_cache),
-                valueText = state.previewCacheSize.toPreviewCacheSizeText(),
+                valueLabel = { it.toPreviewCacheSizeText() },
                 value = state.previewCacheSize,
                 valueRange = 50..500,
                 stepSize = 50,
                 enabled = true,
-                onValueChange = {
+                onValueCommitted = {
                     onEvent(SettingsState.Event.PreviewCacheSizeSelected(it))
                 },
             )

@@ -36,34 +36,33 @@ class PlayerTrackMenu internal constructor(
         get() = if (usesAlloha) alloha.selectedSubtitleOptionIndex else inStream.selectedTextIndex
 
     /**
-     * @return true, если выбор пересоберёт поток (Alloha) — платформе стоит запомнить позицию,
-     *   с которой продолжить.
+     * @param positionMs позиция, с которой продолжить, если выбор пересоберёт поток (Alloha):
+     *   её запоминает ViewModel.
      */
     fun selectAudio(
         index: Int,
         positionMs: Long,
         onEvent: (PlayerState.Event) -> Unit,
-    ): Boolean {
+    ) {
         if (!usesAlloha) {
             inStream.selectAudio(index)
-            return false
+            return
         }
-        val id = alloha.audioIdAt(index) ?: return false
+        val id = alloha.audioIdAt(index) ?: return
         onEvent(PlayerState.Event.AllohaAudioTrackSelected(id, positionMs))
-        return true
     }
 
-    /** @return true, если выбор пересоберёт поток (Alloha). */
+    /** @param positionMs см. [selectAudio]. */
     fun selectSubtitle(
         index: Int,
+        positionMs: Long,
         onEvent: (PlayerState.Event) -> Unit,
-    ): Boolean {
+    ) {
         if (!usesAlloha) {
             inStream.selectText(index)
-            return false
+            return
         }
-        onEvent(PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(index)))
-        return true
+        onEvent(PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(index), positionMs))
     }
 }
 

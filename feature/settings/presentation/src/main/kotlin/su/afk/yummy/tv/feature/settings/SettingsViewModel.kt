@@ -275,8 +275,6 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             is SettingsState.Event.PlayerControlsAutoHideChanged -> viewModelScope.launch {
-                // Слайдер шлёт значение на каждый кадр перетаскивания.
-                if (event.seconds == currentState.playerControlsAutoHideSeconds) return@launch
                 analytics.eventPlayerControlsAutoHideChanged(event.seconds)
                 settingsStore.setPlayerControlsAutoHideSeconds(event.seconds)
             }

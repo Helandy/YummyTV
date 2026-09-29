@@ -177,10 +177,16 @@ internal class AllohaSourceBehavior @Inject constructor(
         saveAudioPreference(audioId)
     }
 
-    fun onSubtitleSelected(index: Int?) {
+    fun onSubtitleSelected(index: Int?, positionMs: Long) {
         val validIndex = index?.takeIf { it in host.state.allohaSubtitles.indices }
+        val position = positionMs.coerceAtLeast(0L)
+        // Субтитры живут в MediaItem, поэтому смена пересобирает поток: продолжаем с той же точки.
         host.update {
-            copy(selectedAllohaSubtitleIndex = validIndex)
+            copy(
+                selectedAllohaSubtitleIndex = validIndex,
+                resumeFromMs = position,
+                playbackPositionMs = position,
+            )
         }
         saveSubtitlePreference(validIndex)
     }
