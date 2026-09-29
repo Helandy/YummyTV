@@ -5,17 +5,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.feature.player.common.PlayerEndFlowState
 import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
-import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.presentation.R
 
 /** Промпты по центру: следующий эпизод и финальное действие тайтла. */
 @Composable
 internal fun BoxScope.TvPlayerEndPrompts(
-    prompts: TvPlayerPromptsState,
+    prompts: PlayerEndFlowState,
     focus: TvPlayerFocusRequesters,
     hasNextEpisode: Boolean,
     nextEpisodeDubbing: String?,
@@ -47,8 +47,7 @@ internal fun BoxScope.TvPlayerEndPrompts(
         primaryFocusRequester = focus.nextEpisode,
         onPrimary = onPlayNextEpisode,
         onStay = {
-            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.nextEpisodePromptDismissed = true
+            prompts.dismissNextEpisode()
             onInteraction()
         },
         onInteraction = onInteraction,

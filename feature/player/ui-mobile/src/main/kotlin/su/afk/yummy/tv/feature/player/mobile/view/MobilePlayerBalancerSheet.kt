@@ -45,7 +45,6 @@ internal fun MobilePlayerBalancerSheet(
     onBalancerSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val playerNamePrefix = stringResource(R.string.player_name_prefix)
 
     BaseBottomSheetCustom(onDismissRequest = onDismiss) { maxHeight ->
         HideSheetWindowSystemBars()
@@ -69,7 +68,7 @@ internal fun MobilePlayerBalancerSheet(
             itemsIndexed(balancerNames, key = { index, name -> "$index-$name" }) { index, name ->
                 val enabled = balancerAvailability.getOrElse(index) { true }
                 MobilePlayerBalancerRow(
-                    label = name.removePrefix(playerNamePrefix),
+                    label = name,
                     metaLabel = if (enabled) {
                         metaLabel
                     } else {

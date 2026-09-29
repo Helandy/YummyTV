@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.feature.player.view.player
+package su.afk.yummy.tv.feature.player.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -7,42 +7,42 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerAutoHideController
-import su.afk.yummy.tv.feature.player.common.PlayerSkipUiState
-import su.afk.yummy.tv.feature.player.common.PlayerStepSeekToastState
-import su.afk.yummy.tv.feature.player.common.toPlaybackErrorEvent
 import su.afk.yummy.tv.feature.player.common.utils.positionSnapshot
 
 /**
- * Player.Listener TV-плеера: play/pause, завершение эпизода, ошибки.
- * Промптами конца эпизода владеет handleEpisodeEnd в TvExoPlayerView,
- * выгрузкой сервиса и финальным сохранением — TvPlayerLifecycleEffect.
+ * Player.Listener, общий для ТВ и мобилки: play/pause ↔ wantsPlay и автоскрытие контролов,
+ * готовность потока, конец эпизода по STATE_ENDED и ошибки воспроизведения.
+ * Платформенные подписки (PiP на мобилке) живут в своих эффектах.
+ *
+ * @param autoHide запланировать (true) или отменить (false) автоскрытие контролов.
  */
 @Composable
-internal fun TvPlayerListenerEffect(
+fun PlayerListenerEffect(
     player: Player,
-    autoHide: PlayerAutoHideController,
     skipUi: PlayerSkipUiState,
     stepSeekToast: PlayerStepSeekToastState,
     fallbackDurationMs: () -> Long,
     wantsPlay: () -> Boolean,
     onWantsPlayChanged: (Boolean) -> Unit,
+    autoHide: (Boolean) -> Unit,
     onEpisodeEnd: (positionMs: Long, durationMs: Long) -> Unit,
     onEvent: (PlayerState.Event) -> Unit,
 ) {
     val currentFallbackDuration by rememberUpdatedState(fallbackDurationMs)
     val currentWantsPlay by rememberUpdatedState(wantsPlay)
     val currentOnWantsPlayChanged by rememberUpdatedState(onWantsPlayChanged)
+    val currentAutoHide by rememberUpdatedState(autoHide)
     val currentOnEpisodeEnd by rememberUpdatedState(onEpisodeEnd)
     val currentOnEvent by rememberUpdatedState(onEvent)
+    val currentSkipUi by rememberUpdatedState(skipUi)
     val currentStepSeekToast by rememberUpdatedState(stepSeekToast)
 
     DisposableEffect(player) {
         player.playWhenReady = currentWantsPlay()
         val listener = object : Player.Listener {
-            override fun onPlayWhenReadyChanged(pwr: Boolean, reason: Int) {
-                currentOnWantsPlayChanged(pwr)
-                if (pwr) autoHide.schedule() else autoHide.cancel()
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                currentOnWantsPlayChanged(playWhenReady)
+                currentAutoHide(playWhenReady)
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -61,10 +61,10 @@ internal fun TvPlayerListenerEffect(
             }
         }
         player.addListener(listener)
-        if (currentWantsPlay()) autoHide.schedule() else autoHide.cancel()
+        currentAutoHide(currentWantsPlay())
         onDispose {
-            autoHide.cancel()
-            skipUi.cancel()
+            currentAutoHide(false)
+            currentSkipUi.cancel()
             currentStepSeekToast.cancel()
             player.removeListener(listener)
         }

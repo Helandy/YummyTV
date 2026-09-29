@@ -12,6 +12,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.compression.ContentEncoding
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -21,7 +22,10 @@ internal object KodikNetworkModule {
     @Provides
     @Singleton
     @KodikHttpClient
-    fun provideKodikHttpClient(): HttpClient = HttpClient(OkHttp) {
+    fun provideKodikHttpClient(okHttpClient: OkHttpClient): HttpClient = HttpClient(OkHttp) {
+        // Общий OkHttpClient приложения: пул соединений и TLS-сессии к Kodik переиспользуются
+        // вместо отдельного движка со своими пулом и потоками.
+        engine { preconfigured = okHttpClient }
         install(HttpTimeout)
         install(ContentEncoding) {
             gzip()

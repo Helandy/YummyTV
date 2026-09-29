@@ -13,7 +13,12 @@ import coil3.request.crossfade
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailFetcher
@@ -37,6 +42,7 @@ class CoilImageLoaderInstaller @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val okHttpClient: OkHttpClient,
     private val settingsStore: CacheSettingsStore,
+    private val interfaceModePreferences: AppInterfaceModePreferences,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
     private val getCachedAnimeVideos: GetCachedAnimeVideosUseCase,
@@ -44,7 +50,6 @@ class CoilImageLoaderInstaller @Inject constructor(
 
     @OptIn(ExperimentalCoilApi::class)
     fun install() {
-        val cacheBytes = settingsStore.currentPreviewCacheSize.toLong() * 1024L * 1024L
         val memoryCachePercent =
             if (isLowRamDevice()) LOW_RAM_MEMORY_CACHE_PERCENT else MEMORY_CACHE_PERCENT
 
@@ -56,8 +61,12 @@ class CoilImageLoaderInstaller @Inject constructor(
                     preconfigured = okHttpClient.newBuilder().build()
                 }
             }
+            // Лоадер собирается лениво, на первой картинке — интерфейс к этому моменту уже выбран.
+            // На ТВ crossfade выключен: анимация на каждой карточке грида стоит кадров на слабых
+            // приставках, а при DPAD-скролле её всё равно не видно.
+            val isTvInterface = interfaceModePreferences.selectedMode == AppInterfaceMode.TV
             ImageLoader.Builder(it)
-                .crossfade(true)
+                .crossfade(!isTvInterface)
                 .memoryCache {
                     MemoryCache.Builder()
                         .maxSizePercent(context, memoryCachePercent)
@@ -66,7 +75,7 @@ class CoilImageLoaderInstaller @Inject constructor(
                 .diskCache {
                     DiskCache.Builder()
                         .directory(context.cacheDir.resolve(IMAGE_CACHE_DIR_NAME))
-                        .maxSizeBytes(cacheBytes)
+                        .maxSizeBytes(readPreviewCacheSizeMb().toLong() * 1024L * 1024L)
                         .build()
                 }
                 .components {
@@ -91,11 +100,22 @@ class CoilImageLoaderInstaller @Inject constructor(
         }
     }
 
+    /**
+     * Coil создаёт дисковый кэш лениво и не на main, поэтому здесь можно дождаться DataStore.
+     * Снапшот [CacheSettingsStore.currentPreviewCacheSize] на холодном старте ещё не заполнен
+     * и отдал бы значение по умолчанию вместо выбранного пользователем.
+     */
+    private fun readPreviewCacheSizeMb(): Int =
+        runBlocking {
+            withTimeoutOrNull(CACHE_SIZE_READ_TIMEOUT_MS) { settingsStore.previewCacheSize.first() }
+        } ?: settingsStore.currentPreviewCacheSize
+
     private fun isLowRamDevice(): Boolean =
         (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
 
     private companion object {
         const val IMAGE_CACHE_DIR_NAME = "image_cache"
+        const val CACHE_SIZE_READ_TIMEOUT_MS = 1_000L
         const val MEMORY_CACHE_PERCENT = 0.15
         const val LOW_RAM_MEMORY_CACHE_PERCENT = 0.10
     }

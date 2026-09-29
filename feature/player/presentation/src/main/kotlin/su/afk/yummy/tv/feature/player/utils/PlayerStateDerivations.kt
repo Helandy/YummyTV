@@ -158,6 +158,26 @@ internal fun availableBalancerIndices(
         index.takeIf { balancer.dubbings.any { dubbing -> dubbing.name == dubbingName } }
     }
 
+/** Доступные качества стрима: от экстрактора или выведенные из URL. */
+internal fun streamQualities(state: PlayerState.State): Map<String, String> =
+    state.streamQualityMap
+        ?: state.streamUrl?.takeIf(String::isNotBlank)?.let(::deriveQualityUrls).orEmpty()
+
+/** Выбранное качество, а если его нет среди доступных — лучшее доступное. */
+internal fun activeQuality(state: PlayerState.State): String? {
+    val qualities = streamQualities(state)
+    return state.selectedQuality?.takeIf { it in qualities } ?: qualities.keys.lastOrNull()
+}
+
+/**
+ * Индексы балансеров графа в том порядке, в котором они показаны в UI
+ * ([su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState.balancerNames]): балансеры с активной
+ * озвучкой, а если таких нет — все.
+ */
+internal fun displayedBalancerIndices(state: PlayerState.State): List<Int> =
+    availableBalancerIndices(state, activeDubbingName(state))
+        .ifEmpty { state.sourceGraph.balancers.indices.toList() }
+
 internal fun isBalancerAvailableForEpisode(
     state: PlayerState.State,
     balancerIndex: Int,

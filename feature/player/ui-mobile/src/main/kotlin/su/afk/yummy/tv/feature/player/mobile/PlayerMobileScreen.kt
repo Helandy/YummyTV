@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.player.mobile
 
 import android.content.pm.ActivityInfo
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -40,6 +39,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 import su.afk.yummy.tv.feature.player.mobile.view.MobileNativePlayer
@@ -77,20 +77,12 @@ fun PlayerMobileScreen(
     ) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
-
     LaunchedEffect(dest) {
         onEvent(PlayerState.Event.NavigateToDestination(dest))
     }
+    // Сервис плеера поднимается параллельно с извлечением ссылки и переживает смену серии.
+    PlayerServiceWarmupEffect()
 
-    LaunchedEffect(Unit) {
-        effect.collect { playerEffect ->
-            when (playerEffect) {
-                is PlayerState.Effect.ShowMessage ->
-                    Toast.makeText(context, playerEffect.message, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     HideMobilePlayerSystemBars()
     ApplyPlayerOrientation(state.playerOrientationMode)
@@ -204,15 +196,8 @@ fun PlayerMobileScreen(
                 selectedIndex = uiState.currentBalancerIndex,
                 metaLabel = stringResource(R.string.player_balancer_meta),
                 onBalancerSelected = { index ->
-                    val balancerIndex =
-                        uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
                     showErrorBalancerSheet = false
-                    onEvent(
-                        PlayerState.Event.BalancerSelected(
-                            balancerIndex,
-                            uiState.errorResumePositionMs
-                        )
-                    )
+                    onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
                 },
                 onDismiss = { showErrorBalancerSheet = false },
             )

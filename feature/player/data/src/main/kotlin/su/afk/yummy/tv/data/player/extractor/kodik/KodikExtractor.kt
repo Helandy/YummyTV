@@ -2,6 +2,9 @@ package su.afk.yummy.tv.data.player.extractor.kodik
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -17,7 +20,9 @@ import su.afk.yummy.tv.domain.player.isKodikPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URLEncoder
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import javax.inject.Singleton
 
 internal sealed interface KodikResult {
     data class Stream(
@@ -34,12 +39,18 @@ internal sealed interface KodikResult {
     data object Failed : KodikResult
 }
 
+@Singleton
 internal class KodikExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
 ) : PlayerStreamExtractor {
 
+    // Скрипт плеера версионирован в URL, поэтому разобранный из него путь эндпоинта для одного и
+    // того же URL не меняется: без кэша каждый resolve качал бы и парсил сотни КБ JS заново.
+    private val endpointPathByScriptUrl = ConcurrentHashMap<String, String>()
+
     private val QUALITY_ORDER = listOf(240, 360, 480, 720, 1080)
+    private val DEFAULT_ENDPOINT_PATH = "/ftor"
     private val HLS_QUALITY_MANIFEST_PATTERN =
         Regex("""/(\d+)\.mp4:hls:manifest\.m3u8(?=$|[?#])""")
 
@@ -130,19 +141,10 @@ internal class KodikExtractor @Inject constructor(
                 }
                 val origin = playerScriptUrl.substringBefore("/assets/js/")
 
-                val playerScript = fetchHtml(playerScriptUrl, referer = fullUrl)
-
-                // Kodik encodes the endpoint path as base64 inside atob("...") in the player script
-                val endpointPath = Regex("""atob\("([A-Za-z0-9+/=]+)"\)""").findAll(playerScript)
-                    .mapNotNull { m ->
-                        try {
-                            val decoded = String(Base64.decode(m.groupValues[1], Base64.DEFAULT))
-                            decoded.takeIf { it.startsWith("/") && !decoded.startsWith("//") && decoded.length <= 10 }
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    .firstOrNull() ?: "/ftor"
+                val endpointPath = endpointPathByScriptUrl[playerScriptUrl]
+                    ?: fetchEndpointPath(playerScriptUrl, referer = fullUrl)
+                        ?.also { endpointPathByScriptUrl[playerScriptUrl] = it }
+                    ?: DEFAULT_ENDPOINT_PATH
 
                 val endpointUrl = "$origin$endpointPath"
 
@@ -163,8 +165,12 @@ internal class KodikExtractor @Inject constructor(
                     append("&info=%7B%7D")
                 }
 
-                val responseText =
+                val responseText = try {
                     postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
+                } catch (e: Exception) {
+                    endpointPathByScriptUrl.remove(playerScriptUrl)
+                    throw e
+                }
 
                 val qualities = parseQualityMap(responseText)
                 val streamUrl = qualities?.values?.lastOrNull()
@@ -174,6 +180,9 @@ internal class KodikExtractor @Inject constructor(
                         qualities = qualities,
                     )
                 } else {
+                    // Путь эндпоинта мог устареть на стороне Kodik — следующий resolve перечитает
+                    // скрипт плеера.
+                    endpointPathByScriptUrl.remove(playerScriptUrl)
                     analyticsTracker.logExtractorFailure(
                         "Kodik",
                         endpointUrl,
@@ -198,21 +207,44 @@ internal class KodikExtractor @Inject constructor(
             }
         }
 
+    /**
+     * Kodik encodes the endpoint path as base64 inside atob("...") in the player script.
+     * Null when nothing was decoded — such a result is not cached.
+     */
+    private suspend fun fetchEndpointPath(playerScriptUrl: String, referer: String): String? {
+        val playerScript = fetchHtml(playerScriptUrl, referer = referer)
+        return Regex("""atob\("([A-Za-z0-9+/=]+)"\)""").findAll(playerScript)
+            .mapNotNull { m ->
+                try {
+                    val decoded = String(Base64.decode(m.groupValues[1], Base64.DEFAULT))
+                    decoded.takeIf { it.startsWith("/") && !decoded.startsWith("//") && decoded.length <= 10 }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            .firstOrNull()
+    }
+
     private suspend fun parseQualityMap(response: String): LinkedHashMap<String, String>? {
         return try {
             val json = JSONObject(response)
             val links = json.optJSONObject("links") ?: return null
-            val qualities = LinkedHashMap<String, String>()
-            QUALITY_ORDER.forEach { quality ->
+            val streams = QUALITY_ORDER.mapNotNull { quality ->
                 val src = links.optJSONArray(quality.toString())
                     ?.optJSONObject(0)?.optString("src")
-                    ?.takeIf { it.isNotEmpty() } ?: return@forEach
+                    ?.takeIf { it.isNotEmpty() } ?: return@mapNotNull null
                 // src without "//" is ROT18+base64 encoded
-                val decoded = if (src.contains("//")) src else decodeKodikSrc(src) ?: return@forEach
-                val streamUrl = fixProtocol(decoded)
-                val resolved = resolveQualityStreamUrl(streamUrl, quality)
-                qualities.putIfAbsent(resolved.label, resolved.url)
+                val decoded = if (src.contains("//")) src else decodeKodikSrc(src) ?: return@mapNotNull null
+                quality to fixProtocol(decoded)
             }
+            // HEAD-проверки качеств независимы — параллельно, но порядок качеств сохраняется.
+            val resolved = coroutineScope {
+                streams.map { (quality, streamUrl) ->
+                    async { resolveQualityStreamUrl(streamUrl, quality) }
+                }.awaitAll()
+            }
+            val qualities = LinkedHashMap<String, String>()
+            resolved.forEach { qualities.putIfAbsent(it.label, it.url) }
             qualities.takeIf { it.isNotEmpty() }
         } catch (_: Exception) {
             currentCoroutineContext().ensureActive()

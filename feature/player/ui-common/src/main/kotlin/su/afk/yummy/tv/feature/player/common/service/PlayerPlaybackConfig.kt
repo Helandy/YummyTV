@@ -51,6 +51,7 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
     @ApplicationContext private val context: Context,
     private val downloadPlaybackCache: VideoDownloadPlaybackCache,
     private val streamingCacheProvider: PlayerStreamingCacheProvider,
+    private val httpDataSourceFactory: PlayerDataSourceFactory,
 ) : PlayerPlaybackConfig {
     @Volatile
     private var headers: Map<String, String> = emptyMap()
@@ -118,7 +119,7 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
         } else {
             CacheDataSource.Factory()
                 .setCache(streamingCacheProvider.cache)
-                .setUpstreamDataSourceFactory(PlayerDataSourceFactory.create(headers))
+                .setUpstreamDataSourceFactory(httpDataSourceFactory.create(headers))
                 .createDataSource()
         }
     }

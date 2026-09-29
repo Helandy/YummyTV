@@ -110,8 +110,9 @@ internal fun TvPlayerEpisodeRow(
             Spacer(Modifier.width(8.dp))
         }
         if (allBalancerNames.size > 1) {
-            val label = allBalancerNames.getOrElse(currentBalancerIndex) { playerName }
-                .removePrefix(stringResource(R.string.player_name_prefix))
+            val label = allBalancerNames.getOrElse(currentBalancerIndex) {
+                playerName.removePrefix(stringResource(R.string.player_name_prefix))
+            }
             TvControlButton(
                 onClick = onToggleBalancer,
                 onFocused = onInteraction,

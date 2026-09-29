@@ -2,8 +2,7 @@ package su.afk.yummy.tv.feature.player.common
 
 /**
  * Стабильный ключ воспроизведения: url + retryKey + отсортированные заголовки.
- * [offlineCacheKeySegment] добавляется вторым сегментом только если передан (TV);
- * mobile-ключ его не содержит — это влияет на пере-срабатывание media-item эффекта.
+ * [offlineCacheKeySegment] (ключ офлайн-кэша и выбранные субтитры) добавляется вторым сегментом.
  */
 fun buildPlayerPlaybackKey(
     url: String,

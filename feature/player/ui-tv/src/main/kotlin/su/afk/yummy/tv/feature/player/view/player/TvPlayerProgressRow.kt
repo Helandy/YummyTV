@@ -36,7 +36,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.utils.formatTime
+import su.afk.yummy.tv.feature.player.common.utils.formatPlayerTime
 
 @Composable
 internal fun TvPlayerProgressRow(
@@ -86,7 +86,7 @@ internal fun TvPlayerProgressRow(
             )
         }
         Text(
-            text = formatTime(displayTime),
+            text = formatPlayerTime(displayTime),
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
         )
@@ -144,7 +144,7 @@ internal fun TvPlayerProgressRow(
                 },
         )
         Text(
-            text = formatTime(duration),
+            text = formatPlayerTime(duration),
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
         )

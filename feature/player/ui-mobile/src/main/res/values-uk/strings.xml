@@ -10,8 +10,6 @@
     <string name="player_mobile_player">Плеєр</string>
     <string name="player_mobile_audio_track">Alloha</string>
     <string name="player_mobile_subtitles">Субтитри</string>
-    <string name="player_mobile_subtitles_off">Вимкнено</string>
-    <string name="player_mobile_track_fallback">Доріжка %1$d</string>
     <string name="player_mobile_done">Готово</string>
     <string name="player_mobile_previous_episode">Попередня</string>
     <string name="player_mobile_next_episode">Наступна</string>

@@ -41,33 +41,38 @@ import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerAllohaTracks
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
+import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
+import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
+import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
+import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
+import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
 import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
+import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
+import su.afk.yummy.tv.feature.player.common.rememberPlayerEndFlowState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSeekController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
-import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackSelection
+import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
 import su.afk.yummy.tv.feature.player.common.rememberPlayerVolumeController
-import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
-import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.common.utils.currentSkip
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.common.utils.playerContentScale
-import su.afk.yummy.tv.feature.player.common.utils.playerEndPromptFor
-import su.afk.yummy.tv.feature.player.common.utils.skippedMessageRes
+import su.afk.yummy.tv.feature.player.common.utils.skipPlayerSegment
 import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.mobile.cast.MobileCastingIndicator
 import su.afk.yummy.tv.feature.player.mobile.cast.rememberMobileCastConnectionState
@@ -79,23 +84,16 @@ import su.afk.yummy.tv.feature.player.mobile.model.MobileVerticalGestureZone
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerGestureController
 import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerOverlayController
-import su.afk.yummy.tv.feature.player.mobile.model.rememberMobilePlayerSeekController
-import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
-import su.afk.yummy.tv.feature.player.mobile.utils.buildMobileMediaItemKey
-import su.afk.yummy.tv.feature.player.mobile.utils.buildMobilePlayerMediaItemConfig
-import su.afk.yummy.tv.feature.player.mobile.utils.buildMobilePlayerPlaybackKey
-import su.afk.yummy.tv.feature.player.mobile.utils.formatMobilePlayerTime
 import su.afk.yummy.tv.feature.player.mobile.utils.gestureIcon
-import su.afk.yummy.tv.feature.player.mobile.utils.mobilePlayerNotificationMeta
 import su.afk.yummy.tv.feature.player.mobile.utils.toGesturePercentText
 import su.afk.yummy.tv.feature.player.mobile.utils.toMobilePlayerKeyAction
 import su.afk.yummy.tv.feature.player.mobile.view.tutorial.MobilePlayerGestureTutorial
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
+import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
-import su.afk.yummy.tv.feature.player.mobile.R as UiR
-import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -111,8 +109,7 @@ internal fun MobileNativePlayer(
     val activity = remember(context) { MobilePlayerPipController.findActivity(context) }
     val supportsPictureInPicture = remember(context) { MobilePlayerPipController.canEnter(context) }
     val isInPictureInPictureMode = MobilePlayerPipController.isInPictureInPictureMode
-    val tutorialBlocksPlayback =
-        !state.mobileGestureTutorialReady || state.showMobileGestureTutorial
+    val tutorialBlocksPlayback = state.mobileTutorialBlocksPlayback
     val tutorialVisible =
         state.mobileGestureTutorialReady &&
             state.showMobileGestureTutorial &&
@@ -134,21 +131,10 @@ internal fun MobileNativePlayer(
     var settingsTrackTab by rememberSaveable { mutableStateOf(MobilePlayerTrackSettingsTab.Dubbing) }
     var volumePanelOpen by remember { mutableStateOf(false) }
     var wantsPlay by remember { mutableStateOf(true) }
-    val resumeAfterLifecyclePause = remember { mutableStateOf(false) }
-    var nextEpisodePromptState by remember(ui.activeIframeUrl, streamUrl) {
-        mutableStateOf<PlayerEndPromptState>(PlayerEndPromptState.Hidden)
-    }
+    val endFlow = rememberPlayerEndFlowState(ui.activeIframeUrl, streamUrl)
     val skipUi = rememberPlayerSkipUiState(ui.activeIframeUrl)
     val currentUrl = ui.playbackUrl
-    val playbackConfigKey = remember(
-        currentUrl,
-        state.streamHeaders,
-        state.retryKey,
-        // Side-loaded subtitles are part of the MediaItem, so a new pick has to rebuild the key.
-        state.selectedAllohaSubtitleIndex,
-    ) {
-        buildMobilePlayerPlaybackKey(state = state, url = currentUrl)
-    }
+    val playbackConfigKey = rememberPlayerPlaybackKey(state, currentUrl)
     val mediaController = rememberPlayerMediaController()
     val castSupported = remember(context) { CastSupport.isSupported(context) }
     val castConnection = rememberMobileCastConnectionState()
@@ -164,7 +150,6 @@ internal fun MobileNativePlayer(
     val advancedVolumeEnabled = state.advancedPlayerVolumeEnabled
     val playerVolumeLevel by volumeController.volume.collectAsStateWithLifecycle()
     val playerVolumePercent = (playerVolumeLevel * 100f).roundToInt()
-    val playbackConfig = rememberPlayerPlaybackConfig()
 
     // При выключении режима прячем регулятор; звук вернётся к системному через эффект
     // применения player.volume (100%). Сохранённый уровень при этом не сбрасываем.
@@ -188,7 +173,7 @@ internal fun MobileNativePlayer(
                 !castConnection.isCasting
         },
         wantsPlay = { wantsPlay },
-        isPromptVisible = { nextEpisodePromptState.isVisible },
+        isPromptVisible = { endFlow.anyVisible },
     )
 
     LaunchedEffect(recoveryHintVisible) {
@@ -228,23 +213,8 @@ internal fun MobileNativePlayer(
     )
     val effectiveSpeed = if (gestures.isSpeedBoosted) MOBILE_PLAYER_SPEED_BOOST else selectedSpeed
     val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
-    val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
     val transformScopeKey = remember(state.animeId, state.animeTitle, ui.activeBalancerName) {
         "${state.animeId}|${state.animeTitle}|${ui.activeBalancerName}"
-    }
-    val notificationMeta = mobilePlayerNotificationMeta(ui)
-    val mediaItemKey = remember(
-        playbackConfigKey,
-        state.animeTitle,
-        notificationMeta,
-        state.artworkUrl,
-    ) {
-        buildMobileMediaItemKey(
-            playbackKey = playbackConfigKey,
-            animeTitle = state.animeTitle,
-            meta = notificationMeta,
-            artworkUrl = state.artworkUrl,
-        )
     }
 
     DisposableEffect(pipSession) {
@@ -260,53 +230,22 @@ internal fun MobileNativePlayer(
     val isBuffering = rememberPlayerBufferingState(player)
     val isMediaReady = rememberPlayerMediaReadyState(player, playbackConfigKey)
 
-    LaunchedEffect(player, playbackConfigKey, mediaItemKey, ui.activeIframeUrl) {
-        val activePlayer = player ?: return@LaunchedEffect
-        mediaItemUpdater.update(
-            player = activePlayer,
-            playbackConfig = playbackConfig,
-            config = buildMobilePlayerMediaItemConfig(
-                playbackKey = playbackConfigKey,
-                mediaItemKey = mediaItemKey,
-                url = currentUrl,
-                episodeUrl = ui.activeIframeUrl,
-                state = state,
-                meta = notificationMeta,
-                artworkUrl = state.artworkUrl,
-            ),
-        )
-        activePlayer.playWhenReady = playbackShouldPlay
-    }
+    PlayerMediaItemEffect(
+        player = player,
+        playbackKey = playbackConfigKey,
+        state = state,
+        playback = ui,
+        durationMs = { state.playbackDurationMs },
+        playbackPositionMs = { state.playbackPositionMs },
+        shouldPlay = { playbackShouldPlay },
+    )
 
     if (player == null) {
         PlayerBlackBackdrop()
         return
     }
 
-    val subtitlesOffLabel = stringResource(UiR.string.player_mobile_subtitles_off)
-    val trackFallbackTemplate = stringResource(UiR.string.player_mobile_track_fallback)
-    val trackSelection = rememberPlayerTrackSelection(
-        player = player,
-        offLabel = subtitlesOffLabel,
-        fallbackLabel = { index -> trackFallbackTemplate.format(index + 1) },
-    )
-    val alloha = remember(
-        state.allohaAudioTracks,
-        state.selectedAllohaAudioId,
-        state.allohaSubtitles,
-        state.selectedAllohaSubtitleIndex,
-        subtitlesOffLabel,
-    ) {
-        PlayerAllohaTracks(
-            audioTracks = state.allohaAudioTracks,
-            selectedAudioId = state.selectedAllohaAudioId,
-            subtitles = state.allohaSubtitles,
-            selectedSubtitleIndex = state.selectedAllohaSubtitleIndex,
-            subtitlesOffLabel = subtitlesOffLabel,
-        )
-    }
-    // Alloha reports its own dubbing/subtitle lists; everything else falls back to in-stream tracks.
-    val usesAlloha = alloha.isAvailable
+    val trackMenu = rememberPlayerTrackMenu(player, state)
 
     LaunchedEffect(tutorialBlocksPlayback, isInPictureInPictureMode, player) {
         if (tutorialBlocksPlayback) {
@@ -314,7 +253,7 @@ internal fun MobileNativePlayer(
             overlay.visible = false
             overlay.cancelHide()
             settingsMode = null
-            nextEpisodePromptState = PlayerEndPromptState.Hidden
+            endFlow.hideAll()
             gestures.resetForPictureInPicture()
         }
     }
@@ -329,16 +268,10 @@ internal fun MobileNativePlayer(
             screenshotUrl = ui.activeScreenshotUrl,
         )
     }
+    // Позицию в progress пишут общий поллинг и перемотка, репортер только отчитывается во VM.
     val reporter = rememberPlayerProgressReporter(
         source = { progressSource },
-        onEvent = { event ->
-            // Все источники позиции (polling, перемотка, listener, lifecycle) идут через репортер.
-            if (event is PlayerState.Event.PlaybackPositionChanged) {
-                progress.currentPosition = event.positionMs.coerceAtLeast(0L)
-                progress.duration = event.durationMs.coerceAtLeast(0L)
-            }
-            onEvent(event)
-        },
+        onEvent = onEvent,
     )
     val completionTracker = rememberPlayerCompletionTracker(
         contentKey = ui.activeIframeUrl,
@@ -347,68 +280,82 @@ internal fun MobileNativePlayer(
         onEvent = onEvent,
     )
 
+    /** Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции. */
     fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
-        completionTracker.onEpisodeEnd(positionMs, durationMs)
-        if (
-            (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
-            !isInPictureInPictureMode &&
-            !nextEpisodePromptState.isVisible
-        ) {
-            // Авто-отсчёт только внутри текущей озвучки: смену озвучки
-            // пользователь должен подтвердить явно
-            nextEpisodePromptState = playerEndPromptFor(
-                state.autoPlayNextEpisode && ui.hasNextEpisode,
-                state.nextEpisodeSwitchDelaySeconds,
-            )
-            overlay.visible = false
-            settingsMode = null
-            overlay.cancelHide()
-        }
+        val promptShown = endFlow.onEpisodeEnd(
+            positionMs = positionMs,
+            durationMs = durationMs,
+            completionTracker = completionTracker,
+            playback = ui,
+            autoPlayNextEpisode = state.autoPlayNextEpisode,
+            nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
+            suppressPrompts = isInPictureInPictureMode,
+        )
+        if (!promptShown) return
+        overlay.visible = false
+        settingsMode = null
+        overlay.cancelHide()
     }
 
-    val seekController = rememberMobilePlayerSeekController(
+    fun playNextEpisode() {
+        reporter.saveProgress(progress.currentPosition, progress.duration)
+        endFlow.hideAll()
+        onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
+    }
+
+    val seekController = rememberPlayerSeekController(
         player = player,
-        fallbackDurationMs = { progress.duration },
+        progress = progress,
         reporter = reporter,
         stepSeekToast = stepSeekToast,
         onEpisodeEnd = ::handleEpisodeEnd,
-        onBackwardStep = { nextEpisodePromptState = PlayerEndPromptState.Hidden },
+        onLeftEnd = endFlow::onLeftEnd,
     )
 
-    MobilePlayerListenerEffect(
+    // Объявлен раньше PlayerListenerEffect и MobilePlayerPipEffect, поэтому освобождается после них:
+    // clearMediaItems()/stop() идут уже без слушателя, иначе пустой плейлист выглядит концом серии.
+    PlayerLifecycleEffect(
         player = player,
-        activity = activity,
-        pipSession = pipSession,
         reporter = reporter,
-        overlay = overlay,
+        fallbackDurationMs = { progress.duration },
+        wantsPlay = { playbackShouldPlay },
+        // Каст продолжает играть на приёмнике независимо от PiP - фон телефона тут ни при чём.
+        keepPlayingOnPause = {
+            pipSession.shouldKeepPlayingOnPause() || castConnection.isCasting
+        },
+        keepPlayingOnLeave = pipSession::shouldKeepPlayingOnPause,
+        releaseOnStop = false,
+        onPaused = endFlow::onPaused,
+        onRelease = {
+            player.clearMediaItems()
+            player.stop()
+        },
+    )
+
+    PlayerListenerEffect(
+        player = player,
         skipUi = skipUi,
         stepSeekToast = stepSeekToast,
-        seekController = seekController,
         fallbackDurationMs = { progress.duration },
         wantsPlay = { playbackShouldPlay },
         onWantsPlayChanged = {
             if (!tutorialBlocksPlayback) wantsPlay = it
         },
+        autoHide = { schedule -> if (schedule) overlay.scheduleHide() else overlay.cancelHide() },
         onEpisodeEnd = ::handleEpisodeEnd,
         onEvent = onEvent,
     )
-
-    MobilePlayerLifecycleEffect(
+    MobilePlayerPipEffect(
         player = player,
+        activity = activity,
         pipSession = pipSession,
-        reporter = reporter,
-        resumeAfterPause = resumeAfterLifecyclePause,
-        fallbackDurationMs = { progress.duration },
-        wantsPlay = { playbackShouldPlay },
-        isCasting = { castConnection.isCasting },
-        promptState = { nextEpisodePromptState },
-        onPromptStateChange = { nextEpisodePromptState = it },
+        seekController = seekController,
     )
 
     LaunchedEffect(isInPictureInPictureMode) {
         if (isInPictureInPictureMode) {
             overlay.visible = false
-            nextEpisodePromptState = PlayerEndPromptState.Hidden
+            endFlow.hideAll()
             gestures.resetForPictureInPicture()
             settingsMode = null
             overlay.cancelHide()
@@ -422,22 +369,19 @@ internal fun MobileNativePlayer(
     }
 
     LaunchedEffect(ui.activeIframeUrl) {
-        nextEpisodePromptState = PlayerEndPromptState.Hidden
         settingsMode = null
     }
 
     PlayerEndPromptCountdownEffect(
-        promptState = nextEpisodePromptState,
+        promptState = endFlow.nextEpisodePrompt,
         contentKey = ui.activeIframeUrl,
-        onPromptStateChange = { nextEpisodePromptState = it },
-        onFinished = {
-            nextEpisodePromptState = PlayerEndPromptState.Hidden
-            onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
-        },
+        onPromptStateChange = { endFlow.nextEpisodePrompt = it },
+        onFinished = ::playNextEpisode,
     )
 
-    BackHandler(enabled = nextEpisodePromptState.isVisible && !isInPictureInPictureMode) {
-        nextEpisodePromptState = PlayerEndPromptState.Hidden
+    BackHandler(enabled = endFlow.anyVisible && !isInPictureInPictureMode) {
+        endFlow.dismissNextEpisode()
+        endFlow.finalEpisodeActionPrompt = null
         overlay.show()
     }
 
@@ -453,18 +397,18 @@ internal fun MobileNativePlayer(
         pipSession.setPlaying(playbackShouldPlay, activity)
     }
 
-    // «Продвинутая» громкость: внутренний уровень плеера (0–100%), независимо от системы.
-    // При выключенном режиме держим 100%, чтобы работал системный звук как раньше.
-    LaunchedEffect(player, advancedVolumeEnabled, playerVolumeLevel) {
-        player.volume = if (advancedVolumeEnabled) playerVolumeLevel else 1f
-    }
-
-    MobilePlayerProgressPollingEffect(
+    PlayerVolumeEffect(
         player = player,
-        episodeKey = ui.activeIframeUrl,
-        isMediaReady = isMediaReady,
-        reporter = reporter,
+        advancedVolumeEnabled = advancedVolumeEnabled,
+        volumeLevel = playerVolumeLevel,
+    )
+
+    PlayerProgressPollingEffect(
+        player = player,
         progress = progress,
+        reporter = reporter,
+        episodeKey = ui.activeIframeUrl,
+        onPositionAtEnd = ::handleEpisodeEnd,
     )
 
     // Позиция тикает раз в секунду; через derivedStateOf экран перекомпоновывается только
@@ -481,24 +425,15 @@ internal fun MobileNativePlayer(
 
     fun skipActiveSegment(reportSelection: Boolean) {
         val skip = activeSkip ?: return
-        if (skip.key !in skipUi.dismissedSkipKeys) skipUi.dismissedSkipKeys += skip.key
-        skipUi.showSnackbar(
-            context.getString(
-                skip.type.skippedMessageRes(),
-                formatMobilePlayerTime(skip.segment.startMs),
-                formatMobilePlayerTime(skip.segment.endMs),
-            )
+        skipPlayerSegment(
+            skip = skip,
+            context = context,
+            player = player,
+            skipUi = skipUi,
+            seekController = seekController,
+            reportSelection = reportSelection,
+            onEvent = onEvent,
         )
-        if (reportSelection) {
-            onEvent(
-                PlayerState.Event.SkipSegmentSelected(
-                    type = skip.type,
-                    fromMs = player.currentPosition.coerceAtLeast(0L),
-                    toMs = skip.segment.endMs,
-                )
-            )
-        }
-        seekController.seekTo(skip.segment.endMs)
     }
 
     MobilePlayerAutoSkipEffect(
@@ -641,17 +576,17 @@ internal fun MobileNativePlayer(
             },
             onPrevEpisode = { onEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = {
-                nextEpisodePromptState = PlayerEndPromptState.Hidden
+                endFlow.hideAll()
                 onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
             },
             onTrackSettings = {
-                nextEpisodePromptState = PlayerEndPromptState.Hidden
+                endFlow.hideAll()
                 settingsMode = MobilePlayerSettingsMode.Track
                 overlay.visible = true
                 overlay.cancelHide()
             },
             onPlaybackSettings = {
-                nextEpisodePromptState = PlayerEndPromptState.Hidden
+                endFlow.hideAll()
                 settingsMode = MobilePlayerSettingsMode.Playback
                 overlay.visible = true
                 overlay.cancelHide()
@@ -791,13 +726,13 @@ internal fun MobileNativePlayer(
             )
         }
 
-        if (nextEpisodePromptState.isVisible &&
+        if (endFlow.nextEpisodePrompt.isVisible &&
             (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
             !isInPictureInPictureMode &&
             !tutorialBlocksPlayback
         ) {
             MobilePlayerEndPrompt(
-                title = when (val prompt = nextEpisodePromptState) {
+                title = when (val prompt = endFlow.nextEpisodePrompt) {
                     is PlayerEndPromptState.WithCountdown -> stringResource(
                         R.string.player_next_episode_prompt_countdown,
                         prompt.seconds,
@@ -817,12 +752,46 @@ internal fun MobileNativePlayer(
                 },
                 primaryLabel = stringResource(R.string.player_watch_next),
                 stayLabel = stringResource(R.string.player_stay),
+                onPrimary = ::playNextEpisode,
+                onStay = {
+                    endFlow.dismissNextEpisode()
+                    overlay.show()
+                },
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
+
+        val finalAction = endFlow.finalEpisodeActionPrompt
+        if (finalAction != null && !isInPictureInPictureMode && !tutorialBlocksPlayback) {
+            val managesSubscriptions = finalAction == PlayerFinalEpisodeAction.ManageSubscriptions
+            MobilePlayerEndPrompt(
+                title = stringResource(
+                    if (managesSubscriptions) {
+                        R.string.player_notifications_prompt
+                    } else {
+                        R.string.player_rate_title_prompt
+                    }
+                ),
+                primaryLabel = stringResource(
+                    if (managesSubscriptions) {
+                        R.string.player_manage_notifications
+                    } else {
+                        R.string.player_rate_title
+                    }
+                ),
+                stayLabel = stringResource(R.string.player_stay),
                 onPrimary = {
-                    nextEpisodePromptState = PlayerEndPromptState.Hidden
-                    onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
+                    endFlow.finalEpisodeActionPrompt = null
+                    onEvent(
+                        if (managesSubscriptions) {
+                            PlayerState.Event.ManageSubscriptions
+                        } else {
+                            PlayerState.Event.RateTitle
+                        }
+                    )
                 },
                 onStay = {
-                    nextEpisodePromptState = PlayerEndPromptState.Hidden
+                    endFlow.finalEpisodeActionPrompt = null
                     overlay.show()
                 },
                 modifier = Modifier.align(Alignment.Center),
@@ -867,57 +836,18 @@ internal fun MobileNativePlayer(
                 balancerAvailability = ui.balancerAvailability,
                 selectedBalancerIndex = ui.currentBalancerIndex,
                 onBalancerSelected = { index ->
-                    val balancerIndex =
-                        ui.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
-                    onEvent(
-                        PlayerState.Event.BalancerSelected(
-                            balancerIndex,
-                            player.currentPosition
-                        )
-                    )
+                    onEvent(PlayerState.Event.BalancerSelected(index, player.currentPosition))
                 },
-                audioTrackNames = (if (usesAlloha) alloha.audioOptions else trackSelection.audioOptions)
-                    .map(PlayerTrackOption::label),
-                selectedAudioTrackIndex = if (usesAlloha) {
-                    alloha.selectedAudioIndex
-                } else {
-                    trackSelection.selectedAudioIndex
-                },
+                audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
+                selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
                 onAudioTrackSelected = { index ->
-                    if (usesAlloha) {
-                        alloha.audioIdAt(index)?.let { id ->
-                            onEvent(
-                                PlayerState.Event.AllohaAudioTrackSelected(
-                                    id,
-                                    player.currentPosition.coerceAtLeast(0L),
-                                )
-                            )
-                        }
-                    } else {
-                        trackSelection.selectAudio(index)
-                    }
+                    trackMenu.selectAudio(index, player.currentPosition.coerceAtLeast(0L), onEvent)
                 },
-                // The tab shows Alloha's own lists and is labelled "Alloha", so it is gated on the
-                // source actually being Alloha - not merely on some track being selectable. The
-                // in-stream fallback offered that tab for Kodik sources too.
-                showAudioSection = usesAlloha && alloha.hasAudioChoice,
-                subtitleTrackNames = (if (usesAlloha) alloha.subtitleOptions else trackSelection.textOptions)
-                    .map(PlayerTrackOption::label),
-                selectedSubtitleTrackIndex = if (usesAlloha) {
-                    alloha.selectedSubtitleOptionIndex
-                } else {
-                    trackSelection.selectedTextIndex
-                },
-                onSubtitleTrackSelected = { index ->
-                    if (usesAlloha) {
-                        onEvent(
-                            PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(index))
-                        )
-                    } else {
-                        trackSelection.selectText(index)
-                    }
-                },
-                showSubtitleSection = usesAlloha && alloha.hasSubtitleChoice,
+                showAudioSection = trackMenu.showAudioChoice,
+                subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
+                selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
+                onSubtitleTrackSelected = { index -> trackMenu.selectSubtitle(index, onEvent) },
+                showSubtitleSection = trackMenu.showSubtitleChoice,
                 onDismiss = { settingsMode = null },
                 initialTrackTab = settingsTrackTab,
                 onTrackTabChanged = { settingsTrackTab = it },

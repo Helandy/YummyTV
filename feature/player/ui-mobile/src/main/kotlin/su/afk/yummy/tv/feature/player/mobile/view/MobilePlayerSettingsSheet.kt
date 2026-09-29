@@ -132,10 +132,10 @@ internal fun MobilePlayerSettingsSheet(
                         val qualityIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
                         MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_quality)) {
                             MobilePlayerSliderRow(
-                                valueText = qualities[qualityIndex],
                                 value = qualityIndex,
                                 valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
-                                onValueChange = { index -> onQualitySelected(qualities[index]) },
+                                valueLabel = { index -> qualities[index] },
+                                onValueCommitted = { index -> onQualitySelected(qualities[index]) },
                                 tickLabels = qualities,
                             )
                         }
@@ -145,10 +145,10 @@ internal fun MobilePlayerSettingsSheet(
                     val speedTenths = (selectedSpeed * 10).roundToInt().coerceIn(5, 30)
                     MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_speed)) {
                         MobilePlayerSliderRow(
-                            valueText = "%.1fx".format(speedTenths / 10f),
                             value = speedTenths,
                             valueRange = 5..30,
-                            onValueChange = { tenths -> onSpeedSelected(tenths / 10f) },
+                            valueLabel = { tenths -> "%.1fx".format(tenths / 10f) },
+                            onValueCommitted = { tenths -> onSpeedSelected(tenths / 10f) },
                         )
                     }
                 }

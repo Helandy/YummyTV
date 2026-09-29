@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.data.home.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -42,13 +44,10 @@ class YaniHomeFeedRepository(
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
     override suspend fun getCachedHomeFeed(): HomeFeed? = withContext(Dispatchers.IO) {
-        val languageCode = settingsStore.currentLanguageCode()
-        val watchSignature = feedCacheSignature()
-        val displayWatchEntries = displayWatchEntries()
-        val hiddenIds = hiddenRecommendationIds()
-        homeFeedStore.getFeed(languageCode, watchSignature)
+        val local = readLocalFeedContext()
+        homeFeedStore.getFeed(local.languageCode, feedCacheSignature())
             ?.toStoredHomeFeed(stringProvider)
-            ?.withLocalOverrides(displayWatchEntries, hiddenIds)
+            ?.withLocalOverrides(local.watchEntries, local.hiddenIds)
     }
 
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
@@ -94,19 +93,17 @@ class YaniHomeFeedRepository(
             .distinctUntilChanged()
 
     private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
-        val languageCode = settingsStore.currentLanguageCode()
-        val watchSignature = feedCacheSignature()
-        val displayWatchEntries = displayWatchEntries()
         // Единый снимок на весь вызов: используется во всех трёх ветках (свежий кэш, сеть,
         // fallback при ошибке), чтобы не пересчитывать его отдельно для сетевой ветки.
-        val hiddenIds = hiddenRecommendationIds()
+        val local = readLocalFeedContext()
+        val watchSignature = feedCacheSignature()
         offlineFirstCache(
             forceRefresh = forceRefresh,
-            read = { homeFeedStore.getFeed(languageCode, watchSignature) },
+            read = { homeFeedStore.getFeed(local.languageCode, watchSignature) },
             isFresh = { it.isFresh(FEED_TTL_MS) },
             toDomain = { it.toStoredHomeFeed(stringProvider) },
-            fetchAndSave = { fetchHomeFeed(languageCode, watchSignature) },
-            transform = { it.withLocalOverrides(displayWatchEntries, hiddenIds) },
+            fetchAndSave = { fetchHomeFeed(local.languageCode, watchSignature) },
+            transform = { it.withLocalOverrides(local.watchEntries, local.hiddenIds) },
         )
     }
 
@@ -131,11 +128,23 @@ class YaniHomeFeedRepository(
         return cache
     }
 
-    private suspend fun displayWatchEntries(): List<WatchProgressEntry> =
-        watchProgressStore.continueWatching()
+    /** Язык, локальный прогресс (Room) и скрытые рекомендации независимы — читаются параллельно. */
+    private suspend fun readLocalFeedContext(): LocalFeedContext = coroutineScope {
+        val languageCode = async { settingsStore.currentLanguageCode() }
+        val watchEntries = async { watchProgressStore.continueWatching() }
+        val hiddenIds = async { settingsStore.hiddenRecommendationIds.first() }
+        LocalFeedContext(
+            languageCode = languageCode.await(),
+            watchEntries = watchEntries.await(),
+            hiddenIds = hiddenIds.await(),
+        )
+    }
 
-    private suspend fun hiddenRecommendationIds(): Set<Int> =
-        settingsStore.hiddenRecommendationIds.first()
+    private class LocalFeedContext(
+        val languageCode: String,
+        val watchEntries: List<WatchProgressEntry>,
+        val hiddenIds: Set<Int>,
+    )
 
     // Применяется одинаково к результату из кэша, из сети и к fallback при ошибке: "продолжить
     // просмотр" всегда пересчитывается из актуального локального прогресса, а не из момента

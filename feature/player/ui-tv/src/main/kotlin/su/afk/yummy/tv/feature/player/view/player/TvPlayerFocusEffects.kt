@@ -6,12 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
+import su.afk.yummy.tv.feature.player.common.PlayerEndFlowState
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanelsState
-import su.afk.yummy.tv.feature.player.model.TvPlayerPromptsState
 import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 
 /**
@@ -23,7 +23,7 @@ import su.afk.yummy.tv.feature.player.utils.toPlayerControlFocusTarget
 internal fun TvPlayerFocusEffects(
     focus: TvPlayerFocusRequesters,
     panels: TvPlayerPanelsState,
-    prompts: TvPlayerPromptsState,
+    prompts: PlayerEndFlowState,
     controllerVisible: Boolean,
     recoveryHintVisible: Boolean,
     tutorialActive: Boolean = false,

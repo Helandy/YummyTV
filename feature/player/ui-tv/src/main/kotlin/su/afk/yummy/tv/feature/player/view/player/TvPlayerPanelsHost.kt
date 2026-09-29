@@ -121,9 +121,7 @@ internal fun BoxScope.TvPlayerPanelsHost(
     TvPlayerSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Balancer),
         title = stringResource(R.string.player_balancer_title),
-        items = playback.balancerNames.map {
-            it.removePrefix(stringResource(R.string.player_name_prefix))
-        },
+        items = playback.balancerNames,
         selectedIndex = playback.currentBalancerIndex,
         selectedFocusRequester = focus.selectedBalancer,
         enabledItems = playback.balancerAvailability,

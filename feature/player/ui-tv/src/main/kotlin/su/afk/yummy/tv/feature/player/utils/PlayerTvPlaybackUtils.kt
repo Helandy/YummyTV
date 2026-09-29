@@ -27,10 +27,5 @@ internal fun PanelReturnFocusTarget.toPlayerControlFocusTarget(): PlayerControlF
         PanelReturnFocusTarget.Alloha -> PlayerControlFocusTarget.Alloha
     }
 
-internal fun formatTime(ms: Long): String {
-    val totalSec = ms / 1000
-    return "%d:%02d".format(totalSec / 60, totalSec % 60)
-}
-
 internal fun Float.speedLabel(): String =
     if (this % 1f == 0f) "${toInt()}x" else "${this}x"

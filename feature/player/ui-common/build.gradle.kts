@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":feature:video-download:api"))
     implementation(libs.bundles.media3.player)
     implementation(libs.media3.cast)
+    implementation(libs.androidx.media3.datasource.okhttp)
+    implementation(libs.okhttp)
     implementation(libs.bundles.compose.screen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.material.icons.core)

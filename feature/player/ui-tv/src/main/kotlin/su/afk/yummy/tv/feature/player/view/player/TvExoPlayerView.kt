@@ -27,7 +27,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -35,56 +34,50 @@ import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.common.PlayerAllohaTracks
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
+import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
+import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
+import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
+import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
-import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
+import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
 import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
+import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
+import su.afk.yummy.tv.feature.player.common.rememberPlayerEndFlowState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
+import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSeekController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
-import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackSelection
+import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
 import su.afk.yummy.tv.feature.player.common.rememberPlayerVolumeController
-import su.afk.yummy.tv.feature.player.common.service.PlayerMediaItemUpdater
-import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackConfig
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackSessionClient
 import su.afk.yummy.tv.feature.player.common.toastIcon
 import su.afk.yummy.tv.feature.player.common.utils.currentSkip
-import su.afk.yummy.tv.feature.player.common.utils.isVisible
-import su.afk.yummy.tv.feature.player.common.utils.playerEndPromptFor
-import su.afk.yummy.tv.feature.player.common.utils.skippedMessageRes
+import su.afk.yummy.tv.feature.player.common.utils.skipPlayerSegment
 import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
-import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.model.TvPlayerPanel
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPanelsState
-import su.afk.yummy.tv.feature.player.model.rememberTvPlayerPromptsState
-import su.afk.yummy.tv.feature.player.model.rememberTvPlayerSeekController
 import su.afk.yummy.tv.feature.player.model.rememberTvPlayerVolumeKeysState
-import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.feature.player.utils.buildTvMediaItemKey
-import su.afk.yummy.tv.feature.player.utils.buildTvPlayerMediaItemConfig
-import su.afk.yummy.tv.feature.player.utils.buildTvPlayerPlaybackKey
-import su.afk.yummy.tv.feature.player.utils.formatTime
 import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.tvPlayerContentScale
 import su.afk.yummy.tv.feature.player.view.TvPlayerRecoveryHint
 import kotlin.math.roundToInt
-import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -94,7 +87,7 @@ internal fun TvExoPlayerView(
     streamUrl: String,
     restoreControlFocusTarget: PlayerControlFocusTarget?,
     exitState: TvPlayerExitState,
-    pausedForTutorial: Boolean = false,
+    tutorialBlocksPlayback: Boolean = false,
     onControlFocusRestored: () -> Unit,
     onDubbingSelected: (dubbingIndex: Int, currentPositionMs: Long) -> Unit,
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit,
@@ -109,13 +102,14 @@ internal fun TvExoPlayerView(
         mutableLongStateOf(state.resumeFromMs)
     }
     var wantsPlay by remember { mutableStateOf(true) }
+    val playbackShouldPlay = wantsPlay && !tutorialBlocksPlayback
     val progress = rememberPlayerPlaybackProgressState()
     // Буфер нового стрима/серии считается с нуля (позиция приходит из polling-цикла).
     LaunchedEffect(streamUrl, episodeKey) { progress.bufferedProgress = 0f }
     var controllerVisible by remember { mutableStateOf(true) }
     val panels = rememberTvPlayerPanelsState()
-    val prompts = rememberTvPlayerPromptsState(episodeKey, streamUrl)
-    val skipUi = rememberPlayerSkipUiState(streamUrl)
+    val prompts = rememberPlayerEndFlowState(episodeKey, streamUrl)
+    val skipUi = rememberPlayerSkipUiState(episodeKey)
     val stepSeekToast = rememberPlayerStepSeekToastState(
         streamUrl = streamUrl,
         toastDuration = TV_PLAYER_INLINE_TOAST_DURATION,
@@ -155,35 +149,8 @@ internal fun TvExoPlayerView(
     val playbackSession = rememberPlayerPlaybackSessionClient()
     val player = playbackSession.player
     val isBuffering = rememberPlayerBufferingState(player)
-    val playbackConfig = rememberPlayerPlaybackConfig()
-    val mediaItemUpdater = remember { PlayerMediaItemUpdater() }
-    val playbackKey =
-        remember(
-            currentUrl,
-            state.streamHeaders,
-            state.offlineCacheKey,
-            state.retryKey,
-            // Side-loaded subtitles are part of the MediaItem, so a new pick has to rebuild the key.
-            state.selectedAllohaSubtitleIndex,
-        ) {
-            buildTvPlayerPlaybackKey(state = state, url = currentUrl)
-        }
+    val playbackKey = rememberPlayerPlaybackKey(state, currentUrl)
     val isMediaReady = rememberPlayerMediaReadyState(player, playbackKey)
-    val mediaItemKey = remember(
-        playbackKey,
-        state.animeTitle,
-        playback.activeEpisode,
-        playback.activeDubbing,
-        playback.activeBalancerName,
-        state.artworkUrl,
-    ) {
-        buildTvMediaItemKey(
-            playbackKey = playbackKey,
-            animeTitle = state.animeTitle,
-            playback = playback,
-            artworkUrl = state.artworkUrl,
-        )
-    }
 
     val progressSource = remember(
         episodeKey,
@@ -207,32 +174,28 @@ internal fun TvExoPlayerView(
         onEvent = onPlayerEvent,
     )
 
-    TvPlayerLifecycleEffect(
+    // На ТВ уход в фон означает уход с плеера: выгружаем уже на ON_STOP.
+    PlayerLifecycleEffect(
         player = player,
-        playbackSession = playbackSession,
         reporter = reporter,
-        prompts = prompts,
         fallbackDurationMs = { progress.duration },
-        wantsPlay = { wantsPlay },
+        wantsPlay = { playbackShouldPlay },
+        keepPlayingOnPause = { false },
+        keepPlayingOnLeave = { false },
+        releaseOnStop = true,
+        onPaused = prompts::onPaused,
+        onRelease = playbackSession::stopPlaybackAndService,
     )
 
-    LaunchedEffect(player, playbackKey, mediaItemKey, episodeKey) {
-        val activePlayer = player ?: return@LaunchedEffect
-        mediaItemUpdater.update(
-            player = activePlayer,
-            playbackConfig = playbackConfig,
-            config = buildTvPlayerMediaItemConfig(
-                playbackKey = playbackKey,
-                mediaItemKey = mediaItemKey,
-                url = currentUrl,
-                state = state,
-                playback = playback,
-                durationMs = progress.duration,
-                playbackPositionMs = seekOnSwitch,
-            ),
-        )
-        activePlayer.playWhenReady = wantsPlay
-    }
+    PlayerMediaItemEffect(
+        player = player,
+        playbackKey = playbackKey,
+        state = state,
+        playback = playback,
+        durationMs = { progress.duration },
+        playbackPositionMs = { seekOnSwitch },
+        shouldPlay = { playbackShouldPlay },
+    )
 
     if (player == null) {
         PlayerBlackBackdrop()
@@ -241,50 +204,16 @@ internal fun TvExoPlayerView(
 
     PlayerKeepScreenOnEffect()
 
-    val subtitlesOffLabel = stringResource(R.string.player_subtitles_off)
-    val trackFallbackTemplate = stringResource(R.string.player_track_fallback)
-    val trackSelection = rememberPlayerTrackSelection(
-        player = player,
-        offLabel = subtitlesOffLabel,
-        fallbackLabel = { index -> trackFallbackTemplate.format(index + 1) },
-    )
-    val alloha = remember(
-        state.allohaAudioTracks,
-        state.selectedAllohaAudioId,
-        state.allohaSubtitles,
-        state.selectedAllohaSubtitleIndex,
-        subtitlesOffLabel,
-    ) {
-        PlayerAllohaTracks(
-            audioTracks = state.allohaAudioTracks,
-            selectedAudioId = state.selectedAllohaAudioId,
-            subtitles = state.allohaSubtitles,
-            selectedSubtitleIndex = state.selectedAllohaSubtitleIndex,
-            subtitlesOffLabel = subtitlesOffLabel,
-        )
-    }
-    // Alloha reports its own dubbing/subtitle lists; everything else falls back to in-stream tracks.
-    val usesAlloha = alloha.isAvailable
-    // The panel shows Alloha's own lists and is labelled "Alloha", so it is gated on the source
-    // actually being Alloha - not merely on some track being selectable. Falling back to in-stream
-    // tracks here offered that panel for Kodik sources whose stream happens to carry extra tracks.
-    val hasSelectableAudio = usesAlloha && alloha.hasAudioChoice
-    val hasSelectableSubtitles = usesAlloha && alloha.hasSubtitleChoice
-    val audioTrackNames = if (usesAlloha) alloha.audioOptions else trackSelection.audioOptions
-    val subtitleTrackNames = if (usesAlloha) alloha.subtitleOptions else trackSelection.textOptions
-    val selectedAudioIndex =
-        if (usesAlloha) alloha.selectedAudioIndex else trackSelection.selectedAudioIndex
-    val selectedSubtitleIndex =
-        if (usesAlloha) alloha.selectedSubtitleOptionIndex else trackSelection.selectedTextIndex
+    val trackMenu = rememberPlayerTrackMenu(player, state)
 
-    LaunchedEffect(pausedForTutorial) {
-        if (pausedForTutorial) player.pause()
+    // Туториал блокирует воспроизведение, не трогая wantsPlay: после закрытия видео стартует само.
+    LaunchedEffect(player, playbackShouldPlay) {
+        player.playWhenReady = playbackShouldPlay
     }
 
     LaunchedEffect(exitState.requested) {
         if (exitState.requested) {
-            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.finalEpisodeActionPrompt = null
+            prompts.hideAll()
             autoHide.cancel()
             player.pause()
         }
@@ -295,53 +224,31 @@ internal fun TvExoPlayerView(
         reporter = reporter,
         onEvent = onPlayerEvent,
     )
-    var endHandled by remember(episodeKey, streamUrl) { mutableStateOf(false) }
 
-    /**
-     * Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции.
-     * Повторные вызовы гасит endHandled — поллинг тикает каждые 500 мс.
-     */
+    /** Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции. */
     fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
-        if (endHandled) return
-        endHandled = true
-        completionTracker.onEpisodeEnd(positionMs = positionMs, durationMs = durationMs)
-        if (exitState.requested) return
-        if (playback.hasNextEpisode || playback.nextEpisodeDubbing != null) {
-            if (prompts.nextEpisodePromptDismissed) return
-            // При переходе в другую озвучку авто-отсчёт не запускаем:
-            // озвучку не меняем без явного подтверждения пользователя
-            prompts.nextEpisodePrompt = playerEndPromptFor(
-                state.autoPlayNextEpisode && playback.hasNextEpisode,
-                state.nextEpisodeSwitchDelaySeconds,
-            )
-        } else {
-            val action = playback.finalEpisodeAction
-            if (action != PlayerFinalEpisodeAction.RateTitle &&
-                action != PlayerFinalEpisodeAction.ManageSubscriptions
-            ) {
-                return
-            }
-            prompts.finalEpisodeActionPrompt = action
-        }
+        val promptShown = prompts.onEpisodeEnd(
+            positionMs = positionMs,
+            durationMs = durationMs,
+            completionTracker = completionTracker,
+            playback = playback,
+            autoPlayNextEpisode = state.autoPlayNextEpisode,
+            nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
+            suppressPrompts = exitState.requested,
+        )
+        if (!promptShown) return
         controllerVisible = true
         panels.close()
         autoHide.cancel()
     }
 
-    val seekController = rememberTvPlayerSeekController(
+    val seekController = rememberPlayerSeekController(
         player = player,
         progress = progress,
         reporter = reporter,
         stepSeekToast = stepSeekToast,
-        onEpisodeEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs)
-        },
-        onBackwardStep = {
-            // Ушли от конца серии — конец эпизода должен отработать заново
-            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-            prompts.nextEpisodePromptDismissed = false
-            endHandled = false
-        },
+        onEpisodeEnd = ::handleEpisodeEnd,
+        onLeftEnd = prompts::onLeftEnd,
     )
 
     fun togglePanel(panel: TvPlayerPanel, returnFocusTarget: PanelReturnFocusTarget) {
@@ -358,8 +265,7 @@ internal fun TvExoPlayerView(
     fun playNextEpisode() {
         if (exitState.requested) return
         reporter.saveProgress(progress.currentPosition, progress.duration)
-        prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
-        prompts.finalEpisodeActionPrompt = null
+        prompts.hideAll()
         panels.close()
         onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
     }
@@ -392,36 +298,29 @@ internal fun TvExoPlayerView(
 
     fun skipActiveSegment(reportSelection: Boolean = true) {
         val skip = activeSkip ?: return
-        if (skip.key !in skipUi.dismissedSkipKeys) skipUi.dismissedSkipKeys += skip.key
         skipUi.highlightedSkipKey = null
-        val message = context.getString(
-            skip.type.skippedMessageRes(),
-            formatTime(skip.segment.startMs),
-            formatTime(skip.segment.endMs),
+        skipPlayerSegment(
+            skip = skip,
+            context = context,
+            player = player,
+            skipUi = skipUi,
+            seekController = seekController,
+            reportSelection = reportSelection,
+            onEvent = onPlayerEvent,
         )
-        skipUi.showSnackbar(message)
-        val fromPosition = player.currentPosition.coerceAtLeast(0L)
-        if (reportSelection) {
-            onPlayerEvent(
-                PlayerState.Event.SkipSegmentSelected(
-                    type = skip.type,
-                    fromMs = fromPosition,
-                    toMs = skip.segment.endMs,
-                ),
-            )
-        }
-        seekController.seekTo(skip.segment.endMs)
         onInteraction()
     }
 
-    TvPlayerListenerEffect(
+    PlayerListenerEffect(
         player = player,
-        autoHide = autoHide,
         skipUi = skipUi,
         stepSeekToast = stepSeekToast,
         fallbackDurationMs = { progress.duration },
-        wantsPlay = { wantsPlay },
-        onWantsPlayChanged = { wantsPlay = it },
+        wantsPlay = { playbackShouldPlay },
+        onWantsPlayChanged = {
+            if (!tutorialBlocksPlayback) wantsPlay = it
+        },
+        autoHide = { schedule -> if (schedule) autoHide.schedule() else autoHide.cancel() },
         onEpisodeEnd = { positionMs, durationMs ->
             handleEpisodeEnd(positionMs, durationMs)
         },
@@ -432,17 +331,17 @@ internal fun TvExoPlayerView(
         player.setPlaybackSpeed(activeSpeed)
     }
 
-    // «Продвинутая» громкость: внутренний уровень плеера (0–100%), независимо от системы.
-    // При выключенном режиме держим 100%, чтобы работал системный звук как раньше.
-    LaunchedEffect(player, advancedVolumeEnabled, playerVolumeLevel) {
-        player.volume = if (advancedVolumeEnabled) playerVolumeLevel else 1f
-    }
+    PlayerVolumeEffect(
+        player = player,
+        advancedVolumeEnabled = advancedVolumeEnabled,
+        volumeLevel = playerVolumeLevel,
+    )
 
-    TvPlayerProgressPollingEffect(
+    PlayerProgressPollingEffect(
         player = player,
         progress = progress,
         reporter = reporter,
-        episodeKey = { episodeKey },
+        episodeKey = episodeKey,
         onPositionAtEnd = { positionMs, durationMs ->
             handleEpisodeEnd(positionMs, durationMs)
         },
@@ -454,7 +353,7 @@ internal fun TvExoPlayerView(
         prompts = prompts,
         controllerVisible = controllerVisible,
         recoveryHintVisible = recoveryHintVisible,
-        tutorialActive = pausedForTutorial,
+        tutorialActive = state.tvControlsTutorialReady && state.showTvControlsTutorial,
         restoreControlFocusTarget = restoreControlFocusTarget,
         onControlFocusRestored = onControlFocusRestored,
     )
@@ -463,7 +362,7 @@ internal fun TvExoPlayerView(
         activeSkip = activeSkip,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
         delaySeconds = state.autoSkipDelaySeconds,
-        isPlaying = wantsPlay,
+        isPlaying = playbackShouldPlay,
         skipUi = skipUi,
         focus = focus,
         autoHide = autoHide,
@@ -482,8 +381,7 @@ internal fun TvExoPlayerView(
 
     BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible || controllerVisible) {
         if (panels.isAnyOpen || prompts.anyVisible) {
-            if (prompts.nextEpisodePrompt.isVisible) prompts.nextEpisodePromptDismissed = true
-            prompts.nextEpisodePrompt = PlayerEndPromptState.Hidden
+            prompts.dismissNextEpisode()
             prompts.finalEpisodeActionPrompt = null
             panels.close(
                 returnFocusTarget = when (panels.activePanel) {
@@ -616,7 +514,7 @@ internal fun TvExoPlayerView(
             visible = controllerVisible,
             focus = focus,
             progress = progress,
-            wantsPlay = wantsPlay,
+            wantsPlay = playbackShouldPlay,
             playback = playback,
             animeTitle = state.animeTitle,
             activeSkip = activeSkip,
@@ -628,7 +526,7 @@ internal fun TvExoPlayerView(
             currentQualityLabel = activeQuality.orEmpty(),
             currentSpeedLabel = activeSpeed.speedLabel(),
             showVolumeButton = advancedVolumeEnabled,
-            showAllohaButton = hasSelectableAudio || hasSelectableSubtitles,
+            showAllohaButton = trackMenu.showAudioChoice || trackMenu.showSubtitleChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
             onSeekTo = seekController::seekTo,
             onInteraction = ::onInteraction,
@@ -673,10 +571,10 @@ internal fun TvExoPlayerView(
             resizeMode = state.resizeMode,
             zoomLevel = state.zoomLevel,
             volumePercent = playerVolumePercent,
-            audioTrackNames = audioTrackNames.map(PlayerTrackOption::label),
-            selectedAudioTrackIndex = selectedAudioIndex,
-            subtitleTrackNames = subtitleTrackNames.map(PlayerTrackOption::label),
-            selectedSubtitleTrackIndex = selectedSubtitleIndex,
+            audioTrackNames = trackMenu.audioOptions.map(PlayerTrackOption::label),
+            selectedAudioTrackIndex = trackMenu.selectedAudioIndex,
+            subtitleTrackNames = trackMenu.subtitleOptions.map(PlayerTrackOption::label),
+            selectedSubtitleTrackIndex = trackMenu.selectedSubtitleIndex,
             onQualitySelected = { idx ->
                 val quality = playback.qualityLabels[idx]
                 if (quality != activeQuality) {
@@ -699,15 +597,12 @@ internal fun TvExoPlayerView(
                 onInteraction()
             },
             onSpeedSelected = { idx ->
-                val speed = speeds[idx]
-                if (speed != activeSpeed) onPlayerEvent(PlayerState.Event.SpeedSelected(speed))
+                onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[idx]))
                 panels.close(PanelReturnFocusTarget.Speed)
                 onInteraction()
             },
             onResizeModeSelected = { mode ->
-                if (mode != state.resizeMode) {
-                    onPlayerEvent(PlayerState.Event.ResizeModeSelected(mode))
-                }
+                onPlayerEvent(PlayerState.Event.ResizeModeSelected(mode))
                 onInteraction()
             },
             onZoomLevelSelected = { level ->
@@ -718,29 +613,14 @@ internal fun TvExoPlayerView(
             },
             onVolumeChange = { volumeController.setPercent(it) },
             onAudioTrackSelected = { idx ->
-                if (usesAlloha) {
-                    alloha.audioIdAt(idx)?.let { id ->
-                        val position = player.currentPosition.coerceAtLeast(0L)
-                        seekOnSwitch = position
-                        onPlayerEvent(
-                            PlayerState.Event.AllohaAudioTrackSelected(id, position),
-                        )
-                    }
-                } else {
-                    trackSelection.selectAudio(idx)
-                }
+                val position = player.currentPosition.coerceAtLeast(0L)
+                if (trackMenu.selectAudio(idx, position, onPlayerEvent)) seekOnSwitch = position
                 panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },
             onSubtitleTrackSelected = { idx ->
-                if (usesAlloha) {
-                    seekOnSwitch = player.currentPosition.coerceAtLeast(0L)
-                    onPlayerEvent(
-                        PlayerState.Event.AllohaSubtitleSelected(alloha.subtitleIndexAt(idx)),
-                    )
-                } else {
-                    trackSelection.selectText(idx)
-                }
+                val position = player.currentPosition.coerceAtLeast(0L)
+                if (trackMenu.selectSubtitle(idx, onPlayerEvent)) seekOnSwitch = position
                 panels.close(PanelReturnFocusTarget.Alloha)
                 onInteraction()
             },

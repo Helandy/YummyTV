@@ -68,7 +68,18 @@ class PlayerState {
         val isPlaybackRecovering: Boolean = false,
         val showChangePlayerHint: Boolean = false,
         val finalEpisodeAction: PlayerFinalEpisodeAction = PlayerFinalEpisodeAction.Loading,
-    ) : UiState
+    ) : UiState {
+        /**
+         * Воспроизведение ждёт туториал ТВ-управления: пока настройка не прочитана (иначе видео
+         * успело бы стартовать под ним) и пока он показан. После закрытия видео стартует само.
+         */
+        val tvTutorialBlocksPlayback: Boolean
+            get() = !tvControlsTutorialReady || showTvControlsTutorial
+
+        /** То же для туториала жестов мобильного плеера. */
+        val mobileTutorialBlocksPlayback: Boolean
+            get() = !mobileGestureTutorialReady || showMobileGestureTutorial
+    }
 
     /** Пользовательские действия и события воспроизведения на экране плеера. */
     sealed interface Event : UiEvent {
@@ -96,10 +107,16 @@ class PlayerState {
             val episodeUrl: String = "",
         ) : Event
 
-        /** Пользователь выбрал озвучку по индексу, сохранив текущую позицию. */
+        /**
+         * Пользователь выбрал озвучку по индексу в `PlayerPlaybackUiState.dubbingNames`, сохранив
+         * текущую позицию.
+         */
         data class DubbingSelected(val index: Int, val currentPosMs: Long) : Event
 
-        /** Пользователь выбрал балансер по индексу, сохранив текущую позицию. */
+        /**
+         * Пользователь выбрал балансер по индексу в `PlayerPlaybackUiState.balancerNames` (не по
+         * индексу графа — перевод делает ViewModel), сохранив текущую позицию.
+         */
         data class BalancerSelected(val index: Int, val currentPosMs: Long) : Event
 
         /** Пользователь выбрал качество потока, сохранив текущую позицию. */
@@ -177,7 +194,6 @@ class PlayerState {
         data object ManageSubscriptions : Event
     }
 
-    sealed interface Effect : UiEffect {
-        data class ShowMessage(val message: String) : Effect
-    }
+    /** Одноразовых эффектов у плеера сейчас нет; тип нужен контракту экрана. */
+    sealed interface Effect : UiEffect
 }

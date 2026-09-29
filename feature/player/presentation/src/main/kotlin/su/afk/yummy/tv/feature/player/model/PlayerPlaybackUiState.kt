@@ -13,10 +13,10 @@ import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeEpisodeSource
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.activeQuality
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
-import su.afk.yummy.tv.feature.player.utils.availableBalancerIndices
-import su.afk.yummy.tv.feature.player.utils.deriveQualityUrls
+import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
 import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
 import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
@@ -26,6 +26,7 @@ import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
 import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
+import su.afk.yummy.tv.feature.player.utils.streamQualities
 
 @Immutable
 data class PlayerPlaybackUiState(
@@ -47,8 +48,8 @@ data class PlayerPlaybackUiState(
     val dubbingSourceNames: ImmutableList<String>,
     val dubbingAvailability: ImmutableList<Boolean>,
     val currentDubbingIndex: Int,
+    /** Имена балансеров для показа, уже без префикса «Плеер». */
     val balancerNames: ImmutableList<String>,
-    val availableBalancerIndices: ImmutableList<Int>,
     val balancerAvailability: ImmutableList<Boolean>,
     val currentBalancerIndex: Int,
     /** Доступные качества стрима: от экстрактора или выведенные из URL. */
@@ -87,8 +88,7 @@ fun PlayerState.State.toPlayerPlaybackUiState(
     val globalSourceNames = displayedDubbingNames.map { name ->
         globalDubbingSourceNames(this, name, playerNamePrefix)
     }
-    val availableBalancerIndices = availableBalancerIndices(this, activeDubbingName)
-        .ifEmpty { sourceGraph.balancers.indices.toList() }
+    val availableBalancerIndices = displayedBalancerIndices(this)
     val activeEpisode = activeEpisode(this)
     val dubbingAvailability = displayedDubbingNames.map { name ->
         isDubbingAvailableForEpisode(this, name, activeEpisode)
@@ -97,10 +97,11 @@ fun PlayerState.State.toPlayerPlaybackUiState(
         isBalancerAvailableForEpisode(this, index, activeDubbingName, activeEpisode)
     }
     val url = streamUrl.orEmpty()
-    val qualities = streamQualityMap ?: url.takeIf(String::isNotBlank)?.let(::deriveQualityUrls).orEmpty()
-    val activeQuality = selectedQuality?.takeIf { it in qualities } ?: qualities.keys.lastOrNull()
+    val qualities = streamQualities(this)
+    val activeQuality = activeQuality(this)
+    // Имена для показа: без общего префикса «Плеер», как во всех списках и кнопках UI.
     val balancerNames = availableBalancerIndices.map { index ->
-        sourceGraph.balancers.getOrNull(index)?.name.orEmpty()
+        sourceGraph.balancers.getOrNull(index)?.name.orEmpty().removePrefix(playerNamePrefix)
     }
     val canChangePlayer = balancerNames.size > 1
     val canChangeDubbing = displayedDubbingNames.size > 1
@@ -136,7 +137,6 @@ fun PlayerState.State.toPlayerPlaybackUiState(
             .takeIf { it >= 0 }
             ?: selection.dubbingIndex,
         balancerNames = balancerNames.toImmutableList(),
-        availableBalancerIndices = availableBalancerIndices.toImmutableList(),
         balancerAvailability = balancerAvailability.toImmutableList(),
         currentBalancerIndex = availableBalancerIndices.indexOf(selection.balancerIndex)
             .takeIf { it >= 0 }

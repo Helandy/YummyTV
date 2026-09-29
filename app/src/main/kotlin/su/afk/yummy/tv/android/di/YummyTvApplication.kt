@@ -11,6 +11,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.tracing.trace
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import su.afk.yummy.tv.BuildConfig
 import su.afk.yummy.tv.android.cast.CastAnalytics
 import su.afk.yummy.tv.android.episodepush.NewEpisodePushScheduler
@@ -25,6 +27,7 @@ import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
+import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -71,6 +74,10 @@ class YummyTvApplication :
     @Inject
     lateinit var startupMetricsTracker: StartupMetricsTracker
 
+    @Inject
+    @DefaultApplicationScope
+    lateinit var appScope: CoroutineScope
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -92,10 +99,14 @@ class YummyTvApplication :
         trace("App.watchedEpisodeRuleSync") { watchedEpisodeRuleSync.start() }
         trace("App.onlineStatus") { onlineStatusCoordinator.start() }
         trace("App.featureToggleRefresh") { featureToggleRefreshCoordinator.start() }
-        trace("App.schedulers") {
-            homeFeedRefreshScheduler.schedule()
-            newEpisodePushScheduler.schedule()
-            pendingMutationSyncScheduler.schedule()
+        // Периодические задачи с KEEP: первый WorkManager.getInstance() поднимает WorkManager и
+        // его Room-базу, на main это стоило бы каждому холодному старту.
+        appScope.launch {
+            trace("App.schedulers") {
+                homeFeedRefreshScheduler.schedule()
+                newEpisodePushScheduler.schedule()
+                pendingMutationSyncScheduler.schedule()
+            }
         }
         trace("App.maintenance") { startupMaintenanceRunner.run() }
 

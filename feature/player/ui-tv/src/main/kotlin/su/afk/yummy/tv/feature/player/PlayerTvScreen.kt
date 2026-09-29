@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.TvPlayerExitState
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
@@ -72,6 +73,8 @@ fun PlayerTvScreen(
     LaunchedEffect(dest) {
         onEvent(PlayerState.Event.NavigateToDestination(dest))
     }
+    // Сервис плеера поднимается параллельно с извлечением ссылки и переживает смену серии.
+    PlayerServiceWarmupEffect()
 
     val exitState = remember { TvPlayerExitState() }
     TvPlayerBackgroundExitEffect {
@@ -185,18 +188,15 @@ fun PlayerTvScreen(
                 streamUrl = streamUrl,
                 restoreControlFocusTarget = pendingControlFocusTarget,
                 exitState = exitState,
-                pausedForTutorial = state.tvControlsTutorialReady && state.showTvControlsTutorial,
+                tutorialBlocksPlayback = state.tvTutorialBlocksPlayback,
                 onControlFocusRestored = { pendingControlFocusTarget = null },
                 onDubbingSelected = { newIdx, currentPosMs ->
                     pendingControlFocusTarget = PlayerControlFocusTarget.Dubbing
                     onEvent(PlayerState.Event.DubbingSelected(newIdx, currentPosMs))
                 },
                 onBalancerSelected = { newIdx, currentPosMs ->
-                    val balancerIndex = uiState.availableBalancerIndices.getOrElse(newIdx) {
-                        state.sourceSelection.balancerIndex
-                    }
                     pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
-                    onEvent(PlayerState.Event.BalancerSelected(balancerIndex, currentPosMs))
+                    onEvent(PlayerState.Event.BalancerSelected(newIdx, currentPosMs))
                 },
                 onPlayerEvent = onEvent,
             )
@@ -217,7 +217,7 @@ fun PlayerTvScreen(
         TvPlayerSelectionPanel(
             visible = showErrorBalancerPanel && uiState.canChangePlayer,
             title = stringResource(R.string.player_balancer_title),
-            items = uiState.balancerNames.map { it.removePrefix(playerNamePrefix) },
+            items = uiState.balancerNames,
             selectedIndex = uiState.currentBalancerIndex,
             selectedFocusRequester = selectedErrorBalancerFocusRequester,
             enabledItems = uiState.balancerAvailability,
@@ -227,16 +227,9 @@ fun PlayerTvScreen(
                 .padding(start = 48.dp, bottom = 72.dp),
             itemMeta = { stringResource(R.string.player_balancer_meta) },
             onItemSelected = { index ->
-                val balancerIndex =
-                    uiState.availableBalancerIndices.getOrElse(index) { state.sourceSelection.balancerIndex }
                 showErrorBalancerPanel = false
                 pendingControlFocusTarget = PlayerControlFocusTarget.Balancer
-                onEvent(
-                    PlayerState.Event.BalancerSelected(
-                        balancerIndex,
-                        uiState.errorResumePositionMs
-                    )
-                )
+                onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
             },
             onExitDown = { showErrorBalancerPanel = false },
         )

@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
@@ -45,9 +46,11 @@ import su.afk.yummy.tv.feature.player.utils.activeDubbingName
 import su.afk.yummy.tv.feature.player.utils.activeEpisode
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
 import su.afk.yummy.tv.feature.player.utils.activePlayerId
+import su.afk.yummy.tv.feature.player.utils.activeQuality
 import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.artworkSource
+import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
 
 /**
  * Оркестратор экрана плеера: источники, поток, прогресс.
@@ -141,7 +144,9 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     /**
      * Обложка медиа-уведомления: при смене серии/постера сразу постер, затем превью серии
-     * (Kodik резолвится по сети); новый запрос отменяет предыдущий.
+     * (Kodik резолвится по сети); новый запрос отменяет предыдущий. Превью запрашивается только
+     * после того, как поток получен: для Kodik это второй запрос того же iframe, и на старте он
+     * конкурировал бы с извлечением ссылки, а обложка нужна лишь уведомлению уже идущего видео.
      */
     private fun observeArtwork() {
         viewModelScope.launch {
@@ -149,6 +154,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 .distinctUntilChanged()
                 .collectLatest { source ->
                     setState { copy(artworkUrl = source.posterUrl.takeIf(String::isNotBlank)) }
+                    state.first { it.streamUrl != null }
                     val artwork = artworkHandler.resolve(source)
                     setState { copy(artworkUrl = artwork) }
                 }
@@ -293,7 +299,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 applySourceSelection(
                     sourceSelectionHandler.previousEpisode(currentState),
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
-                    refreshSourcesBeforeStream = true,
+                    refreshSourcesAlongsideStream = true,
                 )
             }
 
@@ -306,7 +312,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     nextState,
                     sourceScopeChanged = true,
                     resumeMode = PlayerStreamResumeMode.SelectedSourceOnly,
-                    refreshSourcesBeforeStream = true,
+                    refreshSourcesAlongsideStream = true,
                 )
                 nextState?.let(::saveContinueTarget)
             }
@@ -321,41 +327,42 @@ class PlayerViewModel @AssistedInject internal constructor(
                 saveWatchedProgressIfNeeded(event.positionMs, event.durationMs)
             }
 
+            // Сессии закрываются только при реальной смене источника: повторный выбор текущей
+            // озвучки/балансера (handler вернул null) не должен рвать идущее воспроизведение.
             is PlayerState.Event.DubbingSelected -> {
+                val nextState = sourceSelectionHandler.selectDubbing(
+                    state = currentState,
+                    index = event.index,
+                    currentPosMs = event.currentPosMs,
+                ) ?: return
                 closeSourceSessions()
                 analytics.eventDubbingSelected(
                     state = currentState,
                     index = event.index,
                     positionMs = event.currentPosMs,
                 )
-                applySourceSelection(
-                    sourceSelectionHandler.selectDubbing(
-                        state = currentState,
-                        index = event.index,
-                        currentPosMs = event.currentPosMs,
-                    ),
-                    sourceScopeChanged = true,
-                )
+                applySourceSelection(nextState, sourceScopeChanged = true)
             }
 
             is PlayerState.Event.BalancerSelected -> {
+                val balancerIndex = displayedBalancerIndices(currentState)
+                    .getOrNull(event.index) ?: return
+                val nextState = sourceSelectionHandler.selectBalancer(
+                    state = currentState,
+                    index = balancerIndex,
+                    currentPosMs = event.currentPosMs,
+                ) ?: return
                 closeSourceSessions()
                 analytics.eventBalancerSelected(
                     state = currentState,
-                    index = event.index,
+                    index = balancerIndex,
                     positionMs = event.currentPosMs,
                 )
-                applySourceSelection(
-                    sourceSelectionHandler.selectBalancer(
-                        state = currentState,
-                        index = event.index,
-                        currentPosMs = event.currentPosMs,
-                    ),
-                    sourceScopeChanged = true,
-                )
+                applySourceSelection(nextState, sourceScopeChanged = true)
             }
 
             is PlayerState.Event.QualitySelected -> {
+                if (event.quality == activeQuality(currentState)) return
                 analytics.eventQualitySelected(currentState.animeId, event.quality)
                 val position = event.currentPosMs.coerceAtLeast(0L)
                 allohaSource.onQualitySelected(event.quality)
@@ -375,11 +382,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                 allohaSource.onSubtitleSelected(event.index)
 
             is PlayerState.Event.SpeedSelected -> {
-                analytics.eventSpeedSelected(currentState.animeId, event.speed)
-                setState { copy(selectedSpeed = event.speed.coerceAtLeast(0.1f)) }
+                val speed = event.speed.coerceAtLeast(0.1f)
+                if (speed == currentState.selectedSpeed) return
+                analytics.eventSpeedSelected(currentState.animeId, speed)
+                setState { copy(selectedSpeed = speed) }
             }
 
             is PlayerState.Event.ResizeModeSelected -> {
+                if (event.mode == currentState.resizeMode) return
                 analytics.eventResizeModeSelected(currentState.animeId, event.mode)
                 displaySettings.selectResizeMode(host, event.mode)
             }
@@ -555,14 +565,17 @@ class PlayerViewModel @AssistedInject internal constructor(
     /**
      * Применяет выбранный пользователем источник и запускает загрузку потока.
      *
-     * Переключение серии сначала обновляет `/videos`, а смена балансера или озвучки может
-     * использовать уже загруженный граф источников.
+     * Переключение серии параллельно со стартом потока обновляет `/videos`: поток не ждёт сеть,
+     * а если после обновления активный iframe изменится, [loadSourceGraph] перезапустит загрузку.
+     * Устаревший iframe, на котором resolve упал, и так уводит в обновление графа через
+     * [PlayerStreamLoadResult.RefreshSources]. Смена балансера или озвучки использует уже
+     * загруженный граф источников.
      */
     private fun applySourceSelection(
         state: PlayerState.State?,
         sourceScopeChanged: Boolean = false,
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
-        refreshSourcesBeforeStream: Boolean = false,
+        refreshSourcesAlongsideStream: Boolean = false,
     ) {
         if (state == null) return
         resetSourceBehaviors()
@@ -570,10 +583,9 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (sourceScopeChanged) {
             displaySettings.observeActive(host)
         }
-        if (refreshSourcesBeforeStream) {
-            refreshSourceGraphThenLoadStream(resumeMode)
-        } else {
-            loadStream(resumeMode)
+        loadStream(resumeMode)
+        if (refreshSourcesAlongsideStream) {
+            loadSourceGraph(forceRefreshVideos = true, resumeMode = resumeMode)
         }
     }
 

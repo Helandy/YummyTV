@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.handler
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.usecase.GetPlayerSourceGraphUseCase
@@ -54,11 +56,14 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             }
         }
 
+        // Сборка графа (группировки по балансерам × озвучкам × сериям) и маппинг — CPU
         val sourceGraph = runSuspendCatching {
-            getPlayerSourceGraph(
-                request = request,
-                forceRefreshVideos = forceRefreshVideos,
-            ).toPresentationSourceGraph()
+            withContext(Dispatchers.Default) {
+                getPlayerSourceGraph(
+                    request = request,
+                    forceRefreshVideos = forceRefreshVideos,
+                ).toPresentationSourceGraph()
+            }
         }.getOrElse {
             return if (loadStreamOnFailure) {
                 PlayerSourceGraphLoadResult.LoadStream(

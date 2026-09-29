@@ -10,6 +10,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
@@ -21,16 +25,24 @@ import kotlin.math.roundToInt
 /** Половина ширины ползунка Material3: на столько трек вставлен внутрь с каждой стороны. */
 private val SliderThumbInset = 10.dp
 
-/** Слайдер для выбора качества/скорости в нижнем баре настроек плеера, тот же стиль, что в Настройках. */
+/**
+ * Слайдер для выбора качества/скорости в нижнем баре настроек плеера, тот же стиль, что в Настройках.
+ *
+ * Во время перетаскивания меняется только подпись; [onValueCommitted] вызывается один раз, когда
+ * палец отпущен. Иначе Slider шлёт значение на каждый кадр, и плеер переключал бы качество и писал
+ * прогресс десятки раз за один жест.
+ */
 @Composable
 internal fun MobilePlayerSliderRow(
-    valueText: String,
     value: Int,
     valueRange: IntRange,
-    onValueChange: (Int) -> Unit,
+    valueLabel: (Int) -> String,
+    onValueCommitted: (Int) -> Unit,
     modifier: Modifier = Modifier,
     tickLabels: List<String>? = null,
 ) {
+    var dragValue by remember(value) { mutableStateOf<Int?>(null) }
+    val shownValue = dragValue ?: value
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -38,14 +50,19 @@ internal fun MobilePlayerSliderRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = valueText,
+                text = valueLabel(shownValue),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Slider(
-            value = value.toFloat(),
-            onValueChange = { onValueChange(it.roundToInt()) },
+            value = shownValue.toFloat(),
+            onValueChange = { dragValue = it.roundToInt() },
+            onValueChangeFinished = {
+                val committed = dragValue ?: return@Slider
+                dragValue = null
+                if (committed != value) onValueCommitted(committed)
+            },
             valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
             steps = (valueRange.last - valueRange.first - 1).coerceAtLeast(0),
             colors = SliderDefaults.colors(
@@ -56,7 +73,7 @@ internal fun MobilePlayerSliderRow(
         if (tickLabels != null && tickLabels.size > 1) {
             MobilePlayerSliderTickLabels(
                 labels = tickLabels,
-                selectedIndex = value - valueRange.first,
+                selectedIndex = shownValue - valueRange.first,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp),

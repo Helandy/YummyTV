@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.utils.formatMobilePlayerTime
+import su.afk.yummy.tv.feature.player.common.utils.formatPlayerTime
 
 @Composable
 internal fun MobilePlayerProgressRow(
@@ -37,7 +37,7 @@ internal fun MobilePlayerProgressRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = formatMobilePlayerTime(displayTime),
+            text = formatPlayerTime(displayTime),
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
         )
@@ -51,7 +51,7 @@ internal fun MobilePlayerProgressRow(
             modifier = Modifier.weight(1f),
         )
         Text(
-            text = formatMobilePlayerTime(duration),
+            text = formatPlayerTime(duration),
             style = MaterialTheme.typography.labelMedium,
             color = Color.White.copy(alpha = 0.82f),
         )
