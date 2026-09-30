@@ -51,7 +51,7 @@ zxing-core = "3.5.4"
 androidx-tv-tvprovider = "1.1.0"
 
 # Analytics / Feature flags
-appmetrica = "8.5.1"
+appmetrica = "8.6.0"
 varioqub = "0.9.0"
 
 # Performance
