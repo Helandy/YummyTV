@@ -42,6 +42,7 @@ internal class CvhExtractor @Inject constructor(
     ): PlayerStreamResolveResult =
         extractQualities(
             iframeUrl = request.iframeUrl,
+            useFailoverHost = request.forceRefresh,
         )?.let { qualities ->
             PlayerStreamResolveResult.Stream(
                 url = qualities.values.last(),
@@ -50,8 +51,14 @@ internal class CvhExtractor @Inject constructor(
             )
         } ?: PlayerStreamResolveResult.Failed
 
+    /**
+     * @param useFailoverHost перерезолв после сбоя воспроизведения: основной узел okcdn мог
+     *   обрывать ответы, поэтому все качества переводятся на failoverHost из ответа API — он
+     *   отдаёт тот же файл по той же подписанной ссылке.
+     */
     private suspend fun extractQualities(
         iframeUrl: String,
+        useFailoverHost: Boolean,
     ): LinkedHashMap<String, String>? = withContext(Dispatchers.IO) {
         try {
             val fullUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
@@ -120,11 +127,11 @@ internal class CvhExtractor @Inject constructor(
             // URLs that aren't rewritten to failoverHost, which breaks HLS downloads.
             // MP4 qualities only; keys.last() = best available (used as default quality).
             val qualities = LinkedHashMap<String, String>()
-            qualities.putCvhQuality("240p", sources.optString("mpegLowestUrl"), failoverHost)
-            qualities.putCvhQuality("360p", sources.optString("mpegLowUrl"), failoverHost)
-            qualities.putCvhQuality("480p", sources.optString("mpegMediumUrl"), failoverHost)
-            qualities.putCvhQuality("720p", sources.optString("mpegHighUrl"), failoverHost)
-            qualities.putCvhQuality("1080p", sources.optString("mpegFullHdUrl"), failoverHost)
+            qualities.putCvhQuality("240p", sources.optString("mpegLowestUrl"), failoverHost, useFailoverHost)
+            qualities.putCvhQuality("360p", sources.optString("mpegLowUrl"), failoverHost, useFailoverHost)
+            qualities.putCvhQuality("480p", sources.optString("mpegMediumUrl"), failoverHost, useFailoverHost)
+            qualities.putCvhQuality("720p", sources.optString("mpegHighUrl"), failoverHost, useFailoverHost)
+            qualities.putCvhQuality("1080p", sources.optString("mpegFullHdUrl"), failoverHost, useFailoverHost)
 
             if (qualities.isEmpty()) {
                 logFailure(iframeUrl, "no mp4 qualities in sources")
@@ -167,16 +174,25 @@ internal class CvhExtractor @Inject constructor(
         label: String,
         url: String,
         failoverHost: String?,
+        useFailoverHost: Boolean,
     ) {
         val sourceUrl = url.takeIf { it.isNotBlank() } ?: return
-        this[label] = normalizeOkCdnIpUrl(sourceUrl, failoverHost)
+        this[label] = normalizeOkCdnHost(sourceUrl, failoverHost, useFailoverHost)
     }
 
-    private fun normalizeOkCdnIpUrl(url: String, failoverHost: String?): String {
+    /**
+     * Сырые IP-адреса CDN всегда меняются на failoverHost; именованный узел — только когда
+     * [forceFailover] (перерезолв после сбоя).
+     */
+    private fun normalizeOkCdnHost(
+        url: String,
+        failoverHost: String?,
+        forceFailover: Boolean,
+    ): String {
         val host = failoverHost?.takeIf { it.isNotBlank() } ?: return url
         val parsed = runCatching { URL(url) }.getOrNull() ?: return url
         if (!parsed.protocol.equals("https", ignoreCase = true)) return url
-        if (!IPV4_HOST_REGEX.matches(parsed.host)) return url
+        if (!forceFailover && !IPV4_HOST_REGEX.matches(parsed.host)) return url
 
         return runCatching {
             URL(parsed.protocol, host, parsed.port, parsed.file).toString()

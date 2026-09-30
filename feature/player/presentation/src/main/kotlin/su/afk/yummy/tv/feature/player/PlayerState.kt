@@ -177,6 +177,9 @@ class PlayerState {
         /** Новый media item подготовлен после фонового восстановления воспроизведения. */
         data object PlaybackReady : Event
 
+        /** Плеер слишком долго буферизуется при запрошенном воспроизведении. */
+        data object PlaybackStalled : Event
+
         /** Пользователь завершил одноразовое обучение жестам мобильного плеера. */
         data object MobileGestureTutorialDismissed : Event
 

@@ -29,6 +29,12 @@ internal interface PlayerSourceBehavior {
     /** Ошибка ExoPlayer. true — поведение запустило своё восстановление, false — показать ошибку. */
     fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean
 
+    /**
+     * Плеер завис в буферизации: загрузчик молча ретраит, а спиннер висит. true — поведение
+     * запустило своё восстановление, не дожидаясь исчерпания повторов загрузчика.
+     */
+    fun onPlaybackStalled(): Boolean = false
+
     /** Пользователь нажал «повторить». true — обработано, false — общий перезапрос потока. */
     fun onRetryRequested(): Boolean = false
 

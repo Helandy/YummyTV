@@ -5,6 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
+import java.net.ProtocolException
 
 /**
  * Политика обработки ошибок загрузки для «тихого переподключения под буфер».
@@ -39,12 +40,26 @@ internal class PlayerLoadErrorHandlingPolicy(
         ) {
             return C.TIME_UNSET
         }
+        // CDN оборвал ответ на середине (Content-Length не добран). Так ведёт себя сломанный узел
+        // okcdn: повтор того же URL упирается в него же, а 20 попыток с бэкоффом — это полторы
+        // минуты спиннера. После нескольких попыток сдаёмся, чтобы перерезолв взял другой хост.
+        if (exception.isTruncatedResponse() &&
+            loadErrorInfo.errorCount > TRUNCATED_RESPONSE_RETRY_COUNT
+        ) {
+            return C.TIME_UNSET
+        }
         // Сетевые сбои/таймауты/5xx — дефолтный бэкофф; число попыток ограничено
         // getMinimumLoadableRetryCount выше.
         return super.getRetryDelayMsFor(loadErrorInfo)
     }
 
+    private fun Throwable.isTruncatedResponse(): Boolean =
+        generateSequence(this) { it.cause }.take(MAX_CAUSE_DEPTH).any { it is ProtocolException }
+
     private companion object {
+        const val TRUNCATED_RESPONSE_RETRY_COUNT = 3
+        const val MAX_CAUSE_DEPTH = 5
+
         // Достаточно, чтобы окно фоновых ретраев заведомо перекрыло буфер (maxBufferMs = 60 c);
         // после исчерпания — фатал → перерезолв/оверлей, чтобы не зависнуть на спиннере навсегда.
         const val SILENT_RETRY_COUNT = 20

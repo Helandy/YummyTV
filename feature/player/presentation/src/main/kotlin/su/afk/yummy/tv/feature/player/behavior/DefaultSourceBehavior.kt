@@ -39,6 +39,15 @@ internal class DefaultSourceBehavior @Inject constructor(
         return true
     }
 
+    override fun onPlaybackStalled(): Boolean {
+        if (!retry.canRetry()) return false
+        analytics.debugLog {
+            "Playback stalled positionMs=${host.state.playbackPositionMs.coerceAtLeast(0L)}"
+        }
+        scheduleRetryAttempt()
+        return true
+    }
+
     override fun onPlaybackRecovered() {
         analytics.debugLog {
             "Silent playback retry recovered " +

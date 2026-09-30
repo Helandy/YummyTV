@@ -40,6 +40,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
 import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
+import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
@@ -308,6 +309,8 @@ internal fun TvExoPlayerView(
         )
         onInteraction()
     }
+
+    PlayerStallWatchdogEffect(player = player, onEvent = onPlayerEvent)
 
     PlayerListenerEffect(
         player = player,

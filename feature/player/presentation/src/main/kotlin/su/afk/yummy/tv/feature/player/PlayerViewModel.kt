@@ -286,6 +286,10 @@ class PlayerViewModel @AssistedInject internal constructor(
                 }
             }
 
+            PlayerState.Event.PlaybackStalled -> {
+                activeSourceBehavior()?.onPlaybackStalled()
+            }
+
             PlayerState.Event.PlaybackReady -> {
                 sourceBehaviors.forEach { it.onPlaybackReady() }
                 if (currentState.isPlaybackRecovering && sourceBehaviors.none { it.isRecovering }) {
