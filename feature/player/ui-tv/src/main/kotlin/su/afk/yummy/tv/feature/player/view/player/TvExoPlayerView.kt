@@ -182,7 +182,9 @@ internal fun TvExoPlayerView(
         keepPlayingOnLeave = { false },
         releaseOnStop = true,
         onPaused = prompts::onPaused,
-        onRelease = playbackSession::stopPlaybackAndService,
+        // Отключаемся от сервиса сразу: в свёрнутом приложении экран плеера не уходит из
+        // композиции, и привязанный контроллер держал бы сервис с плеером в памяти до возврата.
+        onRelease = { playbackSession.stopPlaybackAndService(releaseConnection = true) },
     )
 
     PlayerMediaItemEffect(
