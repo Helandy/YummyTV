@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
@@ -426,7 +427,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                         playbackDurationMs = duration,
                     )
                 }
-                playbackProgressHandler.recordWatchedTick(currentState, position, duration)
+                if (event.isPlayed) {
+                    playbackProgressHandler.recordWatchedTick(currentState, position, duration)
+                }
                 saveWatchedProgressIfNeeded(position, duration)
             }
 
@@ -443,9 +446,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                 val s = currentState
                 val snapshot = event.snapshot
                 viewModelScope.launch {
-                    playbackProgressHandler.saveProgress(
-                        playbackProgressHandler.progressSaveRequest(s, snapshot),
-                    )
+                    // Фоновое сохранение: сбой Room не должен уводить на экран ошибки посреди просмотра.
+                    runSuspendCatching {
+                        playbackProgressHandler.saveProgress(
+                            playbackProgressHandler.progressSaveRequest(s, snapshot),
+                        )
+                    }
                 }
             }
         }
@@ -539,7 +545,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun saveContinueTarget(state: PlayerState.State) {
         val request = playbackProgressHandler.continueTargetRequest(state) ?: return
         viewModelScope.launch {
-            playbackProgressHandler.saveContinueTarget(request)
+            runSuspendCatching { playbackProgressHandler.saveContinueTarget(request) }
         }
     }
 
@@ -552,17 +558,19 @@ class PlayerViewModel @AssistedInject internal constructor(
         ) ?: return
         val nextState = sourceSelectionHandler.nextEpisode(completionState)
         viewModelScope.launch {
-            playbackProgressHandler.saveProgress(request)
-            val nextTargetRequest =
-                if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
-                    nextState?.let(playbackProgressHandler::continueTargetRequest)
+            runSuspendCatching {
+                playbackProgressHandler.saveProgress(request)
+                val nextTargetRequest =
+                    if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
+                        nextState?.let(playbackProgressHandler::continueTargetRequest)
+                    } else {
+                        null
+                    }
+                if (nextTargetRequest != null) {
+                    playbackProgressHandler.saveContinueTarget(nextTargetRequest)
                 } else {
-                    null
+                    playbackProgressHandler.suppressContinueWatchingDisplay(completionState)
                 }
-            if (nextTargetRequest != null) {
-                playbackProgressHandler.saveContinueTarget(nextTargetRequest)
-            } else {
-                playbackProgressHandler.suppressContinueWatchingDisplay(completionState)
             }
         }
     }

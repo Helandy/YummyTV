@@ -103,13 +103,9 @@ internal class AllohaSourceBehavior @Inject constructor(
 
     override fun retriesFailedResolve(): Boolean {
         if (!recovery.isRecovering || !handles(host.state)) return false
-        // No retry cap here, matching the reference implementation: a warm, pooled
-        // WebView (see AllohaExtractor) makes each fresh-session attempt cheap
-        // enough that retrying indefinitely is fine for transient CDN/token
-        // rejections. A source that's permanently unavailable (not just
-        // temporarily rejected) will keep retrying too - there's currently no way
-        // to distinguish the two failure kinds here - so the user still needs to
-        // navigate away or switch dubbing/balancer manually in that case.
+        // Провал резолва во время восстановления считается такой же попыткой, как ошибка
+        // воспроизведения: бюджет [PlayerAllohaRecoveryHandler.MAX_ATTEMPTS] общий, после его
+        // исчерпания scheduleFreshAttempt покажет ошибку и подсказку сменить плеер/озвучку.
         scheduleFreshAttempt(PLAYBACK_RECOVERY_DELAY_MS)
         return true
     }

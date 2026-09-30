@@ -13,7 +13,8 @@ import su.afk.yummy.tv.feature.player.common.utils.updateBufferedProgress
 
 /**
  * Секундный цикл плеера для ТВ и мобилки: позиция (с защитой после seek), длительность,
- * буферизация, notify раз в секунду и сохранение каждые 10 секунд.
+ * буферизация, notify раз в секунду и сохранение каждые 10 секунд
+ * (на паузе — только при смене позиции).
  *
  * Здесь же страховка конца эпизода: часть потоков не доигрывает до duration и не даёт
  * STATE_ENDED, поэтому конец ловим ещё и по позиции.
@@ -37,6 +38,7 @@ fun PlayerProgressPollingEffect(
         // Серию, открытую сразу с конечной позиции, концом не считаем: сначала должна быть
         // позиция вне зоны конца, иначе промпт выскочит на старте
         var sawPositionBeforeEnd = false
+        var lastSavedPositionMs = -1L
         while (true) {
             val state = currentProgress
             val sinceSeek = System.currentTimeMillis() - state.lastSeekTimeMs
@@ -50,13 +52,20 @@ fun PlayerProgressPollingEffect(
             if (!state.isSeeking && state.duration > 0 &&
                 now - state.lastPositionNotifyTimeMs >= NOTIFY_INTERVAL_MS
             ) {
-                reporter.notifyPositionChanged(state.currentPosition, state.duration)
+                reporter.notifyPositionChanged(
+                    positionMs = state.currentPosition,
+                    durationMs = state.duration,
+                    isPlayed = player.isPlaying,
+                )
                 state.lastPositionNotifyTimeMs = now
             }
+            // На паузе/буферизации периодически не пишем: одно сохранение после остановки или seek.
             if (episodeKey.isNotBlank() && state.duration > 0 &&
-                now - reporter.lastSaveTimeMs > SAVE_INTERVAL_MS
+                now - reporter.lastSaveTimeMs > SAVE_INTERVAL_MS &&
+                (player.isPlaying || state.currentPosition != lastSavedPositionMs)
             ) {
                 reporter.saveProgress(state.currentPosition, state.duration)
+                lastSavedPositionMs = state.currentPosition
             }
             if (!state.isSeeking && state.duration > 0) {
                 if (isAtPlayerEnd(state.currentPosition, state.duration)) {

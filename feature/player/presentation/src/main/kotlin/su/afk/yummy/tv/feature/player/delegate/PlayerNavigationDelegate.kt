@@ -11,7 +11,10 @@ import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackProgressHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
 import javax.inject.Inject
 
-/** Уход с экрана плеера: прогресс сохраняется до навигации, дочерние экраны открываются поверх деталей. */
+/**
+ * Уход с экрана плеера: навигация не ждёт сеть, прогресс сохраняется в [ioScope] (переживает
+ * `viewModelScope`), дочерние экраны открываются поверх деталей.
+ */
 internal class PlayerNavigationDelegate @Inject constructor(
     private val nav: INavigationManager,
     private val detailsNavigator: IDetailsNavigator,
@@ -22,8 +25,12 @@ internal class PlayerNavigationDelegate @Inject constructor(
     var isNavigatingToChildScreen = false
         private set
 
+    private var isLeaving = false
+
     fun back(host: PlayerStateHost, beforeLeave: () -> Unit) {
-        saveProgressThenNavigate(host) {
+        if (isLeaving) return
+        isLeaving = true
+        navigateAndSaveProgress(host) {
             beforeLeave()
             nav.back()
         }
@@ -32,7 +39,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
     fun openDetails(host: PlayerStateHost) {
         val animeId = host.state.animeId
         if (animeId <= 0) return
-        saveProgressThenNavigate(host) {
+        navigateAndSaveProgress(host) {
             nav.navigate(detailsNavigator.getDetailsDest(animeId))
         }
     }
@@ -57,24 +64,19 @@ internal class PlayerNavigationDelegate @Inject constructor(
     fun returnToDetailsAfterTvBackground(host: PlayerStateHost, beforeLeave: () -> Unit) {
         if (isNavigatingToChildScreen) return
         val animeId = host.state.animeId
-        val request = progress.currentProgressSaveRequest(state = host.state)
-
-        beforeLeave()
-        if (animeId <= 0) {
-            nav.back()
-        } else {
-            val detailsDestination = detailsNavigator.getDetailsDest(animeId)
-            val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
-            if (previousDestination == detailsDestination) {
+        navigateAndSaveProgress(host) {
+            beforeLeave()
+            if (animeId <= 0) {
                 nav.back()
             } else {
-                nav.replace(detailsDestination)
+                val detailsDestination = detailsNavigator.getDetailsDest(animeId)
+                val previousDestination = nav.backStack.getOrNull(nav.backStack.lastIndex - 1)
+                if (previousDestination == detailsDestination) {
+                    nav.back()
+                } else {
+                    nav.replace(detailsDestination)
+                }
             }
-        }
-
-        if (request == null) return
-        ioScope.launch {
-            runSuspendCatching { progress.saveProgress(request) }
         }
     }
 
@@ -82,7 +84,7 @@ internal class PlayerNavigationDelegate @Inject constructor(
         val animeId = host.state.animeId
         if (animeId <= 0 || isNavigatingToChildScreen) return
         isNavigatingToChildScreen = true
-        saveProgressThenNavigate(host) {
+        navigateAndSaveProgress(host) {
             navigateFromPlayerToChild(animeId, childDestination(animeId))
         }
     }
@@ -98,18 +100,16 @@ internal class PlayerNavigationDelegate @Inject constructor(
         }
     }
 
-    private fun saveProgressThenNavigate(host: PlayerStateHost, navigate: () -> Unit) {
+    /**
+     * Снимок прогресса берётся до навигации (после неё состояние уже не наше), сама отправка
+     * идёт в [ioScope] и не блокирует уход даже при плохой сети.
+     */
+    private fun navigateAndSaveProgress(host: PlayerStateHost, navigate: () -> Unit) {
         val request = progress.currentProgressSaveRequest(state = host.state)
-        if (request == null) {
-            navigate()
-            return
-        }
-
-        host.scope.launch {
-            runSuspendCatching {
-                progress.saveProgress(request)
-            }
-            navigate()
+        navigate()
+        if (request == null) return
+        ioScope.launch {
+            runSuspendCatching { progress.saveProgress(request) }
         }
     }
 }

@@ -23,12 +23,17 @@ class PlayerProgressReporter internal constructor(
     val episodeUrl: String
         get() = source().episodeUrl
 
-    fun notifyPositionChanged(positionMs: Long, durationMs: Long) {
+    /**
+     * [isPlayed] — позиция получена во время реального воспроизведения (тик плеера), только такие
+     * секунды идут в `times`; цель seek и позиция на паузе просмотренными не считаются.
+     */
+    fun notifyPositionChanged(positionMs: Long, durationMs: Long, isPlayed: Boolean = false) {
         onEvent(
             PlayerState.Event.PlaybackPositionChanged(
                 positionMs = positionMs,
                 durationMs = durationMs,
                 episodeUrl = source().episodeUrl,
+                isPlayed = isPlayed,
             )
         )
     }

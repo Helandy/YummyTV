@@ -61,55 +61,63 @@ internal class PlayerStreamHandler @Inject constructor(
         val session = if (request.iframeUrl.isAllohaPlayerUrl()) {
             openAllohaStreamSession(request)
         } else null
-        val resolved = session?.initialStream ?: resolvePlayerStream(request)
-        when (val result = resolved) {
-            is PlayerStreamResolveResult.Stream -> {
-                val selectedQuality = selectedQualityOverride
-                    ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
-                    ?: selectedQuality(result.qualities, preferredHeightAsync.await())
-                if (selectedQuality != null) session?.selectQuality(selectedQuality)
-                PlayerStreamResult.Stream(
-                    url = result.url,
-                    headers = result.headers,
-                    qualities = result.qualities,
-                    selectedQuality = selectedQuality,
-                    resumeFromMs = resumeAsync.await() ?: 0L,
-                    consumedPendingResume = pendingResumeMs != null,
-                    allohaSession = session,
-                    allohaAudioTracks = result.allohaAudioTracks,
-                    selectedAllohaAudioId = result.selectedAllohaAudioId,
-                    allohaSubtitles = result.allohaSubtitles,
-                )
-            }
+        // Свежая сессия (без переиспользования) ещё никому не принадлежит — её регистрирует activate
+        // во ViewModel. Отмена или сбой на await ниже иначе оставили бы открытыми WebView и прокси.
+        // Переиспользованную сессию не трогаем: она живая и принадлежит менеджеру сессий.
+        try {
+            val resolved = session?.initialStream ?: resolvePlayerStream(request)
+            when (val result = resolved) {
+                is PlayerStreamResolveResult.Stream -> {
+                    val selectedQuality = selectedQualityOverride
+                        ?.takeIf { quality -> result.qualities?.containsKey(quality) == true }
+                        ?: selectedQuality(result.qualities, preferredHeightAsync.await())
+                    if (selectedQuality != null) session?.selectQuality(selectedQuality)
+                    PlayerStreamResult.Stream(
+                        url = result.url,
+                        headers = result.headers,
+                        qualities = result.qualities,
+                        selectedQuality = selectedQuality,
+                        resumeFromMs = resumeAsync.await() ?: 0L,
+                        consumedPendingResume = pendingResumeMs != null,
+                        allohaSession = session,
+                        allohaAudioTracks = result.allohaAudioTracks,
+                        selectedAllohaAudioId = result.selectedAllohaAudioId,
+                        allohaSubtitles = result.allohaSubtitles,
+                    )
+                }
 
-            is PlayerStreamResolveResult.KodikBlocked -> {
-                session?.close()
-                PlayerStreamResult.KodikBlocked(message = result.toMessage(strings))
-            }
+                is PlayerStreamResolveResult.KodikBlocked -> {
+                    session?.close()
+                    PlayerStreamResult.KodikBlocked(message = result.toMessage(strings))
+                }
 
-            is PlayerStreamResolveResult.Unavailable -> {
-                session?.close()
-                PlayerStreamResult.PlayerError(
-                    message = result.message ?: strings.get(R.string.player_dubbing_unavailable),
-                    reason = PlayerStreamResult.REASON_UNAVAILABLE,
-                )
-            }
+                is PlayerStreamResolveResult.Unavailable -> {
+                    session?.close()
+                    PlayerStreamResult.PlayerError(
+                        message = result.message ?: strings.get(R.string.player_dubbing_unavailable),
+                        reason = PlayerStreamResult.REASON_UNAVAILABLE,
+                    )
+                }
 
-            PlayerStreamResolveResult.Failed -> {
-                session?.close()
-                PlayerStreamResult.PlayerError(
-                    message = strings.get(R.string.player_stream_error),
-                    reason = PlayerStreamResult.REASON_FAILED,
-                )
-            }
+                PlayerStreamResolveResult.Failed -> {
+                    session?.close()
+                    PlayerStreamResult.PlayerError(
+                        message = strings.get(R.string.player_stream_error),
+                        reason = PlayerStreamResult.REASON_FAILED,
+                    )
+                }
 
-            PlayerStreamResolveResult.Unsupported -> {
-                session?.close()
-                PlayerStreamResult.PlayerError(
-                    message = strings.get(R.string.player_unsupported),
-                    reason = PlayerStreamResult.REASON_UNSUPPORTED,
-                )
+                PlayerStreamResolveResult.Unsupported -> {
+                    session?.close()
+                    PlayerStreamResult.PlayerError(
+                        message = strings.get(R.string.player_unsupported),
+                        reason = PlayerStreamResult.REASON_UNSUPPORTED,
+                    )
+                }
             }
+        } catch (e: Throwable) {
+            if (!request.reusePlaybackSession) session?.close()
+            throw e
         }
     }
 

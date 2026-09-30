@@ -154,6 +154,8 @@ class PlayerState {
             val positionMs: Long,
             val durationMs: Long,
             val episodeUrl: String = "",
+            /** Позиция получена во время реального воспроизведения, а не при seek/паузе. */
+            val isPlayed: Boolean = false,
         ) : Event
 
         /** Плеер запросил сохранение снимка прогресса просмотра. */
