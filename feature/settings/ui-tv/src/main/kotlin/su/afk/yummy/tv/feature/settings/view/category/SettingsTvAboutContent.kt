@@ -63,6 +63,13 @@ internal fun SettingsTvAboutContent(
     }
     SettingsDivider()
     AboutRow(
+        label = stringResource(R.string.settings_tv_logs_label),
+        hint = stringResource(R.string.settings_tv_logs_hint),
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
+    )
+    SettingsDivider()
+    AboutRow(
         label = stringResource(R.string.settings_feedback_label),
         hint = repositoryUrl,
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),

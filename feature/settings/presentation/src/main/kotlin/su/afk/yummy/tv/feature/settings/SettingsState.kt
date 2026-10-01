@@ -228,6 +228,12 @@ class SettingsState {
 
         /** Пользователь открыл «Что нового»: загрузить историю релизов, если её ещё нет. */
         data object ReleaseNotesRequested : Event
+
+        /** Пользователь хочет передать дамп логов приложения (Share). */
+        data object ShareLogsClicked : Event
+
+        /** Пользователь хочет сохранить дамп логов в память устройства (когда Share недоступен). */
+        data object SaveLogsClicked : Event
     }
 
     sealed interface Effect : UiEffect {
@@ -235,5 +241,12 @@ class SettingsState {
         data object RestartApplication : Effect
         data object OpenVideoExportDirectoryPicker : Effect
         data object VideoExportDirectorySelectionFailed : Effect
+
+        /** Дамп логов готов: отдать [uri] в системный Share; без обработчика сохранить в память. */
+        data class ShareLogs(val uri: String) : Effect
+
+        /** Дамп логов сохранён в [path] (Share недоступен, например на ТВ-приставке). */
+        data class LogsSaved(val path: String) : Effect
+        data object LogsFailed : Effect
     }
 }

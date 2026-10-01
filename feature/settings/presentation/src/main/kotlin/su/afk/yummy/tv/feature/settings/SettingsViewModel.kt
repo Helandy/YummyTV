@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferenc
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.logging.AppLogExporter
 import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
 import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
@@ -46,6 +47,7 @@ class SettingsViewModel @Inject internal constructor(
     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
     private val cacheStorageInspector: CacheStorageInspector,
+    private val appLogExporter: AppLogExporter,
     private val getAppReleaseHistory: GetAppReleaseHistoryUseCase,
     private val analyticsDeviceIdProvider: AnalyticsDeviceIdProvider,
     @param:Named("appVersionName") private val versionName: String,
@@ -409,6 +411,18 @@ class SettingsViewModel @Inject internal constructor(
             }
 
             SettingsState.Event.ReleaseNotesRequested -> loadReleaseNotes()
+
+            SettingsState.Event.ShareLogsClicked -> viewModelScope.launch {
+                runSuspendCatching { appLogExporter.shareUri(appLogExporter.buildDump()).toString() }
+                    .onSuccess { setEffect(SettingsState.Effect.ShareLogs(it)) }
+                    .onFailure { setEffect(SettingsState.Effect.LogsFailed) }
+            }
+
+            SettingsState.Event.SaveLogsClicked -> viewModelScope.launch {
+                runSuspendCatching { appLogExporter.saveToStorage(appLogExporter.buildDump()) }
+                    .onSuccess { setEffect(SettingsState.Effect.LogsSaved(it)) }
+                    .onFailure { setEffect(SettingsState.Effect.LogsFailed) }
+            }
         }
     }
 

@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.core.utils.coroutines.di.DefaultApplicationScope
+import su.afk.yummy.tv.core.utils.logging.AppLogCollector
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -75,6 +76,9 @@ class YummyTvApplication :
     lateinit var startupMetricsTracker: StartupMetricsTracker
 
     @Inject
+    lateinit var appLogCollector: AppLogCollector
+
+    @Inject
     @DefaultApplicationScope
     lateinit var appScope: CoroutineScope
 
@@ -88,6 +92,8 @@ class YummyTvApplication :
         // Hilt инжектит поля в super.onCreate(), поэтому начало замеряем до него
         val onCreateStartedAt = SystemClock.uptimeMillis()
         trace("App.hiltInject") { super.onCreate() }
+        // Файловый дамп logcat для передачи разработчику (Настройки → О приложении)
+        appLogCollector.start()
         startupMetricsTracker.start(this, onCreateStartedAt)
 
         // Секции App.* видны в Perfetto и в TraceSectionMetric бенчмарка старта

@@ -252,4 +252,8 @@
     <string name="settings_mobile_release_notes_beta">Beta</string>
     <string name="settings_mobile_release_notes_no_notes">No description</string>
     <string name="settings_mobile_analytics_id_label">Analytics ID</string>
+    <string name="settings_mobile_logs_label">Share logs</string>
+    <string name="settings_mobile_logs_hint">Send the app log file to the developer</string>
+    <string name="settings_mobile_logs_saved">Logs saved: %1$s</string>
+    <string name="settings_mobile_logs_failed">Could not prepare logs</string>
 </resources>

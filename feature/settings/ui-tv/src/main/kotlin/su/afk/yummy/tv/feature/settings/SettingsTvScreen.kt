@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -30,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
@@ -88,14 +90,41 @@ fun SettingsTvScreen(
 
     LaunchedEffect(Unit) {
         effect.collect { settingsEffect ->
-            if (settingsEffect is SettingsState.Effect.RestartApplication &&
-                !context.restartApplication()
-            ) {
-                Toast.makeText(
+            when (settingsEffect) {
+                SettingsState.Effect.RestartApplication -> if (!context.restartApplication()) {
+                    Toast.makeText(
+                        context,
+                        R.string.settings_interface_restart_failed,
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+
+                // На приставках часто нет приложений для ACTION_SEND: тогда сохраняем файл в память.
+                is SettingsState.Effect.ShareLogs -> {
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_STREAM, settingsEffect.uri.toUri())
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    val canShare = context.packageManager.queryIntentActivities(send, 0).isNotEmpty()
+                    val shared = canShare && runCatching {
+                        context.startActivity(
+                            Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }.isSuccess
+                    if (!shared) onEvent(SettingsState.Event.SaveLogsClicked)
+                }
+
+                is SettingsState.Effect.LogsSaved -> Toast.makeText(
                     context,
-                    R.string.settings_interface_restart_failed,
+                    context.getString(R.string.settings_tv_logs_saved, settingsEffect.path),
                     Toast.LENGTH_LONG,
                 ).show()
+
+                SettingsState.Effect.LogsFailed ->
+                    Toast.makeText(context, R.string.settings_tv_logs_failed, Toast.LENGTH_LONG).show()
+
+                else -> Unit
             }
         }
     }

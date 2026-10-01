@@ -129,6 +129,11 @@ fun SettingsMobileScreen(
                         )
                     }
                     SettingsMobileAboutRow(
+                        label = stringResource(R.string.settings_mobile_logs_label),
+                        hint = stringResource(R.string.settings_mobile_logs_hint),
+                        onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
+                    )
+                    SettingsMobileAboutRow(
                         label = stringResource(R.string.settings_feedback_label),
                         hint = repositoryUrl,
                         onClick = { context.openExternalUri(repositoryUrl) },

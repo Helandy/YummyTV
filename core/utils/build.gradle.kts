@@ -11,6 +11,7 @@ dependencies {
     api(project(":core:common"))
     implementation(project(":core:model"))
 
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.coil.core)

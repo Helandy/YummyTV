@@ -1,11 +1,13 @@
 package su.afk.yummy.tv.feature.settings.mobile.view
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.utils.system.restartApplication
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -41,6 +43,29 @@ internal fun SettingsMobileEffects(
 
                 SettingsState.Effect.OpenVideoExportDirectoryPicker ->
                     videoExportDirectoryPicker.launch(null)
+
+                is SettingsState.Effect.ShareLogs -> {
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_STREAM, settingsEffect.uri.toUri())
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    runCatching {
+                        context.startActivity(
+                            Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }.onFailure { onEvent(SettingsState.Event.SaveLogsClicked) }
+                }
+
+                is SettingsState.Effect.LogsSaved ->
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.settings_mobile_logs_saved, settingsEffect.path),
+                        Toast.LENGTH_LONG,
+                    ).show()
+
+                SettingsState.Effect.LogsFailed ->
+                    Toast.makeText(context, R.string.settings_mobile_logs_failed, Toast.LENGTH_LONG).show()
 
                 SettingsState.Effect.VideoExportDirectorySelectionFailed ->
                     Toast.makeText(
