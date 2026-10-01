@@ -47,6 +47,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
 import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.rememberDelayedRecoveryIndicator
 import su.afk.yummy.tv.feature.player.common.rememberPlayerAutoHideController
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
@@ -148,6 +149,7 @@ internal fun TvExoPlayerView(
     val playbackSession = rememberPlayerPlaybackSessionClient()
     val player = playbackSession.player
     val isBuffering = rememberPlayerBufferingState(player)
+    val showRecoveryIndicator = rememberDelayedRecoveryIndicator(state.isPlaybackRecovering)
     val playbackKey = rememberPlayerPlaybackKey(state, currentUrl)
     val isMediaReady = rememberPlayerMediaReadyState(player, playbackKey)
 
@@ -466,7 +468,7 @@ internal fun TvExoPlayerView(
         )
 
         PlayerBufferingIndicator(
-            visible = isBuffering || state.isPlaybackRecovering,
+            visible = isBuffering || showRecoveryIndicator,
             modifier = Modifier.align(Alignment.Center),
         )
 

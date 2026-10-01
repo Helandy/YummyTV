@@ -56,6 +56,7 @@ import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.rememberDelayedRecoveryIndicator
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
 import su.afk.yummy.tv.feature.player.common.rememberPlayerEndFlowState
@@ -231,6 +232,7 @@ internal fun MobileNativePlayer(
 
     val player = mediaController
     val isBuffering = rememberPlayerBufferingState(player)
+    val showRecoveryIndicator = rememberDelayedRecoveryIndicator(state.isPlaybackRecovering)
     val isMediaReady = rememberPlayerMediaReadyState(player, playbackConfigKey)
 
     PlayerMediaItemEffect(
@@ -514,7 +516,7 @@ internal fun MobileNativePlayer(
         )
 
         PlayerBufferingIndicator(
-            visible = isBuffering || state.isPlaybackRecovering,
+            visible = isBuffering || showRecoveryIndicator,
             modifier = Modifier.align(Alignment.Center),
         )
 

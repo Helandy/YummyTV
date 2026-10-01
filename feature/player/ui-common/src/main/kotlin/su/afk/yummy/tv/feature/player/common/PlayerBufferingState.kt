@@ -2,11 +2,13 @@ package su.afk.yummy.tv.feature.player.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
+import kotlinx.coroutines.delay
 
 /**
  * Возвращает согласованный snapshot видимой буферизации после полного batch событий Media3.
@@ -52,3 +54,23 @@ fun rememberPlayerBufferingState(player: Player?): Boolean {
 
 private fun Player.isVisibleBuffering(): Boolean =
     playbackState == Player.STATE_BUFFERING && playWhenReady
+
+/**
+ * Спиннер тихого восстановления: короткий ретрай остаётся незаметным, индикатор появляется только
+ * если он затянулся дольше [QUIET_RECOVERY_MS].
+ */
+@Composable
+fun rememberDelayedRecoveryIndicator(isRecovering: Boolean): Boolean {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(isRecovering) {
+        if (isRecovering) {
+            delay(QUIET_RECOVERY_MS)
+            visible = true
+        } else {
+            visible = false
+        }
+    }
+    return visible
+}
+
+private const val QUIET_RECOVERY_MS = 5_000L
