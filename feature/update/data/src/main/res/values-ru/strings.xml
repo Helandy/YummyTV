@@ -9,4 +9,14 @@
     <string name="update_install_error_invalid">Некорректный APK-файл</string>
     <string name="update_install_error_storage">Недостаточно места для установки</string>
     <string name="update_install_error_unknown">Не удалось установить обновление</string>
+    <string name="update_download_notification_channel">Обновление приложения</string>
+    <string name="update_download_notification_title">Загрузка обновления</string>
+    <string name="update_download_notification_progress">Скачано %1$d%%</string>
+    <string name="update_download_notification_cancel">Отмена</string>
+    <string name="update_download_notification_done">Обновление скачано. Нажмите, чтобы установить</string>
+    <string name="update_download_error_http">Не удалось скачать обновление: HTTP %1$d</string>
+    <string name="update_download_error_incomplete">Файл обновления скачан не полностью: %1$d из %2$d байт</string>
+    <string name="update_download_error_not_apk">Скачанный файл обновления не является APK</string>
+    <string name="update_download_error_save">Не удалось сохранить файл обновления</string>
+    <string name="update_download_error_unknown">Не удалось скачать обновление</string>
 </resources>

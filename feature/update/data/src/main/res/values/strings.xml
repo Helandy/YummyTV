@@ -9,4 +9,14 @@
     <string name="update_install_error_invalid">Invalid APK file</string>
     <string name="update_install_error_storage">Not enough storage to install</string>
     <string name="update_install_error_unknown">Could not install the update</string>
+    <string name="update_download_notification_channel">App update</string>
+    <string name="update_download_notification_title">Downloading update</string>
+    <string name="update_download_notification_progress">Downloaded %1$d%%</string>
+    <string name="update_download_notification_cancel">Cancel</string>
+    <string name="update_download_notification_done">Update downloaded. Tap to install</string>
+    <string name="update_download_error_http">Could not download the update: HTTP %1$d</string>
+    <string name="update_download_error_incomplete">The update file was downloaded incompletely: %1$d of %2$d bytes</string>
+    <string name="update_download_error_not_apk">The downloaded update file is not an APK</string>
+    <string name="update_download_error_save">Could not save the update file</string>
+    <string name="update_download_error_unknown">Could not download the update</string>
 </resources>

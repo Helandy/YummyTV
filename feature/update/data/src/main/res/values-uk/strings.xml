@@ -9,4 +9,14 @@
     <string name="update_install_error_invalid">Некоректний APK-файл</string>
     <string name="update_install_error_storage">Недостатньо місця для встановлення</string>
     <string name="update_install_error_unknown">Не вдалося встановити оновлення</string>
+    <string name="update_download_notification_channel">Оновлення застосунку</string>
+    <string name="update_download_notification_title">Завантаження оновлення</string>
+    <string name="update_download_notification_progress">Завантажено %1$d%%</string>
+    <string name="update_download_notification_cancel">Скасувати</string>
+    <string name="update_download_notification_done">Оновлення завантажено. Натисніть, щоб встановити</string>
+    <string name="update_download_error_http">Не вдалося завантажити оновлення: HTTP %1$d</string>
+    <string name="update_download_error_incomplete">Файл оновлення завантажено не повністю: %1$d з %2$d байтів</string>
+    <string name="update_download_error_not_apk">Завантажений файл оновлення не є APK</string>
+    <string name="update_download_error_save">Не вдалося зберегти файл оновлення</string>
+    <string name="update_download_error_unknown">Не вдалося завантажити оновлення</string>
 </resources>

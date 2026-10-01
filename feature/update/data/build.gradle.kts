@@ -12,6 +12,9 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":feature:update:domain"))
 
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.ktor.client.core)
     implementation(libs.kotlinx.serialization.json)
 }

@@ -1,13 +1,15 @@
 package su.afk.yummy.tv.feature.update
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.feature.update.handler.UpdateDownloadResult
+import su.afk.yummy.tv.domain.update.model.UpdateDownloadException
+import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
 import su.afk.yummy.tv.feature.update.handler.UpdateInstallHandler
 import su.afk.yummy.tv.feature.update.handler.UpdateInstallResult
 import su.afk.yummy.tv.feature.update.presentation.R
@@ -25,6 +27,10 @@ class UpdateViewModel @Inject internal constructor(
 ) : BaseViewModel<UpdateState.State, UpdateState.Event, UpdateState.Effect>() {
 
     private var downloadedApk: File? = null
+    private var downloadJob: Job? = null
+    private var availableStatus: UpdateState.State.Status.Available? = null
+    private var userStartedDownload = false
+    private var installTriggered = false
     private var updateVersion: String? = null
 
     override fun createInitialState() = UpdateState.State()
@@ -69,44 +75,66 @@ class UpdateViewModel @Inject internal constructor(
     ) {
         if (currentState.status is UpdateState.State.Status.Idle) {
             updateVersion = version
-            setState {
-                copy(
-                    status = UpdateState.State.Status.Available(
-                        version = version,
-                        changelog = changelog,
-                        apkUrl = apkUrl,
-                        required = required,
-                        updatesCount = updatesCount,
-                        isPrerelease = isPrerelease,
-                    )
-                )
-            }
+            val available = UpdateState.State.Status.Available(
+                version = version,
+                changelog = changelog,
+                apkUrl = apkUrl,
+                required = required,
+                updatesCount = updatesCount,
+                isPrerelease = isPrerelease,
+            )
+            availableStatus = available
+            setState { copy(status = available) }
+            // Загрузка могла начаться раньше (диалог закрыли или приложение свернули) — подхватываем её.
+            observeDownload(apkUrl)
         }
     }
 
     private fun downloadAndInstall(apkUrl: String) {
-        viewModelScope.launch {
-            setState { copy(status = UpdateState.State.Status.Downloading(0f)) }
+        userStartedDownload = true
+        setState { copy(status = UpdateState.State.Status.Downloading(0f)) }
+        updateInstallHandler.startDownload(apkUrl)
+        observeDownload(apkUrl)
+    }
 
-            val downloadResult = updateInstallHandler.download(
-                apkUrl = apkUrl,
-                version = currentUpdateVersion(),
-                onProgress = { progress ->
-                    setState { copy(status = UpdateState.State.Status.Downloading(progress)) }
-                },
-            )
-            val file = when (downloadResult) {
-                is UpdateDownloadResult.Success -> downloadResult.file
-                is UpdateDownloadResult.Failure -> {
-                    setUpdateError(downloadResult.error, apkUrl)
-                    return@launch
+    /**
+     * Подписывается на фоновую загрузку этого APK. Сама загрузка живёт в WorkManager, поэтому
+     * диалог можно закрыть или открыть заново (например, по уведомлению) и продолжить с того же места.
+     */
+    private fun observeDownload(apkUrl: String) {
+        downloadJob?.cancel()
+        downloadJob = viewModelScope.launch {
+            updateInstallHandler.observeDownload(apkUrl).collect { download ->
+                when (download) {
+                    UpdateDownloadState.Idle -> restoreAvailableIfDownloading()
+                    is UpdateDownloadState.Downloading -> setState {
+                        copy(status = UpdateState.State.Status.Downloading(download.progress))
+                    }
+
+                    is UpdateDownloadState.Downloaded -> installDownloaded(download.file, apkUrl)
+                    is UpdateDownloadState.Failed -> if (userStartedDownload) {
+                        updateInstallHandler.reportDownloadError(currentUpdateVersion(), download.message)
+                        setUpdateError(UpdateDownloadException(download.message), apkUrl)
+                    }
                 }
             }
-
-            downloadedApk = file
-            setState { copy(status = UpdateState.State.Status.Installing) }
-            applyInstallResult(updateInstallHandler.install(file, currentUpdateVersion()), apkUrl)
         }
+    }
+
+    private suspend fun installDownloaded(file: File, apkUrl: String) {
+        if (installTriggered) return
+        installTriggered = true
+        downloadedApk = file
+        setState { copy(status = UpdateState.State.Status.Installing) }
+        applyInstallResult(updateInstallHandler.install(file, currentUpdateVersion()), apkUrl)
+    }
+
+    /** Загрузку отменили извне (из уведомления): возвращаем диалог к предложению обновиться. */
+    private fun restoreAvailableIfDownloading() {
+        if (currentState.status !is UpdateState.State.Status.Downloading) return
+        val available = availableStatus ?: return
+        userStartedDownload = false
+        setState { copy(status = available) }
     }
 
     private fun retryInstall(apkUrl: String) {
