@@ -1,8 +1,9 @@
 package su.afk.yummy.tv.domain.watching.usecase
 
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
-import su.afk.yummy.tv.domain.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.domain.watching.mapper.toContinueWatchingPlaybackVideo
 import javax.inject.Inject
 

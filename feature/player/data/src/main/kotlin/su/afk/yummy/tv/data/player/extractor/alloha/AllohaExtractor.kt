@@ -17,7 +17,7 @@ import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.MA
 import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.NO_SIGNAL_TIMEOUT_MS
 import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.TIMEOUT_MS
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
-import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult

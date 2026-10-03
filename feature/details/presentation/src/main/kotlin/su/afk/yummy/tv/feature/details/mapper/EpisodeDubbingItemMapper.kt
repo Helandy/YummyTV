@@ -5,8 +5,8 @@ import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.dubbingViews
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 
 internal fun List<AnimeVideo>.episodeDubbingItems(
     episode: String,

@@ -6,13 +6,13 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.details.mapper.toLibraryPoster
-import su.afk.yummy.tv.feature.player.isAksorPlayerUrl
-import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.feature.player.isCvhPlayerUrl
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
-import su.afk.yummy.tv.feature.player.isRutubePlayerUrl
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.isVkPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isAksorPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isRutubePlayerUrl
+import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isVkPlayerUrl
 
 internal fun String.matchesPreferredPlayer(preferred: PreferredPlayer): Boolean =
     when (preferred) {

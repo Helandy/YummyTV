@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.comments.CommentsViewModel
 import su.afk.yummy.tv.feature.comments.ITvCommentsEntry
 import su.afk.yummy.tv.feature.comments.navigator.CommentsDestination

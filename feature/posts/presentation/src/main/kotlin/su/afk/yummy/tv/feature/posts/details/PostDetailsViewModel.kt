@@ -14,7 +14,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.domain.posts.usecase.GetPostDetailsUseCase
 import su.afk.yummy.tv.domain.posts.usecase.RemovePostVoteUseCase

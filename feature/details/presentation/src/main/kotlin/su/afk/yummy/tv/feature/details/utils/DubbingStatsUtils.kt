@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.details.utils
 
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 
 /**
  * Просмотры озвучки: берём максимум по балансерам, а не сумму — один и тот же

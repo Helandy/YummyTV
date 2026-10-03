@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.collection.CollectionMutationNotifier
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.userprofile.handler.FriendshipFetchResult
 import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileContentHandler

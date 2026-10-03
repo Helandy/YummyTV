@@ -16,7 +16,7 @@ import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.model.mutation.PendingMutation
 import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 import su.afk.yummy.tv.domain.reviews.usecase.DeleteReviewUseCase
 import su.afk.yummy.tv.domain.reviews.usecase.GetReviewDetailsUseCase

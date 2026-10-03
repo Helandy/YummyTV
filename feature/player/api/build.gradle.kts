@@ -11,8 +11,6 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:model"))
     implementation(project(":core:utils"))
-    implementation(project(":feature:player:domain"))
-    implementation(project(":feature:watching:domain"))
     implementation(libs.javax.inject)
 
     api(libs.bundles.navigation.serialization)

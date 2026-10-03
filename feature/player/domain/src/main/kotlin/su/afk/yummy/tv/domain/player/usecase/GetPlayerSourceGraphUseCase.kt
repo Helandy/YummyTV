@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.domain.player.usecase
 
-import su.afk.yummy.tv.domain.player.isKodikPlayerUrl
-import su.afk.yummy.tv.domain.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerSourceBalancer
 import su.afk.yummy.tv.domain.player.model.PlayerSourceData
 import su.afk.yummy.tv.domain.player.model.PlayerSourceDubbing
@@ -10,7 +10,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerSourceGraph
 import su.afk.yummy.tv.domain.player.model.PlayerSourceRequest
 import su.afk.yummy.tv.domain.player.model.PlayerSourceSelection
 import su.afk.yummy.tv.domain.player.model.PlayerSourceVideo
-import su.afk.yummy.tv.domain.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import javax.inject.Inject
 

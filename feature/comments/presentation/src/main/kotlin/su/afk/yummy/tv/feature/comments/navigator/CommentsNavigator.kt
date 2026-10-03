@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.comments.navigator
 
 import androidx.navigation3.runtime.NavKey
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import javax.inject.Inject
 

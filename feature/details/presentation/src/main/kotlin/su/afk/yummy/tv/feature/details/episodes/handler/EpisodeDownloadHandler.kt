@@ -21,8 +21,8 @@ import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.dubbingViews
-import su.afk.yummy.tv.feature.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 import javax.inject.Inject
 
 /** Owns source resolution, quality selection and enqueue state for episode downloads. */

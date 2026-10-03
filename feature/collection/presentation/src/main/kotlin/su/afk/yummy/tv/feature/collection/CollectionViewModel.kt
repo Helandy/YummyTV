@@ -19,7 +19,7 @@ import su.afk.yummy.tv.domain.collection.usecase.GetCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.RemoveCollectionVoteUseCase
 import su.afk.yummy.tv.domain.collection.usecase.UpdateCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.VoteCollectionUseCase
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator

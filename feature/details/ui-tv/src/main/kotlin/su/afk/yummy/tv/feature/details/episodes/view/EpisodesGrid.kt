@@ -52,7 +52,7 @@ import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
 import su.afk.yummy.tv.feature.details.utils.isAlloha
-import su.afk.yummy.tv.feature.player.isKodikPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

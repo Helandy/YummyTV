@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.player
 
 import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.model.anime.AnimeVideoSkipSegment
-import su.afk.yummy.tv.domain.watching.usecase.ContinueWatchingLaunch
-import su.afk.yummy.tv.domain.watching.usecase.ContinueWatchingPlaybackVideo
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingLaunch
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 
 /** Maps a domain Continue Watching decision to the public player destination contract. */
 fun IPlayerNavigator.getPlayerDest(launch: ContinueWatchingLaunch): NavKey =

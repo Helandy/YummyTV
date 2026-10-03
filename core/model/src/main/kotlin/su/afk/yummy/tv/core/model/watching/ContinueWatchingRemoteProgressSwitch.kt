@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.watching.usecase
+package su.afk.yummy.tv.core.model.watching
 
 data class ContinueWatchingRemoteProgressSwitch(
     val episode: String,

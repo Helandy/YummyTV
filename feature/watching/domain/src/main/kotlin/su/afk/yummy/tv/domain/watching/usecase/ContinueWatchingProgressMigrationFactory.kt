@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.watching.usecase
 
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.core.utils.episode.isPlaceholderEpisode
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem

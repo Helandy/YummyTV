@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.domain.comments.usecase
 
 import su.afk.yummy.tv.domain.comments.model.CommentSort
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.domain.comments.repository.CommentsRepository
 import javax.inject.Inject
 

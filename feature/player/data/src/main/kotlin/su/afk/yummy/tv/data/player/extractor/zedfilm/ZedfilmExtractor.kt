@@ -28,7 +28,7 @@ import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
 import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.data.player.network.withBrowserUserAgent
-import su.afk.yummy.tv.domain.player.isZedfilmPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.nio.charset.Charset

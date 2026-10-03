@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.watching.usecase
 
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingLaunch
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.MigrateContinueWatchingProgressUseCase
 import javax.inject.Inject

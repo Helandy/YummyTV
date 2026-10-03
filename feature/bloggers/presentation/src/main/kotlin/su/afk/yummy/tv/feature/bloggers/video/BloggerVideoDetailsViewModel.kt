@@ -19,7 +19,7 @@ import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoReaction
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoVote
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideoDetailsUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.SetBloggerVideoVoteUseCase
-import su.afk.yummy.tv.domain.comments.model.CommentTargetType
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator

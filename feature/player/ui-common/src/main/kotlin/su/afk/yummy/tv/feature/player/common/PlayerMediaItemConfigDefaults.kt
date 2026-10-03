@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.player.common
 
-import su.afk.yummy.tv.domain.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
 import su.afk.yummy.tv.feature.player.common.service.PlayerAudioTrackPolicy
 
 fun playerAudioTrackPolicyFor(episodeUrl: String): PlayerAudioTrackPolicy =

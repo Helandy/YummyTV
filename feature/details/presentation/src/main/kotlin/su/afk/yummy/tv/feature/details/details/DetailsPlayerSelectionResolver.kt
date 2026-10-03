@@ -8,8 +8,8 @@ import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.matchesPreferredPlayer
-import su.afk.yummy.tv.feature.player.isSupportedPlayerUrl
-import su.afk.yummy.tv.feature.player.playerDisplayOrderPriority
+import su.afk.yummy.tv.core.utils.player.isSupportedPlayerUrl
+import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 
 /** Resolves whether the selected episode can open directly or needs a balancer picker. */
 internal fun resolveDetailsPlayerSelection(

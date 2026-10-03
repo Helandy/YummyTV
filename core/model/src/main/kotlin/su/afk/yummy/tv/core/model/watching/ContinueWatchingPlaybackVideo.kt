@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.watching.usecase
+package su.afk.yummy.tv.core.model.watching
 
 import su.afk.yummy.tv.core.model.anime.AnimeVideoSkips
 
