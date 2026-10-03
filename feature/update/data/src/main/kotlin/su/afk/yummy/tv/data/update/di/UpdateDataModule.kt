@@ -8,8 +8,8 @@ import su.afk.yummy.tv.data.update.apk.ApkDownloaderImpl
 import su.afk.yummy.tv.data.update.apk.ApkInstallerImpl
 import su.afk.yummy.tv.data.update.repository.GitHubUpdateRepository
 import su.afk.yummy.tv.data.update.repository.ServiceUpdateDownloadRepository
-import su.afk.yummy.tv.domain.update.repository.ApkDownloader
-import su.afk.yummy.tv.domain.update.repository.ApkInstaller
+import su.afk.yummy.tv.domain.update.repository.ApkDownloadRepository
+import su.afk.yummy.tv.domain.update.repository.ApkInstallRepository
 import su.afk.yummy.tv.domain.update.repository.UpdateDownloadRepository
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
 import javax.inject.Singleton
@@ -28,9 +28,9 @@ internal interface UpdateDataModule {
 
     @Binds
     @Singleton
-    fun bindApkDownloader(impl: ApkDownloaderImpl): ApkDownloader
+    fun bindApkDownloader(impl: ApkDownloaderImpl): ApkDownloadRepository
 
     @Binds
     @Singleton
-    fun bindApkInstaller(impl: ApkInstallerImpl): ApkInstaller
+    fun bindApkInstaller(impl: ApkInstallerImpl): ApkInstallRepository
 }

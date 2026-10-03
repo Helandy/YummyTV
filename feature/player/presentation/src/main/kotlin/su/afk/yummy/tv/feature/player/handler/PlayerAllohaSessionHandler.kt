@@ -6,12 +6,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import javax.inject.Inject
 
 /** Activates, refreshes and releases the currently resolved Alloha playback session. */
 internal class PlayerAllohaSessionHandler @Inject constructor(
-    private val sessionManager: AllohaPlaybackSessionManager,
+    private val sessionManager: AllohaPlaybackSessionRepository,
 ) {
     private var activeSession: AllohaStreamSession? = null
     private var refreshJob: Job? = null

@@ -25,7 +25,7 @@ import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
 import su.afk.yummy.tv.domain.player.repository.PlayerSourceRepository
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import javax.inject.Singleton
 
 @Module
@@ -35,7 +35,7 @@ object PlayerDataModule {
     @Singleton
     internal fun provideAllohaPlaybackSessionManager(
         manager: DefaultAllohaPlaybackSessionManager,
-    ): AllohaPlaybackSessionManager = manager
+    ): AllohaPlaybackSessionRepository = manager
 
 
     @Provides

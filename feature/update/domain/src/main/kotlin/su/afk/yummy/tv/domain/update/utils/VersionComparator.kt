@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.update.util
+package su.afk.yummy.tv.domain.update.utils
 
 /** Суффикс версии бета-сборки: `versionName` беты — `1.21.1.2-beta` (2-я бета после стабильной `1.21.1`). */
 const val PRERELEASE_VERSION_SUFFIX = "-beta"

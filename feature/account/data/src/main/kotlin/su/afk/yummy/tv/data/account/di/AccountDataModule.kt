@@ -39,7 +39,7 @@ import su.afk.yummy.tv.data.account.repository.YaniUserProfileRepository
 import su.afk.yummy.tv.data.account.repository.YaniUserStatsRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoSubscriptionRepository
 import su.afk.yummy.tv.data.account.repository.YaniVideoWatchesRepository
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.AccountRepository
 import su.afk.yummy.tv.domain.account.repository.AnimeExtrasRepository
 import su.afk.yummy.tv.domain.account.repository.LocalAuthRepository
@@ -68,7 +68,7 @@ object AccountDataModule {
 
     @Provides
     @Singleton
-    fun provideAccountMutationErrorNotifier(): AccountMutationErrorNotifier =
+    fun provideAccountMutationErrorNotifier(): AccountMutationErrorRepository =
         DefaultAccountMutationErrorNotifier()
 
     @Provides

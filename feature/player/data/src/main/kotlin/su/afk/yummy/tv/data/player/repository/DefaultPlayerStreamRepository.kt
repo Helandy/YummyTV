@@ -8,13 +8,13 @@ import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import javax.inject.Inject
 
 internal class DefaultPlayerStreamRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val extractors: Set<@JvmSuppressWildcards PlayerStreamExtractor>,
-    private val allohaSessionManager: AllohaPlaybackSessionManager,
+    private val allohaSessionManager: AllohaPlaybackSessionRepository,
 ) : PlayerStreamRepository {
 
     private val sessionAwareExtractors: List<SessionAwarePlayerStreamExtractor> =
@@ -36,7 +36,7 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
             ?: return PlayerStreamResolveResult.Unsupported
         // Session-aware стримы (сейчас только Alloha) живут внутри playback-сессии (прокси,
         // ротация подписанных манифестов), их кэшировать по URL нельзя — сессией управляет
-        // AllohaPlaybackSessionManager.
+        // AllohaPlaybackSessionRepository.
         if (extractor is SessionAwarePlayerStreamExtractor) return extractor.extract(
             request,
             context

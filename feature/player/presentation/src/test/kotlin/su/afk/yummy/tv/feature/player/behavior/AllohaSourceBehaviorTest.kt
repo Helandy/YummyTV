@@ -15,7 +15,7 @@ import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
 import su.afk.yummy.tv.domain.player.usecase.GetAllohaTrackPreferenceUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaAudioSelectionUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaSubtitleSelectionUseCase
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
@@ -123,7 +123,7 @@ class AllohaSourceBehaviorTest {
         assertFalse(behavior.retriesFailedResolve())
     }
 
-    private object NoOpSessionManager : AllohaPlaybackSessionManager {
+    private object NoOpSessionManager : AllohaPlaybackSessionRepository {
         override fun find(sourceKey: String): AllohaStreamSession? = null
         override fun activate(session: AllohaStreamSession): AllohaStreamSession = session
         override fun release(session: AllohaStreamSession, immediately: Boolean) = Unit

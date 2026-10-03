@@ -3,7 +3,7 @@ package su.afk.yummy.tv.data.update.mapper
 import su.afk.yummy.tv.data.update.dto.GitHubReleaseDto
 import su.afk.yummy.tv.domain.update.model.AppRelease
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
-import su.afk.yummy.tv.domain.update.util.PRERELEASE_VERSION_SUFFIX
+import su.afk.yummy.tv.domain.update.utils.PRERELEASE_VERSION_SUFFIX
 
 private const val STABLE_TAG_PREFIX = 'v'
 private const val BETA_TAG_PREFIX = 'b'

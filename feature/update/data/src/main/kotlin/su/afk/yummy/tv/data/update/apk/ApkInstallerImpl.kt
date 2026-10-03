@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.data.update.R
 import su.afk.yummy.tv.domain.update.model.UpdateInstallCancelledException
 import su.afk.yummy.tv.domain.update.model.UpdatePermissionRequiredException
-import su.afk.yummy.tv.domain.update.repository.ApkInstaller
+import su.afk.yummy.tv.domain.update.repository.ApkInstallRepository
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -25,7 +25,7 @@ import kotlin.coroutines.resumeWithException
 
 internal class ApkInstallerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-) : ApkInstaller {
+) : ApkInstallRepository {
 
     override suspend fun install(apkFile: File) = withContext(Dispatchers.IO) {
         if (

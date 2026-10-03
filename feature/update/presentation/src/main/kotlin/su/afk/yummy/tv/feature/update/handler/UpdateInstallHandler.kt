@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadException
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
-import su.afk.yummy.tv.domain.update.repository.ApkInstaller
+import su.afk.yummy.tv.domain.update.repository.ApkInstallRepository
 import su.afk.yummy.tv.domain.update.usecase.ObserveUpdateDownloadUseCase
 import su.afk.yummy.tv.domain.update.usecase.StartUpdateDownloadUseCase
 import su.afk.yummy.tv.feature.update.UpdateAnalytics
@@ -15,7 +15,7 @@ import javax.inject.Inject
 internal class UpdateInstallHandler @Inject constructor(
     private val startUpdateDownload: StartUpdateDownloadUseCase,
     private val observeUpdateDownload: ObserveUpdateDownloadUseCase,
-    private val apkInstaller: ApkInstaller,
+    private val apkInstallRepository: ApkInstallRepository,
     private val analytics: UpdateAnalytics,
 ) {
     fun startDownload(apkUrl: String) = startUpdateDownload(apkUrl)
@@ -27,7 +27,7 @@ internal class UpdateInstallHandler @Inject constructor(
 
     suspend fun install(file: File, version: String?): UpdateInstallResult =
         runSuspendCatching {
-            apkInstaller.install(file)
+            apkInstallRepository.install(file)
         }.fold(
             onSuccess = { UpdateInstallResult.Success(file) },
             onFailure = { error ->

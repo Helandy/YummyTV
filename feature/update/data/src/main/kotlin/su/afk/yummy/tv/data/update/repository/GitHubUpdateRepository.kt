@@ -15,8 +15,8 @@ import su.afk.yummy.tv.data.update.mapper.toReleaseNotes
 import su.afk.yummy.tv.domain.update.model.AppRelease
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
 import su.afk.yummy.tv.domain.update.repository.UpdateRepository
-import su.afk.yummy.tv.domain.update.util.compareVersions
-import su.afk.yummy.tv.domain.update.util.isVersionNewer
+import su.afk.yummy.tv.domain.update.utils.compareVersions
+import su.afk.yummy.tv.domain.update.utils.isVersionNewer
 import javax.inject.Inject
 
 /**

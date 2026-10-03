@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import su.afk.yummy.tv.data.update.R
-import su.afk.yummy.tv.domain.update.repository.ApkDownloader
+import su.afk.yummy.tv.domain.update.repository.ApkDownloadRepository
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -25,7 +25,7 @@ import javax.inject.Inject
 internal class ApkDownloaderImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     @param:UnauthenticatedJsonClient private val httpClient: HttpClient,
-) : ApkDownloader {
+) : ApkDownloadRepository {
 
     override suspend fun download(url: String, onProgress: suspend (Float) -> Unit): File =
         withContext(Dispatchers.IO) {

@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.settings.mapper
 
 import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.domain.update.model.AppReleaseNotes
-import su.afk.yummy.tv.domain.update.util.compareVersions
+import su.afk.yummy.tv.domain.update.utils.compareVersions
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
 
 internal fun AppReleaseNotes.toReleaseNoteItem(currentVersion: String): ReleaseNoteItem =

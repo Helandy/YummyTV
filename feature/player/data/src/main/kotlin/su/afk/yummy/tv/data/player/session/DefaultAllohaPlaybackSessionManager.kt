@@ -6,14 +6,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 internal class DefaultAllohaPlaybackSessionManager @Inject constructor(
     @IoApplicationScope private val scope: CoroutineScope,
-) : AllohaPlaybackSessionManager {
+) : AllohaPlaybackSessionRepository {
     private val lock = Any()
     private var activeSession: AllohaStreamSession? = null
     private var pendingRelease: Job? = null

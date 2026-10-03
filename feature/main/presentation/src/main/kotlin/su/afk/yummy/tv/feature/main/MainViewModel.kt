@@ -14,7 +14,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
@@ -32,7 +32,7 @@ class MainViewModel @Inject internal constructor(
     private val featureToggleUpdateObserver: FeatureToggleUpdateObserver,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val mainSideEffectsHandler: MainSideEffectsHandler,
-    private val accountMutationErrorNotifier: AccountMutationErrorNotifier,
+    private val accountMutationErrorRepository: AccountMutationErrorRepository,
     private val stringProvider: StringProvider,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
@@ -57,7 +57,7 @@ class MainViewModel @Inject internal constructor(
     }
 
     private fun observeAccountMutationErrors() {
-        accountMutationErrorNotifier.events
+        accountMutationErrorRepository.events
             .onEach {
                 setEffect(MainState.Effect.ShowToast(stringProvider.get(R.string.main_mutation_error_toast)))
             }

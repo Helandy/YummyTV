@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.account.mutation
+package su.afk.yummy.tv.domain.account.model
 
 enum class AccountMutationAction {
     SET_ANIME_LIST,

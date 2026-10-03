@@ -10,7 +10,7 @@ import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadRestartStream
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
-import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefresher
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefreshRepository
 import su.afk.yummy.tv.domain.videodownload.usecase.PrepareVideoDownloadQualityOptionsUseCase
 import javax.inject.Inject
 
@@ -19,7 +19,7 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
     private val playerSourceRepository: PlayerSourceRepository,
     private val prepareDownloadQualities: PrepareVideoDownloadQualityOptionsUseCase,
     private val strategyResolver: DownloadPlayerStrategyResolver,
-) : VideoDownloadStreamRefresher {
+) : VideoDownloadStreamRefreshRepository {
 
     override suspend fun refresh(
         item: VideoDownloadItem,

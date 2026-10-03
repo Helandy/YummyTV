@@ -12,7 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
-import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
 import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
 import javax.inject.Inject
@@ -28,7 +28,7 @@ class PlayerMediaSessionService : MediaSessionService() {
     internal lateinit var playbackConfig: PlayerPlaybackConfig
 
     @Inject
-    internal lateinit var allohaSessionManager: AllohaPlaybackSessionManager
+    internal lateinit var allohaSessionManager: AllohaPlaybackSessionRepository
 
     @Inject
     internal lateinit var settingsStore: PlayerSettingsStore

@@ -28,7 +28,7 @@ import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
-import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefresher
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefreshRepository
 import java.security.MessageDigest
 
 @OptIn(UnstableApi::class)
@@ -38,7 +38,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     @Assisted params: WorkerParameters,
     private val repository: VideoDownloadRepository,
     private val exportRepository: VideoDownloadExportRepository,
-    private val streamRefresher: VideoDownloadStreamRefresher,
+    private val streamRefresher: VideoDownloadStreamRefreshRepository,
     private val strategyResolver: DownloadPlayerStrategyResolver,
     private val cacheProvider: VideoDownloadCacheProvider,
     private val executor: VideoDownloadExecutor,

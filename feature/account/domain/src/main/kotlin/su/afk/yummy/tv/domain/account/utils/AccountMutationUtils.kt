@@ -1,13 +1,13 @@
-package su.afk.yummy.tv.domain.account.usecase
+package su.afk.yummy.tv.domain.account.utils
 
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorEvent
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.model.AccountMutationAction
+import su.afk.yummy.tv.domain.account.model.AccountMutationErrorEvent
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 
 internal suspend inline fun <T> notifyMutationFailure(
-    notifier: AccountMutationErrorNotifier,
+    notifier: AccountMutationErrorRepository,
     action: AccountMutationAction,
     block: suspend () -> T,
 ): T = try {
@@ -19,7 +19,7 @@ internal suspend inline fun <T> notifyMutationFailure(
 }
 
 internal suspend inline fun notifyBooleanMutationFailure(
-    notifier: AccountMutationErrorNotifier,
+    notifier: AccountMutationErrorRepository,
     action: AccountMutationAction,
     block: suspend () -> Boolean,
 ): Boolean = notifyMutationFailure(notifier, action) {

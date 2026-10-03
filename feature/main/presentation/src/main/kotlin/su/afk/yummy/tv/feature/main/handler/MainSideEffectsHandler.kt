@@ -9,7 +9,7 @@ import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.RestoreAccountSessionUseCase
 import su.afk.yummy.tv.domain.update.usecase.GetLatestAppReleaseUseCase
-import su.afk.yummy.tv.domain.update.util.isVersionNewer
+import su.afk.yummy.tv.domain.update.utils.isVersionNewer
 import su.afk.yummy.tv.feature.main.utils.firstOrZero
 import javax.inject.Inject
 import javax.inject.Named

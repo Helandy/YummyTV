@@ -1,7 +1,8 @@
 package su.afk.yummy.tv.domain.account.usecase
 
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.utils.notifyBooleanMutationFailure
+import su.afk.yummy.tv.domain.account.model.AccountMutationAction
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.VideoSubscriptionRepository
 import javax.inject.Inject
 
@@ -13,7 +14,7 @@ import javax.inject.Inject
  */
 class SetVideoSubscriptionUseCase @Inject constructor(
     private val repository: VideoSubscriptionRepository,
-    private val mutationErrorNotifier: AccountMutationErrorNotifier,
+    private val mutationErrorNotifier: AccountMutationErrorRepository,
 ) {
     suspend operator fun invoke(videoId: Int, subscribed: Boolean): Boolean =
         notifyBooleanMutationFailure(

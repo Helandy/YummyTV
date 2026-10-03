@@ -4,10 +4,10 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorEvent
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.model.AccountMutationErrorEvent
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 
-class DefaultAccountMutationErrorNotifier : AccountMutationErrorNotifier {
+class DefaultAccountMutationErrorNotifier : AccountMutationErrorRepository {
     private val mutableEvents = MutableSharedFlow<AccountMutationErrorEvent>(
         extraBufferCapacity = 8,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,

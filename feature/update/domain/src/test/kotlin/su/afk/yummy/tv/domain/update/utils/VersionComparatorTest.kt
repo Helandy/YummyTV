@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.update.util
+package su.afk.yummy.tv.domain.update.utils
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -10,7 +10,7 @@ import su.afk.yummy.tv.data.videodownload.repository.DefaultVideoDownloadReposit
 import su.afk.yummy.tv.data.videodownload.repository.DefaultVideoDownloadStreamRefresher
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
-import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefresher
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadStreamRefreshRepository
 import su.afk.yummy.tv.feature.videodownload.playback.VideoDownloadPlaybackCache
 import javax.inject.Singleton
 
@@ -33,7 +33,7 @@ interface VideoDownloadDataModule {
     @Singleton
     fun bindVideoDownloadStreamRefresher(
         refresher: DefaultVideoDownloadStreamRefresher,
-    ): VideoDownloadStreamRefresher
+    ): VideoDownloadStreamRefreshRepository
 
     @Binds
     @Singleton

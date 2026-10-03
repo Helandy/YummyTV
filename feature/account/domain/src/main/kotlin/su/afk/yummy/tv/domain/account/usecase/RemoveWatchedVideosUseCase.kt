@@ -1,14 +1,15 @@
 package su.afk.yummy.tv.domain.account.usecase
 
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationAction
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.utils.notifyBooleanMutationFailure
+import su.afk.yummy.tv.domain.account.model.AccountMutationAction
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import javax.inject.Inject
 
 /** Удаляет отметки просмотра для удалённых видео. */
 class RemoveWatchedVideosUseCase @Inject constructor(
     private val repository: VideoWatchesRepository,
-    private val mutationErrorNotifier: AccountMutationErrorNotifier,
+    private val mutationErrorNotifier: AccountMutationErrorRepository,
 ) {
     suspend operator fun invoke(videoIds: List<Int>): Boolean {
         val ids = videoIds.filter { it > 0 }.distinct()

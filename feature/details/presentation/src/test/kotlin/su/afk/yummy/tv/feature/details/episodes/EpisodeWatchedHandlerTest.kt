@@ -10,8 +10,8 @@ import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorEvent
-import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
+import su.afk.yummy.tv.domain.account.model.AccountMutationErrorEvent
+import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
@@ -340,7 +340,7 @@ private class FakePendingMutationQueue : PendingMutationQueue {
     }
 }
 
-private object NoopNotifier : AccountMutationErrorNotifier {
+private object NoopNotifier : AccountMutationErrorRepository {
     override val events: SharedFlow<AccountMutationErrorEvent> = MutableSharedFlow()
     override suspend fun notify(event: AccountMutationErrorEvent) = Unit
 }

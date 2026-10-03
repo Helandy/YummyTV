@@ -5,14 +5,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import su.afk.yummy.tv.data.update.R
 import su.afk.yummy.tv.domain.update.model.UpdateDownloadState
-import su.afk.yummy.tv.domain.update.repository.ApkDownloader
+import su.afk.yummy.tv.domain.update.repository.ApkDownloadRepository
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
 /** Скачивает APK и публикует прогресс и итог в [UpdateDownloadStateHolder]; общий для сервиса и запасного пути. */
 internal class UpdateDownloadRunner @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val apkDownloader: ApkDownloader,
+    private val apkDownloadRepository: ApkDownloadRepository,
     private val stateHolder: UpdateDownloadStateHolder,
 ) {
     /** [onPercent] вызывается при изменении целого процента прогресса. Возвращает итоговое состояние. */
@@ -20,7 +20,7 @@ internal class UpdateDownloadRunner @Inject constructor(
         stateHolder.update(url, UpdateDownloadState.Downloading(progress = 0f))
         var lastPercent = -1
         val result = try {
-            val file = apkDownloader.download(url) { progress ->
+            val file = apkDownloadRepository.download(url) { progress ->
                 val percent = (progress * PERCENT_MAX).roundToInt()
                 if (percent == lastPercent) return@download
                 lastPercent = percent
