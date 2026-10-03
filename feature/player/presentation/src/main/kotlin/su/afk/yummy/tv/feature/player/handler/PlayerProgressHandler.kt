@@ -8,7 +8,9 @@ import su.afk.yummy.tv.core.model.anime.isWatchedProgress
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
-import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
+import su.afk.yummy.tv.domain.player.usecase.SaveContinueTargetUseCase
+import su.afk.yummy.tv.domain.player.usecase.SaveWatchProgressUseCase
+import su.afk.yummy.tv.domain.player.usecase.SuppressContinueWatchingDisplayUseCase
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
 import su.afk.yummy.tv.feature.player.utils.withFullTimingIfWatched
 import javax.inject.Inject
@@ -27,7 +29,9 @@ private const val WATCH_END_TOLERANCE_SECONDS = 10
  */
 @ViewModelScoped
 internal class PlayerProgressHandler @Inject constructor(
-    private val watchProgressRepository: WatchProgressRepository,
+    private val saveWatchProgress: SaveWatchProgressUseCase,
+    private val saveContinueTargetUseCase: SaveContinueTargetUseCase,
+    private val suppressContinueWatchingDisplayUseCase: SuppressContinueWatchingDisplayUseCase,
     private val settingsStore: SettingsStore,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
 ) {
@@ -72,15 +76,13 @@ internal class PlayerProgressHandler @Inject constructor(
         val savedSnapshot = snapshot.withFullTimingIfWatched()
 
         if (context.animeId > 0 && savedSnapshot.episode.isNotBlank()) {
-            val updatedAt = localActivityUpdatedAt(context.animeId, savedSnapshot.episode)
-            watchProgressRepository.save(
+            saveWatchProgress(
                 animeId = context.animeId,
                 episode = savedSnapshot.episode,
                 videoId = savedSnapshot.videoId,
                 episodeUrl = savedSnapshot.episodeUrl,
                 positionMs = savedSnapshot.positionMs,
                 durationMs = savedSnapshot.durationMs,
-                updatedAt = updatedAt,
                 animeTitle = context.animeTitle,
                 posterUrl = context.posterUrl,
                 playerName = savedSnapshot.playerName,
@@ -96,13 +98,11 @@ internal class PlayerProgressHandler @Inject constructor(
         context: PlayerProgressContext,
         snapshot: PlayerProgressSnapshot,
     ) {
-        val updatedAt = localActivityUpdatedAt(context.animeId, snapshot.episode)
-        watchProgressRepository.saveContinueTarget(
+        saveContinueTargetUseCase(
             animeId = context.animeId,
             episode = snapshot.episode,
             videoId = snapshot.videoId,
             episodeUrl = snapshot.episodeUrl,
-            updatedAt = updatedAt,
             animeTitle = context.animeTitle,
             posterUrl = context.posterUrl,
             playerName = snapshot.playerName,
@@ -111,23 +111,8 @@ internal class PlayerProgressHandler @Inject constructor(
         )
     }
 
-    private suspend fun localActivityUpdatedAt(animeId: Int, episode: String): Long {
-        val now = System.currentTimeMillis()
-        if (animeId <= 0) return now
-
-        val existingUpdatedAt = episode
-            .takeIf { it.isNotBlank() }
-            ?.let { watchProgressRepository.get(animeId, it)?.updatedAt }
-            ?: 0L
-
-        return maxOf(now, existingUpdatedAt + 1L)
-    }
-
     suspend fun suppressContinueWatchingDisplay(context: PlayerProgressContext) {
-        watchProgressRepository.suppressContinueWatchingDisplay(
-            animeId = context.animeId,
-            suppressedAt = System.currentTimeMillis(),
-        )
+        suppressContinueWatchingDisplayUseCase(context.animeId)
     }
 
     suspend fun shouldSuggestNextEpisodeOnWatched(): Boolean =

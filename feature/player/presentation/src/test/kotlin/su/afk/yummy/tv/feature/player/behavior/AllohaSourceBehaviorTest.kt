@@ -12,6 +12,9 @@ import org.junit.Test
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaTrackPreference
 import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
+import su.afk.yummy.tv.domain.player.usecase.GetAllohaTrackPreferenceUseCase
+import su.afk.yummy.tv.domain.player.usecase.SaveAllohaAudioSelectionUseCase
+import su.afk.yummy.tv.domain.player.usecase.SaveAllohaSubtitleSelectionUseCase
 import su.afk.yummy.tv.domain.player.session.AllohaPlaybackSessionManager
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
@@ -26,7 +29,11 @@ class AllohaSourceBehaviorTest {
         val behavior = AllohaSourceBehavior(
             session = PlayerAllohaSessionHandler(NoOpSessionManager),
             recovery = PlayerAllohaRecoveryHandler(),
-            trackPreference = PlayerAllohaTrackPreferenceHandler(EmptyTrackPreferenceRepository),
+            trackPreference = PlayerAllohaTrackPreferenceHandler(
+                getPreference = GetAllohaTrackPreferenceUseCase(EmptyTrackPreferenceRepository),
+                saveAudio = SaveAllohaAudioSelectionUseCase(EmptyTrackPreferenceRepository),
+                saveSubtitle = SaveAllohaSubtitleSelectionUseCase(EmptyTrackPreferenceRepository),
+            ),
             analytics = PlayerAnalytics(NoOpAnalyticsTracker),
         )
         behavior.attach(host)

@@ -6,14 +6,14 @@ import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.LoginException
-import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
 import su.afk.yummy.tv.domain.account.model.YaniAccount
 import su.afk.yummy.tv.domain.account.usecase.LoginUseCase
 import su.afk.yummy.tv.domain.account.usecase.LogoutUseCase
 import su.afk.yummy.tv.domain.account.usecase.RefreshAccountUseCase
 import su.afk.yummy.tv.domain.account.usecase.SyncVideoWatchesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
-import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
+import su.afk.yummy.tv.domain.player.usecase.GetMeaningfulVideoProgressUseCase
+import su.afk.yummy.tv.feature.account.account.mapper.toVideoWatchSyncItem
 import su.afk.yummy.tv.feature.account.utils.AccountLoginCredentials
 import javax.inject.Inject
 
@@ -24,7 +24,7 @@ internal class AccountAuthHandler @Inject constructor(
     private val refreshAccountUseCase: RefreshAccountUseCase,
     private val syncVideoWatches: SyncVideoWatchesUseCase,
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
-    private val watchProgressRepository: WatchProgressRepository,
+    private val getMeaningfulVideoProgress: GetMeaningfulVideoProgressUseCase,
     private val analyticsTracker: AnalyticsTracker,
     private val errorHandler: ErrorHandler,
 ) {
@@ -77,15 +77,7 @@ internal class AccountAuthHandler @Inject constructor(
 
     private suspend fun syncLocalWatchesAfterLogin() {
         runSuspendCatching {
-            val videos = watchProgressRepository
-                .allMeaningfulVideoProgress()
-                .map {
-                    VideoWatchSyncItem(
-                        videoId = it.videoId,
-                        timeSeconds = (it.positionMs / 1000L).toInt(),
-                        dateSeconds = (it.updatedAt / 1000L).toInt(),
-                    )
-                }
+            val videos = getMeaningfulVideoProgress().map { it.toVideoWatchSyncItem() }
             if (!syncVideoWatches(videos)) {
                 analyticsTracker.log(TAG) { "Post-login local watch sync returned false" }
             }

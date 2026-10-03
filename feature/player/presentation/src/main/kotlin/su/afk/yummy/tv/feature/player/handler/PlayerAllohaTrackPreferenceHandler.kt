@@ -2,8 +2,9 @@ package su.afk.yummy.tv.feature.player.handler
 
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
-import su.afk.yummy.tv.domain.player.model.AllohaTrackPreference
-import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
+import su.afk.yummy.tv.domain.player.usecase.GetAllohaTrackPreferenceUseCase
+import su.afk.yummy.tv.domain.player.usecase.SaveAllohaAudioSelectionUseCase
+import su.afk.yummy.tv.domain.player.usecase.SaveAllohaSubtitleSelectionUseCase
 import javax.inject.Inject
 
 /**
@@ -27,7 +28,9 @@ internal data class AllohaTrackMatch(
  * субтитров, а не по id/url напрямую.
  */
 internal class PlayerAllohaTrackPreferenceHandler @Inject constructor(
-    private val repository: AllohaTrackPreferenceRepository,
+    private val getPreference: GetAllohaTrackPreferenceUseCase,
+    private val saveAudio: SaveAllohaAudioSelectionUseCase,
+    private val saveSubtitle: SaveAllohaSubtitleSelectionUseCase,
 ) {
 
     /** Возвращает найденное совпадение или null, если сохранённого выбора нет либо он не совпал. */
@@ -38,8 +41,7 @@ internal class PlayerAllohaTrackPreferenceHandler @Inject constructor(
         audioTracks: List<AllohaAudioTrack>,
         subtitles: List<AllohaSubtitleTrack>,
     ): AllohaTrackMatch? {
-        if (animeId <= 0 || dubbing.isBlank() || player.isBlank()) return null
-        val preference = repository.get(animeId, dubbing, player) ?: return null
+        val preference = getPreference(animeId, dubbing, player) ?: return null
 
         val audioId = preference.audioLabel?.let { label ->
             // Несколько дорожек с одинаковым label — неоднозначность, лучше не гадать.
@@ -98,31 +100,13 @@ internal class PlayerAllohaTrackPreferenceHandler @Inject constructor(
         return null
     }
 
-    /**
-     * Сохраняет выбор аудиодорожки, не трогая ранее запомненный выбор субтитров — хранилище держит
-     * оба выбора в одной строке на (animeId, dubbing, player), поэтому запись всегда идёт поверх
-     * существующей записи, а не вместо неё.
-     */
+    /** Сохраняет выбор аудиодорожки, не трогая ранее запомненный выбор субтитров. */
     suspend fun saveAudioSelection(
         animeId: Int,
         dubbing: String,
         player: String,
-        audioLabel: String
-    ) {
-        if (animeId <= 0 || dubbing.isBlank() || player.isBlank()) return
-        val existing = repository.get(animeId, dubbing, player)
-        repository.save(
-            AllohaTrackPreference(
-                animeId = animeId,
-                dubbing = dubbing,
-                player = player,
-                audioLabel = audioLabel,
-                subtitleLanguage = existing?.subtitleLanguage,
-                subtitleLabel = existing?.subtitleLabel,
-                subtitleOff = existing?.subtitleOff ?: false,
-            )
-        )
-    }
+        audioLabel: String,
+    ) = saveAudio(animeId, dubbing, player, audioLabel)
 
     /** Сохраняет выбор субтитров (или их отключение), не трогая ранее запомненный выбор аудиодорожки. */
     suspend fun saveSubtitleSelection(
@@ -132,19 +116,5 @@ internal class PlayerAllohaTrackPreferenceHandler @Inject constructor(
         subtitleLanguage: String?,
         subtitleLabel: String?,
         subtitleOff: Boolean,
-    ) {
-        if (animeId <= 0 || dubbing.isBlank() || player.isBlank()) return
-        val existing = repository.get(animeId, dubbing, player)
-        repository.save(
-            AllohaTrackPreference(
-                animeId = animeId,
-                dubbing = dubbing,
-                player = player,
-                audioLabel = existing?.audioLabel,
-                subtitleLanguage = subtitleLanguage,
-                subtitleLabel = subtitleLabel,
-                subtitleOff = subtitleOff,
-            )
-        )
-    }
+    ) = saveSubtitle(animeId, dubbing, player, subtitleLanguage, subtitleLabel, subtitleOff)
 }

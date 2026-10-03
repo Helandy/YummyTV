@@ -12,7 +12,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
+import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 /** Resolves the active player iframe into a playable stream and presentation-ready stream errors. */
 internal class PlayerStreamHandler @Inject constructor(
-    private val watchProgressRepository: WatchProgressRepository,
+    private val getWatchProgress: GetWatchProgressUseCase,
     private val settingsStore: PlayerSettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
     private val openAllohaStreamSession: OpenAllohaStreamSessionUseCase,
@@ -138,7 +138,7 @@ internal class PlayerStreamHandler @Inject constructor(
     }
 
     private suspend fun loadResumePosition(animeId: Int, episode: String): Long? {
-        val progress = watchProgressRepository.get(animeId, episode) ?: return null
+        val progress = getWatchProgress(animeId, episode) ?: return null
         return progress.positionMs.takeIf { progress.isContinueWatchingProgress() }
     }
 
