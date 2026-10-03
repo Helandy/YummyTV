@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.home.mobile
 
+import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import android.widget.Toast
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Arrangement
@@ -60,7 +61,6 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
-import su.afk.yummy.tv.feature.home.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.presentation.R as PresentationR

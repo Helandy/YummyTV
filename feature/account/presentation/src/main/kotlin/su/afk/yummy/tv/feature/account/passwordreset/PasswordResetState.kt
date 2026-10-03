@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.account.passwordreset
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
-import su.afk.yummy.tv.feature.account.account.YANI_HCAPTCHA_SITE_KEY
+import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 
 class PasswordResetState {
     data class State(

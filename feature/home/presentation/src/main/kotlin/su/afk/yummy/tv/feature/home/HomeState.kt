@@ -96,10 +96,3 @@ class HomeState {
         data class ShowRecommendationUndo(val message: String, val animeId: Int) : Effect
     }
 }
-
-/** Видео пока не имеет собственного экрана — событие не отправляется. */
-fun HomeFeedItemAction.toHomeEventOrNull(): HomeState.Event? = when (this) {
-    is HomeFeedItemAction.OpenSeries -> HomeState.Event.AnimeSelected(seriesId)
-    is HomeFeedItemAction.OpenCollection -> HomeState.Event.CollectionSelected(collectionId)
-    is HomeFeedItemAction.OpenVideo -> null
-}

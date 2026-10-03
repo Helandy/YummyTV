@@ -49,7 +49,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
-import su.afk.yummy.tv.feature.account.account.YANI_HCAPTCHA_SITE_KEY
+import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha

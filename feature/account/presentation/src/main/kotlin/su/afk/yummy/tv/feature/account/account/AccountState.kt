@@ -13,8 +13,7 @@ import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
-
-const val YANI_HCAPTCHA_SITE_KEY = "b1847961-208e-4a90-9671-1e6bba9e0b36"
+import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 
 class AccountState {
     @Immutable

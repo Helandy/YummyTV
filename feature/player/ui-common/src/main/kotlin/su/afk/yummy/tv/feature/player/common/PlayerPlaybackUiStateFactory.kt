@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
-import su.afk.yummy.tv.feature.player.model.toPlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.mapper.toPlayerPlaybackUiState
 
 @Composable
 fun rememberPlayerPlaybackUiState(
