@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.account.dto
 
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserAnimeDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserListResponseDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

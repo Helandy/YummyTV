@@ -6,8 +6,8 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
-import su.afk.yummy.tv.data.account.dto.YaniProfileDto
-import su.afk.yummy.tv.data.account.dto.YaniUserProfileDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileDto
+import su.afk.yummy.tv.data.account.dto.social.YaniUserProfileDto
 import su.afk.yummy.tv.domain.account.model.EditableProfile
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider

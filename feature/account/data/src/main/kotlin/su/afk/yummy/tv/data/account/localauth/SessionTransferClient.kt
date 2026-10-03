@@ -11,8 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.di.LocalAuthHttpClient
-import su.afk.yummy.tv.data.account.dto.SessionTransferDto
-import su.afk.yummy.tv.data.account.dto.SessionTransferErrorDto
+import su.afk.yummy.tv.data.account.dto.auth.SessionTransferDto
+import su.afk.yummy.tv.data.account.dto.auth.SessionTransferErrorDto
 import su.afk.yummy.tv.data.account.utils.LocalAuthCrypto
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.domain.account.model.LocalAuthError

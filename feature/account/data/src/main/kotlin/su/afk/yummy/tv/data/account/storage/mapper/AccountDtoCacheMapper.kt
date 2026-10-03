@@ -39,18 +39,18 @@ import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionEntry
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
 import su.afk.yummy.tv.core.utils.formatting.htmlToPlainText
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
-import su.afk.yummy.tv.data.account.dto.YaniAccountPosterDto
-import su.afk.yummy.tv.data.account.dto.YaniAnimeListStatDto
-import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
-import su.afk.yummy.tv.data.account.dto.YaniNotificationCountDto
-import su.afk.yummy.tv.data.account.dto.YaniNotificationDto
-import su.afk.yummy.tv.data.account.dto.YaniProfileDto
-import su.afk.yummy.tv.data.account.dto.YaniRatingBucketDto
-import su.afk.yummy.tv.data.account.dto.YaniUserAnimeDto
-import su.afk.yummy.tv.data.account.dto.YaniUserFriendDto
-import su.afk.yummy.tv.data.account.dto.YaniUserPostDto
-import su.afk.yummy.tv.data.account.dto.YaniUserReviewDto
-import su.afk.yummy.tv.data.account.dto.YaniVideoSubscriptionDto
+import su.afk.yummy.tv.data.account.dto.common.YaniAccountPosterDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStatDto
+import su.afk.yummy.tv.data.account.dto.collections.YaniCollectionSummaryDto
+import su.afk.yummy.tv.data.account.dto.notifications.YaniNotificationCountDto
+import su.afk.yummy.tv.data.account.dto.notifications.YaniNotificationDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileDto
+import su.afk.yummy.tv.data.account.dto.rating.YaniRatingBucketDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserAnimeDto
+import su.afk.yummy.tv.data.account.dto.social.YaniUserFriendDto
+import su.afk.yummy.tv.data.account.dto.social.YaniUserPostDto
+import su.afk.yummy.tv.data.account.dto.social.YaniUserReviewDto
+import su.afk.yummy.tv.data.account.dto.video.YaniVideoSubscriptionDto
 
 internal fun YaniProfileDto.toProfileEntry(
     profileKey: String,

@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserReviewsPageCache
 import su.afk.yummy.tv.core.storage.account.AccountUserStatsCache
 import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsCache
-import su.afk.yummy.tv.data.account.dto.YaniAnimeListStateDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniAnimeListStateDto
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionPoster
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.AnimeListStats

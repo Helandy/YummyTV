@@ -20,8 +20,8 @@ import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
-import su.afk.yummy.tv.data.account.dto.YaniProfileDto
-import su.afk.yummy.tv.data.account.dto.YaniRegistrationBodyDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileDto
+import su.afk.yummy.tv.data.account.dto.auth.YaniRegistrationBodyDto
 import su.afk.yummy.tv.data.account.mapper.toAccount
 import su.afk.yummy.tv.data.account.mapper.toEditableProfile
 import su.afk.yummy.tv.data.account.network.YaniAccountApi

@@ -4,9 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
-import su.afk.yummy.tv.data.account.dto.YaniProfileHideBodyDto
-import su.afk.yummy.tv.data.account.dto.YaniProfileNotificationsBodyDto
-import su.afk.yummy.tv.data.account.dto.YaniProfileUpdateBodyDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileHideBodyDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileNotificationsBodyDto
+import su.afk.yummy.tv.data.account.dto.profile.YaniProfileUpdateBodyDto
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException

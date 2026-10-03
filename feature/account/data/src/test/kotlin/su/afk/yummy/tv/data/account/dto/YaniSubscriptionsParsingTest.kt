@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.dto
 
+import su.afk.yummy.tv.data.account.dto.video.YaniVideoSubscriptionsResponseDto
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Test

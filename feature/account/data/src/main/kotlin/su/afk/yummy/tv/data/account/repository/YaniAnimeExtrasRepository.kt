@@ -11,7 +11,7 @@ import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.account.AccountUserRatingEntry
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
-import su.afk.yummy.tv.data.account.dto.YaniCollectionSummaryDto
+import su.afk.yummy.tv.data.account.dto.collections.YaniCollectionSummaryDto
 import su.afk.yummy.tv.data.account.network.YaniAccountApi
 import su.afk.yummy.tv.data.account.storage.mapper.toAnimeListStats
 import su.afk.yummy.tv.data.account.storage.mapper.toCollectionSummaries
