@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.update.repository
 
+import su.afk.yummy.tv.domain.update.model.ReleasesUnavailableException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -39,7 +40,7 @@ internal class GitHubUpdateRepository @Inject constructor(
     }
 
     override suspend fun releaseHistory(currentVersion: String, includePrerelease: Boolean): List<AppReleaseNotes> =
-        (fetchReleases() ?: error("GitHub releases are unavailable"))
+        (fetchReleases() ?: throw ReleasesUnavailableException())
             .mapNotNull { it.toReleaseNotes() }
             .filter { (includePrerelease || !it.isPrerelease) && !isVersionNewer(currentVersion, it.version) }
             .sortedWith { a, b -> compareVersions(b.version, a.version) }

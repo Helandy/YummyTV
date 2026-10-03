@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.data.reviews.repository
 
+import su.afk.yummy.tv.domain.reviews.model.ReviewVoteNotSavedException
+import su.afk.yummy.tv.domain.reviews.model.ReviewNotFoundException
 import su.afk.yummy.tv.core.storage.document.UserScopedCache
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -65,7 +67,7 @@ class YaniReviewsRepository @Inject constructor(
             ttlMs = REVIEW_DETAIL_TTL_MS,
         ) { api.getReview(reviewId) }.response
         rememberAnimeId(dto)
-        return dto.toDetailsOrNull() ?: error("Review not found")
+        return dto.toDetailsOrNull() ?: throw ReviewNotFoundException()
     }
 
     override suspend fun delete(reviewId: Int): Boolean {
@@ -85,7 +87,7 @@ class YaniReviewsRepository @Inject constructor(
             reviewId,
             vote.apiValue
         ).response
-        if (!result.success) error("Vote was not saved")
+        if (!result.success) throw ReviewVoteNotSavedException()
         // Голос затрагивает только конкретную рецензию: чистим её деталь, а не весь namespace.
         // Ленты имеют короткий TTL, а список применяет оптимистичный override поверх кэша.
         cache.delete(REVIEW_CACHE_NAMESPACE, "detail:$reviewId")

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.details.repository
 
+import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
 import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -230,7 +231,7 @@ class YaniAnimeRepository(
                 ?.trimEnd('/')
                 ?.substringAfterLast('/')
                 ?.takeIf { it.isNotBlank() }
-                ?: error("Studio URL is unavailable")
+                ?: throw StudioUrlUnavailableException()
 
             else -> reference.id.toString()
         }

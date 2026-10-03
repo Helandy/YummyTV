@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.pages.repository
 
+import su.afk.yummy.tv.domain.pages.model.SitePageEmptyException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -38,7 +39,7 @@ class YaniSitePagesRepository @Inject constructor(
         val rawText = (payload as? JsonPrimitive)?.contentOrNull
             ?: payload.findString(CONTENT_KEYS)
         val text = rawText?.htmlToPlainText()?.trim().orEmpty()
-        require(text.isNotBlank()) { "Site page has no readable content" }
+        if (text.isBlank()) throw SitePageEmptyException()
         return SitePage(
             title = payload.findString(TITLE_KEYS)?.htmlToPlainText()?.trim().orEmpty(),
             text = text,

@@ -35,7 +35,7 @@ internal class PushLocalLibraryChangesUseCase @Inject constructor(
             .toMap()
         val remoteFavorites = remote.favorites.associateBy(UserAnimeListItem::animeId)
         var changedRemote = false
-        var firstError: Throwable? = null
+        val errors = mutableListOf<Throwable>()
 
         libraryRepository.getAll().forEach { local ->
             val localList = local.userAnimeList()
@@ -50,7 +50,7 @@ internal class PushLocalLibraryChangesUseCase @Inject constructor(
             ) {
                 runSuspendCatching { setAnimeList(local.animeId, localList) }
                     .onSuccess { changedRemote = true }
-                    .onFailure { if (firstError == null) firstError = it }
+                    .onFailure { errors += it }
             }
 
             if (
@@ -63,10 +63,10 @@ internal class PushLocalLibraryChangesUseCase @Inject constructor(
             ) {
                 runSuspendCatching { setAnimeFavorite(local.animeId, local.isFavorite) }
                     .onSuccess { changedRemote = true }
-                    .onFailure { if (firstError == null) firstError = it }
+                    .onFailure { errors += it }
             }
         }
-        return LocalLibraryPushResult(changedRemote, firstError)
+        return LocalLibraryPushResult(changedRemote, errors)
     }
 
     private companion object {

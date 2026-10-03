@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -18,6 +17,7 @@ import su.afk.yummy.tv.core.storage.account.accountProfileUserKey
 import su.afk.yummy.tv.core.storage.account.isFresh
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
 import su.afk.yummy.tv.data.account.dto.YaniProfileDto
@@ -30,6 +30,7 @@ import su.afk.yummy.tv.data.account.network.YaniCaptchaRequiredException
 import su.afk.yummy.tv.data.account.storage.mapper.toProfileEntry
 import su.afk.yummy.tv.domain.account.model.AccountCaptchaRequiredException
 import su.afk.yummy.tv.domain.account.model.AccountSession
+import su.afk.yummy.tv.domain.account.model.AccountUnlinkRejectedException
 import su.afk.yummy.tv.domain.account.model.EditableProfile
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 import su.afk.yummy.tv.domain.account.model.LoginException
@@ -232,7 +233,7 @@ class YaniAccountRepository(
 
     override suspend fun unlinkAccount(provider: LinkedAccountProvider): EditableProfile =
         withContext(dispatchers.io) {
-            check(api.unlinkAccount(provider)) { "Account unlink was rejected" }
+            if (!api.unlinkAccount(provider)) throw AccountUnlinkRejectedException()
             val profileDto = api.getProfile()
             saveProfile(profileDto)
             profileDto.toEditableProfile()

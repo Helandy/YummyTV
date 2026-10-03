@@ -258,10 +258,10 @@ class LibraryViewModel @Inject internal constructor(
             setState { copy(isRemoteLoading = true, remoteError = null) }
             when (val result = remoteLibrarySyncHandler.loadRemoteLists(userId, forceRefresh)) {
                 is RemoteLibrarySyncResult.Success -> {
-                    result.syncError?.let { analytics.eventLoadError(it) }
+                    result.pushErrors.forEach { analytics.eventLoadError(it) }
                     setState {
                         copy(
-                            remoteError = result.syncError?.userMessage(),
+                            remoteError = result.pushErrors.firstOrNull()?.userMessage(),
                             isRemoteLoading = false,
                         )
                     }

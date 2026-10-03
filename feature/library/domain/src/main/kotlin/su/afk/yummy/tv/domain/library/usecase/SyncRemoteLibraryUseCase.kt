@@ -43,10 +43,10 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
             pruneMissingLocalEntries = forceRefresh && hasKnownRemoteState,
             remoteFetchedAt = remoteFetchedAt,
         )
-        if (pushResult.error == null) {
+        if (pushResult.errors.isEmpty()) {
             libraryRepository.markSynced(userId)
         }
-        RemoteLibrarySyncResult.Success(syncError = pushResult.error)
+        RemoteLibrarySyncResult.Success(pushErrors = pushResult.errors)
     } catch (error: Throwable) {
         currentCoroutineContext().ensureActive()
         RemoteLibrarySyncResult.Failure(error)
