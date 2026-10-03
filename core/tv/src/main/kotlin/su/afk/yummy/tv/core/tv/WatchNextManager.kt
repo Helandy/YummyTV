@@ -3,9 +3,8 @@ package su.afk.yummy.tv.core.tv
 import android.content.ContentValues
 import android.content.Context
 import androidx.tvprovider.media.tv.TvContractCompat
+import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import dagger.hilt.android.qualifiers.ApplicationContext
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
-import su.afk.yummy.tv.core.storage.watchprogress.latestByAnime
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.isKodikSourceUrl
 import su.afk.yummy.tv.core.utils.network.isLikelyImageUrl
@@ -30,18 +29,18 @@ internal class WatchNextManager @Inject constructor(
 ) {
     private val resolver = context.contentResolver
 
-    suspend fun sync(entries: List<WatchProgressEntry>) {
+    suspend fun sync(entries: List<AnimeWatchProgress>) {
         deleteAll()
-        latestByAnime(
-            entries.filter { it.animeId > 0 }
-        )
+        entries
+            .filter { it.animeId > 0 }
+            .latestByAnime()
             .forEach { entry ->
                 val episodeThumbnail = resolveEpisodeThumbnail(entry)
                 insert(entry, episodeThumbnail)
             }
     }
 
-    private fun insert(entry: WatchProgressEntry, episodeThumbnail: String?) {
+    private fun insert(entry: AnimeWatchProgress, episodeThumbnail: String?) {
         val artUri = episodeThumbnail
             ?: entry.screenshotUrl.takeIf { it.isLikelyImageUrl() }
             ?: entry.posterUrl.ifBlank { null }
@@ -67,10 +66,17 @@ internal class WatchNextManager @Inject constructor(
         }
     }
 
-    private suspend fun resolveEpisodeThumbnail(entry: WatchProgressEntry): String? {
+    private suspend fun resolveEpisodeThumbnail(entry: AnimeWatchProgress): String? {
         val screenshotSource = entry.screenshotUrl.takeIf { it.isKodikSourceUrl() }
         return screenshotSource?.let { resolveKodikThumbnailUrl(it) }
             ?: entry.episodeUrl.takeIf { it.isNotBlank() }
                 ?.let { resolveKodikThumbnailUrl(it) }
     }
 }
+
+/** Последняя по времени запись на каждое аниме, от новых к старым. */
+private fun List<AnimeWatchProgress>.latestByAnime(): List<AnimeWatchProgress> =
+    groupBy { it.animeId }
+        .values
+        .map { group -> group.maxBy { it.updatedAt } }
+        .sortedByDescending { it.updatedAt }

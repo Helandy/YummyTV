@@ -91,7 +91,7 @@ internal class TvIntegration @Inject constructor(
                     emptyList()
                 }
             }
-                .collect { entries -> watchNextManager.sync(entries) }
+                .collect { entries -> watchNextManager.sync(entries.map { it.toAnimeWatchProgress() }) }
         }
 
         scope.launch {
