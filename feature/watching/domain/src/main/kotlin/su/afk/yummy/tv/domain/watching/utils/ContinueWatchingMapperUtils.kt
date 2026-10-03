@@ -1,9 +1,9 @@
-package su.afk.yummy.tv.domain.watching.mapper
+package su.afk.yummy.tv.domain.watching.utils
 
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomePoster
-import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 
 internal fun AnimeVideo.toContinueWatchingPlaybackVideo() = ContinueWatchingPlaybackVideo(
     id = id,

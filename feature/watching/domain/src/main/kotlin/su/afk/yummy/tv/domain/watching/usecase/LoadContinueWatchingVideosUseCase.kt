@@ -6,12 +6,16 @@ import su.afk.yummy.tv.domain.anime.usecase.GetAnimeVideosUseCase
 import su.afk.yummy.tv.domain.anime.usecase.RefreshAnimeVideosUseCase
 import javax.inject.Inject
 
-internal class ContinueWatchingVideoLoader @Inject constructor(
+/**
+ * Загружает видео тайтла для Continue Watching: при [refresh] пробует обновить список с сервера и
+ * при сбое откатывается на кэш; без кэша возвращает пустой список.
+ */
+internal class LoadContinueWatchingVideosUseCase @Inject constructor(
     private val getAnimeVideos: GetAnimeVideosUseCase,
     private val refreshAnimeVideos: RefreshAnimeVideosUseCase,
 ) {
 
-    suspend fun load(animeId: Int, refresh: Boolean): List<AnimeVideo> {
+    suspend operator fun invoke(animeId: Int, refresh: Boolean): List<AnimeVideo> {
         if (animeId == 0) return emptyList()
         return if (refresh) loadRefreshedOrCached(animeId) else loadCached(animeId)
     }
