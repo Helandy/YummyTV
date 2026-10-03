@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.utils
 
+import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState

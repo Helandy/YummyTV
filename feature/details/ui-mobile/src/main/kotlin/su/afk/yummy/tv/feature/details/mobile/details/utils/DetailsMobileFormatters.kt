@@ -15,7 +15,7 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.mobile.R
-import su.afk.yummy.tv.feature.details.utils.isReleasedAnimeStatus
+import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale
 

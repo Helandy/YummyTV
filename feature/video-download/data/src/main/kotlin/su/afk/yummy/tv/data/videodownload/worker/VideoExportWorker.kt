@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.worker
 
+import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import android.content.Context
 import android.net.Uri
 import android.os.StatFs
@@ -393,7 +394,7 @@ class VideoExportWorker @AssistedInject internal constructor(
         animeTitle.toSafeSafName(MAX_DIRECTORY_NAME_BYTES).ifBlank { DEFAULT_DIRECTORY_NAME }
 
     private fun VideoDownloadItem.exportFileName(): String {
-        val balancer = playerName.balancerLabel()
+        val balancer = playerName.playerDisplayName()
         val episodeName = "Серия $episode"
         // Обрезаем базу так, чтобы расширение гарантированно влезло в лимит имени
         val maxBaseBytes = MAX_FILE_NAME_BYTES - MP4_EXTENSION.utf8Size()
@@ -413,9 +414,6 @@ class VideoExportWorker @AssistedInject internal constructor(
             }
         return "$safe$MP4_EXTENSION"
     }
-
-    private fun String.balancerLabel(): String =
-        trim().removePrefix("Плеер ").removePrefix("Player ")
 
     private fun Throwable.userFacingExportError(): String {
         val message = message?.takeIf(String::isNotBlank).orEmpty()

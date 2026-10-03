@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.videodownload.mobile.utils
 
+import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
@@ -64,10 +65,7 @@ internal fun VideoDownloadItem.diskSizeText(): String? {
 internal fun VideoDownloadItem.dubbingLabel(): String =
     dubbing.ifBlank { playerName.balancerLabel() }
 
-internal fun String.balancerLabel(): String =
-    trim()
-        .removePrefix("Плеер ")
-        .removePrefix("Player ")
+internal fun String.balancerLabel(): String = playerDisplayName()
 
 internal val VideoDownloadItem.hasProgressIndicator: Boolean
     get() = status == VideoDownloadStatus.Resolving ||

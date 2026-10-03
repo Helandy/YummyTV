@@ -4,7 +4,7 @@ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
-import su.afk.yummy.tv.feature.player.utils.isOngoingAnimeStatus
+import su.afk.yummy.tv.core.utils.anime.isOngoingAnimeStatus
 import javax.inject.Inject
 
 internal class PlayerFinalEpisodeActionHandler @Inject constructor(

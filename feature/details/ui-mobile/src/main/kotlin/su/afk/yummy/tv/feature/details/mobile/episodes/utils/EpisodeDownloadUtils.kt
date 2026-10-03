@@ -1,11 +1,9 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.utils
 
+import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import java.util.Locale
 
-internal fun String.playerLabel(): String =
-    trim()
-        .removePrefix("Плеер ")
-        .removePrefix("Player ")
+internal fun String.playerLabel(): String = playerDisplayName()
 
 internal fun Long.formatMegabytesOrNull(): String? {
     if (this <= 0L) return null

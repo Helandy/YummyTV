@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.mapper
 
+import su.afk.yummy.tv.core.utils.player.withoutPlayerPrefix
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
@@ -55,8 +56,5 @@ private fun List<AnimeVideo>.supportedBalancersLabel(): String =
                 )
             }.thenBy { it.player }
         )
-        .map { it.player.removePrefix(RU_PLAYER_PREFIX).removePrefix(EN_PLAYER_PREFIX) }
+        .map { it.player.withoutPlayerPrefix() }
         .joinToString(" • ")
-
-private const val RU_PLAYER_PREFIX = "Плеер "
-private const val EN_PLAYER_PREFIX = "Player "
