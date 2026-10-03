@@ -21,6 +21,7 @@ class MainState {
         val isYaniSignedIn: Boolean = false,
         val isYaniAuthResolved: Boolean = false,
         val unreadNotificationsCount: Int = 0,
+        val isOnline: Boolean = true,
     ) : UiState
 
     /** Пользовательские действия в корневом контейнере приложения. */

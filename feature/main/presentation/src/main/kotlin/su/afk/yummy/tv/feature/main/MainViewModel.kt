@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
@@ -34,6 +35,7 @@ class MainViewModel @Inject internal constructor(
     private val mainSideEffectsHandler: MainSideEffectsHandler,
     private val accountMutationErrorRepository: AccountMutationErrorRepository,
     private val stringProvider: StringProvider,
+    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
     override fun createInitialState() = MainState.State()
@@ -50,10 +52,17 @@ class MainViewModel @Inject internal constructor(
     init {
         analytics.eventScreenOpened()
         observeSettings()
+        observeConnectivity()
         observeFeatureToggleUpdates()
         observeAccountMutationErrors()
         refreshAccountIfNeeded()
         checkForUpdates()
+    }
+
+    private fun observeConnectivity() {
+        networkConnectivityMonitor.isOnline
+            .onEach { isOnline -> setState { copy(isOnline = isOnline) } }
+            .launchIn(viewModelScope)
     }
 
     private fun observeAccountMutationErrors() {

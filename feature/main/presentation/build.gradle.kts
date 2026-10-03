@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":core:model"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:network"))
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:update:api"))

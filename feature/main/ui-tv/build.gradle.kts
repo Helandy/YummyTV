@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":core:analytics"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    implementation(project(":core:network"))
     implementation(project(":core:storage"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:bloggers:api"))

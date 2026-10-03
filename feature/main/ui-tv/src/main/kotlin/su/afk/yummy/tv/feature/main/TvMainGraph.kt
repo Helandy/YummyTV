@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -16,7 +15,6 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
 import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.model.tvMenuItems
 import su.afk.yummy.tv.feature.main.navigation.TvNavigationHolder
@@ -32,7 +30,6 @@ import javax.inject.Singleton
 class TvMainGraph @Inject constructor(
     private val navManager: INavigationManager,
     private val navigationHolder: TvNavigationHolder,
-    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : MainGraph {
 
     @Composable
@@ -46,7 +43,6 @@ class TvMainGraph @Inject constructor(
         val showMainMenu = atRoot && !isRequiredUpdateDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
-            val isOnline by networkConnectivityMonitor.isOnline.collectAsStateWithLifecycle()
             val toast = rememberGlobalToastState()
             LaunchedEffect(effect) {
                 effect.collect { eff ->
@@ -64,7 +60,7 @@ class TvMainGraph @Inject constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
-                    LocalIsOffline provides !isOnline,
+                    LocalIsOffline provides !state.isOnline,
                 ) {
                     TvMainScaffold(
                         selectedRoot = navManager.currentRoot,

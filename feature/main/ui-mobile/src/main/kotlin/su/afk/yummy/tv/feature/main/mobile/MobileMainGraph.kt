@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -22,7 +21,6 @@ import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
-import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.main.MainViewModel
@@ -42,7 +40,6 @@ class MobileMainGraph @Inject internal constructor(
     private val navManager: INavigationManager,
     private val navigationHolder: MobileNavigationHolder,
     private val resolveKodikThumbnailUrl: ResolveKodikThumbnailUrlUseCase,
-    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
 ) : MainGraph {
 
     @Composable
@@ -57,7 +54,6 @@ class MobileMainGraph @Inject internal constructor(
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
             val accountSettingsFocusRequester = remember { FocusRequester() }
-            val isOnline by networkConnectivityMonitor.isOnline.collectAsStateWithLifecycle()
             val toast = rememberGlobalToastState()
             LaunchedEffect(effect) {
                 effect.collect { eff ->
@@ -75,7 +71,7 @@ class MobileMainGraph @Inject internal constructor(
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,
                     LocalPosterCardSize provides state.posterCardSize,
-                    LocalIsOffline provides !isOnline,
+                    LocalIsOffline provides !state.isOnline,
                     LocalResolveKodikThumbnailUrl provides resolveKodikThumbnailUrl::invoke,
                     LocalMobileBottomBarUpFocusRequester provides accountSettingsFocusRequester.takeIf {
                         atTabRoot && navManager.currentRoot == RootTab.ACCOUNT
