@@ -2,7 +2,6 @@ package su.afk.yummy.tv.data.account.repository
 
 import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import io.ktor.client.plugins.ClientRequestException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.combine
@@ -197,7 +196,7 @@ class YaniAccountRepository(
             )
         }
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
+            .flowOn(dispatchers.io)
 
     override suspend fun getSession(): AccountSession =
         withContext(dispatchers.io) {

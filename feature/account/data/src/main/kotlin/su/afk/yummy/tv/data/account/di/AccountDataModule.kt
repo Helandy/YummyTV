@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.account.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import android.content.Context
 import dagger.Module
 import dagger.Provides
@@ -20,6 +19,7 @@ import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.storage.account.AccountStorage
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.document.DocumentCacheStorage
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
 import su.afk.yummy.tv.data.account.backup.BlockStoreAuthTokenBackup
 import su.afk.yummy.tv.data.account.localauth.LocalAuthServer
@@ -241,11 +241,13 @@ object AccountDataModule {
         advertiser: NsdAdvertiser,
         discovery: NsdDeviceDiscovery,
         transferClient: SessionTransferClient,
+        dispatchers: AppDispatchers,
     ): LocalAuthRepository = NsdLocalAuthRepository(
         server,
         advertiser,
         discovery,
         transferClient,
+        dispatchers,
     )
 
     private const val LOCAL_AUTH_CONNECT_TIMEOUT_MS = 5_000L
