@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.comments.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
@@ -35,6 +35,7 @@ class YaniCommentsRepository(
     private val api: YaniCommentsApi,
     private val commentsStorage: CommentsStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : CommentsRepository {
 
     override suspend fun getComments(
@@ -44,7 +45,7 @@ class YaniCommentsRepository(
         skip: Int,
         sort: CommentSort,
         forceRefresh: Boolean,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         val scopeType = cacheScope(targetType.apiValue)
         offlineFirstCache(
             forceRefresh = forceRefresh,
@@ -68,7 +69,7 @@ class YaniCommentsRepository(
     override suspend fun getCommentChildren(
         commentId: Int,
         skip: Int,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         val scopeType = cacheScope(COMMENT_SCOPE_CHILDREN)
         offlineFirstCache(
             read = {
@@ -90,7 +91,7 @@ class YaniCommentsRepository(
         targetType: CommentTargetType,
         targetId: Int,
         draft: CommentDraft,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         val parentCommentId = draft.parentCommentId
         val comment = api.addComment(
             targetType = targetType.apiValue,
@@ -116,7 +117,7 @@ class YaniCommentsRepository(
     override suspend fun updateComment(
         commentId: Int,
         text: String,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         api.updateComment(commentId, YaniPatchCommentBodyDto(text))
             .response
             .let { dto ->
@@ -126,7 +127,7 @@ class YaniCommentsRepository(
     }
 
     override suspend fun deleteComment(commentId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             api.deleteComment(commentId).response.also { success ->
                 if (success) commentsStorage.deleteComment(commentId)
             }
@@ -135,7 +136,7 @@ class YaniCommentsRepository(
     override suspend fun voteComment(
         commentId: Int,
         vote: CommentVote,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         require(vote != CommentVote.NEUTRAL)
         api.voteComment(commentId, YaniVoteCommentBodyDto(vote.apiValue))
             .response
@@ -148,7 +149,7 @@ class YaniCommentsRepository(
     }
 
     override suspend fun removeCommentVote(commentId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             api.removeCommentVote(commentId).response.toCommentVoteResult()
                 .also { result ->
                     if (result.success) {
@@ -160,7 +161,7 @@ class YaniCommentsRepository(
     override suspend fun reportComment(
         commentId: Int,
         reason: CommentReportReason,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io) {
         api.reportComment(commentId, YaniClaimCommentBodyDto(reason.apiValue)).response
     }
 

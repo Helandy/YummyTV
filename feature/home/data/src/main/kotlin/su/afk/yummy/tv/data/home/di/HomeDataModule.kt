@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.home.di
 
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -47,6 +48,7 @@ object HomeDataModule {
         settingsStore: YaniAccountSettingsStore,
         watchProgressStore: WatchProgressStorage,
         analyticsTracker: AnalyticsTracker,
+        dispatchers: AppDispatchers,
     ): HomeFeedRepository =
         YaniHomeFeedRepository(
             api,
@@ -55,5 +57,6 @@ object HomeDataModule {
             settingsStore,
             watchProgressStore,
             analyticsTracker,
+            dispatchers,
         )
 }

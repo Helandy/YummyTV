@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.di
 
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import android.content.Context
 import dagger.Module
 import dagger.Provides
@@ -89,6 +90,7 @@ object AccountDataModule {
         animeStorage: AnimeStorage,
         analyticsTracker: AnalyticsTracker,
         authTokenBackup: AuthTokenBackup,
+        dispatchers: AppDispatchers,
     ): AccountRepository = YaniAccountRepository(
         api,
         settingsStore,
@@ -98,6 +100,7 @@ object AccountDataModule {
         animeStorage,
         analyticsTracker,
         authTokenBackup,
+        dispatchers,
     )
 
     @Provides
@@ -106,18 +109,22 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): UserListsRepository = YaniUserListsRepository(
         api,
         accountStorage,
         settingsStore,
+        dispatchers,
     )
 
     @Provides
     @Singleton
     fun provideVideoWatchesRepository(
         api: YaniAccountApi,
+        dispatchers: AppDispatchers,
     ): VideoWatchesRepository = YaniVideoWatchesRepository(
         api,
+        dispatchers,
     )
 
     @Provides
@@ -126,10 +133,12 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): AnimeExtrasRepository = YaniAnimeExtrasRepository(
         api,
         accountStorage,
         settingsStore,
+        dispatchers,
     )
 
     @Provides
@@ -138,11 +147,13 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): VideoSubscriptionRepository =
         YaniVideoSubscriptionRepository(
             api,
             accountStorage,
             settingsStore,
+            dispatchers,
         )
 
     @Provides
@@ -151,8 +162,9 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): UserStatsRepository =
-        YaniUserStatsRepository(api, accountStorage, settingsStore)
+        YaniUserStatsRepository(api, accountStorage, settingsStore, dispatchers)
 
     @Provides
     @Singleton
@@ -160,8 +172,9 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): UserProfileRepository =
-        YaniUserProfileRepository(api, accountStorage, settingsStore)
+        YaniUserProfileRepository(api, accountStorage, settingsStore, dispatchers)
 
     @Provides
     @Singleton
@@ -169,8 +182,9 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): UserProfileContentRepository =
-        YaniUserProfileContentRepository(api, accountStorage, settingsStore)
+        YaniUserProfileContentRepository(api, accountStorage, settingsStore, dispatchers)
 
     @Provides
     @Singleton
@@ -178,11 +192,13 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): ProfileNotificationsRepository =
         YaniProfileNotificationsRepository(
             api,
             accountStorage,
             settingsStore,
+            dispatchers,
         )
 
     @Provides
@@ -191,8 +207,9 @@ object AccountDataModule {
         api: YaniAccountApi,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): UserDirectoryRepository =
-        YaniUserDirectoryRepository(api, accountStorage, settingsStore)
+        YaniUserDirectoryRepository(api, accountStorage, settingsStore, dispatchers)
 
     @Provides
     @Singleton
@@ -201,8 +218,9 @@ object AccountDataModule {
         accountRepository: AccountRepository,
         yaniAuthPreferences: YaniAuthPreferences,
         authTokenBackup: AuthTokenBackup,
+        dispatchers: AppDispatchers,
     ): ProfileSettingsRepository =
-        YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences, authTokenBackup)
+        YaniProfileSettingsRepository(api, accountRepository, yaniAuthPreferences, authTokenBackup, dispatchers)
 
     /** Таймауты короткие: ТВ стоит в той же сети, долгого ожидания тут быть не должно. */
     @Provides

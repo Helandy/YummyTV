@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.schedule.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -19,9 +19,10 @@ class YaniScheduleRepository(
     private val api: YaniScheduleApi,
     private val scheduleStore: AnimeScheduleStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : AnimeScheduleRepository {
 
-    override suspend fun getSchedule(): List<AnimeScheduleDay> = withContext(Dispatchers.IO) {
+    override suspend fun getSchedule(): List<AnimeScheduleDay> = withContext(dispatchers.io) {
         val languageCode = settingsStore.currentLanguageCode()
         offlineFirstCache(
             read = { scheduleStore.getSchedule(languageCode) },

@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -26,9 +26,10 @@ class YaniUserProfileContentRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : UserProfileContentRepository {
     override suspend fun getFriends(userId: Int, limit: Int, offset: Int): List<UserFriend> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getUserFriends(userId, languageCode, limit, offset) },
@@ -49,7 +50,7 @@ class YaniUserProfileContentRepository(
         }
 
     override suspend fun getReviews(userId: Int, limit: Int, offset: Int): List<UserReviewSummary> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getUserReviews(userId, languageCode, limit, offset) },
@@ -70,7 +71,7 @@ class YaniUserProfileContentRepository(
         }
 
     override suspend fun getPosts(userId: Int, limit: Int, offset: Int): List<UserPostSummary> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getUserPosts(userId, languageCode, limit, offset) },
@@ -95,7 +96,7 @@ class YaniUserProfileContentRepository(
         limit: Int,
         offset: Int,
     ): List<AnimeCollectionSummary> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             val pageKey = userCollectionsPageKey(userId, limit, offset, languageCode)
             offlineFirstCache(

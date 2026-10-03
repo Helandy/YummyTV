@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.collection.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -34,10 +34,11 @@ class YaniCollectionDetailRepository(
     private val collectionStorage: CollectionStorage,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : CollectionRepository {
 
     override suspend fun getCollection(id: Int): CollectionDetail =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { collectionStorage.getCollection(id, languageCode) },
@@ -48,7 +49,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun getCollections(limit: Int, offset: Int): CollectionSummaryPage =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             val pageKey = catalogPageKey(languageCode, limit, offset)
             offlineFirstCache(
@@ -72,7 +73,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun createCollection(request: CreateCollectionRequest): Int =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             api.createCollection(
                 YaniCreateCollectionBodyDto(
@@ -88,7 +89,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun updateCollection(id: Int, request: UpdateCollectionRequest): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             val updated = api.updateCollection(
                 id = id,
@@ -117,7 +118,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun deleteCollection(id: Int): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val deleted = api.deleteCollection(id).response
             if (deleted) {
                 collectionStorage.deleteCollection(id)
@@ -127,7 +128,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun voteCollection(id: Int, vote: CollectionVote): CollectionVoteResult =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             require(vote != CollectionVote.NEUTRAL)
             val languageCode = settingsStore.currentLanguageCode()
             val result = api.voteCollection(id, YaniCollectionVoteBodyDto(vote.apiValue))
@@ -144,7 +145,7 @@ class YaniCollectionDetailRepository(
         }
 
     override suspend fun removeCollectionVote(id: Int): CollectionVoteResult =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val languageCode = settingsStore.currentLanguageCode()
             val result = api.removeCollectionVote(id).response.toDomain()
             collectionStorage.updateCollectionVote(

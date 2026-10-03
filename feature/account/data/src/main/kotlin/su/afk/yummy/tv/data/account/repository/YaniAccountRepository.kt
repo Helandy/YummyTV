@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -48,13 +49,14 @@ class YaniAccountRepository(
     private val animeStorage: AnimeStorage,
     private val analyticsTracker: AnalyticsTracker,
     private val authTokenBackup: AuthTokenBackup,
+    private val dispatchers: AppDispatchers,
 ) : AccountRepository {
 
     override suspend fun login(
         login: String,
         password: String,
         captchaResponse: String?,
-    ): YaniAccount = withContext(Dispatchers.IO) {
+    ): YaniAccount = withContext(dispatchers.io) {
         val token = try {
             api.login(login, password, captchaResponse)
         } catch (e: YaniCaptchaRequiredException) {
@@ -65,7 +67,7 @@ class YaniAccountRepository(
         signInWithTokenInternal(token)
     }
 
-    override suspend fun signInWithToken(token: String): YaniAccount = withContext(Dispatchers.IO) {
+    override suspend fun signInWithToken(token: String): YaniAccount = withContext(dispatchers.io) {
         signInWithTokenInternal(token)
     }
 
@@ -119,7 +121,7 @@ class YaniAccountRepository(
         runSuspendCatching { settingsStore.clearYaniAccount() }
     }
 
-    override suspend fun register(registration: UserRegistration) = withContext(Dispatchers.IO) {
+    override suspend fun register(registration: UserRegistration) = withContext(dispatchers.io) {
         try {
             api.register(
                 YaniRegistrationBodyDto(
@@ -140,11 +142,11 @@ class YaniAccountRepository(
     }
 
     override suspend fun verifyRegistration(hash: String): YaniAccount =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             signInWithTokenInternal(api.verifyRegistration(hash))
         }
 
-    override suspend fun refreshToken(): YaniAccount? = withContext(Dispatchers.IO) {
+    override suspend fun refreshToken(): YaniAccount? = withContext(dispatchers.io) {
         val token = runSuspendCatching { api.refreshToken() }.getOrNull().orEmpty()
         if (token.isBlank()) return@withContext getCachedProfileOrNull()
         val profile = runSuspendCatching {
@@ -167,7 +169,7 @@ class YaniAccountRepository(
      * сначала валидирует его профилем. Запись удаляется, только если сервер токен отверг, —
      * сетевые сбои оставляют её до следующего запуска.
      */
-    override suspend fun restoreSessionFromBackup(): YaniAccount? = withContext(Dispatchers.IO) {
+    override suspend fun restoreSessionFromBackup(): YaniAccount? = withContext(dispatchers.io) {
         if (getSession().isAuthorized) return@withContext null
         val token = authTokenBackup.restore() ?: return@withContext null
         try {
@@ -198,7 +200,7 @@ class YaniAccountRepository(
             .flowOn(Dispatchers.IO)
 
     override suspend fun getSession(): AccountSession =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             AccountSession(
                 isAuthorized = yaniAuthPreferences.refreshToken.first().isNotBlank(),
                 userId = settingsStore.yaniUserId.first(),
@@ -206,7 +208,7 @@ class YaniAccountRepository(
         }
 
     override suspend fun getProfile(): YaniAccount =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.yaniUserId.first()
             val stored = getStoredProfile(userId)
             if (stored?.isFresh(ACCOUNT_SHORT_TTL_MS) == true) {
@@ -221,7 +223,7 @@ class YaniAccountRepository(
             }
         }
 
-    override suspend fun refreshProfile(): EditableProfile = withContext(Dispatchers.IO) {
+    override suspend fun refreshProfile(): EditableProfile = withContext(dispatchers.io) {
         val profileDto = api.getProfile()
         val savedProfile = saveProfile(profileDto)
         settingsStore.setYaniAccount(savedProfile.id, savedProfile.nickname, savedProfile.avatarUrl)
@@ -230,18 +232,18 @@ class YaniAccountRepository(
     }
 
     override suspend fun unlinkAccount(provider: LinkedAccountProvider): EditableProfile =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             check(api.unlinkAccount(provider)) { "Account unlink was rejected" }
             val profileDto = api.getProfile()
             saveProfile(profileDto)
             profileDto.toEditableProfile()
         }
 
-    override suspend fun updateOnlineStatus(deviceHash: String) = withContext(Dispatchers.IO) {
+    override suspend fun updateOnlineStatus(deviceHash: String) = withContext(dispatchers.io) {
         api.updateOnline(deviceHash)
     }
 
-    override suspend fun logout() = withContext(Dispatchers.IO) {
+    override suspend fun logout() = withContext(dispatchers.io) {
         val userId = settingsStore.yaniUserId.first()
         runSuspendCatching { api.logout() }
         documentCache.deleteByPrefix(userDocumentCachePrefix(userId.coerceAtLeast(0)))

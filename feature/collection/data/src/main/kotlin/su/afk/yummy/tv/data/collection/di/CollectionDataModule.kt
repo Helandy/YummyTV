@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.collection.di
 
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,8 +32,9 @@ object CollectionDataModule {
         collectionStorage: CollectionStorage,
         accountStorage: AccountStorage,
         settingsStore: YaniAccountSettingsStore,
+        dispatchers: AppDispatchers,
     ): CollectionRepository =
-        YaniCollectionDetailRepository(api, collectionStorage, accountStorage, settingsStore)
+        YaniCollectionDetailRepository(api, collectionStorage, accountStorage, settingsStore, dispatchers)
 
     @Provides
     @Singleton

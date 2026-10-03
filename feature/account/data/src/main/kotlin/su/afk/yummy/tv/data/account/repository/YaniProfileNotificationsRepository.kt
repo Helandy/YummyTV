@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -24,16 +24,17 @@ class YaniProfileNotificationsRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : ProfileNotificationsRepository {
     override suspend fun getNotifications(limit: Int, offset: Int): List<ProfileNotification> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             val languageCode = settingsStore.currentLanguageCode()
             getNotificationsPage(userId, languageCode, limit, offset)
         }
 
     override suspend fun getNotificationCounts(): List<NotificationCount> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             if (userId <= 0) return@withContext emptyList()
             offlineFirstCache(
@@ -52,7 +53,7 @@ class YaniProfileNotificationsRepository(
         }
 
     override suspend fun resolveAnimeIdBySlug(slug: String): Int? =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             offlineFirstCache(
                 read = { accountStorage.getNotificationAnime(slug) },
                 isFresh = { it.isFresh(ACCOUNT_LONG_TTL_MS) },
@@ -62,7 +63,7 @@ class YaniProfileNotificationsRepository(
         }
 
     override suspend fun markNotificationRead(id: Int): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             api.markNotificationRead(id).also {
                 invalidateNotifications(userId)
@@ -70,7 +71,7 @@ class YaniProfileNotificationsRepository(
         }
 
     override suspend fun markAllNotificationsRead(): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             api.markAllNotificationsRead().also {
                 invalidateNotifications(userId)
@@ -78,7 +79,7 @@ class YaniProfileNotificationsRepository(
         }
 
     override suspend fun deleteNotification(id: Int): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             api.deleteNotification(id).also {
                 invalidateNotifications(userId)
@@ -86,7 +87,7 @@ class YaniProfileNotificationsRepository(
         }
 
     override suspend fun deleteAllNotifications(): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val userId = settingsStore.currentUserId()
             api.deleteAllNotifications().also {
                 invalidateNotifications(userId)

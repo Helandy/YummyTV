@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -20,8 +20,9 @@ class YaniUserStatsRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
+    private val dispatchers: AppDispatchers,
 ) : UserStatsRepository {
-    override suspend fun getUserStats(userId: Int): UserStats = withContext(Dispatchers.IO) {
+    override suspend fun getUserStats(userId: Int): UserStats = withContext(dispatchers.io) {
         val languageCode = settingsStore.currentLanguageCode()
         offlineFirstCache(
             read = { accountStorage.getUserStats(userId, languageCode) },

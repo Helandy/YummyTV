@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import kotlinx.coroutines.Dispatchers
+import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
 import su.afk.yummy.tv.data.account.backup.AuthTokenBackup
@@ -23,13 +23,14 @@ class YaniProfileSettingsRepository(
     private val accountRepository: AccountRepository,
     private val authPreferences: YaniAuthPreferences,
     private val authTokenBackup: AuthTokenBackup,
+    private val dispatchers: AppDispatchers,
 ) : ProfileSettingsRepository {
-    override suspend fun getProfile(): EditableProfile = withContext(Dispatchers.IO) {
+    override suspend fun getProfile(): EditableProfile = withContext(dispatchers.io) {
         accountRepository.refreshProfile()
     }
 
     override suspend fun updateProfile(update: ProfileUpdate): EditableProfile =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             api.updateProfile(
                 YaniProfileUpdateBodyDto(
                     about = update.about,
@@ -52,7 +53,7 @@ class YaniProfileSettingsRepository(
         }
 
     override suspend fun uploadImage(kind: ProfileImageKind, bytes: ByteArray): EditableProfile =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val profile = accountRepository.refreshProfile()
             when (kind) {
                 ProfileImageKind.AVATAR -> api.uploadAvatar(profile.userId, bytes)
@@ -62,7 +63,7 @@ class YaniProfileSettingsRepository(
         }
 
     override suspend fun deleteImage(kind: ProfileImageKind): EditableProfile =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val profile = accountRepository.refreshProfile()
             when (kind) {
                 ProfileImageKind.AVATAR -> api.deleteAvatar(profile.userId)
@@ -72,14 +73,14 @@ class YaniProfileSettingsRepository(
         }
 
     override suspend fun changePassword(oldPassword: String, newPassword: String) =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             val token = api.changePassword(oldPassword, newPassword)
             authPreferences.setRefreshToken(token)
             authTokenBackup.save(token)
         }
 
     override suspend fun requestPasswordReset(email: String, captchaResponse: String?) =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io) {
             try {
                 api.requestPasswordReset(email, captchaResponse)
             } catch (_: YaniCaptchaRequiredException) {
