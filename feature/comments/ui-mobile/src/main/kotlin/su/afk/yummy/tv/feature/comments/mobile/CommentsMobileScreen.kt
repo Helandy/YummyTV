@@ -41,7 +41,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.mobile.utils.buildVisibleComments
+import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentSortRow
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsDialogs

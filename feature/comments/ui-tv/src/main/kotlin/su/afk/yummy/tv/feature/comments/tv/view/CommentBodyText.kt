@@ -20,8 +20,8 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusHighlight
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.toParagraphs
 import su.afk.yummy.tv.feature.comments.tv.R
-import su.afk.yummy.tv.feature.comments.tv.model.CommentTextPart
-import su.afk.yummy.tv.feature.comments.tv.utils.parseCommentText
+import su.afk.yummy.tv.feature.comments.model.CommentTextPart
+import su.afk.yummy.tv.feature.comments.utils.parseCommentText
 
 /**
  * @param nextFocusRequester куда должен уйти фокус по DOWN с последнего фокус-стопа текста —

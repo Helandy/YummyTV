@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.tv.utils.resolve
+import su.afk.yummy.tv.feature.comments.utils.resolve
 
 @Composable
 internal fun CommentsList(

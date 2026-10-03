@@ -25,7 +25,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.mobile.R
-import su.afk.yummy.tv.feature.comments.mobile.utils.resolve
+import su.afk.yummy.tv.feature.comments.utils.resolve
 
 @Composable
 internal fun CommentsList(
