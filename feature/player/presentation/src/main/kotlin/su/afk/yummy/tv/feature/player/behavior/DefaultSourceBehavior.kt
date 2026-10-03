@@ -9,6 +9,7 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.streamHost
 import javax.inject.Inject
 
 /**
@@ -34,6 +35,15 @@ internal class DefaultSourceBehavior @Inject constructor(
     /** Сколько тихих повторов потрачено в текущем сеансе — для аналитики финальной ошибки. */
     override val retryAttempts: Int get() = retry.attempts
 
+    override var sourceRefreshes: Int = 0
+        private set
+
+    /** Iframe на момент первого перезапроса `/videos` в сеансе; null — перезапросов не было. */
+    private var iframeBeforeRefresh: String? = null
+
+    override val iframeChanged: Boolean
+        get() = iframeBeforeRefresh?.let { it != activeIframeUrl(host.state) } == true
+
     override fun attach(host: PlayerSourceHost) {
         this.host = host
     }
@@ -44,7 +54,16 @@ internal class DefaultSourceBehavior @Inject constructor(
         // Отголосок упавшего потока, пока резолвится новый: попытка уже потрачена.
         if (recovering) return true
         if (!retry.canRetry()) return false
-        scheduleRetryAttempt()
+        analytics.debugLog {
+            "Playback error code=${event.errorCode} cause=${event.cause} " +
+                "host=${host.state.streamUrl?.streamHost()} quality=${host.state.selectedQuality} " +
+                "positionMs=${event.positionMs} attempts=${retry.attempts}"
+        }
+        if (event.errorCode in MALFORMED_STREAM_CODES) {
+            scheduleSourceRefreshAttempt()
+        } else {
+            scheduleRetryAttempt()
+        }
         return true
     }
 
@@ -68,6 +87,7 @@ internal class DefaultSourceBehavior @Inject constructor(
     override fun onPlaybackReady() {
         // Успешный старт - бюджет тихих повторов освобождается для нового сеанса.
         retry.reset()
+        resetSourceRefreshes()
     }
 
     override fun keepsStreamWhileResolving(): Boolean = recovering && host.state.streamUrl != null
@@ -87,12 +107,18 @@ internal class DefaultSourceBehavior @Inject constructor(
     override fun reset() {
         recovering = false
         retry.reset()
+        resetSourceRefreshes()
         retryJob?.cancel()
     }
 
-    private fun scheduleRetryAttempt() {
+    private fun resetSourceRefreshes() {
+        sourceRefreshes = 0
+        iframeBeforeRefresh = null
+    }
+
+    /** Общая часть тихого повтора: тратит попытку и прячет оверлей, оставляя последний кадр. */
+    private fun beginSilentRecovery(): Int {
         retryJob?.cancel()
-        val iframeUrl = activeIframeUrl(host.state)
         val attempt = retry.next()
         recovering = true
         host.update {
@@ -104,6 +130,32 @@ internal class DefaultSourceBehavior @Inject constructor(
         }
         // Затянувшийся тихий ретрай — предлагаем сменить плеер/озвучку, не дожидаясь исчерпания попыток.
         host.changePlayerHint.start(RECOVERY_HINT_DELAY_MS) { recovering }
+        return attempt
+    }
+
+    /**
+     * Повреждённый контейнер: повтор того же iframe упирается в тот же файл, поэтому заново
+     * запрашиваем `/videos` (свежий iframe) и перерезолвим поток с тем же качеством.
+     */
+    private fun scheduleSourceRefreshAttempt() {
+        val attempt = beginSilentRecovery()
+        if (iframeBeforeRefresh == null) iframeBeforeRefresh = activeIframeUrl(host.state)
+        sourceRefreshes++
+        analytics.debugLog {
+            "Silent playback retry with /videos refresh attempt=$attempt/" +
+                "${PlayerPlaybackRetryHandler.MAX_ATTEMPTS} refreshes=$sourceRefreshes"
+        }
+        retryJob = host.scope.launch {
+            if (!host.state.isOfflinePlayback) {
+                host.closeSourceSessions()
+                host.refreshSourcesAndReloadStream()
+            }
+        }
+    }
+
+    private fun scheduleRetryAttempt() {
+        val iframeUrl = activeIframeUrl(host.state)
+        val attempt = beginSilentRecovery()
         analytics.debugLog {
             "Silent playback retry attempt=$attempt/${PlayerPlaybackRetryHandler.MAX_ATTEMPTS}"
         }
@@ -130,5 +182,11 @@ internal class DefaultSourceBehavior @Inject constructor(
 
     private companion object {
         private const val RECOVERY_HINT_DELAY_MS = 10_000L
+
+        // Повреждённый контейнер/манифест: тот же URL заведомо отдаст то же самое.
+        private val MALFORMED_STREAM_CODES = setOf(
+            "ERROR_CODE_PARSING_CONTAINER_MALFORMED",
+            "ERROR_CODE_PARSING_MANIFEST_MALFORMED",
+        )
     }
 }

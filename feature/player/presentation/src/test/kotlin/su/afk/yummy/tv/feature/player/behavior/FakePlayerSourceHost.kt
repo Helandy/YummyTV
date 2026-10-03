@@ -33,6 +33,12 @@ internal class FakePlayerSourceHost(
         loadRequests += request
     }
 
+    var sourceRefreshRequests = 0
+
+    override fun refreshSourcesAndReloadStream() {
+        sourceRefreshRequests++
+    }
+
     override fun cancelStreamLoad() {
         cancelledLoads++
     }

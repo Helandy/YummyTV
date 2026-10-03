@@ -174,6 +174,8 @@ class PlayerState {
             val errorCode: String? = null,
             val errorType: String? = null,
             val positionMs: Long = 0L,
+            /** Сжатая цепочка причин (без обфусцированных имён классов) для аналитики. */
+            val cause: String? = null,
         ) : Event
 
         /** Новый media item подготовлен после фонового восстановления воспроизведения. */

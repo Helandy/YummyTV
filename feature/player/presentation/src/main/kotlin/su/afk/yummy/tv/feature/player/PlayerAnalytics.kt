@@ -16,6 +16,7 @@ import su.afk.yummy.tv.feature.player.utils.activePlayerId
 import su.afk.yummy.tv.feature.player.utils.activeVideoId
 import su.afk.yummy.tv.feature.player.utils.formatPlaybackTimecode
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
+import su.afk.yummy.tv.feature.player.utils.streamHost
 import javax.inject.Inject
 
 private data class PlayerAnalyticsSource(
@@ -222,7 +223,8 @@ internal class PlayerAnalytics @Inject constructor(
      * Ошибка воспроизведения в плеере.
      *
      * Параметры: anime_id, anime_name, video_id, player_id, episode, player, dubbing,
-     * error_code, error_type, error_message, retry_attempts, position, position_ms.
+     * error_code, error_type, error_message, error_cause, retry_attempts, stream_host, quality,
+     * source_refreshes, iframe_changed, position, position_ms.
      */
     fun eventPlaybackError(
         state: PlayerState.State,
@@ -231,6 +233,9 @@ internal class PlayerAnalytics @Inject constructor(
         errorType: String?,
         positionMs: Long,
         retryAttempts: Int = 0,
+        errorCause: String? = null,
+        sourceRefreshes: Int = 0,
+        iframeChanged: Boolean = false,
     ) {
         // Ошибки сети — ожидаемый транзиентный кейс, не засоряем крэш-репортинг.
         if (errorCode in IGNORED_ERROR_CODES) return
@@ -245,7 +250,12 @@ internal class PlayerAnalytics @Inject constructor(
                     PARAM_ERROR_CODE to errorCode,
                     PARAM_ERROR_TYPE to errorType,
                     PARAM_ERROR_MESSAGE to errorMessage,
+                    PARAM_ERROR_CAUSE to errorCause,
                     PARAM_RETRY_ATTEMPTS to retryAttempts,
+                    PARAM_STREAM_HOST to state.streamUrl?.streamHost(),
+                    PARAM_QUALITY to state.selectedQuality,
+                    PARAM_SOURCE_REFRESHES to sourceRefreshes,
+                    PARAM_IFRAME_CHANGED to iframeChanged.takeIf { sourceRefreshes > 0 },
                     PARAM_POSITION to positionMs.formatPlaybackTimecode(),
                     PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
                 ),
@@ -448,6 +458,10 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_QUALITY = "quality"
         private const val PARAM_REASON = "reason"
         private const val PARAM_RETRY_ATTEMPTS = "retry_attempts"
+        private const val PARAM_ERROR_CAUSE = "error_cause"
+        private const val PARAM_STREAM_HOST = "stream_host"
+        private const val PARAM_SOURCE_REFRESHES = "source_refreshes"
+        private const val PARAM_IFRAME_CHANGED = "iframe_changed"
         private const val PARAM_SKIP_TYPE = "skip_type"
         private const val PARAM_SOURCE = "source"
         private const val PARAM_SPEED = "speed"

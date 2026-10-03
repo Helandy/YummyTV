@@ -75,7 +75,16 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             }
         }
 
-        if (sourceGraph.balancers.isEmpty()) return PlayerSourceGraphLoadResult.Ignore
+        if (sourceGraph.balancers.isEmpty()) {
+            return if (loadStreamOnFailure) {
+                PlayerSourceGraphLoadResult.LoadStream(
+                    resumeMode = resumeMode,
+                    refreshSourcesOnFailure = refreshStreamOnFailure,
+                )
+            } else {
+                PlayerSourceGraphLoadResult.Ignore
+            }
+        }
 
         return PlayerSourceGraphLoadResult.SourceGraph(
             sourceGraph = sourceGraph,

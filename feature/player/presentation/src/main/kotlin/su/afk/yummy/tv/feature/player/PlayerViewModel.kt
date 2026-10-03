@@ -113,6 +113,11 @@ class PlayerViewModel @AssistedInject internal constructor(
             forceRefresh = request.forceRefresh,
         )
 
+        override fun refreshSourcesAndReloadStream() = refreshSourceGraphThenLoadStream(
+            forceRefresh = true,
+            selectedQualityOverride = currentState.selectedQuality,
+        )
+
         override fun cancelStreamLoad() {
             extractionJob?.cancel()
         }
@@ -271,6 +276,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                     positionMs = event.positionMs.takeIf { it > 0L }
                         ?: currentState.playbackPositionMs,
                     retryAttempts = defaultSource.retryAttempts,
+                    errorCause = event.cause,
+                    sourceRefreshes = defaultSource.sourceRefreshes,
+                    iframeChanged = defaultSource.iframeChanged,
                 )
                 defaultSource.reset()
                 changePlayerHint.cancel()
@@ -608,6 +616,8 @@ class PlayerViewModel @AssistedInject internal constructor(
     /** Обновляет граф источников из сети и один раз запускает получение потока. */
     private fun refreshSourceGraphThenLoadStream(
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
+        forceRefresh: Boolean = false,
+        selectedQualityOverride: String? = null,
     ) {
         loadSourceGraph(
             forceRefreshVideos = true,
@@ -615,6 +625,8 @@ class PlayerViewModel @AssistedInject internal constructor(
             loadStreamAfterRefresh = true,
             resumeMode = resumeMode,
             refreshStreamOnFailure = false,
+            streamForceRefresh = forceRefresh,
+            streamQualityOverride = selectedQualityOverride,
         )
     }
 
@@ -629,6 +641,8 @@ class PlayerViewModel @AssistedInject internal constructor(
         loadStreamAfterRefresh: Boolean = false,
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
         refreshStreamOnFailure: Boolean = !forceRefreshVideos,
+        streamForceRefresh: Boolean = false,
+        streamQualityOverride: String? = null,
     ) {
         sourceGraphJob?.cancel()
         sourceGraphJob = viewModelScope.launch {
@@ -648,6 +662,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                     loadStream(
                         resumeMode = result.resumeMode,
                         refreshSourcesOnFailure = result.refreshSourcesOnFailure,
+                        selectedQualityOverride = streamQualityOverride,
+                        forceRefresh = streamForceRefresh,
                     )
                 }
 
@@ -667,6 +683,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                         loadStream(
                             resumeMode = result.resumeMode,
                             refreshSourcesOnFailure = result.refreshStreamOnFailure,
+                            selectedQualityOverride = streamQualityOverride,
+                            forceRefresh = streamForceRefresh,
                         )
                     }
                 }

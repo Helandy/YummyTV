@@ -26,6 +26,12 @@ internal interface PlayerSourceBehavior {
     /** Сколько тихих повторов потрачено в текущем сеансе — для аналитики ошибок. */
     val retryAttempts: Int get() = 0
 
+    /** Сколько раз за сеанс перезапрашивали `/videos` из-за повреждённого потока — для аналитики. */
+    val sourceRefreshes: Int get() = 0
+
+    /** Сменился ли активный iframe после перезапроса `/videos` — для аналитики. */
+    val iframeChanged: Boolean get() = false
+
     /** Ошибка ExoPlayer. true — поведение запустило своё восстановление, false — показать ошибку. */
     fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean
 

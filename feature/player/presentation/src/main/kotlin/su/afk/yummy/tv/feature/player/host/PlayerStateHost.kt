@@ -23,6 +23,12 @@ internal interface PlayerSourceHost : PlayerStateHost {
     /** Запускает получение потока для активного источника, отменяя предыдущее. */
     fun loadStream(request: PlayerStreamLoadRequest = PlayerStreamLoadRequest())
 
+    /**
+     * Заново запрашивает `/videos` (свежий iframe), затем перезапускает поток с принудительным
+     * обновлением и тем же качеством.
+     */
+    fun refreshSourcesAndReloadStream()
+
     /** Отменяет идущее получение потока. */
     fun cancelStreamLoad()
 

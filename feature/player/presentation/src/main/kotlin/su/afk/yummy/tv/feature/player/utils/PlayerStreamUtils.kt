@@ -3,6 +3,11 @@ package su.afk.yummy.tv.feature.player.utils
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.feature.player.presentation.R
+import java.net.URI
+
+/** Хост потока без пути и query: подписанные параметры ссылки в аналитику не попадают. */
+internal fun String.streamHost(): String? =
+    runCatching { URI(this).host }.getOrNull()?.takeIf { it.isNotBlank() }
 
 internal fun String.qualityHeight(): Int? =
     Regex("""\d+""").find(this)?.value?.toIntOrNull()

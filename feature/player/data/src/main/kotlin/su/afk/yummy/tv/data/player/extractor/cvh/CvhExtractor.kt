@@ -2,17 +2,18 @@ package su.afk.yummy.tv.data.player.extractor.cvh
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.network.BROWSER_STREAM_HEADERS
 import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
@@ -43,13 +44,7 @@ internal class CvhExtractor @Inject constructor(
         extractQualities(
             iframeUrl = request.iframeUrl,
             useFailoverHost = request.forceRefresh,
-        )?.let { qualities ->
-            PlayerStreamResolveResult.Stream(
-                url = qualities.values.last(),
-                headers = BROWSER_STREAM_HEADERS,
-                qualities = qualities,
-            )
-        } ?: PlayerStreamResolveResult.Failed
+        )
 
     /**
      * @param useFailoverHost перерезолв после сбоя воспроизведения: основной узел okcdn мог
@@ -59,7 +54,7 @@ internal class CvhExtractor @Inject constructor(
     private suspend fun extractQualities(
         iframeUrl: String,
         useFailoverHost: Boolean,
-    ): LinkedHashMap<String, String>? = withContext(Dispatchers.IO) {
+    ): PlayerStreamResolveResult = withContext(Dispatchers.IO) {
         try {
             val fullUrl = if (iframeUrl.startsWith("//")) "https:$iframeUrl" else iframeUrl
             val query = fullUrl.substringAfter("?", "")
@@ -67,20 +62,19 @@ internal class CvhExtractor @Inject constructor(
 
             val animeId = params["anime_id"] ?: run {
                 logFailure(iframeUrl, "missing anime_id")
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Failed
             }
             val episodeStr = params["episode"] ?: "1"
             val episodeNum = episodeStr.toIntOrNull() ?: 1
             val dubbingCode = params["dubbing_code"] ?: ""
             val dubbingLabel = params["dubbing"] ?: ""
 
-            val playlistJson = httpClient.fetchJson(
+            val playlistJson = fetchJsonWithRetry(
                 url = "$PLAYLIST_URL?pub=$PUBLISHER_ID&id=$animeId&aggr=$AGGREGATOR",
-                headers = jsonHeaders(REFERER),
             )
             val items = playlistJson.optJSONArray("items") ?: run {
                 logFailure(iframeUrl, "playlist has no items")
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Unavailable()
             }
             // Default true keeps the pre-existing episode filtering if the field ever disappears.
             val isSerial = playlistJson.optBoolean("isSerial", true)
@@ -107,20 +101,20 @@ internal class CvhExtractor @Inject constructor(
                     "no playlist item for episode $episodeNum " +
                         "(isSerial=$isSerial, items=${playlistItems.size})",
                 )
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Unavailable()
             }
 
             val vkId = item.vkId.takeIf { it.isNotEmpty() } ?: run {
                 logFailure(iframeUrl, "playlist item has no vkId")
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Failed
             }
 
             val videoJson =
-                httpClient.fetchJson(url = "$VIDEO_URL/$vkId", headers = jsonHeaders(REFERER))
+                fetchJsonWithRetry(url = "$VIDEO_URL/$vkId")
             val failoverHost = videoJson.optString("failoverHost").takeIf { it.isNotBlank() }
             val sources = videoJson.optJSONObject("sources") ?: run {
                 logFailure(iframeUrl, "video response has no sources")
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Failed
             }
 
             // No Auto/HLS entry: CdnVideoHub's HLS manifests embed raw CDN-IP segment
@@ -135,13 +129,37 @@ internal class CvhExtractor @Inject constructor(
 
             if (qualities.isEmpty()) {
                 logFailure(iframeUrl, "no mp4 qualities in sources")
-                return@withContext null
+                return@withContext PlayerStreamResolveResult.Failed
             }
-            qualities
+            analyticsTracker.log("CvhExtractor") {
+                "Resolved vkId=$vkId episode=$episodeNum dubbing=$dubbingCode " +
+                    "qualities=${qualities.keys} failoverHost=$failoverHost " +
+                    "useFailoverHost=$useFailoverHost hosts=${qualities.values.map(::hostOf).distinct()}"
+            }
+            PlayerStreamResolveResult.Stream(
+                url = qualities.values.last(),
+                headers = BROWSER_STREAM_HEADERS,
+                qualities = qualities,
+            )
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure("CVH", iframeUrl, "unexpected extractor error", e)
-            null
+            PlayerStreamResolveResult.Failed
+        }
+    }
+
+    /**
+     * HTTP-ошибка бросает исключение (а не маскируется под JSONException на HTML-теле), один
+     * повтор после короткой паузы закрывает кратковременные сбои сети на слабых приставках.
+     */
+    private suspend fun fetchJsonWithRetry(url: String): JSONObject {
+        val headers = jsonHeaders(REFERER)
+        return try {
+            httpClient.fetchJson(url = url, headers = headers, throwOnFailure = true)
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            delay(RETRY_DELAY_MS)
+            httpClient.fetchJson(url = url, headers = headers, throwOnFailure = true)
         }
     }
 
@@ -199,5 +217,8 @@ internal class CvhExtractor @Inject constructor(
         }.getOrDefault(url)
     }
 
+    private fun hostOf(url: String): String? = runCatching { URL(url).host }.getOrNull()
+
     private val IPV4_HOST_REGEX = Regex("""\d{1,3}(?:\.\d{1,3}){3}""")
+    private val RETRY_DELAY_MS = 700L
 }
