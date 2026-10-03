@@ -28,6 +28,7 @@ internal class AuthTokenStorage(
     private val cipherFactory: (TokenStorageMode) -> TokenCipher,
     private val onStorageFailure: (String, Throwable?) -> Unit,
     private val onModeChanged: (TokenStorageMode) -> Unit = {},
+    private val onDegraded: (String, Throwable?) -> Unit = onStorageFailure,
     private val sleep: suspend (Long) -> Unit = { delay(it) },
 ) {
     private val ciphers = mutableMapOf<TokenStorageMode, TokenCipher>()
@@ -66,12 +67,22 @@ internal class AuthTokenStorage(
             store.removeRecord()
             return
         }
-        val record = encode(mode, trimmed) ?: run {
+        var attempt = encode(mode, trimmed)
+        if (attempt.isFailure && mode == TokenStorageMode.KEYSTORE) {
             // Keystore отказал на записи — иначе успешный вход превратился бы в ошибку.
-            if (mode == TokenStorageMode.KEYSTORE) switchToFallback()
-            encode(mode, trimmed)
+            val keystoreError = attempt.exceptionOrNull()
+            switchToFallback()
+            attempt = encode(mode, trimmed)
+            // Токен сохранён в запасном режиме
+            if (attempt.isSuccess) {
+                onDegraded("Auth token encryption failed (KEYSTORE)", keystoreError)
+            } else {
+                onStorageFailure("Auth token encryption failed (KEYSTORE)", keystoreError)
+            }
         }
+        val record = attempt.getOrNull()
         if (record == null) {
+            attempt.exceptionOrNull()?.let { onStorageFailure("Auth token encryption failed (${mode.name})", it) }
             onStorageFailure("Auth token could not be stored in any mode", null)
             return
         }
@@ -80,16 +91,13 @@ internal class AuthTokenStorage(
 
     fun clear() = store.removeRecord()
 
-    private fun encode(mode: TokenStorageMode, token: String): String? =
+    private fun encode(mode: TokenStorageMode, token: String): Result<String> =
         runCatching { mode.tag() + cipher(mode).encrypt(token) }
-            .onFailure { onStorageFailure("Auth token encryption failed (${mode.name})", it) }
-            .getOrNull()
 
     private fun switchToFallback() {
         if (mode == TokenStorageMode.FALLBACK) return
         mode = TokenStorageMode.FALLBACK
         store.writeMode(TokenStorageMode.FALLBACK)
-        onStorageFailure("Auth token storage degraded to fallback", null)
         onModeChanged(TokenStorageMode.FALLBACK)
     }
 

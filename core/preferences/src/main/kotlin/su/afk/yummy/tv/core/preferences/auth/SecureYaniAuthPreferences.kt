@@ -44,6 +44,7 @@ internal class SecureYaniAuthPreferences @Inject constructor(
                 }
             },
             onStorageFailure = ::reportStorageFailure,
+            onDegraded = ::trackStorageDegraded,
             onModeChanged = { mode -> storageModeState.value = mode },
         )
     }
@@ -105,6 +106,21 @@ internal class SecureYaniAuthPreferences @Inject constructor(
             ?.let { name -> TokenStorageMode.entries.firstOrNull { it.name == name } }
             ?: TokenStorageMode.KEYSTORE
 
+    /** Отказ keystore при успешном запасном режиме — событие, а не ошибка: токен сохранён. */
+    private fun trackStorageDegraded(message: String, error: Throwable?) {
+        runCatching {
+            analyticsTracker.track(
+                STORAGE_DEGRADED_EVENT,
+                mapOf(
+                    "message" to message,
+                    "device" to "${Build.MANUFACTURER}/${Build.MODEL}/${Build.DEVICE}",
+                    "sdk" to Build.VERSION.SDK_INT.toString(),
+                    "error" to error?.javaClass?.simpleName.orEmpty(),
+                ),
+            )
+        }
+    }
+
     /** Прошивка важнее стектрейса: по ней видно, что отказ keystore — не единичный случай. */
     private fun reportStorageFailure(message: String, error: Throwable?) {
         val details = buildString {
@@ -129,6 +145,7 @@ internal class SecureYaniAuthPreferences @Inject constructor(
         private const val PREFS_NAME = "yani_auth_secure_preferences"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_STORAGE_MODE = "token_storage_mode"
+        private const val STORAGE_DEGRADED_EVENT = "auth_token_storage_degraded"
         private const val STORAGE_GROUP = "auth_token_storage"
     }
 }
