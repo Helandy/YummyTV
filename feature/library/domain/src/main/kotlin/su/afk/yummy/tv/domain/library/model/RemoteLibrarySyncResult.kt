@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.library.usecase
+package su.afk.yummy.tv.domain.library.model
 
 sealed interface RemoteLibrarySyncResult {
     data class Success(val syncError: Throwable?) : RemoteLibrarySyncResult

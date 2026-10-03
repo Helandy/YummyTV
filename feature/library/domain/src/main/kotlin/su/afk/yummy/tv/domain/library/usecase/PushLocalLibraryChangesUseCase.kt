@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.library.sync
+package su.afk.yummy.tv.domain.library.usecase
 
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -6,17 +6,24 @@ import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeListUseCase
 import su.afk.yummy.tv.domain.library.model.LibraryItem
+import su.afk.yummy.tv.domain.library.model.LocalLibraryPushResult
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySnapshot
+import su.afk.yummy.tv.domain.library.model.RemoteListItem
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.domain.library.utils.updatedAtMillis
 import javax.inject.Inject
 
-internal class LocalLibraryChangePusher @Inject constructor(
+/**
+ * Отправляет на сервер локальные изменения библиотеки, которых нет в [RemoteLibrarySnapshot] или
+ * которые новее удалённых, и сообщает, менялось ли удалённое состояние и была ли ошибка.
+ */
+internal class PushLocalLibraryChangesUseCase @Inject constructor(
     private val libraryRepository: LibraryRepository,
     private val setAnimeList: SetAnimeListUseCase,
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
 ) {
 
-    suspend fun push(
+    suspend operator fun invoke(
         remote: RemoteLibrarySnapshot,
         allowMissingRemoteUpload: Boolean,
         remoteFetchedAt: Long,

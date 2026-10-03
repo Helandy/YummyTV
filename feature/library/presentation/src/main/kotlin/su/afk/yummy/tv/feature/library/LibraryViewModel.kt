@@ -25,7 +25,7 @@ import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.domain.library.usecase.GetWatchHistoryPageUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
-import su.afk.yummy.tv.domain.library.usecase.RemoteLibrarySyncResult
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.domain.player.usecase.GetMeaningfulVideoProgressUseCase

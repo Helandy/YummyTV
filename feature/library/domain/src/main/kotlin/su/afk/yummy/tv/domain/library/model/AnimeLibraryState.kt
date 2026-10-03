@@ -1,4 +1,4 @@
-package su.afk.yummy.tv.domain.library.usecase
+package su.afk.yummy.tv.domain.library.model
 
 data class AnimeLibraryState(
     val isInLibrary: Boolean,

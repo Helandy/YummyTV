@@ -1,18 +1,23 @@
-package su.afk.yummy.tv.domain.library.sync
+package su.afk.yummy.tv.domain.library.usecase
 
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.library.model.FAVORITE_ONLY_LIBRARY_LIST_ID
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySnapshot
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
 import su.afk.yummy.tv.domain.library.utils.updatedAtMillis
 import javax.inject.Inject
 
-internal class RemoteLibraryHydrator @Inject constructor(
+/**
+ * Приводит локальную библиотеку к удалённому снимку: добавляет и обновляет записи и, при
+ * [pruneMissingLocalEntries], удаляет локальные, которых на сервере больше нет.
+ */
+internal class HydrateLocalLibraryUseCase @Inject constructor(
     private val libraryRepository: LibraryRepository,
 ) {
 
-    suspend fun hydrate(
+    suspend operator fun invoke(
         remote: RemoteLibrarySnapshot,
         pruneMissingLocalEntries: Boolean,
         remoteFetchedAt: Long,

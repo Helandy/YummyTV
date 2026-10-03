@@ -3,19 +3,17 @@ package su.afk.yummy.tv.domain.library.usecase
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
-import su.afk.yummy.tv.domain.library.sync.LocalLibraryChangePusher
-import su.afk.yummy.tv.domain.library.sync.RemoteLibraryHydrator
-import su.afk.yummy.tv.domain.library.sync.RemoteLibrarySnapshotLoader
 import javax.inject.Inject
 
 /** Reconciles the account library with local library state without exposing storage to UI. */
 class SyncRemoteLibraryUseCase @Inject internal constructor(
     private val libraryRepository: LibraryRepository,
     private val hasCachedUserLists: HasCachedUserListsUseCase,
-    private val snapshotLoader: RemoteLibrarySnapshotLoader,
-    private val localChangePusher: LocalLibraryChangePusher,
-    private val remoteHydrator: RemoteLibraryHydrator,
+    private val loadRemoteSnapshot: LoadRemoteLibrarySnapshotUseCase,
+    private val pushLocalChanges: PushLocalLibraryChangesUseCase,
+    private val hydrateLocalLibrary: HydrateLocalLibraryUseCase,
 ) {
 
     suspend operator fun invoke(
@@ -26,19 +24,19 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
             libraryRepository.hasSyncState(userId) || hasCachedUserLists(userId)
         val allowMissingRemoteUpload = !hasKnownRemoteState
         val remoteFetchedAt = System.currentTimeMillis()
-        val initialRemote = snapshotLoader.load(userId, forceRefresh)
-        val pushResult = localChangePusher.push(
+        val initialRemote = loadRemoteSnapshot(userId, forceRefresh)
+        val pushResult = pushLocalChanges(
             remote = initialRemote,
             allowMissingRemoteUpload = allowMissingRemoteUpload,
             remoteFetchedAt = remoteFetchedAt,
         )
         val resolvedRemote = if (pushResult.changedRemote) {
-            snapshotLoader.load(userId, forceRefresh = true)
+            loadRemoteSnapshot(userId, forceRefresh = true)
         } else {
             initialRemote
         }
 
-        remoteHydrator.hydrate(
+        hydrateLocalLibrary(
             remote = resolvedRemote,
             pruneMissingLocalEntries = forceRefresh && hasKnownRemoteState,
             remoteFetchedAt = remoteFetchedAt,

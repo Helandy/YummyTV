@@ -11,8 +11,8 @@ import su.afk.yummy.tv.domain.account.model.AccountSession
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.domain.anime.usecase.GetAnimeDetailsUseCase
 import su.afk.yummy.tv.domain.anime.usecase.ObserveAnimeWatchProgressUseCase
+import su.afk.yummy.tv.domain.library.model.AnimeLibraryState
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
-import su.afk.yummy.tv.domain.library.usecase.AnimeLibraryState
 import su.afk.yummy.tv.domain.library.usecase.ObserveAnimeLibraryStateUseCase
 import su.afk.yummy.tv.domain.library.usecase.RefreshLibraryMetadataUseCase
 import javax.inject.Inject

@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.library.handler
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.RemoveAnimeListUseCase
 import su.afk.yummy.tv.domain.account.usecase.SetAnimeFavoriteUseCase
-import su.afk.yummy.tv.domain.library.usecase.RemoteLibrarySyncResult
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.usecase.SyncRemoteLibraryUseCase
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import javax.inject.Inject
