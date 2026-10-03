@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.top.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +27,6 @@ object TopDataModule {
         api: YaniAnimeTopApi,
         topStore: AnimeTopStorage,
         settingsStore: YaniAccountSettingsStore,
-        dispatchers: AppDispatchers,
     ): AnimeTopRepository =
-        YaniAnimeTopRepository(api, topStore, settingsStore, dispatchers)
+        YaniAnimeTopRepository(api, topStore, settingsStore)
 }

@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.data.details.repository
 
+import kotlinx.coroutines.Dispatchers
 import su.afk.yummy.tv.domain.anime.model.StudioUrlUnavailableException
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -68,10 +68,9 @@ class YaniAnimeRepository(
     private val settingsStore: YaniAccountSettingsStore,
     private val watchProgressStore: WatchProgressStorage,
     private val documentCache: DocumentCacheStorage,
-    private val dispatchers: AppDispatchers,
 ) : AnimeRepository {
 
-    override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(dispatchers.io) {
+    override suspend fun getAnimeDetails(animeId: Int): AnimeDetails = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
         val stored = animeStorage.getDetails(animeId, languageCode)
         if (stored?.isFresh(ANIME_DETAILS_TTL_MS) == true) {
@@ -87,13 +86,13 @@ class YaniAnimeRepository(
     }
 
     override suspend fun getCachedAnimeDetails(animeId: Int): AnimeDetails? =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             animeStorage.getDetails(animeId, settingsStore.currentLanguageCode())
                 ?.toStoredAnimeDetails()
         }
 
     override suspend fun getAnimeVideos(animeId: Int): List<AnimeVideo> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { animeStorage.getVideos(animeId, languageCode) },
@@ -104,7 +103,7 @@ class YaniAnimeRepository(
         }
 
     override suspend fun refreshAnimeVideos(animeId: Int): List<AnimeVideo> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 forceRefresh = true,
@@ -116,7 +115,7 @@ class YaniAnimeRepository(
         }
 
     override suspend fun getCachedAnimeVideos(animeId: Int): List<AnimeVideo>? =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             animeStorage.getVideos(animeId, settingsStore.currentLanguageCode())
                 ?.toStoredAnimeVideos()
         }
@@ -125,7 +124,7 @@ class YaniAnimeRepository(
         animeId: Int,
         fromAi: Boolean
     ): List<AnimeRecommendation> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             val stored = animeStorage.getRecommendations(animeId, languageCode, fromAi)
             runSuspendCatching {
@@ -161,7 +160,7 @@ class YaniAnimeRepository(
         }
 
     override suspend fun setAnimeRecommendationIgnored(animeId: Int, ignored: Boolean): Boolean =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val response = if (ignored) {
                 api.ignoreAnimeRecommendation(animeId)
             } else {
@@ -180,7 +179,7 @@ class YaniAnimeRepository(
         animeId: Int,
         similarAnimeId: Int,
         vote: AnimeRecommendationVote,
-    ): AnimeRecommendationReaction = withContext(dispatchers.io) {
+    ): AnimeRecommendationReaction = withContext(Dispatchers.IO) {
         val response = if (vote == AnimeRecommendationVote.NONE) {
             api.deleteAnimeRecommendationVote(animeId, similarAnimeId)
         } else {
@@ -195,7 +194,7 @@ class YaniAnimeRepository(
     }
 
     override suspend fun getAnimeEpisodeInfo(animeId: Int): Map<String, AnimeEpisodeInfo> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             runSuspendCatching {
                 val malId = getAnimeDetails(animeId).malId ?: return@withContext emptyMap()
                 documentCache.getOrFetchJson<YummyEpisodesDto>(
@@ -210,7 +209,7 @@ class YaniAnimeRepository(
         }
 
     override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { animeStorage.getTrailers(animeId, languageCode) },
@@ -223,7 +222,7 @@ class YaniAnimeRepository(
 
     override suspend fun getAnimeRelation(
         reference: AnimeRelationReference,
-    ): AnimeRelation = withContext(dispatchers.io) {
+    ): AnimeRelation = withContext(Dispatchers.IO) {
         val language = settingsStore.currentLanguageCode()
         val referenceKey = when (reference.kind) {
             AnimeRelationKind.STUDIO -> reference.url

@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -17,10 +17,9 @@ class YaniUserProfileRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : UserProfileRepository {
     override suspend fun getUserProfileSummary(userId: Int): UserProfileSummary =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getUserProfileSummary(userId, languageCode) },

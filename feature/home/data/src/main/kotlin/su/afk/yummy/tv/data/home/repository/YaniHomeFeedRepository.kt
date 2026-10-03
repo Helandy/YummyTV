@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.home.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -41,12 +41,11 @@ class YaniHomeFeedRepository(
     private val settingsStore: YaniAccountSettingsStore,
     private val watchProgressStore: WatchProgressStorage,
     private val analyticsTracker: AnalyticsTracker,
-    private val dispatchers: AppDispatchers,
 ) : HomeFeedRepository {
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
-    override suspend fun getCachedHomeFeed(): HomeFeed? = withContext(dispatchers.io) {
+    override suspend fun getCachedHomeFeed(): HomeFeed? = withContext(Dispatchers.IO) {
         val local = readLocalFeedContext()
         homeFeedStore.getFeed(local.languageCode, feedCacheSignature())
             ?.toStoredHomeFeed(stringProvider)
@@ -56,14 +55,14 @@ class YaniHomeFeedRepository(
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
 
     override suspend fun removeCachedContinueWatching(animeId: Int) {
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             watchProgressStore.suppressContinueWatchingDisplay(animeId)
             homeFeedStore.deleteContinueWatchingByAnimeId(animeId)
         }
     }
 
     override suspend fun getContinueWatchingVideoIds(animeId: Int): List<Int> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             watchProgressStore.continueWatching()
                 .filter { it.animeId == animeId }
                 .map { it.videoId }
@@ -73,7 +72,7 @@ class YaniHomeFeedRepository(
 
     override suspend fun migrateContinueWatchingProgress(
         migration: ContinueWatchingProgressMigration,
-    ) = withContext(dispatchers.io) {
+    ) = withContext(Dispatchers.IO) {
         watchProgressStore.save(
             animeId = migration.animeId,
             episode = migration.episode,
@@ -95,7 +94,7 @@ class YaniHomeFeedRepository(
             .map(::localContinueWatchingItems)
             .distinctUntilChanged()
 
-    private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(dispatchers.io) {
+    private suspend fun getHomeFeed(forceRefresh: Boolean): HomeFeed = withContext(Dispatchers.IO) {
         // Единый снимок на весь вызов: используется во всех трёх ветках (свежий кэш, сеть,
         // fallback при ошибке), чтобы не пересчитывать его отдельно для сетевой ветки.
         val local = readLocalFeedContext()

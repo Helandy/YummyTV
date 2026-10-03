@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.schedule.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +26,6 @@ object ScheduleDataModule {
         api: YaniScheduleApi,
         scheduleStore: AnimeScheduleStorage,
         settingsStore: YaniAccountSettingsStore,
-        dispatchers: AppDispatchers,
     ): AnimeScheduleRepository =
-        YaniScheduleRepository(api, scheduleStore, settingsStore, dispatchers)
+        YaniScheduleRepository(api, scheduleStore, settingsStore)
 }

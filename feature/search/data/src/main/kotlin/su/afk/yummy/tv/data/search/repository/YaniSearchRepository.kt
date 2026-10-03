@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.search.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
@@ -33,9 +33,8 @@ class YaniSearchRepository(
     private val api: YaniSearchApi,
     private val searchStorage: SearchStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : SearchRepository {
-    override suspend fun getRandomAnime(): SearchItem? = withContext(dispatchers.io) {
+    override suspend fun getRandomAnime(): SearchItem? = withContext(Dispatchers.IO) {
         api.getRandomAnime().firstNotNullOfOrNull { it.toSearchItem() }
     }
 
@@ -44,7 +43,7 @@ class YaniSearchRepository(
         filters: SearchFilters,
         limit: Int,
         offset: Int,
-    ): SearchPage = withContext(dispatchers.io) {
+    ): SearchPage = withContext(Dispatchers.IO) {
         val language = settingsStore.yaniContentLanguage.first()
         val pageKey = searchCacheKey(query, filters, limit, offset, language)
         offlineFirstCache(
@@ -71,7 +70,7 @@ class YaniSearchRepository(
         )
     }
 
-    override suspend fun getFilterOptions(): SearchFilterOptions = withContext(dispatchers.io) {
+    override suspend fun getFilterOptions(): SearchFilterOptions = withContext(Dispatchers.IO) {
         val languageCode = settingsStore.currentLanguageCode()
         offlineFirstCache(
             read = { searchStorage.getFilterOptions(languageCode) },

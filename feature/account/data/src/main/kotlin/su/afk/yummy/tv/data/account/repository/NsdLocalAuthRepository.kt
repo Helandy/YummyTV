@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.data.account.repository
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import su.afk.yummy.tv.data.account.localauth.LocalAuthServer
 import su.afk.yummy.tv.data.account.localauth.NsdAdvertiser
 import su.afk.yummy.tv.data.account.localauth.NsdDeviceDiscovery
@@ -27,7 +27,6 @@ internal class NsdLocalAuthRepository @Inject constructor(
     private val advertiser: NsdAdvertiser,
     private val discovery: NsdDeviceDiscovery,
     private val transferClient: SessionTransferClient,
-    private val dispatchers: AppDispatchers,
 ) : LocalAuthRepository {
 
     /** Держим ссылки только ради [stopServer], который приходит извне потока. */
@@ -59,9 +58,9 @@ internal class NsdLocalAuthRepository @Inject constructor(
         running += run
 
         awaitClose { run.stop() }
-    }.flowOn(dispatchers.io)
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun stopServer() = withContext(dispatchers.io) {
+    override suspend fun stopServer() = withContext(Dispatchers.IO) {
         running.toList().forEach { it.stop() }
     }
 

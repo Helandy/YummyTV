@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.comments.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +27,6 @@ object CommentsDataModule {
         api: YaniCommentsApi,
         commentsStorage: CommentsStorage,
         settingsStore: YaniAccountSettingsStore,
-        dispatchers: AppDispatchers,
     ): CommentsRepository =
-        YaniCommentsRepository(api, commentsStorage, settingsStore, dispatchers)
+        YaniCommentsRepository(api, commentsStorage, settingsStore)
 }

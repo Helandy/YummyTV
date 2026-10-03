@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.details.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,7 +40,6 @@ object DetailsDataModule {
         settingsStore: YaniAccountSettingsStore,
         watchProgressStore: WatchProgressStorage,
         documentCache: DocumentCacheStorage,
-        dispatchers: AppDispatchers,
     ): AnimeRepository =
         YaniAnimeRepository(
             api,
@@ -51,6 +49,5 @@ object DetailsDataModule {
             settingsStore,
             watchProgressStore,
             documentCache,
-            dispatchers,
         )
 }

@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.search.di
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +27,6 @@ object SearchDataModule {
         api: YaniSearchApi,
         searchStorage: SearchStorage,
         settingsStore: YaniAccountSettingsStore,
-        dispatchers: AppDispatchers,
     ): SearchRepository =
-        YaniSearchRepository(api, searchStorage, settingsStore, dispatchers)
+        YaniSearchRepository(api, searchStorage, settingsStore)
 }

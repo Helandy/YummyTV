@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -30,11 +30,10 @@ class YaniAnimeExtrasRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : AnimeExtrasRepository {
 
     override suspend fun getRatingSummary(animeId: Int): AnimeRatingSummary =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             offlineFirstCache(
                 read = { accountStorage.getRatingBuckets(animeId) },
                 isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
@@ -44,7 +43,7 @@ class YaniAnimeExtrasRepository(
         }
 
     override suspend fun getUserRating(animeId: Int): Int? =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()
             offlineFirstCache(
                 read = { accountStorage.getUserRating(userId, animeId) },
@@ -54,14 +53,14 @@ class YaniAnimeExtrasRepository(
             )
         }
 
-    override suspend fun setRating(animeId: Int, rating: Int) = withContext(dispatchers.io) {
+    override suspend fun setRating(animeId: Int, rating: Int) = withContext(Dispatchers.IO) {
         val userId = settingsStore.currentUserId()
         api.setRating(animeId, rating)
         updateCachedUserRating(userId, animeId, rating)
         accountStorage.deleteRatingBuckets(animeId)
     }
 
-    override suspend fun deleteRating(animeId: Int) = withContext(dispatchers.io) {
+    override suspend fun deleteRating(animeId: Int) = withContext(Dispatchers.IO) {
         val userId = settingsStore.currentUserId()
         api.deleteRating(animeId)
         updateCachedUserRating(userId, animeId, rating = null)
@@ -69,7 +68,7 @@ class YaniAnimeExtrasRepository(
     }
 
     override suspend fun getListStats(animeId: Int): AnimeListStats =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             offlineFirstCache(
                 read = { accountStorage.getListStats(animeId) },
                 isFresh = { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) },
@@ -79,7 +78,7 @@ class YaniAnimeExtrasRepository(
         }
 
     override suspend fun getCachedListStats(animeId: Int): AnimeListStats? =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             accountStorage.getListStats(animeId)
                 ?.takeIf { it.isFresh(ACCOUNT_MEDIUM_TTL_MS) }
                 ?.toAnimeListStats()
@@ -90,7 +89,7 @@ class YaniAnimeExtrasRepository(
         limit: Int,
         offset: Int
     ): List<AnimeCollectionSummary> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             val pageKey = animeCollectionsPageKey(animeId, limit, offset, languageCode)
             getCollectionsPage(

@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -19,17 +19,16 @@ class YaniUserDirectoryRepository(
     private val api: YaniAccountApi,
     private val storage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : UserDirectoryRepository {
     override suspend fun search(query: String, limit: Int, offset: Int): List<UserSearchItem> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             api.searchUsers(query, limit, offset)
                 .filter { it.id > 0 && it.nickname.isNotBlank() }
                 .map { it.toUserSearchItem() }
         }
 
     override suspend fun getProfileByNickname(nickname: String): UserProfileSummary =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val profile = api.getUserProfileByNickname(nickname).response
             val language = settingsStore.currentLanguageCode()
             val cache = profile.toUserProfileSummaryCache(
@@ -42,16 +41,16 @@ class YaniUserDirectoryRepository(
         }
 
     override suspend fun getFriendship(userId: Int, friendId: Int): FriendshipStatus =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             api.getFriendshipStatus(userId, friendId).toFriendshipStatus()
         }
 
-    override suspend fun addFriend(userId: Int, friendId: Int) = withContext(dispatchers.io) {
+    override suspend fun addFriend(userId: Int, friendId: Int) = withContext(Dispatchers.IO) {
         api.addFriend(userId, friendId)
         invalidateFriendCaches(userId, friendId)
     }
 
-    override suspend fun removeFriend(userId: Int, friendId: Int) = withContext(dispatchers.io) {
+    override suspend fun removeFriend(userId: Int, friendId: Int) = withContext(Dispatchers.IO) {
         api.removeFriend(userId, friendId)
         invalidateFriendCaches(userId, friendId)
     }

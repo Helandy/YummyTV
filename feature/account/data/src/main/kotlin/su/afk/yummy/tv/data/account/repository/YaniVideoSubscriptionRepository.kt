@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
@@ -19,11 +19,10 @@ class YaniVideoSubscriptionRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : VideoSubscriptionRepository {
 
     override suspend fun getSubscriptions(userId: Int): List<VideoSubscription> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 read = { accountStorage.getVideoSubscriptions(userId, languageCode) },
@@ -34,7 +33,7 @@ class YaniVideoSubscriptionRepository(
         }
 
     override suspend fun setSubscribed(videoId: Int, subscribed: Boolean): Boolean =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val userId = settingsStore.yaniUserId.first()
             val result = if (subscribed) {
                 api.setSubscribed(videoId)

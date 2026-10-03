@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.data.account.repository
 
-import su.afk.yummy.tv.core.utils.coroutines.AppDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -28,14 +28,13 @@ class YaniUserListsRepository(
     private val api: YaniAccountApi,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
-    private val dispatchers: AppDispatchers,
 ) : UserListsRepository {
 
     override suspend fun getAllUserLists(
         userId: Int,
         forceRefresh: Boolean,
     ): List<UserAnimeListItem> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val languageCode = settingsStore.currentLanguageCode()
             offlineFirstCache(
                 forceRefresh = forceRefresh,
@@ -57,7 +56,7 @@ class YaniUserListsRepository(
         list: UserAnimeList,
         forceRefresh: Boolean,
     ): List<UserAnimeListItem> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             getUserList(userId, list.id, forceRefresh)
         }
 
@@ -65,17 +64,17 @@ class YaniUserListsRepository(
         userId: Int,
         forceRefresh: Boolean,
     ): List<UserAnimeListItem> =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             getUserList(userId, FAVORITES_LIST_ID, forceRefresh)
         }
 
     override suspend fun hasCachedUserLists(userId: Int): Boolean =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             accountStorage.hasUserListCache(userId)
         }
 
     override suspend fun getAnimeListState(animeId: Int): UserAnimeListItem? =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()
             if (userId <= 0) return@withContext null
 
@@ -88,7 +87,7 @@ class YaniUserListsRepository(
         }
 
     override suspend fun setAnimeList(animeId: Int, list: UserAnimeList) =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()
             api.setAnimeList(animeId, list.id)
             updateCachedListState(userId, animeId, listId = list.id, updateList = true)
@@ -96,7 +95,7 @@ class YaniUserListsRepository(
             accountStorage.invalidateListStats(animeId)
         }
 
-    override suspend fun removeAnimeList(animeId: Int) = withContext(dispatchers.io) {
+    override suspend fun removeAnimeList(animeId: Int) = withContext(Dispatchers.IO) {
         val userId = settingsStore.currentUserId()
         api.removeAnimeList(animeId)
         updateCachedListState(userId, animeId, listId = null, updateList = true)
@@ -105,7 +104,7 @@ class YaniUserListsRepository(
     }
 
     override suspend fun setFavorite(animeId: Int, favorite: Boolean) =
-        withContext(dispatchers.io) {
+        withContext(Dispatchers.IO) {
             val userId = settingsStore.currentUserId()
             if (favorite) {
                 api.setFavorite(animeId)
