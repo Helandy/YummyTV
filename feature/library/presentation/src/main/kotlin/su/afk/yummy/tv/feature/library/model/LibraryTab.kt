@@ -12,6 +12,9 @@ enum class LibraryTab {
 
     ;
 
+    /** Сортировка доступна только на вкладках-списках: у «Продолжить» и «Истории» свой порядок. */
+    val hasSort: Boolean get() = this != CONTINUE_WATCHING && this != HISTORY
+
     companion object {
         val visibleEntries: List<LibraryTab> = entries
     }

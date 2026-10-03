@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
-import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -191,10 +190,7 @@ class LibraryViewModel @Inject internal constructor(
             }
 
             LibraryState.Event.SortDirectionToggled -> {
-                val direction = when (currentState.sortDirection) {
-                    LibrarySortDirection.DESC -> LibrarySortDirection.ASC
-                    LibrarySortDirection.ASC -> LibrarySortDirection.DESC
-                }
+                val direction = currentState.sortDirection.toggled()
                 analytics.eventSortSelected(currentState.sort, direction)
                 viewModelScope.launch { settingsStore.setLibrarySortDirection(direction) }
             }

@@ -174,7 +174,7 @@ fun LibraryMobileScreen(
                     .padding(start = 16.dp, top = 12.dp, end = 16.dp),
             )
 
-            if (pagerState.currentPage.toLibraryMobileTab().hasLibrarySort()) {
+            if (pagerState.currentPage.toLibraryMobileTab().hasSort) {
                 LibraryMobileSortRow(
                     sort = state.sort,
                     direction = state.sortDirection,
@@ -211,13 +211,3 @@ fun LibraryMobileScreen(
         }
     }
 }
-
-/** Сортировка доступна только на вкладках-списках: у «Продолжить» и «Истории» свой порядок. */
-private fun LibraryTab.hasLibrarySort(): Boolean =
-    this != LibraryTab.CONTINUE_WATCHING && this != LibraryTab.HISTORY
-
-private fun LibrarySortDirection.toggled(): LibrarySortDirection =
-    when (this) {
-        LibrarySortDirection.ASC -> LibrarySortDirection.DESC
-        LibrarySortDirection.DESC -> LibrarySortDirection.ASC
-    }

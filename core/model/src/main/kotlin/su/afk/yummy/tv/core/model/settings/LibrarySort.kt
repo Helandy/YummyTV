@@ -19,4 +19,11 @@ enum class LibrarySort {
 enum class LibrarySortDirection {
     DESC,
     ASC,
+    ;
+
+    /** Противоположное направление сортировки. */
+    fun toggled(): LibrarySortDirection = when (this) {
+        DESC -> ASC
+        ASC -> DESC
+    }
 }
