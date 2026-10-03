@@ -4,12 +4,12 @@ import su.afk.yummy.tv.core.storage.document.UserScopedCache
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
-import su.afk.yummy.tv.core.utils.network.toHttpsUrlOrNull
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewDto
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewResponseDto
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewsFeedResponseDto
 import su.afk.yummy.tv.data.reviews.dto.YaniReviewsPageResponseDto
-import su.afk.yummy.tv.data.reviews.mapper.toSummaryOrNull
+import su.afk.yummy.tv.data.reviews.mapper.toDetailsOrNull
+import su.afk.yummy.tv.data.reviews.mapper.toReviewPage
 import su.afk.yummy.tv.data.reviews.network.YaniReviewsApi
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewDetails
 import su.afk.yummy.tv.domain.reviews.model.ReviewPage
@@ -33,16 +33,15 @@ class YaniReviewsRepository @Inject constructor(
         sort: ReviewSort,
         limit: Int,
         offset: Int,
-    ): ReviewPage = ReviewPage(
-        cache.cached<YaniReviewsFeedResponseDto>(
+    ): ReviewPage {
+        val reviews = cache.cached<YaniReviewsFeedResponseDto>(
             namespace = REVIEW_CACHE_NAMESPACE,
             key = "feed:${sort.apiValue}:$limit:$offset",
             ttlMs = REVIEW_FEED_TTL_MS,
-        ) { api.getReviews(sort.apiValue, limit, offset) }.response.mapNotNull {
-            rememberAnimeId(it)
-            it.toSummaryOrNull()
-        },
-    )
+        ) { api.getReviews(sort.apiValue, limit, offset) }.response
+        reviews.forEach(::rememberAnimeId)
+        return reviews.toReviewPage()
+    }
 
     override suspend fun getAnimeReviews(
         animeId: Int,
@@ -56,7 +55,7 @@ class YaniReviewsRepository @Inject constructor(
             ttlMs = REVIEW_FEED_TTL_MS,
         ) { api.getAnimeReviews(animeId, sort.apiValue, limit, offset) }.response
         page.reviews.forEach(::rememberAnimeId)
-        return ReviewPage(page.reviews.mapNotNull { it.toSummaryOrNull() })
+        return page.reviews.toReviewPage()
     }
 
     override suspend fun getReview(reviewId: Int): AnimeReviewDetails {
@@ -66,14 +65,7 @@ class YaniReviewsRepository @Inject constructor(
             ttlMs = REVIEW_DETAIL_TTL_MS,
         ) { api.getReview(reviewId) }.response
         rememberAnimeId(dto)
-        return AnimeReviewDetails(
-            review = dto.toSummaryOrNull() ?: error("Review not found"),
-            animeTitle = dto.anime?.title.orEmpty(),
-            animePosterUrl = dto.anime?.poster
-                ?.run { mega ?: huge ?: big ?: medium ?: small ?: fullsize }
-                .toHttpsUrlOrNull(),
-            commentsCount = dto.commentsCount,
-        )
+        return dto.toDetailsOrNull() ?: error("Review not found")
     }
 
     override suspend fun delete(reviewId: Int): Boolean {
