@@ -2,7 +2,11 @@ package su.afk.yummy.tv.domain.account.usecase
 
 import su.afk.yummy.tv.domain.account.model.NotificationCount
 import su.afk.yummy.tv.domain.account.repository.ProfileNotificationsRepository
+import su.afk.yummy.tv.domain.account.utils.toNotificationCounts
 import javax.inject.Inject
+
+private const val NOTIFICATION_COUNT_PAGE_LIMIT = 100
+private const val MAX_NOTIFICATION_COUNT_PAGES = 10
 
 /** Загружает количество непрочитанных уведомлений по типам. */
 class GetNotificationCountsUseCase @Inject constructor(private val repository: ProfileNotificationsRepository) {
@@ -28,13 +32,5 @@ class GetNotificationCountsUseCase @Inject constructor(private val repository: P
         }
 
         return counts.toNotificationCounts()
-    }
-
-    private fun Map<String, Int>.toNotificationCounts(): List<NotificationCount> =
-        map { (type, count) -> NotificationCount(type = type, count = count) }
-
-    private companion object {
-        const val NOTIFICATION_COUNT_PAGE_LIMIT = 100
-        const val MAX_NOTIFICATION_COUNT_PAGES = 10
     }
 }

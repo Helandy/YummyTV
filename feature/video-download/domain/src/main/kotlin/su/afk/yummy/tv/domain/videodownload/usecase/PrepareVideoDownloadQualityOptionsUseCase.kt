@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.videodownload.usecase
 
+import su.afk.yummy.tv.domain.videodownload.utils.hasVideoQualityNumber
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadQualityOption
 import javax.inject.Inject
 
@@ -29,12 +30,5 @@ class PrepareVideoDownloadQualityOptionsUseCase @Inject constructor() {
             if (numericQualitiesOnly) return emptyList()
             listOf(VideoDownloadQualityOption(label = "Auto", url = streamUrl))
         }
-    }
-
-    private fun String.hasVideoQualityNumber(): Boolean =
-        VIDEO_QUALITY_REGEX.containsMatchIn(this)
-
-    private companion object {
-        val VIDEO_QUALITY_REGEX = Regex("""\d{3,4}p?""", RegexOption.IGNORE_CASE)
     }
 }
