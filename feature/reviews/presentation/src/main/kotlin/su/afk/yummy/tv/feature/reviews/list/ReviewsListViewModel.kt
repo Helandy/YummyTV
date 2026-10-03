@@ -21,7 +21,7 @@ import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.PagedSource
 import su.afk.yummy.tv.core.utils.paging.pagingSource
-import su.afk.yummy.tv.domain.reviews.ReviewMutationNotifier
+import su.afk.yummy.tv.domain.reviews.repository.ReviewMutationRepository
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
@@ -45,7 +45,7 @@ class ReviewsListViewModel @AssistedInject constructor(
     private val voteReview: VoteReviewUseCase,
     private val strings: StringProvider,
     private val pendingMutationQueue: PendingMutationQueue,
-    mutationNotifier: ReviewMutationNotifier,
+    mutationNotifier: ReviewMutationRepository,
     settingsStore: YaniAccountSettingsStore,
 ) : BaseViewModel<ReviewsListState.State, ReviewsListState.Event, ReviewsListState.Effect>() {
     @AssistedFactory

@@ -16,7 +16,7 @@ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
 import su.afk.yummy.tv.domain.account.usecase.GetAccountSessionUseCase
-import su.afk.yummy.tv.domain.collection.CollectionMutationNotifier
+import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
 import su.afk.yummy.tv.domain.collection.usecase.CreateCollectionUseCase
 import su.afk.yummy.tv.domain.collection.usecase.GetCollectionsUseCase
@@ -33,7 +33,7 @@ class CollectionsCatalogViewModel @Inject internal constructor(
     private val nav: INavigationManager,
     private val collectionNavigator: ICollectionNavigator,
     private val getCollections: GetCollectionsUseCase,
-    private val mutationNotifier: CollectionMutationNotifier,
+    private val mutationNotifier: CollectionMutationRepository,
     private val createCollection: CreateCollectionUseCase,
     private val getAccountSession: GetAccountSessionUseCase,
     private val stringProvider: StringProvider,

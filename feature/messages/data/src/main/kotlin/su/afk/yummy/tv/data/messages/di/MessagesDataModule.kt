@@ -4,7 +4,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import su.afk.yummy.tv.data.messages.repository.DefaultMessagesMutationRepository
 import su.afk.yummy.tv.data.messages.repository.YaniMessagesRepository
+import su.afk.yummy.tv.domain.messages.repository.MessagesMutationRepository
 import su.afk.yummy.tv.domain.messages.repository.MessagesRepository
 
 @Module
@@ -12,4 +14,9 @@ import su.afk.yummy.tv.domain.messages.repository.MessagesRepository
 abstract class MessagesDataModule {
     @Binds
     abstract fun bindMessagesRepository(impl: YaniMessagesRepository): MessagesRepository
+
+    @Binds
+    abstract fun bindMessagesMutationRepository(
+        impl: DefaultMessagesMutationRepository,
+    ): MessagesMutationRepository
 }

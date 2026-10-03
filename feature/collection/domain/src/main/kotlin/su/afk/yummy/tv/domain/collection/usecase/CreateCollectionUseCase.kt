@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.domain.collection.usecase
 
-import su.afk.yummy.tv.domain.collection.CollectionMutationNotifier
+import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.domain.collection.model.CreateCollectionRequest
 import su.afk.yummy.tv.domain.collection.repository.CollectionRepository
 import javax.inject.Inject
@@ -8,7 +8,7 @@ import javax.inject.Inject
 /** Создаёт коллекцию и уведомляет наблюдателей об изменении списка. */
 class CreateCollectionUseCase @Inject constructor(
     private val repository: CollectionRepository,
-    private val mutationNotifier: CollectionMutationNotifier,
+    private val mutationNotifier: CollectionMutationRepository,
 ) {
     suspend operator fun invoke(request: CreateCollectionRequest): Int =
         repository.createCollection(request).also { mutationNotifier.notifyChanged() }

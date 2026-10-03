@@ -13,13 +13,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.comments.CommentTargetType
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
-import su.afk.yummy.tv.domain.collection.CollectionMutationNotifier
-import su.afk.yummy.tv.core.model.comments.CommentTargetType
+import su.afk.yummy.tv.domain.collection.repository.CollectionMutationRepository
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.account.userprofile.handler.FriendshipFetchResult
 import su.afk.yummy.tv.feature.account.userprofile.handler.UserProfileContentHandler
@@ -50,7 +50,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
     private val contentHandler: UserProfileContentHandler,
     private val pagingFetchHandler: UserProfilePagingFetchHandler,
     private val friendshipHandler: UserProfileFriendshipHandler,
-    private val collectionMutationNotifier: CollectionMutationNotifier,
+    private val collectionMutationNotifier: CollectionMutationRepository,
     private val analytics: UserProfileAnalytics,
 ) : BaseViewModel<UserProfileState.State, UserProfileState.Event, UserProfileState.Effect>() {
 
@@ -150,7 +150,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
                             userId = userId,
                             nickname = currentState.profile?.nickname.orEmpty(),
                             avatarUrl = currentState.profile?.avatarUrl,
-                        )
+                        ),
                     )
                 } else if (!currentState.isAuthorized) {
                     nav.navigate(accountNavigator.getAccountDest())
@@ -248,7 +248,8 @@ class UserProfileViewModel @AssistedInject internal constructor(
             UserProfileState.Tab.COLLECTIONS,
             UserProfileState.Tab.POSTS,
             UserProfileState.Tab.REVIEWS,
-            UserProfileState.Tab.FRIENDS -> Unit
+            UserProfileState.Tab.FRIENDS,
+            -> Unit
         }
     }
 
@@ -259,7 +260,8 @@ class UserProfileViewModel @AssistedInject internal constructor(
             UserProfileState.Tab.COLLECTIONS,
             UserProfileState.Tab.POSTS,
             UserProfileState.Tab.REVIEWS,
-            UserProfileState.Tab.FRIENDS -> Unit
+            UserProfileState.Tab.FRIENDS,
+            -> Unit
         }
     }
 
@@ -287,7 +289,7 @@ class UserProfileViewModel @AssistedInject internal constructor(
                     pagingFetchHandler.fetchCollections(
                         userId,
                         limit,
-                        offset
+                        offset,
                     )
                 },
             )

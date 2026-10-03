@@ -20,7 +20,7 @@ import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
-import su.afk.yummy.tv.domain.messages.MessagesMutationNotifier
+import su.afk.yummy.tv.domain.messages.repository.MessagesMutationRepository
 import su.afk.yummy.tv.domain.messages.usecase.GetDialogsUseCase
 import su.afk.yummy.tv.domain.messages.usecase.GetMessagesUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
@@ -46,7 +46,7 @@ class ChatViewModel @AssistedInject constructor(
     private val getMessages: GetMessagesUseCase,
     private val pollingHandler: ChatPollingHandler,
     private val mutationHandler: ChatMutationHandler,
-    private val mutationNotifier: MessagesMutationNotifier,
+    private val mutationNotifier: MessagesMutationRepository,
 ) : BaseViewModel<ChatState.State, ChatState.Event, ChatState.Effect>() {
     @AssistedFactory
     interface Factory {

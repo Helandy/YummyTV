@@ -13,7 +13,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.paging.PagedSource
 import su.afk.yummy.tv.core.utils.paging.pagingSource
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
-import su.afk.yummy.tv.domain.messages.MessagesMutationNotifier
+import su.afk.yummy.tv.domain.messages.repository.MessagesMutationRepository
 import su.afk.yummy.tv.domain.messages.model.DialogSummary
 import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.domain.messages.usecase.GetDialogsUseCase
@@ -33,7 +33,7 @@ class DialogsViewModel @Inject constructor(
     private val accountNavigator: IAccountNavigator,
     private val observeAccountSession: ObserveAccountSessionUseCase,
     private val getDialogs: GetDialogsUseCase,
-    mutationNotifier: MessagesMutationNotifier,
+    mutationNotifier: MessagesMutationRepository,
 ) : BaseViewModel<DialogsState.State, DialogsState.Event, DialogsState.Effect>() {
     private var pagedSource: PagedSource<DialogSummary>? = null
 
