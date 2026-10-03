@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
-import su.afk.yummy.tv.domain.account.model.LocalAuthPairingPayload
+import su.afk.yummy.tv.domain.account.utils.encodeLocalAuthPairingPayload
 
 /**
  * QR и код сопряжения рядом: каждая группа кода на своей строке, три строки по высоте равны QR.
@@ -38,7 +38,7 @@ internal fun LocalAuthPairingCode(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             LocalAuthQrCode(
-                content = LocalAuthPairingPayload.encode(serviceName, pin),
+                content = encodeLocalAuthPairingPayload(serviceName, pin),
                 size = qrSize,
             )
             Text(

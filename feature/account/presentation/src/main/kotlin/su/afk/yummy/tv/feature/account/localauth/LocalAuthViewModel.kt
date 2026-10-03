@@ -11,7 +11,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
-import su.afk.yummy.tv.domain.account.model.LocalAuthPairingPayload
+import su.afk.yummy.tv.domain.account.utils.parseLocalAuthPairingPayload
 import su.afk.yummy.tv.domain.account.model.SessionTransferException
 import su.afk.yummy.tv.feature.account.account.handler.AccountLocalAuthHandler
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
@@ -78,7 +78,7 @@ class LocalAuthViewModel @Inject internal constructor(
      */
     private fun onQrScanned(raw: String) {
         if (currentState.isTransferring) return
-        val payload = LocalAuthPairingPayload.parse(raw)
+        val payload = parseLocalAuthPairingPayload(raw)
         if (payload == null) {
             analytics.eventMobileQrScanned(LocalAuthAnalytics.QrScanResult.INVALID)
             setState { copy(error = AccountUiError.LOCAL_AUTH_INVALID_QR) }
