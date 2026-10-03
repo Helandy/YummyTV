@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.domain.account.model
 
-import androidx.compose.runtime.Immutable
 
-@Immutable
 data class UserProfileCounts(
     val watching: Int = 0,
     val planned: Int = 0,
