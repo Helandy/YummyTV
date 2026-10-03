@@ -1,16 +1,28 @@
 package su.afk.yummy.tv.core.storage.account
 
-internal class AccountStorageStore(private val dao: AccountStorageDao) : AccountStorage {
+import androidx.room.withTransaction
+import su.afk.yummy.tv.core.storage.db.AppDatabase
+
+internal class AccountStorageStore(
+    private val db: AppDatabase,
+    private val animeRatingsDao: AccountAnimeRatingsDao,
+    private val collectionsDao: AccountCollectionsDao,
+    private val notificationsDao: AccountNotificationsDao,
+    private val profileDao: AccountProfileDao,
+    private val userListsDao: AccountUserListsDao,
+    private val userProfileDao: AccountUserProfileDao,
+    private val videoSubscriptionsDao: AccountVideoSubscriptionsDao,
+) : AccountStorage {
 
     override suspend fun getProfile(profileKey: String): AccountProfileEntry? =
-        dao.getProfile(profileKey)
+        profileDao.getProfile(profileKey)
 
     override suspend fun saveProfile(entry: AccountProfileEntry) {
-        dao.insertProfile(entry)
+        profileDao.insertProfile(entry)
     }
 
     override suspend fun deleteProfile(profileKey: String) {
-        dao.deleteProfile(profileKey)
+        profileDao.deleteProfile(profileKey)
     }
 
     override suspend fun getUserList(
@@ -18,85 +30,85 @@ internal class AccountStorageStore(private val dao: AccountStorageDao) : Account
         listId: Int,
         language: String,
     ): AccountUserListCache? =
-        dao.getUserList(userId, listId, language)
+        userListsDao.getUserList(userId, listId, language)
 
     override suspend fun saveUserList(cache: AccountUserListCache) {
-        dao.replaceUserList(cache)
+        userListsDao.replaceUserList(cache)
     }
 
     override suspend fun saveUserLists(caches: List<AccountUserListCache>) {
-        dao.replaceUserLists(caches)
+        userListsDao.replaceUserLists(caches)
     }
 
     override suspend fun hasUserListCache(userId: Int): Boolean =
-        dao.hasUserListPages(userId)
+        userListsDao.hasUserListPages(userId)
 
     override suspend fun deleteUserLists(userId: Int) {
-        dao.deleteUserLists(userId)
+        userListsDao.deleteUserLists(userId)
     }
 
     override suspend fun getAnimeListState(userId: Int, animeId: Int): AccountAnimeListStateEntry? =
-        dao.getAnimeListState(userId, animeId)
+        userListsDao.getAnimeListState(userId, animeId)
 
     override suspend fun saveAnimeListState(entry: AccountAnimeListStateEntry) {
-        dao.insertAnimeListState(entry)
+        userListsDao.insertAnimeListState(entry)
     }
 
     override suspend fun getRatingBuckets(animeId: Int): AccountRatingBucketsCache? =
-        dao.getRatingBuckets(animeId)
+        animeRatingsDao.getRatingBuckets(animeId)
 
     override suspend fun saveRatingBuckets(cache: AccountRatingBucketsCache) {
-        dao.replaceRatingBuckets(cache)
+        animeRatingsDao.replaceRatingBuckets(cache)
     }
 
     override suspend fun deleteRatingBuckets(animeId: Int) {
-        dao.deleteRatingBucketsCache(animeId)
+        animeRatingsDao.deleteRatingBucketsCache(animeId)
     }
 
     override suspend fun getUserRating(userId: Int, animeId: Int): AccountUserRatingEntry? =
-        dao.getUserRating(userId, animeId)
+        animeRatingsDao.getUserRating(userId, animeId)
 
     override suspend fun saveUserRating(entry: AccountUserRatingEntry) {
-        dao.insertUserRating(entry)
+        animeRatingsDao.insertUserRating(entry)
     }
 
     override suspend fun getListStats(animeId: Int): AccountListStatsCache? =
-        dao.getListStats(animeId)
+        animeRatingsDao.getListStats(animeId)
 
     override suspend fun saveListStats(cache: AccountListStatsCache) {
-        dao.replaceListStats(cache)
+        animeRatingsDao.replaceListStats(cache)
     }
 
     override suspend fun invalidateListStats(animeId: Int) {
-        dao.invalidateListStats(animeId)
+        animeRatingsDao.invalidateListStats(animeId)
     }
 
     override suspend fun getCollections(pageKey: String): AccountCollectionsPageCache? =
-        dao.getCollections(pageKey)
+        collectionsDao.getCollections(pageKey)
 
     override suspend fun saveCollections(
         cache: AccountCollectionsPageCache,
         prunePagesCachedBefore: Long?,
     ) {
-        dao.replaceCollections(cache, prunePagesCachedBefore)
+        collectionsDao.replaceCollections(cache, prunePagesCachedBefore)
     }
 
     override suspend fun invalidateCollections() {
-        dao.invalidateCollections()
+        collectionsDao.invalidateCollections()
     }
 
     override suspend fun getVideoSubscriptions(
         userId: Int,
         language: String,
     ): AccountVideoSubscriptionsCache? =
-        dao.getVideoSubscriptions(userId, language)
+        videoSubscriptionsDao.getVideoSubscriptions(userId, language)
 
     override suspend fun saveVideoSubscriptions(cache: AccountVideoSubscriptionsCache) {
-        dao.replaceVideoSubscriptions(cache)
+        videoSubscriptionsDao.replaceVideoSubscriptions(cache)
     }
 
     override suspend fun deleteVideoSubscriptions(userId: Int) {
-        dao.deleteVideoSubscriptionsForUser(userId)
+        videoSubscriptionsDao.deleteVideoSubscriptionsForUser(userId)
     }
 
     override suspend fun getNotifications(
@@ -105,17 +117,17 @@ internal class AccountStorageStore(private val dao: AccountStorageDao) : Account
         limit: Int,
         offset: Int,
     ): AccountNotificationsPageCache? =
-        dao.getNotifications(userId, language, limit, offset)
+        notificationsDao.getNotifications(userId, language, limit, offset)
 
     override suspend fun saveNotifications(
         cache: AccountNotificationsPageCache,
         prunePagesCachedBefore: Long?,
     ) {
-        dao.replaceNotifications(cache, prunePagesCachedBefore)
+        notificationsDao.replaceNotifications(cache, prunePagesCachedBefore)
     }
 
     override suspend fun deleteNotifications(userId: Int) {
-        dao.deleteNotificationsForUser(userId)
+        notificationsDao.deleteNotificationsForUser(userId)
     }
 
     override suspend fun getUserFriends(
@@ -124,14 +136,14 @@ internal class AccountStorageStore(private val dao: AccountStorageDao) : Account
         limit: Int,
         offset: Int,
     ): AccountUserFriendsPageCache? =
-        dao.getUserFriendsPage(userId, language, limit, offset)
+        userProfileDao.getUserFriendsPage(userId, language, limit, offset)
 
     override suspend fun saveUserFriends(cache: AccountUserFriendsPageCache) {
-        dao.replaceUserFriendsPage(cache)
+        userProfileDao.replaceUserFriendsPage(cache)
     }
 
     override suspend fun deleteUserFriends(userId: Int) {
-        dao.deleteUserFriendsContentForUser(userId)
+        userProfileDao.deleteUserFriendsContentForUser(userId)
     }
 
     override suspend fun getUserReviews(
@@ -140,10 +152,10 @@ internal class AccountStorageStore(private val dao: AccountStorageDao) : Account
         limit: Int,
         offset: Int,
     ): AccountUserReviewsPageCache? =
-        dao.getUserReviewsPage(userId, language, limit, offset)
+        userProfileDao.getUserReviewsPage(userId, language, limit, offset)
 
     override suspend fun saveUserReviews(cache: AccountUserReviewsPageCache) {
-        dao.replaceUserReviewsPage(cache)
+        userProfileDao.replaceUserReviewsPage(cache)
     }
 
     override suspend fun getUserPosts(
@@ -152,53 +164,65 @@ internal class AccountStorageStore(private val dao: AccountStorageDao) : Account
         limit: Int,
         offset: Int,
     ): AccountUserPostsPageCache? =
-        dao.getUserPostsPage(userId, language, limit, offset)
+        userProfileDao.getUserPostsPage(userId, language, limit, offset)
 
     override suspend fun saveUserPosts(cache: AccountUserPostsPageCache) {
-        dao.replaceUserPostsPage(cache)
+        userProfileDao.replaceUserPostsPage(cache)
     }
 
     override suspend fun getNotificationCounts(userId: Int): AccountNotificationCountsCache? =
-        dao.getNotificationCounts(userId)
+        notificationsDao.getNotificationCounts(userId)
 
     override suspend fun saveNotificationCounts(cache: AccountNotificationCountsCache) {
-        dao.replaceNotificationCounts(cache)
+        notificationsDao.replaceNotificationCounts(cache)
     }
 
     override suspend fun deleteNotificationCounts(userId: Int) {
-        dao.deleteNotificationCountCache(userId)
-        dao.deleteNotificationCounts(userId)
+        notificationsDao.deleteNotificationCountCache(userId)
+        notificationsDao.deleteNotificationCounts(userId)
     }
 
     override suspend fun getNotificationAnime(slug: String): AccountNotificationAnimeEntry? =
-        dao.getNotificationAnime(slug)
+        notificationsDao.getNotificationAnime(slug)
 
     override suspend fun saveNotificationAnime(entry: AccountNotificationAnimeEntry) {
-        dao.insertNotificationAnime(entry)
+        notificationsDao.insertNotificationAnime(entry)
     }
 
     override suspend fun getUserStats(userId: Int, language: String): AccountUserStatsCache? =
-        dao.getUserStats(userId, language)
+        userProfileDao.getUserStats(userId, language)
 
     override suspend fun saveUserStats(cache: AccountUserStatsCache) {
-        dao.replaceUserStats(cache)
+        userProfileDao.replaceUserStats(cache)
     }
 
     override suspend fun getUserProfileSummary(
         userId: Int,
         language: String,
     ): AccountUserProfileSummaryCache? =
-        dao.getUserProfileSummary(userId, language)
+        userProfileDao.getUserProfileSummary(userId, language)
 
     override suspend fun saveUserProfileSummary(cache: AccountUserProfileSummaryCache) {
-        dao.replaceUserProfileSummary(cache)
+        userProfileDao.replaceUserProfileSummary(cache)
     }
 
     override suspend fun deleteUserProfileSummary(userId: Int) {
-        dao.deleteUserProfileSummaryForUser(userId)
+        userProfileDao.deleteUserProfileSummaryForUser(userId)
     }
 
     override suspend fun clearUserScoped(userId: Int) {
-        dao.clearUserScoped(userId)
+        db.withTransaction {
+            profileDao.deleteProfile(ACCOUNT_PROFILE_KEY_CURRENT)
+            profileDao.deleteProfilesByUser(userId)
+            userListsDao.deleteUserLists(userId)
+            userListsDao.deleteAnimeListStates(userId)
+            animeRatingsDao.deleteUserRatings(userId)
+            videoSubscriptionsDao.deleteVideoSubscriptionsForUser(userId)
+            notificationsDao.deleteNotificationsForUser(userId)
+            notificationsDao.deleteNotificationCountCache(userId)
+            notificationsDao.deleteNotificationCounts(userId)
+            userProfileDao.deleteUserProfileContentForUser(userId)
+            userProfileDao.deleteUserStatsForUser(userId)
+        }
     }
 }

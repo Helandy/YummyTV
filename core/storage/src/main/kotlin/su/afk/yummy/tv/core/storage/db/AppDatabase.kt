@@ -15,7 +15,13 @@ import su.afk.yummy.tv.core.storage.account.AccountNotificationPageEntry
 import su.afk.yummy.tv.core.storage.account.AccountProfileEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketCacheEntry
 import su.afk.yummy.tv.core.storage.account.AccountRatingBucketEntry
-import su.afk.yummy.tv.core.storage.account.AccountStorageDao
+import su.afk.yummy.tv.core.storage.account.AccountAnimeRatingsDao
+import su.afk.yummy.tv.core.storage.account.AccountCollectionsDao
+import su.afk.yummy.tv.core.storage.account.AccountNotificationsDao
+import su.afk.yummy.tv.core.storage.account.AccountProfileDao
+import su.afk.yummy.tv.core.storage.account.AccountUserListsDao
+import su.afk.yummy.tv.core.storage.account.AccountUserProfileDao
+import su.afk.yummy.tv.core.storage.account.AccountVideoSubscriptionsDao
 import su.afk.yummy.tv.core.storage.account.AccountUserFriendEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserGenreStatEntry
 import su.afk.yummy.tv.core.storage.account.AccountUserListItemEntry
@@ -170,7 +176,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun animeScheduleDao(): AnimeScheduleDao
     abstract fun searchStorageDao(): SearchStorageDao
     abstract fun collectionStorageDao(): CollectionStorageDao
-    abstract fun accountStorageDao(): AccountStorageDao
+    abstract fun accountAnimeRatingsDao(): AccountAnimeRatingsDao
+    abstract fun accountCollectionsDao(): AccountCollectionsDao
+    abstract fun accountNotificationsDao(): AccountNotificationsDao
+    abstract fun accountProfileDao(): AccountProfileDao
+    abstract fun accountUserListsDao(): AccountUserListsDao
+    abstract fun accountUserProfileDao(): AccountUserProfileDao
+    abstract fun accountVideoSubscriptionsDao(): AccountVideoSubscriptionsDao
     abstract fun commentsStorageDao(): CommentsStorageDao
     abstract fun documentCacheDao(): DocumentCacheDao
     abstract fun videoDownloadDao(): VideoDownloadDao

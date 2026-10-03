@@ -16,7 +16,16 @@ object AccountStorageModule {
     @Provides
     @Singleton
     internal fun provideAccountStorageStore(db: AppDatabase): AccountStorageStore =
-        AccountStorageStore(db.accountStorageDao())
+        AccountStorageStore(
+            db = db,
+            profileDao = db.accountProfileDao(),
+            userListsDao = db.accountUserListsDao(),
+            animeRatingsDao = db.accountAnimeRatingsDao(),
+            collectionsDao = db.accountCollectionsDao(),
+            videoSubscriptionsDao = db.accountVideoSubscriptionsDao(),
+            notificationsDao = db.accountNotificationsDao(),
+            userProfileDao = db.accountUserProfileDao(),
+        )
 
     @Provides
     @Singleton
