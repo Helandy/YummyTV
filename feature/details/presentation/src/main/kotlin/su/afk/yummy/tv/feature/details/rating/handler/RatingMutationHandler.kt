@@ -2,12 +2,8 @@ package su.afk.yummy.tv.feature.details.rating.handler
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import su.afk.yummy.tv.core.error.api.isNetworkError
-import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
-import su.afk.yummy.tv.core.storage.outbox.SetRatingPayload
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
@@ -25,8 +21,7 @@ internal class RatingMutationHandler @Inject constructor(
     private val getAnimeUserRating: GetAnimeUserRatingUseCase,
     private val setAnimeRating: SetAnimeRatingUseCase,
     private val deleteAnimeRating: DeleteAnimeRatingUseCase,
-    private val pendingMutationOutbox: PendingMutationOutbox,
-    private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
+    private val pendingMutationQueue: PendingMutationQueue,
 ) {
     suspend fun load(animeId: Int): RatingLoadResult = coroutineScope {
         val ratingSummary = async { runSuspendCatching { getAnimeRatingSummary(animeId) } }
@@ -41,14 +36,11 @@ internal class RatingMutationHandler @Inject constructor(
 
     suspend fun setRating(animeId: Int, rating: Int): RatingMutationResult =
         runSuspendCatching { setAnimeRating(animeId, rating) }
-            .toMutationResult(
-                PendingMutationTypes.SET_RATING,
-                SetRatingPayload(animeId, rating).encode()
-            )
+            .toMutationResult(PendingMutation.SetRating(animeId, rating))
 
     suspend fun deleteRating(animeId: Int): RatingMutationResult =
         runSuspendCatching { deleteAnimeRating(animeId) }
-            .toMutationResult(PendingMutationTypes.DELETE_RATING, AnimeIdPayload(animeId).encode())
+            .toMutationResult(PendingMutation.DeleteRating(animeId))
 
     suspend fun refreshSummary(animeId: Int): AnimeRatingSummary? =
         runSuspendCatching { getAnimeRatingSummary(animeId) }.getOrNull()
@@ -57,15 +49,10 @@ internal class RatingMutationHandler @Inject constructor(
      * Сетевой сбой ставится в offline-очередь и считается успехом — мутация дойдёт до сервера,
      * как только вернётся сеть. Остальные ошибки остаются провалом.
      */
-    private suspend fun Result<*>.toMutationResult(
-        type: String,
-        payloadJson: String
-    ): RatingMutationResult {
+    private suspend fun Result<*>.toMutationResult(mutation: PendingMutation): RatingMutationResult {
         if (isSuccess) return RatingMutationResult.Success
         val error = exceptionOrNull()
-        if (error != null && error.isNetworkError()) {
-            pendingMutationOutbox.enqueue(type, payloadJson)
-            pendingMutationSyncScheduler.scheduleFlush()
+        if (error != null && pendingMutationQueue.enqueueOnNetworkFailure(mutation, error)) {
             return RatingMutationResult.Success
         }
         return RatingMutationResult.Failure

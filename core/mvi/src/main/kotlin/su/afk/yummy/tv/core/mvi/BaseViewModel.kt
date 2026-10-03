@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
-import su.afk.yummy.tv.core.error.api.isNetworkError
+import su.afk.yummy.tv.core.model.error.isNetworkError
 
 /**
  * База MVI-экрана: держит [state], раздаёт одноразовые [effect] и сводит обработку ошибок

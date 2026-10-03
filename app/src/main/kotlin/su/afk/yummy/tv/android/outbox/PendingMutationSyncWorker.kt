@@ -6,7 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import su.afk.yummy.tv.core.error.api.isNetworkError
+import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
 import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
 import su.afk.yummy.tv.core.storage.outbox.PendingMutationEntry

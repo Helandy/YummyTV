@@ -6,7 +6,7 @@ import su.afk.yummy.tv.core.analytics.api.coroutine.ErrorCoroutineAnalytics
 import su.afk.yummy.tv.core.error.api.ErrorDestinationFactory
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.StringProvider
-import su.afk.yummy.tv.core.error.api.isNetworkError
+import su.afk.yummy.tv.core.model.error.isNetworkError
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import java.io.IOException

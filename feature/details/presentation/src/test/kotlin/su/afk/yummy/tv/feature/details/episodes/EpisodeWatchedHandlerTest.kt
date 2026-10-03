@@ -1,9 +1,7 @@
 package su.afk.yummy.tv.feature.details.episodes
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,12 +9,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationEntry
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
-import su.afk.yummy.tv.core.storage.outbox.RemoveWatchedPayload
 import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorEvent
 import su.afk.yummy.tv.domain.account.mutation.AccountMutationErrorNotifier
@@ -27,6 +19,9 @@ import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import su.afk.yummy.tv.domain.player.usecase.ClearEpisodeWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.MarkEpisodeWatchedLocallyUseCase
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
+import su.afk.yummy.tv.core.model.error.isNetworkError
 import java.io.IOException
 
 /**
@@ -37,16 +32,14 @@ class EpisodeWatchedHandlerTest {
 
     private val progressRepository = FakeWatchProgressRepository()
     private val watchesRepository = FakeVideoWatchesRepository()
-    private val outbox = FakePendingMutationOutbox()
-    private val syncScheduler = FakePendingMutationSyncScheduler()
+    private val queue = FakePendingMutationQueue()
 
     private val handler = EpisodeWatchedHandler(
         markEpisodeWatchedLocally = MarkEpisodeWatchedLocallyUseCase(progressRepository),
         clearEpisodeWatchProgress = ClearEpisodeWatchProgressUseCase(progressRepository),
         saveVideoWatchProgress = SaveVideoWatchProgressUseCase(watchesRepository),
         removeWatchedVideos = RemoveWatchedVideosUseCase(watchesRepository, NoopNotifier),
-        pendingMutationOutbox = outbox,
-        pendingMutationSyncScheduler = syncScheduler,
+        pendingMutationQueue = queue,
     )
 
     private val meta = EpisodeWatchedHandler.EpisodeMeta(
@@ -137,8 +130,7 @@ class EpisodeWatchedHandlerTest {
         assertFalse(succeeded)
         assertEquals(1, progressRepository.saved.size)
         // Ошибка не сетевая — повторять нечего, очередь остаётся пустой.
-        assertTrue(outbox.enqueued.isEmpty())
-        assertEquals(0, syncScheduler.flushes)
+        assertTrue(queue.enqueued.isEmpty())
     }
 
     @Test
@@ -158,10 +150,7 @@ class EpisodeWatchedHandlerTest {
         // Локальная отметка уже проставлена, а доставку берёт на себя offline-очередь.
         assertTrue(succeeded)
         assertEquals(1, progressRepository.saved.size)
-        val queued = outbox.enqueued.single()
-        assertEquals(PendingMutationTypes.MARK_WATCHED, queued.type)
-        assertEquals(MarkWatchedPayload(2, 1_490, 1_500), MarkWatchedPayload.decode(queued.payload))
-        assertEquals(1, syncScheduler.flushes)
+        assertEquals(PendingMutation.MarkWatched(2, 1_490, 1_500), queue.enqueued.single())
     }
 
     @Test
@@ -177,13 +166,7 @@ class EpisodeWatchedHandlerTest {
 
         assertTrue(succeeded)
         assertEquals(7 to "3", progressRepository.deleted.single())
-        val queued = outbox.enqueued.single()
-        assertEquals(PendingMutationTypes.REMOVE_WATCHED, queued.type)
-        assertEquals(
-            RemoveWatchedPayload(listOf(1, 2)),
-            RemoveWatchedPayload.decode(queued.payload),
-        )
-        assertEquals(1, syncScheduler.flushes)
+        assertEquals(PendingMutation.RemoveWatched(listOf(1, 2)), queue.enqueued.single())
     }
 
     @Test
@@ -344,29 +327,16 @@ private class FakeVideoWatchesRepository : VideoWatchesRepository {
     }
 }
 
-private class FakePendingMutationOutbox : PendingMutationOutbox {
-    data class Enqueued(val type: String, val payload: String)
+private class FakePendingMutationQueue : PendingMutationQueue {
+    val enqueued = mutableListOf<PendingMutation>()
 
-    val enqueued = mutableListOf<Enqueued>()
-
-    override suspend fun enqueue(type: String, payloadJson: String) {
-        enqueued += Enqueued(type, payloadJson)
-    }
-
-    override suspend fun pending(): List<PendingMutationEntry> = emptyList()
-
-    override suspend fun remove(id: Long) = Unit
-
-    override suspend fun recordAttemptFailure(id: Long) = Unit
-
-    override fun observeCount(): Flow<Int> = flowOf(enqueued.size)
-}
-
-private class FakePendingMutationSyncScheduler : PendingMutationSyncScheduler {
-    var flushes = 0
-
-    override fun scheduleFlush() {
-        flushes++
+    override suspend fun enqueueOnNetworkFailure(
+        mutation: PendingMutation,
+        error: Throwable,
+    ): Boolean {
+        if (!error.isNetworkError()) return false
+        enqueued += mutation
+        return true
     }
 }
 

@@ -1,13 +1,9 @@
 package su.afk.yummy.tv.feature.details.episodes.handler
 
-import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.core.storage.outbox.MarkWatchedPayload
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
-import su.afk.yummy.tv.core.storage.outbox.RemoveWatchedPayload
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
 import su.afk.yummy.tv.domain.account.usecase.SaveVideoWatchProgressUseCase
@@ -27,8 +23,7 @@ internal class EpisodeWatchedHandler @Inject constructor(
     private val clearEpisodeWatchProgress: ClearEpisodeWatchProgressUseCase,
     private val saveVideoWatchProgress: SaveVideoWatchProgressUseCase,
     private val removeWatchedVideos: RemoveWatchedVideosUseCase,
-    private val pendingMutationOutbox: PendingMutationOutbox,
-    private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
+    private val pendingMutationQueue: PendingMutationQueue,
 ) {
 
     /** Метаданные тайтла и серии для карточки Continue Watching. */
@@ -71,16 +66,7 @@ internal class EpisodeWatchedHandler @Inject constructor(
         val durationSeconds = (durationMs / 1_000L).toInt()
         val timeSeconds = (durationSeconds - WATCH_END_TOLERANCE_SECONDS).coerceAtLeast(0)
         return runCatchingMutation(
-            onNetworkFailure = {
-                pendingMutationOutbox.enqueue(
-                    type = PendingMutationTypes.MARK_WATCHED,
-                    payloadJson = MarkWatchedPayload(
-                        target.id,
-                        timeSeconds,
-                        durationSeconds
-                    ).encode(),
-                )
-            },
+            PendingMutation.MarkWatched(target.id, timeSeconds, durationSeconds),
         ) {
             saveVideoWatchProgress(
                 videoId = target.id,
@@ -108,35 +94,24 @@ internal class EpisodeWatchedHandler @Inject constructor(
         if (!isSignedIn) return true
         val videoIds = videos.map { it.id }.filter { it > 0 }
         if (videoIds.isEmpty()) return true
-        return runCatchingMutation(
-            onNetworkFailure = {
-                pendingMutationOutbox.enqueue(
-                    type = PendingMutationTypes.REMOVE_WATCHED,
-                    payloadJson = RemoveWatchedPayload(videoIds).encode(),
-                )
-            },
-        ) { removeWatchedVideos(videoIds) }
+        return runCatchingMutation(PendingMutation.RemoveWatched(videoIds)) {
+            removeWatchedVideos(videoIds)
+        }
     }
 
     /**
      * Сетевые сбои ставятся в offline-очередь и считаются успехом — локальная отметка уже
-     * применена, а [PendingMutationSyncScheduler] дошлёт мутацию, как только появится сеть.
+     * применена, а [PendingMutationQueue] дошлёт мутацию, как только появится сеть.
      * Остальные ошибки (не связанные с сетью) по-прежнему возвращают false.
      */
     private suspend fun runCatchingMutation(
-        onNetworkFailure: suspend () -> Unit,
+        mutation: PendingMutation,
         block: suspend () -> Boolean,
     ): Boolean =
         runSuspendCatching {
             block()
         }.getOrElse { error ->
-            if (error.isNetworkError()) {
-                onNetworkFailure()
-                pendingMutationSyncScheduler.scheduleFlush()
-                true
-            } else {
-                false
-            }
+            pendingMutationQueue.enqueueOnNetworkFailure(mutation, error)
         }
 
     /**

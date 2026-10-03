@@ -1,13 +1,8 @@
 package su.afk.yummy.tv.feature.details.details.handler
 
-import su.afk.yummy.tv.core.error.api.isNetworkError
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.core.storage.outbox.AnimeIdPayload
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationOutbox
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationSyncScheduler
-import su.afk.yummy.tv.core.storage.outbox.PendingMutationTypes
-import su.afk.yummy.tv.core.storage.outbox.SetFavoritePayload
-import su.afk.yummy.tv.core.storage.outbox.SetListPayload
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.domain.account.usecase.GetAnimeListStateUseCase
@@ -24,7 +19,7 @@ import javax.inject.Inject
 /**
  * Applies details-screen library and favorite mutations with local-first rollback support.
  *
- * A network failure does not roll back: the mutation is queued in [pendingMutationOutbox] and
+ * A network failure does not roll back: the mutation is queued in [pendingMutationQueue] and
  * retried once connectivity returns, so the optimistic local write stands. Only a non-network
  * failure (e.g. the server rejects the request) rolls the local write back.
  */
@@ -36,8 +31,7 @@ internal class DetailsLibraryHandler @Inject constructor(
     private val setAnimeFavorite: SetAnimeFavoriteUseCase,
     private val setAnimeList: SetAnimeListUseCase,
     private val removeAnimeList: RemoveAnimeListUseCase,
-    private val pendingMutationOutbox: PendingMutationOutbox,
-    private val pendingMutationSyncScheduler: PendingMutationSyncScheduler,
+    private val pendingMutationQueue: PendingMutationQueue,
 ) {
     suspend fun refreshAuthorizedState(animeId: Int): Result<DetailsLibraryState?> =
         runSuspendCatching { getAnimeListState(animeId) }
@@ -64,11 +58,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         val result = runSuspendCatching { removeAnimeList(animeId) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
-        if (result.queueOnNetworkFailure(
-                PendingMutationTypes.REMOVE_LIST,
-                AnimeIdPayload(animeId).encode()
-            )
-        ) {
+        if (result.queueOnNetworkFailure(PendingMutation.RemoveList(animeId))) {
             return DetailsLibraryMutationResult.Success
         }
 
@@ -94,11 +84,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         val result = runSuspendCatching { setAnimeList(animeId, list) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
-        if (result.queueOnNetworkFailure(
-                PendingMutationTypes.SET_LIST,
-                SetListPayload(animeId, list.id).encode()
-            )
-        ) {
+        if (result.queueOnNetworkFailure(PendingMutation.SetList(animeId, list.id))) {
             return DetailsLibraryMutationResult.Success
         }
 
@@ -132,11 +118,7 @@ internal class DetailsLibraryHandler @Inject constructor(
         val result = runSuspendCatching { setAnimeFavorite(animeId, favorite) }
         if (result.isSuccess) return DetailsLibraryMutationResult.Success
 
-        if (result.queueOnNetworkFailure(
-                PendingMutationTypes.SET_FAVORITE,
-                SetFavoritePayload(animeId, favorite).encode()
-            )
-        ) {
+        if (result.queueOnNetworkFailure(PendingMutation.SetFavorite(animeId, favorite))) {
             return DetailsLibraryMutationResult.Success
         }
 
@@ -155,15 +137,9 @@ internal class DetailsLibraryHandler @Inject constructor(
      * стороне не откатывать оптимистичную запись. Для не сетевых ошибок ничего не делает — вызывающая
      * сторона откатывает как раньше.
      */
-    private suspend fun Result<*>.queueOnNetworkFailure(
-        type: String,
-        payloadJson: String
-    ): Boolean {
+    private suspend fun Result<*>.queueOnNetworkFailure(mutation: PendingMutation): Boolean {
         val error = exceptionOrNull() ?: return false
-        if (!error.isNetworkError()) return false
-        pendingMutationOutbox.enqueue(type, payloadJson)
-        pendingMutationSyncScheduler.scheduleFlush()
-        return true
+        return pendingMutationQueue.enqueueOnNetworkFailure(mutation, error)
     }
 }
 
