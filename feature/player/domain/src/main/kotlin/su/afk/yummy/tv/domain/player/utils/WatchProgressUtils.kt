@@ -10,8 +10,8 @@ internal suspend fun nextActivityUpdatedAt(
     repository: WatchProgressRepository,
     animeId: Int,
     episode: String,
+    now: Long,
 ): Long {
-    val now = System.currentTimeMillis()
     if (animeId <= 0) return now
     val existingUpdatedAt = episode
         .takeIf { it.isNotBlank() }

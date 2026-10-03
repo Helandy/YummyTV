@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.library.usecase
 
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import su.afk.yummy.tv.domain.account.usecase.HasCachedUserListsUseCase
@@ -14,6 +15,7 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
     private val loadRemoteSnapshot: LoadRemoteLibrarySnapshotUseCase,
     private val pushLocalChanges: PushLocalLibraryChangesUseCase,
     private val hydrateLocalLibrary: HydrateLocalLibraryUseCase,
+    private val clock: AppClock,
 ) {
 
     suspend operator fun invoke(
@@ -23,7 +25,7 @@ class SyncRemoteLibraryUseCase @Inject internal constructor(
         val hasKnownRemoteState =
             libraryRepository.hasSyncState(userId) || hasCachedUserLists(userId)
         val allowMissingRemoteUpload = !hasKnownRemoteState
-        val remoteFetchedAt = System.currentTimeMillis()
+        val remoteFetchedAt = clock.nowMillis()
         val initialRemote = loadRemoteSnapshot(userId, forceRefresh)
         val pushResult = pushLocalChanges(
             remote = initialRemote,

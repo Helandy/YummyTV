@@ -1,11 +1,12 @@
 package su.afk.yummy.tv.domain.library.usecase
 
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
 import su.afk.yummy.tv.domain.library.model.FAVORITE_ONLY_LIBRARY_LIST_ID
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.model.RemoteLibrarySnapshot
 import su.afk.yummy.tv.domain.library.repository.LibraryRepository
+import su.afk.yummy.tv.domain.library.utils.toLibraryItem
 import su.afk.yummy.tv.domain.library.utils.updatedAtMillis
 import javax.inject.Inject
 
@@ -15,6 +16,7 @@ import javax.inject.Inject
  */
 internal class HydrateLocalLibraryUseCase @Inject constructor(
     private val libraryRepository: LibraryRepository,
+    private val clock: AppClock,
 ) {
 
     suspend operator fun invoke(
@@ -22,6 +24,7 @@ internal class HydrateLocalLibraryUseCase @Inject constructor(
         pruneMissingLocalEntries: Boolean,
         remoteFetchedAt: Long,
     ) {
+        val now = clock.nowMillis()
         val localByAnimeId = libraryRepository.getAll()
             .associateBy(LibraryItem::animeId)
             .toMutableMap()
@@ -41,6 +44,7 @@ internal class HydrateLocalLibraryUseCase @Inject constructor(
                 val current = localByAnimeId[remoteItem.animeId]
                 val merged = remoteItem.toLibraryItem(
                     current = current,
+                    now = now,
                     listId = remoteItem.list?.id ?: list.id,
                     isFavorite = if (pruneMissingLocalEntries) {
                         remoteItem.animeId in remoteFavoriteAnimeIds
@@ -65,6 +69,7 @@ internal class HydrateLocalLibraryUseCase @Inject constructor(
             val current = localByAnimeId[remoteFavorite.animeId]
             val merged = remoteFavorite.toLibraryItem(
                 current = current,
+                now = now,
                 listId = if (
                     pruneMissingLocalEntries &&
                     remoteFavorite.animeId !in remotePrimaryAnimeIds
@@ -87,39 +92,5 @@ internal class HydrateLocalLibraryUseCase @Inject constructor(
                 .filterNot(remoteAnimeIds::contains)
                 .forEach { animeId -> libraryRepository.delete(animeId) }
         }
-    }
-
-    private companion object {
-        fun UserAnimeListItem.toLibraryItem(
-            current: LibraryItem?,
-            listId: Int,
-            isFavorite: Boolean,
-            listUpdatedAt: Long,
-            favoriteUpdatedAt: Long,
-        ): LibraryItem = LibraryItem(
-            animeId = animeId,
-            title = title.ifBlank { current?.title.orEmpty() },
-            poster = LibraryPoster(
-                small = poster?.small ?: current?.poster?.small,
-                medium = poster?.medium ?: posterUrl ?: current?.poster?.medium,
-                big = poster?.big ?: current?.poster?.big,
-                fullsize = poster?.fullsize ?: current?.poster?.fullsize,
-                mega = poster?.mega ?: current?.poster?.mega,
-            ),
-            addedAt = current?.addedAt ?: System.currentTimeMillis(),
-            listId = listId,
-            isFavorite = isFavorite,
-            listUpdatedAt = listUpdatedAt,
-            favoriteUpdatedAt = if (isFavorite) {
-                favoriteUpdatedAt
-            } else {
-                current?.favoriteUpdatedAt ?: 0L
-            },
-            userRating = userRating ?: current?.userRating,
-            year = year ?: current?.year,
-            rating = rating ?: current?.rating,
-            nextEpisodeAtSeconds = nextEpisodeAtSeconds ?: current?.nextEpisodeAtSeconds,
-            season = season ?: current?.season,
-        )
     }
 }

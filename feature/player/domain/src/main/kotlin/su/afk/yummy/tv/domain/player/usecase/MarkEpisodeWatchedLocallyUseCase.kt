@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.player.usecase
 
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import javax.inject.Inject
 
@@ -12,6 +13,7 @@ import javax.inject.Inject
  */
 class MarkEpisodeWatchedLocallyUseCase @Inject constructor(
     private val repository: WatchProgressRepository,
+    private val clock: AppClock,
 ) {
     suspend operator fun invoke(
         animeId: Int,
@@ -33,7 +35,7 @@ class MarkEpisodeWatchedLocallyUseCase @Inject constructor(
             episodeUrl = episodeUrl,
             positionMs = durationMs,
             durationMs = durationMs,
-            updatedAt = System.currentTimeMillis(),
+            updatedAt = clock.nowMillis(),
             animeTitle = animeTitle,
             posterUrl = posterUrl,
             playerName = playerName,

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.domain.player.usecase
 
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import su.afk.yummy.tv.domain.player.utils.nextActivityUpdatedAt
 import javax.inject.Inject
@@ -10,6 +11,7 @@ import javax.inject.Inject
  */
 class SaveContinueTargetUseCase @Inject constructor(
     private val repository: WatchProgressRepository,
+    private val clock: AppClock,
 ) {
     @Suppress("LongParameterList")
     suspend operator fun invoke(
@@ -28,7 +30,7 @@ class SaveContinueTargetUseCase @Inject constructor(
             episode = episode,
             videoId = videoId,
             episodeUrl = episodeUrl,
-            updatedAt = nextActivityUpdatedAt(repository, animeId, episode),
+            updatedAt = nextActivityUpdatedAt(repository, animeId, episode, clock.nowMillis()),
             animeTitle = animeTitle,
             posterUrl = posterUrl,
             playerName = playerName,

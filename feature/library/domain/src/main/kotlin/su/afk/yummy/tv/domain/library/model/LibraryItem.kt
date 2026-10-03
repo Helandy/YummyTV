@@ -8,7 +8,8 @@ data class LibraryItem(
     val animeId: Int,
     val title: String,
     val poster: LibraryPoster? = null,
-    val addedAt: Long = System.currentTimeMillis(),
+    /** Время добавления; 0 — запись ещё не сохранена, время проставит `UpsertLibraryItemUseCase`. */
+    val addedAt: Long = 0L,
     val listId: Int = 0,
     val isFavorite: Boolean = false,
     val listUpdatedAt: Long = addedAt,

@@ -35,7 +35,7 @@ class EpisodeWatchedHandlerTest {
     private val queue = FakePendingMutationQueue()
 
     private val handler = EpisodeWatchedHandler(
-        markEpisodeWatchedLocally = MarkEpisodeWatchedLocallyUseCase(progressRepository),
+        markEpisodeWatchedLocally = MarkEpisodeWatchedLocallyUseCase(progressRepository, FixedClock),
         clearEpisodeWatchProgress = ClearEpisodeWatchProgressUseCase(progressRepository),
         saveVideoWatchProgress = SaveVideoWatchProgressUseCase(watchesRepository),
         removeWatchedVideos = RemoveWatchedVideosUseCase(watchesRepository, NoopNotifier),

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.episodes
 
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -19,7 +20,7 @@ class EpisodeWatchLaterHandlerTest {
     private val repository = FakeWatchLaterRepository()
 
     private val handler = EpisodeWatchLaterHandler(
-        addWatchLaterEpisode = AddWatchLaterEpisodeUseCase(repository),
+        addWatchLaterEpisode = AddWatchLaterEpisodeUseCase(repository, FixedClock),
         removeWatchLaterEpisode = RemoveWatchLaterEpisodeUseCase(repository),
     )
 
@@ -68,4 +69,8 @@ class EpisodeWatchLaterHandlerTest {
 
         override suspend fun pruneWatched() = Unit
     }
+}
+
+internal object FixedClock : AppClock {
+    override fun nowMillis(): Long = 1_000L
 }
