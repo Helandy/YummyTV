@@ -2,7 +2,6 @@ import su.afk.yummy.tv.buildlogic.buildConfigSecret
 
 plugins {
     id("yummytv.android.application")
-    alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
     id("yummytv.android.application.baselineprofile")
 }

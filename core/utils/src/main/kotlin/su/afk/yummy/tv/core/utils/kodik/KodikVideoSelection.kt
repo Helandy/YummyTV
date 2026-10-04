@@ -7,14 +7,6 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
  * конкретном балансере — деталь реализации превью, а shared kernel должен оставаться нейтральным.
  */
 
-/** Озвучка с наибольшим суммарным числом просмотров — её превью показываем по умолчанию. */
-fun List<AnimeVideo>.bestKodikDubbing(): String =
-    filter { it.isKodikSource() }
-        .groupBy { it.dubbing }
-        .maxByOrNull { (_, videos) -> videos.sumOf { it.views ?: 0 } }
-        ?.key
-        .orEmpty()
-
 /** Iframe выбранной озвучки, иначе самой просматриваемой — из него достаётся картинка серии. */
 fun List<AnimeVideo>.kodikThumbnailIframeUrl(preferredDubbing: String = ""): String? {
     val kodikVideos = filter { it.isKodikSource() }

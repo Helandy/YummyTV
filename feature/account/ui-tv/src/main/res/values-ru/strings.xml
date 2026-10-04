@@ -15,9 +15,8 @@
     <string name="account_password_placeholder">Пароль</string>
     <string name="account_tv_register_hint">Нет аккаунта? Зарегистрируйтесь на сайте yummyani.me — в приложении регистрации нет. После этого войдите здесь с теми же email или никнеймом и паролем.</string>
     <string name="account_loading">Загрузка...</string>
-    <string name="account_captcha_title">Подтвердите, что вы не робот</string>
-    <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход.</string>
-    <string name="account_captcha_loading">Капча пройдена, выполняем вход...</string>
+    <string name="account_captcha_title">Требуется проверка</string>
+    <string name="account_captcha_hint">Сайт запрашивает капчу, её не пройти пультом. Авторизуйтесь с телефона: нажмите «Войти с телефона».</string>
     <string name="account_tab_profile">Профиль</string>
     <string name="account_tab_stats">Статистика</string>
     <string name="account_tab_notifications">Уведомления</string>

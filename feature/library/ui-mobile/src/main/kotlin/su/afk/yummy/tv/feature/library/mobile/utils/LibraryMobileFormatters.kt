@@ -38,12 +38,6 @@ internal fun LibrarySort.mobileLabel(): String = when (this) {
     LibrarySort.TITLE -> stringResource(R.string.library_mobile_sort_title)
 }
 
-@Composable
-internal fun LibraryItem.mobileDateSubtitle(tab: LibraryTab): String? {
-    val date = mobileDateText(tab)
-    return date?.let { stringResource(R.string.library_mobile_added_date, it) }
-}
-
 internal fun LibraryItem.mobileDateText(tab: LibraryTab): String? {
     val date = when (tab) {
         LibraryTab.FAVORITES -> favoriteUpdatedAt

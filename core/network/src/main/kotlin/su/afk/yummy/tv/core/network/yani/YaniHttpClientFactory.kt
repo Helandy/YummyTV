@@ -87,7 +87,7 @@ fun buildYaniHttpClient(
         })
         if (BuildConfig.DEBUG) {
             install(Logging) {
-                logger = Logger.ANDROID
+                logger = SensitiveDataMaskingLogger(Logger.ANDROID)
                 level = LogLevel.BODY
                 sanitizeHeader { header ->
                     header.equals(HttpHeaders.Authorization, ignoreCase = true) ||

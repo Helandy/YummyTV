@@ -72,6 +72,11 @@ internal fun AccountMobileHCaptcha(
                     loadDataWithBaseURL("https://yummyani.me/", html, "text/html", "utf-8", null)
                 }
             },
+            onRelease = { webView ->
+                webView.removeJavascriptInterface("YummyCaptcha")
+                webView.stopLoading()
+                webView.destroy()
+            },
         )
         if (loading) CircularProgressIndicator()
     }

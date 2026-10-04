@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -239,14 +238,7 @@ internal fun LoginPanel(
             modifier = Modifier.fillMaxWidth(),
         )
         if (state.isCaptchaRequired) {
-            key(state.captchaChallengeId) {
-                CaptchaChallenge(
-                    state = state,
-                    onSolved = { onEvent(AccountState.Event.CaptchaSolved(it)) },
-                    onExpired = { onEvent(AccountState.Event.CaptchaExpired) },
-                    onFailed = { onEvent(AccountState.Event.CaptchaFailed(it)) },
-                )
-            }
+            CaptchaChallenge()
         }
     }
 }

@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStore.Companion.isWatchedProgressEntry
 import su.afk.yummy.tv.core.model.anime.isContinueTarget as isContinueTargetProgress
 import su.afk.yummy.tv.core.model.anime.isMeaningfulProgress as isMeaningfulProgressValue
 import su.afk.yummy.tv.core.model.anime.isUnresolvedProgress as isUnresolvedProgressValue
@@ -38,25 +37,20 @@ internal class WatchProgressStore(private val dao: WatchProgressDao) : WatchProg
 
         fun isContinueTargetEntry(entry: WatchProgressEntry): Boolean =
             isContinueTargetProgress(entry.positionMs, entry.durationMs) &&
-                    entry.episode.isNotBlank() &&
-                    entry.episodeUrl.isNotBlank()
+                entry.episode.isNotBlank() &&
+                entry.episodeUrl.isNotBlank()
 
         fun hasPlayableTargetEntry(entry: WatchProgressEntry): Boolean =
             entry.videoId > 0 ||
-                    entry.episode.isNotBlank() ||
-                    entry.episodeUrl.isNotBlank()
+                entry.episode.isNotBlank() ||
+                entry.episodeUrl.isNotBlank()
 
         fun isUnresolvedProgressEntry(entry: WatchProgressEntry): Boolean =
             isUnresolvedProgressValue(entry.positionMs, entry.durationMs) &&
-                    hasPlayableTargetEntry(entry)
+                hasPlayableTargetEntry(entry)
 
         fun isWatchedProgressEntry(entry: WatchProgressEntry): Boolean =
             isWatchedProgressValue(entry.positionMs, entry.durationMs)
-
-        fun isContinueWatchingEntry(entry: WatchProgressEntry): Boolean =
-            isContinueTargetEntry(entry) ||
-                    isUnresolvedProgressEntry(entry) ||
-                    (isMeaningfulProgressEntry(entry) && !isWatchedProgressEntry(entry))
     }
 
     override suspend fun get(animeId: Int, episode: String): WatchProgressEntry? =

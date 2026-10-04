@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,8 +29,8 @@ internal fun AccountMobileProfileStatsPage(
     page: AccountMobileProfileStatsPageModel,
     modifier: Modifier = Modifier,
 ) {
-    val positiveSlices = page.slices.filter { it.value > 0L }
-    val totalValue = positiveSlices.positiveValueSum()
+    val positiveSlices = remember(page.slices) { page.slices.filter { it.value > 0L } }
+    val totalValue = remember(positiveSlices) { positiveSlices.positiveValueSum() }
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),

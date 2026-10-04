@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.data.player.extractor.alloha
 
-import android.webkit.CookieManager
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
@@ -104,11 +103,6 @@ internal fun parseSources(
     }
     return AllohaParsedSources(audioTracks = audioTracks, subtitles = subtitles)
 }
-
-internal fun cookieHeaderFor(urls: Collection<String>, headers: Map<String, String>): String? =
-    urls.firstNotNullOfOrNull { CookieManager.getInstance().getCookie(it) }
-        ?.takeIf(String::isNotBlank)
-        ?: headers["cookie"]
 
 /** Used both here and by [su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor]'s bridge. */
 internal fun String.normalizeStreamUrl(): String = if (startsWith("//")) "https:$this" else this

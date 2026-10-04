@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
-import su.afk.yummy.tv.domain.account.model.UserProfileCounts
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
@@ -141,9 +140,6 @@ internal fun UserStats.averageRatingLabel(): String {
 
 internal fun List<ProfileStatSlice>.positiveValueSum(): Long =
     sumOf { it.value.coerceAtLeast(0L) }
-
-internal fun UserProfileCounts.totalLibraryCount(): Int =
-    watching + planned + completed + dropped + postponed
 
 internal fun UserSocialCounts.hasAny(): Boolean =
     friends + reviews + comments + posts + collections > 0

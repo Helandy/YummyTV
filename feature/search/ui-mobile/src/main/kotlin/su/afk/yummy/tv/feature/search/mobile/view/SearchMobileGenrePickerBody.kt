@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ internal fun ColumnScope.SearchMobileGenrePickerBody(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    val genresByGroup = filterOptions.genres.groupBy { it.groupId }
+    val genresByGroup = remember(filterOptions.genres) { filterOptions.genres.groupBy { it.groupId } }
     Column(
         modifier = Modifier
             .fillMaxWidth()

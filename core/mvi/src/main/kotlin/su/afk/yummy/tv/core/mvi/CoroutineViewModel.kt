@@ -14,7 +14,7 @@ abstract class CoroutineViewModel : ViewModel() {
 
     protected abstract fun onError(exception: Throwable)
 
-    private var viewModelJob = SupervisorJob()
+    private val viewModelJob = SupervisorJob()
     protected val viewModelScope = CoroutineScope(Main + viewModelJob + handler)
 
     override fun onCleared() {

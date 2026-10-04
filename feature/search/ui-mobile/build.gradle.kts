@@ -1,6 +1,5 @@
 plugins {
     id("yummytv.android.library.compose")
-    alias(libs.plugins.kotlinSerialization)
     id("yummytv.android.hilt")
 }
 

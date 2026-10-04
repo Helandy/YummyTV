@@ -69,7 +69,7 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
                 resolutionStrategy.eachDependency {
                     if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
                         useVersion(kotlinMetadataJvmVersion)
-                        because("Hilt 2.59.2 depends on kotlin-metadata-jvm 2.2.20, which cannot read Kotlin 2.3 metadata.")
+                        because("Hilt pulls an older kotlin-metadata-jvm that cannot read the metadata of the current Kotlin.")
                     }
                 }
             }
