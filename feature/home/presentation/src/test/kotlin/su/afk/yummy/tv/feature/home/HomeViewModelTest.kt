@@ -401,6 +401,39 @@ class HomeViewModelTest : BaseUnitTest() {
         verify(exactly = 1) { bloggerVideosNavigator.video(8) }
     }
 
+    @Test
+    fun `new episodes section is built from the schedule and the selected lists`() {
+        coEvery { getRecentlyAiredSchedule(any()) } returns listOf(item(1), item(2))
+        every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(2))
+
+        val sections = createViewModel().currentState.feed?.sections
+
+        assertEquals(HomeFeedSectionType.MY_NEW_EPISODES, sections?.first()?.type)
+        assertEquals(listOf(2), sections?.first()?.items?.map { it.id })
+    }
+
+    @Test
+    fun `new episodes section is absent when the setting is off`() {
+        coEvery { getRecentlyAiredSchedule(any()) } returns listOf(item(1))
+        every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(1))
+        every { settingsStore.newEpisodesSectionEnabled } returns flowOf(false)
+
+        val types = createViewModel().currentState.feed?.sections?.map { it.type }
+
+        assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), types)
+    }
+
+    @Test
+    fun `a failed schedule leaves the rest of the feed alone`() {
+        coEvery { getRecentlyAiredSchedule(any()) } throws IllegalStateException("boom")
+        every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(1))
+
+        val state = createViewModel().currentState
+
+        assertNull(state.error)
+        assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), state.feed?.sections?.map { it.type })
+    }
+
     private companion object {
         const val USER_ID = 5
     }
