@@ -133,6 +133,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             streamUrl = null,
             streamHeaders = emptyMap(),
             streamQualityMap = null,
+            streamFailoverHost = null,
             playerError = null,
             kodikBlockedError = null,
             dubbingResumeMs = if (preservePlaybackPosition) state.dubbingResumeMs else -1L,
@@ -164,6 +165,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
             streamUrl = null,
             streamHeaders = emptyMap(),
             streamQualityMap = null,
+            streamFailoverHost = null,
             playerError = null,
             kodikBlockedError = null,
             resumeFromMs = 0L,
@@ -241,6 +243,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                         allohaSubtitles = result.allohaSubtitles,
                         selectedAllohaSubtitleIndex = null,
                         streamUrl = result.url,
+                        streamFailoverHost = result.failoverHost,
                         resumeFromMs = result.resumeFromMs,
                         dubbingResumeMs = if (result.consumedPendingResume) {
                             -1L
@@ -296,6 +299,8 @@ internal class PlayerSourceStreamHandler @Inject constructor(
     fun playbackErrorMessage(message: String, errorCode: String? = null): String =
         streamHandler.playbackErrorMessage(message, errorCode)
 
+    /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
+    fun invalidateStreamCache(iframeUrl: String) = streamHandler.invalidateCache(iframeUrl)
 }
 
 /** Инструкция после попытки загрузить или обновить граф источников плеера. */

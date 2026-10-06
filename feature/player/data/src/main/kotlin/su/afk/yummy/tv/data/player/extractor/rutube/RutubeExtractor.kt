@@ -7,6 +7,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isRutubePlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchText
@@ -16,9 +18,7 @@ import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
 import su.afk.yummy.tv.data.player.extractor.common.orderQualityMap
 import su.afk.yummy.tv.data.player.extractor.common.resolveRelativeUrl
 import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isRutubePlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
@@ -27,6 +27,7 @@ import javax.inject.Inject
 internal class RutubeExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     private val RUTUBE_ORIGIN = "https://rutube.ru"
@@ -190,7 +191,7 @@ internal class RutubeExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to RUTUBE_ORIGIN,
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
     )
 
     private fun fetchHeaders(referer: String): Map<String, String> =

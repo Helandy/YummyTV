@@ -16,6 +16,15 @@ import com.google.android.gms.cast.MediaQueueItem
  * буферизации (подтверждено логом `adb logcat`: playbackState застревает в BUFFERING без ошибки).
  * Подставляем video/mp4 как разумный дефолт только для конвертации под Cast, не трогая
  * [PlayerMediaItemFactory]/локальное воспроизведение.
+ *
+ * Заголовки запроса здесь сознательно не передаются. Приложение работает со штатным
+ * Cast-ресивером (`DEFAULT_MEDIA_RECEIVER_APPLICATION_ID`): он за медиа ходит собственным
+ * браузерным стеком Chromecast и своих заголовков к запросам не добавляет (для этого нужен
+ * собственный CAF-ресивер, а `User-Agent`, `Referer`, `Origin` из браузерного JS всё равно не
+ * ставятся). Для okcdn это не помеха: он проверяет класс UA, и UA самого Chromecast (`CrKey`)
+ * принимает — замер `curl` 07.10.2026 по синтетическим строкам, **на устройстве не проверено**.
+ * Если на устройстве вернётся `400`, чинить нужно не ресивером, а прокси в LAN. Подробности — в
+ * `docs/cvh-player.md`.
  */
 @UnstableApi
 class YummyTvCastMediaItemConverter : MediaItemConverter {

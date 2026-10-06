@@ -17,6 +17,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.hasKnownUrlScheme
@@ -25,10 +27,8 @@ import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
 import su.afk.yummy.tv.data.player.extractor.common.orderQualityMap
 import su.afk.yummy.tv.data.player.extractor.common.resolveRelativeUrl
 import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.data.player.network.withBrowserUserAgent
-import su.afk.yummy.tv.core.utils.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.nio.charset.Charset
@@ -38,6 +38,7 @@ import kotlin.coroutines.resume
 internal class ZedfilmExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     private val ZEDFILM_ORIGIN = "https://zedfilm.ru"
@@ -173,7 +174,7 @@ internal class ZedfilmExtractor @Inject constructor(
             val cleanedUrl = normalizeEscapedUrl(normalizeUrl(url, playerUrl))
             if (!isStreamUrl(cleanedUrl)) return
 
-            val headers = (requestHeaders + streamHeaders(playerUrl)).withBrowserUserAgent()
+            val headers = (requestHeaders + streamHeaders(playerUrl)).withBrowserUserAgent(userAgents.userAgent)
             val stream = CapturedStream(url = cleanedUrl, headers = headers)
             fallbackStream = stream
             capturedStreams[qualityLabelFromText(cleanedUrl)] = stream
@@ -199,7 +200,7 @@ internal class ZedfilmExtractor @Inject constructor(
                 @Suppress("DEPRECATION")
                 allowFileAccess = false
                 mediaPlaybackRequiresUserGesture = false
-                userAgentString = CHROME_UA
+                userAgentString = userAgents.userAgent
             }
 
             webViewClient = object : WebViewClient() {
@@ -322,14 +323,12 @@ internal class ZedfilmExtractor @Inject constructor(
 
     private fun isStreamUrl(url: String): Boolean {
         val lowered = url.lowercase()
-        if (!lowered.contains(".mpd") &&
+        return !(!lowered.contains(".mpd") &&
             !lowered.contains(".m3u8") &&
-            !lowered.contains(".mp4")
-        ) return false
-        return !lowered.contains("ima") &&
-                !lowered.contains("doubleclick") &&
-                !lowered.contains("ads") &&
-                !lowered.contains("yandex")
+            !lowered.contains(".mp4")) && !lowered.contains("ima") &&
+            !lowered.contains("doubleclick") &&
+            !lowered.contains("ads") &&
+            !lowered.contains("yandex")
     }
 
     private fun qualityLabelFromText(text: String): String =
@@ -362,7 +361,7 @@ internal class ZedfilmExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to HLAMER_ORIGIN,
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
     )
 
     // Zedfilm serves cyrillic error/meta text in windows-1251; the shared fetchText() helper
@@ -373,7 +372,7 @@ internal class ZedfilmExtractor @Inject constructor(
             headers = mapOf(
                 "Referer" to YANI_REFERER,
                 "Origin" to HLAMER_ORIGIN,
-                "User-Agent" to CHROME_UA,
+                "User-Agent" to userAgents.userAgent,
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             ),
         ).body(Charset.forName("windows-1251"))

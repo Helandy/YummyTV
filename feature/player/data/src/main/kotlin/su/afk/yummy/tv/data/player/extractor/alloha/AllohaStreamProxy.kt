@@ -766,7 +766,10 @@ internal class AllohaStreamProxy(
 
         // How long a plain segment/playlist request may hang waiting for a session refresh before
         // we give up and let the caller fail it. Media3 plays out of its own buffer for the whole
-        // hold, so this is affordable against the 15-60s it keeps (see PlayerLoadControlFactory).
+        // hold, so this is only affordable while that buffer is deeper than the hold: it refills
+        // once it drops below the profile's minBufferMs, so the guaranteed floor is minBufferMs,
+        // not maxBufferMs. SMALL (18s) and MEDIUM (25s) clear 14s; MINIMAL (max 15s) cannot, and a
+        // refresh can stall it. See PlayerBufferProfile and docs/player-buffering.md.
         // It must outlast AllohaExtractor's forced staged-commit timeout (8s) with real margin -
         // not just nominally: IO-to-main-thread marshaling and SESSION_REFRESH_POLL_MS polling
         // granularity both eat into that budget on the request actually waiting here. 14s leaves

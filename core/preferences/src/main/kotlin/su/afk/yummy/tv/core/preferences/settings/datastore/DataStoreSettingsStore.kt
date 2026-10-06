@@ -1,11 +1,10 @@
 package su.afk.yummy.tv.core.preferences.settings.datastore
 
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.MainSettingsSnapshot
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -27,6 +26,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlay
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
@@ -58,6 +58,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore.Companion.defaultPosterQuality
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Фасад над доменными хранилищами: делегирует им все поля и добавляет только агрегаты
@@ -126,6 +128,10 @@ internal class DataStoreSettingsStore @Inject constructor(
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
+            browserUserAgentProfile = prefs.enum(
+                browserUserAgentProfileKey,
+                BrowserUserAgentProfile.DEFAULT,
+            ),
             videoExportAutoEnabled = prefs[videoExportAutoEnabledKey] ?: false,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])

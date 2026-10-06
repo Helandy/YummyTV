@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.videodownload.worker.utils
 
+import su.afk.yummy.tv.core.utils.network.BROWSER_USER_AGENT
 import su.afk.yummy.tv.core.utils.network.httpOriginOrNull
 import su.afk.yummy.tv.core.utils.network.normalizedHttpUrl
 import su.afk.yummy.tv.core.utils.network.safeHttpHeaderNames
@@ -38,7 +39,7 @@ internal fun Map<String, String>.withDownloadRequestHeaders(
             put(ORIGIN_HEADER, origin)
         }
         if (!hasUserAgent) {
-            put(USER_AGENT_HEADER, DEFAULT_DOWNLOAD_USER_AGENT)
+            put(USER_AGENT_HEADER, BROWSER_USER_AGENT)
         }
     }
 }
@@ -48,6 +49,3 @@ internal fun Map<String, String>.safeHeaderNames(): List<String> =
 
 private const val REFERER_HEADER = "Referer"
 private const val ORIGIN_HEADER = "Origin"
-private const val DEFAULT_DOWNLOAD_USER_AGENT =
-    "Mozilla/5.0 (Linux; Android 15; Pixel 8 Pro) AppleWebKit/537.36 " +
-            "(KHTML, like Gecko) Chrome/125 Mobile Safari/537.36"

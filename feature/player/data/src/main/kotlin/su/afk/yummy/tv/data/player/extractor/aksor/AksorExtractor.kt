@@ -7,15 +7,15 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isAksorPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
 import su.afk.yummy.tv.data.player.extractor.common.fetchText
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isAksorPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URI
@@ -24,6 +24,7 @@ import javax.inject.Inject
 internal class AksorExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     private val PLAYER_ORIGIN = "https://player.aksor.tv"
@@ -128,12 +129,12 @@ internal class AksorExtractor @Inject constructor(
 
     private fun streamHeaders(playerUrl: String): Map<String, String> = mapOf(
         "Referer" to playerUrl,
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
     )
 
     private fun apiHeaders(referer: String, accept: String): Map<String, String> = mapOf(
         "Referer" to referer,
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
         "Accept" to accept,
     )
 

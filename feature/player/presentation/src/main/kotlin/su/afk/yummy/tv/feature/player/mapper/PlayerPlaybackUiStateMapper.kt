@@ -1,10 +1,10 @@
 package su.afk.yummy.tv.feature.player.mapper
 
-import androidx.compose.runtime.Immutable
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
+import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.utils.activeBalancer
 import su.afk.yummy.tv.feature.player.utils.activeBalancerName
 import su.afk.yummy.tv.feature.player.utils.activeDubbing
@@ -27,8 +27,6 @@ import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
 import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
 import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
 import su.afk.yummy.tv.feature.player.utils.streamQualities
-import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
-import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 
 fun PlayerState.State.toPlayerPlaybackUiState(
     playerNamePrefix: String,

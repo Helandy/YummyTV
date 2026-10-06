@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.R
@@ -60,6 +61,21 @@ internal fun SettingsMobilePlayerContent(
                     onEvent(
                         SettingsState.Event.PlayerBufferProfileSelected(
                             PlayerBufferProfile.entries[it],
+                        ),
+                    )
+                },
+            )
+            SettingsMobileSliderRow(
+                label = stringResource(R.string.settings_browser_user_agent_title),
+                valueLabel = { BrowserUserAgentProfile.entries[it].label() },
+                value = BrowserUserAgentProfile.entries.indexOf(state.browserUserAgentProfile)
+                    .coerceAtLeast(0),
+                valueRange = 0..BrowserUserAgentProfile.entries.lastIndex,
+                enabled = true,
+                onValueCommitted = {
+                    onEvent(
+                        SettingsState.Event.BrowserUserAgentProfileSelected(
+                            BrowserUserAgentProfile.entries[it],
                         ),
                     )
                 },

@@ -42,13 +42,14 @@ internal class PlayerExoPlayerFactory @Inject constructor(
         // упирающийся в тот же самый сломанный железный декодер.
         val renderersFactory = DefaultRenderersFactory(context)
             .setEnableDecoderFallback(true)
+        val bufferProfile = readBufferProfile()
         val exoPlayer = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(trackSelector)
             .setMediaSourceFactory(
                 DefaultMediaSourceFactory(playbackConfig.dataSourceFactory())
                     .setLoadErrorHandlingPolicy(PlayerLoadErrorHandlingPolicy(playbackConfig)),
             )
-            .setLoadControl(PlayerLoadControlFactory.create(readBufferProfile()))
+            .setLoadControl(PlayerLoadControlFactory.create(bufferProfile))
             // Фокус нужен, чтобы чужая музыка вставала на паузу при старте серии, а звонок или
             // навигатор ставили на паузу/приглушали нас. MOVIE, а не SPEECH: при duck-потере
             // ExoPlayer приглушает звук вместо паузы.
@@ -63,6 +64,13 @@ internal class PlayerExoPlayerFactory @Inject constructor(
             .setHandleAudioBecomingNoisy(true)
             .build()
         exoPlayer.addAnalyticsListener(PlayerDecoderAnalyticsListener(analyticsTracker))
+        exoPlayer.addAnalyticsListener(
+            PlayerBufferingAnalyticsListener(
+                tracker = analyticsTracker,
+                profile = bufferProfile,
+                currentUriHost = { exoPlayer.currentMediaItem?.localConfiguration?.uri?.host },
+            ),
+        )
         return PlayerExoPlayerBundle(exoPlayer, trackSelector)
     }
 

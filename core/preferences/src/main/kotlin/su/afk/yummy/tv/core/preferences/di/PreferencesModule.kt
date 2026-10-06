@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreBrowserUserAgentProvider
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreCacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreEpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStorePlayerSettingsStore
@@ -26,6 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSearchSettin
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreYaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import javax.inject.Singleton
 
 @Module
@@ -43,6 +45,10 @@ internal interface PreferencesModule {
     @Binds
     @Singleton
     fun bindPlayerSettingsStore(impl: DataStorePlayerSettingsStore): PlayerSettingsStore
+
+    @Binds
+    @Singleton
+    fun bindBrowserUserAgentProvider(impl: DataStoreBrowserUserAgentProvider): BrowserUserAgentProvider
 
     @Binds
     @Singleton

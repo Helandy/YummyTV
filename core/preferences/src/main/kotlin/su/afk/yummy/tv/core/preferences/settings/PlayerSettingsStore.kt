@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.preferences.settings
 
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -54,6 +55,9 @@ interface PlayerSettingsStore {
 
     /** Размер оперативного буфера ExoPlayer: запас видео впереди позиции и лимит памяти под него. */
     val playerBufferProfile: Flow<PlayerBufferProfile>
+
+    /** User-Agent запросов к балансерам и их CDN (кроме Alloha); только из проверенного списка. */
+    val browserUserAgentProfile: Flow<BrowserUserAgentProfile>
     val playerResizeMode: Flow<PlayerResizeMode>
     val playerZoomLevel: Flow<PlayerZoomLevel>
 
@@ -95,6 +99,7 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
+    suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)
     suspend fun setPlayerZoomLevel(level: PlayerZoomLevel)
     suspend fun setPlayerSubtitleStyle(settings: PlayerSubtitleStyleSettings)

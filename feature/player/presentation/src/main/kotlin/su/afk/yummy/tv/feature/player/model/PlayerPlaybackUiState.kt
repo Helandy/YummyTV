@@ -2,31 +2,7 @@ package su.afk.yummy.tv.feature.player.model
 
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.feature.player.PlayerSkips
-import su.afk.yummy.tv.feature.player.PlayerState
-import su.afk.yummy.tv.feature.player.utils.activeBalancer
-import su.afk.yummy.tv.feature.player.utils.activeBalancerName
-import su.afk.yummy.tv.feature.player.utils.activeDubbing
-import su.afk.yummy.tv.feature.player.utils.activeDubbingEpisodes
-import su.afk.yummy.tv.feature.player.utils.activeDubbingName
-import su.afk.yummy.tv.feature.player.utils.activeEpisode
-import su.afk.yummy.tv.feature.player.utils.activeEpisodeSource
-import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
-import su.afk.yummy.tv.feature.player.utils.activeQuality
-import su.afk.yummy.tv.feature.player.utils.activeScreenshotUrl
-import su.afk.yummy.tv.feature.player.utils.activeVideoId
-import su.afk.yummy.tv.feature.player.utils.displayedBalancerIndices
-import su.afk.yummy.tv.feature.player.utils.globalDubbingEpisodeNumbers
-import su.afk.yummy.tv.feature.player.utils.globalDubbingNames
-import su.afk.yummy.tv.feature.player.utils.globalDubbingSourceNames
-import su.afk.yummy.tv.feature.player.utils.globalDubbingViews
-import su.afk.yummy.tv.feature.player.utils.isBalancerAvailableForEpisode
-import su.afk.yummy.tv.feature.player.utils.isDubbingAvailableForEpisode
-import su.afk.yummy.tv.feature.player.utils.isFinalAvailableEpisode
-import su.afk.yummy.tv.feature.player.utils.nextEpisodeOtherDubbingSource
-import su.afk.yummy.tv.feature.player.utils.normalizedSourceSelection
-import su.afk.yummy.tv.feature.player.utils.streamQualities
 
 @Immutable
 data class PlayerPlaybackUiState(

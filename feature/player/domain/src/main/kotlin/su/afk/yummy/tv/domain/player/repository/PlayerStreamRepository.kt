@@ -7,4 +7,7 @@ import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 interface PlayerStreamRepository {
     suspend fun resolve(request: PlayerStreamRequest): PlayerStreamResolveResult
     suspend fun openAllohaSession(request: PlayerStreamRequest): AllohaStreamSession?
+
+    /** Забывает закэшированный поток источника: его ссылки больше не ведут на живой узел CDN. */
+    fun invalidateResolveCache(iframeUrl: String)
 }

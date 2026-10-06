@@ -11,6 +11,7 @@ import kotlinx.coroutines.async
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,6 +29,7 @@ import javax.inject.Singleton
 class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     @KodikHttpClient private val httpClient: HttpClient,
     @IoApplicationScope private val scope: CoroutineScope,
+    private val userAgents: BrowserUserAgentProvider,
 ) {
 
     // ConcurrentHashMap не допускает null-значений, поэтому результат (в т.ч. неудачный) заворачиваем.
@@ -62,7 +64,7 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     private suspend fun fetchHtml(url: String): String =
         httpClient.get(url) {
             header("Referer", "https://yani.tv/")
-            header("User-Agent", USER_AGENT)
+            header("User-Agent", userAgents.userAgent)
             header("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
             timeout {
                 connectTimeoutMillis = CONNECT_TIMEOUT_MS
@@ -73,10 +75,6 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
     private companion object {
         const val CONNECT_TIMEOUT_MS = 8_000L
         const val READ_TIMEOUT_MS = 10_000L
-        const val USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/120.0.0.0 Safari/537.36"
     }
 }
 

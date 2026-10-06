@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -24,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbi
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -126,6 +128,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val playerBufferProfile: Flow<PlayerBufferProfile> =
         store.enumFlow(playerBufferProfileKey, PlayerBufferProfile.SMALL)
+
+    override val browserUserAgentProfile: Flow<BrowserUserAgentProfile> =
+        store.enumFlow(browserUserAgentProfileKey, BrowserUserAgentProfile.DEFAULT)
 
     override val playerResizeMode: Flow<PlayerResizeMode> =
         store.enumFlow(playerResizeModeKey, PlayerResizeMode.FIT)
@@ -259,6 +264,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile) =
         store.setEnum(playerBufferProfileKey, profile)
 
+    override suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile) =
+        store.setEnum(browserUserAgentProfileKey, profile)
+
     override suspend fun setPlayerResizeMode(mode: PlayerResizeMode) =
         store.setEnum(playerResizeModeKey, mode)
 
@@ -321,7 +329,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             playerName: String,
         ): Preferences.Key<String> = stringPreferencesKey(
             "player_resize_settings|${titleKeyPart(animeId, animeTitle)}" +
-                    "|player:${playerName.normalizedPlayerResizeKeyPart()}"
+                "|player:${playerName.normalizedPlayerResizeKeyPart()}"
         )
 
         fun playerScopedMobileVideoTransformSettingsKey(
@@ -330,7 +338,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
             playerName: String,
         ): Preferences.Key<String> = stringPreferencesKey(
             "player_mobile_video_transform|${titleKeyPart(animeId, animeTitle)}" +
-                    "|player:${playerName.normalizedPlayerResizeKeyPart()}"
+                "|player:${playerName.normalizedPlayerResizeKeyPart()}"
         )
 
         fun titleKeyPart(animeId: Int, animeTitle: String): String =

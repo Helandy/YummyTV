@@ -6,6 +6,8 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isVkPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.decodeUnicodeEscapes
@@ -16,9 +18,7 @@ import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
 import su.afk.yummy.tv.data.player.extractor.common.orderQualityMap
 import su.afk.yummy.tv.data.player.extractor.common.resolveRelativeUrl
 import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isVkPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
@@ -28,6 +28,7 @@ import javax.inject.Inject
 internal class VkExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     private val DEFAULT_REFERER = "https://vk.com/"
@@ -253,9 +254,9 @@ internal class VkExtractor @Inject constructor(
         if (lowered.contains(".m3u8") || lowered.contains(".mp4")) return true
 
         val isKnownVkCdn = lowered.contains("okcdn.ru") ||
-                lowered.contains("vkuser") ||
-                lowered.contains("userapi.com") ||
-                lowered.contains("vkvd")
+            lowered.contains("vkuser") ||
+            lowered.contains("userapi.com") ||
+            lowered.contains("vkvd")
         val isNamedVideoQuality = quality != "auto" && isHttpUrl(url)
         return isKnownVkCdn && isNamedVideoQuality
     }
@@ -371,7 +372,7 @@ internal class VkExtractor @Inject constructor(
     private fun streamHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
         "Origin" to DEFAULT_REFERER.removeSuffix("/"),
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
     )
 
     private fun isHttpUrl(url: String): Boolean =
@@ -385,7 +386,7 @@ internal class VkExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to CHROME_UA,
+                "User-Agent" to userAgents.userAgent,
                 "Accept" to "*/*",
             ),
             throwOnFailure = true,

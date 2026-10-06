@@ -32,6 +32,9 @@ internal interface PlayerSourceBehavior {
     /** Сменился ли активный iframe после перезапроса `/videos` — для аналитики. */
     val iframeChanged: Boolean get() = false
 
+    /** Сколько раз за сеанс переезжали на резервный узел CDN — для аналитики. */
+    val hostFailovers: Int get() = 0
+
     /** Ошибка ExoPlayer. true — поведение запустило своё восстановление, false — показать ошибку. */
     fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean
 

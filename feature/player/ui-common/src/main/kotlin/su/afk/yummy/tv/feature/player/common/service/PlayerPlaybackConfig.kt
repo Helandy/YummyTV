@@ -119,6 +119,7 @@ class DefaultPlayerPlaybackConfig @Inject constructor(
         } else {
             CacheDataSource.Factory()
                 .setCache(streamingCacheProvider.cache)
+                .setCacheKeyFactory(PlayerStreamingCacheKeyFactory())
                 .setUpstreamDataSourceFactory(httpDataSourceFactory.create(headers))
                 .createDataSource()
         }

@@ -236,6 +236,7 @@ internal class PlayerAnalytics @Inject constructor(
         errorCause: String? = null,
         sourceRefreshes: Int = 0,
         iframeChanged: Boolean = false,
+        hostFailovers: Int = 0,
     ) {
         // Ошибки сети — ожидаемый транзиентный кейс, не засоряем крэш-репортинг.
         if (errorCode in IGNORED_ERROR_CODES) return
@@ -256,6 +257,7 @@ internal class PlayerAnalytics @Inject constructor(
                     PARAM_QUALITY to state.selectedQuality,
                     PARAM_SOURCE_REFRESHES to sourceRefreshes,
                     PARAM_IFRAME_CHANGED to iframeChanged.takeIf { sourceRefreshes > 0 },
+                    PARAM_HOST_FAILOVERS to hostFailovers.takeIf { it > 0 },
                     PARAM_POSITION to positionMs.formatPlaybackTimecode(),
                     PARAM_POSITION_MS to positionMs.coerceAtLeast(0L),
                 ),
@@ -462,6 +464,7 @@ internal class PlayerAnalytics @Inject constructor(
         private const val PARAM_STREAM_HOST = "stream_host"
         private const val PARAM_SOURCE_REFRESHES = "source_refreshes"
         private const val PARAM_IFRAME_CHANGED = "iframe_changed"
+        private const val PARAM_HOST_FAILOVERS = "host_failovers"
         private const val PARAM_SKIP_TYPE = "skip_type"
         private const val PARAM_SOURCE = "source"
         private const val PARAM_SPEED = "speed"

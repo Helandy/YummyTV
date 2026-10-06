@@ -11,12 +11,12 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
-import su.afk.yummy.tv.data.player.network.BROWSER_STREAM_HEADERS
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
+import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URLEncoder
@@ -28,7 +28,7 @@ internal sealed interface KodikResult {
     data class Stream(
         val url: String,
         val qualities: LinkedHashMap<String, String>? = null,
-        val headers: Map<String, String> = BROWSER_STREAM_HEADERS,
+        val headers: Map<String, String>,
     ) : KodikResult
 
     data class Blocked(
@@ -43,6 +43,7 @@ internal sealed interface KodikResult {
 internal class KodikExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     // Скрипт плеера версионирован в URL, поэтому разобранный из него путь эндпоинта для одного и
@@ -178,6 +179,7 @@ internal class KodikExtractor @Inject constructor(
                     KodikResult.Stream(
                         url = streamUrl,
                         qualities = qualities,
+                        headers = userAgents.streamHeaders(),
                     )
                 } else {
                     // Путь эндпоинта мог устареть на стороне Kodik — следующий resolve перечитает
@@ -285,7 +287,7 @@ internal class KodikExtractor @Inject constructor(
 
     private suspend fun isUrlAvailable(url: String): Boolean =
         runSuspendCatching {
-            httpClient.head(url = url, headers = mapOf("User-Agent" to CHROME_UA)).isSuccess
+            httpClient.head(url = url, headers = mapOf("User-Agent" to userAgents.userAgent)).isSuccess
         }.getOrDefault(false)
 
     // Stream URLs from /ftor are encoded: ROT18 applied to letters, then base64 decoded
@@ -321,7 +323,7 @@ internal class KodikExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to CHROME_UA,
+                "User-Agent" to userAgents.userAgent,
                 "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
             ),
         )
@@ -343,7 +345,7 @@ internal class KodikExtractor @Inject constructor(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
-                "User-Agent" to CHROME_UA,
+                "User-Agent" to userAgents.userAgent,
                 "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
             ),
         ).body
@@ -359,7 +361,7 @@ internal class KodikExtractor @Inject constructor(
             body = body,
             headers = buildMap {
                 put("Referer", referer)
-                put("User-Agent", CHROME_UA)
+                put("User-Agent", userAgents.userAgent)
                 put("Content-Type", "application/x-www-form-urlencoded")
                 put("X-Requested-With", "XMLHttpRequest")
                 if (cookies.isNotEmpty()) put("Cookie", cookies)

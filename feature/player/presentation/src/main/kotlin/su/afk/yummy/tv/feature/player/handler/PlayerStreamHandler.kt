@@ -13,6 +13,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.GetWatchProgressUseCase
+import su.afk.yummy.tv.domain.player.usecase.InvalidatePlayerStreamCacheUseCase
 import su.afk.yummy.tv.domain.player.usecase.OpenAllohaStreamSessionUseCase
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -28,9 +29,13 @@ internal class PlayerStreamHandler @Inject constructor(
     private val getWatchProgress: GetWatchProgressUseCase,
     private val settingsStore: PlayerSettingsStore,
     private val resolvePlayerStream: ResolvePlayerStreamUseCase,
+    private val invalidatePlayerStreamCache: InvalidatePlayerStreamCacheUseCase,
     private val openAllohaStreamSession: OpenAllohaStreamSessionUseCase,
     private val strings: StringProvider,
 ) {
+    /** Забывает закэшированный поток источника: его ссылки ведут на отказавший узел CDN. */
+    fun invalidateCache(iframeUrl: String) = invalidatePlayerStreamCache(iframeUrl)
+
     suspend fun resolve(
         state: PlayerState.State,
         pendingResumeMs: Long?,
@@ -83,6 +88,7 @@ internal class PlayerStreamHandler @Inject constructor(
                         allohaAudioTracks = result.allohaAudioTracks,
                         selectedAllohaAudioId = result.selectedAllohaAudioId,
                         allohaSubtitles = result.allohaSubtitles,
+                        failoverHost = result.failoverHost,
                     )
                 }
 
@@ -178,6 +184,8 @@ internal sealed interface PlayerStreamResult {
         val allohaAudioTracks: List<AllohaAudioTrack> = emptyList(),
         val selectedAllohaAudioId: String? = null,
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),
+        /** Резервный узел CDN для этих же ссылок; null — переезжать некуда. */
+        val failoverHost: String? = null,
     ) : PlayerStreamResult
 
     data class KodikBlocked(val message: String) : PlayerStreamResult

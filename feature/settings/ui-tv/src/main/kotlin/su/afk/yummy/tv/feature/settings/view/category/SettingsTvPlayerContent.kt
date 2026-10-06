@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
@@ -63,6 +64,22 @@ internal fun SettingsTvPlayerContent(
         onValueChange = {
             onEvent(
                 SettingsState.Event.PlayerBufferProfileSelected(profiles[it]),
+            )
+        },
+        modifier = Modifier
+            .restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
+    val userAgents = BrowserUserAgentProfile.entries
+    SettingsSliderRow(
+        label = stringResource(R.string.settings_browser_user_agent_title),
+        valueText = state.browserUserAgentProfile.label(),
+        value = userAgents.indexOf(state.browserUserAgentProfile).coerceAtLeast(0),
+        valueRange = 0..userAgents.lastIndex,
+        enabled = true,
+        onValueChange = {
+            onEvent(
+                SettingsState.Event.BrowserUserAgentProfileSelected(userAgents[it]),
             )
         },
         modifier = Modifier

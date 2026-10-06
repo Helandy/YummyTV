@@ -7,8 +7,8 @@ import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
 import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
+import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
 import javax.inject.Inject
 
 internal class DefaultPlayerStreamRepository @Inject constructor(
@@ -63,6 +63,14 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
                     ?.let(allohaSessionManager::activate)
         } else {
             extractor.openSession(request, context)
+        }
+    }
+
+    // Ключ включает autoQualityLabel, поэтому удаляется весь набор записей источника.
+    override fun invalidateResolveCache(iframeUrl: String) {
+        val keyPrefix = "$iframeUrl|"
+        synchronized(resolveCache) {
+            resolveCache.keys.removeAll { it.startsWith(keyPrefix) }
         }
     }
 

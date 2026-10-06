@@ -93,6 +93,7 @@ class SettingsViewModel @Inject internal constructor(
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
+                        browserUserAgentProfile = snapshot.browserUserAgentProfile,
                         videoExportAutoEnabled = snapshot.videoExportAutoEnabled,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
@@ -236,6 +237,11 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PlayerBufferProfileSelected -> viewModelScope.launch {
                 analytics.eventPlayerBufferProfileSelected(event.profile)
                 settingsStore.setPlayerBufferProfile(event.profile)
+            }
+
+            is SettingsState.Event.BrowserUserAgentProfileSelected -> viewModelScope.launch {
+                analytics.eventBrowserUserAgentProfileSelected(event.profile)
+                settingsStore.setBrowserUserAgentProfile(event.profile)
             }
 
             is SettingsState.Event.SubtitleStyleSelected -> viewModelScope.launch {

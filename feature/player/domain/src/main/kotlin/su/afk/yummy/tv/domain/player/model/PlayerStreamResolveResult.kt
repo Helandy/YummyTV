@@ -9,6 +9,11 @@ sealed interface PlayerStreamResolveResult {
         val allohaAudioTracks: List<AllohaAudioTrack> = emptyList(),
         val selectedAllohaAudioId: String? = null,
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),
+        /**
+         * Резервный узел CDN для этих же подписанных ссылок: подпись от узла не зависит, поэтому
+         * при отказе узла можно переехать подменой хоста, не перезапрашивая ссылку у балансера.
+         */
+        val failoverHost: String? = null,
     ) : PlayerStreamResolveResult
 
     data class KodikBlocked(

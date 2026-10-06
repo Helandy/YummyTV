@@ -30,6 +30,11 @@ class PlayerState {
         val streamHeaders: Map<String, String> = emptyMap(),
         val streamQualityMap: LinkedHashMap<String, String>? = null,
         val selectedQuality: String? = null,
+        /**
+         * Резервный узел CDN для текущего потока: подпись от узла не зависит, поэтому при отказе
+         * узла хост подменяется на месте, без перерезолва источника.
+         */
+        val streamFailoverHost: String? = null,
         val allohaAudioTracks: List<AllohaAudioTrack> = emptyList(),
         val selectedAllohaAudioId: String? = null,
         val allohaSubtitles: List<AllohaSubtitleTrack> = emptyList(),
@@ -176,6 +181,8 @@ class PlayerState {
             val positionMs: Long = 0L,
             /** Сжатая цепочка причин (без обфусцированных имён классов) для аналитики. */
             val cause: String? = null,
+            /** HTTP-код нестандартного ответа CDN, если ошибка пришла от HTTP-источника. */
+            val httpStatusCode: Int? = null,
         ) : Event
 
         /** Новый media item подготовлен после фонового восстановления воспроизведения. */

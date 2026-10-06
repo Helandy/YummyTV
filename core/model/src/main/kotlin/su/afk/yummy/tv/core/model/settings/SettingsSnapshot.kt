@@ -30,6 +30,7 @@ data class SettingsSnapshot(
     val advancedPlayerVolumeEnabled: Boolean,
     val volumeStabilizationEnabled: Boolean,
     val playerBufferProfile: PlayerBufferProfile,
+    val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
     val videoExportAutoEnabled: Boolean,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,

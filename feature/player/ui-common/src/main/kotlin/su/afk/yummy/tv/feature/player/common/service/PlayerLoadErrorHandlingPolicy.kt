@@ -18,6 +18,11 @@ import java.net.ProtocolException
  * (дефолтные ~3 попытки сдаются слишком быстро). Заведомо мёртвые HTTP-ответы (протухшая подписанная
  * CVH-ссылка и т.п.) не ретраим — быстрый фатал, чтобы сработал перерезолв источника со свежим URL.
  * Для Alloha/офлайна поведение дефолтное (у Alloha свой fresh-session recovery по onPlayerError).
+ *
+ * Быстрый фатал на [FATAL_RESPONSE_CODES] — это ещё и контракт для переезда на резервный узел CDN:
+ * только так отказ узла доходит до слушателя плеера за один запрос, а не теряется в ретраях
+ * загрузчика. Менять набор, не посмотрев на `DefaultSourceBehavior.FAILOVER_HTTP_CODES`, нельзя:
+ * см. `docs/cvh-player.md`.
  */
 @UnstableApi
 internal class PlayerLoadErrorHandlingPolicy(

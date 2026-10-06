@@ -5,13 +5,13 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.isSibnetPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.hasKnownUrlScheme
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.core.utils.player.isSibnetPlayerUrl
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.net.URL
@@ -20,6 +20,7 @@ import javax.inject.Inject
 internal class SibnetExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     override fun supports(url: String): Boolean = url.isSibnetPlayerUrl()
@@ -45,7 +46,7 @@ internal class SibnetExtractor @Inject constructor(
                 headers = mapOf(
                     "Referer" to playerUrl,
                     "Origin" to SIBNET_ORIGIN,
-                    "User-Agent" to CHROME_UA,
+                    "User-Agent" to userAgents.userAgent,
                 ),
             )
         } catch (e: Exception) {
@@ -65,7 +66,7 @@ internal class SibnetExtractor @Inject constructor(
             url = playerUrl,
             headers = mapOf(
                 "Referer" to YANI_ORIGIN,
-                "User-Agent" to CHROME_UA,
+                "User-Agent" to userAgents.userAgent,
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             ),
         )

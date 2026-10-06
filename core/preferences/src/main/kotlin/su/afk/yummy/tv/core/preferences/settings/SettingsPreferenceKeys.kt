@@ -55,6 +55,7 @@ internal object SettingsPreferenceKeys {
     val volumeStabilizationEnabledKey =
         booleanPreferencesKey("volume_stabilization_enabled")
     val playerBufferProfileKey = stringPreferencesKey("player_buffer_profile")
+    val browserUserAgentProfileKey = stringPreferencesKey("browser_user_agent_profile")
     val playerResizeModeKey = stringPreferencesKey("player_resize_mode")
     val playerZoomLevelKey = stringPreferencesKey("player_zoom_level")
     val subtitleTextSizeKey = intPreferencesKey("subtitle_text_size_percent")

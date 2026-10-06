@@ -9,7 +9,8 @@ import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 object PlayerLoadControlFactory {
     // Настраивается только оперативный буфер ExoPlayer: это не дисковый кэш и не офлайн-загрузка.
     // Профиль выбирает пользователь в настройках; чем больше запас, тем больше памяти забирает
-    // плеер — на слабых приставках это заметно.
+    // плеер — на слабых приставках это заметно. Один LoadControl на все источники; чем отличаются
+    // Kodik/CVH и Alloha вокруг него — в docs/player-buffering.md.
     fun create(profile: PlayerBufferProfile): LoadControl =
         DefaultLoadControl.Builder()
             .setBufferDurationsMs(

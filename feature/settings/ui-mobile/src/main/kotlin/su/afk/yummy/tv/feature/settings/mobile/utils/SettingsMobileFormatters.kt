@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -367,6 +368,15 @@ internal fun PlayerBufferProfile.detailsText(): String = stringResource(
     minBufferMs / 1000,
     maxBufferMs / 1000,
     targetBufferBytes / (1024 * 1024),
+)
+
+@Composable
+internal fun BrowserUserAgentProfile.label(): String = stringResource(
+    when (this) {
+        BrowserUserAgentProfile.WINDOWS_CHROME -> R.string.settings_browser_user_agent_windows_chrome
+        BrowserUserAgentProfile.LINUX_CHROME -> R.string.settings_browser_user_agent_linux_chrome
+        BrowserUserAgentProfile.ANDROID_CHROME -> R.string.settings_browser_user_agent_android_chrome
+    },
 )
 
 @Composable

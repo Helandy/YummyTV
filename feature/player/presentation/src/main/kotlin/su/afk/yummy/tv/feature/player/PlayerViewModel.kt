@@ -124,6 +124,9 @@ class PlayerViewModel @AssistedInject internal constructor(
 
         override fun closeSourceSessions() = this@PlayerViewModel.closeSourceSessions()
 
+        override fun invalidateStreamCache() =
+            sourceStreamHandler.invalidateStreamCache(activeIframeUrl(currentState))
+
         override fun streamErrorMessage(): String =
             sourceStreamHandler.playbackErrorMessage(strings.get(R.string.player_stream_error))
     }
@@ -279,12 +282,14 @@ class PlayerViewModel @AssistedInject internal constructor(
                     errorCause = event.cause,
                     sourceRefreshes = defaultSource.sourceRefreshes,
                     iframeChanged = defaultSource.iframeChanged,
+                    hostFailovers = defaultSource.hostFailovers,
                 )
                 defaultSource.reset()
                 changePlayerHint.cancel()
                 setState {
                     copy(
                         streamUrl = null,
+                        streamFailoverHost = null,
                         isPlaybackRecovering = false,
                         playerError = sourceStreamHandler.playbackErrorMessage(
                             message = event.message,
@@ -778,6 +783,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                 streamHeaders = result.state.streamHeaders,
                 streamQualityMap = result.state.streamQualityMap,
                 selectedQuality = result.state.selectedQuality,
+                streamFailoverHost = result.state.streamFailoverHost,
                 allohaAudioTracks = result.state.allohaAudioTracks,
                 selectedAllohaAudioId = result.state.selectedAllohaAudioId,
                 allohaSubtitles = result.state.allohaSubtitles,

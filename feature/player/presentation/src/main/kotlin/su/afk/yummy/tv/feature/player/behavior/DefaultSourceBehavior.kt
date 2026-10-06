@@ -9,7 +9,9 @@ import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 import su.afk.yummy.tv.feature.player.utils.activeIframeUrl
+import su.afk.yummy.tv.feature.player.utils.availableFailoverHost
 import su.afk.yummy.tv.feature.player.utils.streamHost
+import su.afk.yummy.tv.feature.player.utils.withFailoverHost
 import javax.inject.Inject
 
 /**
@@ -38,6 +40,9 @@ internal class DefaultSourceBehavior @Inject constructor(
     override var sourceRefreshes: Int = 0
         private set
 
+    override var hostFailovers: Int = 0
+        private set
+
     /** Iframe на момент первого перезапроса `/videos` в сеансе; null — перезапросов не было. */
     private var iframeBeforeRefresh: String? = null
 
@@ -53,12 +58,22 @@ internal class DefaultSourceBehavior @Inject constructor(
     override fun onPlaybackError(event: PlayerState.Event.PlaybackError): Boolean {
         // Отголосок упавшего потока, пока резолвится новый: попытка уже потрачена.
         if (recovering) return true
-        if (!retry.canRetry()) return false
         analytics.debugLog {
-            "Playback error code=${event.errorCode} cause=${event.cause} " +
+            "Playback error code=${event.errorCode} http=${event.httpStatusCode} " +
+                "cause=${event.cause} " +
                 "host=${host.state.streamUrl?.streamHost()} quality=${host.state.selectedQuality} " +
                 "positionMs=${event.positionMs} attempts=${retry.attempts}"
         }
+        // Узел CDN отказал, а подпись от узла не зависит: переезжаем на резервный узел на месте.
+        // Выше бюджета повторов — это не повтор того же ресурса, а переход на живой узел, и стоит
+        // он одного пересоздания media item вместо двух запросов к балансеру.
+        if (event.httpStatusCode in FAILOVER_HTTP_CODES) {
+            host.state.availableFailoverHost()?.let { failoverHost ->
+                applyHostFailover(failoverHost)
+                return true
+            }
+        }
+        if (!retry.canRetry()) return false
         if (event.errorCode in MALFORMED_STREAM_CODES) {
             scheduleSourceRefreshAttempt()
         } else {
@@ -113,6 +128,7 @@ internal class DefaultSourceBehavior @Inject constructor(
 
     private fun resetSourceRefreshes() {
         sourceRefreshes = 0
+        hostFailovers = 0
         iframeBeforeRefresh = null
     }
 
@@ -131,6 +147,26 @@ internal class DefaultSourceBehavior @Inject constructor(
         // Затянувшийся тихий ретрай — предлагаем сменить плеер/озвучку, не дожидаясь исчерпания попыток.
         host.changePlayerHint.start(RECOVERY_HINT_DELAY_MS) { recovering }
         return attempt
+    }
+
+    /**
+     * Переезд на резервный узел CDN без перерезолва: подменяем хост в ссылках, которые уже лежат в
+     * состоянии. Новый URL сам заставит сервис пересобрать media item, поэтому `retryKey` не
+     * трогаем — он нужен, когда ссылка не изменилась. Подробности и замеры — `docs/cvh-player.md`.
+     *
+     * `recovering` не выставляем: восстановления, которое надо дожидаться, здесь нет — поток
+     * подменён сразу, и следующая ошибка должна обрабатываться как новая.
+     */
+    private fun applyHostFailover(failoverHost: String) {
+        retryJob?.cancel()
+        hostFailovers++
+        analytics.debugLog {
+            "CDN host failover -> $failoverHost failovers=$hostFailovers " +
+                "quality=${host.state.selectedQuality}"
+        }
+        host.update { withFailoverHost(failoverHost) }
+        // В кэше резолва остались ссылки на отказавший узел: следующий вход поднял бы их снова.
+        host.invalidateStreamCache()
     }
 
     /**
@@ -188,5 +224,10 @@ internal class DefaultSourceBehavior @Inject constructor(
             "ERROR_CODE_PARSING_CONTAINER_MALFORMED",
             "ERROR_CODE_PARSING_MANIFEST_MALFORMED",
         )
+
+        // Отказ узла CDN: okcdn отвечает 400 на подпись, которую сам же выдал, при живом сроке
+        // действия — та же подпись на резервном узле работает. 404/410 сюда не входят: это
+        // «файла нет», и там нужен настоящий перерезолв, а не другой узел.
+        private val FAILOVER_HTTP_CODES = setOf(400, 403)
     }
 }

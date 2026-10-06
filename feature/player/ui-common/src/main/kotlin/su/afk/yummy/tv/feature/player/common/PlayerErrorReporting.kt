@@ -4,6 +4,7 @@ import androidx.media3.common.PlaybackException
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.utils.analyticsType
 import su.afk.yummy.tv.feature.player.common.utils.causeSummary
+import su.afk.yummy.tv.feature.player.common.utils.httpStatusCode
 
 fun PlaybackException.toPlaybackErrorEvent(positionMs: Long): PlayerState.Event.PlaybackError =
     PlayerState.Event.PlaybackError(
@@ -14,4 +15,5 @@ fun PlaybackException.toPlaybackErrorEvent(positionMs: Long): PlayerState.Event.
         errorType = analyticsType(),
         positionMs = positionMs,
         cause = causeSummary(),
+        httpStatusCode = httpStatusCode(),
     )

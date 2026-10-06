@@ -4,6 +4,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
@@ -135,6 +136,18 @@ internal class SettingsAnalytics @Inject constructor(
     fun eventPlayerBufferProfileSelected(profile: PlayerBufferProfile) {
         tracker.track(
             EVENT_PLAYER_BUFFER_PROFILE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to profile.name.lowercase()),
+        )
+    }
+
+    /**
+     * Пользователь изменил User-Agent запросов к балансерам.
+     *
+     * Параметры: value.
+     */
+    fun eventBrowserUserAgentProfileSelected(profile: BrowserUserAgentProfile) {
+        tracker.track(
+            EVENT_BROWSER_USER_AGENT_SELECTED,
             analyticsParamsOf(PARAM_VALUE to profile.name.lowercase()),
         )
     }
@@ -408,6 +421,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PREFERRED_PLAYER_SELECTED = "settings_preferred_player_selected"
         const val EVENT_PLAYER_BUFFER_PROFILE_SELECTED = "settings_player_buffer_profile_selected"
+        const val EVENT_BROWSER_USER_AGENT_SELECTED = "settings_browser_user_agent_selected"
         const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =
             "settings_preferred_video_quality_selected"
         const val EVENT_PREVIEW_CACHE_SIZE_SELECTED = "settings_preview_cache_size_selected"

@@ -34,6 +34,19 @@ fun PlaybackException.causeSummary(): String? =
         .takeIf { it.isNotBlank() }
         ?.take(CAUSE_SUMMARY_MAX_LENGTH)
 
+/**
+ * HTTP-код нестандартного ответа из цепочки причин, или null — ошибка пришла не от HTTP-источника.
+ *
+ * Та же глубина, что у [causeSummary], поэтому код и текст причины всегда описывают одну ошибку.
+ */
+@OptIn(UnstableApi::class)
+fun PlaybackException.httpStatusCode(): Int? =
+    generateSequence(cause) { it.cause }
+        .take(CAUSE_SUMMARY_DEPTH)
+        .filterIsInstance<HttpDataSource.InvalidResponseCodeException>()
+        .firstOrNull()
+        ?.responseCode
+
 @OptIn(UnstableApi::class)
 private fun Throwable.describeCause(): String = when (this) {
     is ParserException ->

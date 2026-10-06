@@ -7,16 +7,18 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.player.cdnHostOrNull
 import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
+import su.afk.yummy.tv.core.utils.player.isIpv4Host
+import su.afk.yummy.tv.core.utils.player.withCdnHost
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.fetchJson
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
-import su.afk.yummy.tv.data.player.network.BROWSER_STREAM_HEADERS
-import su.afk.yummy.tv.data.player.network.CHROME_UA
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
+import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import java.net.URL
 import java.net.URLDecoder
 import javax.inject.Inject
 
@@ -24,9 +26,12 @@ import javax.inject.Inject
 //   //ru.yummyani.me/iframeCVH.html?dubbing_code=AnilibriaTV&anime_id=31240&episode=1
 //
 // Flow: playlist API → find vkId by episode+voice → video API → hlsUrl
+//
+// See `docs/cvh-player.md`: signed-link anatomy, measured node failures and why HLS is skipped.
 internal class CvhExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
     private val analyticsTracker: AnalyticsTracker,
+    private val userAgents: BrowserUserAgentProvider,
 ) : PlayerStreamExtractor {
 
     private val PLAYLIST_URL = "https://plapi.cdnvideohub.com/api/v1/player/sv/playlist"
@@ -138,8 +143,10 @@ internal class CvhExtractor @Inject constructor(
             }
             PlayerStreamResolveResult.Stream(
                 url = qualities.values.last(),
-                headers = BROWSER_STREAM_HEADERS,
+                headers = userAgents.streamHeaders(),
                 qualities = qualities,
+                // Пусто, когда ссылки уже выданы на этом узле: переезжать некуда.
+                failoverHost = failoverHost?.takeIf { it != hostOf(qualities.values.last()) },
             )
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -184,7 +191,7 @@ internal class CvhExtractor @Inject constructor(
 
     private fun jsonHeaders(referer: String): Map<String, String> = mapOf(
         "Referer" to referer,
-        "User-Agent" to CHROME_UA,
+        "User-Agent" to userAgents.userAgent,
         "Accept" to "application/json",
     )
 
@@ -208,17 +215,13 @@ internal class CvhExtractor @Inject constructor(
         forceFailover: Boolean,
     ): String {
         val host = failoverHost?.takeIf { it.isNotBlank() } ?: return url
-        val parsed = runCatching { URL(url) }.getOrNull() ?: return url
-        if (!parsed.protocol.equals("https", ignoreCase = true)) return url
-        if (!forceFailover && !IPV4_HOST_REGEX.matches(parsed.host)) return url
+        val currentHost = url.cdnHostOrNull() ?: return url
+        if (!forceFailover && !currentHost.isIpv4Host()) return url
 
-        return runCatching {
-            URL(parsed.protocol, host, parsed.port, parsed.file).toString()
-        }.getOrDefault(url)
+        return url.withCdnHost(host)
     }
 
-    private fun hostOf(url: String): String? = runCatching { URL(url).host }.getOrNull()
+    private fun hostOf(url: String): String? = url.cdnHostOrNull()
 
-    private val IPV4_HOST_REGEX = Regex("""\d{1,3}(?:\.\d{1,3}){3}""")
     private val RETRY_DELAY_MS = 700L
 }

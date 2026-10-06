@@ -7,6 +7,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -67,6 +68,7 @@ class SettingsState {
         val advancedPlayerVolumeEnabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
+        val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
         /** Сжатие динамического диапазона (DynamicsProcessing) доступно только с Android 9 (API 28). */
         val volumeStabilizationSupported: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P,
         val videoExportAutoEnabled: Boolean = false,
@@ -132,6 +134,9 @@ class SettingsState {
 
         /** Пользователь выбрал размер буфера плеера. */
         data class PlayerBufferProfileSelected(val profile: PlayerBufferProfile) : Event
+
+        /** Пользователь выбрал User-Agent запросов к балансерам. */
+        data class BrowserUserAgentProfileSelected(val profile: BrowserUserAgentProfile) : Event
 
         /** Пользователь запросил доступность preview-канала на TV. */
         data object RequestPreviewChannelBrowsable : Event

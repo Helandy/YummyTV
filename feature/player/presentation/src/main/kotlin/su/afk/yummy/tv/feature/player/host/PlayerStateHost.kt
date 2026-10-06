@@ -35,6 +35,12 @@ internal interface PlayerSourceHost : PlayerStateHost {
     /** Закрывает сессии всех источников (сейчас это живая сессия Alloha). */
     fun closeSourceSessions()
 
+    /**
+     * Забывает закэшированный поток активного источника: его ссылки ведут на отказавший узел CDN,
+     * и без сброса повторный резолв в пределах TTL поднял бы их снова.
+     */
+    fun invalidateStreamCache()
+
     /** Текст общей ошибки потока для оверлея «повторить/сменить». */
     fun streamErrorMessage(): String
 }
