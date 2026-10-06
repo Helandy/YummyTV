@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 
@@ -24,6 +25,12 @@ interface AppearanceSettingsStore {
     val backgroundStyle: Flow<BackgroundStyle>
     val detailsButtonOrder: Flow<List<DetailsButtonAction>>
 
+    /** Показывать ли на главной блок новых серий из списков пользователя. */
+    val newEpisodesSectionEnabled: Flow<Boolean>
+
+    /** Списки, по которым блок новых серий отбирает тайтлы. */
+    val newEpisodesSources: Flow<Set<NewEpisodesSource>>
+
     suspend fun setPosterQuality(quality: PosterQuality)
     suspend fun setPosterCardSize(size: PosterCardSize)
     suspend fun setShowTopTitleYear(enabled: Boolean)
@@ -34,6 +41,8 @@ interface AppearanceSettingsStore {
     suspend fun setAppTheme(theme: AppTheme)
     suspend fun setBackgroundStyle(style: BackgroundStyle)
     suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
+    suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
+    suspend fun setNewEpisodesSources(sources: Set<NewEpisodesSource>)
 
     companion object {
         val defaultDetailsButtonOrder: List<DetailsButtonAction> = listOf(

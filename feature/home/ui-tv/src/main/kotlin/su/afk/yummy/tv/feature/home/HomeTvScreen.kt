@@ -1,8 +1,9 @@
 package su.afk.yummy.tv.feature.home
 
-import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import android.widget.Toast
 import androidx.activity.compose.ReportDrawnWhen
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -15,19 +16,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
+import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
 import su.afk.yummy.tv.feature.home.view.HomeAnnouncementDialog
@@ -136,30 +142,38 @@ fun HomeTvScreen(
             else -> null
         },
     )
-    when {
-        error != null -> HomeError(
-            message = error,
-            onRetry = { onEvent(HomeState.Event.RetrySelected) },
-            retryFocusRequester = focusHandoff.placeholderFocusRequester,
-            modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
+    // Плашка «нет сети» живёт на уровне экрана, а не внутри рядов дашборда: иначе она пропадает
+    // там, где рядов нет — на ошибке, на загрузке и в пустой ленте.
+    Column {
+        OfflineBanner(
+            isOffline = LocalIsOffline.current,
+            modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
         )
+        when {
+            error != null -> HomeError(
+                message = error,
+                onRetry = { onEvent(HomeState.Event.RetrySelected) },
+                retryFocusRequester = focusHandoff.placeholderFocusRequester,
+                modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
+            )
 
-        feed == null || !state.hasInitialContent() -> TvLoadingScreen(
-            modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
-        )
+            feed == null || !state.hasInitialContent() -> TvLoadingScreen(
+                modifier = Modifier.tvFocusablePlaceholder(focusHandoff),
+            )
 
-        else -> HomeDashboard(
-            feed = feed,
-            continueWatching = state.continueWatching,
-            launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
-            requestInitialFocus = focusHandoff.shouldFocusContent,
-            onInitialFocusHandled = focusHandoff::onContentFocused,
-            onContinueWatchingSelected = { entry ->
-                onEvent(HomeState.Event.ContinueWatchingSelected(entry))
-            },
-            onItemSelected = onItemSelected,
-            onRecommendationLongClick = { item -> recommendationActionItem = item },
-        )
+            else -> HomeDashboard(
+                feed = feed,
+                continueWatching = state.continueWatching,
+                launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
+                requestInitialFocus = focusHandoff.shouldFocusContent,
+                onInitialFocusHandled = focusHandoff::onContentFocused,
+                onContinueWatchingSelected = { entry ->
+                    onEvent(HomeState.Event.ContinueWatchingSelected(entry))
+                },
+                onItemSelected = onItemSelected,
+                onRecommendationLongClick = { item -> recommendationActionItem = item },
+            )
+        }
     }
 
     recommendationActionItem?.let { item ->

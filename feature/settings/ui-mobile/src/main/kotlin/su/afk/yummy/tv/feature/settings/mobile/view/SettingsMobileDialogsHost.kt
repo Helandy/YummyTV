@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
@@ -46,6 +47,16 @@ internal fun SettingsMobileDialogsHost(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     when (dialogs.activePicker) {
+        SettingsMobilePicker.NEW_EPISODES_SOURCES -> SettingsMobileMultiPickerSheet(
+            title = stringResource(R.string.settings_new_episodes_sources_title),
+            selectedValues = state.newEpisodesSources,
+            options = NewEpisodesSource.entries.map {
+                SettingsMobilePickerOption(it, it.label())
+            },
+            onDismiss = { dialogs.activePicker = null },
+            onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
+        )
+
         SettingsMobilePicker.INTERFACE_MODE -> SettingsMobilePickerSheet(
             title = stringResource(R.string.settings_interface_type),
             selectedValue = state.interfaceMode,

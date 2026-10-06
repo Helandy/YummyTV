@@ -8,4 +8,5 @@
     <string name="home_recommendation_error">Не удалось обновить рекомендации</string>
     <string name="home_recommendation_hidden">Больше не рекомендуем это аниме</string>
     <string name="home_remote_continue_progress_toast">Найден удалённый прогресс. Серия %1$s (%2$s)</string>
+    <string name="home_section_my_new_episodes">Новые серии из ваших списков</string>
 </resources>

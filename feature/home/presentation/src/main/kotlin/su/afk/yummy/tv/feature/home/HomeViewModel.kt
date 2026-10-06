@@ -1,14 +1,18 @@
 package su.afk.yummy.tv.feature.home
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.minus
 import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -29,10 +33,14 @@ import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
@@ -43,6 +51,7 @@ import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.toToastTimeString
+import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -50,9 +59,8 @@ import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import su.afk.yummy.tv.feature.search.ISearchNavigator
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject internal constructor(
     override val errorHandler: ErrorHandler,
@@ -70,6 +78,9 @@ class HomeViewModel @Inject internal constructor(
     private val refreshHomeFeed: RefreshHomeFeedUseCase,
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase,
     private val observeContinueWatching: ObserveContinueWatchingUseCase,
+    private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
+    private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
+    private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
     private val playerNavigator: IPlayerNavigator,
@@ -80,6 +91,7 @@ class HomeViewModel @Inject internal constructor(
     private val analyticsTracker: AnalyticsTracker,
 ) : BaseViewModel<HomeState.State, HomeState.Event, HomeState.Effect>() {
 
+    /** Пустое состояние до первой загрузки: лента ещё не пришла, показывается лоадер. */
     override fun createInitialState() = HomeState.State()
 
     private var supportPromptTimerJob: Job? = null
@@ -87,6 +99,18 @@ class HomeViewModel @Inject internal constructor(
 
     /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
     private var rawFeed: HomeFeed? = null
+
+    /** Тайтлы из выбранных в настройках списков — из них собирается секция новых серий. */
+    private var libraryAnimeIds: Set<Int> = emptySet()
+
+    /** Онгоинги с серией за последние дни из расписания; фильтруются по [libraryAnimeIds]. */
+    private var recentlyAired: List<HomeFeedItem> = emptyList()
+
+    /** Просмотренные серии: id тайтла → номера серий. Ими помечаются карточки новых серий. */
+    private var watchedEpisodes: Map<Int, Set<Int>> = emptyMap()
+
+    /** Блок новых серий выключен в настройках — секция не собирается вовсе. */
+    private var newEpisodesSectionEnabled: Boolean = true
 
     private var loadJob: Job? = null
 
@@ -102,6 +126,8 @@ class HomeViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        observeLibraryAnimeIds()
+        loadRecentlyAired()
         observeHiddenRecommendations()
         observeSupportPrompt()
         observeAnnouncement()
@@ -120,6 +146,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Разбирает действия пользователя на главной: переходы, обновление, скрытие рекомендаций. */
     override fun onEvent(event: HomeState.Event) {
         when (event) {
             is HomeState.Event.AnimeSelected -> {
@@ -179,6 +206,42 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Следит за списками пользователя — по ним отбираются тайтлы для блока новых серий. */
+    private fun observeLibraryAnimeIds() {
+        settingsStore.newEpisodesSources
+            .flatMapLatest { sources -> observeLibraryNewEpisodeAnimeIds(sources) }
+            .onEach { ids ->
+                libraryAnimeIds = ids
+                applyHiddenRecommendations()
+            }
+            .launchIn(viewModelScope)
+
+        settingsStore.newEpisodesSectionEnabled
+            .onEach { enabled ->
+                newEpisodesSectionEnabled = enabled
+                applyHiddenRecommendations()
+            }
+            .launchIn(viewModelScope)
+
+        observeWatchedEpisodes()
+            .onEach { watched ->
+                watchedEpisodes = watched
+                applyHiddenRecommendations()
+            }
+            .launchIn(viewModelScope)
+    }
+
+    /** Расписание кэшируется на час, поэтому лишней нагрузки на API это не даёт; ошибка не мешает главной. */
+    private fun loadRecentlyAired() {
+        viewModelScope.launch {
+            runSuspendCatching { getRecentlyAiredSchedule(System.currentTimeMillis() / 1_000L) }
+                .onSuccess { items ->
+                    recentlyAired = items
+                    applyHiddenRecommendations()
+                }
+        }
+    }
+
     // Скрытия приходят и с других экранов («Похожее» в деталях), поэтому набор берём из стора.
     private fun observeHiddenRecommendations() {
         settingsStore.hiddenRecommendationIds
@@ -189,6 +252,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Скрывает тайтл из рекомендаций или возвращает обратно, откатываясь при отказе сервера. */
     private fun setRecommendationHidden(animeId: Int, hidden: Boolean) {
         if (animeId in currentState.pendingRecommendationIds) return
         viewModelScope.launch {
@@ -265,12 +329,13 @@ class HomeViewModel @Inject internal constructor(
         val hiddenIds = currentState.hiddenRecommendationIds
         setState {
             copy(
-                feed = feed.withoutHiddenRecommendations(hiddenIds).withoutScheduleSection(),
+                feed = feed.toVisibleFeed(hiddenIds),
                 hasSchedule = feed.sections.any { it.type == HomeFeedSectionType.SCHEDULE },
             )
         }
     }
 
+    /** Следит за тем, когда окно поддержки проекта станет доступно к показу. */
     private fun observeSupportPrompt() {
         viewModelScope.launch {
             settingsStore.ensureSupportPromptInstallTimeInitialized()
@@ -280,6 +345,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Показывает окно поддержки сразу либо заводит таймер до срока из [snapshot]. */
     private fun applySupportPromptSnapshot(snapshot: SupportPromptSnapshot) {
         supportPromptTimerJob?.cancel()
         if (snapshot.dismissed) {
@@ -301,6 +367,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Показывает окно поддержки один раз за сессию и сразу помечает его отработавшим. */
     private fun showSupportPromptOnce() {
         supportPromptDisplayedThisSession = true
         setState { copy(supportPromptVisible = true) }
@@ -309,6 +376,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Закрывает окно поддержки и запоминает отказ, чтобы больше не показывать. */
     private fun dismissSupportPrompt() {
         setState { copy(supportPromptVisible = false) }
         viewModelScope.launch {
@@ -316,6 +384,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Перепроверяет объявление при старте и после каждого обновления фичефлагов. */
     private fun observeAnnouncement() {
         checkAnnouncement()
         val initialActivationId = featureToggleUpdateObserver.currentActivationId
@@ -325,6 +394,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
+    /** Берёт объявление из фичефлагов и показывает, если оно включено и ещё не было прочитано. */
     private fun checkAnnouncement() {
         viewModelScope.launch {
             val id = featureToggleProvider.getString(FeatureFlags.announcementId).trim()
@@ -360,6 +430,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Закрывает объявление и запоминает его прочитанным. */
     private fun dismissAnnouncement() {
         val id = currentState.announcement?.id ?: return
         setState { copy(announcement = null) }
@@ -368,6 +439,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Открывает плеер по записи «продолжить просмотр», а без цели для запуска — детали тайтла. */
     private fun launchContinueWatching(entry: HomeContinueWatchingItem) {
         if (!entry.hasPlayableTarget()) {
             nav.navigate(detailsNavigator.getDetailsDest(entry.animeId))
@@ -401,6 +473,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Грузит ленту: сперва отдаёт кэш, чтобы не держать лоадер, затем обновляет из сети. */
     private fun load() {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
@@ -436,6 +509,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Грузит блок видео блогеров; его ошибка живёт отдельно от ошибки ленты. */
     private fun loadBloggerVideos() {
         viewModelScope.launch {
             setState { copy(isBloggerVideosLoading = true, bloggerVideosError = null) }
@@ -460,6 +534,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Обновляет ленту по запросу пользователя, не стирая уже показанную при неудаче. */
     private fun refresh() {
         viewModelScope.launch {
             if (currentState.isLoading && currentState.feed == null) return@launch
@@ -467,6 +542,7 @@ class HomeViewModel @Inject internal constructor(
             if (showInitialLoading) {
                 setState { copy(isLoading = true, error = null) }
             }
+            loadRecentlyAired()
             runSuspendCatching { refreshHomeFeed() }.fold(
                 onSuccess = { feed -> applyFeed(feed, isLoading = false) },
                 onFailure = { e ->
@@ -486,6 +562,7 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Подтягивает прогресс просмотра из кэша при возврате на экран: он мог измениться в плеере. */
     private fun syncCachedContinueWatching() {
         if (currentState.feed == null) return
         viewModelScope.launch {
@@ -499,17 +576,34 @@ class HomeViewModel @Inject internal constructor(
         }
     }
 
+    /** Запоминает исходную ленту и кладёт в состояние её видимую версию. */
     private fun applyFeed(feed: HomeFeed, isLoading: Boolean) {
         rawFeed = feed
         setState {
             copy(
                 isLoading = isLoading,
-                feed = feed.withoutHiddenRecommendations(hiddenRecommendationIds)
-                    .withoutScheduleSection(),
+                feed = feed.toVisibleFeed(hiddenRecommendationIds),
                 hasSchedule = feed.sections.any { it.type == HomeFeedSectionType.SCHEDULE },
             )
         }
     }
+
+    /** Лента в том виде, в котором её видит пользователь: без скрытого, без расписания, с новыми сериями. */
+    private fun HomeFeed.toVisibleFeed(hiddenIds: Set<Int>): HomeFeed =
+        withoutHiddenRecommendations(hiddenIds)
+            .withoutScheduleSection()
+            .let { feed ->
+                if (!newEpisodesSectionEnabled) {
+                    feed
+                } else {
+                    feed.withMyNewEpisodes(
+                        recentlyAired = recentlyAired,
+                        libraryAnimeIds = libraryAnimeIds,
+                        watchedEpisodes = watchedEpisodes,
+                        title = stringProvider.get(R.string.home_section_my_new_episodes),
+                    )
+                }
+            }
 
     private companion object {
         const val TAG_ANNOUNCEMENT = "HomeAnnouncement"

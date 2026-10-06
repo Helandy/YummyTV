@@ -10,6 +10,7 @@ import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
+import su.afk.yummy.tv.feature.settings.mobile.utils.newEpisodesSourcesValue
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
@@ -55,6 +56,24 @@ internal fun SettingsMobileAppearanceContent(
                 hint = state.posterQuality.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.POSTER_QUALITY) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_new_episodes_section),
+                hint = if (state.newEpisodesSectionEnabled) {
+                    stringResource(R.string.settings_new_episodes_section_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.newEpisodesSectionEnabled,
+                onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
+            )
+            // Список источников без включённого блока ни на что не влияет.
+            if (state.newEpisodesSectionEnabled) {
+                SettingsMobileOptionRow(
+                    label = stringResource(R.string.settings_new_episodes_sources_title),
+                    value = state.newEpisodesSources.newEpisodesSourcesValue(),
+                    onClick = { onPickerRequested(SettingsMobilePicker.NEW_EPISODES_SOURCES) },
+                )
+            }
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_top_title_year),
                 hint = if (state.showTopTitleYear) {

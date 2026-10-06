@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
@@ -37,6 +38,8 @@ class SettingsState {
         val posterQuality: PosterQuality = PosterQuality.STANDARD,
         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
         val showTopTitleYear: Boolean = false,
+        val newEpisodesSectionEnabled: Boolean = true,
+        val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
         val showLibraryTitleYear: Boolean = false,
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
@@ -106,6 +109,12 @@ class SettingsState {
 
         /** Пользователь переключил отображение года у тайтлов в топе. */
         data object ShowTopTitleYearToggled : Event
+
+        /** Пользователь включил или выключил блок новых серий на главной. */
+        data object NewEpisodesSectionToggled : Event
+
+        /** Пользователь добавил или убрал список из тех, по которым ищутся новые серии. */
+        data class NewEpisodesSourceToggled(val source: NewEpisodesSource) : Event
 
         /** Пользователь переключил отображение года у тайтлов в библиотеке. */
         data object ShowLibraryTitleYearToggled : Event

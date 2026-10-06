@@ -18,6 +18,8 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
+import su.afk.yummy.tv.feature.home.mobile.utils.newEpisodeBadge
+import su.afk.yummy.tv.feature.home.mobile.utils.newEpisodeSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.showMobileCardMetadata
 
 @Composable
@@ -49,6 +51,8 @@ internal fun HomeFeedSectionRow(
                     HomeItemCard(
                         item = item,
                         showMetadata = showCardMetadata,
+                        subtitle = item.newEpisodeSubtitle(),
+                        badge = item.newEpisodeBadge(),
                         showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
                         onClick = { onItemSelected(item) },
                         onLongClick = onItemLongClick?.let { { it(item) } },

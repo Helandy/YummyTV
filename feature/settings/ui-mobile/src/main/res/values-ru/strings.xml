@@ -256,4 +256,14 @@
     <string name="settings_mobile_logs_hint">Отправить разработчику файл с логами приложения</string>
     <string name="settings_mobile_logs_saved">Логи сохранены: %1$s</string>
     <string name="settings_mobile_logs_failed">Не удалось подготовить логи</string>
+    <string name="settings_new_episodes_section">Блок новых серий</string>
+    <string name="settings_new_episodes_section_enabled">Показывается на главной</string>
+    <string name="settings_new_episodes_source_watching">Смотрю</string>
+    <string name="settings_new_episodes_source_planned">В планах</string>
+    <string name="settings_new_episodes_source_completed">Просмотрено</string>
+    <string name="settings_new_episodes_source_postponed">Отложено</string>
+    <string name="settings_new_episodes_source_dropped">Брошено</string>
+    <string name="settings_new_episodes_source_favorites">Избранное</string>
+    <string name="settings_new_episodes_sources_title">Списки для блока</string>
+    <string name="settings_new_episodes_sources_empty">Ничего не выбрано</string>
 </resources>

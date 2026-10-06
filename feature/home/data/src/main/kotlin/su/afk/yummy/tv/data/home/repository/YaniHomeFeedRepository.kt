@@ -18,17 +18,18 @@ import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
-import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.core.utils.episode.episodeNumberOrNull
 import su.afk.yummy.tv.data.home.mapper.LocalFeedContext
 import su.afk.yummy.tv.data.home.mapper.localContinueWatchingItems
 import su.afk.yummy.tv.data.home.mapper.withLocalOverrides
+import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeed as toStoredHomeFeed
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
-import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeed as toStoredHomeFeed
 
 private const val FEED_TTL_MS = 60 * 1000L
 private const val FEED_CACHE_SIGNATURE_VERSION = "cw-local1"
@@ -88,6 +89,23 @@ class YaniHomeFeedRepository(
         )
         watchProgressStore.delete(migration.animeId, migration.previousEpisode)
     }
+
+    override fun observeWatchedEpisodes(): Flow<Map<Int, Set<Int>>> =
+        watchProgressStore.observeWatchedProgress()
+            .map { entries ->
+                entries
+                    .groupBy { it.animeId }
+                    .mapValues { (_, items) ->
+                        items.mapNotNullTo(mutableSetOf()) { entry ->
+                            // Спецвыпуски вроде «7.5» — не серия 7, иначе она ложно считалась бы
+                            // просмотренной.
+                            entry.episode.episodeNumberOrNull()
+                                ?.takeIf { it % 1.0 == 0.0 }
+                                ?.toInt()
+                        }
+                    }
+            }
+            .distinctUntilChanged()
 
     override fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>> =
         watchProgressStore.observeContinueWatching()

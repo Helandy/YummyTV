@@ -11,6 +11,7 @@ import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleTextColor
@@ -380,4 +381,32 @@ internal fun Int.toNextEpisodeSwitchDelayText(): String =
         stringResource(R.string.settings_next_episode_switch_delay_instant)
     } else {
         stringResource(R.string.settings_next_episode_switch_delay_seconds, this)
+    }
+
+/** Название списка пользователя в настройке блока новых серий. */
+@Composable
+internal fun NewEpisodesSource.label(): String = stringResource(
+    when (this) {
+        NewEpisodesSource.WATCHING -> R.string.settings_new_episodes_source_watching
+        NewEpisodesSource.PLANNED -> R.string.settings_new_episodes_source_planned
+        NewEpisodesSource.COMPLETED -> R.string.settings_new_episodes_source_completed
+        NewEpisodesSource.POSTPONED -> R.string.settings_new_episodes_source_postponed
+        NewEpisodesSource.DROPPED -> R.string.settings_new_episodes_source_dropped
+        NewEpisodesSource.FAVORITES -> R.string.settings_new_episodes_source_favorites
+    },
+)
+
+/** Значение строки «Списки для блока»: выбранные списки через запятую либо «ничего не выбрано». */
+@Composable
+internal fun Set<NewEpisodesSource>.newEpisodesSourcesValue(): String =
+    if (isEmpty()) {
+        stringResource(R.string.settings_new_episodes_sources_empty)
+    } else {
+        // Порядок берём у enum, чтобы подпись не прыгала при изменении набора. Склеиваем циклом:
+        // label() — composable, а внутри лямбды joinToString его не вызвать.
+        val labels = mutableListOf<String>()
+        for (source in NewEpisodesSource.entries) {
+            if (source in this) labels += source.label()
+        }
+        labels.joinToString(", ")
     }

@@ -18,4 +18,6 @@
     <string name="home_support_prompt_message">Це безкоштовно і займе менше хвилини</string>
     <string name="home_support_prompt_ok">Гаразд</string>
     <string name="home_announcement_ok">ОК</string>
+    <string name="home_mobile_new_episode_badge">Серія %1$d</string>
+    <string name="home_mobile_new_episode_badge_watched">Серія %1$d ✓</string>
 </resources>

@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.home.utils
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import java.util.concurrent.TimeUnit
 
@@ -23,6 +25,28 @@ internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFee
 /** Расписание вынесено в отдельную вкладку бокового меню, поэтому его секция не показывается в ленте главной. */
 internal fun HomeFeed.withoutScheduleSection(): HomeFeed =
     copy(sections = sections.filterNot { it.type == HomeFeedSectionType.SCHEDULE })
+
+/**
+ * Добавляет в начало ленты секцию недавно вышедших серий тайтлов из [libraryAnimeIds]; без
+ * совпадений секцию не добавляет. Серии, отмеченные просмотренными в [watchedEpisodes], помечаются
+ * в карточках, но из секции не убираются.
+ */
+internal fun HomeFeed.withMyNewEpisodes(
+    recentlyAired: List<HomeFeedItem>,
+    libraryAnimeIds: Set<Int>,
+    watchedEpisodes: Map<Int, Set<Int>>,
+    title: String,
+): HomeFeed {
+    val items = recentlyAired
+        .filter { it.id in libraryAnimeIds }
+        .map { item ->
+            item.copy(isWatched = item.episodeNumber != null &&
+                item.episodeNumber in watchedEpisodes[item.id].orEmpty())
+        }
+    if (items.isEmpty()) return this
+    val section = HomeFeedSection(HomeFeedSectionType.MY_NEW_EPISODES, title, items)
+    return copy(sections = listOf(section) + sections)
+}
 
 internal fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
     videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()

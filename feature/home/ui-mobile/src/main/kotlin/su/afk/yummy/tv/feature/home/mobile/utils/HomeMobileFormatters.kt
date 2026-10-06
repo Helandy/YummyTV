@@ -2,13 +2,16 @@ package su.afk.yummy.tv.feature.home.mobile.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.formatting.formatAirDate
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.feature.home.mobile.R
 
 internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this) {
     HomeFeedSectionType.SCHEDULE,
+    HomeFeedSectionType.MY_NEW_EPISODES,
     HomeFeedSectionType.NEW_RELEASES,
     HomeFeedSectionType.RECOMMENDATIONS,
     HomeFeedSectionType.COLLECTIONS -> false
@@ -42,3 +45,19 @@ private fun Long.toMobileTimeString(): String {
     val s = totalSec % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
 }
+
+
+/** Дата выхода серии под названием карточки; без неё подписи нет. */
+internal fun HomeFeedItem.newEpisodeSubtitle(): String? = airedAtSeconds?.formatAirDate()
+
+/** Бейдж с номером вышедшей серии поверх постера: с галочкой, если серия уже просмотрена. */
+@Composable
+internal fun HomeFeedItem.newEpisodeBadge(): String? =
+    episodeNumber?.let { number ->
+        val label = if (isWatched) {
+            R.string.home_mobile_new_episode_badge_watched
+        } else {
+            R.string.home_mobile_new_episode_badge
+        }
+        stringResource(label, number)
+    }

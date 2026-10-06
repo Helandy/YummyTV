@@ -18,4 +18,6 @@
     <string name="home_support_prompt_message">It is free and takes less than a minute</string>
     <string name="home_support_prompt_ok">Okay</string>
     <string name="home_announcement_ok">OK</string>
+    <string name="home_mobile_new_episode_badge">Ep. %1$d</string>
+    <string name="home_mobile_new_episode_badge_watched">Ep. %1$d ✓</string>
 </resources>

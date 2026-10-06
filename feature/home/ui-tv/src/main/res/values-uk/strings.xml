@@ -15,4 +15,6 @@
     <string name="home_tv_recommendation_hide_message">Тайтл зникне з блоку рекомендацій. Повернути його можна на екрані «Схоже» цього аніме</string>
     <string name="home_tv_recommendation_hide">Не рекомендувати</string>
     <string name="home_tv_recommendation_cancel">Скасувати</string>
+    <string name="home_tv_new_episode_badge">Серія %1$d</string>
+    <string name="home_tv_new_episode_badge_watched">Серія %1$d ✓</string>
 </resources>

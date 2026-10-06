@@ -13,4 +13,10 @@ interface HomeFeedRepository {
     suspend fun getContinueWatchingVideoIds(animeId: Int): List<Int>
     suspend fun migrateContinueWatchingProgress(migration: ContinueWatchingProgressMigration)
     fun observeContinueWatching(): Flow<List<HomeContinueWatchingItem>>
+
+    /**
+     * Просмотренные серии по тайтлам: id тайтла → номера серий. Номера нормализованы, потому что
+     * озвучки присылают их по-разному («01» и «1» — одна и та же серия).
+     */
+    fun observeWatchedEpisodes(): Flow<Map<Int, Set<Int>>>
 }

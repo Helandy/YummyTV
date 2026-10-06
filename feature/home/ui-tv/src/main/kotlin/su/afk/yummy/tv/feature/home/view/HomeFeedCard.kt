@@ -43,6 +43,10 @@ import su.afk.yummy.tv.feature.home.utils.posterUrl
 internal fun HomeFeedCard(
     item: HomeFeedItem,
     showYear: Boolean,
+    /** Подпись под названием; в блоке новых серий — дата выхода серии. */
+    subtitle: String? = null,
+    /** Бейдж поверх постера; в блоке новых серий — номер вышедшей серии. */
+    badge: String? = null,
     onClick: () -> Unit,
     onFocused: (displayId: Int, animeId: Int?) -> Unit,
     modifier: Modifier = Modifier,
@@ -116,6 +120,23 @@ internal fun HomeFeedCard(
                     )
                 }
 
+                badge?.let { text ->
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
+                }
+
                 item.rating?.let { rating ->
                     RatingBadge(
                         rating = rating,
@@ -150,11 +171,21 @@ internal fun HomeFeedCard(
                     text = item.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    minLines = 2,
-                    maxLines = 2,
+                    minLines = if (subtitle == null) 2 else 1,
+                    maxLines = if (subtitle == null) 2 else 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }

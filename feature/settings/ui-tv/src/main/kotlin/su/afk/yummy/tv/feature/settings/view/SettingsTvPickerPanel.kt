@@ -35,6 +35,7 @@ import su.afk.yummy.tv.feature.settings.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.utils.color
 import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.label
+import su.afk.yummy.tv.feature.settings.utils.newEpisodesSourcesValue
 import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
 
 /** Текущее значение пункта-пикера для строки в центральной колонке. */
@@ -47,6 +48,7 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.POSTER_SIZE -> state.posterCardSize.label()
     SettingsTvPicker.CONTINUE_WATCHING_SIZE -> state.libraryContinueWatchingCardSize.label()
     SettingsTvPicker.POSTER_QUALITY -> state.posterQuality.label()
+    SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.DETAILS_BUTTON_ORDER ->
         state.detailsButtonOrder.toDetailsButtonOrderItems().joinToString(" · ") { it.label }
 
@@ -164,6 +166,13 @@ internal fun SettingsTvPickerPanel(
             )
 
             // Порядок кнопок правится по шагам, поэтому колонка остаётся открытой.
+            SettingsTvPicker.NEW_EPISODES_SOURCES -> NewEpisodesSourcesPanel(
+                selected = state.newEpisodesSources,
+                upFocusRequester = openerFocusRequester,
+                contentFocusRequester = entryFocusRequester,
+                onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
+            )
+
             SettingsTvPicker.DETAILS_BUTTON_ORDER -> DetailsButtonOrderPanel(
                 order = state.detailsButtonOrder,
                 upFocusRequester = openerFocusRequester,

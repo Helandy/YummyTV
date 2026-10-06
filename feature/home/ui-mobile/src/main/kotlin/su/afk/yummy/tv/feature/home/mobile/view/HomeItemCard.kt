@@ -19,13 +19,18 @@ internal fun HomeItemCard(
     item: HomeFeedItem,
     showMetadata: Boolean,
     showYear: Boolean,
+    /** Подпись под названием; в блоке новых серий — дата выхода серии. */
+    subtitle: String? = null,
+    /** Бейдж поверх постера; в блоке новых серий — номер вышедшей серии. */
+    badge: String? = null,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
     MobilePosterCard(
         title = item.title,
         posterUrl = item.poster.bestUrl(),
-        subtitle = item.description.takeIf { showMetadata && it.isNotBlank() },
+        subtitle = subtitle ?: item.description.takeIf { showMetadata && it.isNotBlank() },
+        badge = badge,
         rating = item.rating.takeIf { showMetadata },
         titleMinLines = if (showMetadata) 1 else 2,
         posterOverlay = {

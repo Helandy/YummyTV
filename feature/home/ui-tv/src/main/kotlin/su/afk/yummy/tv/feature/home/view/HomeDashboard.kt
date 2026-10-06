@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -41,16 +41,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
-import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
-import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.R
 
@@ -74,12 +72,31 @@ internal fun HomeDashboard(
     val hasContinueWatching = continueWatching.isNotEmpty()
     val hasHero = feed.heroItems.isNotEmpty()
 
+    // Блок новых серий закреплён над «Аниме сезона», остальные секции идут после него. Нумеруем
+    // секции по исходному списку, чтобы ключи рядов (а с ними и возврат фокуса) не поехали.
+    val pinnedSectionIndex =
+        feed.sections.indexOfFirst { it.type == HomeFeedSectionType.MY_NEW_EPISODES }
+    val hasPinnedSection = pinnedSectionIndex >= 0
+    val restSections = feed.sections.withIndex().filter { it.index != pinnedSectionIndex }
+
     // LazyColumn item indices used for row-level focus restoration.
-    val heroLazyIdx = if (hasContinueWatching) 1 else 0
+    val pinnedLazyIdx = if (hasContinueWatching) 1 else 0
+    val heroLazyIdx = pinnedLazyIdx + if (hasPinnedSection) 1 else 0
     val sectionsBaseLazyIdx = heroLazyIdx + if (hasHero) 1 else 0
-    val totalLazyItems = sectionsBaseLazyIdx + feed.sections.size
+    val totalLazyItems = sectionsBaseLazyIdx + restSections.size
     fun sectionKey(index: Int): String =
         feed.sections.getOrNull(index)?.let { "section_${it.type.name}" } ?: "section_$index"
+
+    /** Позиция секции (её индекс в [HomeFeed.sections]) среди элементов LazyColumn. */
+    fun lazyIndexForSection(sectionIndex: Int): Int =
+        if (sectionIndex == pinnedSectionIndex) {
+            pinnedLazyIdx
+        } else {
+            restSections.indexOfFirst { it.index == sectionIndex }
+                .takeIf { it >= 0 }
+                ?.let { sectionsBaseLazyIdx + it }
+                ?: -1
+        }
 
     var columnHasFocus by remember { mutableStateOf(false) }
 
@@ -89,7 +106,7 @@ internal fun HomeDashboard(
     var lastFocusedRowKey by rememberSaveable { mutableStateOf<String?>(null) }
     var lastFocusedSectionItemKeys by rememberSaveable {
         mutableStateOf<Map<String, String>>(
-            emptyMap()
+            emptyMap(),
         )
     }
     val homeContentFocusRequester = remember { FocusRequester() }
@@ -113,11 +130,13 @@ internal fun HomeDashboard(
 
     fun focusRequesterForLazyIndex(index: Int): FocusRequester = when {
         hasContinueWatching && index == 0 -> continueWatchingFocusRequester
+        hasPinnedSection && index == pinnedLazyIdx ->
+            sectionFocusRequesters[pinnedSectionIndex]
+
         hasHero && index == heroLazyIdx -> heroFocusRequester
         index >= sectionsBaseLazyIdx -> {
-            val sectionIndex = index - sectionsBaseLazyIdx
-            val section = feed.sections.getOrNull(sectionIndex)
-            section?.let { sectionFocusRequesters.getOrNull(sectionIndex) }
+            val sectionIndex = restSections.getOrNull(index - sectionsBaseLazyIdx)?.index
+            sectionIndex?.let { sectionFocusRequesters.getOrNull(it) }
                 ?: firstAvailableFocusRequester(
                     hasHero = hasHero,
                     hasContinueWatching = hasContinueWatching,
@@ -140,16 +159,20 @@ internal fun HomeDashboard(
         null -> -1
         ROW_CONTINUE_WATCHING -> if (hasContinueWatching) 0 else -1
         ROW_HERO -> if (hasHero) heroLazyIdx else -1
-        else -> feed.sections.indices
-            .firstOrNull { sectionKey(it) == key }
-            ?.let { sectionsBaseLazyIdx + it }
-            ?: -1
+        else ->
+            feed.sections.indices
+                .firstOrNull { sectionKey(it) == key }
+                ?.let { lazyIndexForSection(it) }
+                ?: -1
     }
 
     fun rowKeyForLazyIndex(index: Int): String? = when {
         hasContinueWatching && index == 0 -> ROW_CONTINUE_WATCHING
+        hasPinnedSection && index == pinnedLazyIdx -> sectionKey(pinnedSectionIndex)
         hasHero && index == heroLazyIdx -> ROW_HERO
-        index in sectionsBaseLazyIdx until totalLazyItems -> sectionKey(index - sectionsBaseLazyIdx)
+        index in sectionsBaseLazyIdx until totalLazyItems ->
+            restSections.getOrNull(index - sectionsBaseLazyIdx)?.let { sectionKey(it.index) }
+
         else -> null
     }
 
@@ -226,6 +249,56 @@ internal fun HomeDashboard(
     CompositionLocalProvider(
         LocalBringIntoViewSpec provides HomeColumnNoAutoBringIntoViewSpec,
     ) {
+        // Ряд секции эмитится из двух мест, поэтому собран одной функцией.
+        fun LazyListScope.homeSectionItem(sectionIndex: Int, section: HomeFeedSection) {
+            val rowKey = sectionKey(sectionIndex)
+            item(key = rowKey, contentType = "section") {
+                CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
+                    val lazyIdx = lazyIndexForSection(sectionIndex)
+                    HomeDashboardSectionRow(
+                        section = section,
+                        rowKey = rowKey,
+                        rowIsFocused = columnHasFocus && lastFocusedRowKey == rowKey,
+                        rowFocusRequester = sectionFocusRequesters[sectionIndex],
+                        restoreItemKey = lastFocusedSectionItemKeys[rowKey],
+                        showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
+                        bottomPadding = if (lazyIdx == totalLazyItems - 1) 96.dp else 20.dp,
+                        upFocusRequester = previousRowFocusRequester(lazyIdx),
+                        downFocusRequester = nextRowFocusRequester(lazyIdx),
+                        onRowFocused = { justEntered ->
+                            lastFocusedRowKey = rowKey
+                            // Авто-подскролл колонки отключён (HomeColumnNoAutoBringIntoViewSpec),
+                            // поэтому при входе в ряд выравниваем колонку вручную — фокус может
+                            // прийти в обход requestRowFocus (focusProperties.up, focus search при
+                            // восстановлении после возврата в Home).
+                            if (justEntered) scope.launch { lazyColumnState.scrollToItem(lazyIdx) }
+                        },
+                        registerFocusHandler = { handler ->
+                            registerRowFocusHandler(rowKey, handler)
+                        },
+                        onItemSelected = onItemSelected,
+                        // Управлять видимостью можно только рекомендациями.
+                        onItemLongClick = onRecommendationLongClick
+                            .takeIf { section.type == HomeFeedSectionType.RECOMMENDATIONS },
+                        onFocusedItemKeyChanged = { itemKey ->
+                            lastFocusedSectionItemKeys =
+                                lastFocusedSectionItemKeys + (rowKey to itemKey)
+                        },
+                        onMoveUp = if (lazyIdx > 0) {
+                            { requestRowFocus(lazyIdx - 1) }
+                        } else {
+                            null
+                        },
+                        onMoveDown = if (lazyIdx < totalLazyItems - 1) {
+                            { requestRowFocus(lazyIdx + 1) }
+                        } else {
+                            null
+                        },
+                    )
+                }
+            }
+        }
+
         LazyColumn(
             state = lazyColumnState,
             modifier = Modifier
@@ -276,11 +349,14 @@ internal fun HomeDashboard(
                                         null
                                     },
                                 )
-                                HomeOfflineBanner()
                             }
                         }
                     }
                 }
+            }
+
+            if (hasPinnedSection) {
+                homeSectionItem(pinnedSectionIndex, feed.sections[pinnedSectionIndex])
             }
 
             if (hasHero) {
@@ -320,10 +396,6 @@ internal fun HomeDashboard(
                             },
                         ) {
                             Column {
-                                // Без «Продолжить просмотр» плашка переезжает в первый ряд
-                                if (!hasContinueWatching) {
-                                    HomeOfflineBanner()
-                                }
                                 HomeSectionHeader(
                                     title = stringResource(R.string.home_season_title),
                                     active = columnHasFocus && lastFocusedRowKey == ROW_HERO,
@@ -360,66 +432,8 @@ internal fun HomeDashboard(
                 }
             }
 
-            itemsIndexed(
-                feed.sections,
-                key = { index, _ -> sectionKey(index) },
-                contentType = { _, _ -> "section" }) { index, section ->
-                CompositionLocalProvider(LocalBringIntoViewSpec provides defaultBringIntoViewSpec) {
-                    val lazyIdx = sectionsBaseLazyIdx + index
-                    val rowKey = sectionKey(index)
-                    var rowHadFocus by remember { mutableStateOf(false) }
-                    Box(
-                        modifier = Modifier.onFocusChanged { state ->
-                            val hadFocus = rowHadFocus
-                            rowHadFocus = state.hasFocus
-                            if (state.hasFocus) {
-                                lastFocusedRowKey = rowKey
-                                // Авто-подскролл колонки отключён (HomeColumnNoAutoBringIntoViewSpec),
-                                // поэтому при получении фокуса рядом выравниваем колонку вручную —
-                                // фокус может прийти в обход requestRowFocus (focusProperties.up,
-                                // focus search при восстановлении после возврата в Home).
-                                if (!hadFocus) {
-                                    scope.launch { lazyColumnState.scrollToItem(lazyIdx) }
-                                }
-                            }
-                        },
-                    ) {
-                        HomeSection(
-                            title = section.title,
-                            items = section.items,
-                            showYear = section.type == HomeFeedSectionType.RECOMMENDATIONS,
-                            onItemSelected = onItemSelected,
-                            // Управлять видимостью можно только рекомендациями.
-                            onItemLongClick = onRecommendationLongClick
-                                .takeIf { section.type == HomeFeedSectionType.RECOMMENDATIONS },
-                            rowFocusRequester = sectionFocusRequesters[index],
-                            registerFocusHandler = { handler ->
-                                registerRowFocusHandler(rowKey, handler)
-                            },
-                            rowIsFocused = columnHasFocus && lastFocusedRowKey == rowKey,
-                            rowKey = rowKey,
-                            restoreItemKey = lastFocusedSectionItemKeys[rowKey],
-                            onFocusedItemKeyChanged = { itemKey ->
-                                lastFocusedSectionItemKeys =
-                                    lastFocusedSectionItemKeys + (rowKey to itemKey)
-                            },
-                            upFocusRequester = previousRowFocusRequester(lazyIdx),
-                            downFocusRequester = nextRowFocusRequester(lazyIdx),
-                            bottomPadding = if (index == feed.sections.lastIndex) 96.dp else 20.dp,
-                            focusedCardScale = 1f,
-                            onMoveUp = if (lazyIdx > 0) {
-                                { requestRowFocus(lazyIdx - 1) }
-                            } else {
-                                null
-                            },
-                            onMoveDown = if (lazyIdx < totalLazyItems - 1) {
-                                { requestRowFocus(lazyIdx + 1) }
-                            } else {
-                                null
-                            },
-                        )
-                    }
-                }
+            restSections.forEach { (sectionIndex, section) ->
+                homeSectionItem(sectionIndex, section)
             }
         }
     }
@@ -450,15 +464,3 @@ private const val SECTION_HERO = "__hero"
 private const val ROW_CONTINUE_WATCHING = "continue_watching"
 private const val ROW_HERO = "hero_carousel"
 private const val ROW_FOCUS_TIMEOUT_MILLIS = 500L
-
-/**
- * Плашка «нет сети» в строке главной. Не отдельный lazy-item: фокус дашборда завязан на
- * lazy-индексы рядов. Свои 16dp у плашки уже есть — добираем до отступа экрана.
- */
-@Composable
-private fun HomeOfflineBanner() {
-    OfflineBanner(
-        isOffline = LocalIsOffline.current,
-        modifier = Modifier.padding(horizontal = TvScreenPadding.Horizontal - 16.dp),
-    )
-}

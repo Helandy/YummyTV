@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
@@ -18,6 +19,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsB
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
@@ -37,6 +40,12 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
         store.enumFlow(posterCardSizeKey, PosterCardSize.STANDARD)
 
     override val showTopTitleYear: Flow<Boolean> = store.boolean(showTopTitleYearKey, false)
+
+    override val newEpisodesSectionEnabled: Flow<Boolean> =
+        store.boolean(newEpisodesSectionEnabledKey, true)
+
+    override val newEpisodesSources: Flow<Set<NewEpisodesSource>> =
+        store.stringSet(newEpisodesSourcesKey).map { it.toNewEpisodesSources() }
 
     override val showLibraryTitleYear: Flow<Boolean> =
         store.boolean(showLibraryTitleYearKey, false)
@@ -63,6 +72,13 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override suspend fun setPosterCardSize(size: PosterCardSize) =
         store.setEnum(posterCardSizeKey, size)
+
+    override suspend fun setNewEpisodesSectionEnabled(enabled: Boolean) =
+        store.setBoolean(newEpisodesSectionEnabledKey, enabled)
+
+    override suspend fun setNewEpisodesSources(sources: Set<NewEpisodesSource>) {
+        store.edit { prefs -> prefs[newEpisodesSourcesKey] = sources.toStoredNames() }
+    }
 
     override suspend fun setShowTopTitleYear(enabled: Boolean) =
         store.setBoolean(showTopTitleYearKey, enabled)

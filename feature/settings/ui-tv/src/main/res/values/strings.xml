@@ -255,4 +255,16 @@
     <string name="settings_tv_logs_hint">Send the app log file to the developer</string>
     <string name="settings_tv_logs_saved">Logs saved: %1$s</string>
     <string name="settings_tv_logs_failed">Could not prepare logs</string>
+    <string name="settings_new_episodes_section">New episodes block</string>
+    <string name="settings_new_episodes_section_enabled">Shown on the home screen</string>
+    <string name="settings_new_episodes_source_on">Counted</string>
+    <string name="settings_new_episodes_source_off">Not counted</string>
+    <string name="settings_new_episodes_source_watching">Watching</string>
+    <string name="settings_new_episodes_source_planned">Planned</string>
+    <string name="settings_new_episodes_source_completed">Completed</string>
+    <string name="settings_new_episodes_source_postponed">On hold</string>
+    <string name="settings_new_episodes_source_dropped">Dropped</string>
+    <string name="settings_new_episodes_source_favorites">Favorites</string>
+    <string name="settings_new_episodes_sources_title">Lists for the block</string>
+    <string name="settings_new_episodes_sources_empty">Nothing selected</string>
 </resources>

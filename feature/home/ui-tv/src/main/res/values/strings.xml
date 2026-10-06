@@ -15,4 +15,6 @@
     <string name="home_tv_recommendation_hide_message">The title will disappear from the recommendations row. You can restore it on the Similar screen of this anime</string>
     <string name="home_tv_recommendation_hide">Do not recommend</string>
     <string name="home_tv_recommendation_cancel">Cancel</string>
+    <string name="home_tv_new_episode_badge">Ep. %1$d</string>
+    <string name="home_tv_new_episode_badge_watched">Ep. %1$d ✓</string>
 </resources>

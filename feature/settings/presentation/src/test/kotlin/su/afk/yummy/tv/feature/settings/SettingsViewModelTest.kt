@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
@@ -125,6 +126,8 @@ class SettingsViewModelTest : BaseUnitTest() {
         posterQuality = PosterQuality.entries.first(),
         posterCardSize = PosterCardSize.entries.first(),
         showTopTitleYear = false,
+        newEpisodesSectionEnabled = true,
+        newEpisodesSources = NewEpisodesSource.DEFAULT,
         showLibraryTitleYear = false,
         libraryContinueWatchingCardSize = LibraryContinueWatchingCardSize.entries.first(),
         preferredPlayer = PreferredPlayer.entries.first(),

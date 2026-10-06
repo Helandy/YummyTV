@@ -36,6 +36,23 @@ internal fun SettingsTvAppearanceContent(
     pickerRow(SettingsTvPicker.POSTER_QUALITY, Modifier)
     SettingsDivider()
     ToggleRow(
+        label = stringResource(R.string.settings_new_episodes_section),
+        hint = if (state.newEpisodesSectionEnabled) {
+            stringResource(R.string.settings_new_episodes_section_enabled)
+        } else {
+            stringResource(R.string.settings_disabled)
+        },
+        enabled = state.newEpisodesSectionEnabled,
+        onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
+    // Список источников без включённого блока ни на что не влияет.
+    if (state.newEpisodesSectionEnabled) {
+        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier)
+        SettingsDivider()
+    }
+    ToggleRow(
         label = stringResource(R.string.settings_show_top_title_year),
         hint = if (state.showTopTitleYear) {
             stringResource(R.string.settings_show_top_title_year_enabled)

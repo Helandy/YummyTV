@@ -40,6 +40,8 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.feature.home.utils.newEpisodeBadge
+import su.afk.yummy.tv.feature.home.utils.newEpisodeSubtitle
 import su.afk.yummy.tv.feature.home.utils.focusKey
 
 @Composable
@@ -254,6 +256,8 @@ internal fun HomeSection(
                     modifier = Modifier.focusRequester(focusRequesterForItem(index)),
                     item = item,
                     showYear = showYear,
+                    subtitle = item.newEpisodeSubtitle(),
+                    badge = item.newEpisodeBadge(),
                     onClick = {
                         rememberFocusedItem(index)
                         onItemSelected(rowKey, item)

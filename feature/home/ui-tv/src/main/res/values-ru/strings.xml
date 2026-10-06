@@ -15,4 +15,6 @@
     <string name="home_tv_recommendation_hide_message">Тайтл пропадёт из блока рекомендаций. Вернуть его можно на экране «Похожее» этого аниме</string>
     <string name="home_tv_recommendation_hide">Не рекомендовать</string>
     <string name="home_tv_recommendation_cancel">Отмена</string>
+    <string name="home_tv_new_episode_badge">Серия %1$d</string>
+    <string name="home_tv_new_episode_badge_watched">Серия %1$d ✓</string>
 </resources>

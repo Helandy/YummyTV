@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
+import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -39,7 +40,10 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
+import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
+import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.RefreshHomeFeedUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
@@ -69,6 +73,9 @@ class HomeViewModelTest : BaseUnitTest() {
     private val refreshHomeFeed: RefreshHomeFeedUseCase = mockk()
     private val setAnimeRecommendationIgnored: SetAnimeRecommendationIgnoredUseCase = mockk()
     private val observeContinueWatching: ObserveContinueWatchingUseCase = mockk()
+    private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase = mockk()
+    private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase = mockk()
+    private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase = mockk()
     private val stringProvider: StringProvider = mockk()
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase = mockk()
     private val playerNavigator: IPlayerNavigator = mockk()
@@ -87,6 +94,10 @@ class HomeViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { observeContinueWatching() } returns continueWatching
+        every { settingsStore.newEpisodesSectionEnabled } returns flowOf(true)
+        every { settingsStore.newEpisodesSources } returns flowOf(NewEpisodesSource.DEFAULT)
+        every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(emptySet())
+        every { observeWatchedEpisodes() } returns flowOf(emptyMap())
         every { settingsStore.hiddenRecommendationIds } returns hiddenIds
         every { settingsStore.yaniUserId } returns userId
         every { settingsStore.yaniContentLanguage } returns emptyFlow()
@@ -109,6 +120,7 @@ class HomeViewModelTest : BaseUnitTest() {
         coEvery { refreshHomeFeed() } returns feed()
         coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } returns emptyList()
         coEvery { setAnimeRecommendationIgnored(any(), any()) } returns true
+        coEvery { getRecentlyAiredSchedule(any()) } returns emptyList()
     }
 
     private fun createViewModel() = HomeViewModel(
@@ -127,6 +139,9 @@ class HomeViewModelTest : BaseUnitTest() {
         refreshHomeFeed = refreshHomeFeed,
         setAnimeRecommendationIgnored = setAnimeRecommendationIgnored,
         observeContinueWatching = observeContinueWatching,
+        observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
+        getRecentlyAiredSchedule = getRecentlyAiredSchedule,
+        observeWatchedEpisodes = observeWatchedEpisodes,
         stringProvider = stringProvider,
         resolveContinueWatchingLaunch = resolveContinueWatchingLaunch,
         playerNavigator = playerNavigator,

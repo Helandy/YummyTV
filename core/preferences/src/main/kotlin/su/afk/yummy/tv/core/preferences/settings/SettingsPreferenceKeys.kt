@@ -10,6 +10,8 @@ internal object SettingsPreferenceKeys {
     val posterQualityKey = stringPreferencesKey("poster_quality")
     val posterCardSizeKey = stringPreferencesKey("poster_card_size")
     val showTopTitleYearKey = booleanPreferencesKey("show_top_title_year")
+    val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
+    val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
     val showLibraryTitleYearKey = booleanPreferencesKey("show_library_title_year")
     val libraryContinueWatchingCardSizeKey =
         stringPreferencesKey("library_continue_watching_card_size")
