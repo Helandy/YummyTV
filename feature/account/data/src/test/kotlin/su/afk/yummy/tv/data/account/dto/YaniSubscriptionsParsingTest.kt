@@ -1,17 +1,18 @@
 package su.afk.yummy.tv.data.account.dto
 
-import su.afk.yummy.tv.data.account.dto.video.YaniVideoSubscriptionsResponseDto
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.data.account.dto.video.YaniVideoSubscriptionsResponseDto
 
 /**
  * Регресс: yani отдаёт `sub.dubbing` то строкой, то `null`. Поле объявлено non-null с дефолтом,
  * и без `coerceInputValues` в [YaniApiJson] такой ответ ронял разбор целиком —
  * экран «Мои подписки» показывал текст исключения вместо списка.
  */
-class YaniSubscriptionsParsingTest {
+class YaniSubscriptionsParsingTest : BaseUnitTest() {
 
     @Test
     fun `null dubbing is read as an empty string`() {

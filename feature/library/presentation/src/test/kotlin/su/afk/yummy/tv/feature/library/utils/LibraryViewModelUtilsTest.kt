@@ -4,10 +4,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
-class LibraryViewModelUtilsTest {
+class LibraryViewModelUtilsTest : BaseUnitTest() {
 
     /** Two rows for one title mean a duplicate key in the grid, which crashes Compose. */
     @Test

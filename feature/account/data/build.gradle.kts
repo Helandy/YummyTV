@@ -26,6 +26,6 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinxJson)
     implementation(libs.play.services.auth.blockstore)
 
-    testImplementation(libs.junit)
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
 }

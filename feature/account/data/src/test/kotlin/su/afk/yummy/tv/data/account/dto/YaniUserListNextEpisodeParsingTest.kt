@@ -1,11 +1,12 @@
 package su.afk.yummy.tv.data.account.dto
 
-import su.afk.yummy.tv.data.account.dto.lists.YaniUserAnimeDto
-import su.afk.yummy.tv.data.account.dto.lists.YaniUserListResponseDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserAnimeDto
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserListResponseDto
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
 
 /**
@@ -13,7 +14,7 @@ import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
  * `/users/{id}/lists` — проверяем, что она доезжает до кэша, а её отсутствие или ноль
  * дают `null` (иначе на карточке появился бы отсчёт от эпохи).
  */
-class YaniUserListNextEpisodeParsingTest {
+class YaniUserListNextEpisodeParsingTest : BaseUnitTest() {
 
     @Test
     fun `next_episode reaches the cached list item`() {

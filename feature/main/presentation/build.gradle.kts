@@ -31,4 +31,6 @@ dependencies {
     implementation(project(":feature:settings:api"))
 
     implementation(libs.bundles.compose.presentation)
+
+    testImplementation(project(":core:testing"))
 }

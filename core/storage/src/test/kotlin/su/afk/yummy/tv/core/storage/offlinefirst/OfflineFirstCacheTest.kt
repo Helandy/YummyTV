@@ -9,10 +9,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 private data class FakeCache(val value: String)
 
-class OfflineFirstCacheTest {
+class OfflineFirstCacheTest : BaseUnitTest() {
 
     @Test
     fun `fresh cache is served without hitting the network`() = runTest {

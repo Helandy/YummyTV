@@ -31,6 +31,6 @@ dependencies {
     implementation(libs.bundles.compose.presentation)
     implementation(libs.coil.core)
 
-    testImplementation(libs.junit)
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
 }

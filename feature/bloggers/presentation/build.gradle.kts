@@ -16,4 +16,6 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)
+
+    testImplementation(project(":core:testing"))
 }

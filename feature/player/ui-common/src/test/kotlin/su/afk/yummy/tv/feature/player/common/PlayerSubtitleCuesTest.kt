@@ -3,9 +3,10 @@ package su.afk.yummy.tv.feature.player.common
 import androidx.media3.common.text.Cue
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 /** Одновременные реплики должны стоять друг над другом, а не поверх друг друга (issue #23). */
-class PlayerSubtitleCuesTest {
+class PlayerSubtitleCuesTest : BaseUnitTest() {
 
     @Test
     fun `две одновременные реплики склеиваются в один cue`() {

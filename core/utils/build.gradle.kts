@@ -23,6 +23,6 @@ dependencies {
     // для com.google.android.gms, поэтому проверка версии GMS работает и на API 30+.
     implementation(libs.play.services.base)
 
-    testImplementation(libs.junit)
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
 }

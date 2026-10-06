@@ -28,6 +28,6 @@ dependencies {
 
     add("ksp", libs.hilt.work.compiler)
 
-    testImplementation(libs.junit)
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
 }

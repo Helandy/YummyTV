@@ -6,8 +6,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class WatchedProgressRuleTest {
+class WatchedProgressRuleTest : BaseUnitTest() {
 
     @After
     fun resetRule() {

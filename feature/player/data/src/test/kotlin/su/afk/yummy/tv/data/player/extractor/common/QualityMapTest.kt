@@ -2,8 +2,9 @@ package su.afk.yummy.tv.data.player.extractor.common
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class QualityMapTest {
+class QualityMapTest : BaseUnitTest() {
 
     @Test
     fun `orders known keys first, leftovers appended in original order`() {
@@ -48,10 +49,14 @@ class QualityMapTest {
         val ordered = orderQualityMap(
             raw = raw,
             keyAliases = { key ->
-                if (key == "auto") listOf(key) else listOf(
-                    key,
-                    key.removeSuffix("p")
-                )
+                if (key == "auto") {
+                    listOf(key)
+                } else {
+                    listOf(
+                        key,
+                        key.removeSuffix("p"),
+                    )
+                }
             },
         )
 

@@ -3,8 +3,9 @@ package su.afk.yummy.tv.data.player.extractor.alloha
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class AllohaAssPositionFixTest {
+class AllohaAssPositionFixTest : BaseUnitTest() {
 
     private fun assWith(
         playRes: String = "PlayResX: 1280\nPlayResY: 720\n",

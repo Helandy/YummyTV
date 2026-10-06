@@ -3,13 +3,14 @@ package su.afk.yummy.tv.feature.details.mapper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
 
 /**
  * `/anime/{id}/videos` отдаёт плеер как «Плеер Kodik», а `/users/{id}/lists/subs` — как «Kodik»,
  * поэтому ключ плеера должен совпадать в обоих написаниях.
  */
-class SubscriptionKeysTest {
+class SubscriptionKeysTest : BaseUnitTest() {
 
     @Test
     fun `player id wins over the name spelling`() {

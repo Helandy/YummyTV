@@ -1,27 +1,30 @@
 package su.afk.yummy.tv.core.preferences.auth
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 /**
  * На кастомных прошивках AndroidKeyStore бывает нерабочим. Хранилище обязано отличать «шифр
  * недоступен» от «запись битая»: в первом случае сессию терять нельзя, иначе пользователь
  * бесконечно входит заново.
  */
-class AuthTokenStorageTest {
+class AuthTokenStorageTest : BaseUnitTest() {
 
     @Test
     fun `token survives a cipher that cannot decrypt or self-test`() = runTest {
-        val store = FakeRecordStore()
+        val store = StoredRecord()
         val healthy = storage(store)
         healthy.write("token")
         val record = store.record
 
-        val broken = storage(store, keystore = FakeCipher(TokenStorageMode.KEYSTORE, broken = true))
+        val broken = storage(store, keystore = cipher(TokenStorageMode.KEYSTORE, broken = true))
 
         assertEquals("", broken.read())
         assertEquals(record, store.record)
@@ -30,7 +33,7 @@ class AuthTokenStorageTest {
 
     @Test
     fun `unreadable record is dropped when the cipher is healthy`() = runTest {
-        val store = FakeRecordStore(record = "*not-a-valid-payload")
+        val store = StoredRecord(record = "*not-a-valid-payload")
         val storage = storage(store)
 
         assertEquals("", storage.read())
@@ -40,12 +43,12 @@ class AuthTokenStorageTest {
 
     @Test
     fun `transient failure is retried instead of wiping the session`() = runTest {
-        val store = FakeRecordStore()
-        val cipher = FakeCipher(TokenStorageMode.KEYSTORE)
-        val storage = storage(store, keystore = cipher)
+        val store = StoredRecord()
+        val failures = TransientFailures()
+        val storage = storage(store, keystore = cipher(TokenStorageMode.KEYSTORE, failures = failures))
         storage.write("token")
 
-        cipher.failuresLeft = 1
+        failures.left = 1
 
         assertEquals("token", storage.read())
         assertNotNull(store.record)
@@ -53,11 +56,11 @@ class AuthTokenStorageTest {
 
     @Test
     fun `write falls back when keystore encryption fails`() = runTest {
-        val store = FakeRecordStore()
+        val store = StoredRecord()
         val failures = mutableListOf<String>()
         val storage = storage(
-            store = store,
-            keystore = FakeCipher(TokenStorageMode.KEYSTORE, broken = true),
+            state = store,
+            keystore = cipher(TokenStorageMode.KEYSTORE, broken = true),
             onFailure = { message, _ -> failures += message },
         )
 
@@ -71,19 +74,19 @@ class AuthTokenStorageTest {
 
     @Test
     fun `fallback record is readable after restart`() = runTest {
-        val store = FakeRecordStore()
-        storage(store, keystore = FakeCipher(TokenStorageMode.KEYSTORE, broken = true))
+        val store = StoredRecord()
+        storage(store, keystore = cipher(TokenStorageMode.KEYSTORE, broken = true))
             .write("token")
 
         // Новый экземпляр = перезапуск процесса: режим поднимается из префов.
-        val restarted = storage(store, keystore = FakeCipher(TokenStorageMode.KEYSTORE, broken = true))
+        val restarted = storage(store, keystore = cipher(TokenStorageMode.KEYSTORE, broken = true))
 
         assertEquals("token", restarted.read())
     }
 
     @Test
     fun `blank token clears the record`() = runTest {
-        val store = FakeRecordStore()
+        val store = StoredRecord()
         val storage = storage(store)
         storage.write("token")
 
@@ -93,64 +96,60 @@ class AuthTokenStorageTest {
     }
 
     private fun storage(
-        store: FakeRecordStore,
-        keystore: FakeCipher = FakeCipher(TokenStorageMode.KEYSTORE),
+        state: StoredRecord,
+        keystore: TokenCipher = cipher(TokenStorageMode.KEYSTORE),
         onFailure: (String, Throwable?) -> Unit = { _, _ -> },
     ) = AuthTokenStorage(
-        store = store,
+        store = recordStore(state),
         cipherFactory = { mode ->
-            if (mode == TokenStorageMode.KEYSTORE) keystore else FakeCipher(TokenStorageMode.FALLBACK)
+            if (mode == TokenStorageMode.KEYSTORE) keystore else cipher(TokenStorageMode.FALLBACK)
         },
         onStorageFailure = onFailure,
         sleep = {},
     )
 
-    private class FakeRecordStore(
+    /** То, что хранилище записало в префы: переживает пересоздание [AuthTokenStorage]. */
+    private class StoredRecord(
         var record: String? = null,
         var mode: TokenStorageMode? = null,
-    ) : TokenRecordStore {
-        override fun readRecord(): String? = record
+    )
 
-        override fun writeRecord(record: String) {
-            this.record = record
-        }
+    /** Сколько ближайших расшифровок упадут временным отказом. */
+    private class TransientFailures(var left: Int = 0)
 
-        override fun removeRecord() {
-            record = null
-        }
-
-        override fun readMode(): TokenStorageMode? = mode
-
-        override fun writeMode(mode: TokenStorageMode) {
-            this.mode = mode
-        }
+    private fun recordStore(state: StoredRecord) = mockk<TokenRecordStore> {
+        every { readRecord() } answers { state.record }
+        every { writeRecord(any()) } answers { state.record = firstArg() }
+        every { removeRecord() } answers { state.record = null }
+        every { readMode() } answers { state.mode }
+        every { writeMode(any()) } answers { state.mode = firstArg() }
     }
 
-    /** [broken] — шифр недоступен целиком, [failuresLeft] — временный отказ на N попыток. */
-    private class FakeCipher(
-        override val mode: TokenStorageMode,
-        private val broken: Boolean = false,
-        var failuresLeft: Int = 0,
-    ) : TokenCipher {
-        override fun encrypt(value: String): String {
+    /** [broken] — шифр недоступен целиком, [failures] — временный отказ на N попыток. */
+    private fun cipher(
+        mode: TokenStorageMode,
+        broken: Boolean = false,
+        failures: TransientFailures = TransientFailures(),
+    ) = mockk<TokenCipher> {
+        every { this@mockk.mode } returns mode
+        every { encrypt(any()) } answers {
             check(!broken) { "cipher is unavailable" }
-            return PREFIX + value
+            CIPHER_PREFIX + firstArg<String>()
         }
-
-        override fun decrypt(value: String): String {
+        every { decrypt(any()) } answers {
             check(!broken) { "cipher is unavailable" }
-            if (failuresLeft > 0) {
-                failuresLeft--
+            if (failures.left > 0) {
+                failures.left--
                 error("transient failure")
             }
-            require(value.startsWith(PREFIX)) { "unreadable record" }
-            return value.removePrefix(PREFIX)
+            val value = firstArg<String>()
+            require(value.startsWith(CIPHER_PREFIX)) { "unreadable record" }
+            value.removePrefix(CIPHER_PREFIX)
         }
+        every { selfTest() } answers { !broken && failures.left == 0 }
+    }
 
-        override fun selfTest(): Boolean = !broken && failuresLeft == 0
-
-        private companion object {
-            const val PREFIX = "enc:"
-        }
+    private companion object {
+        const val CIPHER_PREFIX = "enc:"
     }
 }

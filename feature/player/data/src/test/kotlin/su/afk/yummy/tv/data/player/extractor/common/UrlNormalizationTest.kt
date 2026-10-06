@@ -3,14 +3,15 @@ package su.afk.yummy.tv.data.player.extractor.common
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class UrlNormalizationTest {
+class UrlNormalizationTest : BaseUnitTest() {
 
     @Test
     fun `protocol-relative url becomes https`() {
         assertEquals(
             "https://cdn.example.com/a.m3u8",
-            normalizeUrlScheme("//cdn.example.com/a.m3u8")
+            normalizeUrlScheme("//cdn.example.com/a.m3u8"),
         )
     }
 
@@ -18,7 +19,7 @@ class UrlNormalizationTest {
     fun `plain http is upgraded to https`() {
         assertEquals(
             "https://cdn.example.com/a.m3u8",
-            normalizeUrlScheme("http://cdn.example.com/a.m3u8")
+            normalizeUrlScheme("http://cdn.example.com/a.m3u8"),
         )
     }
 
@@ -26,7 +27,7 @@ class UrlNormalizationTest {
     fun `https passes through unchanged`() {
         assertEquals(
             "https://cdn.example.com/a.m3u8",
-            normalizeUrlScheme("https://cdn.example.com/a.m3u8")
+            normalizeUrlScheme("https://cdn.example.com/a.m3u8"),
         )
     }
 
@@ -66,7 +67,8 @@ class UrlNormalizationTest {
         val resolved = resolveRelativeUrl(
             raw = "abc",
             baseUrl = "not a url",
-            fallback = { "https://fallback/abc" })
+            fallback = { "https://fallback/abc" },
+        )
         assertEquals("https://fallback/abc", resolved)
     }
 

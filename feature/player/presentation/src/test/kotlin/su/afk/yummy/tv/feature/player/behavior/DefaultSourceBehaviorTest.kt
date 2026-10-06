@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -8,54 +10,57 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackRetryHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 
-class DefaultSourceBehaviorTest {
+class DefaultSourceBehaviorTest : BaseUnitTest() {
 
-    private fun TestScope.setUp(): Pair<DefaultSourceBehavior, FakePlayerSourceHost> {
-        val host = FakePlayerSourceHost(backgroundScope, onlineState("Kodik"))
+    private fun TestScope.createBehavior(): Pair<DefaultSourceBehavior, PlayerSourceHostMock> {
+        val harness = PlayerSourceHostMock(backgroundScope, onlineState("Kodik"))
         val behavior = DefaultSourceBehavior(
             retry = PlayerPlaybackRetryHandler(),
-            analytics = PlayerAnalytics(NoOpAnalyticsTracker),
+            analytics = PlayerAnalytics(mockk(relaxed = true)),
         )
-        behavior.attach(host)
-        return behavior to host
+        behavior.attach(harness.host)
+        return behavior to harness
     }
 
     @Test
     fun `silent retry re-resolves the stream while keeping the frame`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
 
         assertTrue(behavior.onPlaybackError(playbackError()))
-        assertTrue(host.state.isPlaybackRecovering)
-        assertNull(host.state.playerError)
+        assertTrue(harness.state.isPlaybackRecovering)
+        assertNull(harness.state.playerError)
 
         runCurrent()
-        assertEquals(1, host.state.retryKey)
-        assertEquals(1, host.closedSessions)
-        val request = host.loadRequests.single()
+        assertEquals(0, harness.state.retryKey)
+        verify(exactly = 1) { harness.host.closeSourceSessions() }
+        val request = harness.loadRequests.single()
         assertTrue(request.forceRefresh)
         assertTrue(request.refreshSourcesOnFailure)
     }
 
     @Test
     fun `gives up after the retry budget is spent`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
 
         repeat(PlayerPlaybackRetryHandler.MAX_ATTEMPTS) {
             assertTrue(behavior.onPlaybackError(playbackError()))
             runCurrent()
+            behavior.onStreamResolved(PlayerStreamLoadResult.State(harness.state, false), failed = false)
         }
 
         assertFalse(behavior.onPlaybackError(playbackError()))
         assertEquals(PlayerPlaybackRetryHandler.MAX_ATTEMPTS, behavior.retryAttempts)
-        assertEquals(PlayerPlaybackRetryHandler.MAX_ATTEMPTS, host.loadRequests.size)
+        assertEquals(PlayerPlaybackRetryHandler.MAX_ATTEMPTS, harness.loadRequests.size)
     }
 
     @Test
     fun `successful start frees the retry budget`() = runTest {
-        val (behavior, _) = setUp()
+        val (behavior, _) = createBehavior()
         repeat(PlayerPlaybackRetryHandler.MAX_ATTEMPTS) { behavior.onPlaybackError(playbackError()) }
 
         behavior.onPlaybackReady()
@@ -66,19 +71,19 @@ class DefaultSourceBehaviorTest {
 
     @Test
     fun `retry for a previous episode is dropped`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
         behavior.onPlaybackError(playbackError())
 
-        host.update { onlineState("Kodik", iframeUrl = "https://kodik.example/episode-2") }
+        harness.update { onlineState("Kodik", iframeUrl = "https://kodik.example/episode-2") }
         runCurrent()
 
-        assertTrue(host.loadRequests.isEmpty())
+        assertTrue(harness.loadRequests.isEmpty())
     }
 
     @Test
     fun `offline playback is not handled`() = runTest {
-        val (behavior, host) = setUp()
-        assertTrue(behavior.handles(host.state))
-        assertFalse(behavior.handles(host.state.copy(isOfflinePlayback = true)))
+        val (behavior, harness) = createBehavior()
+        assertTrue(behavior.handles(harness.state))
+        assertFalse(behavior.handles(harness.state.copy(isOfflinePlayback = true)))
     }
 }

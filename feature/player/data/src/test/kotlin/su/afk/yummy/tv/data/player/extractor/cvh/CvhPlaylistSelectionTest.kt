@@ -3,8 +3,9 @@ package su.afk.yummy.tv.data.player.extractor.cvh
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class CvhPlaylistSelectionTest {
+class CvhPlaylistSelectionTest : BaseUnitTest() {
 
     private fun item(
         vkId: String,

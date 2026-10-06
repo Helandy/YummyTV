@@ -1,7 +1,10 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
-import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
@@ -11,53 +14,35 @@ import su.afk.yummy.tv.feature.player.host.PlayerChangePlayerHint
 import su.afk.yummy.tv.feature.player.host.PlayerSourceHost
 import su.afk.yummy.tv.feature.player.host.PlayerStreamLoadRequest
 
-internal class FakePlayerSourceHost(
-    override val scope: CoroutineScope,
+/**
+ * mockk-хост для поведений источника: состояние ведёт как настоящий хост (через reducer),
+ * параметры [PlayerSourceHost.loadStream] копит в [loadRequests], остальные вызовы проверяются `verify`.
+ */
+internal class PlayerSourceHostMock(
+    scope: CoroutineScope,
     initial: PlayerState.State,
-) : PlayerSourceHost {
-    override var state: PlayerState.State = initial
+) {
+    var state: PlayerState.State = initial
         private set
-    override val changePlayerHint = PlayerChangePlayerHint(scope, ::update)
 
     val loadRequests = mutableListOf<PlayerStreamLoadRequest>()
-    var cancelledLoads = 0
-        private set
-    var closedSessions = 0
-        private set
 
-    override fun update(reducer: PlayerState.State.() -> PlayerState.State) {
+    val host: PlayerSourceHost = mockk(relaxed = true) {
+        every { this@mockk.scope } returns scope
+        every { this@mockk.state } answers { this@PlayerSourceHostMock.state }
+        every { update(any()) } answers { this@PlayerSourceHostMock.update(firstArg()) }
+        every { changePlayerHint } returns PlayerChangePlayerHint(scope, this@PlayerSourceHostMock::update)
+        every { loadStream(capture(loadRequests)) } just Runs
+        every { streamErrorMessage() } returns STREAM_ERROR
+    }
+
+    fun update(reducer: PlayerState.State.() -> PlayerState.State) {
         state = state.reducer()
     }
-
-    override fun loadStream(request: PlayerStreamLoadRequest) {
-        loadRequests += request
-    }
-
-    var sourceRefreshRequests = 0
-
-    override fun refreshSourcesAndReloadStream() {
-        sourceRefreshRequests++
-    }
-
-    override fun cancelStreamLoad() {
-        cancelledLoads++
-    }
-
-    override fun closeSourceSessions() {
-        closedSessions++
-    }
-
-    override fun streamErrorMessage(): String = STREAM_ERROR
 
     companion object {
         const val STREAM_ERROR = "stream error"
     }
-}
-
-internal object NoOpAnalyticsTracker : AnalyticsTracker {
-    override fun track(eventName: String, params: Map<String, String>) = Unit
-    override fun reportError(message: String, throwable: Throwable, groupIdentifier: String?) = Unit
-    override fun log(tag: String, throwable: Throwable?, message: () -> String) = Unit
 }
 
 /** Онлайн-источник с одной серией у балансера [balancer]. */

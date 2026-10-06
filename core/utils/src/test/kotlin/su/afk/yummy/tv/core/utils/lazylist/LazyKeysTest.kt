@@ -3,8 +3,9 @@ package su.afk.yummy.tv.core.utils.lazylist
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class LazyKeysTest {
+class LazyKeysTest : BaseUnitTest() {
 
     @Test
     fun `the same id in different sections gives different keys`() {

@@ -3,13 +3,14 @@ package su.afk.yummy.tv.feature.player.utils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 
-class PlayerSourceSelectionTest {
+class PlayerSourceSelectionTest : BaseUnitTest() {
 
     private val graph = PlayerSourceGraph(
         balancers = listOf(

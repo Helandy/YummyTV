@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.details.details.DetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.details.resolveDetailsPlayerSelection
 import su.afk.yummy.tv.feature.details.episodes.dubbings.selectEpisodeDubbingLaunchVideo
@@ -14,7 +15,7 @@ import su.afk.yummy.tv.feature.details.mapper.episodeDubbingItems
  * и как `"2"` (остальные балансеры). Точное сравнение строк схлопывало выбор до одного
  * плеера и запрещало смену озвучки.
  */
-class EpisodeDubbingSelectionTest {
+class EpisodeDubbingSelectionTest : BaseUnitTest() {
 
     private val videos = listOf(
         video(id = 1, episode = "02", dubbing = MC, player = "Плеер Kodik", views = 5392),

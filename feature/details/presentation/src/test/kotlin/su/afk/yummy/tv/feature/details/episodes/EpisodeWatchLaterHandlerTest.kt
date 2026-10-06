@@ -1,13 +1,14 @@
 package su.afk.yummy.tv.feature.details.episodes
 
-import su.afk.yummy.tv.core.utils.coroutines.AppClock
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
-import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.watchlater.repository.WatchLaterRepository
 import su.afk.yummy.tv.domain.watchlater.usecase.AddWatchLaterEpisodeUseCase
 import su.afk.yummy.tv.domain.watchlater.usecase.RemoveWatchLaterEpisodeUseCase
@@ -15,12 +16,18 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
 
 /** Пометка «отложить просмотр» — переключатель, сервера у него нет. */
-class EpisodeWatchLaterHandlerTest {
+class EpisodeWatchLaterHandlerTest : BaseUnitTest() {
 
-    private val repository = FakeWatchLaterRepository()
+    private val repository: WatchLaterRepository = mockk(relaxed = true)
+    private lateinit var clock: AppClock
 
-    private val handler = EpisodeWatchLaterHandler(
-        addWatchLaterEpisode = AddWatchLaterEpisodeUseCase(repository, FixedClock),
+    @Before
+    fun setUp() {
+        clock = mockk<AppClock> { every { nowMillis() } returns NOW }
+    }
+
+    private fun createHandler() = EpisodeWatchLaterHandler(
+        addWatchLaterEpisode = AddWatchLaterEpisodeUseCase(repository, clock),
         removeWatchLaterEpisode = RemoveWatchLaterEpisodeUseCase(repository),
     )
 
@@ -32,45 +39,31 @@ class EpisodeWatchLaterHandlerTest {
 
     @Test
     fun `adds episode with title metadata when it is not postponed yet`() = runTest {
-        handler.toggle(animeId = 7, episode = "3", isInWatchLater = false, meta = meta)
+        createHandler().toggle(animeId = 7, episode = "3", isInWatchLater = false, meta = meta)
 
-        val added = repository.added.single()
-        assertEquals(7, added.animeId)
-        assertEquals("3", added.episode)
-        assertEquals("Title", added.animeTitle)
-        assertEquals("shot", added.screenshotUrl)
-        assertTrue(repository.removed.isEmpty())
+        coVerify(exactly = 1) {
+            repository.add(
+                withArg {
+                    assertEquals(7, it.animeId)
+                    assertEquals("3", it.episode)
+                    assertEquals("Title", it.animeTitle)
+                    assertEquals("shot", it.screenshotUrl)
+                    assertEquals(NOW, it.addedAt)
+                },
+            )
+        }
+        coVerify(exactly = 0) { repository.remove(any(), any()) }
     }
 
     @Test
     fun `removes episode when it is already postponed`() = runTest {
-        handler.toggle(animeId = 7, episode = "3", isInWatchLater = true, meta = meta)
+        createHandler().toggle(animeId = 7, episode = "3", isInWatchLater = true, meta = meta)
 
-        assertEquals(7 to "3", repository.removed.single())
-        assertTrue(repository.added.isEmpty())
+        coVerify(exactly = 1) { repository.remove(7, "3") }
+        coVerify(exactly = 0) { repository.add(any()) }
     }
 
-    private class FakeWatchLaterRepository : WatchLaterRepository {
-        val added = mutableListOf<WatchLaterItem>()
-        val removed = mutableListOf<Pair<Int, String>>()
-
-        override fun observeAll(): Flow<List<WatchLaterItem>> = flowOf(added.toList())
-
-        override fun observeEpisodes(animeId: Int): Flow<Set<String>> =
-            flowOf(added.filter { it.animeId == animeId }.mapTo(mutableSetOf()) { it.episode })
-
-        override suspend fun add(item: WatchLaterItem) {
-            added += item
-        }
-
-        override suspend fun remove(animeId: Int, episode: String) {
-            removed += animeId to episode
-        }
-
-        override suspend fun pruneWatched() = Unit
+    private companion object {
+        const val NOW = 1_000L
     }
-}
-
-internal object FixedClock : AppClock {
-    override fun nowMillis(): Long = 1_000L
 }

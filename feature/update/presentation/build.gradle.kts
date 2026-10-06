@@ -17,4 +17,6 @@ dependencies {
     implementation(project(":feature:update:api"))
 
     implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(project(":core:testing"))
 }

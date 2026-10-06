@@ -33,4 +33,6 @@ dependencies {
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
+
+    testImplementation(project(":core:testing"))
 }

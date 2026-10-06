@@ -1,11 +1,12 @@
 package su.afk.yummy.tv.data.account.dto
 
-import su.afk.yummy.tv.data.account.dto.lists.YaniUserListResponseDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.data.account.dto.lists.YaniUserListResponseDto
 import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
 
 /**
@@ -13,7 +14,7 @@ import su.afk.yummy.tv.data.account.storage.mapper.toUserListCache
  * проверяем оба варианта, а мусор и отсутствие поля должны давать `null` — иначе на карточке
  * рядом с годом появилась бы пустая или неверная подпись.
  */
-class YaniUserListSeasonParsingTest {
+class YaniUserListSeasonParsingTest : BaseUnitTest() {
 
     @Test
     fun `numeric and slug seasons reach the cached list item`() {

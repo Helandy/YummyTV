@@ -1,5 +1,9 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -8,62 +12,76 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
-import su.afk.yummy.tv.domain.player.model.AllohaTrackPreference
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.domain.player.repository.AllohaTrackPreferenceRepository
 import su.afk.yummy.tv.domain.player.usecase.GetAllohaTrackPreferenceUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaAudioSelectionUseCase
 import su.afk.yummy.tv.domain.player.usecase.SaveAllohaSubtitleSelectionUseCase
-import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaRecoveryHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaSessionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerAllohaTrackPreferenceHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerStreamLoadResult
 
-class AllohaSourceBehaviorTest {
+class AllohaSourceBehaviorTest : BaseUnitTest() {
 
-    private fun TestScope.setUp(): Pair<AllohaSourceBehavior, FakePlayerSourceHost> {
-        val host = FakePlayerSourceHost(backgroundScope, onlineState("Alloha").copy(selectedQuality = "720p"))
+    private val sessions: AllohaPlaybackSessionRepository = mockk(relaxed = true)
+    private val trackPreferences: AllohaTrackPreferenceRepository = mockk(relaxed = true)
+
+    @Before
+    fun setUp() {
+        with(sessions) {
+            every { find(any()) } returns null
+            every { activate(any()) } answers { firstArg() }
+        }
+        with(trackPreferences) {
+            coEvery { get(any(), any(), any()) } returns null
+        }
+    }
+
+    private fun TestScope.createBehavior(): Pair<AllohaSourceBehavior, PlayerSourceHostMock> {
+        val harness = PlayerSourceHostMock(backgroundScope, onlineState("Alloha").copy(selectedQuality = "720p"))
         val behavior = AllohaSourceBehavior(
-            session = PlayerAllohaSessionHandler(NoOpSessionManager),
+            session = PlayerAllohaSessionHandler(sessions),
             recovery = PlayerAllohaRecoveryHandler(),
             trackPreference = PlayerAllohaTrackPreferenceHandler(
-                getPreference = GetAllohaTrackPreferenceUseCase(EmptyTrackPreferenceRepository),
-                saveAudio = SaveAllohaAudioSelectionUseCase(EmptyTrackPreferenceRepository),
-                saveSubtitle = SaveAllohaSubtitleSelectionUseCase(EmptyTrackPreferenceRepository),
+                getPreference = GetAllohaTrackPreferenceUseCase(trackPreferences),
+                saveAudio = SaveAllohaAudioSelectionUseCase(trackPreferences),
+                saveSubtitle = SaveAllohaSubtitleSelectionUseCase(trackPreferences),
             ),
-            analytics = PlayerAnalytics(NoOpAnalyticsTracker),
+            analytics = PlayerAnalytics(mockk(relaxed = true)),
         )
-        behavior.attach(host)
-        return behavior to host
+        behavior.attach(harness.host)
+        return behavior to harness
     }
 
     @Test
     fun `handles only online Alloha sources`() = runTest {
-        val (behavior, host) = setUp()
-        assertTrue(behavior.handles(host.state))
-        assertFalse(behavior.handles(host.state.copy(isOfflinePlayback = true)))
+        val (behavior, harness) = createBehavior()
+        assertTrue(behavior.handles(harness.state))
+        assertFalse(behavior.handles(harness.state.copy(isOfflinePlayback = true)))
         assertFalse(behavior.handles(onlineState("Kodik")))
     }
 
     @Test
     fun `playback error opens a fresh session after a delay`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
 
         assertTrue(behavior.onPlaybackError(playbackError(positionMs = 65_000L)))
         assertTrue(behavior.isRecovering)
-        assertTrue(host.state.isPlaybackRecovering)
-        assertEquals(65_000L, host.state.resumeFromMs)
-        assertEquals(1, host.cancelledLoads)
+        assertTrue(harness.state.isPlaybackRecovering)
+        assertEquals(65_000L, harness.state.resumeFromMs)
+        verify(exactly = 1) { harness.host.cancelStreamLoad() }
         assertTrue(behavior.keepsStreamWhileResolving())
 
         runCurrent()
-        assertTrue(host.loadRequests.isEmpty())
+        assertTrue(harness.loadRequests.isEmpty())
 
         advanceTimeBy(1_001L)
-        val request = host.loadRequests.single()
+        val request = harness.loadRequests.single()
         assertTrue(request.forceFreshAllohaSession)
         assertFalse(request.refreshSourcesOnFailure)
         assertEquals("720p", request.selectedQualityOverride)
@@ -71,19 +89,19 @@ class AllohaSourceBehaviorTest {
 
     @Test
     fun `duplicate errors during recovery are ignored`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
         behavior.onPlaybackError(playbackError())
 
         assertTrue(behavior.onPlaybackError(playbackError()))
         advanceTimeBy(1_001L)
 
-        assertEquals(1, host.cancelledLoads)
-        assertEquals(1, host.loadRequests.size)
+        verify(exactly = 1) { harness.host.cancelStreamLoad() }
+        assertEquals(1, harness.loadRequests.size)
     }
 
     @Test
     fun `recovery gives up with a real error after the attempt cap`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
         behavior.onRetryRequested()
         runCurrent()
 
@@ -91,47 +109,35 @@ class AllohaSourceBehaviorTest {
             assertTrue(behavior.retriesFailedResolve())
             advanceTimeBy(1_001L)
         }
-        assertEquals(PlayerAllohaRecoveryHandler.MAX_ATTEMPTS, host.loadRequests.size)
+        assertEquals(PlayerAllohaRecoveryHandler.MAX_ATTEMPTS, harness.loadRequests.size)
 
         assertTrue(behavior.retriesFailedResolve())
 
         assertFalse(behavior.isRecovering)
-        assertFalse(host.state.isPlaybackRecovering)
-        assertTrue(host.state.showChangePlayerHint)
-        assertEquals(FakePlayerSourceHost.STREAM_ERROR, host.state.playerError)
+        assertFalse(harness.state.isPlaybackRecovering)
+        assertTrue(harness.state.showChangePlayerHint)
+        assertEquals(PlayerSourceHostMock.STREAM_ERROR, harness.state.playerError)
     }
 
     @Test
     fun `resolved stream completes the recovery`() = runTest {
-        val (behavior, host) = setUp()
+        val (behavior, harness) = createBehavior()
         behavior.onPlaybackError(playbackError(positionMs = 10_000L))
         behavior.onPlaybackPositionChanged(12_000L)
         assertEquals(12_000L, behavior.recoveryResumePositionMs())
 
-        val completed = behavior.onStreamResolved(PlayerStreamLoadResult.State(host.state, false), failed = false)
+        val completed = behavior.onStreamResolved(PlayerStreamLoadResult.State(harness.state, false), failed = false)
 
         assertTrue(completed)
         assertFalse(behavior.isRecovering)
         assertNull(behavior.recoveryResumePositionMs())
         advanceTimeBy(1_001L)
-        assertTrue(host.loadRequests.isEmpty())
+        assertTrue(harness.loadRequests.isEmpty())
     }
 
     @Test
     fun `failed resolve is not retried outside of recovery`() = runTest {
-        val (behavior, _) = setUp()
+        val (behavior, _) = createBehavior()
         assertFalse(behavior.retriesFailedResolve())
-    }
-
-    private object NoOpSessionManager : AllohaPlaybackSessionRepository {
-        override fun find(sourceKey: String): AllohaStreamSession? = null
-        override fun activate(session: AllohaStreamSession): AllohaStreamSession = session
-        override fun release(session: AllohaStreamSession, immediately: Boolean) = Unit
-        override fun closeActive() = Unit
-    }
-
-    private object EmptyTrackPreferenceRepository : AllohaTrackPreferenceRepository {
-        override suspend fun get(animeId: Int, dubbing: String, player: String): AllohaTrackPreference? = null
-        override suspend fun save(preference: AllohaTrackPreference) = Unit
     }
 }

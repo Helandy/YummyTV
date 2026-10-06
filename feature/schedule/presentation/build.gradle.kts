@@ -19,4 +19,6 @@ dependencies {
     implementation(project(":feature:details:api"))
 
     implementation(libs.bundles.compose.presentation)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

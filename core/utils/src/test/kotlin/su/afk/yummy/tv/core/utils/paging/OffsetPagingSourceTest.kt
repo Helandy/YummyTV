@@ -4,12 +4,13 @@ import androidx.paging.PagingSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 /**
  * A repeat across pages is what crashes a lazy list with `Key "..." was already used`,
  * so de-duplication by [itemKey] is covered on its own.
  */
-class OffsetPagingSourceTest {
+class OffsetPagingSourceTest : BaseUnitTest() {
 
     private data class Item(val id: Int)
 

@@ -3,12 +3,13 @@ package su.afk.yummy.tv.data.account.localauth
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 /**
  * Политика PIN отвечает за то, что перебор кода на ТВ конечен: после лимита неудач и по истечении
  * срока сопряжение обязано отказывать, иначе шестизначный код можно было бы подобрать.
  */
-class PairingSessionTest {
+class PairingSessionTest : BaseUnitTest() {
 
     @Test
     fun `fresh session accepts requests`() {

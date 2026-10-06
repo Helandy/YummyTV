@@ -4,8 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class SafFileNamesTest {
+class SafFileNamesTest : BaseUnitTest() {
 
     @Test
     fun `кириллическое имя укладывается в лимит байтов, а не символов`() {

@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
 
 /**
@@ -12,7 +13,7 @@ import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
  * восстанавливалось сравнением названий озвучек, и одна подписка подсвечивала весь балансер.
  * Названия здесь реальные, из `GET /anime/{id}/videos`.
  */
-class SubscriptionOptionMapperTest {
+class SubscriptionOptionMapperTest : BaseUnitTest() {
 
     private val videos = listOf(
         video(id = 10, episode = "1", dubbing = SUBS, player = KODIK, subscribed = true),

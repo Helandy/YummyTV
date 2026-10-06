@@ -24,4 +24,6 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.hilt.navigation.compose)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

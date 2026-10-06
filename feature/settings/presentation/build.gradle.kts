@@ -22,4 +22,6 @@ dependencies {
     implementation(project(":feature:video-download:domain"))
 
     implementation(libs.androidx.lifecycle.viewmodelCompose)
+
+    testImplementation(project(":core:testing"))
 }

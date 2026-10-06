@@ -1,16 +1,23 @@
 package su.afk.yummy.tv.feature.details.episodes
 
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import io.mockk.MockKMatcherScope
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
-import su.afk.yummy.tv.domain.account.model.VideoWatchSyncItem
-import su.afk.yummy.tv.domain.account.model.AccountMutationErrorEvent
+import su.afk.yummy.tv.core.model.error.isNetworkError
+import su.afk.yummy.tv.core.model.mutation.PendingMutation
+import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
+import su.afk.yummy.tv.core.testing.BaseUnitTest
+import su.afk.yummy.tv.core.utils.coroutines.AppClock
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.repository.VideoWatchesRepository
 import su.afk.yummy.tv.domain.account.usecase.RemoveWatchedVideosUseCase
@@ -19,26 +26,47 @@ import su.afk.yummy.tv.domain.player.repository.WatchProgressRepository
 import su.afk.yummy.tv.domain.player.usecase.ClearEpisodeWatchProgressUseCase
 import su.afk.yummy.tv.domain.player.usecase.MarkEpisodeWatchedLocallyUseCase
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
-import su.afk.yummy.tv.core.model.mutation.PendingMutation
-import su.afk.yummy.tv.core.model.mutation.PendingMutationQueue
-import su.afk.yummy.tv.core.model.error.isNetworkError
 import java.io.IOException
 
 /**
  * Ручная отметка серии просмотренной: локально это позиция, равная длительности, на сервере —
  * время у конца серии без добавления просмотренных секунд.
  */
-class EpisodeWatchedHandlerTest {
+class EpisodeWatchedHandlerTest : BaseUnitTest() {
 
-    private val progressRepository = FakeWatchProgressRepository()
-    private val watchesRepository = FakeVideoWatchesRepository()
-    private val queue = FakePendingMutationQueue()
+    private val progressRepository: WatchProgressRepository = mockk(relaxed = true)
+    private val watchesRepository: VideoWatchesRepository = mockk()
+    private lateinit var clock: AppClock
+    private val notifier: AccountMutationErrorRepository = mockk(relaxed = true)
+    private lateinit var enqueued: MutableList<PendingMutation>
+    private val queue: PendingMutationQueue = mockk()
 
-    private val handler = EpisodeWatchedHandler(
-        markEpisodeWatchedLocally = MarkEpisodeWatchedLocallyUseCase(progressRepository, FixedClock),
+    @Before
+    fun setUp() {
+        with(progressRepository) {
+            coEvery { get(any(), any()) } returns null
+            coEvery { allMeaningfulVideoProgress() } returns emptyList()
+        }
+        with(watchesRepository) {
+            coEvery { markWatched(any(), any(), any(), any()) } returns true
+            coEvery { removeWatched(any()) } returns true
+        }
+        clock = mockk<AppClock> { every { nowMillis() } returns 1_000L }
+        enqueued = mutableListOf()
+        with(queue) {
+            coEvery { enqueueOnNetworkFailure(any(), any()) } coAnswers {
+                secondArg<Throwable>().isNetworkError().also { queued ->
+                    if (queued) enqueued += firstArg<PendingMutation>()
+                }
+            }
+        }
+    }
+
+    private fun createHandler() = EpisodeWatchedHandler(
+        markEpisodeWatchedLocally = MarkEpisodeWatchedLocallyUseCase(progressRepository, clock),
         clearEpisodeWatchProgress = ClearEpisodeWatchProgressUseCase(progressRepository),
         saveVideoWatchProgress = SaveVideoWatchProgressUseCase(watchesRepository),
-        removeWatchedVideos = RemoveWatchedVideosUseCase(watchesRepository, NoopNotifier),
+        removeWatchedVideos = RemoveWatchedVideosUseCase(watchesRepository, notifier),
         pendingMutationQueue = queue,
     )
 
@@ -55,7 +83,7 @@ class EpisodeWatchedHandlerTest {
 
     @Test
     fun `mark writes full position locally and end time to the server`() = runTest {
-        val succeeded = handler.markWatched(
+        val succeeded = createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -66,23 +94,17 @@ class EpisodeWatchedHandlerTest {
         )
 
         assertTrue(succeeded)
-        val saved = progressRepository.saved.single()
         // Озвучка по умолчанию для тайтла, а не первая в списке.
-        assertEquals(2, saved.videoId)
-        assertEquals(1_500_000L, saved.durationMs)
-        assertEquals(saved.durationMs, saved.positionMs)
-
-        val request = watchesRepository.marked.single()
-        assertEquals(2, request.videoId)
-        assertEquals(1_500, request.durationSeconds)
-        assertEquals(1_490, request.timeSeconds)
-        // Фактически серия не просматривалась, поэтому spent_time расти не должен.
-        assertTrue(request.times.isEmpty())
+        coVerify(exactly = 1) { savedWith(progressRepository, videoId = 2, positionMs = 1_500_000L, durationMs = 1_500_000L) }
+        // Фактически серия не просматривалась, поэтому spent_time расти не должен (times пуст).
+        coVerify(exactly = 1) {
+            watchesRepository.markWatched(videoId = 2, timeSeconds = 1_490, durationSeconds = 1_500, times = emptyList())
+        }
     }
 
     @Test
     fun `mark prefers the video that already has progress`() = runTest {
-        handler.markWatched(
+        createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -92,15 +114,13 @@ class EpisodeWatchedHandlerTest {
             isSignedIn = true,
         )
 
-        val saved = progressRepository.saved.single()
-        assertEquals(1, saved.videoId)
         // Длительность известной записи важнее длительности из списка серий.
-        assertEquals(1_320_000L, saved.durationMs)
+        coVerify(exactly = 1) { savedWith(progressRepository, videoId = 1, positionMs = 1_320_000L, durationMs = 1_320_000L) }
     }
 
     @Test
     fun `mark falls back to a typical duration when the api reports none`() = runTest {
-        handler.markWatched(
+        createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = listOf(video(id = 5, dubbing = BEST, durationSeconds = null)),
@@ -110,14 +130,14 @@ class EpisodeWatchedHandlerTest {
             isSignedIn = true,
         )
 
-        assertEquals(24 * 60 * 1_000L, progressRepository.saved.single().durationMs)
+        coVerify(exactly = 1) { savedWith(progressRepository, videoId = 5, positionMs = any(), durationMs = 24 * 60 * 1_000L) }
     }
 
     @Test
     fun `mark keeps the local record when the server call fails`() = runTest {
-        watchesRepository.failMark = true
+        coEvery { watchesRepository.markWatched(any(), any(), any(), any()) } throws IllegalStateException("network")
 
-        val succeeded = handler.markWatched(
+        val succeeded = createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -128,16 +148,16 @@ class EpisodeWatchedHandlerTest {
         )
 
         assertFalse(succeeded)
-        assertEquals(1, progressRepository.saved.size)
+        coVerify(exactly = 1) { savedWith(progressRepository) }
         // Ошибка не сетевая — повторять нечего, очередь остаётся пустой.
-        assertTrue(queue.enqueued.isEmpty())
+        assertTrue(enqueued.isEmpty())
     }
 
     @Test
     fun `mark queues the server call when the device is offline`() = runTest {
-        watchesRepository.markError = IOException("offline")
+        coEvery { watchesRepository.markWatched(any(), any(), any(), any()) } throws IOException("offline")
 
-        val succeeded = handler.markWatched(
+        val succeeded = createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -149,15 +169,15 @@ class EpisodeWatchedHandlerTest {
 
         // Локальная отметка уже проставлена, а доставку берёт на себя offline-очередь.
         assertTrue(succeeded)
-        assertEquals(1, progressRepository.saved.size)
-        assertEquals(PendingMutation.MarkWatched(2, 1_490, 1_500), queue.enqueued.single())
+        coVerify(exactly = 1) { savedWith(progressRepository) }
+        assertEquals(listOf<PendingMutation>(PendingMutation.MarkWatched(2, 1_490, 1_500)), enqueued)
     }
 
     @Test
     fun `unmark queues the server call when the device is offline`() = runTest {
-        watchesRepository.removeError = IOException("offline")
+        coEvery { watchesRepository.removeWatched(any()) } throws IOException("offline")
 
-        val succeeded = handler.unmarkWatched(
+        val succeeded = createHandler().unmarkWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -165,13 +185,13 @@ class EpisodeWatchedHandlerTest {
         )
 
         assertTrue(succeeded)
-        assertEquals(7 to "3", progressRepository.deleted.single())
-        assertEquals(PendingMutation.RemoveWatched(listOf(1, 2)), queue.enqueued.single())
+        coVerify(exactly = 1) { progressRepository.delete(7, "3") }
+        assertEquals(listOf<PendingMutation>(PendingMutation.RemoveWatched(listOf(1, 2))), enqueued)
     }
 
     @Test
     fun `mark stays local when signed out`() = runTest {
-        val succeeded = handler.markWatched(
+        val succeeded = createHandler().markWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -182,13 +202,13 @@ class EpisodeWatchedHandlerTest {
         )
 
         assertTrue(succeeded)
-        assertEquals(1, progressRepository.saved.size)
-        assertTrue(watchesRepository.marked.isEmpty())
+        coVerify(exactly = 1) { savedWith(progressRepository) }
+        coVerify(exactly = 0) { watchesRepository.markWatched(any(), any(), any(), any()) }
     }
 
     @Test
     fun `unmark clears the local record and every dubbing on the server`() = runTest {
-        val succeeded = handler.unmarkWatched(
+        val succeeded = createHandler().unmarkWatched(
             animeId = 7,
             episode = "3",
             videos = videos,
@@ -196,16 +216,16 @@ class EpisodeWatchedHandlerTest {
         )
 
         assertTrue(succeeded)
-        assertEquals(7 to "3", progressRepository.deleted.single())
-        assertEquals(listOf(1, 2), watchesRepository.removed.single())
+        coVerify(exactly = 1) { progressRepository.delete(7, "3") }
+        coVerify(exactly = 1) { watchesRepository.removeWatched(listOf(1, 2)) }
     }
 
     @Test
     fun `unmark stays local when signed out`() = runTest {
-        handler.unmarkWatched(animeId = 7, episode = "3", videos = videos, isSignedIn = false)
+        createHandler().unmarkWatched(animeId = 7, episode = "3", videos = videos, isSignedIn = false)
 
-        assertEquals(7 to "3", progressRepository.deleted.single())
-        assertTrue(watchesRepository.removed.isEmpty())
+        coVerify(exactly = 1) { progressRepository.delete(7, "3") }
+        coVerify(exactly = 0) { watchesRepository.removeWatched(any()) }
     }
 
     private fun video(id: Int, dubbing: String, durationSeconds: Int?) = AnimeVideo(
@@ -228,119 +248,29 @@ class EpisodeWatchedHandlerTest {
         updatedAt = 1L,
     )
 
+    /** Сохранение прогресса с проверкой только тех полей, что заданы; остальные — любые. */
+    private suspend fun MockKMatcherScope.savedWith(
+        repository: WatchProgressRepository,
+        videoId: Int? = null,
+        positionMs: Long? = null,
+        durationMs: Long? = null,
+    ) = repository.save(
+        animeId = any(),
+        episode = any(),
+        videoId = videoId ?: any(),
+        episodeUrl = any(),
+        positionMs = positionMs ?: any(),
+        durationMs = durationMs ?: any(),
+        updatedAt = any(),
+        animeTitle = any(),
+        posterUrl = any(),
+        playerName = any(),
+        dubbing = any(),
+        screenshotUrl = any(),
+    )
+
     private companion object {
         const val BEST = "AniLibria"
         const val OTHER = "AniDub"
     }
-}
-
-private class FakeWatchProgressRepository : WatchProgressRepository {
-    val saved = mutableListOf<AnimeWatchProgress>()
-    val deleted = mutableListOf<Pair<Int, String>>()
-
-    override suspend fun get(animeId: Int, episode: String): AnimeWatchProgress? = null
-
-    override suspend fun save(
-        animeId: Int,
-        episode: String,
-        videoId: Int,
-        episodeUrl: String,
-        positionMs: Long,
-        durationMs: Long,
-        updatedAt: Long,
-        animeTitle: String,
-        posterUrl: String,
-        playerName: String,
-        dubbing: String,
-        screenshotUrl: String,
-    ) {
-        saved += AnimeWatchProgress(
-            animeId = animeId,
-            episode = episode,
-            videoId = videoId,
-            episodeUrl = episodeUrl,
-            positionMs = positionMs,
-            durationMs = durationMs,
-            updatedAt = updatedAt,
-            animeTitle = animeTitle,
-            posterUrl = posterUrl,
-            playerName = playerName,
-            dubbing = dubbing,
-            screenshotUrl = screenshotUrl,
-        )
-    }
-
-    override suspend fun saveContinueTarget(
-        animeId: Int,
-        episode: String,
-        videoId: Int,
-        episodeUrl: String,
-        updatedAt: Long,
-        animeTitle: String,
-        posterUrl: String,
-        playerName: String,
-        dubbing: String,
-        screenshotUrl: String,
-    ) = Unit
-
-    override suspend fun delete(animeId: Int, episode: String) {
-        deleted += animeId to episode
-    }
-
-    override suspend fun suppressContinueWatchingDisplay(animeId: Int, suppressedAt: Long) = Unit
-
-    override suspend fun allMeaningfulVideoProgress(): List<AnimeWatchProgress> = emptyList()
-}
-
-private class FakeVideoWatchesRepository : VideoWatchesRepository {
-    data class MarkRequest(
-        val videoId: Int,
-        val timeSeconds: Int,
-        val durationSeconds: Int,
-        val times: List<Int>,
-    )
-
-    val marked = mutableListOf<MarkRequest>()
-    val removed = mutableListOf<List<Int>>()
-    var failMark = false
-    var markError: Throwable? = null
-    var removeError: Throwable? = null
-
-    override suspend fun markWatched(
-        videoId: Int,
-        timeSeconds: Int,
-        durationSeconds: Int,
-        times: List<Int>,
-    ): Boolean {
-        marked += MarkRequest(videoId, timeSeconds, durationSeconds, times)
-        markError?.let { throw it }
-        if (failMark) throw IllegalStateException("network")
-        return true
-    }
-
-    override suspend fun syncWatched(videos: List<VideoWatchSyncItem>): Boolean = true
-
-    override suspend fun removeWatched(videoIds: List<Int>): Boolean {
-        removed += videoIds
-        removeError?.let { throw it }
-        return true
-    }
-}
-
-private class FakePendingMutationQueue : PendingMutationQueue {
-    val enqueued = mutableListOf<PendingMutation>()
-
-    override suspend fun enqueueOnNetworkFailure(
-        mutation: PendingMutation,
-        error: Throwable,
-    ): Boolean {
-        if (!error.isNetworkError()) return false
-        enqueued += mutation
-        return true
-    }
-}
-
-private object NoopNotifier : AccountMutationErrorRepository {
-    override val events: SharedFlow<AccountMutationErrorEvent> = MutableSharedFlow()
-    override suspend fun notify(event: AccountMutationErrorEvent) = Unit
 }

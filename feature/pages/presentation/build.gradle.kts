@@ -13,4 +13,6 @@ dependencies {
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
     implementation(libs.bundles.compose.presentation)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.bundles.unit.test)
 }

@@ -6,6 +6,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -56,10 +57,12 @@ class BloggerDetailsViewModel @AssistedInject constructor(
     private fun load() = viewModelScope.launch {
         setState { copy(loading = true, error = null) }
         runSuspendCatching {
-            val details = async { getDetails(bloggerId) }
-            val videos =
-                async { getVideos(bloggerId = bloggerId, limit = BLOGGER_VIDEOS_PAGE_SIZE) }
-            details.await() to videos.await()
+            coroutineScope {
+                val details = async { getDetails(bloggerId) }
+                val videos =
+                    async { getVideos(bloggerId = bloggerId, limit = BLOGGER_VIDEOS_PAGE_SIZE) }
+                details.await() to videos.await()
+            }
         }.fold(
             { (blogger, videos) ->
                 setState {

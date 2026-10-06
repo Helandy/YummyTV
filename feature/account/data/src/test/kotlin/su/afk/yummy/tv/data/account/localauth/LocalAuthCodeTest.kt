@@ -3,6 +3,7 @@ package su.afk.yummy.tv.data.account.localauth
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.data.account.utils.LocalAuthCrypto
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 
@@ -11,7 +12,7 @@ import su.afk.yummy.tv.domain.account.model.LocalAuthCode
  * похожие на цифры. Здесь проверяется главное: подмена не должна калечить сам сгенерированный код —
  * буква из алфавита обязана пережить нормализацию без изменений, иначе верный код будет отвергаться.
  */
-class LocalAuthCodeTest {
+class LocalAuthCodeTest : BaseUnitTest() {
 
     @Test
     fun `alphabet survives normalization`() {

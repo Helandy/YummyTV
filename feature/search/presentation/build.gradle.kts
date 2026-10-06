@@ -23,4 +23,6 @@ dependencies {
     implementation(libs.bundles.compose.presentation)
 
     testImplementation(libs.bundles.unit.test)
+
+    testImplementation(project(":core:testing"))
 }

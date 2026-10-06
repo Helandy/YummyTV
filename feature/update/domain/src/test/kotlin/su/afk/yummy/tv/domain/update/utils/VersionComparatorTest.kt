@@ -3,8 +3,9 @@ package su.afk.yummy.tv.domain.update.utils
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class VersionComparatorTest {
+class VersionComparatorTest : BaseUnitTest() {
 
     @Test
     fun `equal versions are not newer`() {

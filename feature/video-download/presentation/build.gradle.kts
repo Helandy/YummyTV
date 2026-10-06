@@ -21,4 +21,6 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(project(":core:testing"))
 }
