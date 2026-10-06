@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":feature:search:api"))
     implementation(project(":feature:top:api"))
     implementation(project(":feature:account:domain"))
+    implementation(project(":feature:playersetup:api"))
     implementation(project(":feature:settings:api"))
 
     implementation(libs.bundles.compose.presentation)

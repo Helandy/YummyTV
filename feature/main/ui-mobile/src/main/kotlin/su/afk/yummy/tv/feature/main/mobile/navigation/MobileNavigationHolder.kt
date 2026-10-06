@@ -14,6 +14,7 @@ import su.afk.yummy.tv.feature.library.IMobileLibraryEntry
 import su.afk.yummy.tv.feature.messages.IMobileMessagesEntry
 import su.afk.yummy.tv.feature.pages.IMobileSitePagesEntry
 import su.afk.yummy.tv.feature.player.IMobilePlayerEntry
+import su.afk.yummy.tv.feature.playersetup.navigator.IMobilePlayerSetupEntry
 import su.afk.yummy.tv.feature.posts.IMobilePostsEntry
 import su.afk.yummy.tv.feature.reviews.IMobileReviewsEntry
 import su.afk.yummy.tv.feature.schedule.IMobileScheduleEntry
@@ -52,6 +53,7 @@ class MobileNavigationHolder @Inject constructor(
     top: IMobileTopEntry,
     videoDownload: IMobileVideoDownloadEntry,
     watchLater: IMobileWatchLaterEntry,
+    playerSetup: IMobilePlayerSetupEntry,
     update: IUpdateEntry,
     errorScreen: IErrorScreenEntry,
     imageView: IImageViewEntry,
@@ -76,6 +78,7 @@ class MobileNavigationHolder @Inject constructor(
         top,
         videoDownload,
         watchLater,
+        playerSetup,
         update,
         errorScreen,
         imageView,

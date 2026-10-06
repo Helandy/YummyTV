@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -88,6 +89,7 @@ class HomeViewModelTest : BaseUnitTest() {
         every { observeContinueWatching() } returns continueWatching
         every { settingsStore.hiddenRecommendationIds } returns hiddenIds
         every { settingsStore.yaniUserId } returns userId
+        every { settingsStore.yaniContentLanguage } returns emptyFlow()
         every { settingsStore.supportPromptSnapshot } returns supportPrompt
         every { settingsStore.lastSeenAnnouncementId } returns flowOf("")
         every { featureToggleUpdateObserver.currentActivationId } returns 1L

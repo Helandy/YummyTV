@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
@@ -87,6 +88,8 @@ class HomeViewModel @Inject internal constructor(
     /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
     private var rawFeed: HomeFeed? = null
 
+    private var loadJob: Job? = null
+
     init {
         analytics.eventScreenOpened()
         observeContinueWatching()
@@ -104,6 +107,17 @@ class HomeViewModel @Inject internal constructor(
         observeAnnouncement()
         loadBloggerVideos()
         load()
+        reloadOnContentLanguageChange()
+    }
+
+    /** Лента кэшируется и запрашивается на языке контента, поэтому при его смене грузим её заново. */
+    private fun reloadOnContentLanguageChange() {
+        settingsStore.contentLanguageChanges()
+            .onEach {
+                setState { copy(feed = null, isLoading = true, error = null) }
+                load()
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: HomeState.Event) {
@@ -388,7 +402,8 @@ class HomeViewModel @Inject internal constructor(
     }
 
     private fun load() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             val cachedFeed = if (currentState.feed == null) {
                 runSuspendCatching { getCachedHomeFeed() }.getOrNull()
             } else {

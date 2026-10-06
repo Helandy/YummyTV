@@ -19,8 +19,15 @@ internal class SharedPreferencesAppInterfaceModePreferences @Inject constructor(
         preferences.edit().putString(SELECTED_MODE_KEY, mode.name).apply()
     }
 
+    override fun consumePlayerSetupPending(): Boolean {
+        if (preferences.getBoolean(PLAYER_SETUP_SHOWN_KEY, false)) return false
+        preferences.edit().putBoolean(PLAYER_SETUP_SHOWN_KEY, true).apply()
+        return true
+    }
+
     private companion object {
         const val PREFERENCES_NAME = "app_interface_mode"
         const val SELECTED_MODE_KEY = "selected_mode"
+        const val PLAYER_SETUP_SHOWN_KEY = "player_setup_shown"
     }
 }

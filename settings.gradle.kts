@@ -71,6 +71,7 @@ include(":feature:library:api")
 include(":feature:details:api")
 include(":feature:player:api")
 include(":feature:settings:api")
+include(":feature:playersetup:api")
 
 include(":feature:home:domain")
 include(":feature:home:data")
@@ -141,6 +142,10 @@ include(":feature:player:ui-mobile")
 include(":feature:settings:presentation")
 include(":feature:settings:ui-tv")
 include(":feature:settings:ui-mobile")
+
+include(":feature:playersetup:presentation")
+include(":feature:playersetup:ui-tv")
+include(":feature:playersetup:ui-mobile")
 
 include(":feature:faq:api")
 include(":feature:faq:presentation")

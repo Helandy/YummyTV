@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -81,6 +82,7 @@ class LibraryViewModelTest : BaseUnitTest() {
         every { observeLibraryItems() } returns items
         every { observeContinueWatching() } returns continueWatching
         every { settingsStore.yaniUserId } returns userId
+        every { settingsStore.yaniContentLanguage } returns emptyFlow()
         every { settingsStore.libraryContinueWatchingCardSize } returns flowOf(LibraryContinueWatchingCardSize.entries.first())
         every { settingsStore.showLibraryTitleYear } returns flowOf(true)
         every { settingsStore.librarySort } returns sort

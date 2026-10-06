@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_setup_tv_title">Настройки приложения</string>
+    <string name="player_setup_tv_subtitle">Выберите, как вам удобнее. Всё можно изменить позже в настройках.</string>
+    <string name="player_setup_tv_opening_timeline_label">Показывать опенинг на таймлайне</string>
+    <string name="player_setup_tv_opening_timeline_hint">Участок опенинга подсвечивается на полосе прогресса</string>
+    <string name="player_setup_tv_auto_skip_label">Автопропуск опенинга и эндинга</string>
+    <string name="player_setup_tv_auto_skip_hint">Пропускать, если для серии есть таймкоды</string>
+    <string name="player_setup_tv_auto_play_label">Автовоспроизведение следующей серии</string>
+    <string name="player_setup_tv_auto_play_hint">Запускать следующую серию после отсчёта</string>
+    <string name="player_setup_tv_suggest_next_label">Подсказка следующей серии</string>
+    <string name="player_setup_tv_suggest_next_hint">Показывать на главной после завершения текущей</string>
+    <string name="player_setup_tv_ask_dubbing_label">Спрашивать озвучку перед просмотром</string>
+    <string name="player_setup_tv_ask_dubbing_hint">Иначе сразу включится самая популярная</string>
+    <string name="player_setup_tv_quality_label">Качество видео</string>
+    <string name="player_setup_tv_quality_hint">Если качества нет, будет выбрано ближайшее ниже</string>
+    <string name="player_setup_tv_quality_best">Лучшее</string>
+    <string name="player_setup_tv_done">Готово</string>
+    <string name="player_setup_tv_refresh_progress_label">Свежий прогресс с других устройств</string>
+    <string name="player_setup_tv_refresh_progress_hint">Проверять прогресс аккаунта при запуске из «Продолжить просмотр», чтобы продолжать с более свежего устройства</string>
+    <string name="player_setup_tv_language_label">Язык API</string>
+    <string name="player_setup_tv_language_hint">Язык названий и описаний с сервера</string>
+    <string name="player_setup_tv_language_russian">Русский</string>
+    <string name="player_setup_tv_language_english">English</string>
+    <string name="player_setup_tv_language_ukrainian">Українська</string>
+</resources>

@@ -90,6 +90,7 @@ class MainViewModelTest : BaseUnitTest() {
         accountMutationErrorRepository = accountMutationErrorRepository,
         stringProvider = stringProvider,
         networkConnectivityMonitor = networkConnectivityMonitor,
+        interfaceModePreferences = mockk(relaxed = true),
     )
 
     private fun snapshot(nickname: String, unread: Int) = MainSettingsSnapshot(

@@ -11,6 +11,7 @@ import su.afk.yummy.tv.feature.details.ITvDetailsEntry
 import su.afk.yummy.tv.feature.home.ITvHomeEntry
 import su.afk.yummy.tv.feature.library.ITvLibraryEntry
 import su.afk.yummy.tv.feature.player.ITvPlayerEntry
+import su.afk.yummy.tv.feature.playersetup.navigator.ITvPlayerSetupEntry
 import su.afk.yummy.tv.feature.posts.ITvPostsEntry
 import su.afk.yummy.tv.feature.reviews.ITvReviewsEntry
 import su.afk.yummy.tv.feature.schedule.ITvScheduleEntry
@@ -41,6 +42,7 @@ class TvNavigationHolder @Inject constructor(
     search: ITvSearchEntry,
     settings: ITvSettingsEntry,
     top: ITvTopEntry,
+    playerSetup: ITvPlayerSetupEntry,
     update: IUpdateEntry,
     errorScreen: IErrorScreenEntry,
     imageView: IImageViewEntry,
@@ -60,6 +62,7 @@ class TvNavigationHolder @Inject constructor(
         search,
         settings,
         top,
+        playerSetup,
         update,
         errorScreen,
         imageView,

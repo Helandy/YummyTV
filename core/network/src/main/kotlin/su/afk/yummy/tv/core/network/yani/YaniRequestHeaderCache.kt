@@ -27,9 +27,6 @@ internal class YaniRequestHeaderCache(
     @Volatile
     private var refreshToken = ""
 
-    @Volatile
-    private var contentLanguageCode = ""
-
     init {
         scope.launch {
             settingsStore.yaniApplicationToken.collectLatest { token ->
@@ -41,11 +38,6 @@ internal class YaniRequestHeaderCache(
                 refreshToken = token
             }
         }
-        scope.launch {
-            settingsStore.yaniContentLanguage.collectLatest { language ->
-                contentLanguageCode = language.apiCode
-            }
-        }
     }
 
     suspend fun current(): YaniRequestHeaders {
@@ -53,7 +45,9 @@ internal class YaniRequestHeaderCache(
         return YaniRequestHeaders(
             applicationToken = applicationToken,
             refreshToken = refreshToken,
-            contentLanguageCode = contentLanguageCode,
+            // Язык читаем из хранилища на каждый запрос: кэшированное поле отставало от смены языка,
+            // и первый запрос после неё уходил со старым заголовком Lang.
+            contentLanguageCode = settingsStore.yaniContentLanguage.first().apiCode,
         )
     }
 
@@ -63,10 +57,8 @@ internal class YaniRequestHeaderCache(
             coroutineScope {
                 val applicationTokenDeferred = async { settingsStore.yaniApplicationToken.first() }
                 val refreshTokenDeferred = async { yaniAuthPreferences.refreshToken.first() }
-                val contentLanguageDeferred = async { settingsStore.yaniContentLanguage.first() }
                 applicationToken = applicationTokenDeferred.await()
                 refreshToken = refreshTokenDeferred.await()
-                contentLanguageCode = contentLanguageDeferred.await().apiCode
             }
             loaded = true
         }

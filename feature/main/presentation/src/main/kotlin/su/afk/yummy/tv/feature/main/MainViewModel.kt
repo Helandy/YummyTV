@@ -14,12 +14,14 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
+import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.domain.account.repository.AccountMutationErrorRepository
 import su.afk.yummy.tv.domain.account.usecase.ObserveAccountSessionUseCase
 import su.afk.yummy.tv.feature.main.handler.MainSideEffectsHandler
 import su.afk.yummy.tv.feature.main.handler.MainUpdateCheckResult
 import su.afk.yummy.tv.feature.main.presentation.R
+import su.afk.yummy.tv.feature.playersetup.navigator.PlayerSetupDestination
 import su.afk.yummy.tv.feature.update.navigator.UpdateDestination
 import javax.inject.Inject
 
@@ -36,6 +38,7 @@ class MainViewModel @Inject internal constructor(
     private val accountMutationErrorRepository: AccountMutationErrorRepository,
     private val stringProvider: StringProvider,
     private val networkConnectivityMonitor: NetworkConnectivityMonitor,
+    private val interfaceModePreferences: AppInterfaceModePreferences,
 ) : BaseViewModel<MainState.State, MainState.Event, MainState.Effect>() {
 
     override fun createInitialState() = MainState.State()
@@ -56,7 +59,15 @@ class MainViewModel @Inject internal constructor(
         observeFeatureToggleUpdates()
         observeAccountMutationErrors()
         refreshAccountIfNeeded()
+        openPlayerSetupIfPending()
         checkForUpdates()
+    }
+
+    /** Первичная настройка плеера показывается один раз — сразу после первого выбора интерфейса. */
+    private fun openPlayerSetupIfPending() {
+        if (interfaceModePreferences.consumePlayerSetupPending()) {
+            nav.navigate(PlayerSetupDestination)
+        }
     }
 
     private fun observeConnectivity() {

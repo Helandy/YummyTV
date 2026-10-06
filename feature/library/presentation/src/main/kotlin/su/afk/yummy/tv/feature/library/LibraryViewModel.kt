@@ -15,16 +15,17 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
+import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.domain.library.usecase.GetWatchHistoryPageUseCase
 import su.afk.yummy.tv.domain.library.usecase.ObserveLibraryItemsUseCase
-import su.afk.yummy.tv.domain.library.model.RemoteLibrarySyncResult
 import su.afk.yummy.tv.domain.library.usecase.RemoveLibraryItemUseCase
 import su.afk.yummy.tv.domain.library.usecase.SetLibraryFavoriteUseCase
 import su.afk.yummy.tv.domain.player.usecase.GetMeaningfulVideoProgressUseCase
@@ -117,6 +118,10 @@ class LibraryViewModel @Inject internal constructor(
                     }
                 }
             }
+            .launchIn(viewModelScope)
+        // Названия в списках приходят на языке контента: при его смене запрашиваем списки заново.
+        settingsStore.contentLanguageChanges()
+            .onEach { if (signedInUserId > 0) loadRemoteLists(signedInUserId, forceRefresh = true) }
             .launchIn(viewModelScope)
         settingsStore.libraryContinueWatchingCardSize
             .onEach { size ->

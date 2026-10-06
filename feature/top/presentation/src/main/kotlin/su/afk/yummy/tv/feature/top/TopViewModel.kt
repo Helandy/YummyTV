@@ -11,6 +11,8 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
@@ -28,6 +30,7 @@ class TopViewModel @Inject internal constructor(
     private val detailsNavigator: IDetailsNavigator,
     private val getAnimeTop: GetAnimeTopUseCase,
     settingsStore: AppearanceSettingsStore,
+    accountSettingsStore: YaniAccountSettingsStore,
     private val analytics: TopAnalytics,
 ) : BaseViewModel<TopState.State, TopState.Event, TopState.Effect>() {
 
@@ -41,6 +44,10 @@ class TopViewModel @Inject internal constructor(
         analytics.eventScreenOpened()
         settingsStore.showTopTitleYear
             .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
+            .launchIn(viewModelScope)
+        // Топ кэшируется по языку контента: при его смене страницы запрашиваем заново.
+        accountSettingsStore.contentLanguageChanges()
+            .onEach { setState { copy(items = createPagingFlow(selectedType)) } }
             .launchIn(viewModelScope)
     }
 

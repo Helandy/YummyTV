@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_setup_mobile_title">App settings</string>
+    <string name="player_setup_mobile_subtitle">Choose what suits you. Everything can be changed later in Settings.</string>
+    <string name="player_setup_mobile_section_timings">Openings and endings</string>
+    <string name="player_setup_mobile_section_episodes">Episodes</string>
+    <string name="player_setup_mobile_section_playback">Playback</string>
+    <string name="player_setup_mobile_opening_timeline_label">Show opening on the timeline</string>
+    <string name="player_setup_mobile_opening_timeline_hint">The opening segment is highlighted on the progress bar</string>
+    <string name="player_setup_mobile_auto_skip_label">Auto-skip opening and ending</string>
+    <string name="player_setup_mobile_auto_skip_hint">Skip when episode timings are available</string>
+    <string name="player_setup_mobile_auto_play_label">Autoplay next episode</string>
+    <string name="player_setup_mobile_auto_play_hint">Start the next episode after a countdown</string>
+    <string name="player_setup_mobile_suggest_next_label">Next episode suggestion</string>
+    <string name="player_setup_mobile_suggest_next_hint">Show on Home after finishing the current episode</string>
+    <string name="player_setup_mobile_ask_dubbing_label">Ask for voice-over before watching</string>
+    <string name="player_setup_mobile_ask_dubbing_hint">Otherwise the most popular one starts right away</string>
+    <string name="player_setup_mobile_orientation_label">Player orientation</string>
+    <string name="player_setup_mobile_orientation_hint">System follows auto-rotate; Left and Right always use landscape</string>
+    <string name="player_setup_mobile_orientation_system">System</string>
+    <string name="player_setup_mobile_orientation_left">Left</string>
+    <string name="player_setup_mobile_orientation_right">Right</string>
+    <string name="player_setup_mobile_pip_label">Picture-in-Picture (PiP)</string>
+    <string name="player_setup_mobile_pip_hint">Switch on automatically when leaving the app during playback</string>
+    <string name="player_setup_mobile_quality_label">Video quality</string>
+    <string name="player_setup_mobile_quality_hint">Falls back to the closest lower quality when unavailable</string>
+    <string name="player_setup_mobile_quality_best">Best</string>
+    <string name="player_setup_mobile_done">Done</string>
+    <string name="player_setup_mobile_refresh_progress_label">Latest progress from other devices</string>
+    <string name="player_setup_mobile_refresh_progress_hint">Check account progress when opening Continue Watching, to resume from the latest device</string>
+    <string name="player_setup_mobile_language_label">API language</string>
+    <string name="player_setup_mobile_language_hint">Language of titles and descriptions from the server</string>
+    <string name="player_setup_mobile_language_russian">Русский</string>
+    <string name="player_setup_mobile_language_english">English</string>
+    <string name="player_setup_mobile_language_ukrainian">Українська</string>
+    <string name="player_setup_mobile_section_general">General</string>
+    <string name="player_setup_mobile_orientation_system_hint">Follow the system rotation setting</string>
+    <string name="player_setup_mobile_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
+    <string name="player_setup_mobile_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
+    <string name="player_setup_mobile_quality_best_hint">Use the highest stream quality</string>
+    <string name="player_setup_mobile_quality_fallback_hint">Falls back to the closest lower quality when unavailable</string>
+</resources>

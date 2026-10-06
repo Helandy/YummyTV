@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":feature:messages:api"))
     implementation(project(":feature:pages:api"))
     implementation(project(":feature:player:api"))
+    implementation(project(":feature:playersetup:api"))
     implementation(project(":feature:posts:api"))
     implementation(project(":feature:reviews:api"))
     implementation(project(":feature:schedule:api"))

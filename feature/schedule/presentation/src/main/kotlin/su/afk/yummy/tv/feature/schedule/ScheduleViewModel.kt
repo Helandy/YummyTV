@@ -2,11 +2,16 @@ package su.afk.yummy.tv.feature.schedule
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.schedule.usecase.GetAnimeScheduleUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
@@ -22,6 +27,7 @@ class ScheduleViewModel @Inject internal constructor(
     private val nav: INavigationManager,
     private val detailsNavigator: IDetailsNavigator,
     private val analytics: ScheduleAnalytics,
+    private val accountSettingsStore: YaniAccountSettingsStore,
 ) : BaseViewModel<ScheduleState.State, ScheduleState.Event, ScheduleState.Effect>() {
 
     override fun createInitialState() = ScheduleState.State()
@@ -29,6 +35,9 @@ class ScheduleViewModel @Inject internal constructor(
     init {
         analytics.eventScreenOpened()
         load()
+        accountSettingsStore.contentLanguageChanges()
+            .onEach { load() }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: ScheduleState.Event) {
@@ -54,8 +63,11 @@ class ScheduleViewModel @Inject internal constructor(
         }
     }
 
+    private var loadJob: Job? = null
+
     private fun load() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             runSuspendCatching { getSchedule() }.fold(
                 onSuccess = { days ->

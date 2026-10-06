@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":feature:schedule:ui-tv"))
     implementation(project(":feature:search:api"))
     implementation(project(":feature:search:ui-tv"))
+    implementation(project(":feature:playersetup:api"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:top:api"))
     implementation(project(":feature:top:ui-tv"))

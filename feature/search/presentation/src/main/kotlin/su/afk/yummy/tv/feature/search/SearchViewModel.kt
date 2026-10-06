@@ -11,12 +11,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.paging.OffsetPage
 import su.afk.yummy.tv.core.utils.paging.OffsetPagingSource
@@ -44,6 +48,7 @@ class SearchViewModel @Inject internal constructor(
     private val search: SearchUseCase,
     private val analytics: SearchAnalytics,
     private val searchSettings: SearchSettingsStore,
+    private val accountSettingsStore: YaniAccountSettingsStore,
 ) : BaseViewModel<SearchState.State, SearchState.Event, SearchState.Effect>() {
 
     override fun createInitialState() = SearchState.State()
@@ -57,6 +62,18 @@ class SearchViewModel @Inject internal constructor(
 
     init {
         analytics.eventScreenOpened()
+        loadFilterOptions()
+        restoreLastSearchIfEnabled()
+        // Названия фильтров и результаты приходят на языке контента: при его смене грузим заново.
+        accountSettingsStore.contentLanguageChanges()
+            .onEach {
+                loadFilterOptions()
+                if (currentState.isSearchActive) setSearchResults(currentState.query, currentState.filters)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadFilterOptions() {
         viewModelScope.launch {
             setState { copy(isLoadingFilterOptions = true) }
             runSuspendCatching { getSearchFilterOptions() }.onSuccess { options ->
@@ -65,7 +82,6 @@ class SearchViewModel @Inject internal constructor(
                 setState { copy(isLoadingFilterOptions = false) }
             }
         }
-        restoreLastSearchIfEnabled()
     }
 
     private fun restoreLastSearchIfEnabled() {
