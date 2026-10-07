@@ -11,7 +11,6 @@ import su.afk.yummy.tv.core.utils.player.isVkPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
 import su.afk.yummy.tv.data.player.extractor.common.decodeUnicodeEscapes
-import su.afk.yummy.tv.data.player.extractor.common.fetchText
 import su.afk.yummy.tv.data.player.extractor.common.hasKnownUrlScheme
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
@@ -19,6 +18,7 @@ import su.afk.yummy.tv.data.player.extractor.common.orderQualityMap
 import su.afk.yummy.tv.data.player.extractor.common.resolveRelativeUrl
 import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
+import su.afk.yummy.tv.data.player.network.PlayerHttpResponse
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
@@ -30,8 +30,11 @@ import javax.inject.Inject
 private sealed interface VkOutcome {
     data class Stream(val stream: ExtractedStream) : VkOutcome
 
-    /** VK ответил страницей-заглушкой (`video_ext_msg`): видео удалено, приватно или скрыто. */
-    data object VideoUnavailable : VkOutcome
+    /**
+     * VK ответил страницей-заглушкой (`video_ext_msg`) вместо плеера. [message] — его текст:
+     * «не найден» (удалено) и другие причины (приватное, региональное) различаются по нему.
+     */
+    data class VideoUnavailable(val message: String?) : VkOutcome
 
     data class Failed(val reason: String) : VkOutcome
 }
@@ -95,16 +98,14 @@ internal class VkExtractor @Inject constructor(
             )
         ) {
             is VkOutcome.Stream -> outcome.stream.toResolveResult()
-            VkOutcome.VideoUnavailable -> PlayerStreamResolveResult.Unavailable(
-                cause = PlayerStreamUnavailableCause.VideoNotFound,
-            )
+            is VkOutcome.VideoUnavailable -> outcome.toResolveResult()
 
             is VkOutcome.Failed -> PlayerStreamResolveResult.Failed(outcome.reason)
         }
 
     private suspend fun extractStream(
         iframeUrl: String,
-        autoQualityLabel: String = "auto"
+        autoQualityLabel: String = "auto",
     ): VkOutcome = withContext(Dispatchers.IO) {
         val normalizedUrl = normalizeUrl(iframeUrl)
         val referer = normalizedUrl.ifBlank { DEFAULT_REFERER }
@@ -112,15 +113,19 @@ internal class VkExtractor @Inject constructor(
         try {
             val iframeHtml = normalizePayload(fetchPageText(normalizedUrl, referer))
             val videoExtUrl = resolveVideoExtUrl(iframeHtml, normalizedUrl)
+            var sourceBytes: ByteArray? = null
             val sourceHtml = videoExtUrl?.let {
                 val source = it
-                runSuspendCatching { normalizePayload(fetchPageText(source, normalizedUrl)) }
+                runSuspendCatching {
+                    fetchPage(source, normalizedUrl).also { page -> sourceBytes = page.bodyBytes }
+                        .let { page -> normalizePayload(page.body) }
+                }
                     .getOrElse {
                         analyticsTracker.logExtractorFailure(
                             "VK",
                             source,
                             "failed to load video_ext page, fallback to iframe",
-                            it
+                            it,
                         )
                         iframeHtml
                     }
@@ -131,7 +136,7 @@ internal class VkExtractor @Inject constructor(
             if (candidates.isEmpty()) {
                 if (VIDEO_UNAVAILABLE_MARKER in sourceHtml) {
                     analyticsTracker.logExtractorFailure("VK", sourceUrl, "video is unavailable on VK")
-                    return@withContext VkOutcome.VideoUnavailable
+                    return@withContext VkOutcome.VideoUnavailable(sourceBytes?.vkUnavailableMessage())
                 }
                 analyticsTracker.logExtractorFailure("VK", normalizedUrl, "no stream URLs found")
                 return@withContext VkOutcome.Failed("no stream URLs found (${sourceHtml.length} chars)")
@@ -140,10 +145,14 @@ internal class VkExtractor @Inject constructor(
             val qualities = orderQualityMap(
                 raw = candidates,
                 keyAliases = { key ->
-                    if (key == "auto") listOf(key) else listOf(
-                        key,
-                        key.removeSuffix("p")
-                    )
+                    if (key == "auto") {
+                        listOf(key)
+                    } else {
+                        listOf(
+                            key,
+                            key.removeSuffix("p"),
+                        )
+                    }
                 },
             ).withAutoQualityLabel(autoQualityLabel)
 
@@ -160,7 +169,7 @@ internal class VkExtractor @Inject constructor(
                 "VK",
                 normalizedUrl,
                 "unexpected extractor error",
-                e
+                e,
             )
             VkOutcome.Failed("${e::class.java.simpleName}: ${e.message.orEmpty().take(60)}")
         }
@@ -238,7 +247,7 @@ internal class VkExtractor @Inject constructor(
     private fun addCandidate(
         candidates: LinkedHashMap<String, String>,
         quality: String,
-        url: String
+        url: String,
     ) {
         if (url.isBlank() || !isStreamLike(url, quality)) return
         val cleaned = normalizeEscapedUrl(url)
@@ -319,8 +328,11 @@ internal class VkExtractor @Inject constructor(
             val match = pattern.find(pageHtml) ?: return@firstNotNullOfOrNull null
             val ownerId = match.groupValues.getOrNull(1).orEmpty()
             val videoId = match.groupValues.getOrNull(2).orEmpty()
-            if (ownerId.isBlank() || videoId.isBlank()) null
-            else "$VIDEO_EXT_URL?oid=$ownerId&id=$videoId&hd=1"
+            if (ownerId.isBlank() || videoId.isBlank()) {
+                null
+            } else {
+                "$VIDEO_EXT_URL?oid=$ownerId&id=$videoId&hd=1"
+            }
         }
     }
 
@@ -363,7 +375,7 @@ internal class VkExtractor @Inject constructor(
 
     private fun normalizePayload(text: String): String =
         decodeUnicodeEscapes(
-            text.replace("\\/", "/").replace("\\u002f", "/").replace("\\u002F", "/")
+            text.replace("\\/", "/").replace("\\u002f", "/").replace("\\u002F", "/"),
         )
 
     private fun normalizeUrl(url: String, baseUrl: String = ""): String {
@@ -407,19 +419,33 @@ internal class VkExtractor @Inject constructor(
     private fun isHttpUrl(url: String): Boolean =
         url.startsWith("https://", ignoreCase = true) || url.startsWith(
             "http://",
-            ignoreCase = true
+            ignoreCase = true,
         )
 
     private suspend fun fetchPageText(url: String, referer: String): String =
-        httpClient.fetchText(
+        fetchPage(url, referer).body
+
+    private suspend fun fetchPage(url: String, referer: String): PlayerHttpResponse =
+        httpClient.getText(
             url = url,
             headers = mapOf(
                 "Referer" to referer,
                 "User-Agent" to userAgents.userAgent,
                 "Accept" to "*/*",
             ),
-            throwOnFailure = true,
-        )
+        ).also { response ->
+            check(response.isSuccess) { "HTTP ${response.statusCode}: ${response.body.take(80)}" }
+        }
+
+    private fun VkOutcome.VideoUnavailable.toResolveResult(): PlayerStreamResolveResult.Unavailable =
+        when {
+            message == null || message.isVkVideoNotFoundMessage() -> PlayerStreamResolveResult.Unavailable(
+                cause = PlayerStreamUnavailableCause.VideoNotFound,
+            )
+
+            // Другая причина VK (приватное, региональное): показываем его собственный текст.
+            else -> PlayerStreamResolveResult.Unavailable(message = message)
+        }
 
     private val VIDEO_EXT_FROM_IFRAME_PATTERNS = listOf(
         Regex("video_ext\\.php[^\"']*?oid=([^&\"']+)&id=([^&\"']+)", RegexOption.IGNORE_CASE),
