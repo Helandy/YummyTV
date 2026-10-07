@@ -44,7 +44,7 @@ internal class RutubeExtractor @Inject constructor(
         extractStream(
             iframeUrl = request.iframeUrl,
             autoQualityLabel = request.autoQualityLabel,
-        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed
+        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Rutube: no stream found")
 
     private suspend fun extractStream(
         iframeUrl: String,

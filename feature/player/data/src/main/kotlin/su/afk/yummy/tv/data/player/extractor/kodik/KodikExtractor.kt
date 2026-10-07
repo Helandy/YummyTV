@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
+import su.afk.yummy.tv.data.player.network.PlayerHttpResponse
 import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -36,7 +37,8 @@ internal sealed interface KodikResult {
         val statusCode: Int?,
     ) : KodikResult
 
-    data object Failed : KodikResult
+    /** [reason] — технический шаг, на котором экстрактор отказал (для аналитики). */
+    data class Failed(val reason: String) : KodikResult
 }
 
 @Singleton
@@ -68,7 +70,7 @@ internal class KodikExtractor @Inject constructor(
                 statusCode = result.statusCode,
             )
 
-            KodikResult.Failed -> PlayerStreamResolveResult.Failed
+            is KodikResult.Failed -> PlayerStreamResolveResult.Failed(result.reason)
         }
 
     private suspend fun extractStream(iframeUrl: String): KodikResult =
@@ -85,45 +87,29 @@ internal class KodikExtractor @Inject constructor(
 
                 val urlParamsStr = Regex("""\burlParams\s*=\s*'([^']+)'""").find(flat)
                     ?.groupValues?.get(1) ?: run {
-                    analyticsTracker.logExtractorFailure(
-                        "Kodik",
-                        fullUrl,
-                        "urlParams were not found"
-                    )
-                    return@withContext KodikResult.Failed
+                    analyticsTracker.logExtractorFailure("Kodik", fullUrl, "urlParams were not found")
+                    return@withContext KodikResult.Failed("urlParams were not found")
                 }
                 val type = Regex("""\b(?:videoInfo|vInfo)\.type\s*=\s*'([^']+)'""").find(flat)
                     ?.groupValues?.get(1) ?: run {
-                    analyticsTracker.logExtractorFailure(
-                        "Kodik",
-                        fullUrl,
-                        "video type was not found"
-                    )
-                    return@withContext KodikResult.Failed
+                    analyticsTracker.logExtractorFailure("Kodik", fullUrl, "video type was not found")
+                    return@withContext KodikResult.Failed("video type was not found")
                 }
                 val hash = Regex("""\b(?:videoInfo|vInfo)\.hash\s*=\s*'([^']+)'""").find(flat)
                     ?.groupValues?.get(1) ?: run {
-                    analyticsTracker.logExtractorFailure(
-                        "Kodik",
-                        fullUrl,
-                        "video hash was not found"
-                    )
-                    return@withContext KodikResult.Failed
+                    analyticsTracker.logExtractorFailure("Kodik", fullUrl, "video hash was not found")
+                    return@withContext KodikResult.Failed("video hash was not found")
                 }
                 val id = Regex("""\b(?:videoInfo|vInfo)\.id\s*=\s*'([^']+)'""").find(flat)
                     ?.groupValues?.get(1) ?: run {
                     analyticsTracker.logExtractorFailure("Kodik", fullUrl, "video id was not found")
-                    return@withContext KodikResult.Failed
+                    return@withContext KodikResult.Failed("video id was not found")
                 }
 
                 val playerSrc = Regex("""src="((?://[^"]+)?/assets/js/app\.player_single[^"]+)"""")
                     .find(flat)?.groupValues?.get(1) ?: run {
-                    analyticsTracker.logExtractorFailure(
-                        "Kodik",
-                        fullUrl,
-                        "player script URL was not found"
-                    )
-                    return@withContext KodikResult.Failed
+                    analyticsTracker.logExtractorFailure("Kodik", fullUrl, "player script URL was not found")
+                    return@withContext KodikResult.Failed("player script URL was not found")
                 }
 
                 // Derive origin from fullUrl so relative paths (/assets/js/...) work too
@@ -166,12 +152,13 @@ internal class KodikExtractor @Inject constructor(
                     append("&info=%7B%7D")
                 }
 
-                val responseText = try {
+                val response = try {
                     postForm(endpointUrl, postBody, referer = fullUrl, cookies = cookies)
                 } catch (e: Exception) {
                     endpointPathByScriptUrl.remove(playerScriptUrl)
                     throw e
                 }
+                val responseText = response.body
 
                 val qualities = parseQualityMap(responseText)
                 val streamUrl = qualities?.values?.lastOrNull()
@@ -190,7 +177,9 @@ internal class KodikExtractor @Inject constructor(
                         endpointUrl,
                         "stream URL was not found in endpoint response"
                     )
-                    KodikResult.Failed
+                    KodikResult.Failed(
+                        "no stream URL in endpoint response: HTTP ${response.statusCode}, ${responseText.length} chars",
+                    )
                 }
             } catch (e: KodikBlockedException) {
                 KodikResult.Blocked(
@@ -205,7 +194,7 @@ internal class KodikExtractor @Inject constructor(
                     "unexpected extractor error",
                     e
                 )
-                KodikResult.Failed
+                KodikResult.Failed("${e::class.java.simpleName}: ${e.message.orEmpty()}")
             }
         }
 
@@ -355,7 +344,7 @@ internal class KodikExtractor @Inject constructor(
         body: String,
         referer: String,
         cookies: String
-    ): String =
+    ): PlayerHttpResponse =
         httpClient.postText(
             url = url,
             body = body,
@@ -366,7 +355,7 @@ internal class KodikExtractor @Inject constructor(
                 put("X-Requested-With", "XMLHttpRequest")
                 if (cookies.isNotEmpty()) put("Cookie", cookies)
             },
-        ).body
+        )
 
     private fun KodikResult.Stream.toStream(): PlayerStreamResolveResult.Stream =
         PlayerStreamResolveResult.Stream(

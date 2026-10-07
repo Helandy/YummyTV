@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.utils
 
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import su.afk.yummy.tv.feature.player.presentation.R
 import java.net.URI
 
@@ -16,3 +17,11 @@ internal fun PlayerStreamResolveResult.KodikBlocked.toMessage(strings: StringPro
     message
         ?: statusCode?.let { strings.get(R.string.player_server_error, it) }
         ?: strings.get(R.string.player_kodik_blocked)
+
+/** Текст для пользователя: название причины, если источник её назвал, иначе общая «озвучка недоступна». */
+internal fun PlayerStreamResolveResult.Unavailable.toMessage(strings: StringProvider): String =
+    message ?: when (cause) {
+        PlayerStreamUnavailableCause.VideoNotFound -> strings.get(R.string.player_video_not_found)
+        PlayerStreamUnavailableCause.AccessForbidden -> strings.get(R.string.player_access_forbidden)
+        null -> strings.get(R.string.player_dubbing_unavailable)
+    }

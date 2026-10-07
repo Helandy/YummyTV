@@ -20,6 +20,8 @@
     <string name="player_unsupported">Player is not supported</string>
     <string name="player_kodik_blocked">Playback is blocked</string>
     <string name="player_dubbing_unavailable">Sorry, the selected dubbing is unavailable in this player. Try another dubbing/player.</string>
+    <string name="player_video_not_found">Video file not found</string>
+    <string name="player_access_forbidden">403 Forbidden</string>
     <string name="player_download_missing">Downloaded episode is missing from local cache</string>
     <string name="player_local_file_title">Local file</string>
     <string name="player_download_resolve_error">Could not prepare this episode for download</string>

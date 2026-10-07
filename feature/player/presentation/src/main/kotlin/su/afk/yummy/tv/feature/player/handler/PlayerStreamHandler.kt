@@ -100,16 +100,18 @@ internal class PlayerStreamHandler @Inject constructor(
                 is PlayerStreamResolveResult.Unavailable -> {
                     session?.close()
                     PlayerStreamResult.PlayerError(
-                        message = result.message ?: strings.get(R.string.player_dubbing_unavailable),
+                        message = result.toMessage(strings),
                         reason = PlayerStreamResult.REASON_UNAVAILABLE,
+                        detail = result.cause?.name,
                     )
                 }
 
-                PlayerStreamResolveResult.Failed -> {
+                is PlayerStreamResolveResult.Failed -> {
                     session?.close()
                     PlayerStreamResult.PlayerError(
                         message = strings.get(R.string.player_stream_error),
                         reason = PlayerStreamResult.REASON_FAILED,
+                        detail = result.reason,
                     )
                 }
 
@@ -192,6 +194,8 @@ internal sealed interface PlayerStreamResult {
     data class PlayerError(
         val message: String,
         val reason: String,
+        /** Техническая причина отказа источника: уходит только в аналитику, не в UI. */
+        val detail: String? = null,
     ) : PlayerStreamResult
 
     companion object {

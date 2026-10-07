@@ -20,6 +20,8 @@
     <string name="player_unsupported">Плеєр не підтримується</string>
     <string name="player_kodik_blocked">Перегляд заблоковано</string>
     <string name="player_dubbing_unavailable">Вибачте, це озвучення недоступне в цьому плеєрі. Спробуйте вибрати інше озвучення/плеєр.</string>
+    <string name="player_video_not_found">Відеофайл не знайдено</string>
+    <string name="player_access_forbidden">403 Forbidden</string>
     <string name="player_download_missing">Завантажена серія відсутня в локальному кеші</string>
     <string name="player_local_file_title">Локальний файл</string>
     <string name="player_download_resolve_error">Не вдалося підготувати серію до завантаження</string>

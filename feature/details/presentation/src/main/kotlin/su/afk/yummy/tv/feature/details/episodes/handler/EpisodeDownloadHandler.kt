@@ -6,6 +6,8 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.kodik.ResolveKodikThumbnailUrlUseCase
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
+import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import su.afk.yummy.tv.domain.player.usecase.ResolvePlayerStreamUseCase
@@ -21,8 +23,6 @@ import su.afk.yummy.tv.feature.details.episodes.utils.toDownloadStatusKey
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.dubbingEpisodeCount
 import su.afk.yummy.tv.feature.details.utils.dubbingViews
-import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
-import su.afk.yummy.tv.core.utils.player.playerDisplayOrderPriority
 import javax.inject.Inject
 
 /** Owns source resolution, quality selection and enqueue state for episode downloads. */
@@ -72,7 +72,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
             .sortedWith(
                 compareByDescending<Map.Entry<String, List<AnimeVideo>>> { (_, group) ->
                     group.sumOf { it.views ?: 0 }
-                }.thenBy { (dubbing, _) -> dubbing }
+                }.thenBy { (dubbing, _) -> dubbing },
             )
             .map { (dubbing, group) ->
                 val titleVideos = titleVideosByDubbing[dubbing].orEmpty()
@@ -112,7 +112,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                     }
                     .thenBy { it.player }
                     .thenBy { it.playerId ?: Int.MAX_VALUE }
-                    .thenBy { it.id }
+                    .thenBy { it.id },
             )
             .map { video ->
                 val key = video.toDownloadStatusKey()
@@ -135,12 +135,14 @@ internal class EpisodeDownloadHandler @Inject constructor(
     suspend fun prepare(video: AnimeVideo): EpisodeDownloadPrepareResult {
         val key = video.toDownloadStatusKey()
         return runSuspendCatching {
-            when (val result = resolvePlayerStream(
-                PlayerStreamRequest(
-                    iframeUrl = video.iframeUrl,
-                    autoQualityLabel = strings.get(R.string.details_quality_auto),
+            when (
+                val result = resolvePlayerStream(
+                    PlayerStreamRequest(
+                        iframeUrl = video.iframeUrl,
+                        autoQualityLabel = strings.get(R.string.details_quality_auto),
+                    ),
                 )
-            )) {
+            ) {
                 is PlayerStreamResolveResult.Stream -> prepareQualitySelection(video, result)
                 is PlayerStreamResolveResult.KodikBlocked -> EpisodeDownloadPrepareResult.Failure(
                     key,
@@ -152,8 +154,9 @@ internal class EpisodeDownloadHandler @Inject constructor(
                     result.message ?: strings.get(R.string.details_download_dubbing_unavailable),
                 )
 
-                PlayerStreamResolveResult.Failed,
-                PlayerStreamResolveResult.Unsupported -> EpisodeDownloadPrepareResult.Failure(
+                is PlayerStreamResolveResult.Failed,
+                PlayerStreamResolveResult.Unsupported,
+                -> EpisodeDownloadPrepareResult.Failure(
                     key,
                     strings.get(R.string.details_download_resolve_error),
                 )
@@ -245,7 +248,7 @@ internal class EpisodeDownloadHandler @Inject constructor(
                 options = options.map {
                     EpisodesState.EpisodeDownloadQualityOption(
                         it.label,
-                        it.url
+                        it.url,
                     )
                 }.toImmutableList(),
             ),
@@ -264,7 +267,6 @@ internal class EpisodeDownloadHandler @Inject constructor(
         val options: List<VideoDownloadQualityOption>,
         val headers: Map<String, String>,
     )
-
 }
 
 internal sealed interface EpisodeDownloadPrepareResult {

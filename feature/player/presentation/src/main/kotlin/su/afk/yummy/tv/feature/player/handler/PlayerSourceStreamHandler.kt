@@ -281,7 +281,7 @@ internal class PlayerSourceStreamHandler @Inject constructor(
                     reason = result.reason,
                     positionMs = pendingResume ?: 0L,
                     retryAttempts = retryAttempts,
-                    message = result.message,
+                    message = result.detail ?: result.message,
                 )
                 if (refreshSourcesOnFailure) {
                     PlayerStreamLoadResult.RefreshSources(resumeMode)

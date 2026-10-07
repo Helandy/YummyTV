@@ -24,8 +24,14 @@ sealed interface PlayerStreamResolveResult {
     /** The source resolved successfully but reports this specific dubbing/episode has no stream. */
     data class Unavailable(
         val message: String? = null,
+        val cause: PlayerStreamUnavailableCause? = null,
     ) : PlayerStreamResolveResult
 
-    data object Failed : PlayerStreamResolveResult
+    /**
+     * Источник не отдал поток. [reason] — короткая техническая причина (шаг экстрактора, HTTP-код)
+     * для диагностики; пользователю не показывается.
+     */
+    data class Failed(val reason: String? = null) : PlayerStreamResolveResult
+
     data object Unsupported : PlayerStreamResolveResult
 }

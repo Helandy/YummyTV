@@ -68,7 +68,7 @@ internal class CvhExtractor @Inject constructor(
 
             val animeId = params["anime_id"] ?: run {
                 logFailure(iframeUrl, "missing anime_id")
-                return@withContext PlayerStreamResolveResult.Failed
+                return@withContext PlayerStreamResolveResult.Failed("missing anime_id")
             }
             val episodeStr = params["episode"] ?: "1"
             val episodeNum = episodeStr.toIntOrNull() ?: 1
@@ -112,7 +112,7 @@ internal class CvhExtractor @Inject constructor(
 
             val vkId = item.vkId.takeIf { it.isNotEmpty() } ?: run {
                 logFailure(iframeUrl, "playlist item has no vkId")
-                return@withContext PlayerStreamResolveResult.Failed
+                return@withContext PlayerStreamResolveResult.Failed("playlist item has no vkId")
             }
 
             val videoJson =
@@ -120,7 +120,7 @@ internal class CvhExtractor @Inject constructor(
             val failoverHost = videoJson.optString("failoverHost").takeIf { it.isNotBlank() }
             val sources = videoJson.optJSONObject("sources") ?: run {
                 logFailure(iframeUrl, "video response has no sources")
-                return@withContext PlayerStreamResolveResult.Failed
+                return@withContext PlayerStreamResolveResult.Failed("video response has no sources")
             }
 
             // No Auto/HLS entry: CdnVideoHub's HLS manifests embed raw CDN-IP segment
@@ -135,7 +135,7 @@ internal class CvhExtractor @Inject constructor(
 
             if (qualities.isEmpty()) {
                 logFailure(iframeUrl, "no mp4 qualities in sources")
-                return@withContext PlayerStreamResolveResult.Failed
+                return@withContext PlayerStreamResolveResult.Failed("no mp4 qualities in sources")
             }
             analyticsTracker.log(PersistedLogTags.CVH_EXTRACTOR) {
                 "Resolved vkId=$vkId episode=$episodeNum dubbing=$dubbingCode " +
@@ -152,7 +152,7 @@ internal class CvhExtractor @Inject constructor(
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure("CVH", iframeUrl, "unexpected extractor error", e)
-            PlayerStreamResolveResult.Failed
+            PlayerStreamResolveResult.Failed("${e::class.java.simpleName}: ${e.message.orEmpty().take(60)}")
         }
     }
 

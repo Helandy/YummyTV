@@ -36,7 +36,7 @@ internal class AksorExtractor @Inject constructor(
         request: PlayerStreamRequest,
         context: android.content.Context,
     ): PlayerStreamResolveResult =
-        extractStream(request.iframeUrl)?.toResolveResult() ?: PlayerStreamResolveResult.Failed
+        extractStream(request.iframeUrl)?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Aksor: no stream found")
 
     private suspend fun extractStream(iframeUrl: String): ExtractedStream? =
         withContext(Dispatchers.IO) {

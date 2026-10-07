@@ -21,9 +21,20 @@ import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URL
 import java.net.URLDecoder
 import javax.inject.Inject
+
+/** Итог разбора VK: отдельно «видео нет на VK» (контент) и «не смогли разобрать» (сбой). */
+private sealed interface VkOutcome {
+    data class Stream(val stream: ExtractedStream) : VkOutcome
+
+    /** VK ответил страницей-заглушкой (`video_ext_msg`): видео удалено, приватно или скрыто. */
+    data object VideoUnavailable : VkOutcome
+
+    data class Failed(val reason: String) : VkOutcome
+}
 
 internal class VkExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -34,6 +45,9 @@ internal class VkExtractor @Inject constructor(
     private val DEFAULT_REFERER = "https://vk.com/"
     private val YUMMY_ORIGIN = "https://ru.yummyani.me"
     private val VIDEO_EXT_URL = "https://vk.com/video_ext.php"
+
+    // ASCII-маркер блока с сообщением VK («Видеофайл не найден»): не зависит от кодировки страницы.
+    private val VIDEO_UNAVAILABLE_MARKER = "id=\"video_ext_msg\""
     private val VK_ID_DELIMITER = "_"
 
     private val NAMED_STREAM_PATTERNS = listOf(
@@ -74,15 +88,24 @@ internal class VkExtractor @Inject constructor(
         request: PlayerStreamRequest,
         context: android.content.Context,
     ): PlayerStreamResolveResult =
-        extractStream(
-            iframeUrl = request.iframeUrl,
-            autoQualityLabel = request.autoQualityLabel,
-        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed
+        when (
+            val outcome = extractStream(
+                iframeUrl = request.iframeUrl,
+                autoQualityLabel = request.autoQualityLabel,
+            )
+        ) {
+            is VkOutcome.Stream -> outcome.stream.toResolveResult()
+            VkOutcome.VideoUnavailable -> PlayerStreamResolveResult.Unavailable(
+                cause = PlayerStreamUnavailableCause.VideoNotFound,
+            )
+
+            is VkOutcome.Failed -> PlayerStreamResolveResult.Failed(outcome.reason)
+        }
 
     private suspend fun extractStream(
         iframeUrl: String,
         autoQualityLabel: String = "auto"
-    ): ExtractedStream? = withContext(Dispatchers.IO) {
+    ): VkOutcome = withContext(Dispatchers.IO) {
         val normalizedUrl = normalizeUrl(iframeUrl)
         val referer = normalizedUrl.ifBlank { DEFAULT_REFERER }
 
@@ -106,8 +129,12 @@ internal class VkExtractor @Inject constructor(
             val sourceUrl = videoExtUrl ?: normalizedUrl
             val candidates = collectCandidates(sourceHtml, sourceUrl)
             if (candidates.isEmpty()) {
+                if (VIDEO_UNAVAILABLE_MARKER in sourceHtml) {
+                    analyticsTracker.logExtractorFailure("VK", sourceUrl, "video is unavailable on VK")
+                    return@withContext VkOutcome.VideoUnavailable
+                }
                 analyticsTracker.logExtractorFailure("VK", normalizedUrl, "no stream URLs found")
-                return@withContext null
+                return@withContext VkOutcome.Failed("no stream URLs found (${sourceHtml.length} chars)")
             }
 
             val qualities = orderQualityMap(
@@ -120,10 +147,12 @@ internal class VkExtractor @Inject constructor(
                 },
             ).withAutoQualityLabel(autoQualityLabel)
 
-            ExtractedStream(
-                url = qualities.values.last(),
-                headers = streamHeaders(sourceUrl),
-                qualities = qualities,
+            VkOutcome.Stream(
+                ExtractedStream(
+                    url = qualities.values.last(),
+                    headers = streamHeaders(sourceUrl),
+                    qualities = qualities,
+                ),
             )
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -133,7 +162,7 @@ internal class VkExtractor @Inject constructor(
                 "unexpected extractor error",
                 e
             )
-            null
+            VkOutcome.Failed("${e::class.java.simpleName}: ${e.message.orEmpty().take(60)}")
         }
     }
 

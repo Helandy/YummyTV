@@ -1,0 +1,10 @@
+package su.afk.yummy.tv.domain.player.model
+
+/** Почему источник сообщил, что видео недоступно: это состояние контента или сети, а не сбой разбора. */
+enum class PlayerStreamUnavailableCause {
+    /** Источник ответил, что видеофайла нет: он удалён или скрыт автором. */
+    VideoNotFound,
+
+    /** Источник закрыл доступ к странице плеера (HTTP 403) для этой сети. */
+    AccessForbidden,
+}

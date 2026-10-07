@@ -70,7 +70,7 @@ internal class AllohaExtractor @Inject constructor(
             )
         ) {
             is AllohaOpenResult.Unavailable -> PlayerStreamResolveResult.Unavailable(result.message)
-            AllohaOpenResult.Failed -> PlayerStreamResolveResult.Failed
+            AllohaOpenResult.Failed -> PlayerStreamResolveResult.Failed("Alloha: session was not opened")
             is AllohaOpenResult.Ready -> {
                 val session = result.session
                 try {

@@ -57,7 +57,7 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                     result.message ?: DUBBING_UNAVAILABLE_MESSAGE,
                 )
 
-                PlayerStreamResolveResult.Failed -> VideoDownloadStreamRefreshResult.Failure(
+                is PlayerStreamResolveResult.Failed -> VideoDownloadStreamRefreshResult.Failure(
                     REFRESH_ERROR_MESSAGE,
                 )
 

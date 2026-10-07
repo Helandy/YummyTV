@@ -14,6 +14,7 @@ import su.afk.yummy.tv.data.player.extractor.common.normalizeUrlScheme
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URL
 import javax.inject.Inject
 
@@ -38,7 +39,7 @@ internal class SibnetExtractor @Inject constructor(
                     playerUrl,
                     "MP4 source was not found"
                 )
-                return@withContext PlayerStreamResolveResult.Failed
+                return@withContext PlayerStreamResolveResult.Failed("MP4 source was not found")
             }
 
             PlayerStreamResolveResult.Stream(
@@ -49,6 +50,9 @@ internal class SibnetExtractor @Inject constructor(
                     "User-Agent" to userAgents.userAgent,
                 ),
             )
+        } catch (e: SibnetAccessForbiddenException) {
+            analyticsTracker.logExtractorFailure("Sibnet", playerUrl, "HTTP 403: access is forbidden")
+            PlayerStreamResolveResult.Unavailable(cause = PlayerStreamUnavailableCause.AccessForbidden)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             analyticsTracker.logExtractorFailure(
@@ -57,7 +61,7 @@ internal class SibnetExtractor @Inject constructor(
                 "unexpected extractor error",
                 e
             )
-            PlayerStreamResolveResult.Failed
+            PlayerStreamResolveResult.Failed("${e::class.java.simpleName}: ${e.message.orEmpty().take(40)}")
         }
     }
 
@@ -70,8 +74,9 @@ internal class SibnetExtractor @Inject constructor(
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             ),
         )
+        if (response.statusCode == HTTP_FORBIDDEN) throw SibnetAccessForbiddenException()
         if (!response.isSuccess) {
-            throw IllegalStateException("HTTP ${response.statusCode}: ${response.body.take(80)}")
+            throw IllegalStateException("HTTP ${response.statusCode}")
         }
         return response.body
     }
@@ -99,7 +104,11 @@ internal class SibnetExtractor @Inject constructor(
         }
     }
 
+    /** Sibnet закрыл страницу плеера (403) для этой сети: видео не при чём, повтор не поможет. */
+    private class SibnetAccessForbiddenException : Exception()
+
     private companion object {
+        const val HTTP_FORBIDDEN = 403
         const val SIBNET_ORIGIN = "https://video.sibnet.ru"
         const val YANI_ORIGIN = "https://yani.tv/"
 

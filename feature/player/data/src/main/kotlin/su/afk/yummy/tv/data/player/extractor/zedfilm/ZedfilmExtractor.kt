@@ -73,7 +73,7 @@ internal class ZedfilmExtractor @Inject constructor(
             iframeUrl = request.iframeUrl,
             context = context,
             autoQualityLabel = request.autoQualityLabel,
-        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed
+        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Zedfilm: no stream found")
 
     private suspend fun extractStream(
         iframeUrl: String,
