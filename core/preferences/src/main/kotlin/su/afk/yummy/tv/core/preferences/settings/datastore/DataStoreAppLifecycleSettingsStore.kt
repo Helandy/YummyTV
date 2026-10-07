@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appLogRecordingEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.betaUpdatesEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastSeenAnnouncementIdKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.lastStartedVersionCodeKey
@@ -23,6 +24,8 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override val betaUpdatesEnabled: Flow<Boolean> = store.boolean(betaUpdatesEnabledKey, false)
 
+    override val appLogRecordingEnabled: Flow<Boolean> = store.boolean(appLogRecordingEnabledKey, false)
+
     override val supportPromptSnapshot: Flow<SupportPromptSnapshot> = store.data.map { prefs ->
         SupportPromptSnapshot(
             dismissed = prefs[supportPromptDismissedKey] ?: false,
@@ -41,6 +44,9 @@ internal class DataStoreAppLifecycleSettingsStore @Inject constructor(
 
     override suspend fun setBetaUpdatesEnabled(enabled: Boolean) =
         store.setBoolean(betaUpdatesEnabledKey, enabled)
+
+    override suspend fun setAppLogRecordingEnabled(enabled: Boolean) =
+        store.setBoolean(appLogRecordingEnabledKey, enabled)
 
     override suspend fun ensureSupportPromptInstallTimeInitialized() {
         store.edit { prefs ->

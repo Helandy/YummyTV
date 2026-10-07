@@ -109,6 +109,9 @@
     <string name="settings_mobile_beta_updates_label">Бета-версії</string>
     <string name="settings_mobile_beta_updates_enabled">Пропонуються й pre-release збірки — вони можуть бути нестабільні. Застосується під час наступного запуску</string>
     <string name="settings_mobile_beta_updates_disabled">Лише стабільні версії</string>
+    <string name="settings_mobile_app_logs_recording_label">Запис логів</string>
+    <string name="settings_mobile_app_logs_recording_enabled">Увімкнено. Логи записуються у файл, їх можна надіслати через «Поділитися логами»</string>
+    <string name="settings_mobile_app_logs_recording_disabled">Вимкнено. Під час вимкнення записані логи видаляються</string>
     <string name="settings_theme_warm_amber">Теплий бурштин</string>
     <string name="settings_theme_warm_amber_hint">Нейтральна темна основа з м\'яким бурштиновим акцентом</string>
     <string name="settings_theme_sakura">Сакура</string>

@@ -301,7 +301,10 @@ UA для запросов к балансерам и их CDN выбирает 
 
 ## 9. Отладка
 
-Логи идут через `AnalyticsTracker.log` — в дебаге в logcat, в релизе no-op.
+Логи идут через `AnalyticsTracker.log` — в дебаге в logcat, в релизе теги `PlayerViewModel`,
+`CvhExtractor`, `PlayerBuffering` и `PlayerExtractor` пишутся в файл логов приложения (Настройки → О
+приложении → Поделиться логами, если включена «Настройки → Общие → Запись логов»); остальные теги в
+релизе no-op.
 
 ```bash
 adb logcat -c && adb logcat -v time PlayerViewModel:D CvhExtractor:D Analytics:D *:S

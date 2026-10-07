@@ -11,13 +11,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
-import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
-import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.MASTER_WAIT_TIMEOUT_MS
-import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.NO_SIGNAL_TIMEOUT_MS
-import su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor.Companion.TIMEOUT_MS
-import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
+import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -89,13 +87,13 @@ internal class AllohaExtractor @Inject constructor(
         context: Context,
     ): AllohaStreamSession? = withContext(Dispatchers.Main) {
         (
-                openSessionViaWebView(
-                    iframeUrl = request.iframeUrl,
-                    preferredQualityLabel = request.autoQualityLabel,
-                    fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
-                    context = context,
-                ) as? AllohaOpenResult.Ready
-                )?.session
+            openSessionViaWebView(
+                iframeUrl = request.iframeUrl,
+                preferredQualityLabel = request.autoQualityLabel,
+                fallbackTtlSeconds = request.sessionFallbackTtlSeconds,
+                context = context,
+            ) as? AllohaOpenResult.Ready
+            )?.session
     }
 
     private sealed interface AllohaOpenResult {
@@ -184,7 +182,7 @@ internal class AllohaExtractor @Inject constructor(
             wrapperReloads++
             analyticsTracker.log(LOG_TAG) {
                 "no signal after ${NO_SIGNAL_TIMEOUT_MS}ms, reloading wrapper " +
-                        "attempt=$wrapperReloads/$MAX_WRAPPER_RELOADS"
+                    "attempt=$wrapperReloads/$MAX_WRAPPER_RELOADS"
             }
             reloadWrapper?.invoke()
             handler.postDelayed(noSignalTimeout, NO_SIGNAL_TIMEOUT_MS)
@@ -198,7 +196,7 @@ internal class AllohaExtractor @Inject constructor(
             // line the 30s dead wait leaves nothing in logcat, only an analytics event.
             analyticsTracker.log(LOG_TAG) {
                 "session timed out after ${TIMEOUT_MS}ms streamReady=$streamReady " +
-                        "refreshedMaster=$refreshedMasterReady"
+                    "refreshedMaster=$refreshedMasterReady"
             }
             analyticsTracker.logExtractorFailure(
                 "Alloha",
@@ -303,7 +301,7 @@ internal class AllohaExtractor @Inject constructor(
                             if (!liveSession.hasSeenConfigUpdate) {
                                 analyticsTracker.log(LOG_TAG) {
                                     "master host changed $previousHost -> $newHost and no " +
-                                            "config_update was ever seen, restarting session now"
+                                        "config_update was ever seen, restarting session now"
                                 }
                                 liveSession.refresh()
                             } else {
@@ -390,11 +388,11 @@ internal class AllohaExtractor @Inject constructor(
         val os = DESKTOP_OS.random()
         val version = Random.nextInt(130, 136)
         return "Mozilla/5.0 ($os) AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/$version.0.0.0 Safari/537.36"
+            "Chrome/$version.0.0.0 Safari/537.36"
     }
 
     private companion object {
-        const val LOG_TAG = "AllohaExtractor"
+        const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
         val DESKTOP_OS = listOf(
             "Windows NT 10.0; Win64; x64",
             "Windows NT 11.0; Win64; x64",

@@ -4,6 +4,7 @@ import android.os.Handler
 import android.webkit.CookieManager
 import android.webkit.WebView
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
-private const val LOG_TAG = "AllohaExtractor"
+private const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
 
 // How long a rotation may stay staged before we apply whatever the reload managed to produce.
 // Committing a partial state is the pre-existing behaviour (a short stall while the proxy

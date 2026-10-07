@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.player
 
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.analytics.utils.analyticsParamsOf
 import su.afk.yummy.tv.core.analytics.utils.analyticsType
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
@@ -439,7 +440,7 @@ internal class PlayerAnalytics @Inject constructor(
         }
 
     internal companion object {
-        private const val DEBUG_LOG_TAG = "PlayerViewModel"
+        private const val DEBUG_LOG_TAG = PersistedLogTags.PLAYER_VIEW_MODEL
         private const val PARAM_ANIME_ID = "anime_id"
         private const val PARAM_ANIME_NAME = "anime_name"
         private const val PARAM_DUBBING = "dubbing"

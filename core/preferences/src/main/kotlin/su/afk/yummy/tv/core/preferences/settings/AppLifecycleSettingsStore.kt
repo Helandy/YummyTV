@@ -11,6 +11,9 @@ interface AppLifecycleSettingsStore {
     /** Бета-канал: проверка обновлений учитывает и pre-release сборки. */
     val betaUpdatesEnabled: Flow<Boolean>
 
+    /** Запись логов приложения в файл для «Поделиться логами»; по умолчанию выключена. */
+    val appLogRecordingEnabled: Flow<Boolean>
+
     val supportPromptSnapshot: Flow<SupportPromptSnapshot>
 
     /** Идентификатор последнего объявления, которое пользователь закрыл кнопкой ОК. */
@@ -21,6 +24,7 @@ interface AppLifecycleSettingsStore {
 
     suspend fun setWatchNextEnabled(enabled: Boolean)
     suspend fun setBetaUpdatesEnabled(enabled: Boolean)
+    suspend fun setAppLogRecordingEnabled(enabled: Boolean)
     suspend fun ensureSupportPromptInstallTimeInitialized()
     suspend fun dismissSupportPrompt()
 

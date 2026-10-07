@@ -7,6 +7,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.core.utils.player.cdnHostOrNull
 import su.afk.yummy.tv.core.utils.player.isCvhPlayerUrl
@@ -136,7 +137,7 @@ internal class CvhExtractor @Inject constructor(
                 logFailure(iframeUrl, "no mp4 qualities in sources")
                 return@withContext PlayerStreamResolveResult.Failed
             }
-            analyticsTracker.log("CvhExtractor") {
+            analyticsTracker.log(PersistedLogTags.CVH_EXTRACTOR) {
                 "Resolved vkId=$vkId episode=$episodeNum dubbing=$dubbingCode " +
                     "qualities=${qualities.keys} failoverHost=$failoverHost " +
                     "useFailoverHost=$useFailoverHost hosts=${qualities.values.map(::hostOf).distinct()}"

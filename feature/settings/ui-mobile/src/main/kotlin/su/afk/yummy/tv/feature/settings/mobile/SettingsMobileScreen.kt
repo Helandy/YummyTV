@@ -136,11 +136,14 @@ fun SettingsMobileScreen(
                             hint = stringResource(R.string.settings_session_storage_fallback),
                         )
                     }
-                    SettingsMobileAboutRow(
-                        label = stringResource(R.string.settings_mobile_logs_label),
-                        hint = stringResource(R.string.settings_mobile_logs_hint),
-                        onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
-                    )
+                    // Логи пишутся только при включённой записи (Общие → «Запись логов»).
+                    if (state.appLogRecordingEnabled) {
+                        SettingsMobileAboutRow(
+                            label = stringResource(R.string.settings_mobile_logs_label),
+                            hint = stringResource(R.string.settings_mobile_logs_hint),
+                            onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
+                        )
+                    }
                     SettingsMobileAboutRow(
                         label = stringResource(R.string.settings_feedback_label),
                         hint = repositoryUrl,

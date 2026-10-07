@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLogRecordingSettings
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreBrowserUserAgentProvider
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreCacheSettingsStore
@@ -27,6 +28,7 @@ import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSearchSettin
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreYaniAccountSettingsStore
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import javax.inject.Singleton
 
@@ -49,6 +51,10 @@ internal interface PreferencesModule {
     @Binds
     @Singleton
     fun bindBrowserUserAgentProvider(impl: DataStoreBrowserUserAgentProvider): BrowserUserAgentProvider
+
+    @Binds
+    @Singleton
+    fun bindAppLogRecordingSettings(impl: DataStoreAppLogRecordingSettings): AppLogRecordingSettings
 
     @Binds
     @Singleton

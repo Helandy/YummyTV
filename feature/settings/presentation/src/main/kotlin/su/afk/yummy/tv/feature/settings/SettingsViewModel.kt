@@ -129,6 +129,9 @@ class SettingsViewModel @Inject internal constructor(
         settingsStore.betaUpdatesEnabled
             .onEach { enabled -> setState { copy(betaUpdatesEnabled = enabled) } }
             .launchIn(viewModelScope)
+        settingsStore.appLogRecordingEnabled
+            .onEach { enabled -> setState { copy(appLogRecordingEnabled = enabled) } }
+            .launchIn(viewModelScope)
         tvIntegration.previewChannelBrowsable
             .onEach { setState { copy(isPreviewChannelBrowsable = it) } }
             .launchIn(viewModelScope)
@@ -432,6 +435,12 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setBetaUpdatesEnabled(enabled)
                 // История зависит от бета-канала — при следующем открытии загрузим заново.
                 setState { copy(releaseNotes = ReleaseNotesStatus.Idle) }
+            }
+
+            SettingsState.Event.AppLogRecordingToggled -> viewModelScope.launch {
+                val enabled = !currentState.appLogRecordingEnabled
+                analytics.eventAppLogRecordingToggled(enabled)
+                settingsStore.setAppLogRecordingEnabled(enabled)
             }
 
             SettingsState.Event.ReleaseNotesRequested -> loadReleaseNotes()

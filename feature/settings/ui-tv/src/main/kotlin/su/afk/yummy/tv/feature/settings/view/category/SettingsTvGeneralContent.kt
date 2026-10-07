@@ -54,6 +54,18 @@ internal fun SettingsTvGeneralContent(
         onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
+    SettingsDivider()
+    ToggleRow(
+        label = stringResource(R.string.settings_tv_app_logs_recording_label),
+        hint = if (state.appLogRecordingEnabled) {
+            stringResource(R.string.settings_tv_app_logs_recording_enabled)
+        } else {
+            stringResource(R.string.settings_tv_app_logs_recording_disabled)
+        },
+        enabled = state.appLogRecordingEnabled,
+        onClick = { onEvent(SettingsState.Event.AppLogRecordingToggled) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_tab_tv_home))
     ToggleRow(

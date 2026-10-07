@@ -28,3 +28,29 @@ internal fun isLineOfProcess(line: String, pid: Int): Boolean {
     val parts = line.trimStart().split(Regex("\\s+"), limit = 5)
     return parts.getOrNull(2)?.toIntOrNull() == pid
 }
+
+private val urlRegex = Regex("""(https?://[^/\s"'<>?#]+)[^\s"'<>]*""")
+private val secretParamRegex =
+    Regex("""\b(token|sig|signature|key|auth|session|hash|expires)=[^&\s"']+""", RegexOption.IGNORE_CASE)
+
+/**
+ * Оставляет от ссылок только схему и хост, а значения секретоподобных параметров заменяет на `***`:
+ * в файл логов, который пользователь отправляет разработчику, не должны попадать подписанные ссылки.
+ */
+internal fun String.maskSensitiveUrls(): String =
+    replace(urlRegex) { "${it.groupValues[1]}/..." }
+        .replace(secretParamRegex) { "${it.groupValues[1]}=***" }
+
+/** Строка в формате `logcat -v threadtime`, чтобы один `grep` работал и по logcat-, и по этим записям. */
+internal fun formatDiagnosticLogLine(
+    timeMillis: Long,
+    pid: Int,
+    tid: Int,
+    tag: String,
+    message: String,
+    stackTrace: String?,
+): String {
+    val time = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US).format(Date(timeMillis))
+    val body = if (stackTrace.isNullOrBlank()) message else "$message\n${stackTrace.trimEnd()}"
+    return "$time $pid $tid D $tag: $body"
+}

@@ -14,6 +14,7 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.utils.coroutines.ioScope
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import java.io.OutputStream
@@ -286,14 +287,12 @@ internal class AllohaStreamProxy(
             if (url.contains("-a1.ts") || url.contains("-a2.ts")) {
                 analytics.log(LOG_TAG) {
                     "Audio TS segment unrecoverable, serving empty packet: ${
-                        url.takeLast(
-                            80
-                        )
+                        url.safeTarget()
                     }"
                 }
                 sendBytes(output, FetchResult(EMPTY_TS_PACKET, 200, "video/MP2T", url))
             } else {
-                analytics.log(LOG_TAG) { "Media segment unrecoverable: ${url.takeLast(80)}" }
+                analytics.log(LOG_TAG) { "Media segment unrecoverable: ${url.safeTarget()}" }
                 send(output, 503, "text/plain", byteArrayOf())
             }
             return
@@ -301,9 +300,7 @@ internal class AllohaStreamProxy(
         if (result.bytes.size < MIN_SEGMENT_BYTES_HINT) {
             analytics.log(LOG_TAG) {
                 "Serving suspiciously small segment (${result.bytes.size}b): ${
-                    url.takeLast(
-                        80
-                    )
+                    url.safeTarget()
                 }"
             }
         }
@@ -757,7 +754,7 @@ internal class AllohaStreamProxy(
     }
 
     private companion object {
-        const val LOG_TAG = "AllohaStreamProxy"
+        const val LOG_TAG = PersistedLogTags.ALLOHA_STREAM_PROXY
 
         /** Both the bind address and the host of every URL handed to Media3 - they must match. */
         const val LOOPBACK_HOST = "127.0.0.1"

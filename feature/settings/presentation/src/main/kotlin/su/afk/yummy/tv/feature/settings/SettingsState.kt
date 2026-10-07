@@ -83,6 +83,8 @@ class SettingsState {
         val isCacheStorageLoading: Boolean = false,
         val saveLastSearchEnabled: Boolean = false,
         val betaUpdatesEnabled: Boolean = false,
+        /** Запись логов приложения в файл включена; пока выключена — «Поделиться логами» скрыто. */
+        val appLogRecordingEnabled: Boolean = false,
         /** Токен сессии хранится без AndroidKeyStore — прошивка не даёт им пользоваться. */
         val isFallbackSessionStorage: Boolean = false,
         /** ID устройства в аналитике, разбитый на группы по 3 цифры; null — ID недоступен. */
@@ -243,6 +245,9 @@ class SettingsState {
         /** Пользователь переключил сохранение последнего поиска. */
         data object SaveLastSearchToggled : Event
         data object BetaUpdatesToggled : Event
+
+        /** Пользователь переключил запись логов приложения в файл. */
+        data object AppLogRecordingToggled : Event
 
         /** Пользователь открыл «Что нового»: загрузить историю релизов, если её ещё нет. */
         data object ReleaseNotesRequested : Event

@@ -4,14 +4,18 @@ import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.utils.player.isOkCdnHost
+import java.io.IOException
 
 /**
  * Диагностика остановок на буферизацию: сколько длилась, с какого источника, при каком профиле и
@@ -23,9 +27,11 @@ import su.afk.yummy.tv.core.utils.player.isOkCdnHost
  * при запасе меньше удержания ([lastLoadBufferedMs]), а остановка идёт рядом с логом прокси про
  * обновление сессии, то минимальный порог профиля слишком мал.
  *
- * Пишет только в [AnalyticsTracker.log] (в дебаге logcat, в релизе no-op), событий в аналитику не
- * шлёт: объём и приватность этого потока решаются отдельно. Читать:
- * `adb logcat -s PlayerBuffering:D AllohaStreamProxy:D`. Описание — `docs/player-buffering.md`.
+ * Пишет только в [AnalyticsTracker.log] (в дебаге logcat, в релизе — в файл логов приложения, тег
+ * входит в `PersistedLogTags`), событий в аналитику не шлёт: объём и приватность этого потока
+ * решаются отдельно. Ссылок и токенов в строках нет — только метка источника и хост CDN.
+ * Читать: `adb logcat -s PlayerBuffering:D AllohaStreamProxy:D` или дамп «Поделиться логами».
+ * Описание — `docs/player-buffering.md`.
  *
  * @param currentUriHost хост текущего media item; вызывается на потоке плеера.
  */
@@ -52,6 +58,9 @@ internal class PlayerBufferingAnalyticsListener(
     // Запас на старте последней подкачки медиа и время этого старта.
     private var lastLoadBufferedMs = 0L
     private var lastLoadAtMs = 0L
+
+    // Последняя оценка пропускной способности ExoPlayer; в логе остановки показывает, была ли сеть узким местом.
+    private var lastBandwidthBps = 0L
 
     override fun onMediaItemTransition(
         eventTime: AnalyticsListener.EventTime,
@@ -85,6 +94,71 @@ internal class PlayerBufferingAnalyticsListener(
         if (retryCount > 0 || mediaLoadData.dataType != C.DATA_TYPE_MEDIA) return
         lastLoadBufferedMs = eventTime.totalBufferedDurationMs
         lastLoadAtMs = SystemClock.elapsedRealtime()
+    }
+
+    override fun onBandwidthEstimate(
+        eventTime: AnalyticsListener.EventTime,
+        totalLoadTimeMs: Int,
+        totalBytesLoaded: Long,
+        bitrateEstimate: Long,
+    ) {
+        lastBandwidthBps = bitrateEstimate
+    }
+
+    // Медленная загрузка сегмента — главный подозреваемый в остановках: сам загрузчик Media3 о ней
+    // молчит. Быстрые загрузки не пишем, чтобы не шуметь.
+    override fun onLoadCompleted(
+        eventTime: AnalyticsListener.EventTime,
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData,
+    ) {
+        if (mediaLoadData.dataType != C.DATA_TYPE_MEDIA) return
+        if (loadEventInfo.loadDurationMs < SLOW_LOAD_MS) return
+        tracker.log(LOG_TAG) {
+            "load slow ${loadEventInfo.describe()} bytes=${loadEventInfo.bytesLoaded} " +
+                "loadMs=${loadEventInfo.loadDurationMs} bufferedMs=${eventTime.totalBufferedDurationMs} " +
+                "positionMs=${eventTime.currentPlaybackPositionMs}"
+        }
+    }
+
+    // Отмена долгой загрузки (перерезолв, перемотка) показывает «повисший» сегмент: сколько он
+    // висел до отмены. Короткие отмены — обычные перемотки, их не пишем.
+    override fun onLoadCanceled(
+        eventTime: AnalyticsListener.EventTime,
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData,
+    ) {
+        if (mediaLoadData.dataType != C.DATA_TYPE_MEDIA) return
+        if (loadEventInfo.loadDurationMs < SLOW_LOAD_MS) return
+        tracker.log(LOG_TAG) {
+            "load canceled ${loadEventInfo.describe()} bytes=${loadEventInfo.bytesLoaded} " +
+                "loadMs=${loadEventInfo.loadDurationMs} bufferedMs=${eventTime.totalBufferedDurationMs} " +
+                "positionMs=${eventTime.currentPlaybackPositionMs}"
+        }
+    }
+
+    override fun onLoadError(
+        eventTime: AnalyticsListener.EventTime,
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData,
+        error: IOException,
+        wasCanceled: Boolean,
+    ) {
+        tracker.log(LOG_TAG) {
+            val http = (error as? HttpDataSource.InvalidResponseCodeException)?.responseCode
+            "load error type=${mediaLoadData.dataType} ${loadEventInfo.describe()} " +
+                "error=${error.javaClass.simpleName} http=${http ?: "-"} canceled=$wasCanceled " +
+                "loadMs=${loadEventInfo.loadDurationMs} bufferedMs=${eventTime.totalBufferedDurationMs} " +
+                "positionMs=${eventTime.currentPlaybackPositionMs} msg=${error.message?.take(MAX_MESSAGE_CHARS)}"
+        }
+    }
+
+    override fun onPlayerError(eventTime: AnalyticsListener.EventTime, error: PlaybackException) {
+        tracker.log(LOG_TAG) {
+            "player error code=${error.errorCodeName} cause=${error.cause?.javaClass?.simpleName ?: "-"} " +
+                "source=${sourceLabel()} positionMs=${eventTime.currentPlaybackPositionMs} " +
+                "msg=${error.message?.take(MAX_MESSAGE_CHARS)}"
+        }
     }
 
     override fun onPlaybackStateChanged(eventTime: AnalyticsListener.EventTime, state: Int) {
@@ -133,21 +207,27 @@ internal class PlayerBufferingAnalyticsListener(
             "stall kind=$stallKind source=${sourceLabel()} durationMs=$durationMs " +
                 "profile=${profile.name}(min=${profile.minBufferMs / 1000}s,max=${profile.maxBufferMs / 1000}s) " +
                 "lastLoadBufferedMs=$stallBufferedAtLoadMs lastLoadAgoMs=$stallSinceLoadMs " +
-                "positionMs=${eventTime.currentPlaybackPositionMs}"
+                "positionMs=${eventTime.currentPlaybackPositionMs} bandwidthBps=$lastBandwidthBps"
         }
     }
 
-    private fun sourceLabel(): String {
-        val host = currentUriHost() ?: return "unknown"
-        return when {
+    private fun sourceLabel(): String = labelOf(currentUriHost())
+
+    private fun LoadEventInfo.describe(): String {
+        val host = uri.host
+        return "source=${labelOf(host)} host=${host ?: "-"}"
+    }
+
+    private fun labelOf(host: String?): String =
+        when {
+            host == null -> "unknown"
             host == LOOPBACK_HOST -> "alloha-proxy"
             host.isOkCdnHost() -> "okcdn"
             else -> "other"
         }
-    }
 
     private companion object {
-        const val LOG_TAG = "PlayerBuffering"
+        const val LOG_TAG = PersistedLogTags.PLAYER_BUFFERING
         const val LOOPBACK_HOST = "127.0.0.1"
         const val KIND_START = "start"
         const val KIND_SEEK = "seek"
@@ -155,5 +235,10 @@ internal class PlayerBufferingAnalyticsListener(
 
         // Долгий старт или перемотка тоже полезны (медленный CDN), короткие — шум.
         const val LOGGED_NON_REBUFFER_MIN_MS = 3_000L
+
+        // Загрузка сегмента дольше этого — медленная (HLS-сегмент Kodik ≈ 18 с видео, запас в
+        // профиле SMALL тоже ≈ 18 с); короче — штатная и в лог не идёт.
+        const val SLOW_LOAD_MS = 3_000L
+        const val MAX_MESSAGE_CHARS = 160
     }
 }

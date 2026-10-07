@@ -54,6 +54,16 @@ internal fun SettingsMobileGeneralContent(
                 enabled = state.betaUpdatesEnabled,
                 onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_mobile_app_logs_recording_label),
+                hint = if (state.appLogRecordingEnabled) {
+                    stringResource(R.string.settings_mobile_app_logs_recording_enabled)
+                } else {
+                    stringResource(R.string.settings_mobile_app_logs_recording_disabled)
+                },
+                enabled = state.appLogRecordingEnabled,
+                onClick = { onEvent(SettingsState.Event.AppLogRecordingToggled) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_devices)) {
             SettingsMobileNavigationRow(

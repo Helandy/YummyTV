@@ -90,6 +90,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         every { settingsStore.tvPlayerControlsTutorialDismissed } returns MutableStateFlow(false)
         every { settingsStore.saveLastSearchEnabled } returns saveLastSearch
         every { settingsStore.betaUpdatesEnabled } returns betaUpdates
+        every { settingsStore.appLogRecordingEnabled } returns MutableStateFlow(false)
         every { yaniAuthPreferences.storageMode } returns storageMode
         every { tvIntegration.previewChannelBrowsable } returns MutableStateFlow(true)
         every { exportRepository.observeDestination() } returns exportDestination

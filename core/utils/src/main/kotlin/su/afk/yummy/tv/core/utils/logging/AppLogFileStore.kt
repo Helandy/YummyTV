@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 /**
  * Ротируемое файловое хранилище логов приложения: `current.log` и предыдущий `previous.log`.
- * Лежит в `cacheDir/logs`, поэтому не попадает в бэкап. Запись потокобезопасна: в неё пишут и
+ * Лежит в `cacheDir/logs`, поэтому не попадает в бэкап; [clear] стирает всё при выключении записи. Запись потокобезопасна: в неё пишут и
  * читатель logcat, и обработчик необработанных исключений.
  */
 @Singleton
@@ -45,6 +45,15 @@ class AppLogFileStore @Inject constructor(
         directory.mkdirs()
         currentSize = currentFile.length()
         return BufferedWriter(FileWriter(currentFile, true))
+    }
+
+    /** Стирает все файлы логов вместе с папкой экспорта: нужен при выключении записи. */
+    @Synchronized
+    fun clear() {
+        runCatching { writer?.close() }
+        writer = null
+        currentSize = 0L
+        runCatching { directory.deleteRecursively() }
     }
 
     private fun rotate() {

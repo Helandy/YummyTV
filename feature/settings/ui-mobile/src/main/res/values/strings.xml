@@ -109,6 +109,9 @@
     <string name="settings_mobile_beta_updates_label">Beta versions</string>
     <string name="settings_mobile_beta_updates_enabled">Pre-release builds are offered too — they may be unstable. Applies on next launch</string>
     <string name="settings_mobile_beta_updates_disabled">Stable releases only</string>
+    <string name="settings_mobile_app_logs_recording_label">Log recording</string>
+    <string name="settings_mobile_app_logs_recording_enabled">On. Logs are saved to a file and can be shared from the About section</string>
+    <string name="settings_mobile_app_logs_recording_disabled">Off. Turning it off deletes the recorded logs</string>
     <string name="settings_theme_warm_amber">Warm amber</string>
     <string name="settings_theme_warm_amber_hint">Neutral dark surfaces with a soft amber focus</string>
     <string name="settings_theme_sakura">Sakura</string>

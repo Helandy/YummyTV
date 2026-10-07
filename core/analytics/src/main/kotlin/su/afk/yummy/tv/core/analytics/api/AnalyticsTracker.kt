@@ -19,7 +19,8 @@ interface AnalyticsTracker {
     )
 
     /**
-     * Free-form debug diagnostic. No-op outside of debug-backed implementations.
+     * Free-form debug diagnostic. In debug it goes to logcat. In release it is a no-op, except for
+     * tags listed in [PersistedLogTags.persisted], which are kept in the app log file.
      */
     fun log(tag: String, throwable: Throwable? = null, message: () -> String)
 }

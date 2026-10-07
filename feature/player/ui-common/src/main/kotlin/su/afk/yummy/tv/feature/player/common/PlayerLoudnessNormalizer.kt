@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.media3.common.C
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 
 /**
  * «Стабилизация громкости» — сжатие динамического диапазона звука через системный аудио-эффект
@@ -114,7 +115,7 @@ class PlayerLoudnessNormalizer(
     }
 
     private companion object {
-        const val LOG_TAG = "PlayerLoudness"
+        const val LOG_TAG = PersistedLogTags.PLAYER_LOUDNESS
         const val EFFECT_PRIORITY = 0
         const val CHANNEL_COUNT = 2
         const val BAND_COUNT = 1

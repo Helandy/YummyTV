@@ -1,9 +1,10 @@
 package su.afk.yummy.tv.data.player.extractor.common
 
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import java.net.URI
 
-private const val TAG = "PlayerExtractor"
+private const val TAG = PersistedLogTags.PLAYER_EXTRACTOR
 
 internal fun AnalyticsTracker.logExtractorFailure(
     extractor: String,

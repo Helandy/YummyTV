@@ -2,10 +2,11 @@ package su.afk.yummy.tv.data.player.extractor.alloha
 
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 import su.afk.yummy.tv.domain.player.model.AllohaAudioTrack
 import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 
-private const val LOG_TAG = "AllohaExtractor"
+private const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
 
 internal fun parseHeaders(headersJson: String): Map<String, String> {
     val objectValue = JSONObject(headersJson)

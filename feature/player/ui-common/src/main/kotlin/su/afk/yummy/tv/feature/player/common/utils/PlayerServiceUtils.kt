@@ -3,9 +3,10 @@ package su.afk.yummy.tv.feature.player.common.utils
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import su.afk.yummy.tv.core.analytics.api.PersistedLogTags
 
 /** Тег логов сервиса плеера: по нему разбирают падения, менять нельзя. */
-internal const val PLAYER_SERVICE_LOG_TAG = "PlayerMediaSession"
+internal const val PLAYER_SERVICE_LOG_TAG = PersistedLogTags.PLAYER_MEDIA_SESSION
 
 private const val REQUEST_CODE_SESSION_ACTIVITY = 40_101
 

@@ -390,6 +390,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил запись логов приложения в файл. */
+    fun eventAppLogRecordingToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_APP_LOG_RECORDING_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     internal companion object {
         private const val PARAM_ACTION = "action"
         private const val PARAM_DIRECTION = "direction"
@@ -456,5 +464,6 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_WATCH_NEXT_TOGGLED = "settings_watch_next_toggled"
         const val EVENT_SAVE_LAST_SEARCH_TOGGLED = "settings_save_last_search_toggled"
         const val EVENT_BETA_UPDATES_TOGGLED = "settings_beta_updates_toggled"
+        const val EVENT_APP_LOG_RECORDING_TOGGLED = "settings_app_log_recording_toggled"
     }
 }
