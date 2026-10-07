@@ -9,7 +9,9 @@ import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
+import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
+import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
 import su.afk.yummy.tv.feature.settings.view.ToggleRow
 
 @Composable
@@ -36,23 +38,6 @@ internal fun SettingsTvAppearanceContent(
     pickerRow(SettingsTvPicker.POSTER_QUALITY, Modifier)
     SettingsDivider()
     ToggleRow(
-        label = stringResource(R.string.settings_new_episodes_section),
-        hint = if (state.newEpisodesSectionEnabled) {
-            stringResource(R.string.settings_new_episodes_section_enabled)
-        } else {
-            stringResource(R.string.settings_disabled)
-        },
-        enabled = state.newEpisodesSectionEnabled,
-        onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
-        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    SettingsDivider()
-    // Список источников без включённого блока ни на что не влияет.
-    if (state.newEpisodesSectionEnabled) {
-        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier)
-        SettingsDivider()
-    }
-    ToggleRow(
         label = stringResource(R.string.settings_show_top_title_year),
         hint = if (state.showTopTitleYear) {
             stringResource(R.string.settings_show_top_title_year_enabled)
@@ -77,4 +62,34 @@ internal fun SettingsTvAppearanceContent(
     )
     SettingsDivider()
     pickerRow(SettingsTvPicker.DETAILS_BUTTON_ORDER, Modifier)
+    SettingsBlockGap()
+    SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))
+    ToggleRow(
+        label = stringResource(R.string.settings_new_episodes_section),
+        hint = if (state.newEpisodesSectionEnabled) {
+            stringResource(R.string.settings_new_episodes_section_enabled)
+        } else {
+            stringResource(R.string.settings_disabled)
+        },
+        enabled = state.newEpisodesSectionEnabled,
+        onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    // Список источников без включённого блока ни на что не влияет.
+    if (state.newEpisodesSectionEnabled) {
+        SettingsDivider()
+        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier)
+        SettingsDivider()
+        ToggleRow(
+            label = stringResource(R.string.settings_new_episodes_hide_watched),
+            hint = if (state.newEpisodesHideWatched) {
+                stringResource(R.string.settings_new_episodes_hide_watched_enabled)
+            } else {
+                stringResource(R.string.settings_disabled)
+            },
+            enabled = state.newEpisodesHideWatched,
+            onClick = { onEvent(SettingsState.Event.NewEpisodesHideWatchedToggled) },
+            modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        )
+    }
 }

@@ -8,6 +8,7 @@ data class SettingsSnapshot(
     val showTopTitleYear: Boolean,
     val newEpisodesSectionEnabled: Boolean,
     val newEpisodesSources: Set<NewEpisodesSource>,
+    val newEpisodesHideWatched: Boolean,
     val showLibraryTitleYear: Boolean,
     val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize,
     val preferredPlayer: PreferredPlayer,

@@ -28,25 +28,28 @@ internal fun HomeFeed.withoutScheduleSection(): HomeFeed =
 
 /**
  * Добавляет в начало ленты секцию недавно вышедших серий тайтлов из [libraryAnimeIds]; без
- * совпадений секцию не добавляет. Серии, отмеченные просмотренными в [watchedEpisodes], помечаются
- * в карточках, но из секции не убираются.
+ * совпадений секцию не добавляет. Серии из [watchedEpisodes] при [hideWatched] убираются из
+ * секции, иначе остаются с пометкой на карточке.
  */
 internal fun HomeFeed.withMyNewEpisodes(
     recentlyAired: List<HomeFeedItem>,
     libraryAnimeIds: Set<Int>,
     watchedEpisodes: Map<Int, Set<Int>>,
+    hideWatched: Boolean,
     title: String,
 ): HomeFeed {
     val items = recentlyAired
         .filter { it.id in libraryAnimeIds }
-        .map { item ->
-            item.copy(isWatched = item.episodeNumber != null &&
-                item.episodeNumber in watchedEpisodes[item.id].orEmpty())
-        }
+        .map { item -> item.copy(isWatched = item.isEpisodeWatched(watchedEpisodes)) }
+        .filterNot { hideWatched && it.isWatched }
     if (items.isEmpty()) return this
     val section = HomeFeedSection(HomeFeedSectionType.MY_NEW_EPISODES, title, items)
     return copy(sections = listOf(section) + sections)
 }
+
+/** Отмечена ли просмотренной именно та серия, которую показывает карточка. */
+private fun HomeFeedItem.isEpisodeWatched(watchedEpisodes: Map<Int, Set<Int>>): Boolean =
+    episodeNumber != null && episodeNumber in watchedEpisodes[id].orEmpty()
 
 internal fun HomeContinueWatchingItem.hasPlayableTarget(): Boolean =
     videoId > 0 || episode.isNotBlank() || episodeUrl.isNotBlank()

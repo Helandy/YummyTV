@@ -112,6 +112,9 @@ class HomeViewModel @Inject internal constructor(
     /** Блок новых серий выключен в настройках — секция не собирается вовсе. */
     private var newEpisodesSectionEnabled: Boolean = true
 
+    /** Настройка «скрывать просмотренные»: убирать такие тайтлы из секции, а не помечать. */
+    private var newEpisodesHideWatched: Boolean = false
+
     private var loadJob: Job? = null
 
     init {
@@ -219,6 +222,13 @@ class HomeViewModel @Inject internal constructor(
         settingsStore.newEpisodesSectionEnabled
             .onEach { enabled ->
                 newEpisodesSectionEnabled = enabled
+                applyHiddenRecommendations()
+            }
+            .launchIn(viewModelScope)
+
+        settingsStore.newEpisodesHideWatched
+            .onEach { hide ->
+                newEpisodesHideWatched = hide
                 applyHiddenRecommendations()
             }
             .launchIn(viewModelScope)
@@ -600,6 +610,7 @@ class HomeViewModel @Inject internal constructor(
                         recentlyAired = recentlyAired,
                         libraryAnimeIds = libraryAnimeIds,
                         watchedEpisodes = watchedEpisodes,
+                        hideWatched = newEpisodesHideWatched,
                         title = stringProvider.get(R.string.home_section_my_new_episodes),
                     )
                 }

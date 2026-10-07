@@ -96,6 +96,7 @@ class HomeViewModelTest : BaseUnitTest() {
         every { observeContinueWatching() } returns continueWatching
         every { settingsStore.newEpisodesSectionEnabled } returns flowOf(true)
         every { settingsStore.newEpisodesSources } returns flowOf(NewEpisodesSource.DEFAULT)
+        every { settingsStore.newEpisodesHideWatched } returns flowOf(false)
         every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(emptySet())
         every { observeWatchedEpisodes() } returns flowOf(emptyMap())
         every { settingsStore.hiddenRecommendationIds } returns hiddenIds
@@ -432,6 +433,18 @@ class HomeViewModelTest : BaseUnitTest() {
 
         assertNull(state.error)
         assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), state.feed?.sections?.map { it.type })
+    }
+
+    @Test
+    fun `watched titles leave the new episodes section when hiding is on`() {
+        coEvery { getRecentlyAiredSchedule(any()) } returns listOf(item(1).copy(episodeNumber = 3))
+        every { observeLibraryNewEpisodeAnimeIds(any()) } returns flowOf(setOf(1))
+        every { observeWatchedEpisodes() } returns flowOf(mapOf(1 to setOf(3)))
+        every { settingsStore.newEpisodesHideWatched } returns flowOf(true)
+
+        val types = createViewModel().currentState.feed?.sections?.map { it.type }
+
+        assertEquals(listOf(HomeFeedSectionType.RECOMMENDATIONS), types)
     }
 
     private companion object {

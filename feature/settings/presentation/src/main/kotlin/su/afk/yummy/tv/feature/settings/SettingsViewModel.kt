@@ -70,6 +70,7 @@ class SettingsViewModel @Inject internal constructor(
                         showTopTitleYear = snapshot.showTopTitleYear,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
                         newEpisodesSources = snapshot.newEpisodesSources,
+                        newEpisodesHideWatched = snapshot.newEpisodesHideWatched,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
                         libraryContinueWatchingCardSize = snapshot.libraryContinueWatchingCardSize,
                         preferredPlayer = snapshot.preferredPlayer,
@@ -204,6 +205,10 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setNewEpisodesSources(
                     if (event.source in current) current - event.source else current + event.source,
                 )
+            }
+
+            SettingsState.Event.NewEpisodesHideWatchedToggled -> viewModelScope.launch {
+                settingsStore.setNewEpisodesHideWatched(!currentState.newEpisodesHideWatched)
             }
 
             SettingsState.Event.ShowTopTitleYearToggled -> viewModelScope.launch {

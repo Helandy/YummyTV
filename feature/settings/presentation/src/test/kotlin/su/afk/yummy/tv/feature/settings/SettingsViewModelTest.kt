@@ -128,6 +128,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         showTopTitleYear = false,
         newEpisodesSectionEnabled = true,
         newEpisodesSources = NewEpisodesSource.DEFAULT,
+        newEpisodesHideWatched = false,
         showLibraryTitleYear = false,
         libraryContinueWatchingCardSize = LibraryContinueWatchingCardSize.entries.first(),
         preferredPlayer = PreferredPlayer.entries.first(),

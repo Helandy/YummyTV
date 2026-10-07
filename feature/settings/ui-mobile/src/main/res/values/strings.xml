@@ -260,7 +260,7 @@
     <string name="settings_mobile_logs_hint">Send the app log file to the developer</string>
     <string name="settings_mobile_logs_saved">Logs saved: %1$s</string>
     <string name="settings_mobile_logs_failed">Could not prepare logs</string>
-    <string name="settings_new_episodes_section">New episodes block</string>
+    <string name="settings_new_episodes_section">Show block</string>
     <string name="settings_new_episodes_section_enabled">Shown on the home screen</string>
     <string name="settings_new_episodes_source_watching">Watching</string>
     <string name="settings_new_episodes_source_planned">Planned</string>
@@ -270,4 +270,8 @@
     <string name="settings_new_episodes_source_favorites">Favorites</string>
     <string name="settings_new_episodes_sources_title">Lists for the block</string>
     <string name="settings_new_episodes_sources_empty">Nothing selected</string>
+    <string name="settings_new_episodes_hide_watched">Hide watched</string>
+    <string name="settings_new_episodes_hide_watched_enabled">Watched episodes are not shown</string>
+    <string name="settings_mobile_section_new_episodes">New episodes block</string>
+    <string name="settings_new_episodes_sources_all">All lists</string>
 </resources>

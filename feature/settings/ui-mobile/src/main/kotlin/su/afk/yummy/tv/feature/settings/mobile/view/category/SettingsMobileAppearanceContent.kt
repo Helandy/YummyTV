@@ -57,24 +57,6 @@ internal fun SettingsMobileAppearanceContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.POSTER_QUALITY) },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_new_episodes_section),
-                hint = if (state.newEpisodesSectionEnabled) {
-                    stringResource(R.string.settings_new_episodes_section_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
-                enabled = state.newEpisodesSectionEnabled,
-                onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
-            )
-            // Список источников без включённого блока ни на что не влияет.
-            if (state.newEpisodesSectionEnabled) {
-                SettingsMobileOptionRow(
-                    label = stringResource(R.string.settings_new_episodes_sources_title),
-                    value = state.newEpisodesSources.newEpisodesSourcesValue(),
-                    onClick = { onPickerRequested(SettingsMobilePicker.NEW_EPISODES_SOURCES) },
-                )
-            }
-            SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_show_top_title_year),
                 hint = if (state.showTopTitleYear) {
                     stringResource(R.string.settings_show_top_title_year_enabled)
@@ -101,6 +83,36 @@ internal fun SettingsMobileAppearanceContent(
                 hint = stringResource(R.string.settings_details_buttons_order_hint),
                 onClick = { onEvent(SettingsState.Event.DetailsButtonOrderSelected) },
             )
+        }
+        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_new_episodes)) {
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_new_episodes_section),
+                hint = if (state.newEpisodesSectionEnabled) {
+                    stringResource(R.string.settings_new_episodes_section_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.newEpisodesSectionEnabled,
+                onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
+            )
+            // Список источников без включённого блока ни на что не влияет.
+            if (state.newEpisodesSectionEnabled) {
+                SettingsMobileOptionRow(
+                    label = stringResource(R.string.settings_new_episodes_sources_title),
+                    value = state.newEpisodesSources.newEpisodesSourcesValue(),
+                    onClick = { onPickerRequested(SettingsMobilePicker.NEW_EPISODES_SOURCES) },
+                )
+                SettingsMobileToggleRow(
+                    label = stringResource(R.string.settings_new_episodes_hide_watched),
+                    hint = if (state.newEpisodesHideWatched) {
+                        stringResource(R.string.settings_new_episodes_hide_watched_enabled)
+                    } else {
+                        stringResource(R.string.settings_disabled)
+                    },
+                    enabled = state.newEpisodesHideWatched,
+                    onClick = { onEvent(SettingsState.Event.NewEpisodesHideWatchedToggled) },
+                )
+            }
         }
     }
 }

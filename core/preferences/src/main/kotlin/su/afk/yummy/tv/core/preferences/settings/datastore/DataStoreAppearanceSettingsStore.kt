@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.core.preferences.settings.datastore
 
 import android.os.Build
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
@@ -19,14 +21,13 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsB
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesHideWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showTopTitleYearKey
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class DataStoreAppearanceSettingsStore @Inject constructor(
@@ -46,6 +47,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override val newEpisodesSources: Flow<Set<NewEpisodesSource>> =
         store.stringSet(newEpisodesSourcesKey).map { it.toNewEpisodesSources() }
+
+    override val newEpisodesHideWatched: Flow<Boolean> =
+        store.boolean(newEpisodesHideWatchedKey, false)
 
     override val showLibraryTitleYear: Flow<Boolean> =
         store.boolean(showLibraryTitleYearKey, false)
@@ -79,6 +83,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override suspend fun setNewEpisodesSources(sources: Set<NewEpisodesSource>) {
         store.edit { prefs -> prefs[newEpisodesSourcesKey] = sources.toStoredNames() }
     }
+
+    override suspend fun setNewEpisodesHideWatched(enabled: Boolean) =
+        store.setBoolean(newEpisodesHideWatchedKey, enabled)
 
     override suspend fun setShowTopTitleYear(enabled: Boolean) =
         store.setBoolean(showTopTitleYearKey, enabled)

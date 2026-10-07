@@ -41,6 +41,7 @@ class SettingsState {
         val showTopTitleYear: Boolean = false,
         val newEpisodesSectionEnabled: Boolean = true,
         val newEpisodesSources: Set<NewEpisodesSource> = NewEpisodesSource.DEFAULT,
+        val newEpisodesHideWatched: Boolean = false,
         val showLibraryTitleYear: Boolean = false,
         val libraryContinueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,
@@ -117,6 +118,9 @@ class SettingsState {
 
         /** Пользователь добавил или убрал список из тех, по которым ищутся новые серии. */
         data class NewEpisodesSourceToggled(val source: NewEpisodesSource) : Event
+
+        /** Пользователь переключил, скрывать ли из блока уже просмотренные серии. */
+        data object NewEpisodesHideWatchedToggled : Event
 
         /** Пользователь переключил отображение года у тайтлов в библиотеке. */
         data object ShowLibraryTitleYearToggled : Event

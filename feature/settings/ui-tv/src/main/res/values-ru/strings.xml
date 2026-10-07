@@ -259,7 +259,7 @@
     <string name="settings_tv_logs_hint">Отправить разработчику файл с логами приложения</string>
     <string name="settings_tv_logs_saved">Логи сохранены: %1$s</string>
     <string name="settings_tv_logs_failed">Не удалось подготовить логи</string>
-    <string name="settings_new_episodes_section">Блок новых серий</string>
+    <string name="settings_new_episodes_section">Показывать блок</string>
     <string name="settings_new_episodes_section_enabled">Показывается на главной</string>
     <string name="settings_new_episodes_source_on">Учитывается</string>
     <string name="settings_new_episodes_source_off">Не учитывается</string>
@@ -271,4 +271,8 @@
     <string name="settings_new_episodes_source_favorites">Избранное</string>
     <string name="settings_new_episodes_sources_title">Списки для блока</string>
     <string name="settings_new_episodes_sources_empty">Ничего не выбрано</string>
+    <string name="settings_new_episodes_hide_watched">Скрывать просмотренные</string>
+    <string name="settings_new_episodes_hide_watched_enabled">Просмотренные серии не показываются</string>
+    <string name="settings_tv_section_new_episodes">Блок новых серий</string>
+    <string name="settings_new_episodes_sources_all">Все списки</string>
 </resources>

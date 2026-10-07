@@ -12,6 +12,7 @@ internal object SettingsPreferenceKeys {
     val showTopTitleYearKey = booleanPreferencesKey("show_top_title_year")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
+    val newEpisodesHideWatchedKey = booleanPreferencesKey("new_episodes_hide_watched")
     val showLibraryTitleYearKey = booleanPreferencesKey("show_library_title_year")
     val libraryContinueWatchingCardSizeKey =
         stringPreferencesKey("library_continue_watching_card_size")

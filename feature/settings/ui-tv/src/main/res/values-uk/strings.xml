@@ -259,7 +259,7 @@
     <string name="settings_tv_logs_hint">Надіслати розробнику файл із логами застосунку</string>
     <string name="settings_tv_logs_saved">Логи збережено: %1$s</string>
     <string name="settings_tv_logs_failed">Не вдалося підготувати логи</string>
-    <string name="settings_new_episodes_section">Блок нових серій</string>
+    <string name="settings_new_episodes_section">Показувати блок</string>
     <string name="settings_new_episodes_section_enabled">Показується на головній</string>
     <string name="settings_new_episodes_source_on">Враховується</string>
     <string name="settings_new_episodes_source_off">Не враховується</string>
@@ -271,4 +271,8 @@
     <string name="settings_new_episodes_source_favorites">Улюблене</string>
     <string name="settings_new_episodes_sources_title">Списки для блоку</string>
     <string name="settings_new_episodes_sources_empty">Нічого не вибрано</string>
+    <string name="settings_new_episodes_hide_watched">Приховувати переглянуті</string>
+    <string name="settings_new_episodes_hide_watched_enabled">Переглянуті серії не показуються</string>
+    <string name="settings_tv_section_new_episodes">Блок нових серій</string>
+    <string name="settings_new_episodes_sources_all">Усі списки</string>
 </resources>

@@ -272,7 +272,8 @@ internal fun PreferredVideoQuality.hint(): String = stringResource(
         PreferredVideoQuality.P1080,
         PreferredVideoQuality.P720,
         PreferredVideoQuality.P480,
-        PreferredVideoQuality.P360 -> R.string.settings_preferred_video_quality_fallback_hint
+        PreferredVideoQuality.P360,
+        -> R.string.settings_preferred_video_quality_fallback_hint
     },
 )
 
@@ -405,6 +406,9 @@ internal fun NewEpisodesSource.label(): String = stringResource(
 internal fun Set<NewEpisodesSource>.newEpisodesSourcesValue(): String =
     if (isEmpty()) {
         stringResource(R.string.settings_new_episodes_sources_empty)
+    } else if (size == NewEpisodesSource.entries.size) {
+        // Шесть названий подряд не влезают в строку — когда выбрано всё, достаточно «Все списки».
+        stringResource(R.string.settings_new_episodes_sources_all)
     } else {
         // Порядок берём у enum, чтобы подпись не прыгала при изменении набора. Склеиваем циклом:
         // label() — composable, а внутри лямбды joinToString его не вызвать.

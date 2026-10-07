@@ -31,6 +31,9 @@ interface AppearanceSettingsStore {
     /** Списки, по которым блок новых серий отбирает тайтлы. */
     val newEpisodesSources: Flow<Set<NewEpisodesSource>>
 
+    /** Убирать из блока тайтлы, чья последняя вышедшая серия уже просмотрена. */
+    val newEpisodesHideWatched: Flow<Boolean>
+
     suspend fun setPosterQuality(quality: PosterQuality)
     suspend fun setPosterCardSize(size: PosterCardSize)
     suspend fun setShowTopTitleYear(enabled: Boolean)
@@ -43,6 +46,7 @@ interface AppearanceSettingsStore {
     suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
     suspend fun setNewEpisodesSources(sources: Set<NewEpisodesSource>)
+    suspend fun setNewEpisodesHideWatched(enabled: Boolean)
 
     companion object {
         val defaultDetailsButtonOrder: List<DetailsButtonAction> = listOf(
