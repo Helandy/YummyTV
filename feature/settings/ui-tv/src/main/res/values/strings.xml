@@ -159,6 +159,8 @@
     <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
     <string name="settings_auto_play_next_episode_label">Autoplay next episode</string>
     <string name="settings_auto_play_next_episode_enabled">Start the next episode after a 10-second countdown</string>
+    <string name="settings_screen_off_after_end_label">Turn screen off after video ends</string>
+    <string name="settings_screen_off_after_end_enabled">Screen can turn off 1 minute after the video ends, per the system screen timeout</string>
     <string name="settings_next_episode_switch_delay_label">Next episode switch delay</string>
     <string name="settings_next_episode_switch_delay_instant">Instant</string>
     <string name="settings_next_episode_switch_delay_seconds">%d sec</string>

@@ -205,6 +205,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил автовыключение экрана после конца видео. */
+    fun eventScreenOffAfterEndToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_SCREEN_OFF_AFTER_END_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь изменил задержку перед авто-переключением на следующую серию. */
     fun eventNextEpisodeSwitchDelayChanged(seconds: Int) {
         tracker.track(
@@ -478,6 +486,7 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_suggest_next_episode_on_watched_toggled"
         const val EVENT_AUTO_PLAY_NEXT_EPISODE_TOGGLED =
             "settings_auto_play_next_episode_toggled"
+        const val EVENT_SCREEN_OFF_AFTER_END_TOGGLED = "settings_screen_off_after_end_toggled"
         const val EVENT_WATCHED_THRESHOLDS_CHANGED = "settings_watched_thresholds_changed"
         const val EVENT_NEXT_EPISODE_SWITCH_DELAY_CHANGED =
             "settings_next_episode_switch_delay_changed"

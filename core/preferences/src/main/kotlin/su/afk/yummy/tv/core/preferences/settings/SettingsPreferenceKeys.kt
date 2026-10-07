@@ -28,6 +28,7 @@ internal object SettingsPreferenceKeys {
     val autoSkipDelaySecondsKey = intPreferencesKey("auto_skip_delay_seconds")
     val showOpeningOnTimelineKey = booleanPreferencesKey("show_opening_on_timeline_enabled")
     val autoPlayNextEpisodeKey = booleanPreferencesKey("auto_play_next_episode")
+    val screenOffAfterEndKey = booleanPreferencesKey("screen_off_after_end")
     val nextEpisodeSwitchDelaySecondsKey =
         intPreferencesKey("next_episode_switch_delay_seconds")
     val playerControlsAutoHideSecondsKey =

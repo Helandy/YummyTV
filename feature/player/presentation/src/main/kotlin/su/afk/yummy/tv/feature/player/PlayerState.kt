@@ -53,6 +53,7 @@ class PlayerState {
         val autoSkipDelaySeconds: Int = 5,
         val showOpeningOnTimeline: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
+        val screenOffAfterEnd: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         /** Через сколько секунд бездействия скрываются контролы. */
         val controlsAutoHideSeconds: Int = 4,

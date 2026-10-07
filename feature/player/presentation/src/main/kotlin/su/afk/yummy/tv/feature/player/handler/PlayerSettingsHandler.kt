@@ -19,6 +19,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val autoSkipDelaySeconds: Flow<Int> = settingsStore.autoSkipDelaySeconds
     val showOpeningOnTimeline: Flow<Boolean> = settingsStore.showOpeningOnTimeline
     val autoPlayNextEpisode: Flow<Boolean> = settingsStore.autoPlayNextEpisode
+    val screenOffAfterEnd: Flow<Boolean> = settingsStore.screenOffAfterEnd
     val nextEpisodeSwitchDelaySeconds: Flow<Int> = settingsStore.nextEpisodeSwitchDelaySeconds
     val playerControlsAutoHideSeconds: Flow<Int> = settingsStore.playerControlsAutoHideSeconds
     val pictureInPictureEnabled: Flow<Boolean> = settingsStore.pictureInPictureEnabled

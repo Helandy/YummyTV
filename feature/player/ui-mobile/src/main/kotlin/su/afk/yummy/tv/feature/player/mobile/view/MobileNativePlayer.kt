@@ -228,7 +228,10 @@ internal fun MobileNativePlayer(
         }
     }
 
-    PlayerKeepScreenOnEffect()
+    PlayerKeepScreenOnEffect(
+        releaseWhenEnded = state.screenOffAfterEnd,
+        ended = endFlow.ended,
+    )
 
     val player = mediaController
     val isBuffering = rememberPlayerBufferingState(player)

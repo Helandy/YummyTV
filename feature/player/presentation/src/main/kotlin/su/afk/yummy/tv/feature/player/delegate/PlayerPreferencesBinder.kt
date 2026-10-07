@@ -19,6 +19,7 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(autoSkipDelaySeconds) { copy(autoSkipDelaySeconds = it) }
             host.bind(showOpeningOnTimeline) { copy(showOpeningOnTimeline = it) }
             host.bind(autoPlayNextEpisode) { copy(autoPlayNextEpisode = it) }
+            host.bind(screenOffAfterEnd) { copy(screenOffAfterEnd = it) }
             host.bind(nextEpisodeSwitchDelaySeconds) { copy(nextEpisodeSwitchDelaySeconds = it) }
             host.bind(playerControlsAutoHideSeconds) { copy(controlsAutoHideSeconds = it) }
             host.bind(pictureInPictureEnabled) { copy(pictureInPictureEnabled = it) }

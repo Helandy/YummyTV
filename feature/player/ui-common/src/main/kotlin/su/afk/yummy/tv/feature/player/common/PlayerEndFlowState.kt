@@ -37,6 +37,10 @@ class PlayerEndFlowState internal constructor() {
     // позиции раз в секунду) — отрабатываем его один раз, пока пользователь не уйдёт от конца.
     private var endHandled = false
 
+    /** Серия досмотрена до конца и пользователь ещё не ушёл от конца. */
+    var ended: Boolean by mutableStateOf(false)
+        private set
+
     /**
      * Единая точка конца эпизода: отчёт о завершении и решение, какой промпт показать.
      *
@@ -55,6 +59,7 @@ class PlayerEndFlowState internal constructor() {
     ): Boolean {
         if (endHandled) return false
         endHandled = true
+        ended = true
         completionTracker.onEpisodeEnd(positionMs = positionMs, durationMs = durationMs)
         if (suppressPrompts) return false
         if (playback.hasNextEpisode || playback.nextEpisodeDubbing != null) {
@@ -82,6 +87,7 @@ class PlayerEndFlowState internal constructor() {
         nextEpisodePrompt = PlayerEndPromptState.Hidden
         nextEpisodePromptDismissed = false
         endHandled = false
+        ended = false
     }
 
     /** Пользователь отказался от следующей серии («Остаться», Back). */

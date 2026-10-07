@@ -89,6 +89,16 @@ internal fun SettingsMobilePlaybackContent(
                     onEvent(SettingsState.Event.PlayerControlsAutoHideChanged(it))
                 },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_screen_off_after_end_label),
+                hint = if (state.screenOffAfterEnd) {
+                    stringResource(R.string.settings_screen_off_after_end_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.screenOffAfterEnd,
+                onClick = { onEvent(SettingsState.Event.ScreenOffAfterEndToggled) },
+            )
         }
     }
 }

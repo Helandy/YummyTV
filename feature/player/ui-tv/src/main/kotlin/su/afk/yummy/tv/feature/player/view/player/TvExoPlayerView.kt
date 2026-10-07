@@ -203,7 +203,10 @@ internal fun TvExoPlayerView(
         return
     }
 
-    PlayerKeepScreenOnEffect()
+    PlayerKeepScreenOnEffect(
+        releaseWhenEnded = state.screenOffAfterEnd,
+        ended = prompts.ended,
+    )
 
     val trackMenu = rememberPlayerTrackMenu(player, state)
 

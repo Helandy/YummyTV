@@ -55,6 +55,7 @@ class SettingsState {
         val autoSkipDelaySeconds: Int = 5,
         val showOpeningOnTimeline: Boolean = false,
         val autoPlayNextEpisode: Boolean = false,
+        val screenOffAfterEnd: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         val playerControlsAutoHideSeconds: Int = 4,
         val askDubbingOnWatch: Boolean = true,
@@ -167,6 +168,9 @@ class SettingsState {
 
         /** Пользователь переключил автовоспроизведение следующей серии. */
         data object AutoPlayNextEpisodeToggled : Event
+
+        /** Пользователь переключил автовыключение экрана после конца видео. */
+        data object ScreenOffAfterEndToggled : Event
 
         /** Пользователь изменил задержку перед авто-переключением на следующую серию. */
         data class NextEpisodeSwitchDelayChanged(val seconds: Int) : Event

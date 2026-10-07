@@ -44,6 +44,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferre
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.preferredVideoQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.previewCacheSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.refreshContinueWatchingProgressOnLaunchKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.screenOffAfterEndKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpeningOnTimelineKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showTopTitleYearKey
@@ -113,6 +114,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(1, 15),
             showOpeningOnTimeline = prefs[showOpeningOnTimelineKey] ?: false,
             autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
+            screenOffAfterEnd = prefs[screenOffAfterEndKey] ?: false,
             nextEpisodeSwitchDelaySeconds =
                 (prefs[nextEpisodeSwitchDelaySecondsKey] ?: 10).coerceIn(0, 30),
             playerControlsAutoHideSeconds =

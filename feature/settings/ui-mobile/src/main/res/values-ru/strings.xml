@@ -21,6 +21,7 @@
     <string name="settings_mobile_login_on_tv">Войти на ТВ</string>
     <string name="settings_mobile_login_on_tv_hint">Передать текущую сессию в приложение на ТВ по локальной сети</string>
     <string name="settings_mobile_section_player_advanced">Дополнительно</string>
+    <string name="settings_mobile_section_library">Библиотека</string>
     <string name="settings_mobile_section_details">Деталка</string>
     <string name="settings_mobile_section_tv_home">TV Home</string>
     <string name="settings_mobile_section_about">О приложении</string>
@@ -168,6 +169,8 @@
     <string name="settings_suggest_next_episode_on_watched_enabled">Показывать на главной после завершения текущей</string>
     <string name="settings_auto_play_next_episode_label">Автовоспроизведение следующей серии</string>
     <string name="settings_auto_play_next_episode_enabled">Запускать следующую серию после 10-секундного отсчёта</string>
+    <string name="settings_screen_off_after_end_label">Выключать экран после видео</string>
+    <string name="settings_screen_off_after_end_enabled">Через минуту после окончания видео экран сможет погаснуть по системному таймауту</string>
     <string name="settings_next_episode_switch_delay_label">Задержка перед переключением серии</string>
     <string name="settings_next_episode_switch_delay_instant">Мгновенно</string>
     <string name="settings_next_episode_switch_delay_seconds">%d сек</string>
