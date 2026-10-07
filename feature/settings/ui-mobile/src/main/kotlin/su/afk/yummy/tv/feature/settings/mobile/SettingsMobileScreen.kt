@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings.mobile
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +26,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.model.hintRes
@@ -54,6 +56,7 @@ fun SettingsMobileScreen(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
+    val analyticsIdLabel = stringResource(R.string.settings_mobile_analytics_id_label)
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val firstCategoryFocusRequester = remember { FocusRequester() }
     var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
@@ -120,6 +123,11 @@ fun SettingsMobileScreen(
                         SettingsMobileAboutRow(
                             label = stringResource(R.string.settings_mobile_analytics_id_label),
                             hint = deviceId,
+                            onClick = {
+                                if (context.copyToClipboard(analyticsIdLabel, deviceId.filterNot(Char::isWhitespace))) {
+                                    Toast.makeText(context, R.string.settings_mobile_analytics_id_copied, Toast.LENGTH_SHORT).show()
+                                }
+                            },
                         )
                     }
                     if (state.isFallbackSessionStorage) {

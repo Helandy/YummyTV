@@ -255,6 +255,7 @@
     <string name="settings_tv_release_notes_no_notes">Без описания</string>
     <string name="settings_tv_release_notes_close">Закрыть</string>
     <string name="settings_tv_analytics_id_label">ID аналитики</string>
+    <string name="settings_tv_analytics_id_copied">ID аналитики скопирован</string>
     <string name="settings_tv_logs_label">Поделиться логами</string>
     <string name="settings_tv_logs_hint">Отправить разработчику файл с логами приложения</string>
     <string name="settings_tv_logs_saved">Логи сохранены: %1$s</string>

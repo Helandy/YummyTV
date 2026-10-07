@@ -256,6 +256,7 @@
     <string name="settings_mobile_release_notes_beta">Бета</string>
     <string name="settings_mobile_release_notes_no_notes">Без опису</string>
     <string name="settings_mobile_analytics_id_label">ID аналітики</string>
+    <string name="settings_mobile_analytics_id_copied">ID аналітики скопійовано</string>
     <string name="settings_mobile_logs_label">Поділитися логами</string>
     <string name="settings_mobile_logs_hint">Надіслати розробнику файл із логами застосунку</string>
     <string name="settings_mobile_logs_saved">Логи збережено: %1$s</string>

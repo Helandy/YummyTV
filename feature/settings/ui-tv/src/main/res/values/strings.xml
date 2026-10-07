@@ -255,6 +255,7 @@
     <string name="settings_tv_release_notes_no_notes">No description</string>
     <string name="settings_tv_release_notes_close">Close</string>
     <string name="settings_tv_analytics_id_label">Analytics ID</string>
+    <string name="settings_tv_analytics_id_copied">Analytics ID copied</string>
     <string name="settings_tv_logs_label">Share logs</string>
     <string name="settings_tv_logs_hint">Send the app log file to the developer</string>
     <string name="settings_tv_logs_saved">Logs saved: %1$s</string>

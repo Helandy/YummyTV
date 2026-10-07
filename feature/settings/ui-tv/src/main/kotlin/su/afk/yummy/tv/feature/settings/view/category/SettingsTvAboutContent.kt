@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.settings.view.category
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.settings.BuildConfig
 import su.afk.yummy.tv.feature.settings.R
@@ -29,6 +31,7 @@ internal fun SettingsTvAboutContent(
 ) {
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val context = LocalContext.current
+    val analyticsIdLabel = stringResource(R.string.settings_tv_analytics_id_label)
     var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
 
     AboutRow(
@@ -51,6 +54,11 @@ internal fun SettingsTvAboutContent(
             label = stringResource(R.string.settings_tv_analytics_id_label),
             hint = deviceId,
             modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+            onClick = {
+                if (context.copyToClipboard(analyticsIdLabel, deviceId.filterNot(Char::isWhitespace))) {
+                    Toast.makeText(context, R.string.settings_tv_analytics_id_copied, Toast.LENGTH_SHORT).show()
+                }
+            },
         )
     }
     if (state.isFallbackSessionStorage) {

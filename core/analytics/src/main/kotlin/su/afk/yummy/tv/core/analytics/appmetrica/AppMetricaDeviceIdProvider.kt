@@ -15,7 +15,7 @@ internal class AppMetricaDeviceIdProvider @Inject constructor(
 ) : AnalyticsDeviceIdProvider {
 
     override suspend fun deviceId(): String? = try {
-        AppMetrica.getDeviceId(context)?.takeIf { it.isNotBlank() } ?: requestDeviceId()
+        requestDeviceIdHash() ?: AppMetrica.getDeviceId(context)?.takeIf { it.isNotBlank() }
     } catch (e: CancellationException) {
         throw e
     } catch (_: Throwable) {
@@ -23,23 +23,24 @@ internal class AppMetricaDeviceIdProvider @Inject constructor(
         null
     }
 
-    private suspend fun requestDeviceId(): String? = suspendCancellableCoroutine { continuation ->
+    /** Десятичный хэш DeviceID — именно он показывается в интерфейсе AppMetrica. */
+    private suspend fun requestDeviceIdHash(): String? = suspendCancellableCoroutine { continuation ->
         val callback = object : StartupParamsCallback {
             override fun onReceive(result: StartupParamsCallback.Result?) {
-                if (continuation.isActive) continuation.resume(result?.deviceId?.takeIf { it.isNotBlank() })
+                if (continuation.isActive) continuation.resume(result?.deviceIdHash?.takeIf { it.isNotBlank() })
             }
 
             override fun onRequestError(
                 reason: StartupParamsCallback.Reason,
                 result: StartupParamsCallback.Result?,
             ) {
-                if (continuation.isActive) continuation.resume(result?.deviceId?.takeIf { it.isNotBlank() })
+                if (continuation.isActive) continuation.resume(result?.deviceIdHash?.takeIf { it.isNotBlank() })
             }
         }
         AppMetrica.requestStartupParams(
             context,
             callback,
-            listOf(StartupParamsCallback.APPMETRICA_DEVICE_ID),
+            listOf(StartupParamsCallback.APPMETRICA_DEVICE_ID_HASH),
         )
     }
 }
