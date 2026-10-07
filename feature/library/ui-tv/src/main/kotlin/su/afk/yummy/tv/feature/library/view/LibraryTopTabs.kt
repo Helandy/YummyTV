@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -18,11 +17,11 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.label
-import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.tabColor
 
 @Composable
 internal fun LibraryTopTabs(
+    tabs: List<LibraryTab>,
     selectedTab: LibraryTab,
     tabCounts: Map<LibraryTab, Int?>,
     contentCanFocus: Boolean,
@@ -32,7 +31,6 @@ internal fun LibraryTopTabs(
     mainMenuFocusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
 ) {
-    val tabs = remember { libraryTabsDisplayOrder() }
     val selectedIndex = tabs.indexOf(selectedTab).coerceAtLeast(0)
     val effectiveFocusRequesters = tabs.map { tabFocusRequesters.getValue(it) }
     val listState = rememberLazyListState()

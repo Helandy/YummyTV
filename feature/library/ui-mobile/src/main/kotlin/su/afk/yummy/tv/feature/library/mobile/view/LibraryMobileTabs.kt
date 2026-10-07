@@ -23,13 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.library.mobile.utils.libraryMobileTabs
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTitle
 import su.afk.yummy.tv.feature.library.mobile.utils.tabColor
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
 @Composable
 internal fun LibraryMobileTabs(
+    tabs: List<LibraryTab>,
     selectedTab: LibraryTab,
     tabCounts: Map<LibraryTab, Int?>,
     onSelected: (LibraryTab) -> Unit,
@@ -37,8 +37,8 @@ internal fun LibraryMobileTabs(
 ) {
     val listState = rememberLazyListState()
 
-    LaunchedEffect(selectedTab) {
-        val selectedIndex = libraryMobileTabs.indexOf(selectedTab).coerceAtLeast(0)
+    LaunchedEffect(selectedTab, tabs) {
+        val selectedIndex = tabs.indexOf(selectedTab).coerceAtLeast(0)
         listState.animateScrollToItem((selectedIndex - 1).coerceAtLeast(0))
     }
 
@@ -52,7 +52,7 @@ internal fun LibraryMobileTabs(
             modifier = Modifier.padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(libraryMobileTabs, key = { it.name }) { tab ->
+            items(tabs, key = { it.name }) { tab ->
                 LibraryMobileTabChip(
                     title = tab.mobileTitle(),
                     count = tabCounts[tab],

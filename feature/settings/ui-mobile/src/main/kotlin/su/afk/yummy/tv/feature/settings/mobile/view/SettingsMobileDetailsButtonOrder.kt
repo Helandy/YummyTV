@@ -54,7 +54,7 @@ internal fun SettingsMobileDetailsButtonOrder(
 }
 
 @Composable
-private fun DetailsOrderRow(
+internal fun DetailsOrderRow(
     label: String,
     position: Int,
     canMoveUp: Boolean,

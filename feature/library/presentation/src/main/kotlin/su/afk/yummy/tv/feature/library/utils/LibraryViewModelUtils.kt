@@ -27,7 +27,7 @@ internal fun buildLibraryTabItems(
     sort: LibrarySort,
     direction: LibrarySortDirection,
 ): ImmutableMap<LibraryTab, ImmutableList<LibraryItem>> =
-    LibraryTab.visibleEntries.associateWith { tab ->
+    LibraryTab.entries.associateWith { tab ->
         when (tab) {
             LibraryTab.CONTINUE_WATCHING, LibraryTab.HISTORY -> emptyList()
             LibraryTab.FAVORITES -> items.filter { it.isFavorite }

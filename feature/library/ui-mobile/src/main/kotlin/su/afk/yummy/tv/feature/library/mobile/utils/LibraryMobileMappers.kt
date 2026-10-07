@@ -10,18 +10,14 @@ import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.semanticColorOrNull
 
-internal val libraryMobileTabs: List<LibraryTab>
-    get() = LibraryTab.visibleEntries
+internal fun LibraryTab.toLibraryMobilePage(tabs: List<LibraryTab>): Int =
+    tabs.indexOf(this).coerceAtLeast(0)
 
-internal fun LibraryTab.toLibraryMobilePage(): Int =
-    libraryMobileTabs.indexOf(this).coerceAtLeast(0)
-
-internal fun Int.toLibraryMobileTab(): LibraryTab =
-    libraryMobileTabs.getOrElse(this) { LibraryTab.CONTINUE_WATCHING }
+internal fun Int.toLibraryMobileTab(tabs: List<LibraryTab>): LibraryTab =
+    tabs.getOrElse(this) { LibraryTab.CONTINUE_WATCHING }
 
 internal fun LibraryState.State.shouldShowRemoteLoader(tab: LibraryTab): Boolean {
-    if (!isSignedIn || !isRemoteLoading || remoteError != null) return false
-    return when (tab) {
+    return !(!isSignedIn || !isRemoteLoading || remoteError != null) && when (tab) {
         LibraryTab.CONTINUE_WATCHING -> false
         LibraryTab.HISTORY -> false
         LibraryTab.FAVORITES -> mobileTabItemCount(tab) == 0

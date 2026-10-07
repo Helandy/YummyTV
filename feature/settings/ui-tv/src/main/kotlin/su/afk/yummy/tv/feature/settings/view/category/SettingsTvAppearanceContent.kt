@@ -61,6 +61,8 @@ internal fun SettingsTvAppearanceContent(
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    pickerRow(SettingsTvPicker.LIBRARY_TAB_ORDER, Modifier)
+    SettingsDivider()
     pickerRow(SettingsTvPicker.DETAILS_BUTTON_ORDER, Modifier)
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))

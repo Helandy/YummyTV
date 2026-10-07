@@ -28,8 +28,10 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.moved
+import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -99,6 +101,7 @@ class SettingsViewModel @Inject internal constructor(
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
                         detailsButtonOrder = snapshot.detailsButtonOrder.toImmutableList(),
+                        libraryTabOrder = snapshot.libraryTabOrder.toImmutableList(),
                     )
                 }
             }
@@ -389,6 +392,26 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.DetailsButtonOrderSelected -> {
                 nav.navigate(SettingsDetailsButtonOrderDestination)
+            }
+
+            is SettingsState.Event.LibraryTabMoved -> viewModelScope.launch {
+                analytics.eventLibraryTabMoved(event.tab, event.direction)
+                settingsStore.setLibraryTabOrder(
+                    currentState.libraryTabOrder.movedLibraryTab(event.tab, event.direction),
+                )
+            }
+
+            SettingsState.Event.LibraryTabOrderScreenOpened -> {
+                analytics.eventLibraryTabOrderScreenOpened()
+            }
+
+            SettingsState.Event.LibraryTabOrderSelected -> {
+                nav.navigate(SettingsLibraryTabOrderDestination)
+            }
+
+            SettingsState.Event.LibraryTabOrderReset -> viewModelScope.launch {
+                analytics.eventLibraryTabOrderReset()
+                settingsStore.setLibraryTabOrder(SettingsStore.defaultLibraryTabOrder)
             }
 
             is SettingsState.Event.CategorySelected -> {

@@ -65,6 +65,7 @@ internal object SettingsPreferenceKeys {
     val subtitleBackgroundKey = stringPreferencesKey("subtitle_background")
     val subtitleOffsetKey = intPreferencesKey("subtitle_offset_percent")
     val detailsButtonOrderKey = stringPreferencesKey("details_button_order")
+    val libraryTabOrderKey = stringPreferencesKey("library_tab_order")
     val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
     val appThemeKey = stringPreferencesKey("app_theme")
     val backgroundStyleKey = stringPreferencesKey("background_style")

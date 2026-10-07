@@ -1,8 +1,6 @@
 package su.afk.yummy.tv.core.preferences.settings.datastore
 
 import android.os.Build
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
@@ -11,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.PosterQuality
@@ -21,6 +20,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsB
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortDirectionKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesHideWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
@@ -28,6 +28,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterCa
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.posterQualityKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showLibraryTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showTopTitleYearKey
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class DataStoreAppearanceSettingsStore @Inject constructor(
@@ -71,6 +73,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override val detailsButtonOrder: Flow<List<DetailsButtonAction>> =
         store.data.map { prefs -> prefs[detailsButtonOrderKey].toDetailsButtonOrder() }
 
+    override val libraryTabOrder: Flow<List<LibraryTabKind>> =
+        store.data.map { prefs -> prefs[libraryTabOrderKey].toLibraryTabOrder() }
+
     override suspend fun setPosterQuality(quality: PosterQuality) =
         store.setEnum(posterQualityKey, quality)
 
@@ -111,6 +116,13 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
         store.edit { prefs ->
             prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
                 .joinToString(DETAILS_BUTTON_ORDER_SEPARATOR) { it.name }
+        }
+    }
+
+    override suspend fun setLibraryTabOrder(order: List<LibraryTabKind>) {
+        store.edit { prefs ->
+            prefs[libraryTabOrderKey] = order.normalizedLibraryTabOrder()
+                .joinToString(LIBRARY_TAB_ORDER_SEPARATOR) { it.name }
         }
     }
 

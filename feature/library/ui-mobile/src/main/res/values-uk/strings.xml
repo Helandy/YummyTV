@@ -7,7 +7,7 @@
     <string name="library_mobile_history_episode">Серія %1$s</string>
     <string name="library_mobile_title">Бібліотека</string>
     <string name="library_mobile_tab_continue_watching">Продовжити</string>
-    <string name="library_mobile_tab_favorites">Улюблене</string>
+    <string name="library_mobile_tab_favorites">Улюблені</string>
     <string name="library_mobile_tab_watching">Дивлюся</string>
     <string name="library_mobile_tab_planned">У планах</string>
     <string name="library_mobile_tab_completed">Переглянуто</string>

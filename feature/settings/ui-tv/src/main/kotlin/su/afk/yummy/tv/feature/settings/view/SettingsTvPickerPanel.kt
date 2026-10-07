@@ -49,6 +49,9 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.CONTINUE_WATCHING_SIZE -> state.libraryContinueWatchingCardSize.label()
     SettingsTvPicker.POSTER_QUALITY -> state.posterQuality.label()
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
+    SettingsTvPicker.LIBRARY_TAB_ORDER ->
+        state.libraryTabOrder.map { it.label() }.joinToString(" · ")
+
     SettingsTvPicker.DETAILS_BUTTON_ORDER ->
         state.detailsButtonOrder.toDetailsButtonOrderItems().joinToString(" · ") { it.label }
 
@@ -171,6 +174,19 @@ internal fun SettingsTvPickerPanel(
                 upFocusRequester = openerFocusRequester,
                 contentFocusRequester = entryFocusRequester,
                 onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
+            )
+
+            SettingsTvPicker.LIBRARY_TAB_ORDER -> LibraryTabOrderPanel(
+                order = state.libraryTabOrder,
+                upFocusRequester = openerFocusRequester,
+                contentFocusRequester = entryFocusRequester,
+                onMoveUp = {
+                    onEvent(SettingsState.Event.LibraryTabMoved(it, DetailsButtonMoveDirection.UP))
+                },
+                onMoveDown = {
+                    onEvent(SettingsState.Event.LibraryTabMoved(it, DetailsButtonMoveDirection.DOWN))
+                },
+                onReset = { onEvent(SettingsState.Event.LibraryTabOrderReset) },
             )
 
             SettingsTvPicker.DETAILS_BUTTON_ORDER -> DetailsButtonOrderPanel(

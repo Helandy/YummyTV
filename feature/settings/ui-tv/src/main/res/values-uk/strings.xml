@@ -279,4 +279,15 @@
     <string name="settings_new_episodes_hide_watched_enabled">Переглянуті серії не показуються</string>
     <string name="settings_tv_section_new_episodes">Блок нових серій</string>
     <string name="settings_new_episodes_sources_all">Усі списки</string>
+    <string name="settings_tv_library_tabs_order">Порядок вкладок бібліотеки</string>
+    <string name="settings_library_tabs_reset">Скинути порядок вкладок</string>
+    <string name="settings_library_tabs_reset_hint">Повернути стандартний порядок вкладок бібліотеки</string>
+    <string name="settings_library_tab_history">Історія</string>
+    <string name="settings_library_tab_continue_watching">Продовжити</string>
+    <string name="settings_library_tab_favorites">Улюблені</string>
+    <string name="settings_library_tab_watching">Дивлюся</string>
+    <string name="settings_library_tab_planned">У планах</string>
+    <string name="settings_library_tab_completed">Переглянуто</string>
+    <string name="settings_library_tab_postponed">Відкладено</string>
+    <string name="settings_library_tab_dropped">Кинуто</string>
 </resources>

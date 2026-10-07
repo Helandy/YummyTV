@@ -278,4 +278,15 @@
     <string name="settings_new_episodes_hide_watched_enabled">Watched episodes are not shown</string>
     <string name="settings_mobile_section_new_episodes">New episodes block</string>
     <string name="settings_new_episodes_sources_all">All lists</string>
+    <string name="settings_library_tabs_order">Library tab order</string>
+    <string name="settings_library_tabs_order_hint">Choose which library tab comes first</string>
+    <string name="settings_library_tabs_reset">Reset tab order</string>
+    <string name="settings_library_tab_history">History</string>
+    <string name="settings_library_tab_continue_watching">Continue</string>
+    <string name="settings_library_tab_favorites">Favorites</string>
+    <string name="settings_library_tab_watching">Watching</string>
+    <string name="settings_library_tab_planned">Planned</string>
+    <string name="settings_library_tab_completed">Completed</string>
+    <string name="settings_library_tab_postponed">Postponed</string>
+    <string name="settings_library_tab_dropped">Dropped</string>
 </resources>

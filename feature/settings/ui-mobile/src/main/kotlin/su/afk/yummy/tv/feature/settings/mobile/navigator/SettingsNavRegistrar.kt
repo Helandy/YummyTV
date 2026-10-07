@@ -8,11 +8,13 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.settings.IMobileSettingsEntry
 import su.afk.yummy.tv.feature.settings.SettingsViewModel
 import su.afk.yummy.tv.feature.settings.mobile.SettingsDetailsButtonOrderMobileScreen
+import su.afk.yummy.tv.feature.settings.mobile.SettingsLibraryTabOrderMobileScreen
 import su.afk.yummy.tv.feature.settings.mobile.SettingsMobileCategoryScreen
 import su.afk.yummy.tv.feature.settings.mobile.SettingsMobileScreen
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDetailsButtonOrderDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
 import javax.inject.Inject
 
 class SettingsNavRegistrar @Inject constructor() : IMobileSettingsEntry {
@@ -33,6 +35,16 @@ class SettingsNavRegistrar @Inject constructor() : IMobileSettingsEntry {
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     SettingsMobileCategoryScreen(
                         category = dest.category,
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent,
+                    )
+                }
+            }
+            entry<SettingsLibraryTabOrderDestination> {
+                val viewModel = hiltViewModel<SettingsViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    SettingsLibraryTabOrderMobileScreen(
                         state = state,
                         effect = effect,
                         onEvent = onEvent,

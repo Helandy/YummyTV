@@ -32,6 +32,7 @@ import su.afk.yummy.tv.domain.player.usecase.GetMeaningfulVideoProgressUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.library.handler.RemoteLibrarySyncHandler
+import su.afk.yummy.tv.feature.library.mapper.toLibraryTab
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
@@ -70,7 +71,7 @@ class LibraryViewModel @Inject internal constructor(
         watchHistory = createWatchHistoryFlow(),
         selectedTab = savedStateHandle.get<String>(KEY_SELECTED_TAB)
             ?.let { runCatching { LibraryTab.valueOf(it) }.getOrNull() }
-            ?.takeIf { it in LibraryTab.visibleEntries }
+            ?.takeIf { it in LibraryTab.entries }
             ?: LibraryTab.CONTINUE_WATCHING,
     )
 
@@ -133,6 +134,20 @@ class LibraryViewModel @Inject internal constructor(
                 setState { copy(showTitleYear = enabled) }
             }
             .launchIn(viewModelScope)
+        settingsStore.libraryTabOrder
+            .onEach { order ->
+                val tabs = order.map { it.toLibraryTab() }.toImmutableList()
+                // Первая вкладка закреплена («История»), поэтому по умолчанию открывается вторая.
+                val defaultTab = tabs.getOrElse(1) { tabs.first() }
+                val hasChosenTab = savedStateHandle.contains(KEY_SELECTED_TAB)
+                setState {
+                    copy(
+                        tabs = tabs,
+                        selectedTab = if (hasChosenTab && selectedTab in tabs) selectedTab else defaultTab,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
         settingsStore.librarySort
             .onEach { sort ->
                 setState {
@@ -178,7 +193,7 @@ class LibraryViewModel @Inject internal constructor(
 
             is LibraryState.Event.TabSelected -> {
                 if (
-                    event.tab in LibraryTab.visibleEntries &&
+                    event.tab in currentState.tabs &&
                     event.tab != currentState.selectedTab
                 ) {
                     analytics.eventTabSelected(event.tab)

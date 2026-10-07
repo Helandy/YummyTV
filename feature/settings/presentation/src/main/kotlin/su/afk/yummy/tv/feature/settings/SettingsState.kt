@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -77,6 +78,8 @@ class SettingsState {
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
             SettingsStore.defaultDetailsButtonOrder.toImmutableList(),
+        val libraryTabOrder: ImmutableList<LibraryTabKind> =
+            SettingsStore.defaultLibraryTabOrder.toImmutableList(),
         val videoExportDirectoryName: String? = null,
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
@@ -223,6 +226,21 @@ class SettingsState {
 
         /** Пользователь подтвердил текущий порядок кнопок деталей. */
         data object DetailsButtonOrderSelected : Event
+
+        /** Пользователь переместил вкладку библиотеки в указанном направлении. */
+        data class LibraryTabMoved(
+            val tab: LibraryTabKind,
+            val direction: DetailsButtonMoveDirection,
+        ) : Event
+
+        /** Пользователь открыл экран настройки порядка вкладок библиотеки. */
+        data object LibraryTabOrderScreenOpened : Event
+
+        /** Пользователь перешёл к настройке порядка вкладок библиотеки. */
+        data object LibraryTabOrderSelected : Event
+
+        /** Пользователь сбросил порядок вкладок библиотеки к стандартному. */
+        data object LibraryTabOrderReset : Event
 
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event

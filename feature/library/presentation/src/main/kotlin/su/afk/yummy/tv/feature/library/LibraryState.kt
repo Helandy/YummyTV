@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
@@ -34,6 +35,8 @@ class LibraryState {
         val isSignedIn: Boolean = false,
         val isRemoteLoading: Boolean = false,
         val remoteError: String? = null,
+        /** Вкладки в порядке, выбранном пользователем в настройках. */
+        val tabs: ImmutableList<LibraryTab> = LibraryTab.entries.toImmutableList(),
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,
         val continueWatchingCardSize: LibraryContinueWatchingCardSize =
             LibraryContinueWatchingCardSize.LARGE,

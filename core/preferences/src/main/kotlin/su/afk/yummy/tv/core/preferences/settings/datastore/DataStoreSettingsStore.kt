@@ -1,7 +1,5 @@
 package su.afk.yummy.tv.core.preferences.settings.datastore
 
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.core.model.settings.AppTheme
@@ -31,6 +29,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgrou
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesHideWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
@@ -61,6 +60,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore.Companion.defaultPosterQuality
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Фасад над доменными хранилищами: делегирует им все поля и добавляет только агрегаты
@@ -139,6 +140,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: store.resolveSystemContentLanguage(),
             detailsButtonOrder = prefs[detailsButtonOrderKey].toDetailsButtonOrder(),
+            libraryTabOrder = prefs[libraryTabOrderKey].toLibraryTabOrder(),
         )
     }
 

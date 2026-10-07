@@ -7,6 +7,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -368,6 +369,38 @@ internal class SettingsAnalytics @Inject constructor(
     }
 
     /**
+     * Пользователь открыл экран настройки порядка вкладок библиотеки.
+     */
+    fun eventLibraryTabOrderScreenOpened() {
+        tracker.track(EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED)
+    }
+
+    /**
+     * Пользователь изменил порядок вкладок библиотеки.
+     *
+     * Параметры: tab, direction.
+     */
+    fun eventLibraryTabMoved(
+        tab: LibraryTabKind,
+        direction: DetailsButtonMoveDirection
+    ) {
+        tracker.track(
+            EVENT_LIBRARY_TAB_ORDER_MOVED,
+            analyticsParamsOf(
+                PARAM_TAB to tab.name.lowercase(),
+                PARAM_DIRECTION to direction.name.lowercase(),
+            ),
+        )
+    }
+
+    /**
+     * Пользователь сбросил порядок вкладок библиотеки.
+     */
+    fun eventLibraryTabOrderReset() {
+        tracker.track(EVENT_LIBRARY_TAB_ORDER_RESET)
+    }
+
+    /**
      * Пользователь запросил отображение preview channel на Android TV.
      */
     fun eventRequestPreviewChannelBrowsable() {
@@ -401,6 +434,7 @@ internal class SettingsAnalytics @Inject constructor(
     internal companion object {
         private const val PARAM_ACTION = "action"
         private const val PARAM_DIRECTION = "direction"
+        private const val PARAM_TAB = "tab"
         private const val PARAM_TARGET_STATE = "target_state"
         private const val PARAM_VALUE = "value"
         private const val PARAM_SHORT_MINUTES = "short_minutes"
@@ -415,6 +449,9 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
         const val EVENT_DETAILS_BUTTON_ORDER_MOVED = "settings_details_button_order_moved"
         const val EVENT_DETAILS_BUTTON_ORDER_RESET = "settings_details_button_order_reset"
+        const val EVENT_LIBRARY_TAB_ORDER_MOVED = "settings_library_tab_order_moved"
+        const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
+        const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
         const val EVENT_INTERFACE_MODE_SELECTED = "settings_interface_mode_selected"
         const val EVENT_SCREEN_OPENED = "settings_screen"
         const val EVENT_SHOW_TOP_TITLE_YEAR_TOGGLED =

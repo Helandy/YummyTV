@@ -76,6 +76,11 @@ internal fun SettingsMobileAppearanceContent(
                 enabled = state.showLibraryTitleYear,
                 onClick = { onEvent(SettingsState.Event.ShowLibraryTitleYearToggled) },
             )
+            SettingsMobileNavigationRow(
+                label = stringResource(R.string.settings_library_tabs_order),
+                hint = stringResource(R.string.settings_library_tabs_order_hint),
+                onClick = { onEvent(SettingsState.Event.LibraryTabOrderSelected) },
+            )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_details)) {
             SettingsMobileNavigationRow(

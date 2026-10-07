@@ -36,4 +36,5 @@ data class SettingsSnapshot(
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,
+    val libraryTabOrder: List<LibraryTabKind> = LibraryTabKind.entries,
 )

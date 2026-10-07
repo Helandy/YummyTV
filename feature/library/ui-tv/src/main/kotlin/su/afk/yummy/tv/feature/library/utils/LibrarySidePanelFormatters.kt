@@ -5,9 +5,6 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 
-internal fun libraryTabsDisplayOrder(): List<LibraryTab> =
-    LibraryTab.visibleEntries
-
 @Composable
 internal fun LibraryTab.label(): String = stringResource(
     when (this) {

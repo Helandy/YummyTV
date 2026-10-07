@@ -9,6 +9,7 @@ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -418,3 +419,17 @@ internal fun Set<NewEpisodesSource>.newEpisodesSourcesValue(): String =
         }
         labels.joinToString(", ")
     }
+
+@Composable
+internal fun LibraryTabKind.label(): String = stringResource(
+    when (this) {
+        LibraryTabKind.HISTORY -> R.string.settings_library_tab_history
+        LibraryTabKind.CONTINUE_WATCHING -> R.string.settings_library_tab_continue_watching
+        LibraryTabKind.FAVORITES -> R.string.settings_library_tab_favorites
+        LibraryTabKind.WATCHING -> R.string.settings_library_tab_watching
+        LibraryTabKind.PLANNED -> R.string.settings_library_tab_planned
+        LibraryTabKind.COMPLETED -> R.string.settings_library_tab_completed
+        LibraryTabKind.POSTPONED -> R.string.settings_library_tab_postponed
+        LibraryTabKind.DROPPED -> R.string.settings_library_tab_dropped
+    },
+)

@@ -36,7 +36,6 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.feature.library.model.LibraryRemoveTarget
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.focusStateKey
-import su.afk.yummy.tv.feature.library.utils.libraryTabsDisplayOrder
 import su.afk.yummy.tv.feature.library.utils.tvTabItemCount
 import su.afk.yummy.tv.feature.library.view.ContinueWatchingGrid
 import su.afk.yummy.tv.feature.library.view.LibraryGrid
@@ -62,8 +61,9 @@ fun LibraryTvScreen(
     onEvent: (LibraryState.Event) -> Unit,
 ) {
     val gridFocusRequester = remember { FocusRequester() }
+    // Вкладок фиксированный набор: запросы фокуса не зависят от порядка, который задаёт пользователь.
     val tabFocusRequesters = remember {
-        libraryTabsDisplayOrder().associateWith { FocusRequester() }
+        LibraryTab.entries.associateWith { FocusRequester() }
     }
     val selectedTabFocusRequester = tabFocusRequesters.getValue(state.selectedTab)
     val registerPreferredContentFocusRequester = LocalPreferredContentFocusRequester.current
@@ -78,7 +78,7 @@ fun LibraryTvScreen(
         state.continueWatching,
         state.items,
     ) {
-        libraryTabsDisplayOrder().associateWith { tab -> state.tvTabItemCount(tab) }
+        LibraryTab.entries.associateWith { tab -> state.tvTabItemCount(tab) }
     }
     val hasFocusableGridContent = when (state.selectedTab) {
         LibraryTab.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
@@ -133,6 +133,7 @@ fun LibraryTvScreen(
             .background(MaterialTheme.colorScheme.background),
     ) {
         LibraryTopTabs(
+            tabs = state.tabs,
             selectedTab = state.selectedTab,
             tabCounts = tabCounts,
             contentCanFocus = hasFocusableGridContent,
