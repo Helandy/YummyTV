@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.mobile.details.model
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 internal data class MobilePickerItem(
@@ -15,5 +16,7 @@ internal data class MobilePickerItem(
     val accentTitle: Boolean = false,
     /** Подзаголовок крупнее — когда это озвучка, а не список балансеров. */
     val emphasizedSubtitle: Boolean = false,
+    /** Слот справа, по центру строки: статус скачивания и т.п. */
+    val trailing: (@Composable () -> Unit)? = null,
     val onClick: () -> Unit,
 )

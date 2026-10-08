@@ -1,25 +1,18 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.view
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
+import su.afk.yummy.tv.feature.details.mobile.details.view.MobilePickerItems
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.blocksNewDownload
 
 @Composable
@@ -31,53 +24,37 @@ internal fun EpisodeDownloadBalancerSheet(
 ) {
     BaseBottomSheet(
         onDismissRequest = onDismiss,
-        title = stringResource(
-            R.string.details_mobile_download_balancer_title,
-            selection.episode,
-            selection.dubbing,
-        ),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
+        titleContent = {
+            EpisodeDownloadSheetTitle(
+                title = stringResource(
+                    R.string.details_mobile_download_balancer_title,
+                    selection.episode,
+                ),
+                subtitle = selection.dubbing,
+            )
+        },
     ) {
         if (selection.options.isEmpty()) {
-            Text(
-                text = stringResource(R.string.details_mobile_download_balancer_empty),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 8.dp),
+            MobileMessage(
+                title = stringResource(R.string.details_mobile_download_balancer_empty),
+                icon = Icons.Filled.Info,
+                fillMaxSize = false,
             )
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                items(
-                    selection.options,
-                    key = { "${it.video.id}|${it.video.iframeUrl}" }) { option ->
-                    TextButton(
+            val items = remember(selection.options) {
+                selection.options.map { option ->
+                    MobilePickerItem(
+                        key = "${option.video.id}|${option.video.iframeUrl}",
+                        title = option.title,
+                        subtitle = option.subtitle,
                         enabled = !option.resolving && !option.status.blocksNewDownload(),
+                        accentTitle = true,
+                        trailing = { EpisodeDownloadStatusIcon(option.status, option.resolving) },
                         onClick = { onSelected(option.video) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(text = option.title, modifier = Modifier.fillMaxWidth())
-                                option.subtitle?.let { subtitle ->
-                                    Text(
-                                        text = subtitle,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                }
-                            }
-                            EpisodeDownloadStatusIcon(option.status, option.resolving)
-                        }
-                    }
+                    )
                 }
             }
+            MobilePickerItems(items)
         }
     }
 }

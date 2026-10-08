@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.designsystem.baseScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -59,6 +60,7 @@ fun BaseBottomSheetCustom(
         modifier = modifier,
         sheetState = sheetState,
         onDismissRequest = onDismissRequest,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
     ) {
         Box(modifier = Modifier.nestedScroll(rememberBottomOverscrollGuard())) {

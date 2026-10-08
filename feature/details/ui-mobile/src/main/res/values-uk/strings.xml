@@ -120,10 +120,11 @@
     <string name="details_mobile_episode_download_error_unknown">Помилка завантаження</string>
     <string name="details_mobile_download_dubbing_title">Серія %1$s · Озвучення</string>
     <string name="details_mobile_download_dubbing_empty">Озвучення недоступні</string>
-    <string name="details_mobile_download_balancer_title">Серія %1$s · %2$s · Балансер</string>
+    <string name="details_mobile_download_balancer_title">Серія %1$s · Балансер</string>
     <string name="details_mobile_download_balancer_empty">Балансери недоступні</string>
     <string name="details_mobile_download_quality_title">Якість завантаження</string>
     <string name="details_mobile_download_quality_prompt">Виберіть якість</string>
+    <string name="details_mobile_download_quality_empty">Немає доступних якостей</string>
     <string name="details_mobile_episode_dubbings_title">Серія %1$s</string>
     <string name="details_mobile_episode_dubbings_empty">Озвучення не знайдено</string>
     <string name="details_mobile_episodes_count_short">%1$d сер.</string>

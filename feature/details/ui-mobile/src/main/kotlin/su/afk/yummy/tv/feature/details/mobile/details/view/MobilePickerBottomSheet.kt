@@ -78,91 +78,96 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
         else -> colorScheme.onSurface
     }
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(background)
             .clickable(enabled = item.enabled, onClick = item.onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (item.color != null) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(item.color),
-                )
-            }
-            Text(
-                text = item.title,
-                color = titleColor,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (item.enabled) FontWeight.Medium else FontWeight.Normal,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        val subtitleColor =
-            colorScheme.onSurfaceVariant.copy(alpha = if (item.enabled) 1f else 0.6f)
-        val episodeCount = item.episodeCount
-        if (episodeCount != null) {
-            // Озвучка: просмотры и число серий отдельной строкой, балансеры под ними —
-            // как в шторке настроек плеера.
-            MobileDubbingMeta(
-                views = item.views ?: 0,
-                episodeCount = episodeCount,
-                color = subtitleColor,
-                modifier = Modifier.padding(top = 5.dp),
-            )
-            if (!item.subtitle.isNullOrBlank()) {
-                Text(
-                    text = item.subtitle,
-                    style = if (item.emphasizedSubtitle) {
-                        MaterialTheme.typography.bodyMedium
-                    } else {
-                        MaterialTheme.typography.labelSmall
-                    },
-                    color = subtitleColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 3.dp),
-                )
-            }
-        } else if (!item.subtitle.isNullOrBlank()) {
+        Column(modifier = Modifier.weight(1f)) {
             Row(
-                modifier = Modifier.padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (item.color != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(item.color),
+                    )
+                }
                 Text(
-                    text = item.subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = subtitleColor,
+                    text = item.title,
+                    color = titleColor,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (item.enabled) FontWeight.Medium else FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
                 )
-                val views = item.views
-                if (views != null && views > 0) {
-                    Icon(
-                        imageVector = Icons.Filled.Visibility,
-                        contentDescription = null,
-                        tint = subtitleColor,
-                        modifier = Modifier.size(13.dp),
-                    )
+            }
+            val subtitleColor =
+                colorScheme.onSurfaceVariant.copy(alpha = if (item.enabled) 1f else 0.6f)
+            val episodeCount = item.episodeCount
+            if (episodeCount != null) {
+                // Озвучка: просмотры и число серий отдельной строкой, балансеры под ними —
+                // как в шторке настроек плеера.
+                MobileDubbingMeta(
+                    views = item.views ?: 0,
+                    episodeCount = episodeCount,
+                    color = subtitleColor,
+                    modifier = Modifier.padding(top = 5.dp),
+                )
+                if (!item.subtitle.isNullOrBlank()) {
                     Text(
-                        text = views.formatCompactCount(),
+                        text = item.subtitle,
+                        style = if (item.emphasizedSubtitle) {
+                            MaterialTheme.typography.bodyMedium
+                        } else {
+                            MaterialTheme.typography.labelSmall
+                        },
+                        color = subtitleColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 3.dp),
+                    )
+                }
+            } else if (!item.subtitle.isNullOrBlank()) {
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = item.subtitle,
                         style = MaterialTheme.typography.labelSmall,
                         color = subtitleColor,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
+                    val views = item.views
+                    if (views != null && views > 0) {
+                        Icon(
+                            imageVector = Icons.Filled.Visibility,
+                            contentDescription = null,
+                            tint = subtitleColor,
+                            modifier = Modifier.size(13.dp),
+                        )
+                        Text(
+                            text = views.formatCompactCount(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = subtitleColor,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
         }
+        item.trailing?.invoke()
     }
 }

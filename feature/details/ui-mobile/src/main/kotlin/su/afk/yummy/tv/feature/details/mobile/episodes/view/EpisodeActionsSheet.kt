@@ -1,7 +1,6 @@
 package su.afk.yummy.tv.feature.details.mobile.episodes.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkRemove
@@ -27,7 +26,6 @@ internal fun EpisodeActionsSheet(
     BaseBottomSheet(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.details_mobile_episode_actions_title, action.episode),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         scrollableContent = true,
     ) {
