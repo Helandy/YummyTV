@@ -42,8 +42,9 @@ internal fun TvControlButton(
     val bgColor by animateColorAsState(
         targetValue = when {
             focused -> colors.primary
-            primary -> Color.White.copy(alpha = 0.18f)
-            else -> Color.Transparent
+            // Тёмная подложка: на светлых кадрах (заставки) прозрачная кнопка теряется.
+            primary -> Color.Black.copy(alpha = 0.62f)
+            else -> Color.Black.copy(alpha = 0.5f)
         },
         animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
         label = "tvControlButtonBackground",
@@ -54,7 +55,7 @@ internal fun TvControlButton(
         label = "tvControlButtonContent",
     )
     val borderColor by animateColorAsState(
-        targetValue = if (focused) colors.primary else Color.White.copy(alpha = 0.35f),
+        targetValue = if (focused) colors.primary else Color.White.copy(alpha = 0.6f),
         animationSpec = tween(TV_PLAYER_FOCUS_ANIMATION_DURATION_MS),
         label = "tvControlButtonBorder",
     )

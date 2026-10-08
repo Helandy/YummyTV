@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,6 +88,7 @@ fun UserSearchMobileScreen(
         ) {
             item(key = "search") {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = state.query,
                     onValueChange = { onEvent(UserSearchState.Event.QueryChanged(it)) },
                     modifier = Modifier

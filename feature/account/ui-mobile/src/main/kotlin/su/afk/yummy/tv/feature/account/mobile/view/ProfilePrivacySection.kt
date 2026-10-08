@@ -56,6 +56,7 @@ internal fun ProfilePrivacySection(
                 expanded = expanded,
                 onExpandedChange = { if (enabled) expanded = it }) {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = listPrivacy.label(),
                     onValueChange = {},
                     readOnly = true,

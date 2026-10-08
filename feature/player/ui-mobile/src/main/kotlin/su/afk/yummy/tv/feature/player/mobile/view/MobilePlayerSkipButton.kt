@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material3.Icon
@@ -51,7 +51,7 @@ internal fun MobilePlayerSkipButton(
     // Тип держим отдельно, чтобы подпись не менялась во время анимации исчезновения.
     var lastType by remember { mutableStateOf(PlayerSkipType.Opening) }
     skip?.type?.let { lastType = it }
-    val shape = RoundedCornerShape(12.dp)
+    val shape = CircleShape
 
     AnimatedVisibility(
         visible = skip != null,
@@ -63,14 +63,14 @@ internal fun MobilePlayerSkipButton(
             modifier = Modifier
                 .clip(shape)
                 .background(YummySemanticColors.PanelScrim)
-                .autoSkipProgressFill(countdownProgress, Color.White.copy(alpha = 0.22f), 12.dp)
+                .autoSkipProgressFill(countdownProgress, Color.White.copy(alpha = 0.22f), 24.dp)
                 .border(1.dp, Color.White.copy(alpha = 0.18f), shape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = onClick,
                 )
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

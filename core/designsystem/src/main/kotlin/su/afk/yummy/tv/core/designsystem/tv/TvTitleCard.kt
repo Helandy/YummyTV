@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +45,7 @@ fun TvTitleCard(
     width: Dp? = null,
     posterOverlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = MaterialTheme.shapes.medium
     val cardDimensions = currentTvTitleCardDimensions()
     val cardWidth = width ?: cardDimensions.width
     val posterHeight = width?.div(TITLE_POSTER_ASPECT_RATIO) ?: cardDimensions.posterHeight

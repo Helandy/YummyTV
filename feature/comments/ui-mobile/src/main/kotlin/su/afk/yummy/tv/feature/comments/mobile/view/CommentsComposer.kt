@@ -90,6 +90,7 @@ internal fun CommentsComposer(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     OutlinedTextField(
+                        shape = MaterialTheme.shapes.large,
                         value = text,
                         onValueChange = onTextChange,
                         enabled = enabled,

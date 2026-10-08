@@ -14,7 +14,10 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.runtime.Composable
+import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -146,13 +149,11 @@ internal fun ContinueWatchingGrid(
     }
 
     if (entries.isEmpty()) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                text = stringResource(R.string.library_empty_continue_watching),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        TvStateMessage(
+            title = stringResource(R.string.library_empty_continue_watching),
+            icon = Icons.AutoMirrored.Filled.List,
+            modifier = modifier,
+        )
         return
     }
 

@@ -65,6 +65,7 @@ fun PasswordResetMobileScreen(
             ) {
                 Text(stringResource(R.string.password_reset_description))
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = state.email,
                     onValueChange = { onEvent(PasswordResetState.Event.EmailChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
@@ -75,7 +76,9 @@ fun PasswordResetMobileScreen(
                     isError = state.validationError,
                     supportingText = if (state.validationError) {
                         { Text(stringResource(R.string.password_reset_invalid_email)) }
-                    } else null,
+                    } else {
+                        null
+                    },
                 )
                 Button(
                     onClick = { onEvent(PasswordResetState.Event.SubmitSelected) },

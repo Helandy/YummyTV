@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -152,7 +151,7 @@ private fun RegistrationForm(
             onValueChange = { onEvent(RegistrationState.Event.EmailChanged(it)) },
             label = { Text(stringResource(R.string.account_email_placeholder)) },
             singleLine = true,
-            shape = RoundedCornerShape(10.dp),
+            shape = MaterialTheme.shapes.large,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,7 +162,7 @@ private fun RegistrationForm(
             onValueChange = { onEvent(RegistrationState.Event.UsernameChanged(it)) },
             label = { Text(stringResource(R.string.account_username_placeholder)) },
             singleLine = true,
-            shape = RoundedCornerShape(10.dp),
+            shape = MaterialTheme.shapes.large,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             modifier = Modifier
                 .fillMaxWidth()
@@ -175,7 +174,7 @@ private fun RegistrationForm(
             label = { Text(stringResource(R.string.account_password_placeholder)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            shape = RoundedCornerShape(10.dp),
+            shape = MaterialTheme.shapes.large,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             modifier = Modifier
                 .fillMaxWidth()

@@ -136,6 +136,7 @@ fun SearchMobileScreen(
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = state.query,
                     onValueChange = { onEvent(SearchState.Event.QueryChanged(it)) },
                     modifier = Modifier

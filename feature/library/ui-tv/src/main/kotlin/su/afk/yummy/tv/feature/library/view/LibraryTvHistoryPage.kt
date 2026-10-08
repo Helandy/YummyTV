@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -49,6 +54,7 @@ import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyListKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -77,7 +83,7 @@ internal fun LibraryTvHistoryPage(
     onDetailsSelected: (WatchHistoryEntry) -> Unit,
 ) {
     if (!isSignedIn) {
-        HistoryMessage(stringResource(R.string.library_history_sign_in))
+        HistoryMessage(stringResource(R.string.library_history_sign_in), icon = Icons.Filled.Lock)
         return
     }
     val items = history.collectAsLazyPagingItems()
@@ -135,7 +141,7 @@ internal fun LibraryTvHistoryPage(
 
     when {
         items.loadState.refresh is LoadState.Loading -> HistoryMessage(null, true)
-        items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_history_error))
+        items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_history_error), icon = Icons.Filled.Warning)
         items.itemCount == 0 -> HistoryMessage(stringResource(R.string.library_history_empty))
         else -> LazyColumn(
             state = listState,
@@ -273,16 +279,16 @@ internal fun LibraryTvHistoryPage(
 }
 
 @Composable
-private fun HistoryMessage(text: String?, loading: Boolean = false) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        if (loading) {
+private fun HistoryMessage(
+    text: String?,
+    loading: Boolean = false,
+    icon: ImageVector = Icons.Filled.Info,
+) {
+    if (loading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
-        } else {
-            Text(
-                text = text.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
+    } else {
+        TvStateMessage(title = text.orEmpty(), icon = icon)
     }
 }

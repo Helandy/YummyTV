@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ internal fun SettingsMobileApiContent(
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         SettingsMobileSection {
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = state.yaniApplicationToken,
                 onValueChange = { onEvent(SettingsState.Event.YaniApplicationTokenChanged(it)) },
                 modifier = Modifier

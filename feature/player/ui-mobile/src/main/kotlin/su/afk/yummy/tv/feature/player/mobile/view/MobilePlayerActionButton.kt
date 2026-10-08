@@ -6,8 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,24 +26,24 @@ internal fun MobilePlayerActionButton(
     enabled: Boolean = true,
     primary: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(12.dp)
+    val shape = CircleShape
     val background = when {
         !enabled -> Color.White.copy(alpha = 0.06f)
-        primary -> Color.White.copy(alpha = 0.92f)
+        primary -> MaterialTheme.colorScheme.primary
         else -> Color.White.copy(alpha = 0.14f)
     }
     val contentColor = when {
         !enabled -> Color.White.copy(alpha = 0.26f)
-        primary -> Color.Black
+        primary -> MaterialTheme.colorScheme.onPrimary
         else -> Color.White
     }
     val borderColor =
-        if (primary) Color.White.copy(alpha = 0.40f) else Color.White.copy(alpha = 0.18f)
+        if (primary) Color.Transparent else Color.White.copy(alpha = 0.18f)
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(if (primary) 56.dp else 46.dp)
+            .size(if (primary) 64.dp else 48.dp)
             .clip(shape)
             .background(background)
             .border(1.dp, borderColor, shape)

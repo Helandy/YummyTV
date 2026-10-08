@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -50,8 +49,8 @@ fun MobilePosterCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(
             Modifier
@@ -60,7 +59,7 @@ fun MobilePosterCard(
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongClick,
-                )
+                ),
         ) {
             Box(
                 modifier = Modifier
@@ -72,7 +71,7 @@ fun MobilePosterCard(
                     contentDescription = null,
                     modifier = Modifier
                         .matchParentSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     contentScale = ContentScale.Crop,
                 )
                 if (!badge.isNullOrBlank()) {
@@ -84,8 +83,8 @@ fun MobilePosterCard(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(8.dp)
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                            .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.extraSmall)
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                 }
                 rating?.let { value ->
@@ -98,7 +97,7 @@ fun MobilePosterCard(
                 }
                 posterOverlay()
             }
-            Column(Modifier.padding(10.dp)) {
+            Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
                 Text(
                     text = title,
                     minLines = titleMinLines,

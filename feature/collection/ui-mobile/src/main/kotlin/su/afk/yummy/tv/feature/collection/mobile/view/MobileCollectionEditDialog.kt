@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -42,6 +43,7 @@ internal fun MobileCollectionEditDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = title,
                     onValueChange = onTitleChanged,
                     modifier = Modifier.fillMaxWidth(),
@@ -50,6 +52,7 @@ internal fun MobileCollectionEditDialog(
                     label = { Text(stringResource(R.string.collection_create_title_label)) },
                 )
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = description,
                     onValueChange = onDescriptionChanged,
                     modifier = Modifier.fillMaxWidth(),

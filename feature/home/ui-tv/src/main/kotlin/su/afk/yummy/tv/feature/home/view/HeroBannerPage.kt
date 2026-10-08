@@ -46,6 +46,10 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.utils.posterUrl
 
+/** Ширина арта справа и длина градиента, растворяющего его в фон. */
+private val HERO_ART_WIDTH = 320.dp
+private val HERO_ART_FADE_WIDTH = 180.dp
+
 @Composable
 internal fun HeroBannerPage(
     item: HomeFeedItem,
@@ -112,9 +116,11 @@ internal fun HeroBannerPage(
                 focusedScale = 1f,
             ),
     ) {
+        // Постер как широкий арт справа: без blur (тяжёл для слабых приставок) — только кроп
+        // от верха (лица обычно там) и длинный градиент, растворяющий его в фон баннера.
         Box(
             modifier = Modifier
-                .width(200.dp)
+                .width(HERO_ART_WIDTH)
                 .fillMaxHeight()
                 .align(Alignment.CenterEnd)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
@@ -123,12 +129,13 @@ internal fun HeroBannerPage(
                 model = item.posterUrl(posterQuality),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                alignment = Alignment.TopCenter,
                 modifier = Modifier.fillMaxSize(),
             )
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(80.dp)
+                    .width(HERO_ART_FADE_WIDTH)
                     .align(Alignment.CenterStart)
                     .background(
                         Brush.horizontalGradient(
@@ -142,7 +149,7 @@ internal fun HeroBannerPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(start = 24.dp, end = 216.dp, top = 32.dp, bottom = 32.dp),
+                .padding(start = 24.dp, end = HERO_ART_WIDTH - 40.dp, top = 32.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
             item.rating?.let { rating ->

@@ -85,6 +85,7 @@ fun BaseBottomSheet(
         modifier = modifier,
         sheetState = sheetState,
         onDismissRequest = onDismissRequest,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentWindowInsets = { WindowInsets(0.dp) },
     ) {
         Column(

@@ -49,8 +49,8 @@ internal fun HomeHeroCard(
             .fillMaxWidth()
             .height(HERO_CARD_HEIGHT)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Box(
             Modifier

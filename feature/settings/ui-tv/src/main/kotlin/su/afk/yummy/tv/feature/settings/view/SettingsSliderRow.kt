@@ -31,7 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-/** Строка настройки с непрерывным числовым значением: фокус + стрелки влево/вправо меняют value. */
+/**
+ * Строка настройки с непрерывным числовым значением: фокус + стрелки влево/вправо меняют value.
+ * Влево на минимальном значении отдаёт фокус дальше (в список категорий).
+ */
 @Composable
 internal fun SettingsSliderRow(
     label: String,
@@ -61,7 +64,10 @@ internal fun SettingsSliderRow(
             .onKeyEvent { event ->
                 if (!enabled || event.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (event.key) {
-                    Key.DirectionLeft -> {
+                    // На минимуме влево не поглощаем: иначе из слайдера нельзя вернуться к списку категорий.
+                    Key.DirectionLeft -> if (value <= valueRange.first) {
+                        false
+                    } else {
                         onValueChange((value - stepSize).coerceIn(valueRange))
                         true
                     }

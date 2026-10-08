@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -100,9 +100,9 @@ internal fun MobilePlayerTopBar(
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier
                                 .padding(top = 2.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.12f))
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
                         )
                     }
                 }
@@ -119,9 +119,9 @@ internal fun MobilePlayerTopBar(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.88f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                                .padding(horizontal = 12.dp, vertical = 5.dp),
                         )
                     }
                     IconButton(
@@ -133,7 +133,7 @@ internal fun MobilePlayerTopBar(
                         Icon(
                             Icons.Filled.MoreVert,
                             contentDescription = stringResource(R.string.player_mobile_actions),
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(28.dp),
                         )
                     }

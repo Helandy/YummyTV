@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -103,6 +104,8 @@ internal fun PostDetailsBody(
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(details.relatedAnime, key = { lazyKey("postanime", it.id) }) { anime ->
                         ElevatedCard(
+                            shape = MaterialTheme.shapes.medium,
+                            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                             onClick = { onEvent(PostDetailsState.Event.AnimeSelected(anime.id)) },
                             modifier = Modifier.width(150.dp),
                         ) {

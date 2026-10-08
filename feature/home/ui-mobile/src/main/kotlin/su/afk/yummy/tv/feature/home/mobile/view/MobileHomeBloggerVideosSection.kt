@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,40 +40,43 @@ internal fun MobileHomeBloggerVideosSection(
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
         ) {
             items(videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
                 ElevatedCard(
-                    Modifier
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier
                         .width(260.dp)
-                        .clickable { onVideoSelected(video) }) {
+                        .clickable { onVideoSelected(video) },
+                ) {
                     AsyncImage(
                         video.previewUrl,
                         video.title,
                         Modifier
                             .fillMaxWidth()
                             .aspectRatio(16f / 9f),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop,
                     )
                     Column(
                         Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
                             video.category.title,
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
                             video.title,
                             style = MaterialTheme.typography.titleSmall,
                             maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                         Text(
                             video.creator.nickname,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }

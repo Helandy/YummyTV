@@ -3,12 +3,13 @@ package su.afk.yummy.tv.feature.account.mobile.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -72,7 +73,7 @@ internal fun AccountMobileLoginCard(
                 onValueChange = { onEvent(AccountState.Event.LoginChanged(it)) },
                 placeholder = { Text(stringResource(R.string.account_login_placeholder)) },
                 singleLine = true,
-                shape = RoundedCornerShape(10.dp),
+                shape = MaterialTheme.shapes.large,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,25 +85,37 @@ internal fun AccountMobileLoginCard(
                 placeholder = { Text(stringResource(R.string.account_password_placeholder)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(10.dp),
+                shape = MaterialTheme.shapes.large,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { contentType = ContentType.Password },
             )
             if (!state.isCaptchaRequired) {
-                Button(
-                    onClick = { onEvent(AccountState.Event.LoginSelected) },
-                    enabled = !state.isLoading,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Text(stringResource(R.string.account_login))
+                    FilledTonalButton(
+                        onClick = { onEvent(AccountState.Event.RegistrationSelected) },
+                        enabled = !state.isLoading,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.account_mobile_register))
+                    }
+                    Button(
+                        onClick = { onEvent(AccountState.Event.LoginSelected) },
+                        enabled = !state.isLoading,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text(stringResource(R.string.account_login))
+                        }
                     }
                 }
                 TextButton(
@@ -110,13 +123,6 @@ internal fun AccountMobileLoginCard(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.account_forgot_password))
-                }
-                Button(
-                    onClick = { onEvent(AccountState.Event.RegistrationSelected) },
-                    enabled = !state.isLoading,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.account_mobile_register))
                 }
             }
             Text(

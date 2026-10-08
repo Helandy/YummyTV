@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -36,7 +35,7 @@ internal fun MobilePlayerSelectionRow(
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(10.dp)
+    val shape = MaterialTheme.shapes.medium
     val background = if (selected) {
         MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
     } else {

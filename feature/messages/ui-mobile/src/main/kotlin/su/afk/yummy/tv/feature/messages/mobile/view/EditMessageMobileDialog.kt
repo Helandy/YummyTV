@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,6 +29,7 @@ internal fun EditMessageMobileDialog(
         text = {
             Column(modifier = Modifier.imePadding()) {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = text,
                     onValueChange = onTextChange,
                     enabled = enabled,

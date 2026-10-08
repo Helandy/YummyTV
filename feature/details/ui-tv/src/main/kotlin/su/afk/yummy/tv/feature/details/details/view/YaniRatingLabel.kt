@@ -14,25 +14,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import su.afk.yummy.tv.core.designsystem.components.toRatingColor
+import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.feature.details.utils.formatRating
 
 @Composable
 internal fun YaniRatingLabel(rating: Double) {
-    val color = rating.toRatingColor()
+    val color = rating.toRatingTextColor()
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Filled.Star,
             contentDescription = null,
             tint = color,
             modifier = Modifier
-                .height(13.dp)
-                .width(13.dp),
+                .height(17.dp)
+                .width(17.dp),
         )
         Spacer(modifier = Modifier.width(3.dp))
         Text(
             text = rating.formatRating(),
-            fontSize = 12.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.ExtraBold,
             color = color,
         )

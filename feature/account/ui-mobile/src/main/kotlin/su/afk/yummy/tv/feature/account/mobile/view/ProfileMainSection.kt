@@ -43,6 +43,7 @@ internal fun ProfileMainSection(
                 style = MaterialTheme.typography.titleMedium
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = nickname,
                 onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
@@ -51,6 +52,7 @@ internal fun ProfileMainSection(
                 enabled = false,
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = about,
                 onValueChange = onAboutChanged,
                 modifier = Modifier.fillMaxWidth(),
@@ -59,6 +61,7 @@ internal fun ProfileMainSection(
                 enabled = enabled,
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = birthDate,
                 onValueChange = {},
                 modifier = Modifier
@@ -73,6 +76,7 @@ internal fun ProfileMainSection(
                 expanded = expanded,
                 onExpandedChange = { if (enabled) expanded = it }) {
                 OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
                     value = sex.label(),
                     onValueChange = {},
                     readOnly = true,

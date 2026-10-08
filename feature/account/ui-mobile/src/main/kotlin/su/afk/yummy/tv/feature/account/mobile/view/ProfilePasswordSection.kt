@@ -33,6 +33,7 @@ internal fun ProfilePasswordSection(
                 style = MaterialTheme.typography.titleMedium
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = oldPassword,
                 onValueChange = onOldPasswordChanged,
                 modifier = Modifier.fillMaxWidth(),
@@ -42,6 +43,7 @@ internal fun ProfilePasswordSection(
                 enabled = !isSaving,
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = newPassword,
                 onValueChange = onNewPasswordChanged,
                 modifier = Modifier.fillMaxWidth(),
@@ -51,6 +53,7 @@ internal fun ProfilePasswordSection(
                 enabled = !isSaving,
             )
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = confirmPassword,
                 onValueChange = onConfirmPasswordChanged,
                 modifier = Modifier.fillMaxWidth(),

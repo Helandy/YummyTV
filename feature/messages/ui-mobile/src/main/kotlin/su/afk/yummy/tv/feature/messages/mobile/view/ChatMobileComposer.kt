@@ -82,6 +82,7 @@ internal fun ChatMobileComposer(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
+                shape = MaterialTheme.shapes.large,
                 value = text,
                 onValueChange = onTextChange,
                 enabled = enabled,

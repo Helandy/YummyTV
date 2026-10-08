@@ -15,6 +15,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -198,11 +199,22 @@ fun YummyTvTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = if (useTvTypography) YummyTvTypography else YummyMobileTypography,
-        content = content,
-    )
+    if (useTvTypography) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = YummyTvTypography,
+            shapes = YummyShapes,
+            content = content,
+        )
+    } else {
+        // Мобильная тема: более округлые формы шкалы M3 Expressive.
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = YummyMobileTypography,
+            shapes = YummyShapes,
+            content = content,
+        )
+    }
 }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
@@ -239,6 +251,13 @@ private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
     onSurface = onBackground,
     surfaceVariant = surfaceVariant,
     onSurfaceVariant = onSurfaceVariant,
+    surfaceContainerLowest = background,
+    surfaceContainerLow = lerp(background, surface, 0.6f),
+    surfaceContainer = surface,
+    surfaceContainerHigh = lerp(surface, surfaceVariant, 0.6f),
+    surfaceContainerHighest = surfaceVariant,
+    surfaceBright = lerp(surfaceVariant, onSurfaceVariant, 0.12f),
+    surfaceDim = background,
     primary = primary,
     onPrimary = onPrimary,
     primaryContainer = primaryContainer,
@@ -270,6 +289,13 @@ private fun YummyTvPalette.toLightColorScheme(neutrals: LightNeutrals) = lightCo
     onSurface = LightOnBackground,
     surfaceVariant = neutrals.surfaceVariant,
     onSurfaceVariant = LightOnSurfaceVariant,
+    surfaceContainerLowest = neutrals.background,
+    surfaceContainerLow = Color(0xFFF6F6F6),
+    surfaceContainer = neutrals.surface,
+    surfaceContainerHigh = neutrals.surfaceVariant,
+    surfaceContainerHighest = Color(0xFFDCDCDC),
+    surfaceBright = neutrals.background,
+    surfaceDim = Color(0xFFD8D8D8),
     primary = primaryLight,
     onPrimary = onPrimaryLight,
     primaryContainer = primaryContainerLight,

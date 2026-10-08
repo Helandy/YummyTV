@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
@@ -22,6 +23,8 @@ import su.afk.yummy.tv.domain.posts.model.PostSummary
 @Composable
 fun PostMobileCard(post: PostSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ElevatedCard(
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)

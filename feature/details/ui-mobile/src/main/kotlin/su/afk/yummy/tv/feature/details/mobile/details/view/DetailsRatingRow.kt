@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.toRatingColor
+import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.RatingLabel
@@ -115,7 +116,7 @@ private fun DetailsAverageRating(
     expandable: Boolean,
     onClick: () -> Unit,
 ) {
-    val color = rating?.toRatingColor()
+    val color = rating?.toRatingTextColor()
     Row(
         modifier = Modifier
             .fillMaxWidth()
