@@ -145,7 +145,7 @@ internal fun MobileNativePlayer(
     // в PiP незачем: видео и так уходит на приёмник, а не рендерится в локальном окне.
     SideEffect {
         pipSession.setEnabled(
-            state.pictureInPictureEnabled && !tutorialBlocksPlayback && !castConnection.isCasting
+            state.pictureInPictureEnabled && !tutorialBlocksPlayback && !castConnection.isCasting,
         )
     }
     val systemVolume = rememberPlayerSystemVolumeController()
@@ -453,7 +453,6 @@ internal fun MobileNativePlayer(
         onSkipActiveSegment = { skipActiveSegment(reportSelection = false) },
     )
 
-
     // Корень держит фокус, чтобы клавиатура управляла плеером без предварительного клика.
     val keyboardFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { keyboardFocusRequester.requestFocus() }
@@ -506,7 +505,7 @@ internal fun MobileNativePlayer(
                     Box(
                         Modifier
                             .fillMaxSize()
-                            .background(Color.Black)
+                            .background(Color.Black),
                     )
                 },
             )
@@ -686,8 +685,7 @@ internal fun MobileNativePlayer(
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
             percentText = gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 32.dp),
+                .align(Alignment.Center),
         )
 
         MobilePlayerGestureIndicator(
@@ -697,8 +695,7 @@ internal fun MobileNativePlayer(
             icon = MobileVerticalGestureZone.Volume.gestureIcon,
             percentText = gestures.volumeLevel.toGesturePercentText(),
             modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 32.dp),
+                .align(Alignment.Center),
         )
 
         MobilePlayerSpeedBoostIndicator(
@@ -780,14 +777,14 @@ internal fun MobileNativePlayer(
                         R.string.player_notifications_prompt
                     } else {
                         R.string.player_rate_title_prompt
-                    }
+                    },
                 ),
                 primaryLabel = stringResource(
                     if (managesSubscriptions) {
                         R.string.player_manage_notifications
                     } else {
                         R.string.player_rate_title
-                    }
+                    },
                 ),
                 stayLabel = stringResource(R.string.player_stay),
                 onPrimary = {
@@ -797,7 +794,7 @@ internal fun MobileNativePlayer(
                             PlayerState.Event.ManageSubscriptions
                         } else {
                             PlayerState.Event.RateTitle
-                        }
+                        },
                     )
                 },
                 onStay = {
@@ -838,8 +835,8 @@ internal fun MobileNativePlayer(
                     onEvent(
                         PlayerState.Event.DubbingSelected(
                             it,
-                            player.currentPosition
-                        )
+                            player.currentPosition,
+                        ),
                     )
                 },
                 balancerNames = ui.balancerNames,
