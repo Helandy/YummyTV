@@ -1,0 +1,58 @@
+name: Unit Tests
+
+on:
+    push:
+        branches:
+            - '**'
+
+permissions:
+    contents: read
+
+concurrency:
+    group: unit-tests-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    unit-tests:
+        name: Unit tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v5
+
+            -   name: Set up JDK
+                uses: actions/setup-java@v5
+                with:
+                    distribution: temurin
+                    java-version: 21
+
+            -   name: Set up Gradle
+                uses: gradle/actions/setup-gradle@v5
+
+            -   name: Set up Android SDK
+                uses: android-actions/setup-android@v4
+
+            -   name: Install Android SDK platform
+                run: |
+                    # версия берётся из каталога, чтобы CI не разъезжался с compileSdk
+                    compile_sdk=$(grep -m1 '^android-compileSdk' gradle/libs.versions.toml | cut -d'"' -f2)
+                    # начиная с API 36 платформы публикуются с минорной версией: android-37 нет, есть android-37.0
+                    case "$compile_sdk" in
+                      *.*) platform_version="$compile_sdk" ;;
+                      *)   platform_version="$compile_sdk.0" ;;
+                    esac
+                    (yes || true) | sdkmanager --licenses >/dev/null
+                    sdkmanager --install "platforms;android-$platform_version" "build-tools;$platform_version.0"
+
+            -   name: Run unit tests
+                run: ./gradlew testDebugUnitTest --stacktrace
+
+            -   name: Upload test reports
+                if: failure()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: unit-test-reports
+                    path: '**/build/reports/tests/testDebugUnitTest'
+                    retention-days: 7
