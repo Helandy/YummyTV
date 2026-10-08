@@ -413,6 +413,9 @@ class PlayerViewModel @AssistedInject internal constructor(
                 displaySettings.selectResizeMode(host, event.mode)
             }
 
+            is PlayerState.Event.OrientationModeSelected ->
+                preferences.selectOrientationMode(host, event.mode)
+
             is PlayerState.Event.ZoomLevelSelected -> {
                 analytics.eventZoomLevelSelected(currentState.animeId, event.level)
                 displaySettings.selectZoomLevel(host, event.level)

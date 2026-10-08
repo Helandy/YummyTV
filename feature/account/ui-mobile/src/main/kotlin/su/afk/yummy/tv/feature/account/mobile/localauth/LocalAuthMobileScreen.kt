@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -110,6 +111,7 @@ fun LocalAuthMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        contentModifier = Modifier.navigationBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.account_local_auth_login_on_tv)) },

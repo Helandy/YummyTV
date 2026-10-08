@@ -545,6 +545,8 @@ internal fun MobileNativePlayer(
             onBack = { onEvent(PlayerState.Event.Back) },
             onDetails = { onEvent(PlayerState.Event.OpenDetails) },
             onPictureInPicture = { activity?.let(pipSession::enter) },
+            orientationMode = state.playerOrientationMode,
+            onOrientationSelected = { onEvent(PlayerState.Event.OrientationModeSelected(it)) },
             showDetails = state.animeId > 0,
             showPictureInPicture = state.pictureInPictureEnabled &&
                 supportsPictureInPicture &&

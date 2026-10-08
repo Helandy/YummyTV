@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonOff
@@ -95,6 +96,7 @@ fun ProfileEditMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        contentModifier = Modifier.navigationBarsPadding(),
         customTopBar = {
             MobileTopBar(
                 title = stringResource(R.string.profile_edit_title),

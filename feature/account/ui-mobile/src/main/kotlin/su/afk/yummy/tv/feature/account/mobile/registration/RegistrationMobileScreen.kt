@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -49,11 +50,11 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
-import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.registration.RegistrationState
+import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 
 private const val YANI_SITE_URL = "https://ru.yummyani.me"
 
@@ -86,6 +87,7 @@ fun RegistrationMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        contentModifier = Modifier.navigationBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.account_registration_title)) },

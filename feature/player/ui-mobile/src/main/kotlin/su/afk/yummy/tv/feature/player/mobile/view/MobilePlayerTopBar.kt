@@ -32,7 +32,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 
 @Composable
 internal fun MobilePlayerTopBar(
@@ -43,6 +45,8 @@ internal fun MobilePlayerTopBar(
     onBack: () -> Unit,
     onDetails: () -> Unit,
     onPictureInPicture: () -> Unit,
+    orientationMode: PlayerOrientationMode,
+    onOrientationSelected: (PlayerOrientationMode) -> Unit,
     showDetails: Boolean,
     showPictureInPicture: Boolean,
     showCast: Boolean,
@@ -50,6 +54,7 @@ internal fun MobilePlayerTopBar(
     modifier: Modifier = Modifier,
 ) {
     var showActionsSheet by remember { mutableStateOf(false) }
+    var showOrientationSheet by remember { mutableStateOf(false) }
 
     if (visible) {
         Column(
@@ -101,40 +106,36 @@ internal fun MobilePlayerTopBar(
                         )
                     }
                 }
-                if (playerName.isNotBlank() || showDetails || showPictureInPicture || showCast) {
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        modifier = Modifier.padding(start = 8.dp),
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.padding(start = 8.dp),
+                ) {
+                    if (playerName.isNotBlank()) {
+                        Text(
+                            text = playerName.uppercase(),
+                            color = Color.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.White.copy(alpha = 0.88f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
+                    }
+                    IconButton(
+                        onClick = { showActionsSheet = true },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .padding(top = 2.dp),
                     ) {
-                        if (playerName.isNotBlank()) {
-                            Text(
-                                text = playerName.uppercase(),
-                                color = Color.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(Color.White.copy(alpha = 0.88f))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                            )
-                        }
-                        if (showDetails || showPictureInPicture || showCast) {
-                            IconButton(
-                                onClick = { showActionsSheet = true },
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(top = 2.dp),
-                            ) {
-                                Icon(
-                                    Icons.Filled.MoreVert,
-                                    contentDescription = stringResource(R.string.player_mobile_actions),
-                                    tint = Color.White,
-                                    modifier = Modifier.size(28.dp),
-                                )
-                            }
-                        }
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.player_mobile_actions),
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp),
+                        )
                     }
                 }
             }
@@ -146,9 +147,22 @@ internal fun MobilePlayerTopBar(
             showDetails = showDetails,
             showPictureInPicture = showPictureInPicture,
             showCast = showCast,
+            orientationLabel = stringResource(orientationMode.labelRes),
             onDetails = onDetails,
+            onOrientation = { showOrientationSheet = true },
             onPictureInPicture = onPictureInPicture,
             onDismiss = { showActionsSheet = false },
+        )
+    }
+
+    if (showOrientationSheet) {
+        MobilePlayerOrientationSheet(
+            selected = orientationMode,
+            onSelected = { mode ->
+                showOrientationSheet = false
+                onOrientationSelected(mode)
+            },
+            onDismiss = { showOrientationSheet = false },
         )
     }
 }

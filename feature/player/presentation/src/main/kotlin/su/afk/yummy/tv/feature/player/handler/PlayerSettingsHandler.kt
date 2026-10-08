@@ -32,6 +32,10 @@ internal class PlayerSettingsHandler @Inject constructor(
     val advancedPlayerVolumeEnabled: Flow<Boolean> = settingsStore.advancedPlayerVolumeEnabled
     val playerSubtitleStyle: Flow<PlayerSubtitleStyleSettings> = settingsStore.playerSubtitleStyle
 
+    suspend fun saveOrientationMode(mode: PlayerOrientationMode) {
+        settingsStore.setPlayerOrientationMode(mode)
+    }
+
     suspend fun dismissMobilePlayerGestureTutorial() {
         settingsStore.dismissMobilePlayerGestureTutorial()
     }

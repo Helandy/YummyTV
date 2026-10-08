@@ -48,4 +48,11 @@
     <string name="player_mobile_casting_to">Playing on %1$s</string>
     <string name="player_mobile_casting_to_unknown">Playing on another device</string>
     <string name="player_mobile_stop_casting">Disconnect</string>
+    <string name="player_mobile_orientation">Screen orientation</string>
+    <string name="player_mobile_orientation_system">System</string>
+    <string name="player_mobile_orientation_system_hint">Follow the system rotation setting</string>
+    <string name="player_mobile_orientation_left">Left</string>
+    <string name="player_mobile_orientation_left_hint">Always landscape (rotated left), even if system rotation is locked</string>
+    <string name="player_mobile_orientation_right">Right</string>
+    <string name="player_mobile_orientation_right_hint">Always landscape (rotated right), even if system rotation is locked</string>
 </resources>

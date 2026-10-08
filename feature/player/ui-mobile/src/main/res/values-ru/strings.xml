@@ -48,4 +48,11 @@
     <string name="player_mobile_casting_to">Воспроизводится на %1$s</string>
     <string name="player_mobile_casting_to_unknown">Воспроизводится на другом устройстве</string>
     <string name="player_mobile_stop_casting">Отключить</string>
+    <string name="player_mobile_orientation">Ориентация экрана</string>
+    <string name="player_mobile_orientation_system">Системный</string>
+    <string name="player_mobile_orientation_system_hint">Следовать системной настройке поворота экрана</string>
+    <string name="player_mobile_orientation_left">Влево</string>
+    <string name="player_mobile_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
+    <string name="player_mobile_orientation_right">Вправо</string>
+    <string name="player_mobile_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
 </resources>

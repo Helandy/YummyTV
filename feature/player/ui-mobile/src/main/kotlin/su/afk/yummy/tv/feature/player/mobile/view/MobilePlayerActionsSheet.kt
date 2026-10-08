@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PictureInPictureAlt
+import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,9 @@ internal fun PlayerMobileActionsSheet(
     showDetails: Boolean,
     showPictureInPicture: Boolean,
     showCast: Boolean,
+    orientationLabel: String,
     onDetails: () -> Unit,
+    onOrientation: () -> Unit,
     onPictureInPicture: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -62,6 +65,15 @@ internal fun PlayerMobileActionsSheet(
                 },
             )
         }
+        ActionRow(
+            icon = Icons.Filled.ScreenRotation,
+            label = stringResource(R.string.player_mobile_orientation),
+            value = orientationLabel,
+            onClick = {
+                onDismiss()
+                onOrientation()
+            },
+        )
         if (showCast) {
             val shape = RoundedCornerShape(8.dp)
             val interactionSource = remember { MutableInteractionSource() }
@@ -138,6 +150,7 @@ private fun ActionRow(
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
+    value: String? = null,
 ) {
     val shape = RoundedCornerShape(8.dp)
     Row(
@@ -154,6 +167,13 @@ private fun ActionRow(
         Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
             Icon(icon, contentDescription = null)
         }
-        Text(label, style = MaterialTheme.typography.bodyLarge)
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        if (value != null) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }

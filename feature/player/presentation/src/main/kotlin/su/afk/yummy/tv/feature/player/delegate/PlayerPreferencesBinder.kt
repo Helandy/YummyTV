@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerSettingsHandler
 import su.afk.yummy.tv.feature.player.host.PlayerStateHost
@@ -34,6 +35,10 @@ internal class PlayerPreferencesBinder @Inject constructor(
             host.bind(advancedPlayerVolumeEnabled) { copy(advancedPlayerVolumeEnabled = it) }
             host.bind(playerSubtitleStyle) { copy(subtitleStyle = it) }
         }
+    }
+
+    fun selectOrientationMode(host: PlayerStateHost, mode: PlayerOrientationMode) {
+        host.scope.launch { settings.saveOrientationMode(mode) }
     }
 
     fun dismissMobileGestureTutorial(host: PlayerStateHost) {

@@ -145,6 +145,9 @@ class PlayerState {
         /** Пользователь выбрал режим изменения размера видео. */
         data class ResizeModeSelected(val mode: PlayerResizeMode) : Event
 
+        /** Пользователь выбрал ориентацию экрана плеера прямо из плеера. */
+        data class OrientationModeSelected(val mode: PlayerOrientationMode) : Event
+
         /** Пользователь выбрал уровень масштабирования видео. */
         data class ZoomLevelSelected(val level: PlayerZoomLevel) : Event
 

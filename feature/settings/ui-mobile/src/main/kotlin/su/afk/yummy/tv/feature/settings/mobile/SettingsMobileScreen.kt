@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.settings.mobile
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -78,6 +79,7 @@ fun SettingsMobileScreen(
 
     BaseScreen(
         isScroll = false,
+        contentModifier = Modifier.navigationBarsPadding(),
         customTopBar = {
             MobileTopBar(
                 title = stringResource(R.string.settings_mobile_title),
