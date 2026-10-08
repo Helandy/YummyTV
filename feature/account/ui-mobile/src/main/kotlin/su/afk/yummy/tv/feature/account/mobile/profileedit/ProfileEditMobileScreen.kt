@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.feature.account.mobile.profileedit
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.messageRes
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.prepareProfileImage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.view.LinkedAccountsSection
+import su.afk.yummy.tv.feature.account.mobile.view.ProfileImageCropDialog
 import su.afk.yummy.tv.feature.account.mobile.view.ProfileMainSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfileMediaSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePasswordSection
@@ -64,26 +65,14 @@ fun ProfileEditMobileScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var pendingImageKind by remember { mutableStateOf<ProfileImageKind?>(null) }
+    var cropRequest by remember { mutableStateOf<Pair<Uri, ProfileImageKind>?>(null) }
     var deleteImageKind by remember { mutableStateOf<ProfileImageKind?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     val picker =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             val kind = pendingImageKind
             pendingImageKind = null
-            if (uri != null && kind != null) {
-                scope.launch {
-                    val bytes = prepareProfileImage(context, uri, kind)
-                    if (bytes != null) {
-                        onEvent(ProfileEditState.Event.ImageSelected(kind, bytes, uri.toString()))
-                    } else {
-                        Toast.makeText(
-                            context,
-                            R.string.profile_image_prepare_failed,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            if (uri != null && kind != null) cropRequest = uri to kind
         }
 
     LaunchedEffect(Unit) {
@@ -128,7 +117,7 @@ fun ProfileEditMobileScreen(
                         enabled = !state.isImageLoading,
                         onPick = { kind ->
                             pendingImageKind = kind
-                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            picker.launch(arrayOf("image/*", "application/octet-stream"))
                         },
                         onDelete = { deleteImageKind = it },
                     )
@@ -158,37 +147,37 @@ fun ProfileEditMobileScreen(
                         onListPrivacyChanged = {
                             onEvent(
                                 ProfileEditState.Event.ListPrivacyChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onShowShikimoriChanged = {
                             onEvent(
                                 ProfileEditState.Event.ShowShikimoriChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onShowTelegramChanged = {
                             onEvent(
                                 ProfileEditState.Event.ShowTelegramChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onShowVkChanged = { onEvent(ProfileEditState.Event.ShowVkChanged(it)) },
                         onShowDiscordChanged = {
                             onEvent(
                                 ProfileEditState.Event.ShowDiscordChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onNotifyTelegramChanged = {
                             onEvent(
                                 ProfileEditState.Event.NotifyTelegramChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onNotifyVkChanged = { onEvent(ProfileEditState.Event.NotifyVkChanged(it)) },
@@ -211,22 +200,22 @@ fun ProfileEditMobileScreen(
                         onOldPasswordChanged = {
                             onEvent(
                                 ProfileEditState.Event.OldPasswordChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onNewPasswordChanged = {
                             onEvent(
                                 ProfileEditState.Event.NewPasswordChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onConfirmPasswordChanged = {
                             onEvent(
                                 ProfileEditState.Event.ConfirmPasswordChanged(
-                                    it
-                                )
+                                    it,
+                                ),
                             )
                         },
                         onSave = { onEvent(ProfileEditState.Event.ChangePasswordSelected) },
@@ -241,6 +230,33 @@ fun ProfileEditMobileScreen(
                 }
             }
         }
+    }
+
+    cropRequest?.let { (uri, kind) ->
+        ProfileImageCropDialog(
+            uri = uri,
+            kind = kind,
+            onDismiss = { cropRequest = null },
+            onLoadFailed = {
+                cropRequest = null
+                Toast.makeText(context, R.string.profile_image_prepare_failed, Toast.LENGTH_SHORT).show()
+            },
+            onCropped = { crop ->
+                cropRequest = null
+                scope.launch {
+                    val bytes = prepareProfileImage(context, uri, kind, crop)
+                    if (bytes != null) {
+                        onEvent(ProfileEditState.Event.ImageSelected(kind, bytes, uri.toString()))
+                    } else {
+                        Toast.makeText(
+                            context,
+                            R.string.profile_image_prepare_failed,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
+                }
+            },
+        )
     }
 
     deleteImageKind?.let { kind ->
@@ -269,8 +285,8 @@ fun ProfileEditMobileScreen(
                 Text(
                     stringResource(
                         R.string.profile_unlink_confirm_title,
-                        provider.label()
-                    )
+                        provider.label(),
+                    ),
                 )
             },
             text = { Text(stringResource(R.string.profile_unlink_confirm_message)) },

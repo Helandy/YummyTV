@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.RectF
 import android.media.ExifInterface
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ internal suspend fun prepareProfileImage(
     context: Context,
     uri: Uri,
     kind: ProfileImageKind,
+    crop: RectF? = null,
 ): ByteArray? = withContext(Dispatchers.IO) {
     val sourceBytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
         ?: return@withContext null
@@ -33,8 +35,10 @@ internal suspend fun prepareProfileImage(
             orientation == ExifInterface.ORIENTATION_ROTATE_270
     val sourceWidth = if (swapsDimensions) bounds.outHeight else bounds.outWidth
     val sourceHeight = if (swapsDimensions) bounds.outWidth else bounds.outHeight
+    val regionWidth = sourceWidth * (crop?.width() ?: 1f)
+    val regionHeight = sourceHeight * (crop?.height() ?: 1f)
     var sampleSize = 1
-    while (sourceWidth / (sampleSize * 2) >= width && sourceHeight / (sampleSize * 2) >= height) {
+    while (regionWidth / (sampleSize * 2) >= width && regionHeight / (sampleSize * 2) >= height) {
         sampleSize *= 2
     }
     val decoded = BitmapFactory.decodeByteArray(
@@ -45,8 +49,10 @@ internal suspend fun prepareProfileImage(
     ) ?: return@withContext null
     val oriented = decoded.applyExifOrientation(orientation)
     if (oriented !== decoded) decoded.recycle()
-    val cropped = oriented.centerCrop(width, height)
-    if (cropped !== oriented) oriented.recycle()
+    val region = oriented.cropToFractions(crop)
+    if (region !== oriented) oriented.recycle()
+    val cropped = region.centerCrop(width, height)
+    if (cropped !== region) region.recycle()
     var quality = 94
     var output: ByteArray
     do {
@@ -106,4 +112,37 @@ private fun Bitmap.centerCrop(targetWidth: Int, targetHeight: Int): Bitmap {
     val result = Bitmap.createBitmap(scaled, left, top, targetWidth, targetHeight)
     if (result !== scaled) scaled.recycle()
     return result
+}
+
+private fun Bitmap.cropToFractions(crop: RectF?): Bitmap {
+    if (crop == null) return this
+    val left = (crop.left * width).toInt().coerceIn(0, width - 1)
+    val top = (crop.top * height).toInt().coerceIn(0, height - 1)
+    val cropWidth = (crop.width() * width).toInt().coerceIn(1, width - left)
+    val cropHeight = (crop.height() * height).toInt().coerceIn(1, height - top)
+    return Bitmap.createBitmap(this, left, top, cropWidth, cropHeight)
+}
+
+/** Decodes [uri] with EXIF rotation applied, downsampled so the longest side is near [maxSide]. */
+internal suspend fun loadOrientedPreview(
+    context: Context,
+    uri: Uri,
+    maxSide: Int = 2048,
+): Bitmap? = withContext(Dispatchers.IO) {
+    val sourceBytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        ?: return@withContext null
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(sourceBytes, 0, sourceBytes.size, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@withContext null
+    var sampleSize = 1
+    while (maxOf(bounds.outWidth, bounds.outHeight) / (sampleSize * 2) >= maxSide) sampleSize *= 2
+    val decoded = BitmapFactory.decodeByteArray(
+        sourceBytes,
+        0,
+        sourceBytes.size,
+        BitmapFactory.Options().apply { inSampleSize = sampleSize },
+    ) ?: return@withContext null
+    val oriented = decoded.applyExifOrientation(sourceBytes.exifOrientation())
+    if (oriented !== decoded) decoded.recycle()
+    oriented
 }

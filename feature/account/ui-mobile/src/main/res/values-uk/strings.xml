@@ -171,6 +171,8 @@
     <string name="profile_delete_image_message">Поточне зображення профілю буде видалено.</string>
     <string name="profile_delete_image_confirm">Видалити</string>
     <string name="profile_image_prepare_failed">Не вдалося підготувати зображення</string>
+    <string name="profile_crop_title">Кадрування</string>
+    <string name="profile_crop_apply">Застосувати</string>
     <string name="profile_saved">Профіль збережено</string>
     <string name="profile_save_failed">Не вдалося зберегти профіль</string>
     <string name="profile_image_saved">Зображення профілю оновлено</string>

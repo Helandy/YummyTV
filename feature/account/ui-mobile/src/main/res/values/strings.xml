@@ -171,6 +171,8 @@
     <string name="profile_delete_image_message">The current profile image will be removed.</string>
     <string name="profile_delete_image_confirm">Delete</string>
     <string name="profile_image_prepare_failed">Could not prepare this image</string>
+    <string name="profile_crop_title">Crop image</string>
+    <string name="profile_crop_apply">Apply</string>
     <string name="profile_saved">Profile saved</string>
     <string name="profile_save_failed">Could not save profile</string>
     <string name="profile_image_saved">Profile image updated</string>

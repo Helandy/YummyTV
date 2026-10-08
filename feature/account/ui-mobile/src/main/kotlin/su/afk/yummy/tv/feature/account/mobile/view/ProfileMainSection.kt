@@ -2,13 +2,14 @@ package su.afk.yummy.tv.feature.account.mobile.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -60,17 +61,22 @@ internal fun ProfileMainSection(
                 minLines = 3,
                 enabled = enabled,
             )
-            OutlinedTextField(
-                shape = MaterialTheme.shapes.large,
-                value = birthDate,
-                onValueChange = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = enabled, onClick = onBirthDateClick),
-                label = { Text(stringResource(R.string.profile_edit_birth_date)) },
-                readOnly = true,
-                enabled = enabled,
-            )
+            Box {
+                OutlinedTextField(
+                    shape = MaterialTheme.shapes.large,
+                    value = birthDate,
+                    onValueChange = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.profile_edit_birth_date)) },
+                    readOnly = true,
+                    enabled = enabled,
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(enabled = enabled, onClick = onBirthDateClick),
+                )
+            }
             var expanded by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = expanded,
