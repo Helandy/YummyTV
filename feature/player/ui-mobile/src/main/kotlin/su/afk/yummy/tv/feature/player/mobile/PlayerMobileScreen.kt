@@ -59,7 +59,7 @@ private fun PlayerMobileScreenDefaultPreview() =
                 iframeUrl = "",
                 animeTitle = "",
                 episode = "",
-                playerName = ""
+                playerName = "",
             ),
             state = PlayerState.State(),
             effect = emptyFlow(),
@@ -74,7 +74,7 @@ fun PlayerMobileScreen(
     effect: Flow<PlayerState.Effect>,
     onEvent: (PlayerState.Event) -> Unit,
 
-    ) {
+) {
     var showErrorBalancerSheet by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingSheet by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(dest) {
@@ -82,7 +82,6 @@ fun PlayerMobileScreen(
     }
     // Сервис плеера поднимается параллельно с извлечением ссылки и переживает смену серии.
     PlayerServiceWarmupEffect()
-
 
     HideMobilePlayerSystemBars()
     ApplyPlayerOrientation(state.playerOrientationMode)
@@ -149,7 +148,7 @@ fun PlayerMobileScreen(
                             scale = transform.scale,
                             offsetX = transform.offset.x,
                             offsetY = transform.offset.y,
-                        )
+                        ),
                     )
                 },
                 onEvent = onEvent,
@@ -167,7 +166,7 @@ fun PlayerMobileScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                         Text(stringResource(R.string.player_loading_stream), color = Color.White)
@@ -204,9 +203,7 @@ fun PlayerMobileScreen(
         }
         if (showErrorDubbingSheet && uiState.canChangeDubbing) {
             MobilePlayerDubbingSheet(
-                dubbingNames = uiState.dubbingNames,
-                dubbingAvailability = uiState.dubbingAvailability,
-                selectedIndex = uiState.currentDubbingIndex,
+                playback = uiState,
                 onDubbingSelected = { index ->
                     showErrorDubbingSheet = false
                     onEvent(PlayerState.Event.DubbingSelected(index, uiState.errorResumePositionMs))

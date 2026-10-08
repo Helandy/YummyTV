@@ -9,7 +9,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerZoomLevel
-import su.afk.yummy.tv.feature.player.common.utils.formatCompactCount
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
@@ -63,28 +62,13 @@ internal fun BoxScope.TvPlayerPanelsHost(
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Quality) },
     )
 
-    TvPlayerSelectionPanel(
+    TvDubbingSelectionPanel(
         visible = panels.isOpen(TvPlayerPanel.Dubbing),
-        title = stringResource(R.string.player_dubbing_title),
-        items = playback.dubbingNames,
-        selectedIndex = playback.currentDubbingIndex,
+        playback = playback,
         selectedFocusRequester = focus.selectedDubbing,
-        enabledItems = playback.dubbingAvailability,
-        accentLabel = true,
-        disabledItemMeta = stringResource(R.string.player_episode_unavailable),
         modifier = Modifier
             .align(Alignment.BottomStart)
             .padding(start = 48.dp, bottom = 72.dp),
-        itemMetaContent = { idx, contentColor ->
-            val views = playback.dubbingViews.getOrElse(idx) { 0 }
-            val episodeCount = playback.dubbingEpisodeCounts.getOrElse(idx) { 0 }
-            TvDubbingMetaRow(
-                views = views.formatCompactCount(),
-                episodeCount = episodeCount,
-                sourceNames = playback.dubbingSourceNames.getOrElse(idx) { "" },
-                contentColor = contentColor,
-            )
-        },
         onItemSelected = onDubbingSelected,
         onExitDown = { onExitPanelDown(PanelReturnFocusTarget.Dubbing) },
     )

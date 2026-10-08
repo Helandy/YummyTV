@@ -31,14 +31,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
+import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MobilePlayerDubbingSheet(
-    dubbingNames: List<String>,
-    dubbingAvailability: List<Boolean>,
-    selectedIndex: Int,
+    playback: PlayerPlaybackUiState,
     onDubbingSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -60,12 +59,15 @@ internal fun MobilePlayerDubbingSheet(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 2.dp),
             )
-            dubbingNames.forEachIndexed { index, name ->
-                val enabled = dubbingAvailability.getOrElse(index) { true }
+            playback.dubbingNames.forEachIndexed { index, name ->
+                val enabled = playback.dubbingAvailability.getOrElse(index) { true }
                 MobilePlayerDubbingRow(
                     label = name,
-                    selected = index == selectedIndex,
+                    selected = index == playback.currentDubbingIndex,
                     enabled = enabled,
+                    views = playback.dubbingViews.getOrElse(index) { 0 },
+                    episodeCount = playback.dubbingEpisodeCounts.getOrElse(index) { 0 },
+                    sourceNames = playback.dubbingSourceNames.getOrElse(index) { "" },
                     onClick = { onDubbingSelected(index) },
                 )
             }
@@ -78,6 +80,9 @@ private fun MobilePlayerDubbingRow(
     label: String,
     selected: Boolean,
     enabled: Boolean,
+    views: Int,
+    episodeCount: Int,
+    sourceNames: String,
     onClick: () -> Unit,
 ) {
     val shape = MaterialTheme.shapes.medium
@@ -90,8 +95,7 @@ private fun MobilePlayerDubbingRow(
     // Выбранная отличается подложкой, жирностью и галочкой.
     val textColor = MaterialTheme.colorScheme.primary
         .let { if (enabled) it else it.copy(alpha = 0.42f) }
-    val metaColor = MaterialTheme.colorScheme.onSurfaceVariant
-        .let { if (enabled) it else it.copy(alpha = 0.42f) }
+    val metaColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.42f)
 
     Row(
         modifier = Modifier
@@ -120,7 +124,14 @@ private fun MobilePlayerDubbingRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (!enabled) {
+            if (enabled) {
+                MobilePlayerDubbingMeta(
+                    views = views,
+                    episodeCount = episodeCount,
+                    sourceNames = sourceNames,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
                 Text(
                     text = stringResource(R.string.player_episode_unavailable),
                     style = MaterialTheme.typography.labelSmall,

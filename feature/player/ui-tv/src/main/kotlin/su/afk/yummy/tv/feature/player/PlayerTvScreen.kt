@@ -41,6 +41,7 @@ import su.afk.yummy.tv.feature.player.view.TvPlayerBackgroundExitEffect
 import su.afk.yummy.tv.feature.player.view.TvStreamErrorOverlay
 import su.afk.yummy.tv.feature.player.view.TvStreamLoadingView
 import su.afk.yummy.tv.feature.player.view.player.TV_PLAYER_INLINE_TOAST_DURATION
+import su.afk.yummy.tv.feature.player.view.player.TvDubbingSelectionPanel
 import su.afk.yummy.tv.feature.player.view.player.TvExoPlayerView
 import su.afk.yummy.tv.feature.player.view.player.TvPlayerInlineToast
 import su.afk.yummy.tv.feature.player.view.player.TvPlayerSelectionPanel
@@ -233,14 +234,10 @@ fun PlayerTvScreen(
             },
             onExitDown = { showErrorBalancerPanel = false },
         )
-        TvPlayerSelectionPanel(
+        TvDubbingSelectionPanel(
             visible = showErrorDubbingPanel && uiState.canChangeDubbing,
-            title = stringResource(R.string.player_dubbing_title),
-            items = uiState.dubbingNames,
-            selectedIndex = uiState.currentDubbingIndex,
+            playback = uiState,
             selectedFocusRequester = selectedErrorDubbingFocusRequester,
-            enabledItems = uiState.dubbingAvailability,
-            disabledItemMeta = stringResource(R.string.player_episode_unavailable),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 48.dp, bottom = 72.dp),
