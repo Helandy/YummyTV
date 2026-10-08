@@ -15,11 +15,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVerticalGestureZone
 import kotlin.math.sqrt
 
 private const val VERTICAL_GESTURE_EDGE_FRACTION = 0.2f
+private val VERTICAL_GESTURE_SIDE_SAFE_AREA = 32.dp
 
 @Composable
 internal fun MobilePlayerGestureLayer(
@@ -121,7 +123,10 @@ internal fun MobilePlayerGestureLayer(
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     val gestureHeight = size.height
-                    if (!down.position.isInVerticalGestureArea(gestureHeight)) {
+                    val sideInset = VERTICAL_GESTURE_SIDE_SAFE_AREA.toPx()
+                    if (!down.position.isInVerticalGestureArea(gestureHeight) ||
+                        down.position.x !in sideInset..(size.width - sideInset)
+                    ) {
                         return@awaitEachGesture
                     }
 
