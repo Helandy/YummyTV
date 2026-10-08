@@ -20,6 +20,7 @@ import su.afk.yummy.tv.data.player.network.PlayerHttpClient
 import su.afk.yummy.tv.data.player.network.streamHeaders
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.domain.player.model.PlayerStreamUnavailableCause
 import java.net.URLDecoder
 import javax.inject.Inject
 
@@ -78,6 +79,15 @@ internal class CvhExtractor @Inject constructor(
             val playlistJson = fetchJsonWithRetry(
                 url = "$PLAYLIST_URL?pub=$PUBLISHER_ID&id=$animeId&aggr=$AGGREGATOR",
             )
+            val tags = playlistJson.optJSONArray("tags")
+                ?.let { array -> (0 until array.length()).map(array::optInt) }
+                .orEmpty()
+            if (isCvhRegionBlocked(tags, hasItems = (playlistJson.optJSONArray("items")?.length() ?: 0) > 0)) {
+                logFailure(iframeUrl, "playlist is blocked in Russia (tags=$tags)")
+                return@withContext PlayerStreamResolveResult.Unavailable(
+                    cause = PlayerStreamUnavailableCause.RegionBlocked,
+                )
+            }
             val items = playlistJson.optJSONArray("items") ?: run {
                 logFailure(iframeUrl, "playlist has no items")
                 return@withContext PlayerStreamResolveResult.Unavailable()

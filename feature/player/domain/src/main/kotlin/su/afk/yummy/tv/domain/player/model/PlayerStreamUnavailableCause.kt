@@ -7,4 +7,7 @@ enum class PlayerStreamUnavailableCause {
 
     /** Источник закрыл доступ к странице плеера (HTTP 403) для этой сети. */
     AccessForbidden,
+
+    /** Источник запретил контент на территории РФ: в плейлисте нет ни одной записи. */
+    RegionBlocked,
 }

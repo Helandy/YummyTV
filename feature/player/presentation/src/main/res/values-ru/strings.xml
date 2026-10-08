@@ -22,6 +22,7 @@
     <string name="player_dubbing_unavailable">Извините, эта озвучка недоступна в этом плеере. Попробуйте выбрать другую озвучку/плеер.</string>
     <string name="player_video_not_found">Видеофайл не найден</string>
     <string name="player_access_forbidden">403 Forbidden</string>
+    <string name="player_region_blocked">Контент недоступен в этом регионе</string>
     <string name="player_download_missing">Скачанная серия отсутствует в локальном кэше</string>
     <string name="player_local_file_title">Локальный файл</string>
     <string name="player_download_resolve_error">Не удалось подготовить серию к скачиванию</string>

@@ -23,5 +23,6 @@ internal fun PlayerStreamResolveResult.Unavailable.toMessage(strings: StringProv
     message ?: when (cause) {
         PlayerStreamUnavailableCause.VideoNotFound -> strings.get(R.string.player_video_not_found)
         PlayerStreamUnavailableCause.AccessForbidden -> strings.get(R.string.player_access_forbidden)
+        PlayerStreamUnavailableCause.RegionBlocked -> strings.get(R.string.player_region_blocked)
         null -> strings.get(R.string.player_dubbing_unavailable)
     }
