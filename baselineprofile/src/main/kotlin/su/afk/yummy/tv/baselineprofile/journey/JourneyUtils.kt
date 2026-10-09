@@ -17,6 +17,9 @@ internal const val SCREEN_TIMEOUT_MS = 15_000L
 /** Таймаут ожидания мелких UI-реакций (диалог, переход фокуса). */
 internal const val UI_TIMEOUT_MS = 5_000L
 
+/** Таймаут получения потока в плеере: ссылка извлекается у внешнего балансера. */
+internal const val PLAYER_STREAM_TIMEOUT_MS = 45_000L
+
 /**
  * Test tags приложения (Modifier.testTag, видны как resource-id благодаря
  * testTagsAsResourceId в MobileActivity/TvActivity). Держать в синхроне с UI.
@@ -27,6 +30,10 @@ internal object Tags {
     const val ANIME_CARD = "anime_card"
     const val DETAILS_ROOT = "details_root"
     const val MAIN_TAB = "main_tab"
+    const val WATCH_BUTTON = "watch_button"
+    const val PLAYER_SCREEN = "player_screen"
+    const val PLAYER_VIEW = "player_view"
+    const val PICKER_OPTION = "picker_option"
 }
 
 /** Пакет тестируемого приложения: у release и releaseDebug он разный. */
@@ -63,3 +70,29 @@ internal fun MacrobenchmarkScope.flingList(selector: BySelector, vararg directio
 
 internal fun MacrobenchmarkScope.flingDownAndBack(selector: BySelector = By.scrollable(true)) =
     flingList(selector, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.UP, Direction.UP, Direction.UP)
+
+/**
+ * После «Смотреть» на новом тайтле приложение может спросить озвучку и/или плеер (шторка на
+ * телефоне, диалог на ТВ). Выбираем первый доступный вариант, пока не откроется плеер.
+ * Настройку «спрашивать озвучку» на устройстве менять не нужно. Возвращает true, если плеер открылся.
+ */
+internal fun MacrobenchmarkScope.pickUntilPlayerOpens(): Boolean {
+    val deadline = System.currentTimeMillis() + PICKER_TOTAL_TIMEOUT_MS
+    while (System.currentTimeMillis() < deadline) {
+        if (device.hasObject(By.res(Tags.PLAYER_SCREEN))) return true
+        val option = device.wait(Until.findObjects(By.res(Tags.PICKER_OPTION)), PICKER_POLL_MS)
+            ?.firstOrNull { it.isEnabled }
+        if (option != null) {
+            try {
+                option.click()
+            } catch (_: StaleObjectException) {
+                // список перерисовался — следующий проход найдёт его заново
+            }
+            device.waitForIdle()
+        }
+    }
+    return device.hasObject(By.res(Tags.PLAYER_SCREEN))
+}
+
+private const val PICKER_TOTAL_TIMEOUT_MS = 30_000L
+private const val PICKER_POLL_MS = 1_000L

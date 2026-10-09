@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -460,6 +461,7 @@ internal fun MobileNativePlayer(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("player_view")
             .background(Color.Black)
             .onSizeChanged { gestures.playerSize = it }
             .focusRequester(keyboardFocusRequester)

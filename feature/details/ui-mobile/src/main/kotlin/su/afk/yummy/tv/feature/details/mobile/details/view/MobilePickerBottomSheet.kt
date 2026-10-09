@@ -23,8 +23,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,13 +52,17 @@ internal fun MobilePickerBottomSheet(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun ColumnScope.MobilePickerItems(
     items: List<MobilePickerItem>,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
+        // шторка — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { testTagsAsResourceId = true },
         contentPadding = PaddingValues(bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -81,6 +89,7 @@ private fun MobilePickerItemRow(item: MobilePickerItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag("picker_option")
             .clip(RoundedCornerShape(14.dp))
             .background(background)
             .clickable(enabled = item.enabled, onClick = item.onClick)

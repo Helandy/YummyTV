@@ -26,6 +26,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -410,6 +411,7 @@ internal fun TvExoPlayerView(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("player_view")
             .onPreviewKeyEvent { event ->
                 // «Продвинутая» громкость меняет внутренний уровень плеера (±1%, 0–200%),
                 // иначе — системную (если включён перехват). Без обеих настроек кнопки

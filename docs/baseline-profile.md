@@ -42,10 +42,13 @@ Coroutines, Ktor, Coil и т. д. При сборке AGP переводит т�
 - Сценарии, генераторы и бенчмарки — в модуле `:baselineprofile`:
   - `journey/` — общие шаги (старт, лента, детали, поиск, вкладки / DPAD-навигация);
   - `generator/` — `StartupProfileGenerator` (только старт), `MobileBaselineProfileGenerator`,
-    `TvBaselineProfileGenerator` (каждый пропускает «чужой» тип устройства);
+    `TvBaselineProfileGenerator`, `MobilePlayerProfileGenerator`, `TvPlayerProfileGenerator`
+    (каждый пропускает «чужой» тип устройства);
   - `benchmark/` — `StartupBenchmark`, `MobileScrollBenchmark`, `TvGridBenchmark`, каждый в двух
     режимах: `None` (как свежая установка без профиля) и `BaselineProfile`.
-- Плеер в сценарии не входит: он зависит от сети и внешних балансеров.
+- Плеер вынесен в отдельные генераторы (`*PlayerProfileGenerator`): поток берётся у внешнего
+  балансера. Если он не пришёл за 45 с, сценарий тихо возвращается на главную — профиль просто
+  не включит код воспроизведения (проверка: `grep -c 'feature/player'` ниже).
 
 ## Команды
 
@@ -135,11 +138,15 @@ build type `releaseDebug`.
 | `anime_card` | карточка тайтла в ряду мобильной главной (`HomeFeedSectionRow`) |
 | `details_root` | экран деталей (mobile `DetailsMobileScreen`, TV `DetailsTvScreen`) |
 | `main_tab` | вкладки нижней навигации (`MobileMainScaffold`) |
+| `watch_button` | кнопка «Смотреть» в деталях (mobile `DetailsPrimaryActions`, TV `DetailsActionButton`) |
+| `player_screen` | корень экрана плеера, есть и пока грузится поток (`PlayerMobileScreen`, `PlayerTvScreen`) |
+| `picker_option` | вариант в шторке/диалоге выбора озвучки и плеера (сценарий сам выбирает первый доступный; окна диалогов включают `testTagsAsResourceId` у себя) |
+| `player_view` | плеер с готовым потоком (`MobileNativePlayer`, `TvExoPlayerView`) |
 
 Если сценарий перестал доходить до экрана — профиль молча «похудеет». Проверка после генерации:
 
 ```bash
-grep -c 'feature/details' app/src/release/generated/baselineProfiles/baseline-prof.txt
+for f in details player schedule top library; do echo "$f: $(grep -c "feature/$f" app/src/release/generated/baselineProfiles/baseline-prof.txt)"; done
 ```
 
 ## Проверка, что профиль в APK

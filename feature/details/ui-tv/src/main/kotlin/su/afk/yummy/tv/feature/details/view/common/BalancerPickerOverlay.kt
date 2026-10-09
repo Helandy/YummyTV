@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -45,7 +46,10 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,6 +63,7 @@ import su.afk.yummy.tv.feature.details.details.model.BalancerOption
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
 import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun BalancerPickerOverlay(
     picker: BalancerPickerState,
@@ -86,6 +91,8 @@ internal fun BalancerPickerOverlay(
     ) {
         Box(
             modifier = Modifier
+                // диалог — отдельное окно: теги как resource-id для сценариев профиля включаем в нём заново
+                .semantics { testTagsAsResourceId = true }
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.82f))
                 .clickable(
@@ -179,6 +186,7 @@ private fun BalancerOptionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag("picker_option")
                 .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
                 .onFocusChanged { if (it.isFocused) onFocused() }
                 .clip(shape)
