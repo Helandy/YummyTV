@@ -37,6 +37,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
@@ -70,7 +71,12 @@ internal fun LibraryMobileHistoryPage(
             modifier = Modifier
                 .mobileContentMaxWidth()
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp,
+                bottom = MobileBottomBarDefaults.contentBottomPadding,
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(

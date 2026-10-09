@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -55,8 +56,9 @@ private fun CollectionMobileScreenErrorPreview() = ScreenPreviewTheme {
     CollectionMobileScreen(
         CollectionState.State(
             isLoading = false,
-            error = "Не удалось загрузить коллекцию"
-        ), emptyFlow()
+            error = "Не удалось загрузить коллекцию",
+        ),
+        emptyFlow(),
     ) {}
 }
 
@@ -122,7 +124,7 @@ fun CollectionMobileScreen(
             }
         },
     ) {
-        MobilePosterGrid(contentPadding = PaddingValues(bottom = 80.dp)) {
+        MobilePosterGrid(contentPadding = PaddingValues(bottom = MobileBottomBarDefaults.contentBottomPadding)) {
             if (collection != null) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     CollectionMobileHeader(
