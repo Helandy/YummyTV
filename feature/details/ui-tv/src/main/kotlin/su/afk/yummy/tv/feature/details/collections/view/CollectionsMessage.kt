@@ -18,7 +18,7 @@ internal fun CollectionsMessage(
     TvStateMessage(
         title = text,
         icon = Icons.Filled.Warning,
-        retryLabel = stringResource(CoreR.string.retry),
+        retryLabel = stringResource(CoreR.string.common_retry),
         onRetry = onRetry,
         fillMaxSize = false,
         modifier = modifier,

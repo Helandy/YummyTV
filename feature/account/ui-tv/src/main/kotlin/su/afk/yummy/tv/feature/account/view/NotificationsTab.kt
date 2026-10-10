@@ -36,6 +36,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -259,7 +260,7 @@ internal fun NotificationsTab(
             },
             dismissButton = {
                 TextButton(onClick = { notificationsTabState.showReadAllConfirm = false }) {
-                    Text(stringResource(R.string.account_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -278,7 +279,7 @@ internal fun NotificationsTab(
             },
             dismissButton = {
                 TextButton(onClick = { notificationsTabState.showDeleteAllConfirm = false }) {
-                    Text(stringResource(R.string.account_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )

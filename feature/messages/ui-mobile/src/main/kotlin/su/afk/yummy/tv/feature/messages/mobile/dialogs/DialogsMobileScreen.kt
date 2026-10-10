@@ -21,6 +21,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -62,7 +63,7 @@ fun DialogsMobileScreen(
 
                 !state.isAuthorized -> StateMessage(
                     title = stringResource(R.string.messages_auth_required),
-                    actionLabel = stringResource(R.string.messages_sign_in),
+                    actionLabel = stringResource(CoreR.string.common_sign_in),
                     onAction = { onEvent(DialogsState.Event.LoginSelected) },
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -99,7 +100,7 @@ fun DialogsMobileScreen(
                             dialogs.loadState.refresh is LoadState.Error -> item {
                                 StateMessage(
                                     title = stringResource(R.string.messages_error),
-                                    actionLabel = stringResource(R.string.messages_retry),
+                                    actionLabel = stringResource(CoreR.string.common_retry),
                                     onAction = dialogs::retry,
                                     fillMaxSize = false,
                                 )

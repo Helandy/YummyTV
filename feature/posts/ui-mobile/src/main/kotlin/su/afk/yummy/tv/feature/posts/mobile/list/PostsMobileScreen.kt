@@ -30,6 +30,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
@@ -163,7 +164,7 @@ private fun PostsList(
                 StateMessage(
                     stringResource(R.string.posts_error),
                     fillMaxSize = false,
-                    actionLabel = stringResource(R.string.posts_retry),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = posts::retry
                 )
             }

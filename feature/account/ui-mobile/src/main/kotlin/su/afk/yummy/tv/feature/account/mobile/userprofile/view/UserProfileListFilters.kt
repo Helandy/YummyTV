@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
 import su.afk.yummy.tv.domain.account.model.UserAnimeListItem
@@ -238,7 +239,7 @@ internal fun <T> LazyListScope.pagedStateItems(
         content.error && content.items.isEmpty() -> item(key = "error") {
             UserProfileMessage(
                 text = stringResource(R.string.user_profile_section_error),
-                action = stringResource(R.string.user_profile_retry),
+                action = stringResource(CoreR.string.common_retry),
                 onAction = onRetry,
             )
         }
@@ -272,7 +273,7 @@ internal fun <T : Any> LazyListScope.pagedStateItems(
         refreshState is LoadState.Error && content.itemCount == 0 -> item(key = "error") {
             UserProfileMessage(
                 text = refreshState.error.uiMessage(),
-                action = stringResource(R.string.user_profile_retry),
+                action = stringResource(CoreR.string.common_retry),
                 onAction = onRetry,
             )
         }
@@ -305,7 +306,7 @@ internal fun <T : Any> LazyListScope.appendStateItem(
         is LoadState.Error -> item(key = "append_error") {
             UserProfileMessage(
                 text = appendState.error.uiMessage(),
-                action = stringResource(R.string.user_profile_retry),
+                action = stringResource(CoreR.string.common_retry),
                 onAction = onRetry,
             )
         }

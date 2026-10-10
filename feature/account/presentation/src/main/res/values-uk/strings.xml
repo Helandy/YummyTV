@@ -9,7 +9,6 @@
     <string name="account_downloaded_episodes">Завантажені серії</string>
     <string name="account_watch_later">Відкладений перегляд</string>
         <string name="account_logout">Вийти</string>
-        <string name="account_login">Увійти</string>
     <string name="account_login_placeholder">Email або нікнейм</string>
     <string name="account_password_placeholder">Пароль</string>
     <string name="account_mobile_register">Реєстрація</string>
@@ -24,7 +23,6 @@
     <string name="account_error_registration_failed">Помилка реєстрації. Будь ласка, спробуйте знову.</string>
     <string name="account_error_invalid_email">Введіть коректний email.</string>
     <string name="account_error_password_too_short">Пароль має містити щонайменше 6 символів.</string>
-    <string name="account_loading">Завантаження...</string>
     <string name="account_captcha_hint">Пройдіть капчу, щоб продовжити вхід. Якщо вона не відкрилася тут, скористайтеся TV-потоком входу.</string>
     <string name="account_captcha_required_toast">Будь ласка, пройдіть капчу</string>
     <string name="account_tab_stats">Статистика</string>
@@ -63,7 +61,6 @@
     <string name="account_delete_all_notifications">Видалити всі</string>
     <string name="account_delete_all_notifications_title">Видалити всі сповіщення?</string>
     <string name="account_delete_all_notifications_message">Цю дію не можна скасувати.</string>
-    <string name="account_cancel">Скасувати</string>
     <string name="account_notification_type_news">Новини</string>
     <string name="account_notification_type_edit">Правки</string>
     <string name="account_notification_type_message">Повідомлення</string>
@@ -72,7 +69,6 @@
     <string name="account_notification_type_anime_episode">Нові серії</string>
             <string name="account_notification_type_post">Публікації</string>
     <string name="account_notification_type_blogvideo">Відео блогерів</string>
-    <string name="account_delete">Видалити</string>
     <string name="account_logout_confirm_title">Вийти з акаунту?</string>
     <string name="account_logout_confirm_message">Локальна бібліотека та прогрес перегляду залишаться на цьому пристрої.</string>
             <string name="account_error_captcha_response_empty">Відповідь капчі порожня</string>
@@ -96,7 +92,6 @@
             <string name="user_profile_load_error">Не вдалося завантажити профіль</string>
     <string name="user_profile_section_error">Не вдалося завантажити розділ</string>
     <string name="user_profile_section_empty">Тут поки порожньо</string>
-    <string name="user_profile_retry">Повторити</string>
     <string name="user_profile_load_more">Завантажити ще</string>
     <string name="user_profile_list_added_date">Додано %1$s</string>
     <string name="user_profile_user_rating">Оцінка користувача %1$d</string>
@@ -211,7 +206,6 @@
     <string name="account_local_auth_mobile_permission_required">Без дозволу на пошук пристроїв у локальній мережі ТВ не знайти. Надайте доступ у налаштуваннях застосунку та поверніться на цей екран.</string>
     <string name="account_local_auth_mobile_transferred_title">Вхід на ТВ виконано</string>
     <string name="account_local_auth_mobile_transferred_hint">Сесію передано на пристрій, на ТВ уже можна користуватися акаунтом.</string>
-    <string name="account_local_auth_mobile_done">Готово</string>
     <string name="account_local_network_permission_title">Дозвольте доступ до локальної мережі</string>
     <string name="account_mobile_local_network_permission_message">Щоб знайти ваш ТВ у домашній Wi-Fi-мережі та передати на нього сесію, застосунку потрібен доступ до локальної мережі. Дані не залишають вашу мережу.</string>
     <string name="account_mobile_local_network_permission_blocked_message">Доступ до локальної мережі заборонено. Увімкніть його в налаштуваннях застосунку, інакше ТВ не знайдеться.</string>
@@ -226,7 +220,6 @@
     <string name="account_error_local_auth_invalid_qr">Це не QR-код YummyTV. Відскануйте код з екрана входу на ТВ.</string>
     <string name="account_error_local_auth_scanner_unavailable">Сканер QR недоступний: потрібні сервіси Google Play. Введіть код вручну.</string>
     <string name="account_title">Акаунт Yummy</string>
-    <string name="account_back">Назад</string>
     <string name="account_signed_in">Ви увійшли</string>
     <string name="account_refresh_hint">Завантажити актуальні дані акаунта з Yummy</string>
     <string name="account_logout_hint">Локальна бібліотека і прогрес залишаться на пристрої</string>

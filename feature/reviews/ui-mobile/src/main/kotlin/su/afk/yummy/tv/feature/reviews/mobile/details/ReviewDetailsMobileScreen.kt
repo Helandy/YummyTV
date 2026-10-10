@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
@@ -73,11 +74,11 @@ fun ReviewDetailsMobileScreen(
                 TextButton(onClick = {
                     confirmDelete = false
                     onEvent(ReviewDetailsState.Event.DeleteConfirmed)
-                }) { Text(stringResource(R.string.review_delete)) }
+                }) { Text(stringResource(CoreR.string.common_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { confirmDelete = false }) {
-                    Text(stringResource(R.string.review_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -184,7 +185,7 @@ fun ReviewDetailsMobileScreen(
                             enabled = !state.deleting,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(stringResource(R.string.review_delete))
+                            Text(stringResource(CoreR.string.common_delete))
                         }
                     }
                 }

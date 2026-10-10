@@ -39,7 +39,7 @@ fun UserProfileResolverMobileScreen(
             else MobileMessage(
                 title = stringResource(R.string.user_profile_not_found),
                 icon = Icons.Default.PersonOff,
-                actionLabel = stringResource(CoreR.string.retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(UserProfileResolverState.Event.RetrySelected) },
             )
         }

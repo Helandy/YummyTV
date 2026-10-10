@@ -26,7 +26,7 @@ fun TvStateMessage(
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Filled.Info,
     description: String? = null,
-    retryLabel: String = stringResource(R.string.retry),
+    retryLabel: String = stringResource(R.string.common_retry),
     onRetry: (() -> Unit)? = null,
     retryFocusRequester: FocusRequester? = null,
     fillMaxSize: Boolean = true,

@@ -30,7 +30,7 @@ fun MobileStateContent(
 
         error != null -> MobileMessage(
             title = error,
-            actionLabel = if (onRetry != null) stringResource(R.string.retry) else null,
+            actionLabel = if (onRetry != null) stringResource(R.string.common_retry) else null,
             onAction = onRetry,
         )
 

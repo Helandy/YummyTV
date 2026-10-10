@@ -11,8 +11,6 @@
     <string name="posts_best">Best</string>
     <string name="posts_empty">No publications yet</string>
     <string name="posts_error">Could not load news</string>
-    <string name="posts_retry">Retry</string>
-    <string name="posts_back">Back</string>
     <string name="posts_related_anime">Related anime</string>
     <string name="posts_views">%1$s views</string>
     <string name="posts_reactions_title">Rate this publication</string>

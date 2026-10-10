@@ -80,7 +80,7 @@ internal fun SimilarRecommendationsGrid(
                     title = similarState.message
                         ?: stringResource(R.string.details_mobile_similar_empty),
                     icon = Icons.Filled.Warning,
-                    actionLabel = onRetry?.let { stringResource(CoreR.string.retry) },
+                    actionLabel = onRetry?.let { stringResource(CoreR.string.common_retry) },
                     onAction = onRetry,
                     fillMaxSize = false,
                 )

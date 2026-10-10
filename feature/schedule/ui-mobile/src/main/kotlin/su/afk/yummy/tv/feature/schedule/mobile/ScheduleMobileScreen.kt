@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
@@ -96,7 +97,7 @@ fun ScheduleMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(R.string.schedule_mobile_retry),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = retry,
                 )
             }

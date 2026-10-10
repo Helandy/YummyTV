@@ -11,8 +11,6 @@
     <string name="posts_best">Найкращі</string>
     <string name="posts_empty">Публікацій поки немає</string>
     <string name="posts_error">Не вдалося завантажити новини</string>
-    <string name="posts_retry">Повторити</string>
-    <string name="posts_back">Назад</string>
     <string name="posts_related_anime">Пов\'язане аніме</string>
     <string name="posts_views">Переглядів: %1$s</string>
     <string name="posts_reactions_title">Оцініть публікацію</string>

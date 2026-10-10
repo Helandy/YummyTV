@@ -11,8 +11,6 @@
     <string name="posts_best">Лучшие</string>
     <string name="posts_empty">Публикаций пока нет</string>
     <string name="posts_error">Не удалось загрузить новости</string>
-    <string name="posts_retry">Повторить</string>
-    <string name="posts_back">Назад</string>
     <string name="posts_related_anime">Связанные аниме</string>
     <string name="posts_views">Просмотров: %1$s</string>
     <string name="posts_reactions_title">Оцените публикацию</string>

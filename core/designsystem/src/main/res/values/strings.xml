@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="back">Back</string>
-    <string name="retry">Retry</string>
     <string name="empty_screen">Nothing here yet</string>
     <string name="notification_permission_explanation">To see download progress, allow notifications.</string>
     <string name="notification_permission_explanation_episode_push">To get notified about new episodes, allow notifications.</string>
@@ -23,4 +21,12 @@
     <string name="error_msg_no_connection">Check your internet connection and try again.</string>
     <string name="error_msg_timeout">The server is taking too long to respond. Please try again.</string>
     <string name="error_msg_generic">Something went wrong. Please try again.</string>
+    <string name="common_back">Back</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_loading">Loading...</string>
+    <string name="common_close">Close</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_sign_in">Sign in</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_done">Done</string>
 </resources>

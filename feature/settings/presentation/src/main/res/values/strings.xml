@@ -28,7 +28,6 @@
     <string name="settings_cache_storage_button_hint">Show cache folder sizes</string>
     <string name="settings_cache_storage_total">Total</string>
     <string name="settings_cache_storage_refresh">Refresh</string>
-    <string name="settings_cache_storage_close">Close</string>
     <string name="settings_cache_storage_empty">Cache is empty</string>
     <string name="settings_cache_storage_loading">Calculating…</string>
     <string name="settings_cache_storage_folder_images">Poster images</string>
@@ -52,7 +51,6 @@
     <string name="settings_interface_confirm_title">Switch interface?</string>
     <string name="settings_interface_confirm_message">Switch to %1$s? The app will restart and the current screen will close.</string>
     <string name="settings_interface_confirm">Switch</string>
-    <string name="settings_interface_cancel">Cancel</string>
     <string name="settings_interface_restart_failed">The interface will change the next time you open the app</string>
     <string name="settings_mobile_poster_size">Poster size</string>
     <string name="settings_poster_quality_title">Poster quality</string>
@@ -246,7 +244,6 @@
     <string name="settings_release_notes_label">What\'s new</string>
     <string name="settings_release_notes_hint">Changes in previous versions</string>
         <string name="settings_release_notes_error">Couldn\'t load the release history</string>
-    <string name="settings_release_notes_retry">Retry</string>
     <string name="settings_release_notes_empty">No release notes yet</string>
     <string name="settings_release_notes_current">Installed</string>
     <string name="settings_release_notes_beta">Beta</string>
@@ -303,7 +300,6 @@
     <string name="settings_account_unknown_user">Signed in</string>
     <string name="settings_account_login_placeholder">Email or nickname</string>
     <string name="settings_account_password_placeholder">Password</string>
-    <string name="settings_account_login">Sign in</string>
     <string name="settings_account_login_hint">Sync lists, watched episodes, ratings and subscriptions</string>
     <string name="settings_account_loading">Please wait</string>
     <string name="settings_account_refresh">Refresh profile</string>

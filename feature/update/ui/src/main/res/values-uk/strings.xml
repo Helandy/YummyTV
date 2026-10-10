@@ -14,8 +14,6 @@
     <string name="update_manual_release_url">https://github.com/Helandy/YummyTV/releases/latest</string>
     <string name="update_downloading">Завантаження оновлення...</string>
     <string name="update_installing">Встановлення...</string>
-    <string name="update_retry">Повторити</string>
-    <string name="update_close">Закрити</string>
     <string name="update_error_title">Помилка оновлення</string>
     <plurals name="update_updates_count">
         <item quantity="one">%1$d оновлення з часу вашої версії</item>

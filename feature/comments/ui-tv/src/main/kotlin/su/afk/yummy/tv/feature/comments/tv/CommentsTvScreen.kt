@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -37,11 +38,11 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
-import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsDialogs
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsHeader
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsList
+import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 
 @Composable
 fun CommentsTvScreen(
@@ -156,7 +157,7 @@ fun CommentsTvScreen(
                     TvStateMessage(
                         title = refreshState.error.uiMessage(),
                         icon = Icons.Filled.Warning,
-                        retryLabel = stringResource(R.string.comments_retry),
+                        retryLabel = stringResource(CoreR.string.common_retry),
                         retryFocusRequester = retryFocusRequester,
                         onRetry = {
                             onEvent(CommentsState.Event.RetrySelected)

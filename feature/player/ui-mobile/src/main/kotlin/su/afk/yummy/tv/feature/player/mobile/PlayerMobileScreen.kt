@@ -36,6 +36,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -113,7 +114,7 @@ fun PlayerMobileScreen(
 
             state.playerError != null -> MobilePlayerMessage(
                 title = state.playerError,
-                actionLabel = stringResource(R.string.player_retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(PlayerState.Event.RetryStream) },
                 secondaryActionLabel = if (uiState.canChangePlayer) {
                     stringResource(R.string.player_change_player)

@@ -21,6 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
 import su.afk.yummy.tv.feature.account.presentation.R
 
@@ -104,7 +105,7 @@ private fun ProfileImageActions(
         }
         if (hasImage) {
             OutlinedButton(onClick = { onDelete(kind) }, enabled = enabled) {
-                Text(stringResource(R.string.account_delete))
+                Text(stringResource(CoreR.string.common_delete))
             }
         }
     }

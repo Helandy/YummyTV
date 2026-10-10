@@ -37,7 +37,7 @@ fun TvAppendErrorFooter(
             modifier = Modifier.padding(end = 16.dp),
         )
         TvRetryButton(
-            text = stringResource(R.string.retry),
+            text = stringResource(R.string.common_retry),
             onClick = onRetry,
         )
     }

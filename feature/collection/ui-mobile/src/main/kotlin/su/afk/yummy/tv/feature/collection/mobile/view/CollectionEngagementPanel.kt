@@ -29,7 +29,7 @@ internal fun CollectionEngagementPanel(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         MobileReactionsCard(
-            title = stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_reactions_title),
+            title = stringResource(su.afk.yummy.tv.feature.collection.presentation.R.string.collection_reactions_title),
             likes = collection.likesCount,
             dislikes = collection.dislikesCount,
             selection = when (collection.vote) {
@@ -48,7 +48,7 @@ internal fun CollectionEngagementPanel(
         ) {
             Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null)
             Text(
-                text = stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_comments),
+                text = stringResource(su.afk.yummy.tv.feature.collection.presentation.R.string.collection_comments),
                 modifier = Modifier.padding(start = 8.dp),
             )
         }

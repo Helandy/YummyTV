@@ -1,6 +1,5 @@
 <resources>
     <string name="schedule_mobile_title">Розклад</string>
-    <string name="schedule_mobile_retry">Повторити</string>
     <string name="schedule_episode_aired">%1$d серія вже вийшла</string>
     <string name="schedule_episode_future">%1$d серія вийде через %2$s</string>
     <string name="schedule_day_one">день</string>

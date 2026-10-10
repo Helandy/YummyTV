@@ -10,8 +10,6 @@
     <string name="comments_vote_error">Не вдалося оцінити коментар</string>
     <string name="comments_title">Коментарі</string>
     <string name="comments_empty">Коментарів поки немає</string>
-    <string name="comments_retry">Повторити</string>
-    <string name="comments_loading">Завантаження...</string>
     <string name="comments_load_more">Завантажити ще</string>
     <string name="comments_load_more_replies">Завантажити ще відповіді</string>
     <string name="comments_show_replies">Показати відповіді (%1$d)</string>
@@ -21,7 +19,6 @@
     <string name="comments_actions">Дії</string>
     <string name="comments_reply">Відповісти</string>
     <string name="comments_edit">Змінити</string>
-    <string name="comments_delete">Видалити</string>
     <string name="comments_report">Поскаржитися</string>
     <string name="comments_spoiler_hidden">%1$s приховано</string>
     <string name="comments_spoiler_title">Спойлер</string>
@@ -30,7 +27,6 @@
     <string name="comments_reply_to">Відповідь для %1$s</string>
     <string name="comments_editing">Редагування коментаря</string>
     <string name="comments_input_hint">Напишіть коментар</string>
-    <string name="comments_cancel">Скасувати</string>
     <string name="comments_send">Надіслати</string>
     <string name="comments_delete_title">Видалити коментар?</string>
     <string name="comments_delete_message">Цю дію не можна скасувати.</string>

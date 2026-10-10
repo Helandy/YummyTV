@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
@@ -141,7 +142,7 @@ internal fun LocalAuthPanel(
                 )
             }
             AccountAction(
-                label = stringResource(R.string.account_back),
+                label = stringResource(CoreR.string.common_back),
                 onClick = onBack,
                 modifier = Modifier
                     .weight(1f)

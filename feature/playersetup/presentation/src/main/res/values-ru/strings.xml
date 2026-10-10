@@ -24,7 +24,6 @@
     <string name="player_setup_quality_label">Качество видео</string>
     <string name="player_setup_quality_hint">Если качества нет, будет выбрано ближайшее ниже</string>
     <string name="player_setup_quality_best">Лучшее</string>
-    <string name="player_setup_done">Готово</string>
     <string name="player_setup_refresh_progress_label">Свежий прогресс с других устройств</string>
     <string name="player_setup_refresh_progress_hint">Проверять прогресс аккаунта при запуске из «Продолжить просмотр», чтобы продолжать с более свежего устройства</string>
     <string name="player_setup_language_label">Язык API</string>

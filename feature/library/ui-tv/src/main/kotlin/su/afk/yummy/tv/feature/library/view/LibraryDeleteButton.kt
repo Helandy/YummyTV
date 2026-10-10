@@ -27,13 +27,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryDeleteButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     LibraryActionButton(
-        label = stringResource(R.string.library_delete),
+        label = stringResource(CoreR.string.common_delete),
         icon = Icons.Filled.Delete,
         focusedContainerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.92f),
         focusedContentColor = MaterialTheme.colorScheme.onError,

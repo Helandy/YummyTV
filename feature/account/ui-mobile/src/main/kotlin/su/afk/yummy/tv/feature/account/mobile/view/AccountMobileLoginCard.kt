@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
@@ -114,7 +115,7 @@ internal fun AccountMobileLoginCard(
                                 strokeWidth = 2.dp,
                             )
                         } else {
-                            Text(stringResource(R.string.account_login))
+                            Text(stringResource(CoreR.string.common_sign_in))
                         }
                     }
                 }

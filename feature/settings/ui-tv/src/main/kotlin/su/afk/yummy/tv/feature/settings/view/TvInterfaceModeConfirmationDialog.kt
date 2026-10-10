@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
@@ -42,7 +43,7 @@ internal fun TvInterfaceModeConfirmationDialog(
                 onClick = onDismiss,
                 modifier = Modifier.focusRequester(cancelFocusRequester),
             ) {
-                Text(stringResource(R.string.settings_interface_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

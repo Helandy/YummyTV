@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
 
@@ -88,7 +89,7 @@ internal fun CommentsComposer(
             )
             if (mode !is CommentsState.ComposerMode.New) {
                 TextButton(onClick = onCancel, enabled = enabled) {
-                    Text(stringResource(R.string.comments_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             }
         }

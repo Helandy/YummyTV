@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissionNames
@@ -358,7 +359,7 @@ private fun LocalAuthTransferredContent(onDone: () -> Unit) {
             textAlign = TextAlign.Center,
         )
         Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.account_local_auth_mobile_done))
+            Text(stringResource(CoreR.string.common_done))
         }
     }
 }

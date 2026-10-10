@@ -60,7 +60,7 @@ fun MySubscriptionsMobileScreen(
             state.error != null -> MobileMessage(
                 title = state.error.accountErrorMessage().orEmpty(),
                 icon = Icons.Filled.Warning,
-                actionLabel = stringResource(CoreR.string.retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(MySubscriptionsState.Event.RetrySelected) },
             )
 

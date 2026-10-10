@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.domain.messages.model.ChatMessage
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
 import su.afk.yummy.tv.feature.messages.presentation.R
@@ -260,7 +261,7 @@ internal fun ChatMessageMobileBubble(
                         menuExpanded = false
                         onEdit()
                     }
-                    MessageMenuItem(R.string.messages_delete, Icons.Filled.Delete) {
+                    MessageMenuItem(CoreR.string.common_delete, Icons.Filled.Delete) {
                         menuExpanded = false
                         onDelete()
                     }

@@ -36,7 +36,7 @@ fun MobileAppendError(
             textAlign = TextAlign.Center,
         )
         TextButton(onClick = onRetry) {
-            Text(stringResource(R.string.retry))
+            Text(stringResource(R.string.common_retry))
         }
     }
 }

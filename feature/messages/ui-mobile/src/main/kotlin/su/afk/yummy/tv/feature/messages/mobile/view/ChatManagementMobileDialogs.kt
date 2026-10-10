@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.messages.presentation.R
 
 @Composable
@@ -28,12 +29,12 @@ internal fun ChatManagementMobileDialogs(
             text = { Text(stringResource(R.string.messages_delete_confirmation)) },
             confirmButton = {
                 TextButton(onClick = onDeleteConfirm, enabled = !isMutating) {
-                    Text(stringResource(R.string.messages_delete))
+                    Text(stringResource(CoreR.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDeleteDismiss, enabled = !isMutating) {
-                    Text(stringResource(R.string.messages_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -51,7 +52,7 @@ internal fun ChatManagementMobileDialogs(
             },
             dismissButton = {
                 TextButton(onClick = onClaimDismiss, enabled = !isMutating) {
-                    Text(stringResource(R.string.messages_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -78,7 +79,7 @@ internal fun ChatManagementMobileDialogs(
             },
             dismissButton = {
                 TextButton(onClick = onBanDismiss, enabled = !isMutating) {
-                    Text(stringResource(R.string.messages_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )

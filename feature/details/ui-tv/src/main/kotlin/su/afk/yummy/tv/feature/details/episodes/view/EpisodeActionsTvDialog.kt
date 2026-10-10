@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -79,7 +80,7 @@ internal fun EpisodeActionsTvDialog(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TvRetryButton(
-                        text = stringResource(R.string.details_cancel),
+                        text = stringResource(CoreR.string.common_cancel),
                         onClick = onDismiss,
                         modifier = Modifier.focusRequester(dismissFocusRequester),
                     )

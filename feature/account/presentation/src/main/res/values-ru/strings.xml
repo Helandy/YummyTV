@@ -9,7 +9,6 @@
     <string name="account_downloaded_episodes">Скачанные серии</string>
     <string name="account_watch_later">Отложенный просмотр</string>
         <string name="account_logout">Выйти</string>
-        <string name="account_login">Войти</string>
     <string name="account_login_placeholder">Email или никнейм</string>
     <string name="account_password_placeholder">Пароль</string>
     <string name="account_mobile_register">Регистрация</string>
@@ -24,7 +23,6 @@
     <string name="account_error_registration_failed">Ошибка регистрации. Пожалуйста, попробуйте снова.</string>
     <string name="account_error_invalid_email">Введите корректный email.</string>
     <string name="account_error_password_too_short">Пароль должен содержать минимум 6 символов.</string>
-    <string name="account_loading">Загрузка...</string>
     <string name="account_captcha_hint">Пройдите капчу, чтобы продолжить вход. Если она не открылась здесь, используйте TV-поток входа.</string>
     <string name="account_captcha_required_toast">Пожалуйста, пройдите капчу</string>
     <string name="account_tab_stats">Статистика</string>
@@ -63,7 +61,6 @@
     <string name="account_delete_all_notifications">Удалить все</string>
     <string name="account_delete_all_notifications_title">Удалить все уведомления?</string>
     <string name="account_delete_all_notifications_message">Это действие нельзя отменить.</string>
-    <string name="account_cancel">Отмена</string>
     <string name="account_notification_type_news">Новости</string>
     <string name="account_notification_type_edit">Правки</string>
     <string name="account_notification_type_message">Сообщения</string>
@@ -72,7 +69,6 @@
     <string name="account_notification_type_anime_episode">Новые серии</string>
             <string name="account_notification_type_post">Публикации</string>
     <string name="account_notification_type_blogvideo">Видео блогеров</string>
-    <string name="account_delete">Удалить</string>
     <string name="account_logout_confirm_title">Выйти из аккаунта?</string>
     <string name="account_logout_confirm_message">Локальная библиотека и прогресс просмотра останутся на этом устройстве.</string>
             <string name="account_error_captcha_response_empty">Ответ капчи пустой</string>
@@ -96,7 +92,6 @@
             <string name="user_profile_load_error">Не удалось загрузить профиль</string>
     <string name="user_profile_section_error">Не удалось загрузить раздел</string>
     <string name="user_profile_section_empty">Здесь пока пусто</string>
-    <string name="user_profile_retry">Повторить</string>
     <string name="user_profile_load_more">Загрузить еще</string>
     <string name="user_profile_list_added_date">Добавлено %1$s</string>
     <string name="user_profile_user_rating">Оценка пользователя %1$d</string>
@@ -211,7 +206,6 @@
     <string name="account_local_auth_mobile_permission_required">Без разрешения на поиск устройств в локальной сети ТВ не найти. Выдайте доступ в настройках приложения и вернитесь на этот экран.</string>
     <string name="account_local_auth_mobile_transferred_title">Вход на ТВ выполнен</string>
     <string name="account_local_auth_mobile_transferred_hint">Сессия передана на устройство, на ТВ уже можно пользоваться аккаунтом.</string>
-    <string name="account_local_auth_mobile_done">Готово</string>
     <string name="account_local_network_permission_title">Разрешите доступ к локальной сети</string>
     <string name="account_mobile_local_network_permission_message">Чтобы найти ваш ТВ в домашней Wi-Fi-сети и передать на него сессию, приложению нужен доступ к локальной сети. Данные не покидают вашу сеть.</string>
     <string name="account_mobile_local_network_permission_blocked_message">Доступ к локальной сети запрещён. Включите его в настройках приложения, иначе ТВ не найдётся.</string>
@@ -226,7 +220,6 @@
     <string name="account_error_local_auth_invalid_qr">Это не QR-код YummyTV. Отсканируйте код с экрана входа на ТВ.</string>
     <string name="account_error_local_auth_scanner_unavailable">Сканер QR недоступен: нужны сервисы Google Play. Введите код вручную.</string>
     <string name="account_title">Аккаунт Yummy</string>
-    <string name="account_back">Назад</string>
     <string name="account_signed_in">Вы вошли</string>
     <string name="account_refresh_hint">Загрузить актуальные данные аккаунта с Yummy</string>
     <string name="account_logout_hint">Локальная библиотека и прогресс останутся на устройстве</string>

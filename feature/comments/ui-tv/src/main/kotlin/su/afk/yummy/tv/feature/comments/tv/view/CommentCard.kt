@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.comments.model.CommentVote
@@ -162,7 +163,7 @@ internal fun CommentCard(
                             onClick = { onEdit(comment.id) },
                         )
                         CommentActionButton(
-                            label = stringResource(R.string.comments_delete),
+                            label = stringResource(CoreR.string.common_delete),
                             icon = Icons.Filled.Delete,
                             enabled = !isMutating,
                             modifier = Modifier.focusRequester(deleteFocusRequester),
@@ -215,7 +216,7 @@ internal fun CommentCard(
                         ) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                             Text(
-                                text = stringResource(R.string.comments_loading),
+                                text = stringResource(CoreR.string.common_loading),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

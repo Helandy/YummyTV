@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -33,7 +34,7 @@ internal fun TvDeleteCollectionDialog(
                 if (isDeleting) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text(stringResource(R.string.collection_delete))
+                    Text(stringResource(CoreR.string.common_delete))
                 }
             }
         },
@@ -43,7 +44,7 @@ internal fun TvDeleteCollectionDialog(
                 enabled = !isDeleting,
                 modifier = Modifier.focusRequester(cancelFocusRequester),
             ) {
-                Text(stringResource(R.string.collection_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

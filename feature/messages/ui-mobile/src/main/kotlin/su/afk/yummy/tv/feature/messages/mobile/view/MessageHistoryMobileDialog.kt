@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.domain.messages.model.MessageHistoryEntry
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
 import su.afk.yummy.tv.feature.messages.mobile.utils.label
@@ -47,7 +48,7 @@ internal fun MessageHistoryMobileDialog(
                     isLoading -> CircularProgressIndicator()
                     hasError -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(stringResource(R.string.messages_history_error))
-                        TextButton(onClick = onRetry) { Text(stringResource(R.string.messages_retry)) }
+                        TextButton(onClick = onRetry) { Text(stringResource(CoreR.string.common_retry)) }
                     }
 
                     entries.isEmpty() -> Text(stringResource(R.string.messages_history_empty))
@@ -61,7 +62,7 @@ internal fun MessageHistoryMobileDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.messages_close)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(CoreR.string.common_close)) }
         },
     )
 }

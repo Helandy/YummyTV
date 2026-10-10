@@ -21,7 +21,6 @@
     <string name="details_reviews">Reviews</string>
     <string name="details_reviews_count">Reviews (%1$d)</string>
         <string name="details_mobile_empty">Title not found</string>
-    <string name="details_back">Back</string>
     <string name="details_watch">Watch</string>
     <string name="details_watch_not_found">Video not found</string>
     <string name="details_loading_episodes">Loading episodes...</string>
@@ -58,8 +57,6 @@
     <string name="details_balancer_title">Episode %1$s · Balancer</string>
     <string name="details_mobile_unsupported_player">%1$s · unsupported</string>
     <string name="details_balancer_preferred_unavailable">Your preferred balancer is not available for this dubbing — choose one of these</string>
-    <string name="details_mobile_close">Close</string>
-    <string name="details_cancel">Cancel</string>
     <string name="details_mobile_aired">Aired: %1$d of %2$s</string>
     <string name="details_released_episodes">Episode count: %1$d</string>
     <string name="details_aired_progress">%1$d of %2$s</string>
@@ -107,7 +104,6 @@
     <string name="details_mobile_delete_downloaded_episode">Delete downloaded episode</string>
     <string name="details_mobile_delete_downloaded_episode_title">Delete episode %1$s?</string>
     <string name="details_mobile_delete_downloaded_episode_message">The local episode file will be removed from this device.</string>
-    <string name="details_mobile_delete_confirm">Delete</string>
         <string name="details_mobile_episode_download_restart_action">Restart download</string>
         <string name="details_mobile_episode_download_progress">Downloading %1$d%%</string>
     <string name="details_mobile_episode_download_paused">Paused at %1$d%%</string>
@@ -130,7 +126,6 @@
     <string name="details_mobile_creators">Creators</string>
     <string name="details_mobile_similar_source_ai">AI</string>
     <string name="details_mobile_similar_source_site">Users</string>
-    <string name="details_mobile_loading">Loading...</string>
     <string name="details_mobile_similar_empty">No similar titles</string>
     <string name="details_your_rating">Your rating: %1$s</string>
     <string name="details_rating_delete">Delete rating</string>

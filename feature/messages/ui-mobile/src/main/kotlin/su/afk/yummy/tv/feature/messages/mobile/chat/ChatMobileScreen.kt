@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.StateMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -172,7 +173,7 @@ fun ChatMobileScreen(
 
             !state.isAuthorized -> StateMessage(
                 title = stringResource(R.string.messages_auth_required),
-                actionLabel = stringResource(R.string.messages_sign_in),
+                actionLabel = stringResource(CoreR.string.common_sign_in),
                 onAction = { onEvent(ChatState.Event.LoginSelected) },
                 modifier = Modifier.fillMaxSize(),
             )
@@ -198,7 +199,7 @@ fun ChatMobileScreen(
 
                         state.hasLoadError && state.messages.isEmpty() -> StateMessage(
                             title = stringResource(R.string.messages_chat_error),
-                            actionLabel = stringResource(R.string.messages_retry),
+                            actionLabel = stringResource(CoreR.string.common_retry),
                             onAction = { onEvent(ChatState.Event.RefreshSelected) },
                             modifier = Modifier.fillMaxSize(),
                         )

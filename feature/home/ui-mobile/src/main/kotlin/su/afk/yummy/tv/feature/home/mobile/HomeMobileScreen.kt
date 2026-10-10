@@ -166,7 +166,7 @@ fun HomeMobileScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         MobileMessage(
                             title = message,
-                            actionLabel = stringResource(CoreR.string.retry),
+                            actionLabel = stringResource(CoreR.string.common_retry),
                             onAction = retry,
                             fillMaxSize = false,
                         )
@@ -287,7 +287,7 @@ fun HomeMobileScreen(
                     item(key = "blogger_videos_error") {
                         MobileMessage(
                             title = message,
-                            actionLabel = stringResource(CoreR.string.retry),
+                            actionLabel = stringResource(CoreR.string.common_retry),
                             onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
                         )
                     }

@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -72,7 +73,7 @@ fun BloggerDetailsMobileScreen(
         when {
             error != null -> MobileMessage(
                 title = error.ifBlank { stringResource(R.string.blogger_videos_error) },
-                actionLabel = stringResource(R.string.blogger_videos_retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(BloggerDetailsState.Event.RetrySelected) },
             )
 

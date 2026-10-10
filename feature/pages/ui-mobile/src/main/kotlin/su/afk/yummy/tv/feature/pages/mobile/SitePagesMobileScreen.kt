@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -80,7 +81,7 @@ fun SitePagesMobileScreen(
 
             else -> MobileMessage(
                 title = stringResource(R.string.site_page_fallback),
-                actionLabel = stringResource(R.string.site_page_retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(SitePagesState.Event.RetrySelected) },
             )
         }

@@ -16,10 +16,8 @@
     <string name="library_episode_number">Серія %1$s</string>
     <string name="library_mobile_added_date">Додано %1$s</string>
     <string name="library_empty_list">Список поки порожній - саме час щось додати</string>
-    <string name="library_retry">Повторити</string>
     <string name="library_mobile_remove_title">Видалити тайтл?</string>
     <string name="library_mobile_remove_message">“%1$s” буде видалено з розділу “%2$s”.</string>
-        <string name="library_mobile_remove_cancel">Скасувати</string>
     <string name="library_remove_success">Видалено</string>
     <string name="library_mobile_details_content_description">Відкрити деталі</string>
     <string name="library_mobile_remove_content_description">Видалити</string>
@@ -55,7 +53,6 @@
     <string name="library_year_season">%1$s · %2$s</string>
         <string name="library_episode">Серія</string>
     <string name="library_details">Деталі</string>
-    <string name="library_delete">Видалити</string>
     <string name="library_tab_continue_watching_short">Пр</string>
     <string name="library_tab_history_short">Іс</string>
     <string name="library_tab_favorites_short">Ул</string>

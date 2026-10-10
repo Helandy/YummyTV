@@ -24,7 +24,6 @@
     <string name="player_setup_quality_label">Якість відео</string>
     <string name="player_setup_quality_hint">Якщо якості немає, буде вибрано найближчу нижчу</string>
     <string name="player_setup_quality_best">Найкраща</string>
-    <string name="player_setup_done">Готово</string>
     <string name="player_setup_refresh_progress_label">Свіжий прогрес з інших пристроїв</string>
     <string name="player_setup_refresh_progress_hint">Перевіряти прогрес акаунта під час запуску з «Продовжити перегляд», щоб продовжувати з більш свіжого пристрою</string>
     <string name="player_setup_language_label">Мова API</string>

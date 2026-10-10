@@ -126,7 +126,7 @@ internal fun CollectionHeader(
                             down = deleteFocusRequester
                         },
                 ) {
-                    Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_edit))
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.presentation.R.string.collection_edit))
                 }
                 OutlinedButton(
                     onClick = onDelete,
@@ -139,7 +139,7 @@ internal fun CollectionHeader(
                             down = likeFocusRequester
                         },
                 ) {
-                    Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_delete))
+                    Text(stringResource(su.afk.yummy.tv.core.designsystem.R.string.common_delete))
                 }
             }
         }
@@ -155,7 +155,7 @@ internal fun CollectionHeader(
             downFocusRequester = downFocusRequester,
         )
         OutlinedButton(onClick = onComments) {
-            Text(stringResource(su.afk.yummy.tv.feature.collection.R.string.collection_comments))
+            Text(stringResource(su.afk.yummy.tv.feature.collection.presentation.R.string.collection_comments))
         }
     }
 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.presentation.R
 
@@ -89,7 +90,7 @@ internal fun ReleaseNotesTvDialog(
                     onClick = onDismiss,
                     modifier = Modifier.focusRequester(closeFocusRequester),
                 ) {
-                    Text(stringResource(R.string.settings_cache_storage_close))
+                    Text(stringResource(CoreR.string.common_close))
                 }
             }
         },
@@ -118,7 +119,7 @@ internal fun ReleaseNotesTvDialog(
         confirmButton = {
             if (status == ReleaseNotesStatus.Error) {
                 TextButton(onClick = onRetry) {
-                    Text(stringResource(R.string.settings_release_notes_retry))
+                    Text(stringResource(CoreR.string.common_retry))
                 }
             }
         },

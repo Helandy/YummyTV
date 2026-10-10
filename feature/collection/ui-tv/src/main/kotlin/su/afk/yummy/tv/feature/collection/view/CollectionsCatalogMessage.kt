@@ -18,7 +18,7 @@ internal fun CollectionsCatalogMessage(
     TvStateMessage(
         title = message,
         icon = Icons.Filled.Warning,
-        retryLabel = stringResource(CoreR.string.retry),
+        retryLabel = stringResource(CoreR.string.common_retry),
         onRetry = onRetry,
         retryFocusRequester = retryFocusRequester,
     )

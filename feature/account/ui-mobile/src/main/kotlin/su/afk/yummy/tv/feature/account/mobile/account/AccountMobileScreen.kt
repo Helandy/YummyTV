@@ -301,7 +301,7 @@ fun AccountMobileScreen(
                             MobileMessage(
                                 title = error,
                                 icon = Icons.Filled.Warning,
-                                actionLabel = stringResource(CoreR.string.retry),
+                                actionLabel = stringResource(CoreR.string.common_retry),
                                 onAction = { onEvent(AccountState.Event.RefreshHubSelected) },
                                 fillMaxSize = false,
                             )

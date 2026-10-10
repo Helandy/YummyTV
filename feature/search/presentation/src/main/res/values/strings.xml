@@ -8,13 +8,10 @@
     <string name="search_mobile_submit_with_filters">Search · filters: %1$d</string>
     <string name="search_results_count">Results: %1$d</string>
     <string name="search_random_anime">Random anime</string>
-    <string name="search_mobile_loading">Loading...</string>
     <string name="search_mobile_load_more">Show more</string>
     <string name="search_filters_apply">Apply</string>
     <string name="search_mobile_filters_apply_with_count">Apply · %1$d</string>
     <string name="search_filters_reset">Reset</string>
-    <string name="search_filters_close">Close</string>
-    <string name="search_filters_back">Back</string>
     <string name="search_filters_loading">Loading filters...</string>
     <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Selected: %1$d</string>
@@ -54,7 +51,6 @@
     <string name="search_mobile_filter_sort_id">New releases</string>
     <string name="search_placeholder">Search anime...</string>
     <string name="search_empty">Nothing found</string>
-    <string name="search_retry">Retry</string>
     <string name="search_filters_with_count">Filters (%1$d)</string>
     <string name="search_filter_sort_rating_counters">Rating votes</string>
     <string name="search_filter_sort_id">Newest</string>

@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
@@ -31,7 +32,7 @@ internal fun MobileInterfaceModeConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.settings_interface_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

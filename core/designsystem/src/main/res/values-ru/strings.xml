@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="back">Назад</string>
-    <string name="retry">Повторить</string>
     <string name="empty_screen">Пока ничего нет</string>
     <string name="notification_permission_explanation">Чтобы видеть прогресс загрузки, нужно разрешить отображение уведомлений.</string>
     <string name="notification_permission_explanation_episode_push">Чтобы присылать уведомления о новых сериях, нужно разрешить их отображение.</string>
@@ -23,4 +21,12 @@
     <string name="error_msg_no_connection">Проверь интернет и попробуй снова.</string>
     <string name="error_msg_timeout">Похоже, сервер тормозит. Попробуй ещё раз.</string>
     <string name="error_msg_generic">Что-то пошло не так. Попробуй ещё раз.</string>
+    <string name="common_back">Назад</string>
+    <string name="common_retry">Повторить</string>
+    <string name="common_loading">Загрузка...</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_sign_in">Войти</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_done">Готово</string>
 </resources>

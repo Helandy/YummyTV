@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
@@ -28,14 +29,14 @@ internal fun EpisodeDownloadDeleteConfirmationDialog(
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(
-                    text = stringResource(R.string.details_mobile_delete_confirm),
+                    text = stringResource(CoreR.string.common_delete),
                     color = MaterialTheme.colorScheme.error,
                 )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.details_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

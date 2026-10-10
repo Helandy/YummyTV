@@ -24,7 +24,6 @@
     <string name="blogger_open_page">Сторінка блогера</string>
     <string name="blogger_videos_title">Відео блогерів</string>
     <string name="blogger_videos_anime_title">Відео про аніме</string>
-    <string name="blogger_videos_retry">Повторити</string>
     <string name="blogger_videos_loading">Завантажуємо відео блогерів…</string>
     <string name="blogger_videos_error">Не вдалося завантажити відео блогерів</string>
     <string name="blogger_videos_empty">Відео блогерів не знайдено</string>
@@ -38,7 +37,6 @@
     <string name="blogger_filters_title">Фільтри відео</string>
     <string name="blogger_filters_category">Категорія</string>
         <string name="blogger_filters_reset">Скинути</string>
-    <string name="blogger_filters_done">Готово</string>
     <string name="blogger_subscribers_tv">Підписників: %1$s</string>
     <string name="blogger_videos_count_tv">Відео: %1$s</string>
 </resources>

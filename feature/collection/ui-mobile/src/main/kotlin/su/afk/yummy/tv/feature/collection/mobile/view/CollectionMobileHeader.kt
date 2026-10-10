@@ -53,10 +53,10 @@ internal fun CollectionMobileHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             ) {
                 Button(onClick = onEdit, enabled = !isMutationLoading) {
-                    Text(stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_edit))
+                    Text(stringResource(su.afk.yummy.tv.feature.collection.presentation.R.string.collection_edit))
                 }
                 OutlinedButton(onClick = onDelete, enabled = !isMutationLoading) {
-                    Text(stringResource(su.afk.yummy.tv.feature.collection.mobile.R.string.collection_delete))
+                    Text(stringResource(su.afk.yummy.tv.core.designsystem.R.string.common_delete))
                 }
             }
         }

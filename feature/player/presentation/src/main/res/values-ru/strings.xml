@@ -11,7 +11,6 @@
     <string name="player_loading_stream">Получаем поток...</string>
     <string name="player_kodik_error_title">Кодик вернул ошибку</string>
     <string name="player_quoted_message">«%1$s»</string>
-    <string name="player_retry">Повторить</string>
     <string name="player_change_player">Сменить плеер</string>
     <string name="player_change_dubbing">Сменить озвучку</string>
     <string name="player_stream_error">Не удалось получить поток</string>
@@ -90,10 +89,8 @@
     <string name="player_mobile_track_settings_title">Озвучка и плеер</string>
     <string name="player_mobile_playback_settings_title">Качество и скорость</string>
             <string name="player_mobile_episode_number">%1$s Серия</string>
-                    <string name="player_mobile_done">Готово</string>
     <string name="player_mobile_previous_episode">Предыдущая</string>
     <string name="player_mobile_next_episode">Следующая</string>
-    <string name="player_mobile_back">Назад</string>
     <string name="player_mobile_details">Детали</string>
     <string name="player_mobile_actions">Ещё</string>
     <string name="player_mobile_cast">Трансляция</string>

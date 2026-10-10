@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.comments.CommentsState
 import su.afk.yummy.tv.feature.comments.presentation.R
 
@@ -81,7 +82,7 @@ internal fun CommentsComposer(
                             onClick = onCancel,
                             enabled = enabled,
                         ) {
-                            Text(stringResource(R.string.comments_cancel))
+                            Text(stringResource(CoreR.string.common_cancel))
                         }
                     }
                 }

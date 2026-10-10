@@ -41,6 +41,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.feature.account.account.AccountState
@@ -203,9 +204,9 @@ internal fun LoginPanel(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AccountAction(
-                label = stringResource(R.string.account_login),
+                label = stringResource(CoreR.string.common_sign_in),
                 hint = if (state.isLoading) {
-                    stringResource(R.string.account_loading)
+                    stringResource(CoreR.string.common_loading)
                 } else {
                     stringResource(
                         R.string.account_login_hint,

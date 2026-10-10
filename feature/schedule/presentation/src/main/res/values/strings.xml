@@ -1,6 +1,5 @@
 <resources>
     <string name="schedule_mobile_title">Schedule</string>
-    <string name="schedule_mobile_retry">Retry</string>
     <string name="schedule_episode_aired">Episode %1$d is out</string>
     <string name="schedule_episode_future">Episode %1$d releases in %2$s</string>
     <string name="schedule_day_one">day</string>

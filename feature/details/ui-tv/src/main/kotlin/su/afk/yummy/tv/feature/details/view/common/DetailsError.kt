@@ -21,7 +21,7 @@ internal fun DetailsError(
         title = stringResource(R.string.details_error_title),
         description = message,
         icon = Icons.Filled.Warning,
-        retryLabel = stringResource(CoreR.string.retry),
+        retryLabel = stringResource(CoreR.string.common_retry),
         onRetry = onRetry,
         modifier = Modifier
             .fillMaxSize()

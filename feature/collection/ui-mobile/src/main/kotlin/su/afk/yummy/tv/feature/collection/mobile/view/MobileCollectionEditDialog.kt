@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -86,7 +87,7 @@ internal fun MobileCollectionEditDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isUpdating) {
-                Text(stringResource(R.string.collection_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

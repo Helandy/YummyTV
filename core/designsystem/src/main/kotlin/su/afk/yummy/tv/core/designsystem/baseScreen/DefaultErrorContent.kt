@@ -53,11 +53,11 @@ fun DefaultErrorContent(
 
     val hasDetails = remember(errorItem) {
         errorItem.code != null ||
-                errorItem.method != null ||
-                errorItem.url != null ||
-                errorItem.requestId != null ||
-                (errorItem.body?.isNotBlank() == true) ||
-                (errorItem.cause?.isNotBlank() == true)
+            errorItem.method != null ||
+            errorItem.url != null ||
+            errorItem.requestId != null ||
+            (errorItem.body?.isNotBlank() == true) ||
+            (errorItem.cause?.isNotBlank() == true)
     }
 
     Box(
@@ -65,19 +65,19 @@ fun DefaultErrorContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 24.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 520.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = errorItem.title.ifBlank { stringResource(R.string.error_title_fallback) },
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
 
             Spacer(Modifier.height(12.dp))
@@ -97,35 +97,38 @@ fun DefaultErrorContent(
                 if (hasDetails) {
                     OutlinedButton(
                         onClick = { showDetails = !showDetails },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text(
-                            if (showDetails) stringResource(R.string.hide_details)
-                            else stringResource(R.string.details)
+                            if (showDetails) {
+                                stringResource(R.string.hide_details)
+                            } else {
+                                stringResource(R.string.details)
+                            },
                         )
                     }
                 }
 
                 DefaultErrorRetryButton(
-                    text = stringResource(R.string.retry),
+                    text = stringResource(R.string.common_retry),
                     onClick = onRetry,
                     modifier = Modifier.weight(1f),
                 )
             }
 
-            /** ДЕТАЛИ */
+            // ДЕТАЛИ
             AnimatedVisibility(visible = showDetails && hasDetails) {
                 Column(
                     modifier = Modifier
                         .padding(top = 16.dp)
                         .fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     errorItem.code?.let {
                         Text(
                             text = stringResource(
                                 R.string.error_http_code,
-                                it.toString()
+                                it.toString(),
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -167,11 +170,11 @@ fun DefaultErrorContent(
                         )
                     }
 
-                    /** Copy показываем ТОЛЬКО когда раскрыты детали */
+                    // Copy показываем ТОЛЬКО когда раскрыты детали
                     Spacer(Modifier.height(12.dp))
                     OutlinedButton(
                         onClick = { context.copyToClipboard(copyText) },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
                     ) {
                         Text(stringResource(R.string.copy))
                     }

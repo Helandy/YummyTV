@@ -96,7 +96,7 @@ fun DetailsMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(CoreR.string.retry),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = retry,
                 )
             }
@@ -167,7 +167,7 @@ fun DetailsMobileScreen(
                 item(key = "soft_error") {
                     MobileMessage(
                         title = error,
-                        actionLabel = stringResource(CoreR.string.retry),
+                        actionLabel = stringResource(CoreR.string.common_retry),
                         onAction = { onEvent(DetailsState.Event.RetrySelected) },
                     )
                 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
@@ -71,7 +72,7 @@ internal fun TopMobileGrid(
             refreshError != null && itemCount == 0 -> item(span = { GridItemSpan(maxLineSpan) }) {
                 MobileMessage(
                     title = refreshError,
-                    actionLabel = stringResource(R.string.top_mobile_retry),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = onRetry,
                 )
             }

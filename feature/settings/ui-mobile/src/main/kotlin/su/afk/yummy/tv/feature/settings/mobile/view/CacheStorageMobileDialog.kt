@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.mobile.utils.cacheStorageFolderLabel
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -83,7 +84,7 @@ internal fun CacheStorageMobileDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.settings_cache_storage_close))
+                Text(stringResource(CoreR.string.common_close))
             }
         },
     )

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -26,13 +27,13 @@ internal fun MobileDeleteCollectionDialog(
                 if (isDeleting) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text(stringResource(R.string.collection_delete))
+                    Text(stringResource(CoreR.string.common_delete))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isDeleting) {
-                Text(stringResource(R.string.collection_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

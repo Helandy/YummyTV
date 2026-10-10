@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.messages.presentation.R
 
 @Composable
@@ -45,7 +46,7 @@ internal fun EditMessageMobileDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = enabled) {
-                Text(stringResource(R.string.messages_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )

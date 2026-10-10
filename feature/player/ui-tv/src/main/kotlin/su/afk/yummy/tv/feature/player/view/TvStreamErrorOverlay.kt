@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
@@ -44,7 +45,7 @@ internal fun TvStreamErrorOverlay(
         if (onRetry != null || onChangePlayer != null || onChangeDubbing != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (onRetry != null) {
-                    TvOverlayButton(text = stringResource(R.string.player_retry), onClick = onRetry)
+                    TvOverlayButton(text = stringResource(CoreR.string.common_retry), onClick = onRetry)
                 }
                 if (onChangePlayer != null) {
                     TvOverlayButton(

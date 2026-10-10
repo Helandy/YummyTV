@@ -80,7 +80,7 @@ fun EpisodeDubbingsMobileScreen(
             state.error != null -> MobileMessage(
                 title = state.error.orEmpty(),
                 icon = Icons.Filled.Warning,
-                actionLabel = stringResource(CoreR.string.retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(EpisodeDubbingsState.Event.RetrySelected) },
                 fillMaxSize = false,
             )

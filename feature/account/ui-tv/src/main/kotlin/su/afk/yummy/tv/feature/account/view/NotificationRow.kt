@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -129,7 +130,7 @@ internal fun NotificationRow(
                     )
                 }
                 AccountAction(
-                    label = stringResource(R.string.account_delete),
+                    label = stringResource(CoreR.string.common_delete),
                     icon = Icons.Outlined.DeleteOutline,
                     onClick = onDelete,
                     modifier = deleteModifier

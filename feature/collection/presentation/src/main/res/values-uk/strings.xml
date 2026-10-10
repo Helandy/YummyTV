@@ -17,9 +17,7 @@
     <string name="collection_description_label">Опис</string>
     <string name="collection_public_label">Публічна колекція</string>
     <string name="collection_create_confirm">Створити</string>
-    <string name="collection_cancel">Скасувати</string>
     <string name="collection_edit">Редагувати</string>
-    <string name="collection_delete">Видалити</string>
     <string name="collection_edit_dialog_title">Редагування колекції</string>
     <string name="collection_save">Зберегти</string>
     <string name="collection_delete_dialog_title">Видалити колекцію?</string>

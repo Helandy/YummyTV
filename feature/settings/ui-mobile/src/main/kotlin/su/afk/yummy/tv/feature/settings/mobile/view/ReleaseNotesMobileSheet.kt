@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.presentation.R
@@ -52,7 +53,7 @@ internal fun ReleaseNotesMobileSheet(
             ) {
                 ReleaseNotesMessage(stringResource(R.string.settings_release_notes_error))
                 TextButton(onClick = onRetry) {
-                    Text(stringResource(R.string.settings_release_notes_retry))
+                    Text(stringResource(CoreR.string.common_retry))
                 }
             }
 

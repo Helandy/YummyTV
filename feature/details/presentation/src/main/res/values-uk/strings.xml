@@ -21,7 +21,6 @@
     <string name="details_reviews">Рецензії</string>
     <string name="details_reviews_count">Рецензії (%1$d)</string>
         <string name="details_mobile_empty">Тайтл не знайдено</string>
-    <string name="details_back">Назад</string>
     <string name="details_watch">Дивитися</string>
     <string name="details_watch_not_found">Відео не знайдено</string>
     <string name="details_loading_episodes">Завантажуємо серії...</string>
@@ -58,8 +57,6 @@
     <string name="details_balancer_title">Серія %1$s · Балансер</string>
     <string name="details_mobile_unsupported_player">%1$s · не підтримується</string>
     <string name="details_balancer_preferred_unavailable">Бажаного балансера немає в цього озвучення — виберіть із доступних</string>
-    <string name="details_mobile_close">Закрити</string>
-    <string name="details_cancel">Скасувати</string>
     <string name="details_mobile_aired">Вийшло: %1$d із %2$s</string>
     <string name="details_released_episodes">Кількість серій: %1$d</string>
     <string name="details_aired_progress">%1$d із %2$s</string>
@@ -119,7 +116,6 @@
     <string name="details_mobile_delete_downloaded_episode">Видалити завантажену серію</string>
     <string name="details_mobile_delete_downloaded_episode_title">Видалити серію %1$s?</string>
     <string name="details_mobile_delete_downloaded_episode_message">Локальний файл серії буде видалено з пристрою.</string>
-    <string name="details_mobile_delete_confirm">Видалити</string>
         <string name="details_mobile_episode_download_restart_action">Перезапустити завантаження</string>
         <string name="details_mobile_episode_download_progress">Триває завантаження %1$d%%</string>
     <string name="details_mobile_episode_download_paused">На паузі %1$d%%</string>
@@ -142,7 +138,6 @@
     <string name="details_mobile_creators">Творці</string>
     <string name="details_mobile_similar_source_ai">Нейромережа</string>
     <string name="details_mobile_similar_source_site">Користувачі</string>
-    <string name="details_mobile_loading">Завантаження...</string>
     <string name="details_mobile_similar_empty">Схожих тайтлів немає</string>
     <string name="details_your_rating">Ваша оцінка: %1$s</string>
     <string name="details_rating_delete">Видалити оцінку</string>

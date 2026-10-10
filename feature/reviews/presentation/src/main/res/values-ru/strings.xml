@@ -22,9 +22,6 @@
     <string name="review_waiting">Ожидает модерации</string>
     <string name="review_declined">Отклонён</string>
     <string name="review_approved">Опубликован</string>
-    <string name="review_delete">Удалить</string>
     <string name="review_delete_confirm">Удалить эту рецензию?</string>
-    <string name="review_cancel">Отмена</string>
-    <string name="review_retry">Повторить</string>
     <string name="reviews_mobile_detail_placeholder">Выберите рецензию, чтобы прочитать её здесь</string>
 </resources>

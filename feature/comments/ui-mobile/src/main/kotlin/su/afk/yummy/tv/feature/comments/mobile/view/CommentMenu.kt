@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.comments.presentation.R
 
 @Composable
@@ -67,7 +68,7 @@ internal fun CommentMenu(
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.comments_delete)) },
+                    text = { Text(stringResource(CoreR.string.common_delete)) },
                     leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                     onClick = {
                         expanded = false

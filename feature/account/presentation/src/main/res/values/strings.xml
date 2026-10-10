@@ -9,7 +9,6 @@
     <string name="account_downloaded_episodes">Downloaded episodes</string>
     <string name="account_watch_later">Watch later</string>
         <string name="account_logout">Log out</string>
-        <string name="account_login">Sign in</string>
     <string name="account_login_placeholder">Email or nickname</string>
     <string name="account_password_placeholder">Password</string>
     <string name="account_mobile_register">Register</string>
@@ -24,7 +23,6 @@
     <string name="account_error_registration_failed">Registration failed. Please try again.</string>
     <string name="account_error_invalid_email">Enter a valid email address.</string>
     <string name="account_error_password_too_short">Password must be at least 6 characters.</string>
-    <string name="account_loading">Loading...</string>
     <string name="account_captcha_hint">Complete the captcha to continue signing in. If it does not open here, sign in from the TV flow.</string>
     <string name="account_captcha_required_toast">Please complete the captcha</string>
     <string name="account_tab_stats">Statistics</string>
@@ -63,7 +61,6 @@
     <string name="account_delete_all_notifications">Delete all</string>
     <string name="account_delete_all_notifications_title">Delete all notifications?</string>
     <string name="account_delete_all_notifications_message">This cannot be undone.</string>
-    <string name="account_cancel">Cancel</string>
     <string name="account_notification_type_news">News</string>
     <string name="account_notification_type_edit">Edits</string>
     <string name="account_notification_type_message">Messages</string>
@@ -72,7 +69,6 @@
     <string name="account_notification_type_anime_episode">New episodes</string>
             <string name="account_notification_type_post">Posts</string>
     <string name="account_notification_type_blogvideo">Blog videos</string>
-    <string name="account_delete">Delete</string>
     <string name="account_logout_confirm_title">Log out?</string>
     <string name="account_logout_confirm_message">Your local library and watch progress will stay on this device.</string>
             <string name="account_error_captcha_response_empty">Captcha response is empty</string>
@@ -96,7 +92,6 @@
             <string name="user_profile_load_error">Could not load profile</string>
     <string name="user_profile_section_error">Could not load this section</string>
     <string name="user_profile_section_empty">Nothing here yet</string>
-    <string name="user_profile_retry">Retry</string>
     <string name="user_profile_load_more">Load more</string>
     <string name="user_profile_list_added_date">Added %1$s</string>
     <string name="user_profile_user_rating">User rating %1$d</string>
@@ -211,7 +206,6 @@
     <string name="account_local_auth_mobile_permission_required">Without permission to find devices on the local network the TV cannot be found. Allow access in the app settings and come back to this screen.</string>
     <string name="account_local_auth_mobile_transferred_title">Signed in on TV</string>
     <string name="account_local_auth_mobile_transferred_hint">The session has been transferred, you can already use the account on the TV.</string>
-    <string name="account_local_auth_mobile_done">Done</string>
     <string name="account_local_network_permission_title">Allow local network access</string>
     <string name="account_mobile_local_network_permission_message">The app needs local network access to find your TV on your home Wi-Fi and hand the session over to it. Nothing leaves your network.</string>
     <string name="account_mobile_local_network_permission_blocked_message">Local network access is blocked. Enable it in the app settings, otherwise the TV will not be found.</string>
@@ -226,7 +220,6 @@
     <string name="account_error_local_auth_invalid_qr">This QR code is not from YummyTV. Scan the code on the TV login screen.</string>
     <string name="account_error_local_auth_scanner_unavailable">QR scanner is unavailable: Google Play services are required. Enter the code manually.</string>
     <string name="account_title">Yummy account</string>
-    <string name="account_back">Back</string>
     <string name="account_signed_in">Signed in</string>
     <string name="account_refresh_hint">Update account data from Yummy</string>
     <string name="account_logout_hint">Keep local library and progress on this device</string>

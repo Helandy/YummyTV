@@ -11,7 +11,6 @@
     <string name="player_loading_stream">Отримуємо потік...</string>
     <string name="player_kodik_error_title">Kodik повернув помилку</string>
     <string name="player_quoted_message">«%1$s»</string>
-    <string name="player_retry">Повторити</string>
     <string name="player_change_player">Змінити плеєр</string>
     <string name="player_change_dubbing">Змінити озвучення</string>
     <string name="player_stream_error">Не вдалося отримати потік</string>
@@ -90,10 +89,8 @@
     <string name="player_mobile_track_settings_title">Озвучення і плеєр</string>
     <string name="player_mobile_playback_settings_title">Якість і швидкість</string>
             <string name="player_mobile_episode_number">%1$s Серія</string>
-                    <string name="player_mobile_done">Готово</string>
     <string name="player_mobile_previous_episode">Попередня</string>
     <string name="player_mobile_next_episode">Наступна</string>
-    <string name="player_mobile_back">Назад</string>
     <string name="player_mobile_details">Деталі</string>
     <string name="player_mobile_actions">Ще</string>
     <string name="player_mobile_cast">Трансляція</string>

@@ -16,6 +16,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchGenre
 import su.afk.yummy.tv.feature.search.presentation.R
@@ -94,7 +95,7 @@ internal fun GenrePickerScreen(
             )
         }
         SelectableRow(
-            label = stringResource(R.string.search_filters_back),
+            label = stringResource(CoreR.string.common_back),
             selected = false,
             onClick = onBack,
             modifier = Modifier.focusRequester(backFocusRequester),

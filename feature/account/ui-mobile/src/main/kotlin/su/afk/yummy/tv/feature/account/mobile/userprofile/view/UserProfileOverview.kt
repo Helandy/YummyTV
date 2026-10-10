@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.presentation.R
@@ -28,7 +29,7 @@ internal fun UserProfileOverview(
             state.overviewError && state.profile == null && state.stats == null ->
                 UserProfileMessage(
                     text = stringResource(R.string.user_profile_load_error),
-                    action = stringResource(R.string.user_profile_retry),
+                    action = stringResource(CoreR.string.common_retry),
                     onAction = { onEvent(UserProfileState.Event.RetryOverviewSelected) },
                 )
 

@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.MainState
@@ -162,7 +163,7 @@ internal fun TvSideMenu(
         verticalArrangement = Arrangement.spacedBy(TvSideMenuItemSpacing),
     ) {
         TvSideMenuAccountItem(
-            label = accountLabel?.ifBlank { null } ?: stringResource(R.string.main_account_sign_in),
+            label = accountLabel?.ifBlank { null } ?: stringResource(CoreR.string.common_sign_in),
             signedIn = !accountLabel.isNullOrBlank(),
             avatarUrl = accountAvatarUrl,
             unreadNotificationsCount = unreadNotificationsCount,

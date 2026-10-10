@@ -2,9 +2,7 @@
     <string name="messages_title">Повідомлення</string>
     <string name="messages_empty">Діалогів поки немає</string>
     <string name="messages_error">Не вдалося завантажити діалоги</string>
-    <string name="messages_retry">Повторити</string>
     <string name="messages_auth_required">Увійдіть, щоб переглянути особисті повідомлення</string>
-    <string name="messages_sign_in">Увійти</string>
     <string name="messages_unknown_user">Користувач #%1$d</string>
     <string name="messages_global_chat">Загальний чат</string>
     <string name="messages_chat_empty">Повідомлень поки немає. Почніть діалог.</string>
@@ -14,7 +12,6 @@
     <string name="messages_edit">Редагувати</string>
     <string name="messages_edit_title">Редагування повідомлення</string>
     <string name="messages_save">Зберегти</string>
-    <string name="messages_cancel">Скасувати</string>
     <string name="messages_edited">змінено</string>
     <string name="messages_deleted">Повідомлення видалено</string>
     <string name="messages_reply">Відповідь для @%1$s</string>
@@ -25,7 +22,6 @@
     <string name="messages_read_failed">Не вдалося позначити повідомлення прочитаними.</string>
     <string name="messages_actions">Дії з повідомленням</string>
     <string name="messages_dialog_actions">Дії з діалогом</string>
-    <string name="messages_delete">Видалити</string>
     <string name="messages_delete_title">Видалити повідомлення?</string>
     <string name="messages_delete_confirmation">Повідомлення буде приховано, але його можна буде відновити.</string>
     <string name="messages_delete_failed">Не вдалося видалити повідомлення.</string>
@@ -41,7 +37,6 @@
     <string name="messages_history_changed">Повідомлення змінено</string>
     <string name="messages_history_old_text">Було: %1$s</string>
     <string name="messages_history_new_text">Стало: %1$s</string>
-    <string name="messages_close">Закрити</string>
     <string name="messages_claim">Поскаржитися</string>
     <string name="messages_claim_title">Скарга на повідомлення</string>
     <string name="messages_claim_description">Надіслати це повідомлення модераторам на перевірку?</string>

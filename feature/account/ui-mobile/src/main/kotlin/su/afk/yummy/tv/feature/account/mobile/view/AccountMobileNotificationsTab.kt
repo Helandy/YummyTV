@@ -174,7 +174,7 @@ internal fun AccountMobileNotificationsTab(
             },
             dismissButton = {
                 TextButton(onClick = { showReadAllConfirm = false }) {
-                    Text(stringResource(R.string.account_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -192,7 +192,7 @@ internal fun AccountMobileNotificationsTab(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAllConfirm = false }) {
-                    Text(stringResource(R.string.account_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )

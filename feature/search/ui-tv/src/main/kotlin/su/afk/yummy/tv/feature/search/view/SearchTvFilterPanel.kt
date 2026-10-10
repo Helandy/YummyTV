@@ -35,6 +35,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
@@ -204,7 +205,7 @@ internal fun FilterPanel(
                         },
                 )
                 SelectableRow(
-                    label = stringResource(R.string.search_filters_close),
+                    label = stringResource(CoreR.string.common_close),
                     selected = false,
                     onClick = onClose,
                     modifier = Modifier

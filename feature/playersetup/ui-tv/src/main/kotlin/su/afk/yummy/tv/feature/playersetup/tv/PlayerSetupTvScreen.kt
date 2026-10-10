@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
 import su.afk.yummy.tv.feature.playersetup.presentation.R
 import su.afk.yummy.tv.feature.playersetup.tv.utils.next
@@ -114,7 +115,7 @@ fun PlayerSetupTvScreen(
         )
 
         PlayerSetupTvButton(
-            text = stringResource(R.string.player_setup_done),
+            text = stringResource(CoreR.string.common_done),
             onClick = { onEvent(PlayerSetupState.Event.DoneSelected) },
             modifier = Modifier.padding(top = 16.dp),
         )

@@ -39,7 +39,7 @@ internal fun HomeError(
             title = stringResource(R.string.home_error_title),
             description = message,
             icon = Icons.Filled.Warning,
-            retryLabel = stringResource(CoreR.string.retry),
+            retryLabel = stringResource(CoreR.string.common_retry),
             onRetry = onRetry,
             retryFocusRequester = retryFocusRequester,
             fillMaxSize = false,

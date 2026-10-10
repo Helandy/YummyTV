@@ -129,7 +129,7 @@ internal fun ImageViewScreen(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(CoreR.string.back),
+                contentDescription = stringResource(CoreR.string.common_back),
                 tint = Color.White,
             )
         }

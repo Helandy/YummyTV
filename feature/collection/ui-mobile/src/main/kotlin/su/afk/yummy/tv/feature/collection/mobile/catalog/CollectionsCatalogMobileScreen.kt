@@ -112,7 +112,7 @@ fun CollectionsCatalogMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(CoreR.string.retry),
+                    actionLabel = stringResource(CoreR.string.common_retry),
                     onAction = retry,
                 )
             }

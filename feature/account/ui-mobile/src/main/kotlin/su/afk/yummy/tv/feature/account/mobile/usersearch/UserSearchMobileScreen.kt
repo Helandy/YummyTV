@@ -132,7 +132,7 @@ fun UserSearchMobileScreen(
                     MobileMessage(
                         title = stringResource(R.string.user_search_error),
                         icon = Icons.Default.PersonSearch,
-                        actionLabel = stringResource(CoreR.string.retry),
+                        actionLabel = stringResource(CoreR.string.common_retry),
                         onAction = { results.retry() },
                         fillMaxSize = false,
                     )
@@ -175,7 +175,7 @@ fun UserSearchMobileScreen(
                     MobileMessage(
                         title = stringResource(R.string.user_search_error),
                         icon = Icons.Default.PersonSearch,
-                        actionLabel = stringResource(CoreR.string.retry),
+                        actionLabel = stringResource(CoreR.string.common_retry),
                         onAction = { results.retry() },
                         fillMaxSize = false,
                     )

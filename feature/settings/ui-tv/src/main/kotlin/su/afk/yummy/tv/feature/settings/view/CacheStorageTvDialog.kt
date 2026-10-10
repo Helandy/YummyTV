@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.cacheStorageFolderLabel
@@ -92,7 +93,7 @@ internal fun CacheStorageTvDialog(
                 onClick = onDismiss,
                 modifier = Modifier.focusRequester(closeFocusRequester),
             ) {
-                Text(stringResource(R.string.settings_cache_storage_close))
+                Text(stringResource(CoreR.string.common_close))
             }
         },
     )

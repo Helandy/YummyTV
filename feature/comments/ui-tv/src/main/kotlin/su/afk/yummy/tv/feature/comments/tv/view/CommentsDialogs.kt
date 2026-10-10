@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.feature.comments.presentation.R
@@ -41,12 +42,12 @@ internal fun CommentsDialogs(
                     enabled = !isMutating,
                     modifier = Modifier.focusRequester(confirmFocusRequester),
                 ) {
-                    Text(stringResource(R.string.comments_delete))
+                    Text(stringResource(CoreR.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDeleteDismissed, enabled = !isMutating) {
-                    Text(stringResource(R.string.comments_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -78,7 +79,7 @@ internal fun CommentsDialogs(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = onReportDismissed, enabled = !isMutating) {
-                    Text(stringResource(R.string.comments_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.feature.library.presentation.R
@@ -41,7 +42,7 @@ internal fun LibraryRemoteErrorBanner(
             modifier = Modifier.weight(1f),
         )
         TvRetryButton(
-            text = stringResource(R.string.library_retry),
+            text = stringResource(CoreR.string.common_retry),
             enabled = !isLoading,
             onClick = onRetry,
         )

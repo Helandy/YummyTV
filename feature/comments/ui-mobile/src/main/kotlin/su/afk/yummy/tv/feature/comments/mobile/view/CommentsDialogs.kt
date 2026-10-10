@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
@@ -51,7 +52,7 @@ internal fun CommentsDialogs(
                     onClick = onDeleteConfirm,
                     enabled = !isMutating,
                 ) {
-                    Text(stringResource(R.string.comments_delete))
+                    Text(stringResource(CoreR.string.common_delete))
                 }
             },
             dismissButton = {
@@ -59,7 +60,7 @@ internal fun CommentsDialogs(
                     onClick = onDeleteDismiss,
                     enabled = !isMutating,
                 ) {
-                    Text(stringResource(R.string.comments_cancel))
+                    Text(stringResource(CoreR.string.common_cancel))
                 }
             },
         )
@@ -102,7 +103,7 @@ internal fun CommentsDialogs(
                 enabled = !isMutating,
                 modifier = Modifier.align(Alignment.End),
             ) {
-                Text(stringResource(R.string.comments_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         }
     }

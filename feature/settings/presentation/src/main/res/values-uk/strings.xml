@@ -28,7 +28,6 @@
     <string name="settings_cache_storage_button_hint">Показати розміри тек кешу</string>
     <string name="settings_cache_storage_total">Усього</string>
     <string name="settings_cache_storage_refresh">Оновити</string>
-    <string name="settings_cache_storage_close">Закрити</string>
     <string name="settings_cache_storage_empty">Кеш порожній</string>
     <string name="settings_cache_storage_loading">Обчислення…</string>
     <string name="settings_cache_storage_folder_images">Зображення постерів</string>
@@ -52,7 +51,6 @@
     <string name="settings_interface_confirm_title">Змінити інтерфейс?</string>
     <string name="settings_interface_confirm_message">Перемкнутися на «%1$s»? Застосунок перезапуститься, поточний екран закриється.</string>
     <string name="settings_interface_confirm">Перемкнути</string>
-    <string name="settings_interface_cancel">Скасувати</string>
     <string name="settings_interface_restart_failed">Інтерфейс зміниться під час наступного запуску застосунку</string>
     <string name="settings_mobile_poster_size">Розмір постерів</string>
     <string name="settings_poster_quality_title">Якість постерів</string>
@@ -246,7 +244,6 @@
     <string name="settings_release_notes_label">Що нового</string>
     <string name="settings_release_notes_hint">Зміни в попередніх версіях</string>
         <string name="settings_release_notes_error">Не вдалося завантажити історію релізів</string>
-    <string name="settings_release_notes_retry">Повторити</string>
     <string name="settings_release_notes_empty">Історії змін поки немає</string>
     <string name="settings_release_notes_current">Встановлена</string>
     <string name="settings_release_notes_beta">Бета</string>
@@ -303,7 +300,6 @@
     <string name="settings_account_unknown_user">Вхід виконано</string>
     <string name="settings_account_login_placeholder">Email або нікнейм</string>
     <string name="settings_account_password_placeholder">Пароль</string>
-    <string name="settings_account_login">Увійти</string>
     <string name="settings_account_login_hint">Синхронізація списків, переглянутого, оцінок і підписок</string>
     <string name="settings_account_loading">Зачекайте</string>
     <string name="settings_account_refresh">Оновити профіль</string>

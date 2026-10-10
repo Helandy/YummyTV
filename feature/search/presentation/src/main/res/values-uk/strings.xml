@@ -8,13 +8,10 @@
     <string name="search_mobile_submit_with_filters">Знайти · фільтрів: %1$d</string>
     <string name="search_results_count">Результатів: %1$d</string>
     <string name="search_random_anime">Випадкове аніме</string>
-    <string name="search_mobile_loading">Завантаження...</string>
     <string name="search_mobile_load_more">Показати ще</string>
     <string name="search_filters_apply">Застосувати</string>
     <string name="search_mobile_filters_apply_with_count">Застосувати · %1$d</string>
     <string name="search_filters_reset">Скинути</string>
-    <string name="search_filters_close">Закрити</string>
-    <string name="search_filters_back">Назад</string>
     <string name="search_filters_loading">Завантаження фільтрів...</string>
     <string name="search_filter_selected">✓ %1$s</string>
     <string name="search_filter_selected_count">Обрано: %1$d</string>
@@ -54,7 +51,6 @@
     <string name="search_mobile_filter_sort_id">Новинки</string>
     <string name="search_placeholder">Пошук аніме...</string>
     <string name="search_empty">Нічого не знайдено</string>
-    <string name="search_retry">Повторити</string>
     <string name="search_filters_with_count">Фільтри (%1$d)</string>
     <string name="search_filter_sort_rating_counters">Оцінки</string>
     <string name="search_filter_sort_id">Новинки</string>

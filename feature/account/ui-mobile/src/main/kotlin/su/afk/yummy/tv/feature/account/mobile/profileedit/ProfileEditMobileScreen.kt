@@ -98,7 +98,7 @@ fun ProfileEditMobileScreen(
             state.hasLoadError -> MobileMessage(
                 title = stringResource(R.string.profile_edit_load_error),
                 icon = Icons.Default.PersonOff,
-                actionLabel = stringResource(CoreR.string.retry),
+                actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(ProfileEditState.Event.RetrySelected) },
             )
 
@@ -268,7 +268,7 @@ fun ProfileEditMobileScreen(
                 TextButton(onClick = {
                     deleteImageKind = null
                     onEvent(ProfileEditState.Event.DeleteImageSelected(kind))
-                }) { Text(stringResource(R.string.account_delete)) }
+                }) { Text(stringResource(CoreR.string.common_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { deleteImageKind = null }) {

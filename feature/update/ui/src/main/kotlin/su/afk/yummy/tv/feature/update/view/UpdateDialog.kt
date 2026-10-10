@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.formatReleaseNotes
 import su.afk.yummy.tv.core.utils.system.openExternalUri
@@ -453,7 +454,7 @@ private fun ErrorContent(
                         .padding(horizontal = 24.dp, vertical = 12.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.update_retry),
+                        text = stringResource(CoreR.string.common_retry),
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.labelLarge,
@@ -469,7 +470,7 @@ private fun ErrorContent(
                     .padding(horizontal = 24.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.update_close),
+                    text = stringResource(CoreR.string.common_close),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelLarge,
                 )

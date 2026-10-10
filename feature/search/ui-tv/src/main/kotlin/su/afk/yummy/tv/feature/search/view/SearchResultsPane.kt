@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.Job
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.focus.launchTvLazyGridKeyFocusRestore
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
@@ -277,7 +278,7 @@ private fun SearchErrorMessage(
     TvStateMessage(
         title = message,
         icon = Icons.Filled.Warning,
-        retryLabel = stringResource(R.string.search_retry),
+        retryLabel = stringResource(CoreR.string.common_retry),
         onRetry = onRetry,
         retryFocusRequester = retryFocusRequester,
         fillMaxSize = false,

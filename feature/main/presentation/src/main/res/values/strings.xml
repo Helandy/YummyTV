@@ -11,5 +11,4 @@
     <string name="main_tab_collections">Collections</string>
     <string name="main_settings_content_description">Settings</string>
     <string name="main_account_content_description">Account</string>
-    <string name="main_account_sign_in">Sign in</string>
 </resources>

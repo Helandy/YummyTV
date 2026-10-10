@@ -28,6 +28,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.commonscreen.R
 
 /**
@@ -108,7 +109,7 @@ internal fun ZoomableImage(
                     onClick = { attempt++ },
                     modifier = Modifier.align(Alignment.Center),
                 ) {
-                    Text(text = stringResource(R.string.image_view_retry), color = Color.White)
+                    Text(text = stringResource(CoreR.string.common_retry), color = Color.White)
                 }
         }
     }

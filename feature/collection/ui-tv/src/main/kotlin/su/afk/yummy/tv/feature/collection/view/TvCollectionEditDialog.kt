@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
@@ -86,7 +87,7 @@ internal fun TvCollectionEditDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isUpdating) {
-                Text(stringResource(R.string.collection_cancel))
+                Text(stringResource(CoreR.string.common_cancel))
             }
         },
     )
