@@ -274,7 +274,7 @@ read-таймаута `PlayerDataSourceFactory`.
 | Попытки   | `PlayerAllohaRecoveryHandler` | `MAX_ATTEMPTS = 4`, дальше ошибка с действиями                                    |
 | Подсказка | `PlayerViewModel`             | Через `ALLOHA_RECOVERY_HINT_DELAY_MS` (15 с) предложить сменить плеер или озвучку |
 
-У остальных источников другой путь: `PlayerPlaybackRetryHandler` с `MAX_ATTEMPTS = 3` и тихий
+У остальных источников другой путь: `PlayerPlaybackRetryHandler` с `MAX_ATTEMPTS = 5` и тихий
 реконнект (`SILENT_RETRY_COUNT = 20` в `PlayerLoadErrorHandlingPolicy`). Для Alloha тихий реконнект
 выключен, у неё своё восстановление.
 
