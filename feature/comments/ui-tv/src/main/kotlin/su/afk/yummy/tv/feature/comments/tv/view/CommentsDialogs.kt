@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentReportReason
 import su.afk.yummy.tv.feature.comments.presentation.R
-import su.afk.yummy.tv.feature.comments.tv.utils.labelRes
+import su.afk.yummy.tv.feature.comments.utils.labelRes
 
 @Composable
 internal fun CommentsDialogs(

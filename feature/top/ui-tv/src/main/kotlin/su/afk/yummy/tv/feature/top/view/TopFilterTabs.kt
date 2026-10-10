@@ -31,13 +31,14 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.utils.label
+import su.afk.yummy.tv.feature.top.utils.labelRes
 
 @Composable
 internal fun TopFilterTabs(
@@ -71,7 +72,7 @@ internal fun TopFilterTabs(
     ) {
         AnimeTopType.entries.forEachIndexed { index, type ->
             TopFilterTabItem(
-                label = type.label(),
+                label = stringResource(type.labelRes()),
                 selected = selectedType == type,
                 onActivated = {
                     onContentFocusRequested(type)

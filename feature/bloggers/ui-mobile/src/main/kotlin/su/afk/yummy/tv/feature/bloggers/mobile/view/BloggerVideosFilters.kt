@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
-import su.afk.yummy.tv.feature.bloggers.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.bloggers.presentation.R
+import su.afk.yummy.tv.feature.bloggers.utils.labelRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

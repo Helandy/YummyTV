@@ -47,7 +47,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.reviews.presentation.R
-import su.afk.yummy.tv.feature.reviews.utils.label
+import su.afk.yummy.tv.feature.reviews.utils.labelRes
 import su.afk.yummy.tv.feature.reviews.view.ReviewTvCard
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -85,7 +85,7 @@ fun ReviewsListTvScreen(
         ) {
             state.availableSorts.forEach { sort ->
                 TvChip(
-                    label = sort.label(),
+                    label = stringResource(sort.labelRes()),
                     selected = state.sort == sort,
                     onClick = { onEvent(ReviewsListState.Event.SortSelected(sort)) },
                 )

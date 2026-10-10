@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
-import su.afk.yummy.tv.feature.details.mobile.relation.utils.labelRes
 import su.afk.yummy.tv.feature.details.relation.model.RelationType
+import su.afk.yummy.tv.feature.details.relation.utils.labelRes
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

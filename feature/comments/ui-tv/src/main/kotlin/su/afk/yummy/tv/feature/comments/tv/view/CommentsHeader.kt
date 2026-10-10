@@ -22,7 +22,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.domain.comments.model.CommentSort
 import su.afk.yummy.tv.feature.comments.presentation.R
-import su.afk.yummy.tv.feature.comments.tv.utils.labelRes
+import su.afk.yummy.tv.feature.comments.utils.labelRes
 
 @Composable
 internal fun CommentsHeader(

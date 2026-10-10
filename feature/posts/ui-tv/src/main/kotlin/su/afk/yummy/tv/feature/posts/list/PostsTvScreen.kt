@@ -54,7 +54,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.feature.posts.presentation.R
-import su.afk.yummy.tv.feature.posts.utils.label
+import su.afk.yummy.tv.feature.posts.utils.labelRes
 import su.afk.yummy.tv.feature.posts.view.PostTvCard
 
 @Composable
@@ -160,7 +160,7 @@ fun PostsTvScreen(
                 Spacer(Modifier.weight(1f))
                 PostSort.entries.forEach { sort ->
                     TvChip(
-                        label = sort.label(),
+                        label = stringResource(sort.labelRes()),
                         selected = state.sort == sort,
                         onClick = { onEvent(PostsListState.Event.SortSelected(sort)) },
                     )

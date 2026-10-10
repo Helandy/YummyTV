@@ -15,10 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.comments.model.CommentSort
-import su.afk.yummy.tv.feature.comments.mobile.utils.label
+import su.afk.yummy.tv.feature.comments.utils.labelRes
 
 /** Порядок вкладок сортировки комментариев в UI (Новые/Лучшие/Старые). */
 internal val commentSortOrder = listOf(CommentSort.NEW, CommentSort.BEST, CommentSort.OLD)
@@ -49,7 +50,7 @@ internal fun CommentSortRow(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = sort.label(),
+                    text = stringResource(sort.labelRes()),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                     color = if (isSelected) {

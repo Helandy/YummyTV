@@ -30,11 +30,11 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
-import su.afk.yummy.tv.feature.details.mobile.relation.utils.labelRes
 import su.afk.yummy.tv.feature.details.mobile.relation.view.RelationMobileHeaderCard
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.relation.RelationState
 import su.afk.yummy.tv.feature.details.relation.model.RelationType
+import su.afk.yummy.tv.feature.details.relation.utils.labelRes
 
 @Preview(name = "Studio", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable

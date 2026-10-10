@@ -10,11 +10,12 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
-import su.afk.yummy.tv.feature.reviews.mobile.utils.label
+import su.afk.yummy.tv.feature.reviews.utils.labelRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,7 @@ internal fun ReviewsSortSelector(
                 onClick = { onSortSelected(sort) },
                 shape = SegmentedButtonDefaults.itemShape(index, sorts.size),
                 colors = sortTabColors,
-                label = { Text(sort.label()) },
+                label = { Text(stringResource(sort.labelRes())) },
             )
         }
     }

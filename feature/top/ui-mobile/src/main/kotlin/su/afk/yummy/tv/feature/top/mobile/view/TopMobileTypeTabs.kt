@@ -12,12 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.mobile.utils.label
+import su.afk.yummy.tv.feature.top.utils.labelRes
 
 @Composable
 internal fun TopMobileTypeTabs(
@@ -37,7 +38,7 @@ internal fun TopMobileTypeTabs(
         ) {
             AnimeTopType.entries.forEach { type ->
                 TopMobileTypeTab(
-                    label = type.label(),
+                    label = stringResource(type.labelRes()),
                     selected = type == selectedType,
                     onClick = { onTypeSelected(type) },
                     modifier = Modifier.weight(1f),
