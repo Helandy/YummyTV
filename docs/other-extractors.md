@@ -144,17 +144,22 @@ HLS. Нет Auto-качества: у каждого качества свой �
 
 ## Zedfilm
 
-Основной путь статический, WebView — аварийный.
+Только статический разбор страницы iframe, WebView-фолбэка нет.
 
-1. GET iframe-страницы. На ней `video_Init('<base64>')` с JSON: `url` (DASH `.mpd`), `url2` (mp4
-   запасной), `dash`, `type`, `tracks`.
+1. GET iframe-страницы (`Referer: https://yani.tv/`, `Accept-Language: ru-RU,…`,
+   `Accept-Encoding: gzip`), тело декодируется как `windows-1251`. Без языка и без gzip сайт отвечает
+   404 «Видео не найдено» на живую ссылку (замер curl на `zedfilm.ru/<id>`), поэтому оба заголовка
+   заданы явно. gzip безопасен только на клиенте с плагином `ContentEncoding`
+   (`NetworkModule.provideHttpClient`): он и декодирует ответ. В заголовки потока (`Stream.headers`)
+   эти два заголовка не попадают: поток читает Media3, и для медиа у него `identity`.
+   На странице есть `video_Init('<base64>')` с JSON: `url` (DASH `.mpd`), `url2` (mp4 запасной), `dash`, `type`,
+   `tracks`.
 2. Дополнительно перебираются regex'ы по HTML: `.mpd`, `.m3u8`, `.mp4` в тексте, в
-   `file/src/source`, в `<source>`.
-3. Качество определяется по тексту URL (`144…2160`, `p` необязателен).
-4. Если статически ничего не найдено, поднимается WebView и перехватываются запросы
-   (`extractViaWebView`, на Main-потоке). После первого пойманного потока ждёт
-   `STREAM_SETTLE_DELAY_MS` (2 с), чтобы собрать остальные качества, общий таймаут `TIMEOUT_MS` = 20
-   с.
+   `file/src/source`, в `<source>`. Рекламные ссылки отбрасываются (`doubleclick`, `yandex`, а
+   также `ads`/`ima` как отдельные слова в пути).
+3. Качество определяется по тексту URL без хоста (`144…2160`, `p` необязателен), иначе `auto`.
+4. Если кандидатов нет или страница не загрузилась, результат `Failed("Zedfilm: no stream found")`, а
+   причина пишется в лог (`failed to load iframe page` или `no stream URLs found in iframe page`).
 
 Хосты: `zedfilm.ru` и `hlamer.ru`, референс `https://yani.tv/`.
 
@@ -169,7 +174,7 @@ HLS. Нет Auto-качества: у каждого качества свой �
 | Rutube   | HLS                            | `Referer`, `Origin: https://rutube.ru`, `User-Agent`        | Мастер не загрузился → одно качество       |
 | Sibnet   | mp4                            | `Referer`, `Origin: https://video.sibnet.ru`, `User-Agent`  | 403 → `Unavailable(AccessForbidden)`       |
 | Aksor    | mp4 по качествам `q360…q4k`    | `Referer`, `User-Agent`                                     | Запасной разбор страницы                   |
-| Zedfilm  | DASH `.mpd` / mp4 / m3u8       | `Referer`, `Origin: https://hlamer.ru`, `User-Agent`        | Запасной путь через WebView                |
+| Zedfilm  | DASH `.mpd` / mp4 / m3u8       | `Referer`, `Origin: https://hlamer.ru`, `User-Agent`        | Нет потока на странице → `Failed`          |
 
 ## Где регистрируются балансеры
 

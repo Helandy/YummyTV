@@ -10,6 +10,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
 import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import java.util.concurrent.ConcurrentHashMap
@@ -65,7 +66,7 @@ class ResolveKodikThumbnailUrlUseCase @Inject constructor(
         httpClient.get(url) {
             header("Referer", "https://yani.tv/")
             header("User-Agent", userAgents.userAgent)
-            header("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
+            header("Accept-Language", RU_ACCEPT_LANGUAGE)
             timeout {
                 connectTimeoutMillis = CONNECT_TIMEOUT_MS
                 requestTimeoutMillis = READ_TIMEOUT_MS

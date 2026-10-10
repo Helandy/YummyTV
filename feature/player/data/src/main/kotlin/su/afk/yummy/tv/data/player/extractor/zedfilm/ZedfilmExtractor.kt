@@ -1,23 +1,14 @@
 package su.afk.yummy.tv.data.player.extractor.zedfilm
 
 import android.content.Context
-import android.net.http.SslError
-import android.os.Handler
-import android.os.Looper
 import android.util.Base64
-import android.webkit.SslErrorHandler
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
 import su.afk.yummy.tv.core.utils.player.isZedfilmPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.ExtractedStream
@@ -28,12 +19,10 @@ import su.afk.yummy.tv.data.player.extractor.common.orderQualityMap
 import su.afk.yummy.tv.data.player.extractor.common.resolveRelativeUrl
 import su.afk.yummy.tv.data.player.extractor.common.withAutoQualityLabel
 import su.afk.yummy.tv.data.player.network.PlayerHttpClient
-import su.afk.yummy.tv.data.player.network.withBrowserUserAgent
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
 import java.nio.charset.Charset
 import javax.inject.Inject
-import kotlin.coroutines.resume
 
 internal class ZedfilmExtractor @Inject constructor(
     private val httpClient: PlayerHttpClient,
@@ -44,8 +33,6 @@ internal class ZedfilmExtractor @Inject constructor(
     private val ZEDFILM_ORIGIN = "https://zedfilm.ru"
     private val HLAMER_ORIGIN = "https://hlamer.ru"
     private val YANI_REFERER = "https://yani.tv/"
-    private val TIMEOUT_MS = 20_000L
-    private val STREAM_SETTLE_DELAY_MS = 2_000L
 
     private val STREAM_URL_PATTERNS = listOf(
         Regex("(?i)https?:\\\\?/\\\\?/[^\"'\\s<>]+\\.(?:mpd|m3u8|mp4)[^\"'\\s<>]*"),
@@ -57,11 +44,16 @@ internal class ZedfilmExtractor @Inject constructor(
     // Zedfilm embeds stream metadata as: video_Init('eyJ2X2lkIj...')
     // The Base64 payload is JSON with fields such as url, url2, dash, type, and tracks.
     private val VIDEO_INIT_PATTERN = Regex("""(?i)video_Init\(\s*['"]([^'"]+)['"]""")
-    private val QUALITY_FROM_TEXT = Regex("(?i)(?<!\\d)(144|240|360|480|720|1080|1440|2160)p?")
+    // Длинные значения первыми и `(?!\d)` после числа: иначе `1440` читалось бы как `144`.
+    private val QUALITY_FROM_TEXT = Regex("(?i)(?<!\\d)(2160|1440|1080|720|480|360|240|144)(?!\\d)p?")
+    private val URL_ORIGIN_PATTERN = Regex("^(?:https?:)?//[^/?#]+")
+    private val AD_URL_TOKENS = setOf("ads", "ima")
+    private val AD_HOST_MARKERS = listOf("doubleclick", "yandex")
 
     /**
-     * Main flow: GET iframe HTML, decode video_Init(Base64 JSON), use url as DASH .mpd and url2
-     * as MP4 fallback. If that page contract changes, fall back to WebView request interception.
+     * GET iframe HTML, decode video_Init(Base64 JSON), use url as DASH .mpd and url2 as MP4
+     * fallback, then scan the page for stream URLs. There is no WebView fallback: if the page
+     * contract changes this reports a failure (logged as "no stream URLs found in iframe page").
      */
     override fun supports(url: String): Boolean = url.isZedfilmPlayerUrl()
 
@@ -69,25 +61,9 @@ internal class ZedfilmExtractor @Inject constructor(
         request: PlayerStreamRequest,
         context: Context,
     ): PlayerStreamResolveResult =
-        extractStream(
-            iframeUrl = request.iframeUrl,
-            context = context,
-            autoQualityLabel = request.autoQualityLabel,
-        )?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Zedfilm: no stream found")
-
-    private suspend fun extractStream(
-        iframeUrl: String,
-        context: Context,
-        autoQualityLabel: String = "auto",
-    ): ExtractedStream? {
-        val playerUrl = normalizeUrl(iframeUrl)
-        val staticResult = withContext(Dispatchers.IO) {
-            extractStatic(playerUrl, autoQualityLabel)
-        }
-        return staticResult ?: withContext(Dispatchers.Main) {
-            extractViaWebView(playerUrl, context, autoQualityLabel)
-        }
-    }
+        withContext(Dispatchers.IO) {
+            extractStatic(normalizeUrl(request.iframeUrl), request.autoQualityLabel)
+        }?.toResolveResult() ?: PlayerStreamResolveResult.Failed("Zedfilm: no stream found")
 
     private suspend fun extractStatic(
         playerUrl: String,
@@ -120,135 +96,6 @@ internal class ZedfilmExtractor @Inject constructor(
             headers = streamHeaders(playerUrl),
             qualities = qualities.takeIf { it.size > 1 },
         )
-    }
-
-    /** Emergency fallback for changed/obfuscated pages; the normal Zedfilm path is static parsing. */
-    private suspend fun extractViaWebView(
-        playerUrl: String,
-        context: Context,
-        autoQualityLabel: String,
-    ): ExtractedStream? = suspendCancellableCoroutine { cont ->
-        var webView: WebView? = null
-        var delivered = false
-        val handler = Handler(Looper.getMainLooper())
-        val capturedStreams = LinkedHashMap<String, CapturedStream>()
-        var fallbackStream: CapturedStream? = null
-        var settleRunnable: Runnable? = null
-        lateinit var timeoutRunnable: Runnable
-
-        fun deliver(result: ExtractedStream?) {
-            if (delivered) return
-            delivered = true
-            val wv = webView
-            webView = null
-            settleRunnable?.let(handler::removeCallbacks)
-            handler.removeCallbacks(timeoutRunnable)
-            handler.post { wv?.destroy() }
-            if (cont.isActive) cont.resume(result)
-        }
-
-        fun resultFromCapturedStreams(): ExtractedStream? {
-            val qualities = capturedStreams.toQualityMap()
-                .withAutoQualityLabel(autoQualityLabel)
-            val stream = qualities.values.lastOrNull()?.let { url ->
-                capturedStreams.values.firstOrNull { it.url == url }
-            } ?: fallbackStream
-
-            return stream?.let {
-                ExtractedStream(
-                    url = it.url,
-                    headers = it.headers,
-                    qualities = qualities.takeIf { qualityMap -> qualityMap.size > 1 },
-                )
-            }
-        }
-
-        fun scheduleDelivery(delayMs: Long = STREAM_SETTLE_DELAY_MS) {
-            settleRunnable?.let(handler::removeCallbacks)
-            val runnable = Runnable { deliver(resultFromCapturedStreams()) }
-            settleRunnable = runnable
-            handler.postDelayed(runnable, delayMs)
-        }
-
-        fun captureStream(url: String, requestHeaders: Map<String, String>) {
-            val cleanedUrl = normalizeEscapedUrl(normalizeUrl(url, playerUrl))
-            if (!isStreamUrl(cleanedUrl)) return
-
-            val headers = (requestHeaders + streamHeaders(playerUrl)).withBrowserUserAgent(userAgents.userAgent)
-            val stream = CapturedStream(url = cleanedUrl, headers = headers)
-            fallbackStream = stream
-            capturedStreams[qualityLabelFromText(cleanedUrl)] = stream
-            scheduleDelivery()
-        }
-
-        timeoutRunnable = Runnable {
-            if (resultFromCapturedStreams() == null) {
-                analyticsTracker.logExtractorFailure(
-                    "Zedfilm",
-                    playerUrl,
-                    "timed out before any stream was captured"
-                )
-            }
-            deliver(resultFromCapturedStreams())
-        }
-        handler.postDelayed(timeoutRunnable, TIMEOUT_MS)
-
-        webView = WebView(context).apply {
-            settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                @Suppress("DEPRECATION")
-                allowFileAccess = false
-                mediaPlaybackRequiresUserGesture = false
-                userAgentString = userAgents.userAgent
-            }
-
-            webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(
-                    view: WebView,
-                    request: WebResourceRequest,
-                ): WebResourceResponse? {
-                    captureStream(request.url.toString(), request.requestHeaders)
-                    return null
-                }
-
-                override fun onPageFinished(view: WebView, url: String) {
-                    view.evaluateJavascript(playProbeScript(), null)
-                }
-
-                override fun onReceivedError(
-                    view: WebView,
-                    request: WebResourceRequest,
-                    error: WebResourceError,
-                ) {
-                    analyticsTracker.logExtractorFailure(
-                        extractor = "Zedfilm",
-                        url = request.url.toString(),
-                        reason = "WebView error ${error.errorCode}: ${error.description}",
-                    )
-                }
-
-                override fun onReceivedSslError(
-                    view: WebView,
-                    handler: SslErrorHandler,
-                    error: SslError,
-                ) {
-                    analyticsTracker.logExtractorFailure(
-                        extractor = "Zedfilm",
-                        url = error.url.orEmpty(),
-                        reason = "WebView SSL error ${error.primaryError}",
-                    )
-                    super.onReceivedSslError(view, handler, error)
-                }
-            }
-
-            loadUrl(playerUrl, streamHeaders(playerUrl))
-        }
-
-        cont.invokeOnCancellation {
-            handler.removeCallbacks(timeoutRunnable)
-            deliver(null)
-        }
     }
 
     private fun collectCandidates(html: String, baseUrl: String): LinkedHashMap<String, String> {
@@ -318,21 +165,19 @@ internal class ZedfilmExtractor @Inject constructor(
             ?: linkedMapOf()
     }
 
-    private fun LinkedHashMap<String, CapturedStream>.toQualityMap(): LinkedHashMap<String, String> =
-        orderQualityMap(entries.associateTo(LinkedHashMap()) { it.key to it.value.url })
-
     private fun isStreamUrl(url: String): Boolean {
         val lowered = url.lowercase()
-        return !(!lowered.contains(".mpd") &&
-            !lowered.contains(".m3u8") &&
-            !lowered.contains(".mp4")) && !lowered.contains("ima") &&
-            !lowered.contains("doubleclick") &&
-            !lowered.contains("ads") &&
-            !lowered.contains("yandex")
+        val isMedia = lowered.contains(".mpd") || lowered.contains(".m3u8") || lowered.contains(".mp4")
+        if (!isMedia) return false
+        if (AD_HOST_MARKERS.any(lowered::contains)) return false
+        // Рекламные маркеры ищем целыми словами: подстрока «ads»/«ima» режет `uploads`,
+        // `animation` и `prima`, то есть вполне нормальные ссылки.
+        return lowered.split(Regex("[^a-z0-9]+")).none { it in AD_URL_TOKENS }
     }
 
+    // Хост отбрасываем: `s240.cdn.example` — это не качество.
     private fun qualityLabelFromText(text: String): String =
-        QUALITY_FROM_TEXT.find(text)
+        QUALITY_FROM_TEXT.find(text.replace(URL_ORIGIN_PATTERN, ""))
             ?.groupValues
             ?.getOrNull(1)
             ?.let { "${it}p" }
@@ -366,6 +211,12 @@ internal class ZedfilmExtractor @Inject constructor(
 
     // Zedfilm serves cyrillic error/meta text in windows-1251; the shared fetchText() helper
     // always decodes as UTF-8, so this stays a direct call to control the charset.
+    //
+    // Accept-Language and Accept-Encoding are explicit on purpose: without both the site answers
+    // the iframe URL with 404 "video not found". gzip is safe here only because the injected
+    // client has the ContentEncoding plugin (NetworkModule.provideHttpClient), which decodes the
+    // body even when the header is set by the caller. Neither header may go into stream headers:
+    // those are replayed by Media3, which sends `Accept-Encoding: identity` for media.
     private suspend fun fetchIframeHtml(url: String): String =
         httpClient.getText(
             url = url,
@@ -374,23 +225,8 @@ internal class ZedfilmExtractor @Inject constructor(
                 "Origin" to HLAMER_ORIGIN,
                 "User-Agent" to userAgents.userAgent,
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language" to RU_ACCEPT_LANGUAGE,
+                "Accept-Encoding" to "gzip",
             ),
         ).body(Charset.forName("windows-1251"))
-
-    private fun playProbeScript(): String = """
-        (function(){
-            try {
-                var videos = Array.prototype.slice.call(document.querySelectorAll("video"));
-                videos.forEach(function(video){
-                    video.muted = true;
-                    video.play().catch(function(){});
-                });
-            } catch(e) {}
-        })();
-    """.trimIndent()
-
-    private data class CapturedStream(
-        val url: String,
-        val headers: Map<String, String>,
-    )
 }

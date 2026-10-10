@@ -42,14 +42,22 @@ fun fixAssMarginPositions(assText: String): String {
     val (playResX, playResY) = readPlayRes(lines, scriptInfo)
     val resX = playResX ?: SYNTHETIC_PLAY_RES
     val resY = playResY ?: SYNTHETIC_PLAY_RES
-    val needsSyntheticRes = playResX == null || playResY == null
 
     val styleMap = parseStyles(lines, styles)
     val output = lines.toMutableList()
     rewriteDialoguePositions(lines, events, styleMap, resX, resY, output)
 
-    if (needsSyntheticRes) {
-        insertSyntheticPlayRes(output, scriptInfo, resX, resY)
+    // Вставляем только отсутствующий ключ: второй уже есть в файле, дубль перекрыл бы настоящее
+    // значение выдуманным.
+    if (playResX == null || playResY == null) {
+        insertSyntheticPlayRes(
+            output = output,
+            scriptInfo = scriptInfo,
+            missingX = playResX == null,
+            missingY = playResY == null,
+            resX = resX,
+            resY = resY,
+        )
     }
 
     return output.joinToString("\n")
@@ -173,6 +181,8 @@ private fun rewriteDialoguePositions(
 private fun insertSyntheticPlayRes(
     output: MutableList<String>,
     scriptInfo: AssSection?,
+    missingX: Boolean,
+    missingY: Boolean,
     resX: Int,
     resY: Int,
 ) {
@@ -180,8 +190,8 @@ private fun insertSyntheticPlayRes(
         output.add(0, "[Script Info]")
         1
     }
-    output.add(insertionIndex, "PlayResX: $resX")
-    output.add(insertionIndex, "PlayResY: $resY")
+    if (missingX) output.add(insertionIndex, "PlayResX: $resX")
+    if (missingY) output.add(insertionIndex, "PlayResY: $resY")
 }
 
 private fun String.splitKeyValue(): Pair<String, String>? {

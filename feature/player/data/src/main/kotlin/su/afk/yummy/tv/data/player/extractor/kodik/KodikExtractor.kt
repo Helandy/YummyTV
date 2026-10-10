@@ -12,6 +12,7 @@ import org.json.JSONObject
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
+import su.afk.yummy.tv.core.utils.network.RU_ACCEPT_LANGUAGE
 import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
 import su.afk.yummy.tv.data.player.extractor.common.logExtractorFailure
@@ -313,7 +314,7 @@ internal class KodikExtractor @Inject constructor(
             headers = mapOf(
                 "Referer" to referer,
                 "User-Agent" to userAgents.userAgent,
-                "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
+                "Accept-Language" to RU_ACCEPT_LANGUAGE,
             ),
         )
         if (!response.isSuccess) {
@@ -335,7 +336,7 @@ internal class KodikExtractor @Inject constructor(
             headers = mapOf(
                 "Referer" to referer,
                 "User-Agent" to userAgents.userAgent,
-                "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
+                "Accept-Language" to RU_ACCEPT_LANGUAGE,
             ),
         ).body
 

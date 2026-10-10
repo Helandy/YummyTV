@@ -79,6 +79,40 @@ class SibnetExtractorTest : BaseUnitTest() {
         assertTrue((result as PlayerStreamResolveResult.Stream).url.endsWith("/v/abc/1.mp4"))
     }
 
+    @Test
+    fun `source tag is used when there is no player src call`() = runTest {
+        stubPage(200, """<video><source src="//cdn.sibnet.ru/v/2.mp4" type="video/mp4"></video>""")
+
+        val result = extractor().extract(request(), context) as PlayerStreamResolveResult.Stream
+
+        assertEquals("https://cdn.sibnet.ru/v/2.mp4", result.url)
+    }
+
+    @Test
+    fun `relative source is resolved against the player url`() = runTest {
+        stubPage(200, """<script>player.src([{src: "/v/abc/1.mp4"}]);</script>""")
+
+        val result = extractor().extract(request(), context) as PlayerStreamResolveResult.Stream
+
+        assertEquals("https://video.sibnet.ru/v/abc/1.mp4", result.url)
+    }
+
+    @Test
+    fun `stream headers carry referer origin and user agent`() = runTest {
+        stubPage(200, """<script>player.src([{src: "/v/abc/1.mp4"}]);</script>""")
+
+        val result = extractor().extract(request(), context) as PlayerStreamResolveResult.Stream
+
+        assertEquals(
+            mapOf(
+                "Referer" to "https://video.sibnet.ru/shell.php?videoid=6181468",
+                "Origin" to "https://video.sibnet.ru",
+                "User-Agent" to "test-agent",
+            ),
+            result.headers,
+        )
+    }
+
     private companion object {
         const val IFRAME_URL = "//video.sibnet.ru/shell.php?videoid=6181468"
     }

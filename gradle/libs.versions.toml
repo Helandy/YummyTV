@@ -63,6 +63,7 @@ androidx-tracing = "2.0.3"
 androidx-testExt = "1.3.0"
 junit = "4.13.2"
 mockk = "1.14.11"
+org-json = "20260814"
 androidx-uiautomator = "2.4.0"
 
 [libraries]
@@ -185,6 +186,10 @@ androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "androidx-profileinstaller" }
 androidx-tracing-ktx = { module = "androidx.tracing:tracing-ktx", version.ref = "androidx-tracing" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+# Настоящий org.json для JVM-тестов: в android.jar для unit-тестов JSONObject пустой, и экстракторы
+# молча уходили бы в Failed. Семантика отличается от Android: optString от JSON null даёт "", а не
+# "null", и порядок ключей другой. Прод-код это учитывает (isNull / проверка на пустую строку).
+org-json = { module = "org.json:json", version.ref = "org-json" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 [bundles]

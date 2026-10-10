@@ -67,9 +67,15 @@ internal class RutubeExtractor @Inject constructor(
             )
             val streamUrl = options.optJSONObject("video_balancer")
                 ?.let { balancer ->
-                    balancer.optString("m3u8")
-                        .ifBlank { balancer.optString("default") }
-                        .takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+                    // JSON null у Android `optString` даёт строку "null": её нельзя считать
+                    // значением, иначе резервный `default` не подхватывался бы.
+                    listOf("m3u8", "default").firstNotNullOfOrNull { key ->
+                        balancer.optString(key).takeIf {
+                            !balancer.isNull(key) &&
+                                it.isNotBlank() &&
+                                !it.equals("null", ignoreCase = true)
+                        }
+                    }
                 }
                 ?: run {
                     analyticsTracker.logExtractorFailure(
@@ -183,7 +189,10 @@ internal class RutubeExtractor @Inject constructor(
 
         return when {
             trimmed.hasKnownUrlScheme() -> normalizeUrlScheme(trimmed)
-            trimmed.startsWith("/") -> "$RUTUBE_ORIGIN$trimmed"
+            // Корневой путь относится к хосту документа-основания, а не всегда к rutube.ru:
+            // варианты мастер-плейлиста лежат на хосте балансера.
+            trimmed.startsWith("/") ->
+                resolveRelativeUrl(trimmed, baseUrl) { "$RUTUBE_ORIGIN$trimmed" }
             else -> resolveRelativeUrl(trimmed, baseUrl) { "https://$trimmed" }
         }
     }

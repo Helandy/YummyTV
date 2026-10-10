@@ -21,4 +21,7 @@ dependencies {
     implementation(libs.okhttp)
 
     testImplementation(project(":core:testing"))
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.client.encoding)
+    testImplementation(libs.org.json)
 }

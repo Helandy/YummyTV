@@ -35,6 +35,9 @@ object NetworkModule {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
             requestTimeoutMillis = REQUEST_TIMEOUT_MS
         }
+        // Нагружено: экстракторы полагаются на этот плагин. Он добавляет Accept-Encoding и
+        // декодирует ответ, а часть страниц плееров (Zedfilm) без gzip отвечает 404. Убрать или
+        // заменить клиент без него нельзя, не проверив ZedfilmExtractor.
         install(ContentEncoding) {
             gzip()
             deflate()

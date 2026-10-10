@@ -47,7 +47,7 @@ internal fun parseSources(
             val quality = source.optJSONObject("quality") ?: continue
             val qualities = linkedMapOf<String, String>()
             quality.keys().forEach { label ->
-                quality.optString(label)
+                (quality.optNonBlankString(label) ?: return@forEach)
                     .split(" or ")
                     .firstOrNull()
                     ?.trim()
@@ -64,9 +64,9 @@ internal fun parseSources(
                     track = AllohaAudioTrack(
                         // audioId is Alloha's own identifier; fall back to the index so a source
                         // without one still stays selectable.
-                        id = source.optString("audioId").takeIf(String::isNotBlank)
-                            ?: index.toString(),
-                        label = source.optString("label").trim().takeIf(String::isNotBlank)
+                        id = source.optNonBlankString("audioId") ?: index.toString(),
+                        label = source.optNonBlankString("label")?.trim()
+                            ?.takeIf(String::isNotBlank)
                             ?: "#${index + 1}",
                         isDefault = source.optBoolean("default"),
                     ),
@@ -82,14 +82,16 @@ internal fun parseSources(
         for (index in 0 until tracks.length()) {
             val entry = tracks.optJSONObject(index) ?: continue
             if (!entry.optString("kind").equals("captions", ignoreCase = true)) continue
-            val src = entry.optString("src").normalizeStreamUrl().takeIf(String::isNotBlank)
+            val src = entry.optNonBlankString("src")?.normalizeStreamUrl()
+                ?.takeIf(String::isNotBlank)
                 ?: continue
             add(
                 AllohaSubtitleTrack(
-                    label = entry.optString("label").trim().takeIf(String::isNotBlank)
+                    label = entry.optNonBlankString("label")?.trim()
+                        ?.takeIf(String::isNotBlank)
                         ?: "#${index + 1}",
                     url = src,
-                    language = entry.optString("language").takeIf(String::isNotBlank),
+                    language = entry.optNonBlankString("language"),
                     format = src.substringBefore('?').substringAfterLast('.', "")
                         .lowercase()
                         .takeIf(String::isNotBlank),
@@ -104,6 +106,13 @@ internal fun parseSources(
     }
     return AllohaParsedSources(audioTracks = audioTracks, subtitles = subtitles)
 }
+
+/**
+ * `optString` у Android `org.json` на JSON `null` возвращает строку `"null"`, которая не пуста и
+ * превращалась бы в «ссылку» или идентификатор дорожки. Здесь `null` и пустая строка — отсутствие.
+ */
+private fun JSONObject.optNonBlankString(key: String): String? =
+    if (isNull(key)) null else optString(key).takeIf(String::isNotBlank)
 
 /** Used both here and by [su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor]'s bridge. */
 internal fun String.normalizeStreamUrl(): String = if (startsWith("//")) "https:$this" else this
