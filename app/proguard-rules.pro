@@ -14,3 +14,8 @@
 # рефлексией по именам из манифеста. R8 вырезал конструкторы регистраторов, MlKitContext
 # оставался пустым, и GmsBarcodeScanning.getClient падал с NPE при открытии «Войти на ТВ».
 -keep class * implements com.google.firebase.components.ComponentRegistrar { <init>(); }
+
+# Номера строк и имя файла в стектрейсах release-сборки: без них краши в AppMetrica приходят
+# без строк, а mapping.txt не может восстановить позицию. Имя файла скрываем за SourceFile.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

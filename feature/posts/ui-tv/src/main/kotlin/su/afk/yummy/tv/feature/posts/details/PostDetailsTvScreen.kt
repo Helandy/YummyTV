@@ -31,7 +31,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -162,10 +161,35 @@ fun PostDetailsTvScreen(
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                     )
                 }
+                // Профиль пользователя на ТВ не зарегистрирован, поэтому автор — не кнопка, а
+                // обычная подпись; фокусируемость нужна для DPAD-скролла списка.
                 item {
-                    TextButton(onClick = { onEvent(PostDetailsState.Event.AuthorSelected(details.author.id)) }) {
-                        Text("${details.author.nickname} · ${details.createdAt.formatFeedDateTime()}")
-                    }
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val focused by interactionSource.collectIsFocusedAsState()
+                    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                    val shape = RoundedCornerShape(12.dp)
+                    Text(
+                        "${details.author.nickname} · ${details.createdAt.formatFeedDateTime()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .clip(shape)
+                            .background(
+                                if (focused) {
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                                } else {
+                                    Color.Transparent
+                                },
+                            )
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                                }
+                            }
+                            .focusable(interactionSource = interactionSource)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
                 }
                 details.previewImageUrl?.takeIf(String::isNotBlank)?.let { url ->
                     item {

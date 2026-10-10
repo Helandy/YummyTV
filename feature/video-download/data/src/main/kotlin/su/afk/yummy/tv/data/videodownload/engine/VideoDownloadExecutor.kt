@@ -14,12 +14,14 @@ import androidx.media3.exoplayer.offline.ProgressiveDownloader
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
@@ -110,6 +112,10 @@ internal class VideoDownloadExecutor @Inject constructor(
                 "url=${item.streamUrl.safeDownloadUrlForLog()}"
         }
         var cancellationWatcher: Job? = null
+        // Колбэк загрузчика исполняется на блокирующем потоке и не должен ждать БД: снимки прогресса
+        // уходят в conflated-канал, а пишет их отдельная корутина — важен только последний.
+        val progressUpdates = Channel<ProgressSnapshot>(Channel.CONFLATED)
+        var progressWriter: Job? = null
         try {
             val downloadHeaders = if (liveSession != null) {
                 emptyMap()
@@ -155,6 +161,18 @@ internal class VideoDownloadExecutor @Inject constructor(
                     "headers=${downloadHeaders.safeHeaderNames()} retryUsed=$retriedAfterForbidden " +
                     "player=${strategy.playerLabel} liveSessionUsed=${liveSession != null}"
             }
+            progressWriter = launch {
+                for (snapshot in progressUpdates) {
+                    repository.updateStatus(
+                        id = id,
+                        status = VideoDownloadStatus.Downloading,
+                        progress = snapshot.progress,
+                        bytesDownloaded = snapshot.bytesDownloaded,
+                        totalBytes = snapshot.totalBytes,
+                        errorMessage = null,
+                    )
+                }
+            }
             val finished = AtomicBoolean(false)
             // Media3 требует cancel() и прерывание потока: сам download() блокирующий и отмену корутины
             // не видит. runInterruptible прерывает поток, а этот сторож зовёт cancel().
@@ -191,16 +209,9 @@ internal class VideoDownloadExecutor @Inject constructor(
                     if (progressPercent != lastProgress) {
                         lastProgress = progressPercent
                         onProgressPercent(progressPercent)
-                        runBlocking {
-                            repository.updateStatus(
-                                id = id,
-                                status = VideoDownloadStatus.Downloading,
-                                progress = progress,
-                                bytesDownloaded = storedBytesDownloaded,
-                                totalBytes = storedTotalBytes,
-                                errorMessage = null,
-                            )
-                        }
+                        progressUpdates.trySend(
+                            ProgressSnapshot(progress, storedBytesDownloaded, storedTotalBytes),
+                        )
                     }
                     if (progressPercent / PROGRESS_LOG_STEP > lastLoggedProgress / PROGRESS_LOG_STEP) {
                         lastLoggedProgress = progressPercent
@@ -214,6 +225,9 @@ internal class VideoDownloadExecutor @Inject constructor(
                 finished.set(true)
             }
         } finally {
+            // Дописать последний снимок до того, как воркер выставит итоговый статус
+            progressUpdates.close()
+            withContext(NonCancellable) { progressWriter?.join() }
             cancellationWatcher?.cancel()
             sessionRefreshTimer?.cancel()
             liveSession?.close()
@@ -264,3 +278,9 @@ internal class VideoDownloadExecutor @Inject constructor(
         const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
     }
 }
+
+private data class ProgressSnapshot(
+    val progress: Float,
+    val bytesDownloaded: Long,
+    val totalBytes: Long?,
+)

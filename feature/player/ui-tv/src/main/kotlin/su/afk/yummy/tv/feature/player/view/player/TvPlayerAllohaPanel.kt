@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -125,7 +126,7 @@ internal fun TvPlayerAllohaPanel(
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexed(
+private fun LazyListScope.itemsIndexed(
     values: List<String>,
     keyPrefix: String,
     itemContent: @Composable (index: Int, label: String) -> Unit,

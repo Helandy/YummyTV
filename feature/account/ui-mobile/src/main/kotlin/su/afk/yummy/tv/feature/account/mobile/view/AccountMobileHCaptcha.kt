@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -49,6 +50,16 @@ internal fun AccountMobileHCaptcha(
                 WebView(context).apply {
                     setBackgroundColor(android.graphics.Color.TRANSPARENT)
                     webViewClient = object : WebViewClient() {
+                        // Мост YummyCaptcha доступен любому загруженному фрейму: уход главной
+                        // страницы на сторонний хост запрещаем, пускаем только капчу и сайт.
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                        ): Boolean {
+                            val target = request ?: return false
+                            return target.isForMainFrame && !target.url.host.isTrustedCaptchaHost()
+                        }
+
                         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                             loading = true
                         }
@@ -67,7 +78,7 @@ internal fun AccountMobileHCaptcha(
                             onExpiredState = { currentOnExpired },
                             onFailedState = { currentOnFailed },
                         ),
-                        "YummyCaptcha"
+                        "YummyCaptcha",
                     )
                     loadDataWithBaseURL("https://yummyani.me/", html, "text/html", "utf-8", null)
                 }
@@ -117,3 +128,10 @@ private fun mobileCaptchaHtml(siteKey: String) = """
     <body><div class="h-captcha" data-sitekey="$siteKey" data-theme="dark"
     data-callback="solved" data-expired-callback="expired" data-error-callback="failed"></div></body></html>
 """.trimIndent()
+
+private val TrustedCaptchaHosts = listOf("hcaptcha.com", "yummyani.me")
+
+private fun String?.isTrustedCaptchaHost(): Boolean {
+    val host = this?.lowercase() ?: return false
+    return TrustedCaptchaHosts.any { host == it || host.endsWith(".$it") }
+}

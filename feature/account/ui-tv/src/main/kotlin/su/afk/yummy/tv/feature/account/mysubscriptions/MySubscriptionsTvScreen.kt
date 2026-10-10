@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
@@ -126,7 +127,7 @@ private fun MySubscriptionsGrid(
     }
 }
 
-private inline fun androidx.compose.foundation.lazy.grid.LazyGridScope.itemsIndexedSubscriptions(
+private inline fun LazyGridScope.itemsIndexedSubscriptions(
     state: MySubscriptionsState.State,
     noinline onEvent: (MySubscriptionsState.Event) -> Unit,
     itemFocusRequesters: List<FocusRequester>,
