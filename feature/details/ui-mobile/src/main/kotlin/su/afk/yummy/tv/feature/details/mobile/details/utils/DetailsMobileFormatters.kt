@@ -8,7 +8,6 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
-import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.utils.episode.releaseCountdown
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -18,9 +17,6 @@ import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale
-
-internal fun AnimePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 internal fun Double.formatRating(): String {
     val rounded = (this * 10).toInt() / 10.0

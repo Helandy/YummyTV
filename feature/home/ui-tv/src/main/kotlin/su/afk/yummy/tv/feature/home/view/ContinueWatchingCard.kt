@@ -7,12 +7,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.home.R
-import su.afk.yummy.tv.feature.home.utils.bestUrl
-import su.afk.yummy.tv.feature.home.utils.msToTimeString
+import su.afk.yummy.tv.domain.home.model.bestUrl
 
 private val CardWidth = 220.dp
 private val ThumbnailHeight = 124.dp
@@ -34,8 +34,8 @@ internal fun ContinueWatchingCard(
     } else {
         0f
     }
-    val positionLabel = entry.positionMs.msToTimeString()
-    val durationLabel = entry.durationMs.msToTimeString()
+    val positionLabel = entry.positionMs.millisToClockTime()
+    val durationLabel = entry.durationMs.millisToClockTime()
     val timingLabel =
         if (entry.durationMs > 0L) "$positionLabel / $durationLabel" else positionLabel
 

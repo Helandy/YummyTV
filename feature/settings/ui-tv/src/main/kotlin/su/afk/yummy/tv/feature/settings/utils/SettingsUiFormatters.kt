@@ -183,13 +183,13 @@ internal fun LibraryContinueWatchingCardSize.label(): String = stringResource(
 internal fun LibraryContinueWatchingCardSize.hint(): String = stringResource(
     when (this) {
         LibraryContinueWatchingCardSize.COMPACT ->
-            R.string.settings_library_continue_watching_card_size_compact_hint
+            R.string.settings_library_continue_watching_card_size_compact_hint_tv
 
         LibraryContinueWatchingCardSize.STANDARD ->
             R.string.settings_library_continue_watching_card_size_standard_hint
 
         LibraryContinueWatchingCardSize.LARGE ->
-            R.string.settings_library_continue_watching_card_size_large_hint
+            R.string.settings_library_continue_watching_card_size_large_hint_tv
     },
 )
 

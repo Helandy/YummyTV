@@ -75,7 +75,7 @@ fun ReviewsListTvScreen(
             ),
     ) {
         Text(
-            stringResource(R.string.reviews_title),
+            stringResource(R.string.reviews_title_tv),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -103,7 +103,7 @@ fun ReviewsListTvScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 TvStateMessage(
-                    title = stringResource(R.string.reviews_error),
+                    title = stringResource(R.string.reviews_error_tv),
                     icon = Icons.Filled.Warning,
                     onRetry = reviews::retry,
                 )
@@ -116,7 +116,7 @@ fun ReviewsListTvScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 TvStateMessage(
-                    title = stringResource(R.string.reviews_empty),
+                    title = stringResource(R.string.reviews_empty_tv),
                     icon = Icons.Filled.RateReview,
                 )
             }
@@ -176,7 +176,7 @@ fun ReviewsListTvScreen(
 
                             is LoadState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
                                 TvAppendErrorFooter(
-                                    message = stringResource(R.string.reviews_error),
+                                    message = stringResource(R.string.reviews_error_tv),
                                     onRetry = reviews::retry,
                                 )
                             }

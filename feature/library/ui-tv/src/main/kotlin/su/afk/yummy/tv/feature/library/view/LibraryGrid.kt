@@ -58,9 +58,9 @@ import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.utils.posterUrl
-import su.afk.yummy.tv.feature.library.utils.tvDateText
+import su.afk.yummy.tv.feature.library.utils.dateText
 import su.afk.yummy.tv.feature.library.utils.tvReleaseCountdownText
-import su.afk.yummy.tv.feature.library.utils.tvUserRating
+import su.afk.yummy.tv.feature.library.utils.validUserRating
 import su.afk.yummy.tv.feature.library.utils.tvYearSeasonText
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -223,7 +223,7 @@ internal fun LibraryGrid(
                     }
                     val stableOnFocused =
                         remember(item.animeId, index) { { rememberFocusedItem(index) } }
-                    val rating = item.tvUserRating()
+                    val rating = item.validUserRating()
                     val yearSeasonText = item.tvYearSeasonText()
                     val stableOnDelete = remember(item.animeId, index) {
                         {
@@ -248,7 +248,7 @@ internal fun LibraryGrid(
                         onFocused = stableOnFocused,
                         onDelete = stableOnDelete,
                         cardWidth = adaptiveCardWidth,
-                        subtitle = item.tvDateText(tab),
+                        subtitle = item.dateText(tab),
                         caption = item.tvReleaseCountdownText(nowEpochSeconds),
                         posterOverlay = {
                             rating?.let {

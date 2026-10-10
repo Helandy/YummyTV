@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player.common.utils
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.media3.common.Player
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerSeekController
@@ -61,8 +62,8 @@ fun skipPlayerSegment(
     skipUi.showSnackbar(
         context.getString(
             skip.type.skippedMessageRes(),
-            formatPlayerTime(skip.segment.startMs),
-            formatPlayerTime(skip.segment.endMs),
+            skip.segment.startMs.millisToClockTime(),
+            skip.segment.endMs.millisToClockTime(),
         )
     )
     if (reportSelection) {

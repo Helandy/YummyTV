@@ -19,7 +19,7 @@
     <string name="comments_new_comment">Новый комментарий</string>
     <string name="comments_reply_to">Ответ для %1$s</string>
     <string name="comments_editing">Редактирование комментария</string>
-    <string name="comments_input_hint">Нажмите ОК, чтобы написать комментарий</string>
+    <string name="comments_input_hint_tv">Нажмите ОК, чтобы написать комментарий</string>
     <string name="comments_cancel">Отмена</string>
     <string name="comments_send">Отправить</string>
     <string name="comments_delete_title">Удалить комментарий?</string>

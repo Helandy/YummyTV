@@ -41,8 +41,8 @@ import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
-import su.afk.yummy.tv.feature.details.mobile.episodes.model.EpisodeMobileWatchStatus
-import su.afk.yummy.tv.feature.details.mobile.episodes.utils.durationLabel
+import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.durationLabel
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.isDownloadBusy
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.isPaused
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsMediaCard
@@ -56,7 +56,7 @@ private val DownloadResolvingColor = Color(0xFFFFC107)
 internal fun EpisodeMobileCard(
     video: AnimeVideo,
     episodeNumber: String = video.episode,
-    watchStatus: EpisodeMobileWatchStatus,
+    watchStatus: EpisodeWatchStatus,
     kodikIframeUrl: String?,
     episodeTitle: String?,
     episodeDescription: String?,
@@ -83,7 +83,7 @@ internal fun EpisodeMobileCard(
     DetailsMediaCard(
         title = stringResource(R.string.details_mobile_episode, episodeNumber),
         subtitle = watchStatus.durationLabel(video.durationSeconds),
-        subtitleColor = if (watchStatus == EpisodeMobileWatchStatus.None) {
+        subtitleColor = if (watchStatus == EpisodeWatchStatus.None) {
             Color.Unspecified
         } else {
             InProgressColor
@@ -92,10 +92,10 @@ internal fun EpisodeMobileCard(
         secondaryFooterTextColor = downloadStatusColor,
         imageModel = kodikIframeUrl?.let(::KodikThumbnail),
         badge = episodeNumber,
-        mediaProgress = (watchStatus as? EpisodeMobileWatchStatus.InProgress)?.progress,
+        mediaProgress = (watchStatus as? EpisodeWatchStatus.InProgress)?.progress,
         mediaProgressColor = InProgressColor,
         mediaTopEndContent = when (watchStatus) {
-            EpisodeMobileWatchStatus.None -> null
+            EpisodeWatchStatus.None -> null
             else -> {
                 { EpisodeMobileWatchIndicator(watchStatus = watchStatus) }
             }
@@ -319,17 +319,17 @@ private fun downloadStatusText(
 
 @Composable
 private fun EpisodeMobileWatchIndicator(
-    watchStatus: EpisodeMobileWatchStatus,
+    watchStatus: EpisodeWatchStatus,
 ) {
     when (watchStatus) {
-        EpisodeMobileWatchStatus.None -> Unit
-        is EpisodeMobileWatchStatus.InProgress -> Box(
+        EpisodeWatchStatus.None -> Unit
+        is EpisodeWatchStatus.InProgress -> Box(
             modifier = Modifier
                 .size(8.dp)
                 .background(InProgressColor, CircleShape),
         )
 
-        is EpisodeMobileWatchStatus.Watched -> Box(
+        is EpisodeWatchStatus.Watched -> Box(
             modifier = Modifier
                 .size(24.dp)
                 .background(Color.Black.copy(alpha = 0.72f), CircleShape),

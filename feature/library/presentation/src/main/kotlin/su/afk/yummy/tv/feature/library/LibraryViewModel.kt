@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.paging.pagingFlow
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
@@ -38,7 +39,6 @@ import su.afk.yummy.tv.feature.library.model.LibraryTab
 import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.buildLibraryTabItems
 import su.afk.yummy.tv.feature.library.utils.historyProgressKey
-import su.afk.yummy.tv.feature.library.utils.toToastTimeString
 import su.afk.yummy.tv.feature.library.utils.userAnimeList
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
@@ -359,7 +359,7 @@ class LibraryViewModel @Inject internal constructor(
                             stringProvider.get(
                                 R.string.library_remote_continue_progress_toast,
                                 progress.episode,
-                                progress.positionMs.toToastTimeString(),
+                                progress.positionMs.millisToClockTime(),
                             ),
                         ),
                     )

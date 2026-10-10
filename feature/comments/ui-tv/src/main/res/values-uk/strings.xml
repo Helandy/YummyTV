@@ -19,7 +19,7 @@
     <string name="comments_new_comment">Новий коментар</string>
     <string name="comments_reply_to">Відповідь для %1$s</string>
     <string name="comments_editing">Редагування коментаря</string>
-    <string name="comments_input_hint">Натисніть ОК, щоб написати коментар</string>
+    <string name="comments_input_hint_tv">Натисніть ОК, щоб написати коментар</string>
     <string name="comments_cancel">Скасувати</string>
     <string name="comments_send">Надіслати</string>
     <string name="comments_delete_title">Видалити коментар?</string>

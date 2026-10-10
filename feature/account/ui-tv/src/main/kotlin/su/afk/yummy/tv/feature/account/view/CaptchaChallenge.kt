@@ -21,7 +21,7 @@ internal fun CaptchaChallenge() {
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = stringResource(R.string.account_captcha_hint),
+            text = stringResource(R.string.account_captcha_hint_tv),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

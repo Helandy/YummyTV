@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvProgressMediaCard
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.library.utils.bestUrl
+import su.afk.yummy.tv.domain.home.model.bestUrl
 import su.afk.yummy.tv.feature.library.utils.timingLabel
 
 @Composable

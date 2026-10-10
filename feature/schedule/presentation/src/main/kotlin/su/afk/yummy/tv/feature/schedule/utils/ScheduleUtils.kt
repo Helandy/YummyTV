@@ -4,10 +4,10 @@ import su.afk.yummy.tv.feature.schedule.model.ScheduleRemainingLabels
 import java.time.Duration
 import java.time.ZonedDateTime
 
-internal fun ZonedDateTime.timeLabel(): String =
+fun ZonedDateTime.timeLabel(): String =
     "%02d:%02d".format(hour, minute)
 
-internal fun ZonedDateTime.remainingText(
+fun ZonedDateTime.remainingText(
     now: ZonedDateTime,
     labels: ScheduleRemainingLabels,
 ): String {

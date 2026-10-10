@@ -3,11 +3,11 @@ package su.afk.yummy.tv.feature.schedule.mobile.view
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.schedule.mobile.R
-import su.afk.yummy.tv.feature.schedule.mobile.model.ScheduleMobileRemainingLabels
+import su.afk.yummy.tv.feature.schedule.model.ScheduleRemainingLabels
 
 @Composable
-internal fun scheduleMobileRemainingLabels(): ScheduleMobileRemainingLabels =
-    ScheduleMobileRemainingLabels(
+internal fun scheduleMobileRemainingLabels(): ScheduleRemainingLabels =
+    ScheduleRemainingLabels(
         dayOne = stringResource(R.string.schedule_mobile_day_one),
         dayFew = stringResource(R.string.schedule_mobile_day_few),
         dayMany = stringResource(R.string.schedule_mobile_day_many),

@@ -16,7 +16,7 @@
     <string name="account_tv_register_hint">Немає акаунта? Зареєструйтеся на сайті yummyani.me — у застосунку реєстрації немає. Після цього увійдіть тут із тими самими email або нікнеймом і паролем.</string>
     <string name="account_loading">Завантаження...</string>
     <string name="account_captcha_title">Потрібна перевірка</string>
-    <string name="account_captcha_hint">Сайт запитує капчу, її не пройти пультом. Авторизуйтесь з телефону: натисніть «Увійти з телефону».</string>
+    <string name="account_captcha_hint_tv">Сайт запитує капчу, її не пройти пультом. Авторизуйтесь з телефону: натисніть «Увійти з телефону».</string>
     <string name="account_tab_profile">Профіль</string>
     <string name="account_tab_stats">Статистика</string>
     <string name="account_tab_notifications">Сповіщення</string>
@@ -40,12 +40,12 @@
     <string name="account_profile_watch_type_movies">Фільми</string>
     <string name="account_profile_list_duration_title">Тривалість за списками</string>
     <string name="account_profile_genres_title">Жанри</string>
-    <string name="account_profile_ratings_title">Поставлені оцінки (Середня %1$s)</string>
+    <string name="account_profile_ratings_title">Оцінені тайтли (Середня %1$s)</string>
     <string name="account_profile_stats_empty">Даних поки немає</string>
     <string name="account_profile_duration_hours">%1$d год</string>
     <string name="account_profile_duration_less_hour">&lt;1 год</string>
     <string name="account_profile_percent_full">100%</string>
-    <string name="account_profile_days_online">днів поспіль на сайті</string>
+    <string name="account_profile_days_online_tv">днів поспіль на сайті</string>
     <string name="account_profile_list_watching">Дивлюся</string>
     <string name="account_profile_list_planned">У планах</string>
     <string name="account_profile_list_completed">Переглянуто</string>
@@ -79,11 +79,11 @@
     <string name="account_notification_type_blogvideo">Відео блогерів</string>
     <string name="account_delete">Видалити</string>
     <string name="account_error_captcha_response_empty">Відповідь капчі порожня</string>
-    <string name="account_error_captcha_expired">Строк дії капчі минув. Спробуйте ще раз.</string>
+    <string name="account_error_captcha_expired">Термін дії капчі минув. Спробуйте ще раз.</string>
     <string name="account_error_captcha_load_failed">Не вдалося завантажити капчу. Спробуйте ще раз.</string>
     <string name="account_error_captcha_rejected">Капчу не прийнято. Спробуйте ще раз.</string>
     <string name="account_error_credentials_required">Введіть логін і пароль</string>
-    <string name="account_error_logout_failed">Не вдалося вийти з акаунта</string>
+    <string name="account_error_logout_failed">Не вдалося вийти з акаунту</string>
     <string name="account_error_refresh_failed">Не вдалося оновити профіль</string>
     <string name="account_error_open_notification_failed">Не вдалося відкрити сповіщення</string>
     <string name="account_error_sign_in_failed">Не вдалося увійти</string>

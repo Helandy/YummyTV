@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchSort
-import su.afk.yummy.tv.feature.search.mobile.model.GenrePickerMode
+import su.afk.yummy.tv.feature.search.model.GenrePickerMode
 
 /** Filter panel sliding in from the end edge over a dimmed scrim. */
 @Composable

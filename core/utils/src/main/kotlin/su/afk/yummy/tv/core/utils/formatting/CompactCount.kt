@@ -9,10 +9,11 @@ import java.util.Locale
 fun Int.toCompactCount(): String = toLong().toCompactCount()
 
 fun Long.toCompactCount(): String = when {
-    this >= 1_000_000 -> "${(this / 1_000_000f).compactDecimal()}M"
-    this >= 1_000 -> "${(this / 1_000f).compactDecimal()}K"
+    this >= 1_000_000 -> "${(this / 1_000_000f).toCompactDecimal()}M"
+    this >= 1_000 -> "${(this / 1_000f).toCompactDecimal()}K"
     else -> toString()
 }
 
-private fun Float.compactDecimal(): String =
+/** Число без дробной части, если она нулевая, иначе с одним знаком: `2`, `1.1`. */
+fun Float.toCompactDecimal(): String =
     if (this % 1f == 0f) toInt().toString() else String.format(Locale.US, "%.1f", this)

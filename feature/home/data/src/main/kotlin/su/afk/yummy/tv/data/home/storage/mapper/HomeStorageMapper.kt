@@ -27,6 +27,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.model.HomePoster
+import su.afk.yummy.tv.domain.home.model.bestUrl
 
 internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
@@ -121,9 +122,6 @@ internal fun WatchProgressEntry.toHomeContinueWatchingItem(): HomeContinueWatchi
         dubbing = dubbing,
         screenshotUrl = screenshotUrl,
     )
-
-private fun HomePoster.bestUrl(): String? =
-    mega ?: fullsize ?: big ?: medium ?: small
 
 private fun String.toHomePoster(): HomePoster =
     HomePoster(

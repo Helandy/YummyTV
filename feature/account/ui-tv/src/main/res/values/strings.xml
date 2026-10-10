@@ -16,7 +16,7 @@
     <string name="account_tv_register_hint">No account? Sign up on yummyani.me — registration isn\'t available in the app. Then sign in here with the same email or nickname and password.</string>
     <string name="account_loading">Loading...</string>
     <string name="account_captcha_title">Verification required</string>
-    <string name="account_captcha_hint">The site asks for a captcha, which can\'t be solved with a remote. Sign in from your phone: tap “Login from mobile”.</string>
+    <string name="account_captcha_hint_tv">The site asks for a captcha, which can\'t be solved with a remote. Sign in from your phone: tap “Login from mobile”.</string>
     <string name="account_tab_profile">Profile</string>
     <string name="account_tab_stats">Statistics</string>
     <string name="account_tab_notifications">Notifications</string>
@@ -45,7 +45,7 @@
     <string name="account_profile_duration_hours">%1$d h</string>
     <string name="account_profile_duration_less_hour">&lt;1 h</string>
     <string name="account_profile_percent_full">100%</string>
-    <string name="account_profile_days_online">days in a row on site</string>
+    <string name="account_profile_days_online_tv">days in a row on site</string>
     <string name="account_profile_list_watching">Watching</string>
     <string name="account_profile_list_planned">Planned</string>
     <string name="account_profile_list_completed">Completed</string>

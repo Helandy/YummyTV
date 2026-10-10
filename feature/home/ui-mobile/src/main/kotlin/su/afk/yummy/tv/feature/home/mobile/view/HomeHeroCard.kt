@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+import su.afk.yummy.tv.domain.home.model.bestUrl
 
 /** Фиксированная высота: длина названия и описания не должна менять высоту карусели. */
 private val HERO_CARD_HEIGHT = 220.dp

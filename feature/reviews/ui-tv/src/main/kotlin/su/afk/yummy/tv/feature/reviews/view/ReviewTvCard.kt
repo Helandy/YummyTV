@@ -45,7 +45,7 @@ import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.domain.reviews.model.ReviewReactions
 import su.afk.yummy.tv.domain.reviews.model.ReviewStatus
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
-import su.afk.yummy.tv.feature.reviews.tv.utils.displayReviewDate
+import su.afk.yummy.tv.feature.reviews.utils.displayReviewDate
 import su.afk.yummy.tv.feature.reviews.utils.reviewStatusColor
 import su.afk.yummy.tv.feature.reviews.utils.reviewStatusLabel
 import su.afk.yummy.tv.feature.reviews.utils.sanitizeReviewHtml

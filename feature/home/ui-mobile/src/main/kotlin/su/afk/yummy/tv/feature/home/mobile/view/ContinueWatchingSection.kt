@@ -18,7 +18,7 @@ import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.home.mobile.R
-import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+import su.afk.yummy.tv.domain.home.model.bestUrl
 import su.afk.yummy.tv.feature.home.mobile.utils.episodeSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.timingSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.watchProgress

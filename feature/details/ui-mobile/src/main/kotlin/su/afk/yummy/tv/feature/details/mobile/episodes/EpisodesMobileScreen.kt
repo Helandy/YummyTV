@@ -32,7 +32,7 @@ import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
-import su.afk.yummy.tv.feature.details.mobile.episodes.utils.mobileWatchStatus
+import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.representativeVideo
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeActionsSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadBalancerSheet
@@ -115,7 +115,7 @@ fun EpisodesMobileScreen(
                     EpisodeMobileCard(
                         video = video,
                         episodeNumber = group.episode,
-                        watchStatus = group.videos.mobileWatchStatus(state.watchProgress),
+                        watchStatus = group.videos.watchStatus(state.watchProgress),
                         kodikIframeUrl = kodikIframeUrl,
                         episodeTitle = episodeInfo?.title,
                         episodeDescription = episodeInfo?.description,

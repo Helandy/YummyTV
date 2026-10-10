@@ -7,15 +7,10 @@ import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.utils.episode.releaseCountdown
-import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 internal fun LibraryTab.mobileTitle(): String = when (this) {
@@ -38,59 +33,8 @@ internal fun LibrarySort.mobileLabel(): String = when (this) {
     LibrarySort.TITLE -> stringResource(R.string.library_mobile_sort_title)
 }
 
-internal fun LibraryItem.mobileDateText(tab: LibraryTab): String? {
-    val date = when (tab) {
-        LibraryTab.FAVORITES -> favoriteUpdatedAt
-        LibraryTab.CONTINUE_WATCHING -> 0L
-        LibraryTab.HISTORY -> 0L
-        else -> listUpdatedAt
-    }.formatLibraryDate()
-    return date
-}
-
-internal fun LibraryItem.mobileUserRating(): Double? =
-    userRating?.takeIf { it in 1..10 }?.toDouble()
-
-private val libraryDateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
-private fun Long.formatLibraryDate(): String? =
-    takeIf { it > 0L }?.let { libraryDateFormatter.format(Date(it)) }
-
 internal fun HomeContinueWatchingItem.watchProgress(): Float =
     if (durationMs <= 0L) 0f else (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
-
-internal fun HomeContinueWatchingItem.timingLabel(): String? =
-    if (durationMs > 0L) {
-        "${positionMs.toTimeString()} / ${durationMs.toTimeString()}"
-    } else {
-        positionMs.toTimeString()
-    }
-
-private fun Long.toTimeString(): String {
-    val totalSec = coerceAtLeast(0L) / 1000
-    val h = totalSec / 3600
-    val m = (totalSec % 3600) / 60
-    val s = totalSec % 60
-    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
-}
-
-internal fun WatchHistoryEntry.watchedAtLabel(): String? =
-    watchedAtSeconds.takeIf { it > 0 }?.formatRelativeDateTime()
-
-internal fun WatchHistoryEntry.timingLabel(): String? =
-    if (durationSeconds > 0) {
-        "${positionSeconds.toSecondsTimeString()} / ${durationSeconds.toSecondsTimeString()}"
-    } else {
-        null
-    }
-
-private fun Int.toSecondsTimeString(): String {
-    val totalSec = coerceAtLeast(0)
-    val h = totalSec / 3600
-    val m = (totalSec % 3600) / 60
-    val s = totalSec % 60
-    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
-}
 
 /** Обратный отсчёт до следующей серии, `null` если даты нет или серия уже вышла. */
 @Composable

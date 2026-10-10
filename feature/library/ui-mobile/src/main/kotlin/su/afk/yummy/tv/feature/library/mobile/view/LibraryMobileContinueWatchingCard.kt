@@ -26,7 +26,7 @@ import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.utils.posterUrl
-import su.afk.yummy.tv.feature.library.mobile.utils.timingLabel
+import su.afk.yummy.tv.feature.library.utils.timingLabel
 import su.afk.yummy.tv.feature.library.mobile.utils.watchProgress
 
 @Composable

@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.feature.search.mobile.R
-import su.afk.yummy.tv.feature.search.mobile.model.GenrePickerMode
+import su.afk.yummy.tv.feature.search.model.GenrePickerMode
 
 @Composable
 internal fun ColumnScope.SearchMobileGenrePickerBody(

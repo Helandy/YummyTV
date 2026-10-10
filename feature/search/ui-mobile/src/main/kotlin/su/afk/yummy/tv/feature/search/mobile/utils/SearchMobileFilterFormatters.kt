@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.search.model.SearchSort
 import su.afk.yummy.tv.feature.search.mobile.R
-import su.afk.yummy.tv.feature.search.mobile.model.IntOption
-import su.afk.yummy.tv.feature.search.mobile.model.StringOption
+import su.afk.yummy.tv.feature.search.model.IntOption
+import su.afk.yummy.tv.feature.search.model.StringOption
 
 @Composable
 internal fun statusOptions(): List<StringOption> = listOf(

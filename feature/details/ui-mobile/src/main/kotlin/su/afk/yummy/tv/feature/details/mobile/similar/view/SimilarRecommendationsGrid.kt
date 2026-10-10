@@ -30,7 +30,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
 import su.afk.yummy.tv.feature.details.mobile.R
-import su.afk.yummy.tv.feature.details.mobile.similar.utils.bestUrl
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 private const val SIMILAR_SKELETON_COUNT = 6

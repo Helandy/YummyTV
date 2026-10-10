@@ -16,7 +16,7 @@
     <string name="account_tv_register_hint">Нет аккаунта? Зарегистрируйтесь на сайте yummyani.me — в приложении регистрации нет. После этого войдите здесь с теми же email или никнеймом и паролем.</string>
     <string name="account_loading">Загрузка...</string>
     <string name="account_captcha_title">Требуется проверка</string>
-    <string name="account_captcha_hint">Сайт запрашивает капчу, её не пройти пультом. Авторизуйтесь с телефона: нажмите «Войти с телефона».</string>
+    <string name="account_captcha_hint_tv">Сайт запрашивает капчу, её не пройти пультом. Авторизуйтесь с телефона: нажмите «Войти с телефона».</string>
     <string name="account_tab_profile">Профиль</string>
     <string name="account_tab_stats">Статистика</string>
     <string name="account_tab_notifications">Уведомления</string>
@@ -45,7 +45,7 @@
     <string name="account_profile_duration_hours">%1$d ч</string>
     <string name="account_profile_duration_less_hour">&lt;1 ч</string>
     <string name="account_profile_percent_full">100%</string>
-    <string name="account_profile_days_online">дней подряд на сайте</string>
+    <string name="account_profile_days_online_tv">дней подряд на сайте</string>
     <string name="account_profile_list_watching">Смотрю</string>
     <string name="account_profile_list_planned">В планах</string>
     <string name="account_profile_list_completed">Просмотрено</string>

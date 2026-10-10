@@ -3,10 +3,6 @@ package su.afk.yummy.tv.feature.home.utils
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
-import su.afk.yummy.tv.domain.home.model.HomePoster
-
-internal fun HomePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 internal fun HomeFeedItem.focusKey(): String = when (val action = action) {
     is HomeFeedItemAction.OpenSeries -> "series:${action.seriesId}"

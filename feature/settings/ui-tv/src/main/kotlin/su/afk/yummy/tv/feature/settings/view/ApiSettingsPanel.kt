@@ -65,7 +65,7 @@ internal fun ApiSettingsPanel(
                 ),
         )
         Text(
-            text = stringResource(R.string.settings_yani_application_token_hint),
+            text = stringResource(R.string.settings_yani_application_token_hint_tv),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

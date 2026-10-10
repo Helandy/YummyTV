@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.anime.usecase.SetAnimeRecommendationIgnoredUseCase
 import su.afk.yummy.tv.domain.bloggers.usecase.GetBloggerVideosUseCase
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
@@ -50,7 +51,6 @@ import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
-import su.afk.yummy.tv.feature.home.utils.toToastTimeString
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.home.utils.withoutScheduleSection
@@ -471,7 +471,7 @@ class HomeViewModel @Inject internal constructor(
                             stringProvider.get(
                                 R.string.home_remote_continue_progress_toast,
                                 progress.episode,
-                                progress.positionMs.toToastTimeString(),
+                                progress.positionMs.millisToClockTime(),
                             ),
                         ),
                     )

@@ -39,7 +39,6 @@
     <string name="details_trailers">Трейлери</string>
     <string name="details_trailer_number">Трейлер %1$d</string>
     <string name="details_episode_number">Серія %1$s</string>
-    <string name="details_episode_watch_timing">%1$s / %2$s</string>
     <string name="details_aired">Вийшло: %1$s</string>
     <string name="details_aired_progress">%1$d із %2$s</string>
     <string name="details_released_episodes">Кількість серій: %1$d</string>

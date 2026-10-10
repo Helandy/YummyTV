@@ -3,7 +3,6 @@ package su.afk.yummy.tv.domain.watching.utils
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.watching.ContinueWatchingPlaybackVideo
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.HomePoster
 
 internal fun AnimeVideo.toContinueWatchingPlaybackVideo() = ContinueWatchingPlaybackVideo(
     id = id,
@@ -25,5 +24,3 @@ internal fun HomeContinueWatchingItem.toContinueWatchingPlaybackVideo() =
         iframeUrl = episodeUrl,
     )
 
-internal fun HomePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small

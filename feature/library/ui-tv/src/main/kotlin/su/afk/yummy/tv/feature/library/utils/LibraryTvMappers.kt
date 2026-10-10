@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Color
 import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.utils.episode.episodeGroupKey
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.domain.home.model.HomePoster
 import su.afk.yummy.tv.domain.library.model.LibraryItem
 import su.afk.yummy.tv.domain.library.model.LibraryPoster
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
@@ -47,9 +46,6 @@ internal fun List<WatchHistoryEntry>.historyFocusKeys(): List<String> {
         if (ordinal == 0) base else "$base#$ordinal"
     }
 }
-
-internal fun HomePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
 
 internal fun LibraryItem.posterUrl(quality: PosterQuality): String? = poster.posterUrl(quality)
 

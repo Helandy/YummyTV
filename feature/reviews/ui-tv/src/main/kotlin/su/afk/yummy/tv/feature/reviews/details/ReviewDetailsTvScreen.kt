@@ -71,7 +71,7 @@ fun ReviewDetailsTvScreen(
 
         state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             TvStateMessage(
-                title = stringResource(R.string.reviews_error),
+                title = stringResource(R.string.reviews_error_tv),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(ReviewDetailsState.Event.RetrySelected) },
             )
@@ -79,7 +79,7 @@ fun ReviewDetailsTvScreen(
 
         state.details == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             TvStateMessage(
-                title = stringResource(R.string.reviews_empty),
+                title = stringResource(R.string.reviews_empty_tv),
                 icon = Icons.Filled.RateReview,
             )
         }

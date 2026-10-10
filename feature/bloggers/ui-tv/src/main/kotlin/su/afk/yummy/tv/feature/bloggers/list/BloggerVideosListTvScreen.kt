@@ -61,7 +61,7 @@ fun BloggerVideosListTvScreen(
         verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical)
     ) {
         Text(
-            stringResource(if (state.animeId == null) R.string.blogger_videos_title else R.string.blogger_videos_anime_title),
+            stringResource(if (state.animeId == null) R.string.blogger_videos_title else R.string.blogger_videos_anime_title_tv),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )

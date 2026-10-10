@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.schedule.model
 
-internal data class ScheduleRemainingLabels(
+data class ScheduleRemainingLabels(
     val dayOne: String,
     val dayFew: String,
     val dayMany: String,

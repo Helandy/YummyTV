@@ -1,5 +1,5 @@
 <resources>
-    <string name="blogger_video_comments">Коментарі (%1$d)</string>
+    <string name="blogger_video_comments">Коментарі (%1$s)</string>
     <string name="blogger_details_title">Блогер</string>
     <string name="blogger_details_loading">Завантажуємо сторінку блогера…</string>
     <string name="blogger_subscribers">Підписників: %1$d</string>
@@ -16,7 +16,7 @@
     <string name="blogger_videos_retry">Повторити</string>
     <string name="blogger_open_page">Сторінка блогера</string>
     <string name="blogger_videos_title">Відео блогерів</string>
-    <string name="blogger_videos_anime_title">Відео блогерів про це аніме</string>
+    <string name="blogger_videos_anime_title_tv">Відео блогерів про це аніме</string>
     <string name="blogger_videos_loading">Завантажуємо відео блогерів…</string>
     <string name="blogger_videos_error">Не вдалося завантажити відео блогерів</string>
     <string name="blogger_videos_empty">Відео блогерів не знайдено</string>

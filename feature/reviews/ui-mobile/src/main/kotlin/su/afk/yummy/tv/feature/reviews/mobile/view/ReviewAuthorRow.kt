@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
-import su.afk.yummy.tv.feature.reviews.mobile.utils.displayReviewDate
+import su.afk.yummy.tv.feature.reviews.utils.displayReviewDate
 
 @Composable
 internal fun ReviewAuthorRow(

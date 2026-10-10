@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
-import su.afk.yummy.tv.feature.details.mobile.viewingorder.utils.bestUrl
+import su.afk.yummy.tv.core.model.anime.bestUrl
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.utils.mobileMeta
 
 @Composable

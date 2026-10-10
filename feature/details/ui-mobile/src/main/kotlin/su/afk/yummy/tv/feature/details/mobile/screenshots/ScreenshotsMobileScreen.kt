@@ -20,7 +20,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.mobile.R
-import su.afk.yummy.tv.feature.details.mobile.screenshots.utils.screenshotLazyKey
+import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotMobileCard
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsState
 

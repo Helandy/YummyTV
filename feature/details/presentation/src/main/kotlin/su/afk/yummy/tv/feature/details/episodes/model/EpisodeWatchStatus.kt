@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.details.episodes.model
 
-internal sealed interface EpisodeWatchStatus {
+sealed interface EpisodeWatchStatus {
     data object None : EpisodeWatchStatus
 
     data class InProgress(

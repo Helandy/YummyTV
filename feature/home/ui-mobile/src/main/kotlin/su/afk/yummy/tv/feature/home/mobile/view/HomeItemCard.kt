@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+import su.afk.yummy.tv.domain.home.model.bestUrl
 
 @Composable
 internal fun HomeItemCard(

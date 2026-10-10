@@ -28,8 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.feature.schedule.mobile.R
-import su.afk.yummy.tv.feature.schedule.mobile.utils.remainingText
-import su.afk.yummy.tv.feature.schedule.mobile.utils.timeLabel
+import su.afk.yummy.tv.feature.schedule.utils.remainingText
+import su.afk.yummy.tv.feature.schedule.utils.timeLabel
 import su.afk.yummy.tv.feature.schedule.model.ScheduleReleaseUi
 import java.time.Instant
 import java.time.ZoneId

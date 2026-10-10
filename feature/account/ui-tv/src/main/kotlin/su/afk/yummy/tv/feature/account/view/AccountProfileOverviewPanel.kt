@@ -220,7 +220,7 @@ private fun DaysOnlineTile(
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = stringResource(R.string.account_profile_days_online),
+            text = stringResource(R.string.account_profile_days_online_tv),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

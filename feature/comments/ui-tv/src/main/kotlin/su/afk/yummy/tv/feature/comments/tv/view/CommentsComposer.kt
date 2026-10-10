@@ -103,7 +103,7 @@ internal fun CommentsComposer(
                 readOnly = !isEditing,
                 minLines = 1,
                 maxLines = 3,
-                placeholder = { Text(stringResource(R.string.comments_input_hint)) },
+                placeholder = { Text(stringResource(R.string.comments_input_hint_tv)) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
                     onEditingChanged(false)

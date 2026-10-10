@@ -29,11 +29,11 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
 import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
-import su.afk.yummy.tv.feature.library.mobile.utils.mobileDateText
+import su.afk.yummy.tv.feature.library.utils.dateText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileReleaseCountdownText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTitle
-import su.afk.yummy.tv.feature.library.mobile.utils.mobileUserRating
+import su.afk.yummy.tv.feature.library.utils.validUserRating
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileYearSeasonText
 import su.afk.yummy.tv.feature.library.mobile.utils.posterUrl
 import su.afk.yummy.tv.feature.library.mobile.utils.shouldShowRemoteLoader
@@ -123,8 +123,8 @@ internal fun LibraryMobilePage(
             MobileTitleListCard(
                 title = item.title,
                 posterUrl = item.posterUrl(),
-                dateText = item.mobileDateText(tab),
-                rating = item.mobileUserRating(),
+                dateText = item.dateText(tab),
+                rating = item.validUserRating(),
                 captionText = item.mobileReleaseCountdownText(nowEpochSeconds),
                 posterOverlay = {
                     if (state.showTitleYear) {
