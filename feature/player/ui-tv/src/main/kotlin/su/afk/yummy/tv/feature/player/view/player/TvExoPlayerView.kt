@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,7 +24,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +34,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
 import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
 import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
@@ -45,7 +44,6 @@ import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
-import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.rememberDelayedRecoveryIndicator
@@ -57,6 +55,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSeekController
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSegmentSkipper
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
@@ -64,8 +63,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
 import su.afk.yummy.tv.feature.player.common.rememberPlayerVolumeController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerPlaybackSessionClient
 import su.afk.yummy.tv.feature.player.common.toastIcon
-import su.afk.yummy.tv.feature.player.common.utils.currentSkip
-import su.afk.yummy.tv.feature.player.common.utils.skipPlayerSegment
+import su.afk.yummy.tv.feature.player.common.utils.toProgressSource
 import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.model.PanelReturnFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
@@ -96,7 +94,6 @@ internal fun TvExoPlayerView(
     onBalancerSelected: (balancerIndex: Int, currentPositionMs: Long) -> Unit,
     onPlayerEvent: (PlayerState.Event) -> Unit,
 ) {
-    val context = LocalContext.current
     val episodeKey = playback.activeIframeUrl
     val speeds = remember { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f) }
     val activeQuality = playback.activeQuality
@@ -162,14 +159,7 @@ internal fun TvExoPlayerView(
         playback.activeDubbing,
         playback.activeScreenshotUrl,
     ) {
-        PlayerProgressSource(
-            episodeUrl = episodeKey,
-            episode = playback.activeEpisode,
-            videoId = playback.activeVideoId,
-            playerName = playback.activeBalancerName,
-            dubbing = playback.activeDubbing,
-            screenshotUrl = playback.activeScreenshotUrl,
-        )
+        playback.toProgressSource()
     }
     val reporter = rememberPlayerProgressReporter(
         source = { progressSource },
@@ -230,29 +220,31 @@ internal fun TvExoPlayerView(
         onEvent = onPlayerEvent,
     )
 
-    /** Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции. */
-    fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
-        val promptShown = prompts.onEpisodeEnd(
-            positionMs = positionMs,
-            durationMs = durationMs,
-            completionTracker = completionTracker,
-            playback = playback,
-            autoPlayNextEpisode = state.autoPlayNextEpisode,
-            nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
-            suppressPrompts = exitState.requested,
-        )
-        if (!promptShown) return
-        controllerVisible = true
-        panels.close()
-        autoHide.cancel()
-    }
+    val episodeEnd = PlayerEpisodeEndController(
+        endFlow = prompts,
+        completionTracker = completionTracker,
+        reporter = reporter,
+        progress = progress,
+        playback = playback,
+        autoPlayNextEpisode = state.autoPlayNextEpisode,
+        nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
+        onEvent = onPlayerEvent,
+        isPromptSuppressed = { exitState.requested },
+        onPromptShown = {
+            controllerVisible = true
+            panels.close()
+            autoHide.cancel()
+        },
+        blocksActions = { exitState.requested },
+        onActionStarted = { panels.close() },
+    )
 
     val seekController = rememberPlayerSeekController(
         player = player,
         progress = progress,
         reporter = reporter,
         stepSeekToast = stepSeekToast,
-        onEpisodeEnd = ::handleEpisodeEnd,
+        onEpisodeEnd = episodeEnd::onEpisodeEnd,
         onLeftEnd = prompts::onLeftEnd,
     )
 
@@ -267,52 +259,21 @@ internal fun TvExoPlayerView(
         onInteraction()
     }
 
-    fun playNextEpisode() {
-        if (exitState.requested) return
-        reporter.saveProgress(progress.currentPosition, progress.duration)
-        prompts.hideAll()
-        panels.close()
-        onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
-    }
-
-    fun rateTitle() {
-        if (exitState.requested) return
-        prompts.finalEpisodeActionPrompt = null
-        panels.close()
-        onPlayerEvent(PlayerState.Event.RateTitle)
-    }
-
-    fun manageSubscriptions() {
-        if (exitState.requested) return
-        prompts.finalEpisodeActionPrompt = null
-        panels.close()
-        onPlayerEvent(PlayerState.Event.ManageSubscriptions)
-    }
-
-    // Позиция тикает каждые 500 мс; через derivedStateOf экран перекомпоновывается только
-    // когда активная заставка реально меняется, а не на каждом тике.
-    val activeSkip by remember(isMediaReady, playback.activeSkips, skipUi.dismissedSkipKeys) {
-        derivedStateOf {
-            if (isMediaReady) {
-                currentSkip(playback.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
-            } else {
-                null
-            }
-        }
-    }
+    val skipper = rememberPlayerSegmentSkipper(
+        player = player,
+        skipUi = skipUi,
+        seekController = seekController,
+        progress = progress,
+        isMediaReady = isMediaReady,
+        skips = playback.activeSkips,
+        onEvent = onPlayerEvent,
+    )
+    val activeSkip = skipper.activeSkip
 
     fun skipActiveSegment(reportSelection: Boolean = true) {
-        val skip = activeSkip ?: return
+        if (skipper.activeSkip == null) return
         skipUi.highlightedSkipKey = null
-        skipPlayerSegment(
-            skip = skip,
-            context = context,
-            player = player,
-            skipUi = skipUi,
-            seekController = seekController,
-            reportSelection = reportSelection,
-            onEvent = onPlayerEvent,
-        )
+        skipper.skip(reportSelection)
         onInteraction()
     }
 
@@ -328,9 +289,7 @@ internal fun TvExoPlayerView(
             if (!tutorialBlocksPlayback) wantsPlay = it
         },
         autoHide = { schedule -> if (schedule) autoHide.schedule() else autoHide.cancel() },
-        onEpisodeEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs)
-        },
+        onEpisodeEnd = episodeEnd::onEpisodeEnd,
         onEvent = onPlayerEvent,
     )
 
@@ -349,9 +308,7 @@ internal fun TvExoPlayerView(
         progress = progress,
         reporter = reporter,
         episodeKey = episodeKey,
-        onPositionAtEnd = { positionMs, durationMs ->
-            handleEpisodeEnd(positionMs, durationMs)
-        },
+        onPositionAtEnd = episodeEnd::onEpisodeEnd,
     )
 
     TvPlayerFocusEffects(
@@ -381,9 +338,7 @@ internal fun TvExoPlayerView(
         promptState = prompts.nextEpisodePrompt,
         contentKey = episodeKey,
         onPromptStateChange = { prompts.nextEpisodePrompt = it },
-        onFinished = {
-            if (!exitState.requested) playNextEpisode()
-        },
+        onFinished = episodeEnd::playNextEpisode,
     )
 
     BackHandler(enabled = panels.isAnyOpen || prompts.anyVisible || controllerVisible) {
@@ -543,8 +498,8 @@ internal fun TvExoPlayerView(
             onNextEpisode = {
                 onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))
             },
-            onRateTitle = ::rateTitle,
-            onManageSubscriptions = ::manageSubscriptions,
+            onRateTitle = episodeEnd::rateTitle,
+            onManageSubscriptions = episodeEnd::manageSubscriptions,
             onToggleQuality = {
                 togglePanel(TvPlayerPanel.Quality, PanelReturnFocusTarget.Quality)
             },
@@ -641,9 +596,9 @@ internal fun TvExoPlayerView(
             focus = focus,
             hasNextEpisode = playback.hasNextEpisode,
             nextEpisodeDubbing = playback.nextEpisodeDubbing,
-            onPlayNextEpisode = ::playNextEpisode,
-            onRateTitle = ::rateTitle,
-            onManageSubscriptions = ::manageSubscriptions,
+            onPlayNextEpisode = episodeEnd::playNextEpisode,
+            onRateTitle = episodeEnd::rateTitle,
+            onManageSubscriptions = episodeEnd::manageSubscriptions,
             onInteraction = ::onInteraction,
         )
 

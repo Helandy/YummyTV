@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +43,7 @@ import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
+import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
 import su.afk.yummy.tv.feature.player.common.PlayerKeepScreenOnEffect
 import su.afk.yummy.tv.feature.player.common.PlayerLifecycleEffect
 import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
@@ -53,8 +53,6 @@ import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
-import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
-import su.afk.yummy.tv.feature.player.common.model.PlayerProgressSource
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.rememberDelayedRecoveryIndicator
@@ -65,6 +63,7 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerMediaReadyState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackKey
 import su.afk.yummy.tv.feature.player.common.rememberPlayerProgressReporter
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSeekController
+import su.afk.yummy.tv.feature.player.common.rememberPlayerSegmentSkipper
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSkipUiState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerStepSeekToastState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerSystemVolumeController
@@ -72,10 +71,13 @@ import su.afk.yummy.tv.feature.player.common.rememberPlayerTrackMenu
 import su.afk.yummy.tv.feature.player.common.rememberPlayerVolumeController
 import su.afk.yummy.tv.feature.player.common.service.rememberPlayerMediaController
 import su.afk.yummy.tv.feature.player.common.toastIcon
-import su.afk.yummy.tv.feature.player.common.utils.currentSkip
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.common.utils.playerContentScale
-import su.afk.yummy.tv.feature.player.common.utils.skipPlayerSegment
+import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePrimaryLabel
+import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePromptTitle
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodePromptTitle
+import su.afk.yummy.tv.feature.player.common.utils.toProgressSource
+import su.afk.yummy.tv.feature.player.common.view.PlayerAutoSkipEffect
 import su.afk.yummy.tv.feature.player.common.view.PlayerEndPromptCountdownEffect
 import su.afk.yummy.tv.feature.player.mobile.cast.MobileCastingIndicator
 import su.afk.yummy.tv.feature.player.mobile.cast.rememberMobileCastConnectionState
@@ -96,6 +98,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.canPlayNext
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
@@ -266,14 +269,7 @@ internal fun MobileNativePlayer(
     }
 
     val progressSource = remember(player, ui) {
-        PlayerProgressSource(
-            episodeUrl = ui.activeIframeUrl,
-            episode = ui.activeEpisode,
-            videoId = ui.activeVideoId,
-            playerName = ui.activeBalancerName,
-            dubbing = ui.activeDubbing,
-            screenshotUrl = ui.activeScreenshotUrl,
-        )
+        ui.toProgressSource()
     }
     // Позицию в progress пишут общий поллинг и перемотка, репортер только отчитывается во VM.
     val reporter = rememberPlayerProgressReporter(
@@ -287,35 +283,29 @@ internal fun MobileNativePlayer(
         onEvent = onEvent,
     )
 
-    /** Единая точка конца эпизода: STATE_ENDED, перемотка в конец и детект по позиции. */
-    fun handleEpisodeEnd(positionMs: Long, durationMs: Long) {
-        val promptShown = endFlow.onEpisodeEnd(
-            positionMs = positionMs,
-            durationMs = durationMs,
-            completionTracker = completionTracker,
-            playback = ui,
-            autoPlayNextEpisode = state.autoPlayNextEpisode,
-            nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
-            suppressPrompts = isInPictureInPictureMode,
-        )
-        if (!promptShown) return
-        overlay.visible = false
-        settingsMode = null
-        overlay.cancelHide()
-    }
-
-    fun playNextEpisode() {
-        reporter.saveProgress(progress.currentPosition, progress.duration)
-        endFlow.hideAll()
-        onEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.EndPrompt))
-    }
+    val episodeEnd = PlayerEpisodeEndController(
+        endFlow = endFlow,
+        completionTracker = completionTracker,
+        reporter = reporter,
+        progress = progress,
+        playback = ui,
+        autoPlayNextEpisode = state.autoPlayNextEpisode,
+        nextEpisodeDelaySeconds = state.nextEpisodeSwitchDelaySeconds,
+        onEvent = onEvent,
+        isPromptSuppressed = { isInPictureInPictureMode },
+        onPromptShown = {
+            overlay.visible = false
+            settingsMode = null
+            overlay.cancelHide()
+        },
+    )
 
     val seekController = rememberPlayerSeekController(
         player = player,
         progress = progress,
         reporter = reporter,
         stepSeekToast = stepSeekToast,
-        onEpisodeEnd = ::handleEpisodeEnd,
+        onEpisodeEnd = episodeEnd::onEpisodeEnd,
         onLeftEnd = endFlow::onLeftEnd,
     )
 
@@ -351,7 +341,7 @@ internal fun MobileNativePlayer(
             if (!tutorialBlocksPlayback) wantsPlay = it
         },
         autoHide = { schedule -> if (schedule) overlay.scheduleHide() else overlay.cancelHide() },
-        onEpisodeEnd = ::handleEpisodeEnd,
+        onEpisodeEnd = episodeEnd::onEpisodeEnd,
         onEvent = onEvent,
     )
     MobilePlayerPipEffect(
@@ -385,7 +375,7 @@ internal fun MobileNativePlayer(
         promptState = endFlow.nextEpisodePrompt,
         contentKey = ui.activeIframeUrl,
         onPromptStateChange = { endFlow.nextEpisodePrompt = it },
-        onFinished = ::playNextEpisode,
+        onFinished = episodeEnd::playNextEpisode,
     )
 
     BackHandler(enabled = endFlow.anyVisible && !isInPictureInPictureMode) {
@@ -417,41 +407,27 @@ internal fun MobileNativePlayer(
         progress = progress,
         reporter = reporter,
         episodeKey = ui.activeIframeUrl,
-        onPositionAtEnd = ::handleEpisodeEnd,
+        onPositionAtEnd = episodeEnd::onEpisodeEnd,
     )
 
-    // Позиция тикает раз в секунду; через derivedStateOf экран перекомпоновывается только
-    // когда активная заставка реально меняется.
-    val activeSkip by remember(isMediaReady, ui.activeSkips, skipUi.dismissedSkipKeys) {
-        derivedStateOf {
-            if (isMediaReady) {
-                currentSkip(ui.activeSkips, progress.currentPosition, skipUi.dismissedSkipKeys)
-            } else {
-                null
-            }
-        }
-    }
+    val skipper = rememberPlayerSegmentSkipper(
+        player = player,
+        skipUi = skipUi,
+        seekController = seekController,
+        progress = progress,
+        isMediaReady = isMediaReady,
+        skips = ui.activeSkips,
+        onEvent = onEvent,
+    )
+    val activeSkip = skipper.activeSkip
 
-    fun skipActiveSegment(reportSelection: Boolean) {
-        val skip = activeSkip ?: return
-        skipPlayerSegment(
-            skip = skip,
-            context = context,
-            player = player,
-            skipUi = skipUi,
-            seekController = seekController,
-            reportSelection = reportSelection,
-            onEvent = onEvent,
-        )
-    }
-
-    MobilePlayerAutoSkipEffect(
+    PlayerAutoSkipEffect(
         activeSkip = activeSkip,
         autoSkipOpeningsEndings = state.autoSkipOpeningsEndings,
         delaySeconds = state.autoSkipDelaySeconds,
         isPlaying = playbackShouldPlay,
         skipUi = skipUi,
-        onSkipActiveSegment = { skipActiveSegment(reportSelection = false) },
+        onSkipActiveSegment = { skipper.skip(reportSelection = false) },
     )
 
     // Корень держит фокус, чтобы клавиатура управляла плеером без предварительного клика.
@@ -622,7 +598,7 @@ internal fun MobileNativePlayer(
             countdownSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
             countdownProgress = skipUi.autoSkipProgress(activeSkip?.key),
             onClick = {
-                skipActiveSegment(reportSelection = true)
+                skipper.skip(reportSelection = true)
                 // Панель не открываем принудительно, но не даём ей скрыться по таймеру.
                 if (overlay.visible) overlay.show()
             },
@@ -736,32 +712,19 @@ internal fun MobileNativePlayer(
         }
 
         if (endFlow.nextEpisodePrompt.isVisible &&
-            (ui.hasNextEpisode || ui.nextEpisodeDubbing != null) &&
+            ui.canPlayNext &&
             !isInPictureInPictureMode &&
             !tutorialBlocksPlayback
         ) {
             MobilePlayerEndPrompt(
-                title = when (val prompt = endFlow.nextEpisodePrompt) {
-                    is PlayerEndPromptState.WithCountdown -> stringResource(
-                        R.string.player_next_episode_prompt_countdown,
-                        prompt.seconds,
-                    )
-
-                    else -> {
-                        val nextEpisodeDubbing = ui.nextEpisodeDubbing
-                        if (!ui.hasNextEpisode && nextEpisodeDubbing != null) {
-                            stringResource(
-                                R.string.player_next_episode_prompt_other_dubbing,
-                                nextEpisodeDubbing,
-                            )
-                        } else {
-                            stringResource(R.string.player_next_episode_prompt)
-                        }
-                    }
-                },
+                title = playerNextEpisodePromptTitle(
+                    prompt = endFlow.nextEpisodePrompt,
+                    hasNextEpisode = ui.hasNextEpisode,
+                    nextEpisodeDubbing = ui.nextEpisodeDubbing,
+                ),
                 primaryLabel = stringResource(R.string.player_watch_next),
                 stayLabel = stringResource(R.string.player_stay),
-                onPrimary = ::playNextEpisode,
+                onPrimary = episodeEnd::playNextEpisode,
                 onStay = {
                     endFlow.dismissNextEpisode()
                     overlay.show()
@@ -774,30 +737,15 @@ internal fun MobileNativePlayer(
         if (finalAction != null && !isInPictureInPictureMode && !tutorialBlocksPlayback) {
             val managesSubscriptions = finalAction == PlayerFinalEpisodeAction.ManageSubscriptions
             MobilePlayerEndPrompt(
-                title = stringResource(
-                    if (managesSubscriptions) {
-                        R.string.player_notifications_prompt
-                    } else {
-                        R.string.player_rate_title_prompt
-                    },
-                ),
-                primaryLabel = stringResource(
-                    if (managesSubscriptions) {
-                        R.string.player_manage_notifications
-                    } else {
-                        R.string.player_rate_title
-                    },
-                ),
+                title = playerFinalEpisodePromptTitle(finalAction),
+                primaryLabel = playerFinalEpisodePrimaryLabel(finalAction),
                 stayLabel = stringResource(R.string.player_stay),
                 onPrimary = {
-                    endFlow.finalEpisodeActionPrompt = null
-                    onEvent(
-                        if (managesSubscriptions) {
-                            PlayerState.Event.ManageSubscriptions
-                        } else {
-                            PlayerState.Event.RateTitle
-                        },
-                    )
+                    if (managesSubscriptions) {
+                        episodeEnd.manageSubscriptions()
+                    } else {
+                        episodeEnd.rateTitle()
+                    }
                 },
                 onStay = {
                     endFlow.finalEpisodeActionPrompt = null

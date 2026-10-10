@@ -12,6 +12,7 @@ import su.afk.yummy.tv.feature.player.common.utils.isVisible
 import su.afk.yummy.tv.feature.player.common.utils.playerEndPromptFor
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.utils.canPlayNext
 
 /**
  * Сценарий конца серии, общий для ТВ и мобилки: промпт следующей серии, промпт финального
@@ -62,7 +63,7 @@ class PlayerEndFlowState internal constructor() {
         ended = true
         completionTracker.onEpisodeEnd(positionMs = positionMs, durationMs = durationMs)
         if (suppressPrompts) return false
-        if (playback.hasNextEpisode || playback.nextEpisodeDubbing != null) {
+        if (playback.canPlayNext) {
             if (nextEpisodePromptDismissed) return false
             // При переходе в другую озвучку авто-отсчёт не запускаем:
             // озвучку не меняем без явного подтверждения пользователя

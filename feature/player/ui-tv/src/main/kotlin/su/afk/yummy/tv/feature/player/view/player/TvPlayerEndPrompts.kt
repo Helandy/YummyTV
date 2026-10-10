@@ -6,8 +6,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.player.common.PlayerEndFlowState
-import su.afk.yummy.tv.feature.player.common.model.PlayerEndPromptState
 import su.afk.yummy.tv.feature.player.common.utils.isVisible
+import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePrimaryLabel
+import su.afk.yummy.tv.feature.player.common.utils.playerFinalEpisodePromptTitle
+import su.afk.yummy.tv.feature.player.common.utils.playerNextEpisodePromptTitle
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -27,21 +29,11 @@ internal fun BoxScope.TvPlayerEndPrompts(
     TvPlayerEndPrompt(
         visible = prompts.nextEpisodePrompt.isVisible &&
                 (hasNextEpisode || nextEpisodeDubbing != null),
-        title = when (val prompt = prompts.nextEpisodePrompt) {
-            is PlayerEndPromptState.WithCountdown -> stringResource(
-                R.string.player_next_episode_prompt_countdown,
-                prompt.seconds,
-            )
-
-            else -> if (!hasNextEpisode && nextEpisodeDubbing != null) {
-                stringResource(
-                    R.string.player_next_episode_prompt_other_dubbing,
-                    nextEpisodeDubbing,
-                )
-            } else {
-                stringResource(R.string.player_next_episode_prompt)
-            }
-        },
+        title = playerNextEpisodePromptTitle(
+            prompt = prompts.nextEpisodePrompt,
+            hasNextEpisode = hasNextEpisode,
+            nextEpisodeDubbing = nextEpisodeDubbing,
+        ),
         primaryLabel = stringResource(R.string.player_watch_next),
         stayLabel = stringResource(R.string.player_stay),
         primaryFocusRequester = focus.nextEpisode,
@@ -57,20 +49,8 @@ internal fun BoxScope.TvPlayerEndPrompts(
     val finalAction = prompts.finalEpisodeActionPrompt
     TvPlayerEndPrompt(
         visible = finalAction != null,
-        title = stringResource(
-            if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
-                R.string.player_notifications_prompt
-            } else {
-                R.string.player_rate_title_prompt
-            }
-        ),
-        primaryLabel = stringResource(
-            if (finalAction == PlayerFinalEpisodeAction.ManageSubscriptions) {
-                R.string.player_manage_notifications
-            } else {
-                R.string.player_rate_title
-            }
-        ),
+        title = playerFinalEpisodePromptTitle(finalAction),
+        primaryLabel = playerFinalEpisodePrimaryLabel(finalAction),
         stayLabel = stringResource(R.string.player_stay),
         primaryFocusRequester = focus.finalEpisodeAction,
         onPrimary = {
