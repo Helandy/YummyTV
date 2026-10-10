@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.feature.details.details.model.ExternalRatingLabel
 import su.afk.yummy.tv.feature.details.presentation.R
-import su.afk.yummy.tv.feature.details.utils.formatRating
 
 @Composable
 internal fun HeroRatingRow(details: AnimeDetails) {

@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.toRatingColor
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
+import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.feature.details.mobile.details.model.RatingLabel
-import su.afk.yummy.tv.feature.details.mobile.details.utils.formatRating
 import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalLayoutApi::class)

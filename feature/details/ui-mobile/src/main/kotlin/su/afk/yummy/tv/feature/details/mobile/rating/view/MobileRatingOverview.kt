@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.utils.formatting.formatRating
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
-import su.afk.yummy.tv.feature.details.mobile.rating.utils.formatRating
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.weightedAverage
 import su.afk.yummy.tv.feature.details.presentation.R
 import java.text.NumberFormat

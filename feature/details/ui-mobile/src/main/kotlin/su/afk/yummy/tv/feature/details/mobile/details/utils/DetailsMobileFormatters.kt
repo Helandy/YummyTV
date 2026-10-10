@@ -18,11 +18,6 @@ import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale
 
-internal fun Double.formatRating(): String {
-    val rounded = (this * 10).toInt() / 10.0
-    return String.format(Locale.US, "%.1f", rounded)
-}
-
 internal fun Int.formatViews(): String = when {
     this >= 1_000_000 -> String.format(Locale.US, "%.1fM", this / 1_000_000f)
     this >= 1_000 -> "${this / 1_000}K"
