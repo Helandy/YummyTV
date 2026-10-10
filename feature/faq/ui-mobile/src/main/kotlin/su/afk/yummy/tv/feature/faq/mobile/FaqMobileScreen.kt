@@ -27,6 +27,7 @@ import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.faq.FaqState
 import su.afk.yummy.tv.feature.faq.mobile.view.FaqExpandableItem
 import su.afk.yummy.tv.feature.faq.mobile.view.FaqFeedbackButton
+import su.afk.yummy.tv.feature.faq.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable

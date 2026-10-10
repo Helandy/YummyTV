@@ -8,12 +8,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.utils.toPreviewCacheSizeText
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileStorageContent(

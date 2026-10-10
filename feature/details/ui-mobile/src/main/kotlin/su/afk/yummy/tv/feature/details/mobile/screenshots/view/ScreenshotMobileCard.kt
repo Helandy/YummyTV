@@ -13,7 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun ScreenshotMobileCard(
@@ -30,7 +30,7 @@ internal fun ScreenshotMobileCard(
         AsyncImage(
             model = screenshot.small ?: screenshot.full,
             contentDescription = screenshot.episode?.let {
-                stringResource(R.string.details_mobile_episode, it)
+                stringResource(R.string.details_episode_number, it)
             } ?: stringResource(R.string.details_mobile_screenshot),
             contentScale = ContentScale.Crop,
             modifier = Modifier

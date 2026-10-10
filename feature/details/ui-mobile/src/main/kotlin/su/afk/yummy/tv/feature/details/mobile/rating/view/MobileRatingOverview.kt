@@ -25,9 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.formatRating
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.weightedAverage
+import su.afk.yummy.tv.feature.details.presentation.R
 import java.text.NumberFormat
 
 @Composable
@@ -65,7 +65,7 @@ internal fun MobileRatingOverview(
                     )
                     Text(
                         text = selectedUserRating?.let {
-                            stringResource(R.string.details_mobile_user_rating, it)
+                            stringResource(R.string.details_your_rating, it)
                         } ?: stringResource(R.string.details_mobile_rating_not_set),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -107,7 +107,7 @@ internal fun MobileRatingOverview(
                     label = {
                         Text(
                             stringResource(
-                                R.string.details_mobile_rating_votes,
+                                R.string.details_full_rating_votes,
                                 integerFormat.format(total)
                             )
                         )

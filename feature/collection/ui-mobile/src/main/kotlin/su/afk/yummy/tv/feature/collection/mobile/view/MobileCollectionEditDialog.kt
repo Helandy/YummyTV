@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import su.afk.yummy.tv.feature.collection.mobile.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
 internal fun MobileCollectionEditDialog(
@@ -49,7 +49,7 @@ internal fun MobileCollectionEditDialog(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isUpdating,
                     singleLine = true,
-                    label = { Text(stringResource(R.string.collection_create_title_label)) },
+                    label = { Text(stringResource(R.string.collection_title_label)) },
                 )
                 OutlinedTextField(
                     shape = MaterialTheme.shapes.large,
@@ -59,14 +59,14 @@ internal fun MobileCollectionEditDialog(
                     enabled = !isUpdating,
                     minLines = 3,
                     maxLines = 5,
-                    label = { Text(stringResource(R.string.collection_create_description_label)) },
+                    label = { Text(stringResource(R.string.collection_description_label)) },
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(stringResource(R.string.collection_create_public_label))
+                    Text(stringResource(R.string.collection_public_label))
                     Switch(
                         checked = isPublic,
                         onCheckedChange = onPublicChanged,
@@ -86,7 +86,7 @@ internal fun MobileCollectionEditDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isUpdating) {
-                Text(stringResource(R.string.collection_create_cancel))
+                Text(stringResource(R.string.collection_cancel))
             }
         },
     )

@@ -51,8 +51,8 @@ import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvOverlayAppear
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun SubscriptionsPickerOverlay(

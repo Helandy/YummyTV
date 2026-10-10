@@ -10,10 +10,10 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.details.view.MobilePickerItems
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.blocksNewDownload
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +27,7 @@ internal fun EpisodeDownloadDubbingSheet(
         titleContent = {
             EpisodeDownloadSheetTitle(
                 title = stringResource(
-                    R.string.details_mobile_download_dubbing_title,
+                    R.string.details_episode_dubbings_title,
                     selection.episode,
                 ),
             )

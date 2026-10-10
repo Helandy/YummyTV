@@ -57,7 +57,7 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.relation.model.RelationType
 import su.afk.yummy.tv.feature.details.relation.view.RelationTvHeaderCard
 import su.afk.yummy.tv.feature.details.view.common.DetailsError

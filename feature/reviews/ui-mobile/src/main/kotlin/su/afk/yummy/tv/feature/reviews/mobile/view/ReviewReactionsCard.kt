@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.MobileReactionSelection
 import su.afk.yummy.tv.core.designsystem.mobile.MobileReactionsCard
 import su.afk.yummy.tv.domain.reviews.model.ReviewReactions
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
-import su.afk.yummy.tv.feature.reviews.mobile.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @Composable
 internal fun ReviewReactionsCard(

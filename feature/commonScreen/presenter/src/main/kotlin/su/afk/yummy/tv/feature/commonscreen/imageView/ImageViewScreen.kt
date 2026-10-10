@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.commonscreen.R
 import su.afk.yummy.tv.feature.commonscreen.imageView.view.NavigationControls
 import su.afk.yummy.tv.feature.commonscreen.imageView.view.ThumbnailStrip
@@ -128,7 +129,7 @@ internal fun ImageViewScreen(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.back),
+                contentDescription = stringResource(CoreR.string.back),
                 tint = Color.White,
             )
         }

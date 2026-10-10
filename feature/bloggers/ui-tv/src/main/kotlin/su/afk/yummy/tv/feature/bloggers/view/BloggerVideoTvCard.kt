@@ -28,7 +28,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
-import su.afk.yummy.tv.feature.bloggers.tv.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @Composable
 fun BloggerVideoTvCard(
@@ -78,7 +78,7 @@ fun BloggerVideoTvCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    stringResource(R.string.blogger_video_views_tv, video.views.toCompactCount()),
+                    stringResource(R.string.blogger_video_views, video.views.toCompactCount()),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

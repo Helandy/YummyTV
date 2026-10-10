@@ -14,9 +14,9 @@ import su.afk.yummy.tv.domain.account.model.UserSocialCounts
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.UserWatchTypeStat
 import su.afk.yummy.tv.domain.account.model.ratingsByValue
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatSlice
 import su.afk.yummy.tv.feature.account.mobile.account.model.ProfileWatchSlice
+import su.afk.yummy.tv.feature.account.presentation.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

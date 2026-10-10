@@ -9,9 +9,9 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.details.view.MobilePickerItems
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

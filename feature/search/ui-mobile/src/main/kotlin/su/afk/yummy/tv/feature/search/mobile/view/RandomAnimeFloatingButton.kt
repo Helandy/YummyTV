@@ -14,14 +14,14 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.search.mobile.R
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun RandomAnimeFloatingButton(
     isLoading: Boolean,
     onClick: () -> Unit,
 ) {
-    val description = stringResource(R.string.search_mobile_random_anime)
+    val description = stringResource(R.string.search_random_anime)
     FloatingActionButton(
         onClick = { if (!isLoading) onClick() },
         modifier = Modifier

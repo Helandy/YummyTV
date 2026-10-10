@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.details.mobile.details.view
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.details.utils.label
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
 
 @Composable
@@ -21,7 +21,7 @@ internal fun LibraryListDialog(
         UserAnimeList.DROPPED,
     )
     MobilePickerBottomSheet(
-        title = stringResource(R.string.details_mobile_library_picker_title),
+        title = stringResource(R.string.details_library_picker_title),
         onDismiss = onDismiss,
     ) {
         MobilePickerItems(

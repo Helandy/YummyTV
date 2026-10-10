@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.collections.CollectionsState
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -40,8 +40,9 @@ private fun CollectionsMobileScreenErrorPreview() = ScreenPreviewTheme {
     CollectionsMobileScreen(
         CollectionsState.State(
             isLoading = false,
-            error = "Не удалось загрузить коллекции"
-        ), emptyFlow()
+            error = "Не удалось загрузить коллекции",
+        ),
+        emptyFlow(),
     ) {}
 }
 
@@ -56,7 +57,7 @@ fun CollectionsMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_collections),
+                title = stringResource(R.string.details_collections_button),
                 onBack = { onEvent(CollectionsState.Event.BackSelected) },
             )
         },

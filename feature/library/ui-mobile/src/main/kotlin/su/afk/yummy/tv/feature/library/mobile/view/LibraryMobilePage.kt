@@ -27,8 +27,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.library.LibraryState
-import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.model.PendingLibraryMobileRemoval
+import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.dateText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileReleaseCountdownText
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileTabItemCount
@@ -183,7 +183,7 @@ internal fun LibraryMobileEmptyList() {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = stringResource(R.string.library_mobile_empty_list),
+            text = stringResource(R.string.library_empty_list),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

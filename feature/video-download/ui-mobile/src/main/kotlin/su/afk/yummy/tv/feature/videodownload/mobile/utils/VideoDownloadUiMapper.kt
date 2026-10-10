@@ -6,7 +6,7 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
-import su.afk.yummy.tv.feature.videodownload.mobile.R
+import su.afk.yummy.tv.feature.videodownload.presentation.R
 import kotlin.math.roundToInt
 
 @Composable

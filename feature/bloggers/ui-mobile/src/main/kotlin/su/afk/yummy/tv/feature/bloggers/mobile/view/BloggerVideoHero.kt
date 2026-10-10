@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
-import su.afk.yummy.tv.feature.bloggers.mobile.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @Composable
 internal fun BloggerVideoHero(

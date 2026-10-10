@@ -41,7 +41,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.reviews.model.ReviewVote
 import su.afk.yummy.tv.feature.reviews.model.ReviewContentBlock
-import su.afk.yummy.tv.feature.reviews.tv.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 import su.afk.yummy.tv.feature.reviews.utils.parseReviewBlocks
 import su.afk.yummy.tv.feature.reviews.utils.reviewStatusColor
 import su.afk.yummy.tv.feature.reviews.utils.reviewStatusLabel
@@ -71,7 +71,7 @@ fun ReviewDetailsTvScreen(
 
         state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             TvStateMessage(
-                title = stringResource(R.string.reviews_error_tv),
+                title = stringResource(R.string.reviews_error),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(ReviewDetailsState.Event.RetrySelected) },
             )
@@ -79,7 +79,7 @@ fun ReviewDetailsTvScreen(
 
         state.details == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             TvStateMessage(
-                title = stringResource(R.string.reviews_empty_tv),
+                title = stringResource(R.string.reviews_empty),
                 icon = Icons.Filled.RateReview,
             )
         }
@@ -155,12 +155,12 @@ fun ReviewDetailsTvScreen(
                         Box(
                             Modifier
                                 .fillMaxWidth()
-                                .then(focusModifier)
+                                .then(focusModifier),
                         ) {
                             when (block) {
                                 is ReviewContentBlock.Image -> ReviewRemoteImage(
                                     block.url,
-                                    block.alt
+                                    block.alt,
                                 )
 
                                 is ReviewContentBlock.Paragraph -> ReviewRichParagraph(block)
@@ -202,7 +202,7 @@ fun ReviewDetailsTvScreen(
                         item {
                             ReviewActionButton(
                                 label = stringResource(
-                                    R.string.review_comments_tv,
+                                    R.string.review_comments,
                                     details.commentsCount.toCompactCount(),
                                 ),
                                 onClick = { onEvent(ReviewDetailsState.Event.CommentsSelected) },

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.schedule.*
 import su.afk.yummy.tv.feature.schedule.model.ScheduleRemainingLabels
+import su.afk.yummy.tv.feature.schedule.presentation.R
 
 @Composable
 internal fun scheduleRemainingLabels(): ScheduleRemainingLabels =

@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +48,7 @@ internal fun ProfileMainSection(
                 value = nickname,
                 onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.profile_edit_nickname)) },
+                label = { Text(stringResource(R.string.user_search_hint)) },
                 readOnly = true,
                 enabled = false,
             )

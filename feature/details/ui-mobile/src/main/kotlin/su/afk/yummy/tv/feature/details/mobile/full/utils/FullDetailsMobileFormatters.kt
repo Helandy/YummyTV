@@ -5,8 +5,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.utils.rememberReleaseCountdown
+import su.afk.yummy.tv.feature.details.presentation.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -19,8 +19,8 @@ internal fun Long.formatEpochSeconds(): String = epochSecondsFormatter.format(Da
 @Composable
 internal fun AnimeEpisodes.formatAiredCount(): String? {
     val airedCount = aired ?: return null
-    val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
-    return stringResource(R.string.details_mobile_aired_progress, airedCount, totalCount)
+    val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
+    return stringResource(R.string.details_aired_progress, airedCount, totalCount)
 }
 
 /** «02.10.2026 03:00 · через 3 дня»; без отсчёта, если дата уже прошла. */

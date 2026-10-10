@@ -3,9 +3,9 @@ package su.afk.yummy.tv.feature.search.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.search.model.SearchSort
-import su.afk.yummy.tv.feature.search.R
 import su.afk.yummy.tv.feature.search.model.IntOption
 import su.afk.yummy.tv.feature.search.model.StringOption
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun statusOptions(): List<StringOption> = listOf(
@@ -35,7 +35,7 @@ internal fun ageOptions(): List<IntOption> = listOf(
 internal fun SearchSort.label(): String = when (this) {
     SearchSort.RELEVANCE -> stringResource(R.string.search_filter_sort_relevance)
     SearchSort.TITLE -> stringResource(R.string.search_filter_sort_title)
-    SearchSort.YEAR -> stringResource(R.string.search_filter_sort_year)
+    SearchSort.YEAR -> stringResource(R.string.search_filter_year)
     SearchSort.RATING -> stringResource(R.string.search_filter_sort_rating)
     SearchSort.RATING_COUNTERS -> stringResource(R.string.search_filter_sort_rating_counters)
     SearchSort.VIEWS -> stringResource(R.string.search_filter_sort_views)

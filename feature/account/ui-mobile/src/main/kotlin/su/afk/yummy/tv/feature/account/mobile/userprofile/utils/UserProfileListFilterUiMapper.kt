@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.userprofile.model.UserProfileListFilterUi
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
 @Composable

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun ProfileStatsEmptyState(modifier: Modifier = Modifier) {

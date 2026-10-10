@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

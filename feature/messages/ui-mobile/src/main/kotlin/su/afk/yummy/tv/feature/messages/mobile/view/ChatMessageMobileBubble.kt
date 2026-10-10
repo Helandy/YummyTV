@@ -57,8 +57,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.domain.messages.model.ChatMessage
-import su.afk.yummy.tv.feature.messages.mobile.R
 import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
+import su.afk.yummy.tv.feature.messages.presentation.R
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)

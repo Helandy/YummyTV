@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.pages.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.pages.model.SitePageType
-import su.afk.yummy.tv.feature.pages.mobile.R
+import su.afk.yummy.tv.feature.pages.presentation.R
 
 @Composable
 internal fun SitePageType.title(): String = stringResource(

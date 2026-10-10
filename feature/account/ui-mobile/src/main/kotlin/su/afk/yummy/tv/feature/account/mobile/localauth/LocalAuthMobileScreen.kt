@@ -47,9 +47,9 @@ import su.afk.yummy.tv.core.designsystem.permissions.missingLocalNetworkPermissi
 import su.afk.yummy.tv.core.designsystem.permissions.rememberLocalNetworkPermissionGate
 import su.afk.yummy.tv.domain.account.model.DiscoveredDevice
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.localauth.utils.rememberLocalAuthQrScanner
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +129,7 @@ fun LocalAuthMobileScreen(
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = stringResource(
-                                    R.string.account_local_auth_mobile_search_again_cd,
+                                    R.string.account_local_auth_mobile_search_again,
                                 ),
                             )
                         }
@@ -270,7 +270,7 @@ private fun LocalAuthSearchStatus(
             Button(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(
-                        R.string.account_mobile_local_network_permission_open_settings,
+                        R.string.account_local_network_permission_open_settings,
                     ),
                 )
             }

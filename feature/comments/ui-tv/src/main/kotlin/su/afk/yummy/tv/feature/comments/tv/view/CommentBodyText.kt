@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusHighlight
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.utils.formatting.toParagraphs
-import su.afk.yummy.tv.feature.comments.tv.R
 import su.afk.yummy.tv.feature.comments.model.CommentTextPart
+import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.parseCommentText
 
 /**

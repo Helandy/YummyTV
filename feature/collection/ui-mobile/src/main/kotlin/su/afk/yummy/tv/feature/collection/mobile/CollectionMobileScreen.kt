@@ -35,6 +35,8 @@ import su.afk.yummy.tv.feature.collection.mobile.view.CollectionEngagementPanel
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionMobileHeader
 import su.afk.yummy.tv.feature.collection.mobile.view.MobileCollectionEditDialog
 import su.afk.yummy.tv.feature.collection.mobile.view.MobileDeleteCollectionDialog
+import su.afk.yummy.tv.feature.collection.presentation.R
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -118,7 +120,7 @@ fun CollectionMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(R.string.collection_mobile_retry),
+                    actionLabel = stringResource(CoreR.string.retry),
                     onAction = retry,
                 )
             }

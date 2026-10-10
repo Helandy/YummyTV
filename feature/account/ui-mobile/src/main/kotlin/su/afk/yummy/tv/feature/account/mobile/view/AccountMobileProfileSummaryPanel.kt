@@ -20,8 +20,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.hasAny
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileProfileSummaryPanel(
@@ -46,7 +46,7 @@ internal fun AccountMobileProfileSummaryPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     AccountMobileSectionLabel(
                         icon = Icons.Filled.VideoLibrary,
-                        title = stringResource(R.string.account_mobile_section_lists),
+                        title = stringResource(R.string.account_section_lists),
                     )
                     AccountMobileProfileListCounters(counts = summary.counts)
                 }
@@ -55,7 +55,7 @@ internal fun AccountMobileProfileSummaryPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     AccountMobileSectionLabel(
                         icon = Icons.Filled.Groups,
-                        title = stringResource(R.string.account_mobile_section_social),
+                        title = stringResource(R.string.account_section_social),
                     )
                     AccountMobileProfileSocialCounters(counts = summary.socialCounts)
                 }
@@ -64,7 +64,7 @@ internal fun AccountMobileProfileSummaryPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     AccountMobileSectionLabel(
                         icon = Icons.Filled.Info,
-                        title = stringResource(R.string.account_mobile_section_about),
+                        title = stringResource(R.string.account_section_about),
                     )
                     Text(
                         text = summary.about,

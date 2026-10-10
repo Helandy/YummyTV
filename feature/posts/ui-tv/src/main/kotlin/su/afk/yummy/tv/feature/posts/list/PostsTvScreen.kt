@@ -53,7 +53,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
-import su.afk.yummy.tv.feature.posts.tv.R
+import su.afk.yummy.tv.feature.posts.presentation.R
 import su.afk.yummy.tv.feature.posts.utils.label
 import su.afk.yummy.tv.feature.posts.view.PostTvCard
 

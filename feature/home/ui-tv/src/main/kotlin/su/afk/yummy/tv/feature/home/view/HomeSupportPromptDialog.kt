@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusableButton
-import su.afk.yummy.tv.feature.home.R
+import su.afk.yummy.tv.feature.home.presentation.R
 
 @Composable
 internal fun HomeSupportPromptDialog(

@@ -15,11 +15,11 @@ import su.afk.yummy.tv.core.navigation.scene.listPaneAnchor
 import su.afk.yummy.tv.feature.messages.IMobileMessagesEntry
 import su.afk.yummy.tv.feature.messages.chat.ChatViewModel
 import su.afk.yummy.tv.feature.messages.dialogs.DialogsViewModel
-import su.afk.yummy.tv.feature.messages.mobile.R
 import su.afk.yummy.tv.feature.messages.mobile.chat.ChatMobileScreen
 import su.afk.yummy.tv.feature.messages.mobile.dialogs.DialogsMobileScreen
 import su.afk.yummy.tv.feature.messages.navigator.ChatDestination
 import su.afk.yummy.tv.feature.messages.navigator.DialogsDestination
+import su.afk.yummy.tv.feature.messages.presentation.R
 import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)

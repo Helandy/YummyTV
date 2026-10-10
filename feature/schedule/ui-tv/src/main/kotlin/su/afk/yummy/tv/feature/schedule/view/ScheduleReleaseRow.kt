@@ -44,8 +44,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.feature.schedule.R
 import su.afk.yummy.tv.feature.schedule.model.ScheduleReleaseUi
+import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.utils.remainingText
 import su.afk.yummy.tv.feature.schedule.utils.timeLabel
 import java.time.Instant

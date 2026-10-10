@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
-import su.afk.yummy.tv.feature.home.mobile.R
+import su.afk.yummy.tv.feature.home.presentation.R
 
 internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this) {
     HomeFeedSectionType.SCHEDULE,
@@ -20,9 +20,9 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
 @Composable
 internal fun HomeContinueWatchingItem.episodeSubtitle(): String =
     if (episode.isBlank()) {
-        stringResource(R.string.home_mobile_episode_unknown)
+        stringResource(R.string.home_episode)
     } else {
-        stringResource(R.string.home_mobile_episode, episode)
+        stringResource(R.string.home_episode_number, episode)
     }
 
 internal fun HomeContinueWatchingItem.timingSubtitle(): String =
@@ -44,9 +44,9 @@ internal fun HomeFeedItem.newEpisodeSubtitle(): String? = airedAtSeconds?.format
 internal fun HomeFeedItem.newEpisodeBadge(): String? =
     episodeNumber?.let { number ->
         val label = if (isWatched) {
-            R.string.home_mobile_new_episode_badge_watched
+            R.string.home_new_episode_badge_watched
         } else {
-            R.string.home_mobile_new_episode_badge
+            R.string.home_new_episode_badge
         }
         stringResource(label, number)
     }

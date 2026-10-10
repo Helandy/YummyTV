@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.reviews.model.ReviewRating
-import su.afk.yummy.tv.feature.reviews.mobile.R
 import su.afk.yummy.tv.feature.reviews.mobile.utils.reviewScoreColor
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @Composable
 internal fun ReviewRatingCard(

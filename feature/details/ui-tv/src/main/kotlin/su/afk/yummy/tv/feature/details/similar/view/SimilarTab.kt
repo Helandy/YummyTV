@@ -46,8 +46,8 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusReques
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.view.common.RelatedTitleCard
 
 private val RelatedCardWidth = 188.dp

@@ -20,9 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.utils.toDetailsButtonOrderItems
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileDetailsButtonOrder(

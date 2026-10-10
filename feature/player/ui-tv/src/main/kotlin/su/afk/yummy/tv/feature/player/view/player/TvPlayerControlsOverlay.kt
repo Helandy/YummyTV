@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
-import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.presentation.R
 
 /** Нижний блок контролов: кнопка пропуска, прогресс и ряд эпизода/настроек. */
 @Composable

@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
-import su.afk.yummy.tv.feature.settings.R
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.cacheStorageFolderLabel
 
 @Composable

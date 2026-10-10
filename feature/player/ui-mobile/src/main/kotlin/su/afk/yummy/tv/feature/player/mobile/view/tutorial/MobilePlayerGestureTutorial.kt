@@ -32,8 +32,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.model.GestureTutorialStep
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun MobilePlayerGestureTutorial(
@@ -78,7 +78,7 @@ internal fun MobilePlayerGestureTutorial(
                 )
                 Text(
                     text = stringResource(
-                        R.string.player_mobile_gesture_tutorial_step,
+                        R.string.player_tv_controls_tutorial_step,
                         stepIndex + 1,
                         steps.size,
                     ),

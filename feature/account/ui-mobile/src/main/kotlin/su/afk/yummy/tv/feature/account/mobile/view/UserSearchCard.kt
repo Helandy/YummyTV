@@ -22,8 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.account.model.UserSearchItem
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.formatProfileDate
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun UserSearchCard(

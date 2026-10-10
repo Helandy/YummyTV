@@ -42,10 +42,10 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostSort
 import su.afk.yummy.tv.domain.posts.model.PostSummary
 import su.afk.yummy.tv.feature.posts.list.PostsListState
-import su.afk.yummy.tv.feature.posts.mobile.R
 import su.afk.yummy.tv.feature.posts.mobile.utils.label
 import su.afk.yummy.tv.feature.posts.mobile.view.PostMobileCard
 import su.afk.yummy.tv.feature.posts.mobile.view.PostsLoadingState
+import su.afk.yummy.tv.feature.posts.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

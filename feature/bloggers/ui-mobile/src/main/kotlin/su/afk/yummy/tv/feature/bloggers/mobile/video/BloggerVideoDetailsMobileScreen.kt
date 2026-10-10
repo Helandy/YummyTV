@@ -39,10 +39,10 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.openExternalUri
-import su.afk.yummy.tv.feature.bloggers.mobile.R
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoCreatorCard
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoHero
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoReactions
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.bloggers.video.BloggerVideoDetailsState
 
 @OptIn(ExperimentalMaterial3Api::class)

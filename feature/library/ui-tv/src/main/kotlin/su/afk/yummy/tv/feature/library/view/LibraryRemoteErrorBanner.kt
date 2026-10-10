@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
-import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryRemoteErrorBanner(

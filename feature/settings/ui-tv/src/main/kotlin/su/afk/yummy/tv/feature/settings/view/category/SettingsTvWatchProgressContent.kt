@@ -6,8 +6,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSliderRow
@@ -37,9 +37,9 @@ internal fun SettingsTvWatchProgressContent(
     )
     SettingsDivider()
     SettingsSliderRow(
-        label = stringResource(R.string.settings_tv_watched_short_label),
+        label = stringResource(R.string.settings_watched_short_label),
         valueText = stringResource(
-            R.string.settings_tv_watched_minutes_value,
+            R.string.settings_watched_minutes_value,
             state.watchedThresholds.shortMinutes,
         ),
         value = state.watchedThresholds.shortMinutes,
@@ -55,9 +55,9 @@ internal fun SettingsTvWatchProgressContent(
     )
     SettingsDivider()
     SettingsSliderRow(
-        label = stringResource(R.string.settings_tv_watched_medium_label),
+        label = stringResource(R.string.settings_watched_medium_label),
         valueText = stringResource(
-            R.string.settings_tv_watched_minutes_value,
+            R.string.settings_watched_minutes_value,
             state.watchedThresholds.mediumMinutes,
         ),
         value = state.watchedThresholds.mediumMinutes,
@@ -73,9 +73,9 @@ internal fun SettingsTvWatchProgressContent(
     )
     SettingsDivider()
     SettingsSliderRow(
-        label = stringResource(R.string.settings_tv_watched_long_label),
+        label = stringResource(R.string.settings_watched_long_label),
         valueText = stringResource(
-            R.string.settings_tv_watched_minutes_value,
+            R.string.settings_watched_minutes_value,
             state.watchedThresholds.longMinutes,
         ),
         value = state.watchedThresholds.longMinutes,

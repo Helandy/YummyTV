@@ -21,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchSort
-import su.afk.yummy.tv.feature.search.mobile.R
 import su.afk.yummy.tv.feature.search.mobile.utils.ageOptions
 import su.afk.yummy.tv.feature.search.mobile.utils.label
 import su.afk.yummy.tv.feature.search.mobile.utils.seasonOptions
 import su.afk.yummy.tv.feature.search.mobile.utils.statusOptions
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun ColumnScope.SearchMobileFilterBody(
@@ -47,16 +47,16 @@ internal fun ColumnScope.SearchMobileFilterBody(
     onSortDirectionToggled: () -> Unit,
 ) {
     SheetHeader(
-        title = stringResource(R.string.search_mobile_filters),
+        title = stringResource(R.string.search_filters),
         onBack = onBack,
-        actionLabel = stringResource(R.string.search_mobile_filters_reset),
+        actionLabel = stringResource(R.string.search_filters_reset),
         actionVisible = draftFilters.activeCount > 0,
         onClose = onReset,
     )
 
     if (isLoadingFilterOptions) {
         Text(
-            text = stringResource(R.string.search_mobile_filters_loading),
+            text = stringResource(R.string.search_filters_loading),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -70,16 +70,16 @@ internal fun ColumnScope.SearchMobileFilterBody(
             .padding(bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        FilterSection(title = stringResource(R.string.search_mobile_filter_genre_screen_title)) {
+        FilterSection(title = stringResource(R.string.search_filter_genre_screen_title)) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterNavigationRow(
-                    title = stringResource(R.string.search_mobile_filter_genres),
+                    title = stringResource(R.string.search_filter_genres),
                     icon = Icons.Filled.Sell,
                     selectedCount = draftFilters.genres.size,
                     onClick = onOpenGenres,
                 )
                 FilterNavigationRow(
-                    title = stringResource(R.string.search_mobile_filter_exclude_genres),
+                    title = stringResource(R.string.search_filter_exclude_genres),
                     icon = Icons.Filled.Block,
                     selectedCount = draftFilters.excludedGenres.size,
                     onClick = onOpenExcludedGenres,
@@ -87,7 +87,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_sort)) {
+        FilterSection(title = stringResource(R.string.search_filter_sort)) {
             ChipFlow {
                 SearchSort.entries.forEach { sort ->
                     FilterChip(
@@ -98,9 +98,9 @@ internal fun ColumnScope.SearchMobileFilterBody(
                 }
                 FilterDirectionChip(
                     label = if (draftFilters.sortForward) {
-                        stringResource(R.string.search_mobile_filter_sort_forward)
+                        stringResource(R.string.search_filter_sort_forward)
                     } else {
-                        stringResource(R.string.search_mobile_filter_sort_backward)
+                        stringResource(R.string.search_filter_sort_backward)
                     },
                     forward = draftFilters.sortForward,
                     onClick = onSortDirectionToggled,
@@ -108,16 +108,16 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_year)) {
+        FilterSection(title = stringResource(R.string.search_filter_year)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 YearField(
-                    label = stringResource(R.string.search_mobile_filter_year_from),
+                    label = stringResource(R.string.search_filter_year_from),
                     value = draftFilters.fromYear,
                     onValueChanged = onFromYearChanged,
                     modifier = Modifier.weight(1f),
                 )
                 YearField(
-                    label = stringResource(R.string.search_mobile_filter_year_to),
+                    label = stringResource(R.string.search_filter_year_to),
                     value = draftFilters.toYear,
                     onValueChanged = onToYearChanged,
                     modifier = Modifier.weight(1f),
@@ -125,7 +125,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_type)) {
+        FilterSection(title = stringResource(R.string.search_filter_type)) {
             ChipFlow {
                 filterOptions.types.forEach { type ->
                     FilterChip(
@@ -137,7 +137,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_status)) {
+        FilterSection(title = stringResource(R.string.search_filter_status)) {
             ChipFlow {
                 statusOptions().forEach { option ->
                     FilterChip(
@@ -149,7 +149,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_season)) {
+        FilterSection(title = stringResource(R.string.search_filter_season)) {
             ChipFlow {
                 seasonOptions().forEach { option ->
                     FilterChip(
@@ -161,7 +161,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
             }
         }
 
-        FilterSection(title = stringResource(R.string.search_mobile_filter_age)) {
+        FilterSection(title = stringResource(R.string.search_filter_age)) {
             ChipFlow {
                 ageOptions().forEach { option ->
                     FilterChip(
@@ -185,7 +185,7 @@ internal fun ColumnScope.SearchMobileFilterBody(
                     draftFilters.activeCount,
                 )
             } else {
-                stringResource(R.string.search_mobile_filters_apply)
+                stringResource(R.string.search_filters_apply)
             },
         )
     }

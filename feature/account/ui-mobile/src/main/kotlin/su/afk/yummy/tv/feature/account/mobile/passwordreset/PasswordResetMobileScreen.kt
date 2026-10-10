@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.passwordreset.PasswordResetState
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

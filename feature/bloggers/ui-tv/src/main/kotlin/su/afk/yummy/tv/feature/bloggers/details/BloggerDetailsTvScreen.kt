@@ -34,7 +34,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.bloggers.tv.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.bloggers.view.BloggerVideoTvCard
 
 @Composable

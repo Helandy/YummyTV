@@ -17,8 +17,8 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobileDetailsAction
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun buildMobileActions(
@@ -40,7 +40,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.EPISODES,
-                stringResource(R.string.details_mobile_episodes),
+                stringResource(R.string.details_episodes),
                 Icons.Filled.VideoLibrary,
                 onEpisodesSelected,
             )
@@ -49,7 +49,7 @@ internal fun buildMobileActions(
             add(
                 MobileDetailsAction(
                     DetailsButtonAction.SUBSCRIPTIONS,
-                    stringResource(R.string.details_mobile_subscriptions),
+                    stringResource(R.string.details_subscriptions),
                     Icons.Filled.Notifications,
                     onSubscriptionsSelected,
                 )
@@ -58,7 +58,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.FULL_DETAILS,
-                stringResource(R.string.details_mobile_full_details),
+                stringResource(R.string.details_full_details),
                 Icons.Filled.Info,
                 onFullDetailsSelected,
             )
@@ -66,7 +66,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.TRAILERS,
-                stringResource(R.string.details_mobile_trailers),
+                stringResource(R.string.details_trailers),
                 Icons.Filled.Movie,
                 onTrailersSelected,
             )
@@ -74,7 +74,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.SIMILAR,
-                stringResource(R.string.details_mobile_similar),
+                stringResource(R.string.details_similar),
                 Icons.Filled.AutoAwesome,
                 onSimilarSelected,
             )
@@ -82,7 +82,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.VIEWING_ORDER,
-                stringResource(R.string.details_mobile_viewing_order),
+                stringResource(R.string.details_viewing_order),
                 Icons.Filled.FormatListNumbered,
                 onViewingOrderSelected,
             )
@@ -90,7 +90,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.RATING,
-                stringResource(R.string.details_mobile_rating),
+                stringResource(R.string.details_rating_button),
                 Icons.Filled.Star,
                 onRatingScreenSelected,
             )
@@ -98,7 +98,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.COLLECTIONS,
-                stringResource(R.string.details_mobile_collections),
+                stringResource(R.string.details_collections_button),
                 Icons.Filled.CollectionsBookmark,
                 onCollectionsSelected,
             )
@@ -107,9 +107,9 @@ internal fun buildMobileActions(
             MobileDetailsAction(
                 DetailsButtonAction.REVIEWS,
                 if (details.reviewsCount > 0) stringResource(
-                    R.string.details_mobile_reviews_count,
+                    R.string.details_reviews_count,
                     details.reviewsCount
-                ) else stringResource(R.string.details_mobile_reviews),
+                ) else stringResource(R.string.details_reviews),
                 Icons.Filled.RateReview,
                 onReviewsSelected,
             )
@@ -117,7 +117,7 @@ internal fun buildMobileActions(
         add(
             MobileDetailsAction(
                 DetailsButtonAction.BLOGGER_VIDEOS,
-                stringResource(R.string.details_mobile_blogger_videos),
+                stringResource(R.string.details_blogger_videos),
                 Icons.Filled.VideoCameraFront,
                 onBloggerVideosSelected,
             )
@@ -126,7 +126,7 @@ internal fun buildMobileActions(
             add(
                 MobileDetailsAction(
                     DetailsButtonAction.SCREENSHOTS,
-                    stringResource(R.string.details_mobile_screenshots),
+                    stringResource(R.string.details_screenshots_title),
                     Icons.Filled.PhotoLibrary,
                     onScreenshotsSelected,
                 )

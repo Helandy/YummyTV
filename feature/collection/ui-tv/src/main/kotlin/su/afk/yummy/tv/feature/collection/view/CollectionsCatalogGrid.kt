@@ -52,7 +52,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.domain.collection.model.CollectionSummary
-import su.afk.yummy.tv.feature.collection.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -98,7 +98,7 @@ internal fun CollectionsCatalogGrid(
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
-                        text = stringResource(R.string.collection_catalog_tv_title),
+                        text = stringResource(R.string.collection_catalog_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = gridStartExtent.measure,

@@ -37,7 +37,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
-import su.afk.yummy.tv.feature.bloggers.tv.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.bloggers.utils.labelRes
 import su.afk.yummy.tv.feature.bloggers.view.BloggerVideoTvCard
 
@@ -61,7 +61,7 @@ fun BloggerVideosListTvScreen(
         verticalArrangement = Arrangement.spacedBy(TvCardSpacing.Vertical)
     ) {
         Text(
-            stringResource(if (state.animeId == null) R.string.blogger_videos_title else R.string.blogger_videos_anime_title_tv),
+            stringResource(if (state.animeId == null) R.string.blogger_videos_title else R.string.blogger_videos_anime_title),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )

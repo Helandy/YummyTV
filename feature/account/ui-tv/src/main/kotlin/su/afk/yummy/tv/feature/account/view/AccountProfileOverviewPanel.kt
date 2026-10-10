@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.hasAny
 
 private val PanelHorizontalPadding = 18.dp
@@ -118,7 +118,7 @@ internal fun AccountProfileOverviewPanel(
         Spacer(modifier = Modifier.height(16.dp))
         ProfileSectionHeader(
             icon = Icons.Filled.VideoLibrary,
-            title = stringResource(R.string.account_tv_section_lists),
+            title = stringResource(R.string.account_section_lists),
             modifier = Modifier.padding(horizontal = PanelHorizontalPadding),
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -133,7 +133,7 @@ internal fun AccountProfileOverviewPanel(
             Spacer(modifier = Modifier.height(16.dp))
             ProfileSectionHeader(
                 icon = Icons.Filled.Groups,
-                title = stringResource(R.string.account_tv_section_social),
+                title = stringResource(R.string.account_section_social),
                 modifier = Modifier.padding(horizontal = PanelHorizontalPadding),
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -147,7 +147,7 @@ internal fun AccountProfileOverviewPanel(
             Spacer(modifier = Modifier.height(16.dp))
             ProfileSectionHeader(
                 icon = Icons.Filled.Info,
-                title = stringResource(R.string.account_tv_section_about),
+                title = stringResource(R.string.account_section_about),
                 modifier = Modifier.padding(horizontal = PanelHorizontalPadding),
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -220,7 +220,7 @@ private fun DaysOnlineTile(
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = stringResource(R.string.account_profile_days_online_tv),
+            text = stringResource(R.string.account_profile_days_online),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

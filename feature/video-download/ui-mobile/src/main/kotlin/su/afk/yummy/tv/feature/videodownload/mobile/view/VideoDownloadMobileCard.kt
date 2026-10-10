@@ -42,7 +42,6 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
-import su.afk.yummy.tv.feature.videodownload.mobile.R
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.balancerLabel
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.canPause
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.diskSizeText
@@ -51,6 +50,7 @@ import su.afk.yummy.tv.feature.videodownload.mobile.utils.hasProgressIndicator
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.isActive
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.statusText
 import su.afk.yummy.tv.feature.videodownload.mobile.utils.visibleProgress
+import su.afk.yummy.tv.feature.videodownload.presentation.R
 
 private val DownloadActiveColor = YummySemanticColors.InProgress
 

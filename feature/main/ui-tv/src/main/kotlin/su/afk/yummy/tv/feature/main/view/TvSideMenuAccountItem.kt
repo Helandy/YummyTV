@@ -35,7 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.feature.main.R
+import su.afk.yummy.tv.feature.main.presentation.R
 import su.afk.yummy.tv.feature.main.utils.moveFocusToContentOnKey
 
 @OptIn(ExperimentalComposeUiApi::class)

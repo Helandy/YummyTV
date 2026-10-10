@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.utils.libraryLabel
 import su.afk.yummy.tv.feature.details.mobile.details.utils.watchLabel
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
 
 @Composable
@@ -118,8 +118,11 @@ internal fun DetailsPrimaryActions(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = stringResource(
-                        if (state.isFavorite) R.string.details_mobile_favorite_on
-                        else R.string.details_mobile_favorite_off,
+                        if (state.isFavorite) {
+                            R.string.details_add_favorite
+                        } else {
+                            R.string.details_add_favorite
+                        },
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.settings.R
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 
 @Composable
@@ -65,7 +65,7 @@ internal fun ApiSettingsPanel(
                 ),
         )
         Text(
-            text = stringResource(R.string.settings_yani_application_token_hint_tv),
+            text = stringResource(R.string.settings_yani_application_token_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

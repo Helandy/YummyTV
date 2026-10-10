@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.account.mobile.userprofile.view
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.UserReviewSummary
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun UserReviewRow(item: UserReviewSummary, onClick: () -> Unit) {

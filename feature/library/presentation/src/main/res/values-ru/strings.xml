@@ -1,4 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_remote_continue_progress_toast">Найден удалённый прогресс. Серия %1$s (%2$s)</string>
+    <string name="library_tab_history">История</string>
+    <string name="library_history_sign_in">Войдите, чтобы увидеть историю просмотров</string>
+    <string name="library_history_empty">История просмотров пуста</string>
+    <string name="library_history_error">Не удалось загрузить историю просмотров</string>
+        <string name="library_mobile_title">Библиотека</string>
+    <string name="library_tab_continue_watching">Продолжить</string>
+    <string name="library_tab_favorites">Любимые</string>
+    <string name="library_tab_watching">Смотрю</string>
+    <string name="library_tab_planned">В планах</string>
+    <string name="library_tab_completed">Просмотрено</string>
+    <string name="library_tab_postponed">Отложено</string>
+    <string name="library_tab_dropped">Брошено</string>
+    <string name="library_episode_number">Серия %1$s</string>
+    <string name="library_mobile_added_date">Добавлено %1$s</string>
+    <string name="library_empty_list">Список пока пуст - самое время добавить что то</string>
+    <string name="library_retry">Повторить</string>
+    <string name="library_mobile_remove_title">Удалить тайтл?</string>
+    <string name="library_mobile_remove_message">“%1$s” будет удалён из раздела “%2$s”.</string>
+        <string name="library_mobile_remove_cancel">Отмена</string>
+    <string name="library_remove_success">Удалено</string>
+    <string name="library_mobile_details_content_description">Открыть детали</string>
+    <string name="library_mobile_remove_content_description">Удалить</string>
+    <string name="library_mobile_sort_label">Сортировка: %1$s</string>
+    <string name="library_mobile_sort_added_date">по дате добавления</string>
+    <string name="library_mobile_sort_year">по году</string>
+    <string name="library_mobile_sort_rating">по рейтингу</string>
+    <string name="library_mobile_sort_user_rating">по моей оценке</string>
+    <string name="library_mobile_sort_title">по названию</string>
+    <string name="library_mobile_sort_direction_content_description">Развернуть порядок</string>
+    <plurals name="library_release_in_days">
+        <item quantity="one">До выхода серии %1$d день</item>
+        <item quantity="few">До выхода серии %1$d дня</item>
+        <item quantity="many">До выхода серии %1$d дней</item>
+        <item quantity="other">До выхода серии %1$d дня</item>
+    </plurals>
+    <plurals name="library_release_in_hours">
+        <item quantity="one">До выхода серии %1$d час</item>
+        <item quantity="few">До выхода серии %1$d часа</item>
+        <item quantity="many">До выхода серии %1$d часов</item>
+        <item quantity="other">До выхода серии %1$d часа</item>
+    </plurals>
+    <plurals name="library_release_in_minutes">
+        <item quantity="one">До выхода серии %1$d минута</item>
+        <item quantity="few">До выхода серии %1$d минуты</item>
+        <item quantity="many">До выхода серии %1$d минут</item>
+        <item quantity="other">До выхода серии %1$d минуты</item>
+    </plurals>
+    <string name="library_season_winter">Зима</string>
+    <string name="library_season_spring">Весна</string>
+    <string name="library_season_summer">Лето</string>
+    <string name="library_season_fall">Осень</string>
+    <string name="library_year_season">%1$s · %2$s</string>
+        <string name="library_episode">Серия</string>
+    <string name="library_details">Детали</string>
+    <string name="library_delete">Удалить</string>
+    <string name="library_tab_continue_watching_short">Пр</string>
+    <string name="library_tab_history_short">Ис</string>
+    <string name="library_tab_favorites_short">Лю</string>
+    <string name="library_tab_watching_short">См</string>
+    <string name="library_tab_planned_short">Пл</string>
+    <string name="library_tab_completed_short">Го</string>
+    <string name="library_tab_postponed_short">От</string>
+    <string name="library_tab_dropped_short">Бр</string>
 </resources>

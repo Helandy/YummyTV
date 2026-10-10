@@ -32,15 +32,14 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerSettingsMode
 import su.afk.yummy.tv.feature.player.mobile.model.MobilePlayerTrackSettingsTab
+import su.afk.yummy.tv.feature.player.presentation.R
 import kotlin.math.roundToInt
-import su.afk.yummy.tv.feature.player.mobile.R as UiR
-import su.afk.yummy.tv.feature.player.presentation.R as PresentationR
 
 private fun PlayerResizeMode.mobileResizeLabelRes(): Int = when (this) {
-    PlayerResizeMode.FIT -> PresentationR.string.player_resize_fit
-    PlayerResizeMode.ZOOM -> PresentationR.string.player_resize_zoom
-    PlayerResizeMode.STRETCH -> PresentationR.string.player_resize_stretch
-    PlayerResizeMode.CROP -> PresentationR.string.player_resize_crop
+    PlayerResizeMode.FIT -> R.string.player_resize_fit
+    PlayerResizeMode.ZOOM -> R.string.player_resize_zoom
+    PlayerResizeMode.STRETCH -> R.string.player_resize_stretch
+    PlayerResizeMode.CROP -> R.string.player_resize_crop
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,8 +117,8 @@ internal fun MobilePlayerSettingsSheet(
             item {
                 Text(
                     text = when (mode) {
-                        MobilePlayerSettingsMode.Track -> stringResource(UiR.string.player_mobile_track_settings_title)
-                        MobilePlayerSettingsMode.Playback -> stringResource(UiR.string.player_mobile_playback_settings_title)
+                        MobilePlayerSettingsMode.Track -> stringResource(R.string.player_mobile_track_settings_title)
+                        MobilePlayerSettingsMode.Playback -> stringResource(R.string.player_mobile_playback_settings_title)
                     },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -130,7 +129,7 @@ internal fun MobilePlayerSettingsSheet(
                 if (qualities.isNotEmpty()) {
                     item {
                         val qualityIndex = qualities.indexOf(selectedQuality).coerceAtLeast(0)
-                        MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_quality)) {
+                        MobilePlayerSettingsSection(title = stringResource(R.string.player_quality_title)) {
                             MobilePlayerSliderRow(
                                 value = qualityIndex,
                                 valueRange = 0..(qualities.size - 1).coerceAtLeast(0),
@@ -143,7 +142,7 @@ internal fun MobilePlayerSettingsSheet(
                 }
                 item {
                     val speedTenths = (selectedSpeed * 10).roundToInt().coerceIn(5, 30)
-                    MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_speed)) {
+                    MobilePlayerSettingsSection(title = stringResource(R.string.player_speed_title)) {
                         MobilePlayerSliderRow(
                             value = speedTenths,
                             valueRange = 5..30,
@@ -153,7 +152,7 @@ internal fun MobilePlayerSettingsSheet(
                     }
                 }
                 item {
-                    MobilePlayerSettingsSection(title = stringResource(PresentationR.string.player_resize_title)) {
+                    MobilePlayerSettingsSection(title = stringResource(R.string.player_resize_title)) {
                         resizeModes.forEach { resizeMode ->
                             MobilePlayerSelectionRow(
                                 label = stringResource(resizeMode.mobileResizeLabelRes()),
@@ -166,9 +165,9 @@ internal fun MobilePlayerSettingsSheet(
             }
             if (mode == MobilePlayerSettingsMode.Track) {
                 item {
-                    val dubbingLabel = stringResource(UiR.string.player_mobile_dubbing)
-                    val playerLabel = stringResource(UiR.string.player_mobile_player)
-                    val allohaLabel = stringResource(UiR.string.player_mobile_audio_track)
+                    val dubbingLabel = stringResource(R.string.player_dubbing_title)
+                    val playerLabel = stringResource(R.string.player_name_prefix)
+                    val allohaLabel = stringResource(R.string.player_audio_track_title)
                     MobilePlayerTrackSettingsTabs(
                         tabs = trackTabs,
                         selectedTab = trackTabs[trackPagerState.currentPage],
@@ -193,7 +192,7 @@ internal fun MobilePlayerSettingsSheet(
                     ) { page ->
                         when (trackTabs[page]) {
                             MobilePlayerTrackSettingsTab.Dubbing ->
-                                MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_dubbing)) {
+                                MobilePlayerSettingsSection(title = stringResource(R.string.player_dubbing_title)) {
                                     dubbingNames.forEachIndexed { index, name ->
                                         val enabled = dubbingAvailability.getOrElse(index) { true }
                                         MobilePlayerSelectionRow(
@@ -215,7 +214,7 @@ internal fun MobilePlayerSettingsSheet(
                                                     )
                                                 } else {
                                                     Text(
-                                                        text = stringResource(PresentationR.string.player_episode_unavailable),
+                                                        text = stringResource(R.string.player_episode_unavailable),
                                                         style = MaterialTheme.typography.labelSmall,
                                                         color = contentColor.copy(alpha = 0.68f),
                                                     )
@@ -227,7 +226,7 @@ internal fun MobilePlayerSettingsSheet(
                                 }
 
                             MobilePlayerTrackSettingsTab.Player ->
-                                MobilePlayerSettingsSection(title = stringResource(UiR.string.player_mobile_player)) {
+                                MobilePlayerSettingsSection(title = stringResource(R.string.player_name_prefix)) {
                                     balancerNames.forEachIndexed { index, name ->
                                         val enabled = balancerAvailability.getOrElse(index) { true }
                                         MobilePlayerSelectionRow(
@@ -238,7 +237,7 @@ internal fun MobilePlayerSettingsSheet(
                                             metaContent = { contentColor ->
                                                 if (!enabled) {
                                                     Text(
-                                                        text = stringResource(PresentationR.string.player_episode_unavailable),
+                                                        text = stringResource(R.string.player_episode_unavailable),
                                                         style = MaterialTheme.typography.labelSmall,
                                                         color = contentColor.copy(alpha = 0.68f),
                                                     )
@@ -255,7 +254,7 @@ internal fun MobilePlayerSettingsSheet(
                                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                                     if (showAudioSection) {
                                         MobilePlayerSettingsSection(
-                                            title = stringResource(UiR.string.player_mobile_dubbing),
+                                            title = stringResource(R.string.player_dubbing_title),
                                         ) {
                                             audioTrackNames.forEachIndexed { index, name ->
                                                 MobilePlayerSelectionRow(
@@ -268,7 +267,7 @@ internal fun MobilePlayerSettingsSheet(
                                     }
                                     if (showSubtitleSection) {
                                         MobilePlayerSettingsSection(
-                                            title = stringResource(UiR.string.player_mobile_subtitles),
+                                            title = stringResource(R.string.player_subtitles_title),
                                         ) {
                                             subtitleTrackNames.forEachIndexed { index, name ->
                                                 MobilePlayerSelectionRow(

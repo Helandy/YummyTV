@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotMobileCard
 import su.afk.yummy.tv.feature.details.screenshots.ScreenshotsState
@@ -59,7 +59,7 @@ fun ScreenshotsMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = state.title.ifBlank { stringResource(R.string.details_mobile_screenshots) },
+                title = state.title.ifBlank { stringResource(R.string.details_screenshots_title) },
                 onBack = { onEvent(ScreenshotsState.Event.BackSelected) },
             )
         },

@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileLibraryTabOrder
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable

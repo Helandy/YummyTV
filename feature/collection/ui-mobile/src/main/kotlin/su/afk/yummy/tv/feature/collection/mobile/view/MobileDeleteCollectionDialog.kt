@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.collection.mobile.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
 internal fun MobileDeleteCollectionDialog(
@@ -32,7 +32,7 @@ internal fun MobileDeleteCollectionDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isDeleting) {
-                Text(stringResource(R.string.collection_create_cancel))
+                Text(stringResource(R.string.collection_cancel))
             }
         },
     )

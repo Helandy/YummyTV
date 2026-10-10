@@ -15,12 +15,12 @@ import su.afk.yummy.tv.core.navigation.scene.listPaneAnchor
 import su.afk.yummy.tv.feature.reviews.IMobileReviewsEntry
 import su.afk.yummy.tv.feature.reviews.details.ReviewDetailsViewModel
 import su.afk.yummy.tv.feature.reviews.list.ReviewsListViewModel
-import su.afk.yummy.tv.feature.reviews.mobile.R
 import su.afk.yummy.tv.feature.reviews.mobile.details.ReviewDetailsMobileScreen
 import su.afk.yummy.tv.feature.reviews.mobile.list.ReviewsListMobileScreen
 import su.afk.yummy.tv.feature.reviews.navigator.AnimeReviewsDestination
 import su.afk.yummy.tv.feature.reviews.navigator.ReviewDetailsDestination
 import su.afk.yummy.tv.feature.reviews.navigator.ReviewsDestination
+import su.afk.yummy.tv.feature.reviews.presentation.R
 import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)

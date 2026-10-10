@@ -19,7 +19,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun SubscriptionMobileRow(

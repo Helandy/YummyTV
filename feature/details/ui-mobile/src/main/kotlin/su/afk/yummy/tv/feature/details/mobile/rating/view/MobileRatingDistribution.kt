@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeRatingBucket
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 import java.text.NumberFormat
 import kotlin.math.roundToInt
 
@@ -98,7 +98,7 @@ private fun MobileRatingDistributionRow(
         )
         Text(
             text = stringResource(
-                R.string.details_mobile_rating_percent,
+                R.string.details_rating_percent,
                 (fraction * 100).roundToInt()
             ),
             style = MaterialTheme.typography.labelSmall,

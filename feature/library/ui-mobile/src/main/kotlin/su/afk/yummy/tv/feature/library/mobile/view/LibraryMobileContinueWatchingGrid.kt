@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.library.mobile.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryMobileContinueWatchingGrid(
@@ -61,7 +61,7 @@ internal fun LibraryMobileContinueWatchingGrid(
             key = { entry -> "${entry.animeId}-${entry.episode}" },
         ) { entry ->
             val episodeLabel = stringResource(
-                R.string.library_mobile_episode,
+                R.string.library_episode_number,
                 entry.episode.ifBlank { "?" },
             )
             LibraryMobileContinueWatchingCard(

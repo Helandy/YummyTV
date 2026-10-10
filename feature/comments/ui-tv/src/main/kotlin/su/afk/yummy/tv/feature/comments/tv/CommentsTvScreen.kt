@@ -36,6 +36,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.feature.comments.CommentsState
+import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.tv.view.CommentsDialogs

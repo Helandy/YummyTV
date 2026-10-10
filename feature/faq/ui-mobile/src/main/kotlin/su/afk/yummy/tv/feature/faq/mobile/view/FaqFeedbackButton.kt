@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.faq.mobile.R
+import su.afk.yummy.tv.feature.faq.presentation.R
 
 @Composable
 internal fun FaqFeedbackButton(

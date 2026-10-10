@@ -32,9 +32,9 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.domain.reviews.model.AnimeReviewSummary
 import su.afk.yummy.tv.feature.reviews.list.ReviewsListState
-import su.afk.yummy.tv.feature.reviews.mobile.R
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewMobileCard
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewsSortSelector
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

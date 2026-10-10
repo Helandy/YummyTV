@@ -24,10 +24,10 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.dubbings.view.EpisodeDubbingMobileRow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -63,7 +63,7 @@ fun EpisodeDubbingsMobileScreen(
     BaseBottomSheet(
         onDismissRequest = { onEvent(EpisodeDubbingsState.Event.BackSelected) },
         title = stringResource(
-            R.string.details_mobile_episode_dubbings_title,
+            R.string.details_episode_number,
             state.episode
         ),
     ) {
@@ -86,7 +86,7 @@ fun EpisodeDubbingsMobileScreen(
             )
 
             state.dubbings.isEmpty() -> MobileMessage(
-                title = stringResource(R.string.details_mobile_episode_dubbings_empty),
+                title = stringResource(R.string.details_subscriptions_empty),
                 fillMaxSize = false,
             )
 

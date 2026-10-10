@@ -26,6 +26,7 @@ import su.afk.yummy.tv.feature.schedule.ScheduleState
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileDateChips
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileReleaseCard
 import su.afk.yummy.tv.feature.schedule.model.ScheduleDayUi
+import su.afk.yummy.tv.feature.schedule.presentation.R
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -50,8 +51,9 @@ private fun ScheduleMobileScreenErrorPreview() = ScreenPreviewTheme {
     ScheduleMobileScreen(
         ScheduleState.State(
             isLoading = false,
-            error = "Не удалось загрузить расписание"
-        ), emptyFlow()
+            error = "Не удалось загрузить расписание",
+        ),
+        emptyFlow(),
     ) {}
 }
 
@@ -63,7 +65,7 @@ fun ScheduleMobileScreen(
     effect: Flow<ScheduleState.Effect>,
     onEvent: (ScheduleState.Event) -> Unit,
 
-    ) {
+) {
     val schedule = state.tvSchedule
     val dayGroups = schedule.dayGroups
     val tabsState = rememberMobileSwipeableTabsState(

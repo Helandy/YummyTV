@@ -9,7 +9,7 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import android.util.Rational
 import androidx.annotation.RequiresApi
-import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.presentation.R
 
 internal class MobilePlayerPipParamsFactory {
 

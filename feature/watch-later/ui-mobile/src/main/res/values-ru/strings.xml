@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="watch_later_title">Отложенный просмотр</string>
-    <string name="watch_later_empty">Отложенных серий пока нет</string>
-    <string name="watch_later_episode">Серия %1$s</string>
-    <string name="watch_later_remove">Убрать из отложенных</string>
-</resources>

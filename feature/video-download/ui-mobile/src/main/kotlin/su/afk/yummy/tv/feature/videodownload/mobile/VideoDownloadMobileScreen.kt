@@ -40,6 +40,7 @@ import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadDeleteConf
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoDownloadMobileCard
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportAllConfirmationDialog
 import su.afk.yummy.tv.feature.videodownload.mobile.view.VideoExportReExportConfirmationDialog
+import su.afk.yummy.tv.feature.videodownload.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -59,7 +60,7 @@ fun VideoDownloadMobileScreen(
     val notificationPermissionGate = rememberNotificationPermissionGate()
     val context = LocalContext.current
     val exportDirectoryPicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
+        ActivityResultContracts.OpenDocumentTree(),
     ) { uri ->
         uri?.let {
             onEvent(VideoDownloadState.Event.ExportDirectoryGranted(it.toString()))
@@ -102,7 +103,7 @@ fun VideoDownloadMobileScreen(
                     }
                     Text(
                         text = stringResource(
-                            R.string.video_download_total_disk_size,
+                            R.string.video_download_item_dubbing,
                             occupiedSize,
                         ),
                         modifier = Modifier.padding(end = 16.dp),

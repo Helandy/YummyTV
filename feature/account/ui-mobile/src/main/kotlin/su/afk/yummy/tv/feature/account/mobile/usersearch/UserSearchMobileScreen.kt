@@ -43,8 +43,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.view.UserSearchCard
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.usersearch.UserSearchState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
@@ -73,7 +73,7 @@ fun UserSearchMobileScreen(
         contentModifier = Modifier.navigationBarsPadding(),
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.user_search_title),
+                title = stringResource(R.string.account_user_search),
                 onBack = { onEvent(UserSearchState.Event.BackSelected) },
             )
         },

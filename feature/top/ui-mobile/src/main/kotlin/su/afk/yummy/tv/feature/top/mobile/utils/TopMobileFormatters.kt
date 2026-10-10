@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.top.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.top.model.AnimeTopType
-import su.afk.yummy.tv.feature.top.mobile.R
+import su.afk.yummy.tv.feature.top.presentation.R
 
 @Composable
 internal fun AnimeTopType.label(): String = when (this) {

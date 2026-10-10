@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.rating.utils.count
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.statusColor
 import java.text.NumberFormat
 
@@ -33,27 +33,27 @@ internal fun MobileListStats(
     val items = listOf(
         Triple(
             UserAnimeList.WATCHING,
-            R.string.details_mobile_library_watching,
+            R.string.details_library_list_watching,
             listStats.count(UserAnimeList.WATCHING)
         ),
         Triple(
             UserAnimeList.PLANNED,
-            R.string.details_mobile_library_planned,
+            R.string.details_library_list_planned,
             listStats.count(UserAnimeList.PLANNED)
         ),
         Triple(
             UserAnimeList.COMPLETED,
-            R.string.details_mobile_library_completed,
+            R.string.details_library_list_completed,
             listStats.count(UserAnimeList.COMPLETED)
         ),
         Triple(
             UserAnimeList.POSTPONED,
-            R.string.details_mobile_library_postponed,
+            R.string.details_library_list_postponed,
             listStats.count(UserAnimeList.POSTPONED)
         ),
         Triple(
             UserAnimeList.DROPPED,
-            R.string.details_mobile_library_dropped,
+            R.string.details_library_list_dropped,
             listStats.count(UserAnimeList.DROPPED)
         ),
     ).filter { it.third > 0 }
@@ -91,7 +91,7 @@ internal fun MobileListStats(
                     label = {
                         Text(
                             stringResource(
-                                R.string.details_mobile_list_stat_item,
+                                R.string.details_list_stat_item,
                                 stringResource(labelRes),
                                 integerFormat.format(count),
                             )

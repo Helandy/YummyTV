@@ -31,9 +31,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheetCustom
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.utils.hintRes
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

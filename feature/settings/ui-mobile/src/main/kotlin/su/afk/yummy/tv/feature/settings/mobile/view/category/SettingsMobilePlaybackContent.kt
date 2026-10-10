@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.utils.toNextEpisodeSwitchDelayText
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobilePlaybackContent(
@@ -40,7 +40,7 @@ internal fun SettingsMobilePlaybackContent(
                 onClick = { onEvent(SettingsState.Event.AutoSkipOpeningsEndingsToggled) },
             )
             SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_auto_skip_delay_label),
+                label = stringResource(R.string.settings_auto_skip_delay_label),
                 valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
                 value = state.autoSkipDelaySeconds,
                 valueRange = 1..15,
@@ -50,9 +50,9 @@ internal fun SettingsMobilePlaybackContent(
                 },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_mobile_show_opening_on_timeline_label),
+                label = stringResource(R.string.settings_show_opening_on_timeline_label),
                 hint = if (state.showOpeningOnTimeline) {
-                    stringResource(R.string.settings_mobile_show_opening_on_timeline_enabled)
+                    stringResource(R.string.settings_show_opening_on_timeline_enabled)
                 } else {
                     stringResource(R.string.settings_disabled)
                 },
@@ -80,7 +80,7 @@ internal fun SettingsMobilePlaybackContent(
                 },
             )
             SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_controls_auto_hide_label),
+                label = stringResource(R.string.settings_controls_auto_hide_label),
                 valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
                 value = state.playerControlsAutoHideSeconds,
                 valueRange = 1..10,

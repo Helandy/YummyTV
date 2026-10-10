@@ -26,8 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
-import su.afk.yummy.tv.feature.library.mobile.R
 import su.afk.yummy.tv.feature.library.mobile.utils.mobileLabel
+import su.afk.yummy.tv.feature.library.presentation.R
 
 /** Порядок вариантов сортировки в меню. */
 private val librarySortOrder = listOf(

@@ -1,6 +1,6 @@
 package su.afk.yummy.tv.feature.account.mobile.profileedit.utils
 
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditState
 
 internal fun ProfileEditState.MessageType.messageRes() = when (this) {

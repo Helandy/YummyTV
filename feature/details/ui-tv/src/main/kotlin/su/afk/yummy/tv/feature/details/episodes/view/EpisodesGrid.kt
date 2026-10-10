@@ -47,10 +47,10 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.model.anime.AnimeEpisodeInfo
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.isAlloha
 import su.afk.yummy.tv.core.utils.player.isKodikPlayerUrl
 

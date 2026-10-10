@@ -68,7 +68,7 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostVote
 import su.afk.yummy.tv.feature.posts.details.utils.compactCount
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
-import su.afk.yummy.tv.feature.posts.tv.R
+import su.afk.yummy.tv.feature.posts.presentation.R
 import su.afk.yummy.tv.feature.posts.utils.parsePostContent
 import su.afk.yummy.tv.feature.posts.view.PostVoteButton
 
@@ -76,16 +76,18 @@ import su.afk.yummy.tv.feature.posts.view.PostVoteButton
 fun PostDetailsTvScreen(
     state: PostDetailsState.State,
     effect: Flow<PostDetailsState.Effect>,
-    onEvent: (PostDetailsState.Event) -> Unit
+    onEvent: (PostDetailsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         effect.collect {
-            if (it is PostDetailsState.Effect.ShowToast) Toast.makeText(
-                context,
-                it.message,
-                Toast.LENGTH_LONG
-            ).show()
+            if (it is PostDetailsState.Effect.ShowToast) {
+                Toast.makeText(
+                    context,
+                    it.message,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
         }
     }
     when {
@@ -109,7 +111,7 @@ fun PostDetailsTvScreen(
             val listState = rememberLazyListState()
             val likeFocusRequester = remember { FocusRequester() }
             val viewsLabel =
-                stringResource(R.string.posts_views_short, details.views.compactCount())
+                stringResource(R.string.posts_views, details.views.compactCount())
             val contentBlocks = remember(details.contentHtml, details.previewImageUrl) {
                 details.contentHtml.parsePostContent(details.previewImageUrl)
             }
@@ -128,7 +130,7 @@ fun PostDetailsTvScreen(
                     Text(
                         details.category.title,
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 item {
@@ -144,8 +146,11 @@ fun PostDetailsTvScreen(
                             .fillMaxWidth()
                             .clip(shape)
                             .background(
-                                if (focused) MaterialTheme.colorScheme.surfaceContainerHigh
-                                else Color.Transparent,
+                                if (focused) {
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                                } else {
+                                    Color.Transparent
+                                },
                             )
                             .bringIntoViewRequester(bringIntoViewRequester)
                             .onFocusChanged {
@@ -180,7 +185,7 @@ fun PostDetailsTvScreen(
                                         Modifier.border(
                                             3.dp,
                                             MaterialTheme.colorScheme.primary,
-                                            shape
+                                            shape,
                                         )
                                     } else {
                                         Modifier
@@ -198,7 +203,7 @@ fun PostDetailsTvScreen(
                                     interactionSource = interactionSource,
                                     focusedScale = 1f,
                                 ),
-                            contentScale = ContentScale.FillWidth
+                            contentScale = ContentScale.FillWidth,
                         )
                     }
                 }
@@ -216,8 +221,11 @@ fun PostDetailsTvScreen(
                                     .fillMaxWidth()
                                     .clip(shape)
                                     .background(
-                                        if (focused) MaterialTheme.colorScheme.surfaceContainerHigh
-                                        else Color.Transparent,
+                                        if (focused) {
+                                            MaterialTheme.colorScheme.surfaceContainerHigh
+                                        } else {
+                                            Color.Transparent
+                                        },
                                     )
                                     .focusable(interactionSource = interactionSource)
                                     .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -241,7 +249,7 @@ fun PostDetailsTvScreen(
                                             Modifier.border(
                                                 3.dp,
                                                 MaterialTheme.colorScheme.primary,
-                                                shape
+                                                shape,
                                             )
                                         } else {
                                             Modifier
@@ -336,8 +344,8 @@ fun PostDetailsTvScreen(
                                             onClick = {
                                                 onEvent(
                                                     PostDetailsState.Event.AnimeSelected(
-                                                        anime.id
-                                                    )
+                                                        anime.id,
+                                                    ),
                                                 )
                                             },
                                             shape = cardShape,
@@ -354,24 +362,25 @@ fun PostDetailsTvScreen(
                                             Modifier
                                                 .fillMaxWidth()
                                                 .aspectRatio(.7f),
-                                            contentScale = ContentScale.Crop
+                                            contentScale = ContentScale.Crop,
                                         )
                                     }
                                     Column(
                                         Modifier.padding(12.dp),
-                                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                                        verticalArrangement = Arrangement.spacedBy(5.dp),
                                     ) {
                                         Text(
                                             anime.title,
                                             style = MaterialTheme.typography.titleMedium,
-                                            maxLines = 2
+                                            maxLines = 2,
                                         )
                                         Text(
                                             listOfNotNull(
                                                 anime.year?.toString(),
-                                                anime.rating?.let { "★ %.1f".format(it) }).joinToString(
-                                                " · "
-                                            )
+                                                anime.rating?.let { "★ %.1f".format(it) },
+                                            ).joinToString(
+                                                " · ",
+                                            ),
                                         )
                                     }
                                 }
@@ -389,7 +398,7 @@ fun PostDetailsTvScreen(
                 item {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         PostVoteButton(
                             isLike = true,

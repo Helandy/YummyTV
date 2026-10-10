@@ -24,7 +24,7 @@ import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.mobile.R
+import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.resolve
 
 @Composable

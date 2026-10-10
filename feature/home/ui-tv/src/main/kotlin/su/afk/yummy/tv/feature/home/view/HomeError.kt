@@ -17,9 +17,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.home.R
-import su.afk.yummy.tv.feature.home.presentation.R as PresentationR
+import su.afk.yummy.tv.feature.home.presentation.R
 
 @Composable
 internal fun HomeError(
@@ -39,7 +39,7 @@ internal fun HomeError(
             title = stringResource(R.string.home_error_title),
             description = message,
             icon = Icons.Filled.Warning,
-            retryLabel = stringResource(R.string.retry),
+            retryLabel = stringResource(CoreR.string.retry),
             onRetry = onRetry,
             retryFocusRequester = retryFocusRequester,
             fillMaxSize = false,
@@ -47,8 +47,8 @@ internal fun HomeError(
         Spacer(Modifier.height(12.dp))
         Text(
             text = stringResource(
-                PresentationR.string.home_error_status_hint,
-                stringResource(PresentationR.string.home_error_status_url),
+                R.string.home_error_status_hint,
+                stringResource(R.string.home_error_status_url),
             ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

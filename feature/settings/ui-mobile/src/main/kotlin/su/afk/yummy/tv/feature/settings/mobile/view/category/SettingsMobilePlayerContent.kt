@@ -8,7 +8,6 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.detailsText
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
@@ -19,6 +18,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobilePlayerContent(
@@ -99,22 +99,22 @@ internal fun SettingsMobilePlayerContent(
                 onClick = { onEvent(SettingsState.Event.PictureInPictureToggled) },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_mobile_advanced_volume_label),
+                label = stringResource(R.string.settings_advanced_volume_label),
                 hint = if (state.advancedPlayerVolumeEnabled) {
-                    stringResource(R.string.settings_mobile_advanced_volume_enabled)
+                    stringResource(R.string.settings_advanced_volume_enabled)
                 } else {
-                    stringResource(R.string.settings_mobile_advanced_volume_disabled)
+                    stringResource(R.string.settings_advanced_volume_disabled)
                 },
                 enabled = state.advancedPlayerVolumeEnabled,
                 onClick = { onEvent(SettingsState.Event.AdvancedPlayerVolumeToggled) },
             )
             if (state.volumeStabilizationSupported) {
                 SettingsMobileToggleRow(
-                    label = stringResource(R.string.settings_mobile_volume_stabilization_label),
+                    label = stringResource(R.string.settings_volume_stabilization_label),
                     hint = if (state.volumeStabilizationEnabled) {
-                        stringResource(R.string.settings_mobile_volume_stabilization_enabled)
+                        stringResource(R.string.settings_volume_stabilization_enabled)
                     } else {
-                        stringResource(R.string.settings_mobile_volume_stabilization_disabled)
+                        stringResource(R.string.settings_volume_stabilization_disabled)
                     },
                     enabled = state.volumeStabilizationEnabled,
                     onClick = { onEvent(SettingsState.Event.VolumeStabilizationToggled) },

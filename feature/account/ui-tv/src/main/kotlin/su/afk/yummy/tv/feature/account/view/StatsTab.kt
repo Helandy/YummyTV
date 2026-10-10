@@ -35,9 +35,9 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.domain.account.model.ratingsByValue
 import su.afk.yummy.tv.domain.account.model.topGenres
-import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.utils.isEmpty
 

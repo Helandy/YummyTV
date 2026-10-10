@@ -27,7 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserSocialCounts
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 private data class AccountMobileSocialItem(
     val icon: ImageVector,

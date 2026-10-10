@@ -11,8 +11,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.utils.toPreviewCacheSizeText
 import su.afk.yummy.tv.feature.settings.view.AboutRow

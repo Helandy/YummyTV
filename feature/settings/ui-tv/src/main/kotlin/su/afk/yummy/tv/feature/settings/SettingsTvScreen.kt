@@ -43,6 +43,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.utils.system.restartApplication
 import su.afk.yummy.tv.feature.settings.model.SettingsTab
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.color
 import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.view.SettingsTvCategoryList
@@ -117,12 +118,12 @@ fun SettingsTvScreen(
 
                 is SettingsState.Effect.LogsSaved -> Toast.makeText(
                     context,
-                    context.getString(R.string.settings_tv_logs_saved, settingsEffect.path),
+                    context.getString(R.string.settings_logs_saved, settingsEffect.path),
                     Toast.LENGTH_LONG,
                 ).show()
 
                 SettingsState.Effect.LogsFailed ->
-                    Toast.makeText(context, R.string.settings_tv_logs_failed, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
 
                 else -> Unit
             }

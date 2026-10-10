@@ -31,7 +31,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileAppendError
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.top.model.AnimeTopItem
-import su.afk.yummy.tv.feature.top.mobile.R
+import su.afk.yummy.tv.feature.top.presentation.R
 
 @Composable
 internal fun TopMobileGrid(

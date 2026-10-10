@@ -31,8 +31,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.posts.model.PostDetails
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
-import su.afk.yummy.tv.feature.posts.mobile.R
 import su.afk.yummy.tv.feature.posts.model.PostContentBlock
+import su.afk.yummy.tv.feature.posts.presentation.R
 import su.afk.yummy.tv.feature.posts.utils.parsePostContent
 
 @Composable

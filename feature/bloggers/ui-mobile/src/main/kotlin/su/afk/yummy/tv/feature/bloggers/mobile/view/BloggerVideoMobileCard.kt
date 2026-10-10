@@ -37,7 +37,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.formatFeedDateTime
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
-import su.afk.yummy.tv.feature.bloggers.mobile.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @Composable
 fun BloggerVideoMobileCard(

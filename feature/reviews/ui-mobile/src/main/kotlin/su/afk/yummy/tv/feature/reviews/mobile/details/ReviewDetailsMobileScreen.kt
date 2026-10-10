@@ -37,7 +37,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.feature.reviews.details.ReviewDetailsState
-import su.afk.yummy.tv.feature.reviews.mobile.R
 import su.afk.yummy.tv.feature.reviews.mobile.utils.displayCompactReviewCount
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewAnimeCard
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewDetailsHeader
@@ -46,6 +45,7 @@ import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewMobileRichParagraph
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewRatingCard
 import su.afk.yummy.tv.feature.reviews.mobile.view.ReviewReactionsCard
 import su.afk.yummy.tv.feature.reviews.model.ReviewContentBlock
+import su.afk.yummy.tv.feature.reviews.presentation.R
 import su.afk.yummy.tv.feature.reviews.utils.parseReviewBlocks
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,7 +111,7 @@ fun ReviewDetailsMobileScreen(
                     start = 16.dp,
                     top = 8.dp,
                     end = 16.dp,
-                    bottom = 32.dp
+                    bottom = 32.dp,
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {

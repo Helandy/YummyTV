@@ -49,9 +49,9 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.registration.RegistrationState
 import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
 
@@ -149,7 +149,7 @@ private fun RegistrationForm(
         OutlinedTextField(
             value = state.email,
             onValueChange = { onEvent(RegistrationState.Event.EmailChanged(it)) },
-            label = { Text(stringResource(R.string.account_email_placeholder)) },
+            label = { Text(stringResource(R.string.password_reset_email)) },
             singleLine = true,
             shape = MaterialTheme.shapes.large,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),

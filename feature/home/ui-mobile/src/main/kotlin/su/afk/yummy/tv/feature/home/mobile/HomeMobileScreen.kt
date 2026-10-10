@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.home.mobile
 
-import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import android.widget.Toast
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +38,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
@@ -52,6 +52,7 @@ import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.HomeState
+import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
 import su.afk.yummy.tv.feature.home.mobile.view.ContinueWatchingSection
 import su.afk.yummy.tv.feature.home.mobile.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
@@ -61,9 +62,9 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeRecommendationActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSearchEntry
 import su.afk.yummy.tv.feature.home.mobile.view.HomeSupportPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.MobileHomeBloggerVideosSection
+import su.afk.yummy.tv.feature.home.presentation.R
 import su.afk.yummy.tv.feature.home.utils.hasInitialContent
 import su.afk.yummy.tv.feature.home.utils.isFirstScreenSettled
-import su.afk.yummy.tv.feature.home.presentation.R as PresentationR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -165,15 +166,15 @@ fun HomeMobileScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         MobileMessage(
                             title = message,
-                            actionLabel = stringResource(R.string.home_mobile_retry),
+                            actionLabel = stringResource(CoreR.string.retry),
                             onAction = retry,
                             fillMaxSize = false,
                         )
-                        val statusUrl = stringResource(PresentationR.string.home_error_status_url)
+                        val statusUrl = stringResource(R.string.home_error_status_url)
                         TextButton(onClick = { context.openExternalUri(statusUrl) }) {
                             Text(
                                 text = stringResource(
-                                    PresentationR.string.home_error_status_hint,
+                                    R.string.home_error_status_hint,
                                     statusUrl,
                                 ),
                                 style = MaterialTheme.typography.bodySmall,
@@ -216,7 +217,7 @@ fun HomeMobileScreen(
                     item(key = "hero") {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             MobileSectionHeader(
-                                title = stringResource(R.string.home_mobile_season_title),
+                                title = stringResource(R.string.home_season_title),
                                 modifier = Modifier.padding(horizontal = 16.dp),
                             )
                             HomeHeroCarousel(
@@ -286,7 +287,7 @@ fun HomeMobileScreen(
                     item(key = "blogger_videos_error") {
                         MobileMessage(
                             title = message,
-                            actionLabel = stringResource(R.string.home_mobile_retry),
+                            actionLabel = stringResource(CoreR.string.retry),
                             onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
                         )
                     }

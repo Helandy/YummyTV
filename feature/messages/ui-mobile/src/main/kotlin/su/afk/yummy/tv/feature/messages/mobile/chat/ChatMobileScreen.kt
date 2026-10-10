@@ -52,13 +52,13 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.messages.model.GLOBAL_CHAT_USER_ID
 import su.afk.yummy.tv.feature.messages.chat.ChatState
-import su.afk.yummy.tv.feature.messages.mobile.R
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatManagementMobileDialogs
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMessageMobileBubble
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMobileActionsMenu
 import su.afk.yummy.tv.feature.messages.mobile.view.ChatMobileComposer
 import su.afk.yummy.tv.feature.messages.mobile.view.EditMessageMobileDialog
 import su.afk.yummy.tv.feature.messages.mobile.view.MessageHistoryMobileDialog
+import su.afk.yummy.tv.feature.messages.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,8 +133,11 @@ fun ChatMobileScreen(
             MobileTopBar(
                 title = state.peer?.nickname?.takeIf { it.isNotBlank() }
                     ?: state.fallbackNickname.takeIf { it.isNotBlank() }
-                    ?: if (state.userId == 0) stringResource(R.string.messages_global_chat)
-                    else stringResource(R.string.messages_unknown_user, state.userId),
+                    ?: if (state.userId == 0) {
+                        stringResource(R.string.messages_global_chat)
+                    } else {
+                        stringResource(R.string.messages_unknown_user, state.userId)
+                    },
                 onBack = { onEvent(ChatState.Event.BackSelected) }.takeUnless { isInListDetailPane() },
                 actions = {
                     (state.peer?.avatarUrl ?: state.fallbackAvatarUrl)
@@ -162,7 +165,7 @@ fun ChatMobileScreen(
         when {
             !state.isAuthResolved -> Box(
                 Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -188,7 +191,7 @@ fun ChatMobileScreen(
                     when {
                         state.isLoading -> Box(
                             Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator()
                         }
@@ -218,12 +221,14 @@ fun ChatMobileScreen(
                             ),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            if (state.isLoadingOlder) item(key = "older_loading") {
-                                Box(
-                                    Modifier.fillParentMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
+                            if (state.isLoadingOlder) {
+                                item(key = "older_loading") {
+                                    Box(
+                                        Modifier.fillParentMaxWidth(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
                                 }
                             }
                             items(state.messages, key = { lazyKey("message", it.id) }) { message ->

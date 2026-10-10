@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
-import su.afk.yummy.tv.feature.home.R
+import su.afk.yummy.tv.feature.home.presentation.R
 
 /** Подтверждение скрытия тайтла из блока рекомендаций на главной. */
 @Composable
@@ -84,7 +84,7 @@ internal fun TvRecommendationActionsDialog(
                 // прозрачные с рамкой, иначе на ТВ непонятно, что сейчас выбрано.
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TvRetryButton(
-                        text = stringResource(R.string.home_tv_recommendation_cancel),
+                        text = stringResource(R.string.home_recommendation_cancel),
                         onClick = onDismiss,
                         modifier = Modifier.focusRequester(dismissFocusRequester),
                     )

@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.details.details.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun UserAnimeList.label(): String = stringResource(

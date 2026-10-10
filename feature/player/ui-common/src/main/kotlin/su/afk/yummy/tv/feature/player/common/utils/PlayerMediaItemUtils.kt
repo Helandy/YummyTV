@@ -17,7 +17,7 @@ import su.afk.yummy.tv.feature.player.utils.selectedAllohaSubtitle
 @Composable
 fun playerMediaItemMeta(ui: PlayerPlaybackUiState): PlayerMediaItemMeta {
     val subtitle = ui.activeEpisode.takeIf { it.isNotBlank() }?.let {
-        stringResource(R.string.player_notification_episode, it)
+        stringResource(R.string.player_episode_number, it)
     }
     val description = when {
         ui.activeBalancerName.isNotBlank() && ui.activeDubbing.isNotBlank() ->

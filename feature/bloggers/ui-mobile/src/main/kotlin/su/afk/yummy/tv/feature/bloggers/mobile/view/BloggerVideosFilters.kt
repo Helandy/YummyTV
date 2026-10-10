@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
-import su.afk.yummy.tv.feature.bloggers.mobile.R
 import su.afk.yummy.tv.feature.bloggers.mobile.utils.labelRes
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -190,7 +190,7 @@ private fun BloggerVideosFiltersSheet(
             }
 
             HorizontalDivider()
-            FilterSectionTitle(stringResource(R.string.blogger_filters_blogger))
+            FilterSectionTitle(stringResource(R.string.blogger_details_title))
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),

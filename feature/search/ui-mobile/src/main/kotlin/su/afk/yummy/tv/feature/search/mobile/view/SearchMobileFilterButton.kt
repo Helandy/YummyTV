@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.search.mobile.R
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun SearchMobileFilterButton(
@@ -23,7 +23,7 @@ internal fun SearchMobileFilterButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val contentDescription = stringResource(R.string.search_mobile_filters)
+    val contentDescription = stringResource(R.string.search_filters)
     BadgedBox(
         badge = {
             if (activeCount > 0) {

@@ -23,13 +23,13 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.details.model.SimilarUiState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.similar.utils.SIMILAR_SOURCE_PAGE_COUNT
 import su.afk.yummy.tv.feature.details.mobile.similar.utils.toSimilarSourceFromAi
 import su.afk.yummy.tv.feature.details.mobile.similar.utils.toSimilarSourcePage
 import su.afk.yummy.tv.feature.details.mobile.similar.view.MobileSimilarRecommendationVisibilityButton
 import su.afk.yummy.tv.feature.details.mobile.similar.view.SimilarRecommendationsGrid
 import su.afk.yummy.tv.feature.details.mobile.similar.view.SimilarSourceTabs
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.similar.SimilarState
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -82,7 +82,7 @@ fun SimilarMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_similar),
+                title = stringResource(R.string.details_similar),
                 onBack = { onEvent(SimilarState.Event.BackSelected) },
             )
         },

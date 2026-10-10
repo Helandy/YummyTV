@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 /** Шторка «Что нового»: история изменений установленной и предыдущих версий. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +31,7 @@ internal fun ReleaseNotesMobileSheet(
 ) {
     BaseBottomSheet(
         onDismissRequest = onDismiss,
-        title = stringResource(R.string.settings_mobile_release_notes_title),
+        title = stringResource(R.string.settings_release_notes_label),
     ) {
         when (status) {
             ReleaseNotesStatus.Idle, ReleaseNotesStatus.Loading -> Box(
@@ -50,15 +50,15 @@ internal fun ReleaseNotesMobileSheet(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                ReleaseNotesMessage(stringResource(R.string.settings_mobile_release_notes_error))
+                ReleaseNotesMessage(stringResource(R.string.settings_release_notes_error))
                 TextButton(onClick = onRetry) {
-                    Text(stringResource(R.string.settings_mobile_release_notes_retry))
+                    Text(stringResource(R.string.settings_release_notes_retry))
                 }
             }
 
             is ReleaseNotesStatus.Loaded -> if (status.items.isEmpty()) {
                 ReleaseNotesMessage(
-                    text = stringResource(R.string.settings_mobile_release_notes_empty),
+                    text = stringResource(R.string.settings_release_notes_empty),
                     modifier = Modifier.padding(vertical = 24.dp),
                 )
             } else {

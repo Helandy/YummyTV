@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -33,11 +34,11 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -95,7 +96,7 @@ fun DetailsMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(R.string.details_mobile_retry),
+                    actionLabel = stringResource(CoreR.string.retry),
                     onAction = retry,
                 )
             }
@@ -166,7 +167,7 @@ fun DetailsMobileScreen(
                 item(key = "soft_error") {
                     MobileMessage(
                         title = error,
-                        actionLabel = stringResource(R.string.details_mobile_retry),
+                        actionLabel = stringResource(CoreR.string.retry),
                         onAction = { onEvent(DetailsState.Event.RetrySelected) },
                     )
                 }

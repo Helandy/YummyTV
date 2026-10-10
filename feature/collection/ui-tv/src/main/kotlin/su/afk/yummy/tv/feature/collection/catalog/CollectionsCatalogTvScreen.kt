@@ -30,7 +30,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusReques
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.collection.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogGrid
 import su.afk.yummy.tv.feature.collection.view.CollectionsCatalogMessage
 

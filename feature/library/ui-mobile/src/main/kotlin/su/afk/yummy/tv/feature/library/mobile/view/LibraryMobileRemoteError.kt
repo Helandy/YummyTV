@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.library.mobile.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryMobileRemoteError(
@@ -40,7 +40,7 @@ internal fun LibraryMobileRemoteError(
             onClick = onRetry,
             enabled = !isLoading,
         ) {
-            Text(stringResource(R.string.library_mobile_retry))
+            Text(stringResource(R.string.library_retry))
         }
     }
 }

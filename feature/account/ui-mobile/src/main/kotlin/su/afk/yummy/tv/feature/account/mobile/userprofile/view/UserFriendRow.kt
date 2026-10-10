@@ -21,8 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.account.model.UserFriend
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileSurfacePanel
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun UserFriendRow(item: UserFriend, onClick: () -> Unit) {

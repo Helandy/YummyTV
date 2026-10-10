@@ -33,8 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun MobilePlayerTopBar(

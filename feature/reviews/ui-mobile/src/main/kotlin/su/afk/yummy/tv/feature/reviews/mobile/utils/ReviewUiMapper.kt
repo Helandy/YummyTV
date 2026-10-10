@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.reviews.model.ReviewStatus
-import su.afk.yummy.tv.feature.reviews.mobile.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @Composable
 internal fun ReviewStatus.reviewStatusLabel(): String = when (this) {

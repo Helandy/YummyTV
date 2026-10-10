@@ -22,7 +22,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileHeader
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileListFilters
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.UserProfileOverview
@@ -32,6 +31,7 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.view.friendItems
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.postItems
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.reviewItems
 import su.afk.yummy.tv.feature.account.mobile.userprofile.view.userAnimeListItems
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -80,8 +80,8 @@ fun UserProfileMobileScreen(
         customTopBar = {
             MobileTopBar(
                 title = state.profile?.nickname?.ifBlank {
-                    stringResource(R.string.user_profile_title)
-                } ?: stringResource(R.string.user_profile_title),
+                    stringResource(R.string.account_tab_profile)
+                } ?: stringResource(R.string.account_tab_profile),
                 onBack = { onEvent(UserProfileState.Event.BackSelected) },
             )
         },

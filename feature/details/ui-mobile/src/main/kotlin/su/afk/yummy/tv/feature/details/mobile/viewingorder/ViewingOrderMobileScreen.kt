@@ -20,8 +20,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderMobileCard
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.viewingorder.ViewingOrderState
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -61,7 +61,7 @@ fun ViewingOrderMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_viewing_order),
+                title = stringResource(R.string.details_viewing_order),
                 onBack = { onEvent(ViewingOrderState.Event.BackSelected) },
             )
         },

@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
+import su.afk.yummy.tv.feature.details.presentation.R
 
 /** Действия над серией по удержанию OK на карточке: пока это только отметка о просмотре. */
 @Composable
@@ -71,7 +71,7 @@ internal fun EpisodeActionsTvDialog(
             ) {
                 Text(
                     text = stringResource(
-                        R.string.details_tv_episode_actions_title,
+                        R.string.details_episode_number,
                         action.episode,
                     ),
                     style = MaterialTheme.typography.headlineSmall,
@@ -79,7 +79,7 @@ internal fun EpisodeActionsTvDialog(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TvRetryButton(
-                        text = stringResource(R.string.details_tv_episode_actions_cancel),
+                        text = stringResource(R.string.details_cancel),
                         onClick = onDismiss,
                         modifier = Modifier.focusRequester(dismissFocusRequester),
                     )
@@ -87,7 +87,7 @@ internal fun EpisodeActionsTvDialog(
                         text = if (action.isWatched) {
                             stringResource(R.string.details_tv_unmark_episode_watched)
                         } else {
-                            stringResource(R.string.details_tv_mark_episode_watched)
+                            stringResource(R.string.details_mark_episode_watched)
                         },
                         onClick = onToggleWatched,
                     )

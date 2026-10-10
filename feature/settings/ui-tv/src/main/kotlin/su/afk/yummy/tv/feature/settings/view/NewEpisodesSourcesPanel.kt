@@ -10,7 +10,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
-import su.afk.yummy.tv.feature.settings.R
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 

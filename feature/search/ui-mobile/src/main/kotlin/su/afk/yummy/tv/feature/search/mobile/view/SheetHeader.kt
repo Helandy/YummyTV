@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.search.mobile.R
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun SheetHeader(
@@ -42,7 +42,7 @@ internal fun SheetHeader(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.search_mobile_filters_back),
+                    contentDescription = stringResource(R.string.search_filters_back),
                 )
             }
         }

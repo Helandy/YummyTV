@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun TvSimilarRecommendationVisibilityButton(

@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeSeason
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.utils.episode.releaseCountdown
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryItem.tvReleaseCountdownText(nowEpochSeconds: Long): String? {

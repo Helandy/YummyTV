@@ -23,11 +23,11 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileListStats
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileRatingDistribution
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileRatingOverview
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileRatingPicker
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.rating.RatingState
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -74,7 +74,7 @@ fun RatingMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_rating),
+                title = stringResource(R.string.details_rating_button),
                 onBack = { onEvent(RatingState.Event.BackSelected) },
             )
         },
@@ -121,7 +121,7 @@ fun RatingMobileScreen(
                             onClick = { onEvent(RatingState.Event.RatingDeleted) },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(stringResource(R.string.details_mobile_delete_rating))
+                            Text(stringResource(R.string.details_rating_delete))
                         }
                     }
                 }

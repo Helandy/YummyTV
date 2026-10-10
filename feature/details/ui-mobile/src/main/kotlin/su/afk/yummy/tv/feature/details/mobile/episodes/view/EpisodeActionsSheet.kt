@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 /** Действия над серией по долгому нажатию: отметка о просмотре и «отложить просмотр». */
 @Composable
@@ -25,7 +25,7 @@ internal fun EpisodeActionsSheet(
 ) {
     BaseBottomSheet(
         onDismissRequest = onDismiss,
-        title = stringResource(R.string.details_mobile_episode_actions_title, action.episode),
+        title = stringResource(R.string.details_episode_number, action.episode),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         scrollableContent = true,
     ) {
@@ -33,7 +33,7 @@ internal fun EpisodeActionsSheet(
             text = if (action.isWatched) {
                 stringResource(R.string.details_mobile_unmark_episode_watched)
             } else {
-                stringResource(R.string.details_mobile_mark_episode_watched)
+                stringResource(R.string.details_mark_episode_watched)
             },
             icon = if (action.isWatched) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
             onClick = onToggleWatched,

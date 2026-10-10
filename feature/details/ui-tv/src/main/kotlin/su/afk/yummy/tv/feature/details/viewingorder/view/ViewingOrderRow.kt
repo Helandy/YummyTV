@@ -38,7 +38,7 @@ import su.afk.yummy.tv.core.designsystem.focus.rememberTvLazyFocusRestoreState
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 private val RelatedCardWidth = 188.dp
 

@@ -34,7 +34,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
 import su.afk.yummy.tv.feature.player.common.view.autoSkipProgressFill
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
-import su.afk.yummy.tv.feature.player.mobile.R as UiR
+import su.afk.yummy.tv.feature.player.presentation.R
 
 /**
  * Плавающая кнопка ручного пропуска опенинга/эндинга: живёт весь сегмент
@@ -84,16 +84,16 @@ internal fun MobilePlayerSkipButton(
                 text = if (countdownSeconds != null) {
                     stringResource(
                         when (lastType) {
-                            PlayerSkipType.Opening -> UiR.string.player_mobile_skip_opening_countdown
-                            PlayerSkipType.Ending -> UiR.string.player_mobile_skip_ending_countdown
+                            PlayerSkipType.Opening -> R.string.player_mobile_skip_opening_countdown
+                            PlayerSkipType.Ending -> R.string.player_mobile_skip_ending_countdown
                         },
                         countdownSeconds,
                     )
                 } else {
                     stringResource(
                         when (lastType) {
-                            PlayerSkipType.Opening -> UiR.string.player_mobile_skip_opening
-                            PlayerSkipType.Ending -> UiR.string.player_mobile_skip_ending
+                            PlayerSkipType.Opening -> R.string.player_mobile_skip_opening
+                            PlayerSkipType.Ending -> R.string.player_mobile_skip_ending
                         }
                     )
                 },

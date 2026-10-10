@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.player.mobile.utils
 
 import androidx.annotation.StringRes
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
-import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @get:StringRes
 internal val PlayerOrientationMode.labelRes: Int

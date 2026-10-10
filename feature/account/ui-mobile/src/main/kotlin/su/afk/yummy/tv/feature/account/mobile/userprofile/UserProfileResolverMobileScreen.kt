@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileResolverState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
@@ -29,7 +29,7 @@ fun UserProfileResolverMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.user_profile_title),
+                title = stringResource(R.string.account_tab_profile),
                 onBack = { onEvent(UserProfileResolverState.Event.BackSelected) },
             )
         },

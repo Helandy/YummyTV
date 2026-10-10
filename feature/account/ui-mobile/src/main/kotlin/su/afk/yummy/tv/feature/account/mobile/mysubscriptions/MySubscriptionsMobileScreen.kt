@@ -24,11 +24,11 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.mysubscriptions.view.MySubscriptionMobileRow
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +44,7 @@ fun MySubscriptionsMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.account_mobile_my_subscriptions),
+                title = stringResource(R.string.account_my_subscriptions),
                 onBack = { onEvent(MySubscriptionsState.Event.BackSelected) },
             )
         },
@@ -65,7 +65,7 @@ fun MySubscriptionsMobileScreen(
             )
 
             state.subscriptions.isEmpty() -> MobileMessage(
-                title = stringResource(R.string.account_mobile_my_subscriptions_empty),
+                title = stringResource(R.string.account_my_subscriptions_empty),
                 icon = Icons.Filled.Notifications,
             )
 

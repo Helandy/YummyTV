@@ -41,17 +41,18 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentSortRow
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsComposer
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsDialogs
 import su.afk.yummy.tv.feature.comments.mobile.view.CommentsList
 import su.afk.yummy.tv.feature.comments.mobile.view.commentSortOrder
+import su.afk.yummy.tv.feature.comments.presentation.R
+import su.afk.yummy.tv.feature.comments.utils.buildVisibleComments
 
 @Preview(
     name = "Default",
     device = "spec:width=412dp,height=915dp,dpi=420",
-    showBackground = true
+    showBackground = true,
 )
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

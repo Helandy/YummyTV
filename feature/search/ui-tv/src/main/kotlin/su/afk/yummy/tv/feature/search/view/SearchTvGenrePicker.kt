@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchGenre
-import su.afk.yummy.tv.feature.search.R
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun GenresSection(

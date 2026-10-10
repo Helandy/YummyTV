@@ -38,7 +38,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.messageRes
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.prepareProfileImage
@@ -49,6 +48,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.ProfileMainSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfileMediaSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePasswordSection
 import su.afk.yummy.tv.feature.account.mobile.view.ProfilePrivacySection
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.profileedit.ProfileEditState
 import java.time.Instant
 import java.time.LocalDate
@@ -268,7 +268,7 @@ fun ProfileEditMobileScreen(
                 TextButton(onClick = {
                     deleteImageKind = null
                     onEvent(ProfileEditState.Event.DeleteImageSelected(kind))
-                }) { Text(stringResource(R.string.profile_delete_image_confirm)) }
+                }) { Text(stringResource(R.string.account_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { deleteImageKind = null }) {

@@ -27,7 +27,7 @@ import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.account.model.AnimeListStats
 import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun RatingBody(
@@ -61,7 +61,7 @@ internal fun RatingBody(
                 verticalArrangement = Arrangement.spacedBy(22.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.details_rating_screen_title),
+                    text = stringResource(R.string.details_rating_button),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,

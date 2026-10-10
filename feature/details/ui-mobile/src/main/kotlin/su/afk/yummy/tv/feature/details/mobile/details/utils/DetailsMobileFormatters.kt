@@ -13,8 +13,8 @@ import su.afk.yummy.tv.core.utils.episode.releaseCountdown
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.core.utils.anime.isReleasedAnimeStatus
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import java.util.Locale
 
@@ -33,13 +33,13 @@ internal fun Int.formatViews(): String = when {
 internal fun AnimeEpisodes.formatAiredProgress(status: String?): String? {
     if (status.isReleasedAnimeStatus()) {
         val episodesCount = count ?: aired ?: return null
-        return stringResource(R.string.details_mobile_released_episodes, episodesCount)
+        return stringResource(R.string.details_released_episodes, episodesCount)
     }
     val airedCount = aired ?: return formatReleaseCountdown()
-    val totalCount = count?.toString() ?: stringResource(R.string.details_mobile_unknown_count)
+    val totalCount = count?.toString() ?: stringResource(R.string.details_unknown_count)
     val progress = stringResource(R.string.details_mobile_aired, airedCount, totalCount)
     val releaseCountdown = formatReleaseCountdown() ?: return progress
-    return stringResource(R.string.details_mobile_aired_with_release, progress, releaseCountdown)
+    return stringResource(R.string.details_aired_with_release, progress, releaseCountdown)
 }
 
 /** Отсчёт до [AnimeEpisodes.nextDateEpochSeconds], пересчитывается раз в минуту. */
@@ -62,9 +62,9 @@ internal fun AnimeEpisodes.rememberReleaseCountdown(): EpisodeReleaseCountdown? 
 private fun AnimeEpisodes.formatReleaseCountdown(): String? {
     val countdown = rememberReleaseCountdown() ?: return null
     val resource = when (countdown.unit) {
-        EpisodeReleaseCountdown.TimeUnit.DAYS -> R.plurals.details_mobile_release_in_days
-        EpisodeReleaseCountdown.TimeUnit.HOURS -> R.plurals.details_mobile_release_in_hours
-        EpisodeReleaseCountdown.TimeUnit.MINUTES -> R.plurals.details_mobile_release_in_minutes
+        EpisodeReleaseCountdown.TimeUnit.DAYS -> R.plurals.details_release_in_days
+        EpisodeReleaseCountdown.TimeUnit.HOURS -> R.plurals.details_release_in_hours
+        EpisodeReleaseCountdown.TimeUnit.MINUTES -> R.plurals.details_release_in_minutes
     }
     return pluralStringResource(resource, countdown.value, countdown.value)
 }
@@ -80,15 +80,15 @@ internal fun DetailsState.State.watchLabel(details: AnimeDetails): String {
     }
     return when {
         isWatchLaunchPending || videosState is VideosUiState.Loading -> {
-            stringResource(R.string.details_mobile_loading_episodes)
+            stringResource(R.string.details_loading_episodes)
         }
 
-        videosState is VideosUiState.Empty -> stringResource(R.string.details_mobile_watch_not_found)
+        videosState is VideosUiState.Empty -> stringResource(R.string.details_watch_not_found)
         continueTarget != null && continueTarget.video.episode.isNotBlank() -> {
-            stringResource(R.string.details_mobile_continue_episode, continueTarget.video.episode)
+            stringResource(R.string.details_continue_episode, continueTarget.video.episode)
         }
 
-        else -> stringResource(R.string.details_mobile_watch)
+        else -> stringResource(R.string.details_watch)
     }
 }
 
@@ -101,10 +101,10 @@ internal fun DetailsState.State.libraryLabel(): String = when {
 @Composable
 internal fun UserAnimeList.label(): String = stringResource(
     when (this) {
-        UserAnimeList.WATCHING -> R.string.details_mobile_library_watching
-        UserAnimeList.PLANNED -> R.string.details_mobile_library_planned
-        UserAnimeList.COMPLETED -> R.string.details_mobile_library_completed
-        UserAnimeList.POSTPONED -> R.string.details_mobile_library_postponed
-        UserAnimeList.DROPPED -> R.string.details_mobile_library_dropped
+        UserAnimeList.WATCHING -> R.string.details_library_list_watching
+        UserAnimeList.PLANNED -> R.string.details_library_list_planned
+        UserAnimeList.COMPLETED -> R.string.details_library_list_completed
+        UserAnimeList.POSTPONED -> R.string.details_library_list_postponed
+        UserAnimeList.DROPPED -> R.string.details_library_list_dropped
     },
 )

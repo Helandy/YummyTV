@@ -30,7 +30,6 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.utils.kodik.kodikThumbnailIframeUrl
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.episodes.utils.watchStatus
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.representativeVideo
@@ -41,6 +40,7 @@ import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadQuali
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDownloadedActionSheet
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeDubbingDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.view.EpisodeMobileCard
+import su.afk.yummy.tv.feature.details.presentation.R
 
 private val DownloadResolvingColor = Color(0xFFFFC107)
 
@@ -73,7 +73,7 @@ fun EpisodesMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_episodes),
+                title = stringResource(R.string.details_episodes),
                 onBack = { onEvent(EpisodesState.Event.BackSelected) },
             )
         },
@@ -83,7 +83,7 @@ fun EpisodesMobileScreen(
             error = (state.videosState as? VideosUiState.Error)?.message,
             onRetry = { onEvent(EpisodesState.Event.RetryVideosSelected) },
             empty = state.videosState is VideosUiState.Empty,
-            emptyText = stringResource(R.string.details_mobile_episodes_empty),
+            emptyText = stringResource(R.string.details_episodes_empty),
             emptyIcon = Icons.Filled.PlayArrow,
         ) {
             LazyColumn(

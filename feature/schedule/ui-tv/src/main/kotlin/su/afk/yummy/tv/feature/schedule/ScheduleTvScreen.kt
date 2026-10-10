@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.view.ScheduleLoadingState
 import su.afk.yummy.tv.feature.schedule.view.ScheduleTimeline
 

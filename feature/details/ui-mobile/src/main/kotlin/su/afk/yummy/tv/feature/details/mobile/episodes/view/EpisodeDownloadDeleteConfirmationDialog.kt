@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun EpisodeDownloadDeleteConfirmationDialog(
@@ -35,7 +35,7 @@ internal fun EpisodeDownloadDeleteConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.details_mobile_delete_cancel))
+                Text(stringResource(R.string.details_cancel))
             }
         },
     )

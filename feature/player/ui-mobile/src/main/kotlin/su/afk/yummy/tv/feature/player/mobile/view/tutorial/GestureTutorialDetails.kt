@@ -22,9 +22,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.model.GestureTutorialStep
 import su.afk.yummy.tv.feature.player.mobile.utils.text
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun GestureTutorialDetails(
@@ -85,7 +85,7 @@ internal fun GestureTutorialDetails(
                     if (currentStep == stepCount - 1) {
                         R.string.player_mobile_gesture_tutorial_thanks
                     } else {
-                        R.string.player_mobile_gesture_tutorial_next
+                        R.string.player_tv_controls_tutorial_next
                     }
                 ),
             )

@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
-import su.afk.yummy.tv.feature.playersetup.tv.R
+import su.afk.yummy.tv.feature.playersetup.presentation.R
 
 @Composable
 internal fun PreferredVideoQuality.setupLabel(): String =
-    height?.let { "${it}p" } ?: stringResource(R.string.player_setup_tv_quality_best)
+    height?.let { "${it}p" } ?: stringResource(R.string.player_setup_quality_best)
 
 internal fun PreferredVideoQuality.next(): PreferredVideoQuality =
     PreferredVideoQuality.entries[(ordinal + 1) % PreferredVideoQuality.entries.size]
@@ -16,9 +16,9 @@ internal fun PreferredVideoQuality.next(): PreferredVideoQuality =
 @Composable
 internal fun YaniContentLanguage.setupLabel(): String = stringResource(
     when (this) {
-        YaniContentLanguage.RUSSIAN -> R.string.player_setup_tv_language_russian
-        YaniContentLanguage.ENGLISH -> R.string.player_setup_tv_language_english
-        YaniContentLanguage.UKRAINIAN -> R.string.player_setup_tv_language_ukrainian
+        YaniContentLanguage.RUSSIAN -> R.string.player_setup_language_russian
+        YaniContentLanguage.ENGLISH -> R.string.player_setup_language_english
+        YaniContentLanguage.UKRAINIAN -> R.string.player_setup_language_ukrainian
     },
 )
 

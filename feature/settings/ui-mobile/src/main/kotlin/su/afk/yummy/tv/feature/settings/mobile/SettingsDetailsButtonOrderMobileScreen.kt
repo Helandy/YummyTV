@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileDetailsButtonOrder
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -58,7 +59,7 @@ fun SettingsDetailsButtonOrderMobileScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             item {
-                SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_details)) {
+                SettingsMobileSection(title = stringResource(R.string.settings_tab_details)) {
                     SettingsMobileDetailsButtonOrder(
                         order = state.detailsButtonOrder,
                         onMove = { action, direction ->

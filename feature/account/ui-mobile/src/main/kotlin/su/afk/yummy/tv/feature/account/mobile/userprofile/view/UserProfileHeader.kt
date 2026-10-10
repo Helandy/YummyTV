@@ -18,12 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.formatProfileDate
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.friendshipActionLabel
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileAvatar
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileSurfacePanel
 import su.afk.yummy.tv.feature.account.mobile.view.UserProfileActions
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
 @Composable
@@ -98,7 +98,7 @@ internal fun UserProfileHeader(
                 } else {
                     stringResource(R.string.user_profile_login_to_friend)
                 },
-                commentsLabel = stringResource(R.string.user_profile_comments),
+                commentsLabel = stringResource(R.string.account_profile_social_comments),
                 onMessageClick = { onEvent(UserProfileState.Event.MessageSelected) },
                 onFriendshipClick = {
                     onEvent(

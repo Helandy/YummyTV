@@ -38,8 +38,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.full.utils.formatEpochSeconds
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatAiredProgress
 
 /** Индекс ряда жанров в [FullDetailsBody]: всегда после тайтла и (если есть) описания. */
@@ -252,7 +252,7 @@ internal fun FullDetailsBody(
                     listState = listState,
                     focusable = false
                 ) {
-                    FullDetailsRow(label = stringResource(R.string.details_full_studio)) {
+                    FullDetailsRow(label = stringResource(R.string.details_relation_studio)) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -277,7 +277,7 @@ internal fun FullDetailsBody(
                     listState = listState,
                     focusable = false
                 ) {
-                    FullDetailsRow(label = stringResource(R.string.details_full_director)) {
+                    FullDetailsRow(label = stringResource(R.string.details_relation_director)) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),

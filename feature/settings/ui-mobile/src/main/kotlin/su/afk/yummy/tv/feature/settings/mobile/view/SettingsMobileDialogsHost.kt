@@ -20,13 +20,13 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePickerOption
 import su.afk.yummy.tv.feature.settings.mobile.utils.availableAppThemes
 import su.afk.yummy.tv.feature.settings.mobile.utils.color
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 /** Состояние шторок и диалогов, общее для всех категорий мобильных настроек. */
 @Stable
@@ -77,7 +77,7 @@ internal fun SettingsMobileDialogsHost(
         )
 
         SettingsMobilePicker.THEME -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_mobile_theme),
+            title = stringResource(R.string.settings_tab_theme),
             selectedValue = state.appTheme,
             options = availableAppThemes.map {
                 SettingsMobilePickerOption(
@@ -94,7 +94,7 @@ internal fun SettingsMobileDialogsHost(
         )
 
         SettingsMobilePicker.BACKGROUND -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_mobile_background),
+            title = stringResource(R.string.settings_tab_background),
             selectedValue = state.backgroundStyle,
             options = BackgroundStyle.entries.map {
                 SettingsMobilePickerOption(
@@ -111,7 +111,7 @@ internal fun SettingsMobileDialogsHost(
         )
 
         SettingsMobilePicker.POSTER_QUALITY -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_mobile_poster_quality),
+            title = stringResource(R.string.settings_poster_quality_title),
             selectedValue = state.posterQuality,
             options = PosterQuality.entries.map {
                 SettingsMobilePickerOption(
@@ -213,7 +213,7 @@ internal fun SettingsMobileDialogsHost(
         )
 
         SettingsMobilePicker.SUBTITLE_BACKGROUND -> SettingsMobilePickerSheet(
-            title = stringResource(R.string.settings_subtitle_background_title),
+            title = stringResource(R.string.settings_tab_background),
             selectedValue = state.subtitleStyle.background,
             options = PlayerSubtitleBackground.entries.map {
                 SettingsMobilePickerOption(it, it.label())

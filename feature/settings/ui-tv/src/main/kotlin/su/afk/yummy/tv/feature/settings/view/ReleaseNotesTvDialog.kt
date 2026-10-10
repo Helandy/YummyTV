@@ -41,8 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 /** Шаг прокрутки списка изменений одним нажатием DPAD. */
 private const val DPAD_SCROLL_STEP_PX = 120
@@ -82,14 +82,14 @@ internal fun ReleaseNotesTvDialog(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.settings_tv_release_notes_title),
+                    text = stringResource(R.string.settings_release_notes_label),
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier.focusRequester(closeFocusRequester),
                 ) {
-                    Text(stringResource(R.string.settings_tv_release_notes_close))
+                    Text(stringResource(R.string.settings_cache_storage_close))
                 }
             }
         },
@@ -105,11 +105,11 @@ internal fun ReleaseNotesTvDialog(
                 }
 
                 ReleaseNotesStatus.Error -> ReleaseNotesTvMessage(
-                    stringResource(R.string.settings_tv_release_notes_error),
+                    stringResource(R.string.settings_release_notes_error),
                 )
 
                 is ReleaseNotesStatus.Loaded -> if (status.items.isEmpty()) {
-                    ReleaseNotesTvMessage(stringResource(R.string.settings_tv_release_notes_empty))
+                    ReleaseNotesTvMessage(stringResource(R.string.settings_release_notes_empty))
                 } else {
                     ReleaseNotesTvList(status = status, focusRequester = listFocusRequester)
                 }
@@ -118,7 +118,7 @@ internal fun ReleaseNotesTvDialog(
         confirmButton = {
             if (status == ReleaseNotesStatus.Error) {
                 TextButton(onClick = onRetry) {
-                    Text(stringResource(R.string.settings_tv_release_notes_retry))
+                    Text(stringResource(R.string.settings_release_notes_retry))
                 }
             }
         },

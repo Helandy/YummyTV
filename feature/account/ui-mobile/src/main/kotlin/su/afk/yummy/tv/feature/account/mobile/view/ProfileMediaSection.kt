@@ -22,7 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun ProfileMediaSection(
@@ -104,7 +104,7 @@ private fun ProfileImageActions(
         }
         if (hasImage) {
             OutlinedButton(onClick = { onDelete(kind) }, enabled = enabled) {
-                Text(stringResource(R.string.profile_edit_delete_image))
+                Text(stringResource(R.string.account_delete))
             }
         }
     }

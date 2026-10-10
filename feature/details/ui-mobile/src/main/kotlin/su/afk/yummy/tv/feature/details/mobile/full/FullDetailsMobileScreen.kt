@@ -22,10 +22,10 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.details.full.FullDetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.full.utils.formatAiredCount
 import su.afk.yummy.tv.feature.details.mobile.full.utils.formatNextEpisode
 import su.afk.yummy.tv.feature.details.mobile.full.view.MobileRelationRow
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -62,7 +62,7 @@ fun FullDetailsMobileScreen(
         isScroll = false,
         customTopBar = {
             MobileTopBar(
-                title = stringResource(R.string.details_mobile_description),
+                title = stringResource(R.string.details_full_description),
                 onBack = { onEvent(FullDetailsState.Event.BackSelected) },
             )
         },
@@ -106,7 +106,7 @@ fun FullDetailsMobileScreen(
                 }
                 item {
                     MobileRelationRow(
-                        label = stringResource(R.string.details_mobile_genres),
+                        label = stringResource(R.string.details_full_genres),
                         items = details?.genres.orEmpty().mapNotNull { genre ->
                             val id = genre.id ?: return@mapNotNull null
                             genre.title to {
@@ -139,13 +139,13 @@ fun FullDetailsMobileScreen(
                 }
                 item {
                     MobileMetaRow(
-                        stringResource(R.string.details_mobile_full_episodes_progress),
+                        stringResource(R.string.details_full_episodes_progress),
                         details?.episodes?.formatAiredCount().orEmpty(),
                     )
                 }
                 item {
                     MobileMetaRow(
-                        stringResource(R.string.details_mobile_full_next_episode),
+                        stringResource(R.string.details_full_next_episode),
                         details?.episodes?.formatNextEpisode().orEmpty(),
                     )
                 }

@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountUiError?.accountErrorMessage(): String? =
@@ -31,7 +31,7 @@ private val AccountUiError.messageRes: Int
         AccountUiError.INVALID_EMAIL -> R.string.account_error_invalid_email
         AccountUiError.PASSWORD_TOO_SHORT -> R.string.account_error_password_too_short
         AccountUiError.TRANSFER_FAILED -> R.string.account_error_transfer_failed
-        AccountUiError.LOCAL_AUTH_INVALID_PIN -> R.string.account_error_local_auth_invalid_pin
+        AccountUiError.LOCAL_AUTH_INVALID_PIN -> R.string.account_local_auth_error_invalid_pin
         AccountUiError.LOCAL_AUTH_PIN_EXPIRED -> R.string.account_error_local_auth_pin_expired
         AccountUiError.LOCAL_AUTH_TOO_MANY_ATTEMPTS -> R.string.account_error_local_auth_too_many_attempts
         AccountUiError.LOCAL_AUTH_SIGN_IN_FAILED -> R.string.account_error_local_auth_sign_in_failed

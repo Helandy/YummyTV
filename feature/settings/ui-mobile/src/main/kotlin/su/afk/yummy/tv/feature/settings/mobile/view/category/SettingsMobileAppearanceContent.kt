@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
@@ -15,6 +14,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileAppearanceContent(
@@ -25,13 +25,13 @@ internal fun SettingsMobileAppearanceContent(
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         SettingsMobileSection {
             SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_mobile_theme),
+                label = stringResource(R.string.settings_tab_theme),
                 value = state.appTheme.label(),
                 hint = state.appTheme.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.THEME) },
             )
             SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_mobile_background),
+                label = stringResource(R.string.settings_tab_background),
                 value = state.backgroundStyle.label(),
                 hint = state.backgroundStyle.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.BACKGROUND) },
@@ -51,7 +51,7 @@ internal fun SettingsMobileAppearanceContent(
                 },
             )
             SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_mobile_poster_quality),
+                label = stringResource(R.string.settings_poster_quality_title),
                 value = state.posterQuality.label(),
                 hint = state.posterQuality.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.POSTER_QUALITY) },
@@ -84,14 +84,14 @@ internal fun SettingsMobileAppearanceContent(
                 onClick = { onEvent(SettingsState.Event.LibraryTabOrderSelected) },
             )
         }
-        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_details)) {
+        SettingsMobileSection(title = stringResource(R.string.settings_tab_details)) {
             SettingsMobileNavigationRow(
                 label = stringResource(R.string.settings_details_buttons_order),
                 hint = stringResource(R.string.settings_details_buttons_order_hint),
                 onClick = { onEvent(SettingsState.Event.DetailsButtonOrderSelected) },
             )
         }
-        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_new_episodes)) {
+        SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_new_episodes_section),
                 hint = if (state.newEpisodesSectionEnabled) {

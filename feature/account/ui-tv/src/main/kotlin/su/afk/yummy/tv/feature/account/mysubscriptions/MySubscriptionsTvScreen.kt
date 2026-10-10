@@ -33,7 +33,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.tv.TvStateContent
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.domain.account.model.SubscriptionKeys
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.utils.accountErrorMessage
 
 @Composable

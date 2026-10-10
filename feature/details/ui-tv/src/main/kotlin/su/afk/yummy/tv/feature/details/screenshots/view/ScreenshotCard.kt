@@ -21,7 +21,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.focus.TvFocusOverlay
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun ScreenshotCard(
@@ -51,7 +51,7 @@ internal fun ScreenshotCard(
             AsyncImage(
                 model = screenshot.small ?: screenshot.full,
                 contentDescription = screenshot.episode?.let {
-                    stringResource(R.string.details_episode_content_description, it)
+                    stringResource(R.string.details_episode_number, it)
                 },
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),

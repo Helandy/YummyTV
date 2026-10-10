@@ -31,7 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.domain.search.model.SearchFilters
-import su.afk.yummy.tv.feature.search.R
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun SearchTvHeaderRow(

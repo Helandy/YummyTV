@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.mobile.R
+import su.afk.yummy.tv.feature.comments.presentation.R
 
 @Composable
 internal fun CommentThread(

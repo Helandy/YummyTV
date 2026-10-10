@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileLogoutConfirmDialog(
@@ -18,12 +18,12 @@ internal fun AccountMobileLogoutConfirmDialog(
         text = { Text(stringResource(R.string.account_logout_confirm_message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.account_logout_confirm_action))
+                Text(stringResource(R.string.account_logout))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.account_logout_confirm_cancel))
+                Text(stringResource(R.string.account_cancel))
             }
         },
     )

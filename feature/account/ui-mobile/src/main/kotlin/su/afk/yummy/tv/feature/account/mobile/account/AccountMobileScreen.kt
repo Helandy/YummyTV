@@ -43,7 +43,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.model.AccountUiError
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.accountErrorMessage
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHeader
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileLoadingIndicator
@@ -54,6 +53,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickAction
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileQuickActionsGrid
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileStatsTab
 import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileTabs
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -242,7 +242,7 @@ fun AccountMobileScreen(
                 add(
                     AccountMobileQuickAction(
                         key = "messages",
-                        title = stringResource(R.string.account_messages),
+                        title = stringResource(R.string.account_notification_type_message),
                         icon = Icons.Filled.Email,
                         onClick = { onEvent(AccountState.Event.MessagesSelected) },
                     ),

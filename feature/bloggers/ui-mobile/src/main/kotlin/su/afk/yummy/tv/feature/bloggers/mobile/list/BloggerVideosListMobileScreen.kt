@@ -32,9 +32,9 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
 import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
-import su.afk.yummy.tv.feature.bloggers.mobile.R
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoMobileCard
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideosFilters
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

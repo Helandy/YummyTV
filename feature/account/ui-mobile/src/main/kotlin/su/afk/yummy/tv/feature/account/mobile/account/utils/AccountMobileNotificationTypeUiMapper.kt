@@ -14,20 +14,20 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun notificationTypeLabel(type: String): String = when (type) {
     "news" -> stringResource(R.string.account_notification_type_news)
     "edit" -> stringResource(R.string.account_notification_type_edit)
     "message" -> stringResource(R.string.account_notification_type_message)
-    "comment" -> stringResource(R.string.account_notification_type_comment)
+    "comment" -> stringResource(R.string.account_profile_social_comments)
     "animeupdate" -> stringResource(R.string.account_notification_type_animeupdate)
-    "review" -> stringResource(R.string.account_notification_type_review)
+    "review" -> stringResource(R.string.account_profile_social_reviews)
     "viewingorderupdate", "viewing_order_update" -> stringResource(R.string.account_notification_type_viewing_order_update)
     "anime_episode" -> stringResource(R.string.account_notification_type_anime_episode)
-    "friend" -> stringResource(R.string.account_notification_type_friend)
-    "collection" -> stringResource(R.string.account_notification_type_collection)
+    "friend" -> stringResource(R.string.account_profile_social_friends)
+    "collection" -> stringResource(R.string.account_profile_social_collections)
     "post" -> stringResource(R.string.account_notification_type_post)
     "blogvideo" -> stringResource(R.string.account_notification_type_blogvideo)
     else -> type

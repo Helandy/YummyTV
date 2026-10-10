@@ -11,7 +11,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.utils.system.restartApplication
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 /** Обработка одноразовых эффектов настроек: рестарт после смены интерфейса и выбор папки экспорта. */
 @Composable
@@ -60,12 +60,12 @@ internal fun SettingsMobileEffects(
                 is SettingsState.Effect.LogsSaved ->
                     Toast.makeText(
                         context,
-                        context.getString(R.string.settings_mobile_logs_saved, settingsEffect.path),
+                        context.getString(R.string.settings_logs_saved, settingsEffect.path),
                         Toast.LENGTH_LONG,
                     ).show()
 
                 SettingsState.Effect.LogsFailed ->
-                    Toast.makeText(context, R.string.settings_mobile_logs_failed, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
 
                 SettingsState.Effect.VideoExportDirectorySelectionFailed ->
                     Toast.makeText(

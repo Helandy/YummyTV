@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.reviews.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.reviews.model.ReviewSort
-import su.afk.yummy.tv.feature.reviews.tv.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @Composable
 internal fun ReviewSort.label() = when (this) {

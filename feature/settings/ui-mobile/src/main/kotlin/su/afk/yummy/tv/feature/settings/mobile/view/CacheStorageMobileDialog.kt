@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.utils.system.CacheStorageEntry
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.utils.cacheStorageFolderLabel
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun CacheStorageMobileDialog(

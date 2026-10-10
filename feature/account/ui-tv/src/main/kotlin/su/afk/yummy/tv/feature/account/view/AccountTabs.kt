@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
-import su.afk.yummy.tv.feature.account.R
 import su.afk.yummy.tv.feature.account.account.AccountState
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountTabs(

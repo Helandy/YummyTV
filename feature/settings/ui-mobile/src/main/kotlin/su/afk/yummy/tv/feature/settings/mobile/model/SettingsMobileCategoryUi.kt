@@ -11,20 +11,20 @@ import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.ui.graphics.vector.ImageVector
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @get:StringRes
 internal val SettingsCategory.titleRes: Int
     get() = when (this) {
-        SettingsCategory.GENERAL -> R.string.settings_mobile_category_general
-        SettingsCategory.APPEARANCE -> R.string.settings_mobile_category_appearance
-        SettingsCategory.PLAYER -> R.string.settings_mobile_category_player
-        SettingsCategory.PLAYBACK -> R.string.settings_mobile_category_playback
-        SettingsCategory.WATCH_PROGRESS -> R.string.settings_mobile_category_watch_progress
-        SettingsCategory.SUBTITLES -> R.string.settings_mobile_category_subtitles
-        SettingsCategory.STORAGE -> R.string.settings_mobile_category_storage
-        SettingsCategory.API -> R.string.settings_mobile_category_api
+        SettingsCategory.GENERAL -> R.string.settings_category_general
+        SettingsCategory.APPEARANCE -> R.string.settings_category_appearance
+        SettingsCategory.PLAYER -> R.string.settings_category_player
+        SettingsCategory.PLAYBACK -> R.string.settings_category_playback
+        SettingsCategory.WATCH_PROGRESS -> R.string.settings_category_watch_progress
+        SettingsCategory.SUBTITLES -> R.string.settings_category_subtitles
+        SettingsCategory.STORAGE -> R.string.settings_category_storage
+        SettingsCategory.API -> R.string.settings_category_api
     }
 
 @get:StringRes

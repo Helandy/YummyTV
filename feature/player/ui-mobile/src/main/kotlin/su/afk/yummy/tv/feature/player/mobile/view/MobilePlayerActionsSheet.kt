@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.cast.MediaRouteButton
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.baseScreen.HideSheetWindowSystemBars
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

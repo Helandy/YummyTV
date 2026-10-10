@@ -9,8 +9,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.details.model.BalancerPickerState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun BalancerDialog(
@@ -19,12 +19,12 @@ internal fun BalancerDialog(
     onDismiss: () -> Unit,
 ) {
     MobilePickerBottomSheet(
-        title = stringResource(R.string.details_mobile_balancer_title, picker.episodeNumber),
+        title = stringResource(R.string.details_balancer_title, picker.episodeNumber),
         onDismiss = onDismiss,
     ) {
         if (picker.preferredPlayerUnavailable) {
             Text(
-                text = stringResource(R.string.details_mobile_balancer_preferred_unavailable),
+                text = stringResource(R.string.details_balancer_preferred_unavailable),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 12.dp),

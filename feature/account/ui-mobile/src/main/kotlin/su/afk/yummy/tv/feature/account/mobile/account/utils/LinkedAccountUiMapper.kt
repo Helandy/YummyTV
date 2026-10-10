@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.account.mobile.account.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun LinkedAccountProvider.label(): String = stringResource(

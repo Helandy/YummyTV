@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 /** Вход в список подписок пользователя — первый пункт вкладки уведомлений. */
 @Composable
@@ -45,7 +45,7 @@ internal fun AccountMobileMySubscriptionsRow(
                 tint = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = stringResource(R.string.account_mobile_my_subscriptions),
+                text = stringResource(R.string.account_my_subscriptions),
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.weight(1f),
             )

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="top_load_error">Could not load the list</string>
+    <string name="top_mobile_title">Top</string>
+    <string name="top_mobile_retry">Retry</string>
+    <string name="top_mobile_retry_error">Retry: %1$s</string>
+    <string name="top_mobile_loading">Loading...</string>
+    <string name="top_mobile_load_more">Show more</string>
+    <string name="top_type_tv">Series</string>
+    <string name="top_type_movie">Movies</string>
+    <string name="top_type_ona">ONA</string>
+    <string name="top_type_tv_short">Ser</string>
+    <string name="top_type_movie_short">Mov</string>
 </resources>

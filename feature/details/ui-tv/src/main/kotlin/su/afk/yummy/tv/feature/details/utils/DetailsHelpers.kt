@@ -12,8 +12,8 @@ import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.episode.EpisodeReleaseCountdown
 import su.afk.yummy.tv.core.utils.episode.releaseCountdown
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.core.utils.player.isAllohaPlayerUrl
+import su.afk.yummy.tv.feature.details.presentation.R
 
 internal fun Double.formatRating(): String {
     val rounded = (this * 10).toInt() / 10.0
@@ -23,7 +23,7 @@ internal fun Double.formatRating(): String {
 @Composable
 internal fun Int.formatViews(): String = when {
     this >= 1_000_000 -> stringResource(
-        R.string.details_views_millions,
+        R.string.details_count_millions,
         "%.1f".format(this / 1_000_000f)
     )
 

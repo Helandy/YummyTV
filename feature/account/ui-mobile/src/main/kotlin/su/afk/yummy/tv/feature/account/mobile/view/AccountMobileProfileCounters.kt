@@ -32,8 +32,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserProfileCounts
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileCounterItem
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileProfileListCounters(

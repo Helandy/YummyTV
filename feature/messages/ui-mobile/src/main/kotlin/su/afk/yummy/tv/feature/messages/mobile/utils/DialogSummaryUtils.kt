@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.messages.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.messages.model.DialogSummary
-import su.afk.yummy.tv.feature.messages.mobile.R
+import su.afk.yummy.tv.feature.messages.presentation.R
 
 /** Имя собеседника для списка диалогов: ник, а без него — общий чат или «пользователь N». */
 @Composable

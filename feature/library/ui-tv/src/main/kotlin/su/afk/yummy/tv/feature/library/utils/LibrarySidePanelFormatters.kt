@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.library.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryTab.label(): String = stringResource(

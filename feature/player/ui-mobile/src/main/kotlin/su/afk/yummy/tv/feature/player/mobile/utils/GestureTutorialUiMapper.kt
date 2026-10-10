@@ -2,8 +2,8 @@ package su.afk.yummy.tv.feature.player.mobile.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.player.mobile.R
 import su.afk.yummy.tv.feature.player.mobile.model.GestureTutorialStep
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun GestureTutorialStep.text(): Pair<String, String> = when (this) {

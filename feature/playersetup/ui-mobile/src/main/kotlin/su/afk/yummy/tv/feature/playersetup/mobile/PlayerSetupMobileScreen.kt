@@ -35,6 +35,7 @@ import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileOptionRo
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobilePickerSheet
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileSection
 import su.afk.yummy.tv.feature.playersetup.mobile.view.PlayerSetupMobileToggleRow
+import su.afk.yummy.tv.feature.playersetup.presentation.R
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,13 +57,13 @@ fun PlayerSetupMobileScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = stringResource(R.string.player_setup_mobile_title),
+                    text = stringResource(R.string.player_setup_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = stringResource(R.string.player_setup_mobile_subtitle),
+                    text = stringResource(R.string.player_setup_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -70,23 +71,23 @@ fun PlayerSetupMobileScreen(
 
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_general)) {
                 PlayerSetupMobileOptionRow(
-                    label = stringResource(R.string.player_setup_mobile_language_label),
+                    label = stringResource(R.string.player_setup_language_label),
                     value = state.contentLanguage.setupLabel(),
-                    hint = stringResource(R.string.player_setup_mobile_language_hint),
+                    hint = stringResource(R.string.player_setup_language_hint),
                     onClick = { activePicker = PlayerSetupMobilePicker.LANGUAGE },
                 )
             }
 
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_timings)) {
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_opening_timeline_label),
-                    hint = stringResource(R.string.player_setup_mobile_opening_timeline_hint),
+                    label = stringResource(R.string.player_setup_opening_timeline_label),
+                    hint = stringResource(R.string.player_setup_opening_timeline_hint),
                     enabled = state.showOpeningOnTimeline,
                     onClick = { onEvent(PlayerSetupState.Event.ShowOpeningOnTimelineToggled) },
                 )
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_auto_skip_label),
-                    hint = stringResource(R.string.player_setup_mobile_auto_skip_hint),
+                    label = stringResource(R.string.player_setup_auto_skip_label),
+                    hint = stringResource(R.string.player_setup_auto_skip_hint),
                     enabled = state.autoSkipOpeningsEndings,
                     onClick = { onEvent(PlayerSetupState.Event.AutoSkipOpeningsEndingsToggled) },
                 )
@@ -94,26 +95,26 @@ fun PlayerSetupMobileScreen(
 
             PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_episodes)) {
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_auto_play_label),
-                    hint = stringResource(R.string.player_setup_mobile_auto_play_hint),
+                    label = stringResource(R.string.player_setup_auto_play_label),
+                    hint = stringResource(R.string.player_setup_auto_play_hint),
                     enabled = state.autoPlayNextEpisode,
                     onClick = { onEvent(PlayerSetupState.Event.AutoPlayNextEpisodeToggled) },
                 )
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_suggest_next_label),
-                    hint = stringResource(R.string.player_setup_mobile_suggest_next_hint),
+                    label = stringResource(R.string.player_setup_suggest_next_label),
+                    hint = stringResource(R.string.player_setup_suggest_next_hint),
                     enabled = state.suggestNextEpisodeOnWatched,
                     onClick = { onEvent(PlayerSetupState.Event.SuggestNextEpisodeOnWatchedToggled) },
                 )
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_ask_dubbing_label),
-                    hint = stringResource(R.string.player_setup_mobile_ask_dubbing_hint),
+                    label = stringResource(R.string.player_setup_ask_dubbing_label),
+                    hint = stringResource(R.string.player_setup_ask_dubbing_hint),
                     enabled = state.askDubbingOnWatch,
                     onClick = { onEvent(PlayerSetupState.Event.AskDubbingOnWatchToggled) },
                 )
                 PlayerSetupMobileToggleRow(
-                    label = stringResource(R.string.player_setup_mobile_refresh_progress_label),
-                    hint = stringResource(R.string.player_setup_mobile_refresh_progress_hint),
+                    label = stringResource(R.string.player_setup_refresh_progress_label),
+                    hint = stringResource(R.string.player_setup_refresh_progress_hint),
                     enabled = state.refreshContinueWatchingProgressOnLaunch,
                     onClick = { onEvent(PlayerSetupState.Event.RefreshContinueWatchingProgressToggled) },
                 )
@@ -133,9 +134,9 @@ fun PlayerSetupMobileScreen(
                     onClick = { onEvent(PlayerSetupState.Event.PictureInPictureToggled) },
                 )
                 PlayerSetupMobileOptionRow(
-                    label = stringResource(R.string.player_setup_mobile_quality_label),
+                    label = stringResource(R.string.player_setup_quality_label),
                     value = state.preferredVideoQuality.setupLabel(),
-                    hint = stringResource(R.string.player_setup_mobile_quality_hint),
+                    hint = stringResource(R.string.player_setup_quality_hint),
                     onClick = { activePicker = PlayerSetupMobilePicker.QUALITY },
                 )
             }
@@ -144,14 +145,14 @@ fun PlayerSetupMobileScreen(
                 onClick = { onEvent(PlayerSetupState.Event.DoneSelected) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(text = stringResource(R.string.player_setup_mobile_done))
+                Text(text = stringResource(R.string.player_setup_done))
             }
         }
     }
 
     when (activePicker) {
         PlayerSetupMobilePicker.LANGUAGE -> PlayerSetupMobilePickerSheet(
-            title = stringResource(R.string.player_setup_mobile_language_label),
+            title = stringResource(R.string.player_setup_language_label),
             selectedValue = state.contentLanguage,
             options = YaniContentLanguage.entries.map {
                 PlayerSetupMobilePickerOption(it, it.setupLabel())
@@ -177,7 +178,7 @@ fun PlayerSetupMobileScreen(
         )
 
         PlayerSetupMobilePicker.QUALITY -> PlayerSetupMobilePickerSheet(
-            title = stringResource(R.string.player_setup_mobile_quality_label),
+            title = stringResource(R.string.player_setup_quality_label),
             selectedValue = state.preferredVideoQuality,
             options = PreferredVideoQuality.entries.map {
                 PlayerSetupMobilePickerOption(it, it.setupLabel(), it.setupHint())

@@ -47,7 +47,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvWholeItemBringIntoView
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.continueWatchingFocusKey
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -150,7 +150,7 @@ internal fun ContinueWatchingGrid(
 
     if (entries.isEmpty()) {
         TvStateMessage(
-            title = stringResource(R.string.library_empty_continue_watching),
+            title = stringResource(R.string.library_empty_list),
             icon = Icons.AutoMirrored.Filled.List,
             modifier = modifier,
         )

@@ -40,12 +40,12 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.episodes.model.EpisodeWatchStatus
 import su.afk.yummy.tv.feature.details.episodes.utils.durationLabel
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.isDownloadBusy
 import su.afk.yummy.tv.feature.details.mobile.episodes.utils.isPaused
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsMediaCard
+import su.afk.yummy.tv.feature.details.presentation.R
 import kotlin.math.roundToInt
 
 private val InProgressColor = YummySemanticColors.InProgress
@@ -81,7 +81,7 @@ internal fun EpisodeMobileCard(
         else -> MaterialTheme.colorScheme.primary
     }
     DetailsMediaCard(
-        title = stringResource(R.string.details_mobile_episode, episodeNumber),
+        title = stringResource(R.string.details_episode_number, episodeNumber),
         subtitle = watchStatus.durationLabel(video.durationSeconds),
         subtitleColor = if (watchStatus == EpisodeWatchStatus.None) {
             Color.Unspecified
@@ -231,7 +231,7 @@ private fun EpisodeDownloadButton(
                         imageVector = Icons.Filled.HourglassEmpty,
                         contentDescription = stringResource(
                             if (resolving) {
-                                R.string.details_mobile_episode_download_resolving_quality
+                                R.string.details_download_resolving_quality
                             } else {
                                 R.string.details_mobile_download_quality_prompt
                             },
@@ -287,7 +287,7 @@ private fun downloadStatusText(
 ): String? {
     val uiStatus = status?.status
     return when {
-        resolving -> stringResource(R.string.details_mobile_episode_download_resolving_quality)
+        resolving -> stringResource(R.string.details_download_resolving_quality)
         awaitingQualitySelection -> stringResource(R.string.details_mobile_download_quality_prompt)
 
         uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued ||

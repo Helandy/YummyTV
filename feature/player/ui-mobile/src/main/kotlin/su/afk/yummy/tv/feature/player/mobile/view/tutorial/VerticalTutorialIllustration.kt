@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.presentation.R
 
 @Composable
 internal fun VerticalTutorialIllustration(accent: Color) {
@@ -57,7 +57,7 @@ internal fun VerticalTutorialIllustration(accent: Color) {
         ) {
             Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = Color.White)
             Text(
-                text = stringResource(R.string.player_mobile_gesture_tutorial_volume),
+                text = stringResource(R.string.player_volume_title),
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
             )

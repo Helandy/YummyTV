@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.sp
 import su.afk.yummy.tv.core.designsystem.components.toRatingColor
 import su.afk.yummy.tv.core.designsystem.components.toRatingTextColor
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.RatingLabel
 import su.afk.yummy.tv.feature.details.mobile.details.utils.formatRating
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -49,7 +49,7 @@ internal fun DetailsRatingRow(
             add(
                 RatingLabel(
                     label = stringResource(
-                        R.string.details_mobile_kinopoisk_rating,
+                        R.string.details_kinopoisk_rating,
                         it.formatRating()
                     ),
                     isPrimary = false,
@@ -61,7 +61,7 @@ internal fun DetailsRatingRow(
             add(
                 RatingLabel(
                     stringResource(
-                        R.string.details_mobile_shikimori_rating,
+                        R.string.details_shikimori_rating,
                         it.formatRating(),
                     ),
                     false,
@@ -73,7 +73,7 @@ internal fun DetailsRatingRow(
             add(
                 RatingLabel(
                     stringResource(
-                        R.string.details_mobile_mal_rating,
+                        R.string.details_mal_rating,
                         it.formatRating(),
                     ),
                     false,
@@ -132,7 +132,7 @@ private fun DetailsAverageRating(
             modifier = Modifier.size(28.dp),
         )
         Text(
-            text = rating?.formatRating() ?: stringResource(R.string.details_mobile_rating),
+            text = rating?.formatRating() ?: stringResource(R.string.details_rating_button),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = color ?: MaterialTheme.colorScheme.onSurface,

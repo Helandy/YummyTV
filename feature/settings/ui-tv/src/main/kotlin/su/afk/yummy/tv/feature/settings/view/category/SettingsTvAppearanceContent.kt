@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
@@ -65,7 +65,7 @@ internal fun SettingsTvAppearanceContent(
     SettingsDivider()
     pickerRow(SettingsTvPicker.DETAILS_BUTTON_ORDER, Modifier)
     SettingsBlockGap()
-    SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))
+    SettingsSectionTitle(text = stringResource(R.string.settings_section_new_episodes))
     ToggleRow(
         label = stringResource(R.string.settings_new_episodes_section),
         hint = if (state.newEpisodesSectionEnabled) {

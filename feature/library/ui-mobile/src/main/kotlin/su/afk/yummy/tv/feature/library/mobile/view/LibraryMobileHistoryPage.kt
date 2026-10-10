@@ -44,11 +44,11 @@ import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.WatchHistoryEntry
-import su.afk.yummy.tv.feature.library.mobile.R
-import su.afk.yummy.tv.feature.library.utils.timingLabel
-import su.afk.yummy.tv.feature.library.utils.watchedAtLabel
+import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.thumbnail.HistoryEpisodeThumbnail
 import su.afk.yummy.tv.feature.library.utils.historyProgressKey
+import su.afk.yummy.tv.feature.library.utils.timingLabel
+import su.afk.yummy.tv.feature.library.utils.watchedAtLabel
 
 @Composable
 internal fun LibraryMobileHistoryPage(
@@ -59,14 +59,14 @@ internal fun LibraryMobileHistoryPage(
     onDetailsSelected: (WatchHistoryEntry) -> Unit,
 ) {
     if (!isSignedIn) {
-        HistoryMessage(stringResource(R.string.library_mobile_history_sign_in))
+        HistoryMessage(stringResource(R.string.library_history_sign_in))
         return
     }
     val items = history.collectAsLazyPagingItems()
     when {
         items.loadState.refresh is LoadState.Loading -> HistoryMessage(null, loading = true)
-        items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_mobile_history_error))
-        items.itemCount == 0 -> HistoryMessage(stringResource(R.string.library_mobile_history_empty))
+        items.loadState.refresh is LoadState.Error -> HistoryMessage(stringResource(R.string.library_history_error))
+        items.itemCount == 0 -> HistoryMessage(stringResource(R.string.library_history_empty))
         else -> LazyColumn(
             modifier = Modifier
                 .mobileContentMaxWidth()
@@ -97,7 +97,7 @@ internal fun LibraryMobileHistoryPage(
                     ) {
                         Row(
                             Modifier.padding(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             SubcomposeAsyncImage(
                                 model = entry.screenshotUrl
@@ -131,12 +131,14 @@ internal fun LibraryMobileHistoryPage(
                             }
                             Column(Modifier.weight(1f)) {
                                 Text(entry.title, style = MaterialTheme.typography.titleMedium)
-                                if (entry.episode.isNotBlank()) Text(
-                                    stringResource(
-                                        R.string.library_mobile_history_episode,
-                                        entry.episode
+                                if (entry.episode.isNotBlank()) {
+                                    Text(
+                                        stringResource(
+                                            R.string.library_episode_number,
+                                            entry.episode,
+                                        ),
                                     )
-                                )
+                                }
                                 entry.timingLabel()?.let { Text(it) }
                                 Row(
                                     Modifier.fillMaxWidth(),
@@ -150,7 +152,7 @@ internal fun LibraryMobileHistoryPage(
                                     )
                                     ContinueWatchingOverlayButton(
                                         contentDescription = stringResource(
-                                            R.string.library_mobile_details_content_description
+                                            R.string.library_mobile_details_content_description,
                                         ),
                                         onClick = { onDetailsSelected(entry) },
                                     ) {
@@ -167,11 +169,13 @@ internal fun LibraryMobileHistoryPage(
                     }
                 }
             }
-            if (items.loadState.append is LoadState.Loading) item {
-                HistoryMessage(
-                    null,
-                    loading = true
-                )
+            if (items.loadState.append is LoadState.Loading) {
+                item {
+                    HistoryMessage(
+                        null,
+                        loading = true,
+                    )
+                }
             }
         }
     }
@@ -180,9 +184,13 @@ internal fun LibraryMobileHistoryPage(
 @Composable
 private fun HistoryMessage(text: String?, loading: Boolean = false) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        if (loading) CircularProgressIndicator() else Text(
-            text.orEmpty(),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
+        if (loading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text.orEmpty(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
     }
 }

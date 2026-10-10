@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.videodownload.mobile.R
+import su.afk.yummy.tv.feature.videodownload.presentation.R
 
 @Composable
 internal fun VideoExportAllConfirmationDialog(
@@ -26,7 +26,7 @@ internal fun VideoExportAllConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.video_export_all_dialog_cancel))
+                Text(stringResource(R.string.video_download_delete_cancel))
             }
         },
     )

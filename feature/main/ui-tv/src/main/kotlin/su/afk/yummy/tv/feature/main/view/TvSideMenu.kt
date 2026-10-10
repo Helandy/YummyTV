@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.feature.main.MainState
-import su.afk.yummy.tv.feature.main.R
 import su.afk.yummy.tv.feature.main.model.TvMenuItem
+import su.afk.yummy.tv.feature.main.presentation.R
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

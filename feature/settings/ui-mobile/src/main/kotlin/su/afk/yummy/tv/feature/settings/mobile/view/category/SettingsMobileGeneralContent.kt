@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
@@ -14,6 +13,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileGeneralContent(
@@ -45,21 +45,21 @@ internal fun SettingsMobileGeneralContent(
                 onClick = { onEvent(SettingsState.Event.SaveLastSearchToggled) },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_mobile_beta_updates_label),
+                label = stringResource(R.string.settings_beta_updates_label),
                 hint = if (state.betaUpdatesEnabled) {
-                    stringResource(R.string.settings_mobile_beta_updates_enabled)
+                    stringResource(R.string.settings_beta_updates_enabled)
                 } else {
-                    stringResource(R.string.settings_mobile_beta_updates_disabled)
+                    stringResource(R.string.settings_beta_updates_disabled)
                 },
                 enabled = state.betaUpdatesEnabled,
                 onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
             )
             SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_mobile_app_logs_recording_label),
+                label = stringResource(R.string.settings_app_logs_recording_label),
                 hint = if (state.appLogRecordingEnabled) {
-                    stringResource(R.string.settings_mobile_app_logs_recording_enabled)
+                    stringResource(R.string.settings_app_logs_recording_enabled)
                 } else {
-                    stringResource(R.string.settings_mobile_app_logs_recording_disabled)
+                    stringResource(R.string.settings_app_logs_recording_disabled)
                 },
                 enabled = state.appLogRecordingEnabled,
                 onClick = { onEvent(SettingsState.Event.AppLogRecordingToggled) },

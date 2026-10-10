@@ -6,13 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
 import su.afk.yummy.tv.feature.settings.mobile.utils.toSubtitlePercentText
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileOptionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileSubtitlesContent(
@@ -56,7 +56,7 @@ internal fun SettingsMobileSubtitlesContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_COLOR) },
             )
             SettingsMobileOptionRow(
-                label = stringResource(R.string.settings_subtitle_background_title),
+                label = stringResource(R.string.settings_tab_background),
                 value = state.subtitleStyle.background.label(),
                 onClick = { onPickerRequested(SettingsMobilePicker.SUBTITLE_BACKGROUND) },
             )

@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import su.afk.yummy.tv.core.navigation.root.RootTab
-import su.afk.yummy.tv.feature.main.R
+import su.afk.yummy.tv.feature.main.presentation.R
 
 /** Вкладки бокового меню TV в порядке показа (аккаунт рисуется отдельно, внизу меню). */
 internal val tvMenuItems: List<TvMenuItem> = listOf(

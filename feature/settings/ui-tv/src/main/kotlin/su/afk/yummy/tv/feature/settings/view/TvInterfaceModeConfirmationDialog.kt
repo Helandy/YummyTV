@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.settings.R
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun TvInterfaceModeConfirmationDialog(

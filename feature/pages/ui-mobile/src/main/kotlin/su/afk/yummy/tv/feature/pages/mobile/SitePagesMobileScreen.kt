@@ -24,6 +24,7 @@ import su.afk.yummy.tv.domain.pages.model.SitePageType
 import su.afk.yummy.tv.feature.pages.SitePagesState
 import su.afk.yummy.tv.feature.pages.mobile.utils.title
 import su.afk.yummy.tv.feature.pages.mobile.view.SitePageRow
+import su.afk.yummy.tv.feature.pages.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +63,7 @@ fun SitePagesMobileScreen(
                 Modifier
                     .fillMaxSize()
                     .navigationBarsPadding(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }

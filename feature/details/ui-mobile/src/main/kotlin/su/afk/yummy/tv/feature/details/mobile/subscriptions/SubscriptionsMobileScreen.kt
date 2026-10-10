@@ -23,8 +23,8 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.subscriptions.view.SubscriptionMobileRow
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 
@@ -61,7 +61,7 @@ fun SubscriptionsMobileScreen(
 ) {
     BaseBottomSheet(
         onDismissRequest = { onEvent(SubscriptionsState.Event.BackSelected) },
-        title = stringResource(R.string.details_mobile_subscriptions),
+        title = stringResource(R.string.details_subscriptions),
     ) {
         when {
             state.isLoading && state.subscriptions.isEmpty() -> Box(
@@ -82,7 +82,7 @@ fun SubscriptionsMobileScreen(
             )
 
             state.subscriptions.isEmpty() -> MobileMessage(
-                title = stringResource(R.string.details_mobile_subscriptions_empty),
+                title = stringResource(R.string.details_subscriptions_empty),
                 fillMaxSize = false,
             )
 

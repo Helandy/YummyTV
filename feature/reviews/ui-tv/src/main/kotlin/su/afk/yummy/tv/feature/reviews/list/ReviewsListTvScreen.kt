@@ -46,7 +46,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvChip
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingFooter
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.reviews.tv.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 import su.afk.yummy.tv.feature.reviews.utils.label
 import su.afk.yummy.tv.feature.reviews.view.ReviewTvCard
 
@@ -75,7 +75,7 @@ fun ReviewsListTvScreen(
             ),
     ) {
         Text(
-            stringResource(R.string.reviews_title_tv),
+            stringResource(R.string.reviews_title),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -103,7 +103,7 @@ fun ReviewsListTvScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 TvStateMessage(
-                    title = stringResource(R.string.reviews_error_tv),
+                    title = stringResource(R.string.reviews_error),
                     icon = Icons.Filled.Warning,
                     onRetry = reviews::retry,
                 )
@@ -116,7 +116,7 @@ fun ReviewsListTvScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 TvStateMessage(
-                    title = stringResource(R.string.reviews_empty_tv),
+                    title = stringResource(R.string.reviews_empty),
                     icon = Icons.Filled.RateReview,
                 )
             }
@@ -176,7 +176,7 @@ fun ReviewsListTvScreen(
 
                             is LoadState.Error -> item(span = { GridItemSpan(maxLineSpan) }) {
                                 TvAppendErrorFooter(
-                                    message = stringResource(R.string.reviews_error_tv),
+                                    message = stringResource(R.string.reviews_error),
                                     onRetry = reviews::retry,
                                 )
                             }

@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import su.afk.yummy.tv.feature.schedule.mobile.R
+import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.utils.remainingText
 import su.afk.yummy.tv.feature.schedule.utils.timeLabel
 import su.afk.yummy.tv.feature.schedule.model.ScheduleReleaseUi
@@ -97,10 +97,10 @@ internal fun ScheduleMobileReleaseCard(
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = if (aired) {
-                    stringResource(R.string.schedule_mobile_episode_aired, release.episode)
+                    stringResource(R.string.schedule_episode_aired, release.episode)
                 } else {
                     stringResource(
-                        R.string.schedule_mobile_episode_future,
+                        R.string.schedule_episode_future,
                         release.episode,
                         releaseAt.remainingText(now, remainingLabels),
                     )

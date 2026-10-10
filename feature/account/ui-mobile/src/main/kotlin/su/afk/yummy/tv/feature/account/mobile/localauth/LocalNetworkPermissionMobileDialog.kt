@@ -6,7 +6,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.permissions.LocalNetworkPermissionStep
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 /** Объяснение перед системным запросом доступа к локальной сети. */
 @Composable
@@ -22,7 +22,7 @@ internal fun LocalNetworkPermissionMobileDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.account_mobile_local_network_permission_title)) },
+        title = { Text(stringResource(R.string.account_local_network_permission_title)) },
         text = {
             Text(
                 stringResource(
@@ -39,9 +39,9 @@ internal fun LocalNetworkPermissionMobileDialog(
                 Text(
                     stringResource(
                         if (isBlocked) {
-                            R.string.account_mobile_local_network_permission_open_settings
+                            R.string.account_local_network_permission_open_settings
                         } else {
-                            R.string.account_mobile_local_network_permission_allow
+                            R.string.account_local_network_permission_allow
                         },
                     ),
                 )
@@ -49,7 +49,7 @@ internal fun LocalNetworkPermissionMobileDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.account_mobile_local_network_permission_later))
+                Text(stringResource(R.string.account_local_network_permission_later))
             }
         },
     )

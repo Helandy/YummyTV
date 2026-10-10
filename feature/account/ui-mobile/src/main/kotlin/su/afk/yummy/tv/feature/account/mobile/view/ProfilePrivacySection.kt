@@ -23,8 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.ProfileListPrivacy
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

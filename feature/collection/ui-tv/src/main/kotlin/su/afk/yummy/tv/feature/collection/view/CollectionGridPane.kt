@@ -37,6 +37,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
@@ -53,7 +54,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.collection.model.CollectionDetail
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
-import su.afk.yummy.tv.feature.collection.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
 internal fun CollectionGridPane(
@@ -91,7 +92,7 @@ internal fun CollectionGridPane(
             error != null -> TvStateMessage(
                 title = error,
                 icon = Icons.Filled.Warning,
-                retryLabel = stringResource(R.string.retry),
+                retryLabel = stringResource(CoreR.string.retry),
                 onRetry = onRetry,
                 retryFocusRequester = retryFocusRequester,
                 modifier = Modifier.align(Alignment.Center),

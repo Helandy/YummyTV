@@ -39,6 +39,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileEffects
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -57,7 +58,7 @@ fun SettingsMobileScreen(
     onEvent: (SettingsState.Event) -> Unit,
 ) {
     val context = LocalContext.current
-    val analyticsIdLabel = stringResource(R.string.settings_mobile_analytics_id_label)
+    val analyticsIdLabel = stringResource(R.string.settings_analytics_id_label)
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val firstCategoryFocusRequester = remember { FocusRequester() }
     var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
@@ -111,10 +112,10 @@ fun SettingsMobileScreen(
             }
 
             item(key = "about") {
-                SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_about)) {
+                SettingsMobileSection(title = stringResource(R.string.settings_section_about)) {
                     SettingsMobileAboutRow(
-                        label = stringResource(R.string.settings_mobile_release_notes_label),
-                        hint = stringResource(R.string.settings_mobile_release_notes_hint),
+                        label = stringResource(R.string.settings_release_notes_label),
+                        hint = stringResource(R.string.settings_release_notes_hint),
                         onClick = { showReleaseNotes = true },
                     )
                     SettingsMobileAboutRow(
@@ -123,11 +124,11 @@ fun SettingsMobileScreen(
                     )
                     state.analyticsDeviceId?.let { deviceId ->
                         SettingsMobileAboutRow(
-                            label = stringResource(R.string.settings_mobile_analytics_id_label),
+                            label = stringResource(R.string.settings_analytics_id_label),
                             hint = deviceId,
                             onClick = {
                                 if (context.copyToClipboard(analyticsIdLabel, deviceId.filterNot(Char::isWhitespace))) {
-                                    Toast.makeText(context, R.string.settings_mobile_analytics_id_copied, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, R.string.settings_analytics_id_copied, Toast.LENGTH_SHORT).show()
                                 }
                             },
                         )
@@ -141,8 +142,8 @@ fun SettingsMobileScreen(
                     // Логи пишутся только при включённой записи (Общие → «Запись логов»).
                     if (state.appLogRecordingEnabled) {
                         SettingsMobileAboutRow(
-                            label = stringResource(R.string.settings_mobile_logs_label),
-                            hint = stringResource(R.string.settings_mobile_logs_hint),
+                            label = stringResource(R.string.settings_logs_label),
+                            hint = stringResource(R.string.settings_logs_hint),
                             onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
                         )
                     }

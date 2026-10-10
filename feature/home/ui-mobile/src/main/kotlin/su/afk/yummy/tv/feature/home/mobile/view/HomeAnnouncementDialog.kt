@@ -7,7 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.home.mobile.R
+import su.afk.yummy.tv.feature.home.presentation.R
 
 @Composable
 internal fun HomeAnnouncementDialog(

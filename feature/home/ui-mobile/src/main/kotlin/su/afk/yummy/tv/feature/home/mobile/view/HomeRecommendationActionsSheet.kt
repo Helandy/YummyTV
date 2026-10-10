@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
-import su.afk.yummy.tv.feature.home.mobile.R
+import su.afk.yummy.tv.feature.home.presentation.R
 
 /** Меню действий по карточке из блока рекомендаций на главной. */
 @Composable
@@ -44,7 +44,7 @@ internal fun HomeRecommendationActionsSheet(
             onClick = onHide,
         )
         RecommendationSheetActionButton(
-            text = stringResource(R.string.home_mobile_recommendation_cancel),
+            text = stringResource(R.string.home_recommendation_cancel),
             icon = Icons.Filled.Close,
             onClick = onDismiss,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

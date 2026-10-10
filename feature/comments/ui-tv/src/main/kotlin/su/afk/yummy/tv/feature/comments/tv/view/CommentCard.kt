@@ -42,7 +42,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
-import su.afk.yummy.tv.feature.comments.tv.R
+import su.afk.yummy.tv.feature.comments.presentation.R
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)

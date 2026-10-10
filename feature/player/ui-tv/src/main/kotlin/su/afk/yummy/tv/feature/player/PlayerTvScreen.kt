@@ -218,7 +218,7 @@ fun PlayerTvScreen(
         }
         TvPlayerSelectionPanel(
             visible = showErrorBalancerPanel && uiState.canChangePlayer,
-            title = stringResource(R.string.player_balancer_title),
+            title = stringResource(R.string.player_name_prefix),
             items = uiState.balancerNames,
             selectedIndex = uiState.currentBalancerIndex,
             selectedFocusRequester = selectedErrorBalancerFocusRequester,

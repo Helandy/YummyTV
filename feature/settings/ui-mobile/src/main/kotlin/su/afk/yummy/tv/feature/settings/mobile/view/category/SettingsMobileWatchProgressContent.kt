@@ -7,10 +7,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSliderRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileToggleRow
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun SettingsMobileWatchProgressContent(
@@ -32,8 +32,8 @@ internal fun SettingsMobileWatchProgressContent(
                 },
             )
             SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_watched_short_label),
-                valueLabel = { stringResource(R.string.settings_mobile_watched_minutes_value, it) },
+                label = stringResource(R.string.settings_watched_short_label),
+                valueLabel = { stringResource(R.string.settings_watched_minutes_value, it) },
                 value = state.watchedThresholds.shortMinutes,
                 valueRange = WatchedThresholds.SHORT_MINUTES_RANGE,
                 enabled = true,
@@ -46,8 +46,8 @@ internal fun SettingsMobileWatchProgressContent(
                 },
             )
             SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_watched_medium_label),
-                valueLabel = { stringResource(R.string.settings_mobile_watched_minutes_value, it) },
+                label = stringResource(R.string.settings_watched_medium_label),
+                valueLabel = { stringResource(R.string.settings_watched_minutes_value, it) },
                 value = state.watchedThresholds.mediumMinutes,
                 valueRange = WatchedThresholds.MEDIUM_MINUTES_RANGE,
                 enabled = true,
@@ -60,8 +60,8 @@ internal fun SettingsMobileWatchProgressContent(
                 },
             )
             SettingsMobileSliderRow(
-                label = stringResource(R.string.settings_mobile_watched_long_label),
-                valueLabel = { stringResource(R.string.settings_mobile_watched_minutes_value, it) },
+                label = stringResource(R.string.settings_watched_long_label),
+                valueLabel = { stringResource(R.string.settings_watched_minutes_value, it) },
                 value = state.watchedThresholds.longMinutes,
                 valueRange = WatchedThresholds.LONG_MINUTES_RANGE,
                 enabled = true,

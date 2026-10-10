@@ -12,7 +12,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.permissions.LocalNetworkPermissionStep
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 /**
  * Объяснение перед системным запросом доступа к локальной сети: пульт не подскажет,

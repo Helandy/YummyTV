@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
-import su.afk.yummy.tv.feature.library.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryDeleteButton(onClick: () -> Unit, modifier: Modifier = Modifier) {

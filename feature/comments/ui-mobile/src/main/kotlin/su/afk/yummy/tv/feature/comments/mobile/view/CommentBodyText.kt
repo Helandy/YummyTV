@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.comments.mobile.R
 import su.afk.yummy.tv.feature.comments.model.CommentTextPart
+import su.afk.yummy.tv.feature.comments.presentation.R
 import su.afk.yummy.tv.feature.comments.utils.splitSpoilers
 import su.afk.yummy.tv.feature.comments.utils.stripBbCode
 

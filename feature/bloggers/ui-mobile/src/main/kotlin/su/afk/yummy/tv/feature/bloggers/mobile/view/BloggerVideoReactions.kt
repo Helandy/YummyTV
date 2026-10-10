@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.MobileReactionSelection
 import su.afk.yummy.tv.core.designsystem.mobile.MobileReactionsCard
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoReaction
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoVote
-import su.afk.yummy.tv.feature.bloggers.mobile.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @Composable
 internal fun BloggerVideoReactions(

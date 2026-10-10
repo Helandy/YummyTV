@@ -44,8 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import su.afk.yummy.tv.domain.account.model.ProfileImageKind
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.profileedit.utils.loadOrientedPreview
+import su.afk.yummy.tv.feature.account.presentation.R
 import kotlin.math.max
 
 private const val MAX_ZOOM = 6f

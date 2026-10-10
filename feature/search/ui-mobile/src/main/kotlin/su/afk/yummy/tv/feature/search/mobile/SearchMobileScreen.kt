@@ -55,6 +55,7 @@ import su.afk.yummy.tv.feature.search.mobile.view.RandomAnimeFloatingButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterButton
 import su.afk.yummy.tv.feature.search.mobile.view.SearchMobileFilterPanel
 import su.afk.yummy.tv.feature.search.navigator.SearchDestination
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -103,7 +104,7 @@ fun SearchMobileScreen(
         isScroll = false,
         topBar = {
             MobileTopBar(
-                title = stringResource(R.string.search_mobile_title),
+                title = stringResource(R.string.search_mobile_query),
                 onBack = { onEvent(SearchState.Event.BackSelected) },
             )
         },
@@ -173,7 +174,7 @@ fun SearchMobileScreen(
                         if (state.filters.activeCount > 0) {
                             stringResource(
                                 R.string.search_mobile_submit_with_filters,
-                                state.filters.activeCount
+                                state.filters.activeCount,
                             )
                         } else {
                             stringResource(R.string.search_mobile_submit)
@@ -185,8 +186,8 @@ fun SearchMobileScreen(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         text = stringResource(
-                            R.string.search_mobile_results_count,
-                            results.itemCount
+                            R.string.search_results_count,
+                            results.itemCount,
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -32,7 +32,7 @@ import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.comments.model.Comment
 import su.afk.yummy.tv.domain.comments.model.CommentVote
-import su.afk.yummy.tv.feature.comments.mobile.R
+import su.afk.yummy.tv.feature.comments.presentation.R
 
 @Composable
 internal fun CommentItem(

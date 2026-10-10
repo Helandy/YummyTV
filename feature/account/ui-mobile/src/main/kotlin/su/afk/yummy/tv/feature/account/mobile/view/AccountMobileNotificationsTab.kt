@@ -37,8 +37,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGa
 import su.afk.yummy.tv.core.designsystem.mobile.rememberNotificationPermissionGranted
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileBlockingLoading
 import su.afk.yummy.tv.feature.account.account.AccountState
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileNotificationsTab(

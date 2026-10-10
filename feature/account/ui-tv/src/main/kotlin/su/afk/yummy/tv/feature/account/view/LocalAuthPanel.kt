@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.account.model.LocalAuthError
 import su.afk.yummy.tv.domain.account.model.LocalAuthServerState
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun LocalAuthPanel(

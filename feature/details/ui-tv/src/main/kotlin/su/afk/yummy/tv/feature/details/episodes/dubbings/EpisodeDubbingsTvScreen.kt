@@ -50,7 +50,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.formatCompactCount
 import su.afk.yummy.tv.feature.details.view.common.BalancerPickerOverlay
 
@@ -109,7 +109,7 @@ fun EpisodeDubbingsTvScreen(
             )
 
             state.dubbings.isEmpty() -> TvStateMessage(
-                title = stringResource(R.string.details_episode_dubbings_empty),
+                title = stringResource(R.string.details_subscriptions_empty),
                 icon = Icons.Filled.Mic,
             )
 

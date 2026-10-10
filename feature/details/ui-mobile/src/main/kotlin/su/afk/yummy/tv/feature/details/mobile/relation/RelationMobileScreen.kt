@@ -30,9 +30,9 @@ import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationItem
 import su.afk.yummy.tv.domain.anime.model.AnimeRelationSubGenre
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.relation.utils.labelRes
 import su.afk.yummy.tv.feature.details.mobile.relation.view.RelationMobileHeaderCard
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.relation.RelationState
 import su.afk.yummy.tv.feature.details.relation.model.RelationType
 
@@ -106,7 +106,7 @@ fun RelationMobileScreen(
                         )
                         Text(
                             text = stringResource(
-                                R.string.details_mobile_related_anime_count,
+                                R.string.details_related_anime_count,
                                 relation.anime.size,
                             ),
                             style = MaterialTheme.typography.titleLarge,
@@ -115,7 +115,7 @@ fun RelationMobileScreen(
                         )
                         if (relation.anime.isEmpty()) {
                             Text(
-                                text = stringResource(R.string.details_mobile_related_empty),
+                                text = stringResource(R.string.details_related_empty),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 8.dp),
                             )

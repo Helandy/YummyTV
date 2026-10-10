@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.messages.mobile.R
+import su.afk.yummy.tv.feature.messages.presentation.R
 
 @Composable
 internal fun ChatMobileComposer(

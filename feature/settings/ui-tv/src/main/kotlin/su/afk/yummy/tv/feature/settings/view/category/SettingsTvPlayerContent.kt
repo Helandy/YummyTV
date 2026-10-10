@@ -7,9 +7,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.detailsText
 import su.afk.yummy.tv.feature.settings.utils.label
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
@@ -88,11 +88,11 @@ internal fun SettingsTvPlayerContent(
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_sound))
     ToggleRow(
-        label = stringResource(R.string.settings_tv_advanced_volume_label),
+        label = stringResource(R.string.settings_advanced_volume_label),
         hint = if (state.advancedPlayerVolumeEnabled) {
-            stringResource(R.string.settings_tv_advanced_volume_enabled)
+            stringResource(R.string.settings_advanced_volume_enabled)
         } else {
-            stringResource(R.string.settings_tv_advanced_volume_disabled)
+            stringResource(R.string.settings_advanced_volume_disabled)
         },
         enabled = state.advancedPlayerVolumeEnabled,
         onClick = {
@@ -102,11 +102,11 @@ internal fun SettingsTvPlayerContent(
     if (state.volumeStabilizationSupported) {
         SettingsDivider()
         ToggleRow(
-            label = stringResource(R.string.settings_tv_volume_stabilization_label),
+            label = stringResource(R.string.settings_volume_stabilization_label),
             hint = if (state.volumeStabilizationEnabled) {
-                stringResource(R.string.settings_tv_volume_stabilization_enabled)
+                stringResource(R.string.settings_volume_stabilization_enabled)
             } else {
-                stringResource(R.string.settings_tv_volume_stabilization_disabled)
+                stringResource(R.string.settings_volume_stabilization_disabled)
             },
             enabled = state.volumeStabilizationEnabled,
             onClick = {

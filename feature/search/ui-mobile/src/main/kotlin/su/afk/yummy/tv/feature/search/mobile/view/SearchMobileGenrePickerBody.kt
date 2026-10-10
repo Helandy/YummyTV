@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
-import su.afk.yummy.tv.feature.search.mobile.R
 import su.afk.yummy.tv.feature.search.model.GenrePickerMode
+import su.afk.yummy.tv.feature.search.presentation.R
 
 @Composable
 internal fun ColumnScope.SearchMobileGenrePickerBody(
@@ -28,13 +28,13 @@ internal fun ColumnScope.SearchMobileGenrePickerBody(
 ) {
     SheetHeader(
         title = when (mode) {
-            GenrePickerMode.INCLUDE -> stringResource(R.string.search_mobile_filter_genres)
-            GenrePickerMode.EXCLUDE -> stringResource(R.string.search_mobile_filter_exclude_genres)
+            GenrePickerMode.INCLUDE -> stringResource(R.string.search_filter_genres)
+            GenrePickerMode.EXCLUDE -> stringResource(R.string.search_filter_exclude_genres)
         },
         onBack = onBack,
     )
     Text(
-        text = stringResource(R.string.search_mobile_filter_selected_count, selectedIds.size),
+        text = stringResource(R.string.search_filter_selected_count, selectedIds.size),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -64,7 +64,7 @@ internal fun ColumnScope.SearchMobileGenrePickerBody(
             .filter { genre -> filterOptions.genreGroups.none { it.id == genre.groupId } }
         if (ungroupedGenres.isNotEmpty()) {
             SearchMobileGenreGroup(
-                title = stringResource(R.string.search_mobile_filter_genre_screen_title),
+                title = stringResource(R.string.search_filter_genre_screen_title),
                 genres = ungroupedGenres,
                 selectedIds = selectedIds,
                 onGenreToggled = onGenreToggled,

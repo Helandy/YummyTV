@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.watchlater.model.WatchLaterItem
-import su.afk.yummy.tv.feature.watchlater.mobile.R
+import su.afk.yummy.tv.feature.watchlater.presentation.R
 
 @Composable
 internal fun WatchLaterMobileCard(

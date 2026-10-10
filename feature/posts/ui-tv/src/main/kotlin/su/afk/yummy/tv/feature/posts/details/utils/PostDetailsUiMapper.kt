@@ -2,7 +2,7 @@ package su.afk.yummy.tv.feature.posts.details.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.posts.tv.R
+import su.afk.yummy.tv.feature.posts.presentation.R
 import java.util.Locale
 
 @Composable

@@ -58,7 +58,7 @@ internal fun MobilePlayerBalancerSheet(
         ) {
             item {
                 Text(
-                    text = stringResource(R.string.player_balancer_title),
+                    text = stringResource(R.string.player_name_prefix),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 2.dp),

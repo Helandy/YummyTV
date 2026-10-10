@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.library.mobile.R
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Composable
 internal fun LibraryMobileRemoveConfirmDialog(
@@ -28,7 +28,7 @@ internal fun LibraryMobileRemoveConfirmDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.library_mobile_remove_confirm))
+                Text(stringResource(R.string.library_mobile_remove_content_description))
             }
         },
         dismissButton = {

@@ -5,8 +5,9 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.collection.R
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Composable
 internal fun CollectionsCatalogMessage(
@@ -17,7 +18,7 @@ internal fun CollectionsCatalogMessage(
     TvStateMessage(
         title = message,
         icon = Icons.Filled.Warning,
-        retryLabel = stringResource(R.string.retry),
+        retryLabel = stringResource(CoreR.string.retry),
         onRetry = onRetry,
         retryFocusRequester = retryFocusRequester,
     )

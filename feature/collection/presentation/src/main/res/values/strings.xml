@@ -8,4 +8,21 @@
     <string name="collection_create_error">Could not create the collection</string>
     <string name="collection_update_error">Could not update the collection</string>
     <string name="collection_delete_error">Could not delete the collection</string>
+    <string name="collection_comments">Comments</string>
+    <string name="collection_reactions_title">Rate this collection</string>
+    <string name="collection_mobile_title">Collection</string>
+    <string name="collection_catalog_title">Collections</string>
+        <string name="collection_create_dialog_title">New collection</string>
+    <string name="collection_title_label">Title</string>
+    <string name="collection_description_label">Description</string>
+    <string name="collection_public_label">Public collection</string>
+    <string name="collection_create_confirm">Create</string>
+    <string name="collection_cancel">Cancel</string>
+    <string name="collection_edit">Edit</string>
+    <string name="collection_delete">Delete</string>
+    <string name="collection_edit_dialog_title">Edit collection</string>
+    <string name="collection_save">Save</string>
+    <string name="collection_delete_dialog_title">Delete collection?</string>
+    <string name="collection_delete_dialog_message">The collection will be permanently deleted.</string>
+    <string name="collection_catalog_tv_empty">No collections yet</string>
 </resources>

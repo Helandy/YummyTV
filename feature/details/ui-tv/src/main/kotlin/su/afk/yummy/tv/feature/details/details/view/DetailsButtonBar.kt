@@ -71,13 +71,13 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.details.model.ButtonData
 import su.afk.yummy.tv.feature.details.details.model.ButtonRowData
 import su.afk.yummy.tv.feature.details.details.model.ButtonStyle
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.utils.label
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.utils.resolveDetailsContinueTarget
 import su.afk.yummy.tv.feature.details.utils.statusColor
 
@@ -151,7 +151,7 @@ internal fun DetailsButtonBar(
     val favoriteButton = ButtonData(
         action = DetailsButtonAction.FAVORITE,
         label = stringResource(
-            if (isFavorite) R.string.details_remove_favorite
+            if (isFavorite) R.string.details_add_favorite
             else R.string.details_add_favorite,
         ),
         icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,

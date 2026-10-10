@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobilePage
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileRemoveConfirmDialog
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileSortRow
 import su.afk.yummy.tv.feature.library.mobile.view.LibraryMobileTabs
+import su.afk.yummy.tv.feature.library.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -63,7 +64,7 @@ fun LibraryMobileScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnEvent by rememberUpdatedState(onEvent)
-    val itemRemovedText = stringResource(R.string.library_mobile_remove_success)
+    val itemRemovedText = stringResource(R.string.library_remove_success)
     val tabs = state.tabs
     // При смене порядка вкладок страницы пейджера меняют смысл, поэтому состояние создаётся заново.
     val pagerState = key(tabs) {

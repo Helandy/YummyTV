@@ -14,8 +14,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.feature.posts.details.PostDetailsState
-import su.afk.yummy.tv.feature.posts.mobile.R
 import su.afk.yummy.tv.feature.posts.mobile.view.PostDetailsBody
+import su.afk.yummy.tv.feature.posts.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,11 +27,13 @@ fun PostDetailsMobileScreen(
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         effect.collect {
-            if (it is PostDetailsState.Effect.ShowToast) Toast.makeText(
-                context,
-                it.message,
-                Toast.LENGTH_LONG
-            ).show()
+            if (it is PostDetailsState.Effect.ShowToast) {
+                Toast.makeText(
+                    context,
+                    it.message,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
         }
     }
     BaseScreen(

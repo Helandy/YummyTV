@@ -5,8 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.utils.toNextEpisodeSwitchDelayText
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
@@ -49,7 +49,7 @@ internal fun SettingsTvPlaybackContent(
     )
     SettingsDivider()
     SettingsSliderRow(
-        label = stringResource(R.string.settings_tv_auto_skip_delay_label),
+        label = stringResource(R.string.settings_auto_skip_delay_label),
         valueText = stringResource(
             R.string.settings_next_episode_switch_delay_seconds,
             state.autoSkipDelaySeconds,
@@ -63,9 +63,9 @@ internal fun SettingsTvPlaybackContent(
     )
     SettingsDivider()
     ToggleRow(
-        label = stringResource(R.string.settings_tv_show_opening_on_timeline_label),
+        label = stringResource(R.string.settings_show_opening_on_timeline_label),
         hint = if (state.showOpeningOnTimeline) {
-            stringResource(R.string.settings_tv_show_opening_on_timeline_enabled)
+            stringResource(R.string.settings_show_opening_on_timeline_enabled)
         } else {
             stringResource(R.string.settings_disabled)
         },
@@ -98,7 +98,7 @@ internal fun SettingsTvPlaybackContent(
     )
     SettingsDivider()
     SettingsSliderRow(
-        label = stringResource(R.string.settings_tv_controls_auto_hide_label),
+        label = stringResource(R.string.settings_controls_auto_hide_label),
         valueText = stringResource(
             R.string.settings_next_episode_switch_delay_seconds,
             state.playerControlsAutoHideSeconds,

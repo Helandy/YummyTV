@@ -19,7 +19,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.MobileReactionsCard
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.domain.posts.model.PostReaction
 import su.afk.yummy.tv.domain.posts.model.PostVote
-import su.afk.yummy.tv.feature.posts.mobile.R
+import su.afk.yummy.tv.feature.posts.presentation.R
 
 @Composable
 internal fun PostEngagementPanel(

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
-import su.afk.yummy.tv.feature.account.mobile.R
+import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
 
 @Composable
@@ -25,10 +25,10 @@ internal fun FriendshipStatus.friendshipActionLabel(): String = stringResource(
 internal fun UserProfileState.Tab.label(): String = when (this) {
     UserProfileState.Tab.OVERVIEW -> stringResource(R.string.user_profile_tab_overview)
     UserProfileState.Tab.LISTS -> stringResource(R.string.user_profile_tab_lists)
-    UserProfileState.Tab.COLLECTIONS -> stringResource(R.string.user_profile_tab_collections)
+    UserProfileState.Tab.COLLECTIONS -> stringResource(R.string.account_profile_social_collections)
     UserProfileState.Tab.POSTS -> stringResource(R.string.user_profile_tab_posts)
-    UserProfileState.Tab.REVIEWS -> stringResource(R.string.user_profile_tab_reviews)
-    UserProfileState.Tab.FRIENDS -> stringResource(R.string.user_profile_tab_friends)
+    UserProfileState.Tab.REVIEWS -> stringResource(R.string.account_profile_social_reviews)
+    UserProfileState.Tab.FRIENDS -> stringResource(R.string.account_profile_social_friends)
 }
 
 internal fun UserProfileState.Tab.count(profile: UserProfileSummary?): Int? {

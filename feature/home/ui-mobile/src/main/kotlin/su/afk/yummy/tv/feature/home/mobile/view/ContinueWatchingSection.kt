@@ -17,11 +17,11 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileProgressMediaCard
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.home.mobile.R
 import su.afk.yummy.tv.domain.home.model.bestUrl
 import su.afk.yummy.tv.feature.home.mobile.utils.episodeSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.timingSubtitle
 import su.afk.yummy.tv.feature.home.mobile.utils.watchProgress
+import su.afk.yummy.tv.feature.home.presentation.R
 
 @Composable
 internal fun ContinueWatchingSection(
@@ -31,7 +31,7 @@ internal fun ContinueWatchingSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MobileSectionHeader(
-            title = stringResource(R.string.home_mobile_continue_watching),
+            title = stringResource(R.string.continue_watching),
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         LazyRow(
@@ -45,9 +45,9 @@ internal fun ContinueWatchingSection(
                 },
             ) { _, entry ->
                 val episodeTitle = if (entry.episode.isBlank()) {
-                    stringResource(R.string.home_mobile_episode_unknown)
+                    stringResource(R.string.home_episode)
                 } else {
-                    stringResource(R.string.home_mobile_episode, entry.episode)
+                    stringResource(R.string.home_episode_number, entry.episode)
                 }
                 val imageModel = resolveContinueWatchingImageModel(
                     screenshotUrl = entry.screenshotUrl,

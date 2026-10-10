@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.model.ReleaseNoteItem
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 /** Релиз в диалоге «Что нового»: версия с отметками, дата и список изменений. */
 @Composable
@@ -41,13 +41,13 @@ internal fun ReleaseNoteTvItem(
             )
             if (item.isPrerelease) {
                 ReleaseNoteTvBadge(
-                    text = stringResource(R.string.settings_tv_release_notes_beta),
+                    text = stringResource(R.string.settings_release_notes_beta),
                     color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             if (item.isCurrent) {
                 ReleaseNoteTvBadge(
-                    text = stringResource(R.string.settings_tv_release_notes_current),
+                    text = stringResource(R.string.settings_release_notes_current),
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -60,7 +60,7 @@ internal fun ReleaseNoteTvItem(
             }
         }
         Text(
-            text = item.notes.ifBlank { stringResource(R.string.settings_tv_release_notes_no_notes) },
+            text = item.notes.ifBlank { stringResource(R.string.settings_release_notes_no_notes) },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )

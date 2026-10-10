@@ -15,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.utils.system.copyToClipboard
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.feature.settings.BuildConfig
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.AboutRow
 import su.afk.yummy.tv.feature.settings.view.ReleaseNotesTvDialog
@@ -31,12 +31,12 @@ internal fun SettingsTvAboutContent(
 ) {
     val repositoryUrl = stringResource(R.string.settings_repository_url)
     val context = LocalContext.current
-    val analyticsIdLabel = stringResource(R.string.settings_tv_analytics_id_label)
+    val analyticsIdLabel = stringResource(R.string.settings_analytics_id_label)
     var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
 
     AboutRow(
-        label = stringResource(R.string.settings_tv_release_notes_label),
-        hint = stringResource(R.string.settings_tv_release_notes_hint),
+        label = stringResource(R.string.settings_release_notes_label),
+        hint = stringResource(R.string.settings_release_notes_hint),
         modifier = Modifier
             .focusRequester(tabContentFocusRequester)
             .restoreCategoryFocusOnLeft(tabFocusRequester),
@@ -51,12 +51,12 @@ internal fun SettingsTvAboutContent(
     state.analyticsDeviceId?.let { deviceId ->
         SettingsDivider()
         AboutRow(
-            label = stringResource(R.string.settings_tv_analytics_id_label),
+            label = stringResource(R.string.settings_analytics_id_label),
             hint = deviceId,
             modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
             onClick = {
                 if (context.copyToClipboard(analyticsIdLabel, deviceId.filterNot(Char::isWhitespace))) {
-                    Toast.makeText(context, R.string.settings_tv_analytics_id_copied, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.settings_analytics_id_copied, Toast.LENGTH_SHORT).show()
                 }
             },
         )
@@ -73,8 +73,8 @@ internal fun SettingsTvAboutContent(
     if (state.appLogRecordingEnabled) {
         SettingsDivider()
         AboutRow(
-            label = stringResource(R.string.settings_tv_logs_label),
-            hint = stringResource(R.string.settings_tv_logs_hint),
+            label = stringResource(R.string.settings_logs_label),
+            hint = stringResource(R.string.settings_logs_hint),
             modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
             onClick = { onEvent(SettingsState.Event.ShareLogsClicked) },
         )

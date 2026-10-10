@@ -1,7 +1,7 @@
 package su.afk.yummy.tv.feature.details.relation.utils
 
 import androidx.annotation.StringRes
-import su.afk.yummy.tv.feature.details.R
+import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.relation.model.RelationType
 
 @StringRes

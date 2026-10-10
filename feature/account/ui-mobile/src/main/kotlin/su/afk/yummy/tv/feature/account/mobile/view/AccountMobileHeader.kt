@@ -25,9 +25,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.account.AccountState
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.utils.formatProfileDate
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileHeader(
@@ -78,7 +78,7 @@ internal fun AccountMobileHeader(
                 IconButton(onClick = onEditClick) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.account_profile_edit_mobile),
+                        contentDescription = stringResource(R.string.account_edit_profile),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

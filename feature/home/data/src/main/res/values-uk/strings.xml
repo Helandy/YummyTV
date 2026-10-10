@@ -4,5 +4,4 @@
     <string name="home_section_schedule">Розклад</string>
     <string name="home_section_recommends">Рекомендації</string>
     <string name="home_section_collections">Колекції</string>
-    <string name="home_episode_number">Серія %1$s</string>
 </resources>

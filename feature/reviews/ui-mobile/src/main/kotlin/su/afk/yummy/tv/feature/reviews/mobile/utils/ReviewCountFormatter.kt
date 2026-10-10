@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.reviews.mobile.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
-import su.afk.yummy.tv.feature.reviews.mobile.R
+import su.afk.yummy.tv.feature.reviews.presentation.R
 
 @Composable
 internal fun Int.displayCompactReviewCount(): String {

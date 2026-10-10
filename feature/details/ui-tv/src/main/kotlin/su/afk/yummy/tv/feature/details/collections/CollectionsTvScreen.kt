@@ -23,9 +23,9 @@ import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsGrid
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsMessage
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Preview(
     name = "Default",

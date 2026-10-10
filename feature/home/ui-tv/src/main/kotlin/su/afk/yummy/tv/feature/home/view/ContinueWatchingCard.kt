@@ -11,8 +11,8 @@ import su.afk.yummy.tv.core.utils.formatting.millisToClockTime
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnail
 import su.afk.yummy.tv.core.utils.kodik.resolveContinueWatchingImageModel
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
-import su.afk.yummy.tv.feature.home.R
 import su.afk.yummy.tv.domain.home.model.bestUrl
+import su.afk.yummy.tv.feature.home.presentation.R
 
 private val CardWidth = 220.dp
 private val ThumbnailHeight = 124.dp

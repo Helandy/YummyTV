@@ -35,8 +35,8 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.bloggers.details.BloggerDetailsState
-import su.afk.yummy.tv.feature.bloggers.mobile.R
 import su.afk.yummy.tv.feature.bloggers.mobile.view.BloggerVideoMobileCard
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,11 +50,13 @@ fun BloggerDetailsMobileScreen(
     val error = state.error
     LaunchedEffect(Unit) {
         effect.collect {
-            if (it is BloggerDetailsState.Effect.ShowToast) Toast.makeText(
-                context,
-                it.message,
-                Toast.LENGTH_SHORT
-            ).show()
+            if (it is BloggerDetailsState.Effect.ShowToast) {
+                Toast.makeText(
+                    context,
+                    it.message,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
         }
     }
     BackHandler { onEvent(BloggerDetailsState.Event.BackSelected) }
@@ -99,7 +101,7 @@ fun BloggerDetailsMobileScreen(
                         )
                         Column(
                             Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
                         ) {
                             Text(blogger.nickname, style = MaterialTheme.typography.headlineSmall)
                             Text(stringResource(R.string.blogger_subscribers, blogger.subscribers))
@@ -108,28 +110,32 @@ fun BloggerDetailsMobileScreen(
                     }
                 }
                 item {
-                    if (blogger.isSubscribed) OutlinedButton(
-                        onClick = { onEvent(BloggerDetailsState.Event.SubscribeSelected) },
-                        enabled = !state.subscribing,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text(stringResource(R.string.blogger_unsubscribe)) }
-                    else Button(
-                        onClick = { onEvent(BloggerDetailsState.Event.SubscribeSelected) },
-                        enabled = !state.subscribing,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text(stringResource(R.string.blogger_subscribe)) }
+                    if (blogger.isSubscribed) {
+                        OutlinedButton(
+                            onClick = { onEvent(BloggerDetailsState.Event.SubscribeSelected) },
+                            enabled = !state.subscribing,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.blogger_unsubscribe)) }
+                    } else {
+                        Button(
+                            onClick = { onEvent(BloggerDetailsState.Event.SubscribeSelected) },
+                            enabled = !state.subscribing,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.blogger_subscribe)) }
+                    }
                 }
                 item {
                     Text(
                         stringResource(R.string.blogger_videos_section),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
                     )
                 }
                 if (state.videos.isEmpty()) item { Text(stringResource(R.string.blogger_videos_empty)) }
                 items(state.videos, key = { lazyKey("bloggervideo", it.id) }) { video ->
                     BloggerVideoMobileCard(
                         video,
-                        { onEvent(BloggerDetailsState.Event.VideoSelected(video.id)) })
+                        { onEvent(BloggerDetailsState.Event.VideoSelected(video.id)) },
+                    )
                 }
             }
         }

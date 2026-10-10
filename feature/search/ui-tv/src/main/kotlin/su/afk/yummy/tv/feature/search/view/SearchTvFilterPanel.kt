@@ -40,8 +40,8 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
 import su.afk.yummy.tv.domain.search.model.SearchFilters
 import su.afk.yummy.tv.domain.search.model.SearchSort
-import su.afk.yummy.tv.feature.search.R
 import su.afk.yummy.tv.feature.search.model.GenrePickerMode
+import su.afk.yummy.tv.feature.search.presentation.R
 import su.afk.yummy.tv.feature.search.utils.ageOptions
 import su.afk.yummy.tv.feature.search.utils.label
 import su.afk.yummy.tv.feature.search.utils.seasonOptions

@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.watchlater.WatchLaterState
 import su.afk.yummy.tv.feature.watchlater.mobile.view.WatchLaterMobileCard
+import su.afk.yummy.tv.feature.watchlater.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -72,12 +73,12 @@ fun WatchLaterMobileScreen(
                         item = item,
                         onClick = {
                             onEvent(
-                                WatchLaterState.Event.ItemSelected(item.animeId, item.episode)
+                                WatchLaterState.Event.ItemSelected(item.animeId, item.episode),
                             )
                         },
                         onRemove = {
                             onEvent(
-                                WatchLaterState.Event.RemoveSelected(item.animeId, item.episode)
+                                WatchLaterState.Event.RemoveSelected(item.animeId, item.episode),
                             )
                         },
                     )

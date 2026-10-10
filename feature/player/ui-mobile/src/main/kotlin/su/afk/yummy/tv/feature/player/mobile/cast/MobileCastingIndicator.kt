@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.player.mobile.R
+import su.afk.yummy.tv.feature.player.presentation.R
 
 /**
  * Замена пустого видео-кадра, пока активна Cast-сессия: локальный ContentFrame ничего не рисует

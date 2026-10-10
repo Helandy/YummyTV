@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.messages.mobile.R
+import su.afk.yummy.tv.feature.messages.presentation.R
 
 @Composable
 internal fun ChatMobileActionsMenu(

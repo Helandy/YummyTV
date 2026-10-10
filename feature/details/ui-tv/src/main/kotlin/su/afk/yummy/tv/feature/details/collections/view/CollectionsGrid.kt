@@ -41,8 +41,8 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.tv.TvTitleCard
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
-import su.afk.yummy.tv.feature.details.R
 import su.afk.yummy.tv.feature.details.collections.utils.posterUrl
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
-import su.afk.yummy.tv.feature.account.mobile.R
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
 import su.afk.yummy.tv.feature.account.mobile.account.utils.averageRatingLabel
@@ -35,6 +34,7 @@ import su.afk.yummy.tv.feature.account.mobile.account.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.watchStatSlices
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun AccountMobileProfileStatsPager(

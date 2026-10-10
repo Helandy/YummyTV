@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import su.afk.yummy.tv.feature.settings.R
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
+import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
@@ -44,11 +44,11 @@ internal fun SettingsTvGeneralContent(
     )
     SettingsDivider()
     ToggleRow(
-        label = stringResource(R.string.settings_tv_beta_updates_label),
+        label = stringResource(R.string.settings_beta_updates_label),
         hint = if (state.betaUpdatesEnabled) {
-            stringResource(R.string.settings_tv_beta_updates_enabled)
+            stringResource(R.string.settings_beta_updates_enabled)
         } else {
-            stringResource(R.string.settings_tv_beta_updates_disabled)
+            stringResource(R.string.settings_beta_updates_disabled)
         },
         enabled = state.betaUpdatesEnabled,
         onClick = { onEvent(SettingsState.Event.BetaUpdatesToggled) },
@@ -56,18 +56,18 @@ internal fun SettingsTvGeneralContent(
     )
     SettingsDivider()
     ToggleRow(
-        label = stringResource(R.string.settings_tv_app_logs_recording_label),
+        label = stringResource(R.string.settings_app_logs_recording_label),
         hint = if (state.appLogRecordingEnabled) {
-            stringResource(R.string.settings_tv_app_logs_recording_enabled)
+            stringResource(R.string.settings_app_logs_recording_enabled)
         } else {
-            stringResource(R.string.settings_tv_app_logs_recording_disabled)
+            stringResource(R.string.settings_app_logs_recording_disabled)
         },
         enabled = state.appLogRecordingEnabled,
         onClick = { onEvent(SettingsState.Event.AppLogRecordingToggled) },
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsBlockGap()
-    SettingsSectionTitle(text = stringResource(R.string.settings_tab_tv_home))
+    SettingsSectionTitle(text = stringResource(R.string.settings_section_tv_home))
     ToggleRow(
         label = stringResource(R.string.settings_preview_channel_label),
         hint = if (state.isPreviewChannelBrowsable) {

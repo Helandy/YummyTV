@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
 import su.afk.yummy.tv.feature.details.mobile.details.view.MobilePickerBottomSheet
 import su.afk.yummy.tv.feature.details.mobile.details.view.MobilePickerItems
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun EpisodeDubbingDialog(
@@ -16,7 +16,7 @@ internal fun EpisodeDubbingDialog(
     onDismiss: () -> Unit,
 ) {
     MobilePickerBottomSheet(
-        title = stringResource(R.string.details_mobile_episode_dubbings_title, selection.episode),
+        title = stringResource(R.string.details_episode_number, selection.episode),
         onDismiss = onDismiss,
     ) {
         MobilePickerItems(

@@ -21,8 +21,8 @@ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
-import su.afk.yummy.tv.feature.settings.mobile.R
 import su.afk.yummy.tv.feature.settings.mobile.model.DetailsButtonOrderItem
+import su.afk.yummy.tv.feature.settings.presentation.R
 
 @Composable
 internal fun AppInterfaceMode.label(): String = stringResource(
@@ -225,12 +225,12 @@ internal fun PreferredPlayer.label(): String = when (this) {
 @Composable
 internal fun PreferredPlayer.hint(): String = when (this) {
     PreferredPlayer.NONE -> stringResource(R.string.settings_preferred_player_none_hint)
-    PreferredPlayer.KODIK -> stringResource(R.string.settings_preferred_player_kodik_hint)
+    PreferredPlayer.KODIK -> stringResource(R.string.settings_preferred_player_kodik)
     PreferredPlayer.AKSOR -> stringResource(R.string.settings_preferred_player_aksor_hint)
-    PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha_hint)
-    PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh_hint)
-    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk_hint)
-    PreferredPlayer.RUTUBE -> stringResource(R.string.settings_preferred_player_rutube_hint)
+    PreferredPlayer.ALLOHA -> stringResource(R.string.settings_preferred_player_alloha)
+    PreferredPlayer.CVH -> stringResource(R.string.settings_preferred_player_cvh)
+    PreferredPlayer.VK -> stringResource(R.string.settings_preferred_player_vk)
+    PreferredPlayer.RUTUBE -> stringResource(R.string.settings_preferred_player_rutube)
 }
 
 @Composable
@@ -393,9 +393,9 @@ internal fun Int.toNextEpisodeSwitchDelayText(): String =
 @Composable
 internal fun NewEpisodesSource.label(): String = stringResource(
     when (this) {
-        NewEpisodesSource.WATCHING -> R.string.settings_new_episodes_source_watching
-        NewEpisodesSource.PLANNED -> R.string.settings_new_episodes_source_planned
-        NewEpisodesSource.COMPLETED -> R.string.settings_new_episodes_source_completed
+        NewEpisodesSource.WATCHING -> R.string.settings_library_tab_watching
+        NewEpisodesSource.PLANNED -> R.string.settings_library_tab_planned
+        NewEpisodesSource.COMPLETED -> R.string.settings_library_tab_completed
         NewEpisodesSource.POSTPONED -> R.string.settings_new_episodes_source_postponed
         NewEpisodesSource.DROPPED -> R.string.settings_new_episodes_source_dropped
         NewEpisodesSource.FAVORITES -> R.string.settings_new_episodes_source_favorites

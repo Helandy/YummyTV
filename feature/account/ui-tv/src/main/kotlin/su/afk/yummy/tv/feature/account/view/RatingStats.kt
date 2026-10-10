@@ -5,7 +5,7 @@ package su.afk.yummy.tv.feature.account.view
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.UserRatingStat
-import su.afk.yummy.tv.feature.account.R
+import su.afk.yummy.tv.feature.account.presentation.R
 
 @Composable
 internal fun RatingStats(ratingsByValue: Map<Int, UserRatingStat>) {

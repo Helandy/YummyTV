@@ -55,8 +55,8 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterQuality
 import su.afk.yummy.tv.core.designsystem.time.rememberNowEpochSeconds
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.domain.library.model.LibraryItem
-import su.afk.yummy.tv.feature.library.R
 import su.afk.yummy.tv.feature.library.model.LibraryTab
+import su.afk.yummy.tv.feature.library.presentation.R
 import su.afk.yummy.tv.feature.library.utils.posterUrl
 import su.afk.yummy.tv.feature.library.utils.dateText
 import su.afk.yummy.tv.feature.library.utils.tvReleaseCountdownText

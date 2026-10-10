@@ -5,9 +5,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.anime.AnimeTrailer
 import su.afk.yummy.tv.core.utils.system.openExternalUri
-import su.afk.yummy.tv.feature.details.mobile.R
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsMediaCard
 import su.afk.yummy.tv.feature.details.mobile.view.DetailsPlayIcon
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun TrailerMobileCard(
@@ -16,7 +16,7 @@ internal fun TrailerMobileCard(
 ) {
     val context = LocalContext.current
     DetailsMediaCard(
-        title = stringResource(R.string.details_mobile_trailer_number, number),
+        title = stringResource(R.string.details_trailer_number, number),
         subtitle = trailer.youtubeWatchUrl ?: trailer.iframeUrl,
         imageModel = trailer.youtubeThumbnailUrl,
         leadingIcon = DetailsPlayIcon,

@@ -45,7 +45,7 @@ import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
 import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoVote
-import su.afk.yummy.tv.feature.bloggers.tv.R
+import su.afk.yummy.tv.feature.bloggers.presentation.R
 import su.afk.yummy.tv.feature.bloggers.video.view.PageScrollableText
 import su.afk.yummy.tv.feature.bloggers.video.view.VideoActionButton
 import su.afk.yummy.tv.feature.bloggers.video.view.VideoReactionButton
@@ -66,7 +66,7 @@ fun BloggerVideoDetailsTvScreen(
                 is BloggerVideoDetailsState.Effect.ShowToast -> Toast.makeText(
                     context,
                     it.message,
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT,
                 ).show()
             }
         }
@@ -163,7 +163,7 @@ fun BloggerVideoDetailsTvScreen(
                         VideoActionButton(
                             label = stringResource(
                                 R.string.blogger_video_comments,
-                                video.commentsCount
+                                video.commentsCount,
                             ),
                             onClick = {
                                 onEvent(BloggerVideoDetailsState.Event.CommentsSelected)
@@ -178,8 +178,8 @@ fun BloggerVideoDetailsTvScreen(
                                 onClick = {
                                     onEvent(
                                         BloggerVideoDetailsState.Event.VoteSelected(
-                                            BloggerVideoVote.LIKE
-                                        )
+                                            BloggerVideoVote.LIKE,
+                                        ),
                                     )
                                 },
                             )
@@ -191,16 +191,16 @@ fun BloggerVideoDetailsTvScreen(
                                 onClick = {
                                     onEvent(
                                         BloggerVideoDetailsState.Event.VoteSelected(
-                                            BloggerVideoVote.DISLIKE
-                                        )
+                                            BloggerVideoVote.DISLIKE,
+                                        ),
                                     )
                                 },
                             )
                         }
                         Text(
                             stringResource(
-                                R.string.blogger_video_views_tv,
-                                video.views.toCompactCount()
+                                R.string.blogger_video_views,
+                                video.views.toCompactCount(),
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendation
 import su.afk.yummy.tv.core.model.anime.AnimeRecommendationVote
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun MobileSimilarVoteButtons(
@@ -43,7 +43,7 @@ internal fun MobileSimilarVoteButtons(
             color = LikeColor,
             selected = item.vote == AnimeRecommendationVote.LIKE,
             enabled = enabled,
-            contentDescription = stringResource(R.string.details_mobile_similar_like),
+            contentDescription = stringResource(R.string.details_similar_like),
             icon = Icons.Filled.ThumbUp,
             onClick = { onVote(AnimeRecommendationVote.LIKE) },
         )
@@ -52,7 +52,7 @@ internal fun MobileSimilarVoteButtons(
             color = DislikeColor,
             selected = item.vote == AnimeRecommendationVote.DISLIKE,
             enabled = enabled,
-            contentDescription = stringResource(R.string.details_mobile_similar_dislike),
+            contentDescription = stringResource(R.string.details_similar_dislike),
             icon = Icons.Filled.ThumbDown,
             onClick = { onVote(AnimeRecommendationVote.DISLIKE) },
         )

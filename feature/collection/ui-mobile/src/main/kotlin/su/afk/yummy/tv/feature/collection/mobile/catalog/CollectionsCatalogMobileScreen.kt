@@ -24,6 +24,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.error.uiMessage
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -34,9 +35,9 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.feature.collection.catalog.CollectionsCatalogState
-import su.afk.yummy.tv.feature.collection.mobile.R
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionLikesBadge
 import su.afk.yummy.tv.feature.collection.mobile.view.CreateCollectionDialog
+import su.afk.yummy.tv.feature.collection.presentation.R
 
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 @Composable
@@ -97,7 +98,7 @@ fun CollectionsCatalogMobileScreen(
         isScroll = false,
         topBar = {
             MobileTopBar(
-                title = stringResource(R.string.collection_catalog_mobile_title),
+                title = stringResource(R.string.collection_catalog_title),
                 onBack = { onEvent(CollectionsCatalogState.Event.BackSelected) },
             )
         },
@@ -111,7 +112,7 @@ fun CollectionsCatalogMobileScreen(
             { _, retry ->
                 MobileMessage(
                     title = message,
-                    actionLabel = stringResource(R.string.collection_mobile_retry),
+                    actionLabel = stringResource(CoreR.string.retry),
                     onAction = retry,
                 )
             }

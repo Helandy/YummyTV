@@ -3,7 +3,7 @@ package su.afk.yummy.tv.feature.posts.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.posts.model.PostSort
-import su.afk.yummy.tv.feature.posts.tv.R
+import su.afk.yummy.tv.feature.posts.presentation.R
 
 @Composable
 internal fun PostSort.label() = when (this) {

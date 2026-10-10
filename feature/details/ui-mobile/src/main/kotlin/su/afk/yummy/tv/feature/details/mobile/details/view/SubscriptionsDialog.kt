@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.details.details.DetailsState
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 internal fun SubscriptionsDialog(
@@ -25,16 +25,16 @@ internal fun SubscriptionsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.details_mobile_subscriptions)) },
+        title = { Text(stringResource(R.string.details_subscriptions)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
                     state.isSubscriptionsLoading && state.subscriptions.isEmpty() -> {
-                        Text(stringResource(R.string.details_mobile_subscriptions_loading))
+                        Text(stringResource(R.string.details_subscriptions_loading))
                     }
 
                     state.subscriptions.isEmpty() -> {
-                        Text(stringResource(R.string.details_mobile_subscriptions_empty))
+                        Text(stringResource(R.string.details_subscriptions_empty))
                     }
 
                     else -> state.subscriptions.forEach { option ->
@@ -66,9 +66,9 @@ internal fun SubscriptionsDialog(
                             Text(
                                 text = stringResource(
                                     if (option.isSubscribed) {
-                                        R.string.details_mobile_unsubscribe
+                                        R.string.details_subscription_unsubscribe
                                     } else {
-                                        R.string.details_mobile_subscribe
+                                        R.string.details_subscription_subscribe
                                     },
                                 ),
                                 style = MaterialTheme.typography.labelMedium,

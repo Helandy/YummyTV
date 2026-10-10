@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
-import su.afk.yummy.tv.feature.details.mobile.R
+import su.afk.yummy.tv.feature.details.presentation.R
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +34,7 @@ internal fun EpisodeDownloadedActionSheet(
     BaseBottomSheet(
         onDismissRequest = onDismiss,
         title = stringResource(
-            R.string.details_mobile_downloaded_episode_actions_title,
+            R.string.details_episode_number,
             action.episode,
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
