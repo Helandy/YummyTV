@@ -2,6 +2,8 @@ package su.afk.yummy.tv.data.videodownload.cache
 
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
 import javax.inject.Inject
 
@@ -24,8 +26,10 @@ class LegacyStreamingCachePruner @Inject constructor(
         if (store.hasActiveLegacyCacheKeyDownloads()) return
         val activeCacheKeys = store.getActiveCacheKeys().toSet()
         val activePrefixes = activeCacheKeys.flatMap(::downloadResourcePrefixes)
-        cacheProvider.cache.keys
-            .filterNot { key -> key in activeCacheKeys || activePrefixes.any(key::startsWith) }
-            .forEach { key -> runCatching { cacheProvider.cache.removeResource(key) } }
+        withContext(Dispatchers.IO) {
+            cacheProvider.cache.keys
+                .filterNot { key -> key in activeCacheKeys || activePrefixes.any(key::startsWith) }
+                .forEach { key -> runCatching { cacheProvider.cache.removeResource(key) } }
+        }
     }
 }

@@ -9,11 +9,13 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.engine.DownloadIntegrityVerifier
@@ -401,7 +403,9 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                 // URLs change. Remove only the manifest entry so the next downloader reads the
                 // fresh playlist and still reuses already cached segments.
                 strategy.manifestKeyToEvictOnRefresh(item)?.let { manifestKey ->
-                    runCatching { cacheProvider.cache.removeResource(manifestKey) }
+                    withContext(Dispatchers.IO) {
+                        runCatching { cacheProvider.cache.removeResource(manifestKey) }
+                    }
                 }
                 repository.updatePreparedStream(id, stream)
                 repository.updateStatus(

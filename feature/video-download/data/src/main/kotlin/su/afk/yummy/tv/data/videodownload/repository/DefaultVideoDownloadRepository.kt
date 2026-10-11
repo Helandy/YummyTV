@@ -13,6 +13,7 @@ import androidx.work.WorkManager
 import androidx.work.await
 import androidx.work.workDataOf
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -175,12 +177,16 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
                 DefaultVideoDownloadExportRepository.uniqueWorkName(download.id)
             ).await()
         }
-        episodeDownloads.map { it.cacheKey }.distinct().forEach { cacheKey ->
-            runCatching { cacheProvider.cache.removeResource(cacheKey) }
-            val resourcePrefixes = downloadResourcePrefixes(cacheKey)
-            cacheProvider.cache.keys
-                .filter { key -> resourcePrefixes.any(key::startsWith) }
-                .forEach { key -> runCatching { cacheProvider.cache.removeResource(key) } }
+        // SimpleCache: файловый и SQLite-ввод-вывод (у HLS сотни сегментов), а первое обращение ещё и
+        // поднимает кэш сканированием каталога. Вызов приходит с Main (viewModelScope).
+        withContext(Dispatchers.IO) {
+            episodeDownloads.map { it.cacheKey }.distinct().forEach { cacheKey ->
+                runCatching { cacheProvider.cache.removeResource(cacheKey) }
+                val resourcePrefixes = downloadResourcePrefixes(cacheKey)
+                cacheProvider.cache.keys
+                    .filter { key -> resourcePrefixes.any(key::startsWith) }
+                    .forEach { key -> runCatching { cacheProvider.cache.removeResource(key) } }
+            }
         }
         store.markEpisodeDeleted(
             animeId = entry.animeId,
