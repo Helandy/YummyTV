@@ -12,7 +12,8 @@ import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
  * [autoSkipOpeningsEndings]; отсчёт идёт только пока [isPlaying].
  *
  * Платформа может дополнить сценарий: [onActivated] — сразу при появлении сегмента (подсветка,
- * фокус), [onManualWindow] — вместо авто-скипа, когда настройка выключена, [onCompleted] — после.
+ * фокус), [onManualWindow] — вместо авто-скипа, когда настройка выключена, [onCompleted] — после
+ * (в том числе при отмене эффекта: смена сегмента, ручной пропуск).
  */
 @Composable
 fun PlayerAutoSkipEffect(
@@ -35,12 +36,15 @@ fun PlayerAutoSkipEffect(
     LaunchedEffect(activeSkip?.key, autoSkipOpeningsEndings, delaySeconds) {
         val skip = activeSkip ?: return@LaunchedEffect
         currentOnActivated(skip)
-        if (autoSkipOpeningsEndings && !skipUi.isAutoSkipCancelled(skip.key)) {
-            val completed = skipUi.runAutoSkipCountdown(skip.key, delaySeconds) { currentIsPlaying }
-            if (completed) currentOnSkipActiveSegment()
-        } else {
-            currentOnManualWindow(skip)
+        try {
+            if (autoSkipOpeningsEndings && !skipUi.isAutoSkipCancelled(skip.key)) {
+                val completed = skipUi.runAutoSkipCountdown(skip.key, delaySeconds) { currentIsPlaying }
+                if (completed) currentOnSkipActiveSegment()
+            } else {
+                currentOnManualWindow(skip)
+            }
+        } finally {
+            currentOnCompleted(skip)
         }
-        currentOnCompleted(skip)
     }
 }

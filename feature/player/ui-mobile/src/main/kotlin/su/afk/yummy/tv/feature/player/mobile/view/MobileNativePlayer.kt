@@ -100,6 +100,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.presentation.R
 import su.afk.yummy.tv.feature.player.utils.canPlayNext
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
@@ -428,6 +429,15 @@ internal fun MobileNativePlayer(
         isPlaying = playbackShouldPlay,
         skipUi = skipUi,
         onSkipActiveSegment = { skipper.skip(reportSelection = false) },
+        onActivated = {
+            // Кнопка пропуска живёт только с панелью: открываем её на время отсчёта.
+            if (!isInPictureInPictureMode && !tutorialBlocksPlayback) {
+                overlay.visible = true
+                overlay.cancelHide()
+            }
+        },
+        onManualWindow = { delay(5.seconds) },
+        onCompleted = { overlay.scheduleHide() },
     )
 
     // Корень держит фокус, чтобы клавиатура управляла плеером без предварительного клика.
@@ -593,7 +603,7 @@ internal fun MobileNativePlayer(
 
         MobilePlayerSkipButton(
             skip = activeSkip.takeUnless {
-                isInPictureInPictureMode || tutorialBlocksPlayback
+                isInPictureInPictureMode || tutorialBlocksPlayback || !overlay.visible
             },
             countdownSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
             countdownProgress = skipUi.autoSkipProgress(activeSkip?.key),

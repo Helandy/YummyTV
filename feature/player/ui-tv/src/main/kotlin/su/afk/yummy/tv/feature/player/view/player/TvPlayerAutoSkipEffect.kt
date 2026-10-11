@@ -13,7 +13,7 @@ import su.afk.yummy.tv.feature.player.model.TvPlayerFocusRequesters
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Авто-скип с ТВ-подсветкой: кнопка пропуска получает фокус, в ручном режиме подсвечена 10 секунд,
+ * Авто-скип с ТВ-подсветкой: кнопка пропуска получает фокус, в ручном режиме подсвечена 5 секунд,
  * в авто — на время отсчёта [delaySeconds] (идёт только пока [isPlaying]).
  */
 @Composable
@@ -43,7 +43,7 @@ internal fun TvPlayerAutoSkipEffect(
             autoHide.cancel()
             requestFocusUntilTimeout(focus.skip)
         },
-        onManualWindow = { delay(10.seconds) },
+        onManualWindow = { delay(5.seconds) },
         onCompleted = { skip ->
             if (skipUi.highlightedSkipKey == skip.key) skipUi.highlightedSkipKey = null
         },
