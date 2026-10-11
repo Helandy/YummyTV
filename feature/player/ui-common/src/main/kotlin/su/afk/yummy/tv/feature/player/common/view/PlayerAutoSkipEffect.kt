@@ -35,9 +35,9 @@ fun PlayerAutoSkipEffect(
     LaunchedEffect(activeSkip?.key, autoSkipOpeningsEndings, delaySeconds) {
         val skip = activeSkip ?: return@LaunchedEffect
         currentOnActivated(skip)
-        if (autoSkipOpeningsEndings) {
-            skipUi.runAutoSkipCountdown(skip.key, delaySeconds) { currentIsPlaying }
-            currentOnSkipActiveSegment()
+        if (autoSkipOpeningsEndings && !skipUi.isAutoSkipCancelled(skip.key)) {
+            val completed = skipUi.runAutoSkipCountdown(skip.key, delaySeconds) { currentIsPlaying }
+            if (completed) currentOnSkipActiveSegment()
         } else {
             currentOnManualWindow(skip)
         }

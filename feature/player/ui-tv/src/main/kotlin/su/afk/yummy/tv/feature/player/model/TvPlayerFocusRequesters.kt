@@ -23,6 +23,7 @@ internal class TvPlayerFocusRequesters {
     val selectedVolume = FocusRequester()
     val selectedAlloha = FocusRequester()
     val skip = FocusRequester()
+    val stay = FocusRequester()
     val nextEpisode = FocusRequester()
     val finalEpisodeAction = FocusRequester()
 

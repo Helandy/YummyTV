@@ -597,6 +597,10 @@ internal fun MobileNativePlayer(
             },
             countdownSeconds = skipUi.autoSkipRemainingSeconds(activeSkip?.key),
             countdownProgress = skipUi.autoSkipProgress(activeSkip?.key),
+            onStay = {
+                activeSkip?.let { skipUi.cancelAutoSkip(it.key) }
+                if (overlay.visible) overlay.show()
+            },
             onClick = {
                 skipper.skip(reportSelection = true)
                 // Панель не открываем принудительно, но не даём ей скрыться по таймеру.

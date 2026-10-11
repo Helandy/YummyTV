@@ -494,6 +494,10 @@ internal fun TvExoPlayerView(
             onSeekTo = seekController::seekTo,
             onInteraction = ::onInteraction,
             onSkipActiveSegment = { skipActiveSegment() },
+            onStayAutoSkip = {
+                activeSkip?.let { skipUi.cancelAutoSkip(it.key) }
+                onInteraction()
+            },
             onPrevEpisode = { onPlayerEvent(PlayerState.Event.PrevEpisode) },
             onNextEpisode = {
                 onPlayerEvent(PlayerState.Event.NextEpisode(PlayerNextEpisodeSource.Controls))

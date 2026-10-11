@@ -44,6 +44,7 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerSkipButton(
     skip: PlayerActiveSkip?,
     onClick: () -> Unit,
+    onStay: () -> Unit,
     modifier: Modifier = Modifier,
     countdownSeconds: Int? = null,
     countdownProgress: Float? = null,
@@ -60,46 +61,68 @@ internal fun MobilePlayerSkipButton(
         exit = fadeOut() + slideOutHorizontally { it / 2 },
     ) {
         Row(
-            modifier = Modifier
-                .clip(shape)
-                .background(YummySemanticColors.PanelScrim)
-                .autoSkipProgressFill(countdownProgress, Color.White.copy(alpha = 0.22f), 24.dp)
-                .border(1.dp, Color.White.copy(alpha = 0.18f), shape)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick,
-                )
-                .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = Icons.Filled.FastForward,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(20.dp),
-            )
-            Text(
-                text = if (countdownSeconds != null) {
-                    stringResource(
-                        when (lastType) {
-                            PlayerSkipType.Opening -> R.string.player_mobile_skip_opening_countdown
-                            PlayerSkipType.Ending -> R.string.player_mobile_skip_ending_countdown
-                        },
-                        countdownSeconds,
+            if (countdownSeconds != null) {
+                Text(
+                    text = stringResource(R.string.player_stay),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White,
+                    modifier = Modifier
+                        .clip(shape)
+                        .background(YummySemanticColors.PanelScrim)
+                        .border(1.dp, Color.White.copy(alpha = 0.18f), shape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onStay,
+                        )
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .clip(shape)
+                    .background(YummySemanticColors.PanelScrim)
+                    .autoSkipProgressFill(countdownProgress, Color.White.copy(alpha = 0.22f), 24.dp)
+                    .border(1.dp, Color.White.copy(alpha = 0.18f), shape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onClick,
                     )
-                } else {
-                    stringResource(
-                        when (lastType) {
-                            PlayerSkipType.Opening -> R.string.player_mobile_skip_opening
-                            PlayerSkipType.Ending -> R.string.player_mobile_skip_ending
-                        }
-                    )
-                },
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.White,
-            )
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.FastForward,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
+                Text(
+                    text = if (countdownSeconds != null) {
+                        stringResource(
+                            when (lastType) {
+                                PlayerSkipType.Opening -> R.string.player_mobile_skip_opening_countdown
+                                PlayerSkipType.Ending -> R.string.player_mobile_skip_ending_countdown
+                            },
+                            countdownSeconds,
+                        )
+                    } else {
+                        stringResource(
+                            when (lastType) {
+                                PlayerSkipType.Opening -> R.string.player_mobile_skip_opening
+                                PlayerSkipType.Ending -> R.string.player_mobile_skip_ending
+                            }
+                        )
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White,
+                )
+            }
         }
     }
 }

@@ -50,6 +50,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onSeekTo: (positionMs: Long) -> Unit,
     onInteraction: () -> Unit,
     onSkipActiveSegment: () -> Unit,
+    onStayAutoSkip: () -> Unit,
     onPrevEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onRateTitle: () -> Unit,
@@ -99,13 +100,38 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                 if (activeSkip != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                     ) {
+                        val showStay = autoSkipRemainingSeconds != null
+                        if (showStay) {
+                            TvControlButton(
+                                onClick = {
+                                    // Кнопка исчезнет — уводим фокус на «Пропустить», иначе он упадёт в меню.
+                                    runCatching { focus.skip.requestFocus() }
+                                    onStayAutoSkip()
+                                },
+                                onFocused = onInteraction,
+                                focusRequester = focus.stay,
+                                modifier = Modifier.focusProperties {
+                                    down = focus.play
+                                    right = focus.skip
+                                },
+                            ) { color ->
+                                Text(
+                                    text = stringResource(R.string.player_stay),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = color,
+                                )
+                            }
+                        }
                         TvControlButton(
                             onClick = onSkipActiveSegment,
                             onFocused = onInteraction,
                             focusRequester = focus.skip,
-                            modifier = Modifier.focusProperties { down = focus.play },
+                            modifier = Modifier.focusProperties {
+                                down = focus.play
+                                if (showStay) left = focus.stay
+                            },
                             primary = highlightedSkipKey == activeSkip.key,
                             fillProgress = autoSkipProgress,
                         ) { color ->

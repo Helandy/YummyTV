@@ -26,6 +26,7 @@ class PlayerSkipUiState internal constructor(
     highlightedSkipKeyState: MutableState<String?>,
     snackbarTextState: MutableState<String?>,
     val dismissedSkipKeys: SnapshotStateList<String>,
+    private val cancelledAutoSkipKeys: SnapshotStateList<String>,
 ) {
     var highlightedSkipKey: String? by highlightedSkipKeyState
     var snackbarText: String? by snackbarTextState
@@ -44,25 +45,35 @@ class PlayerSkipUiState internal constructor(
     fun autoSkipProgress(skipKey: String?): Float? =
         autoSkipCountdown?.takeIf { it.skipKey == skipKey }?.progress
 
+    /** Отменяет автопропуск сегмента [skipKey]; ручная кнопка пропуска остаётся. */
+    fun cancelAutoSkip(skipKey: String) {
+        if (skipKey !in cancelledAutoSkipKeys) cancelledAutoSkipKeys.add(skipKey)
+    }
+
+    fun isAutoSkipCancelled(skipKey: String): Boolean = skipKey in cancelledAutoSkipKeys
+
     /**
      * Отсчитывает [seconds] перед автопропуском сегмента [skipKey]. Время идёт только
-     * пока [isPlaying] — на паузе отсчёт замирает. Возвращается, когда отсчёт дошёл до нуля;
-     * отмена корутины (смена сегмента, ручной пропуск) прерывает его.
+     * пока [isPlaying] — на паузе отсчёт замирает. Возвращает true, когда отсчёт дошёл до нуля,
+     * и false, если автопропуск отменён [cancelAutoSkip]; отмена корутины (смена сегмента,
+     * ручной пропуск) прерывает его.
      */
-    suspend fun runAutoSkipCountdown(skipKey: String, seconds: Int, isPlaying: () -> Boolean) {
+    suspend fun runAutoSkipCountdown(skipKey: String, seconds: Int, isPlaying: () -> Boolean): Boolean {
         val totalMs = seconds * 1000L
         var elapsedMs = 0L
         try {
             while (elapsedMs < totalMs) {
+                if (isAutoSkipCancelled(skipKey)) return false
                 autoSkipCountdown = AutoSkipCountdown(
                     skipKey = skipKey,
                     remainingSeconds = ((totalMs - elapsedMs + 999) / 1000).toInt(),
                     progress = elapsedMs.toFloat() / totalMs,
                 )
-                snapshotFlow { isPlaying() }.first { it }
+                snapshotFlow { isPlaying() || isAutoSkipCancelled(skipKey) }.first { it }
                 delay(AUTO_SKIP_TICK_MS.milliseconds)
                 elapsedMs += AUTO_SKIP_TICK_MS
             }
+            return !isAutoSkipCancelled(skipKey)
         } finally {
             if (autoSkipCountdown?.skipKey == skipKey) autoSkipCountdown = null
         }
@@ -100,12 +111,14 @@ fun rememberPlayerSkipUiState(resetKey: Any): PlayerSkipUiState {
     val highlightedSkipKey = remember { mutableStateOf<String?>(null) }
     val snackbarText = remember(resetKey) { mutableStateOf<String?>(null) }
     val dismissedSkipKeys = remember(resetKey) { mutableStateListOf<String>() }
-    return remember(snackbarText, dismissedSkipKeys) {
+    val cancelledAutoSkipKeys = remember(resetKey) { mutableStateListOf<String>() }
+    return remember(snackbarText, dismissedSkipKeys, cancelledAutoSkipKeys) {
         PlayerSkipUiState(
             scope = scope,
             highlightedSkipKeyState = highlightedSkipKey,
             snackbarTextState = snackbarText,
             dismissedSkipKeys = dismissedSkipKeys,
+            cancelledAutoSkipKeys = cancelledAutoSkipKeys,
         )
     }
 }
