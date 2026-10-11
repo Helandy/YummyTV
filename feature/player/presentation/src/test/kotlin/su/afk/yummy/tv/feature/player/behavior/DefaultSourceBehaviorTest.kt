@@ -22,6 +22,7 @@ class DefaultSourceBehaviorTest : BaseUnitTest() {
         val behavior = DefaultSourceBehavior(
             retry = PlayerPlaybackRetryHandler(),
             analytics = PlayerAnalytics(mockk(relaxed = true)),
+            purgePlaybackCache = mockk(relaxed = true),
         )
         behavior.attach(harness.host)
         return behavior to harness

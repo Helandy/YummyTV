@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.domain.player.usecase.PurgePlayerPlaybackCacheUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.handler.PlayerPlaybackRetryHandler
@@ -24,6 +26,7 @@ import javax.inject.Inject
 internal class DefaultSourceBehavior @Inject constructor(
     private val retry: PlayerPlaybackRetryHandler,
     private val analytics: PlayerAnalytics,
+    private val purgePlaybackCache: PurgePlayerPlaybackCacheUseCase,
 ) : PlayerSourceBehavior {
 
     private lateinit var host: PlayerSourceHost
@@ -172,6 +175,11 @@ internal class DefaultSourceBehavior @Inject constructor(
     /**
      * Повреждённый контейнер: повтор того же iframe упирается в тот же файл, поэтому заново
      * запрашиваем `/videos` (свежий iframe) и перерезолвим поток с тем же качеством.
+     *
+     * Первым в серии повторов выбрасываем дисковый кэш воспроизведения: испорченные байты лежат
+     * под стабильным ключом и отдаются из кэша при любом перерезолве и смене узла, так что без
+     * очистки повтор упирается в них же. Дальше в той же серии кэш не трогаем: он уже наполнен
+     * по сети, и повторная очистка ничего не изменит.
      */
     private fun scheduleSourceRefreshAttempt() {
         val attempt = beginSilentRecovery()
@@ -181,12 +189,32 @@ internal class DefaultSourceBehavior @Inject constructor(
             "Silent playback retry with /videos refresh attempt=$attempt/" +
                 "${PlayerPlaybackRetryHandler.MAX_ATTEMPTS} refreshes=$sourceRefreshes"
         }
+        val purgeCache = sourceRefreshes == 1
         retryJob = host.scope.launch {
             if (!host.state.isOfflinePlayback) {
                 host.closeSourceSessions()
+                if (purgeCache) purgeStreamingCache()
                 host.refreshSourcesAndReloadStream()
             }
         }
+    }
+
+    private suspend fun purgeStreamingCache() {
+        runCatching { purgePlaybackCache() }
+            .onSuccess { result ->
+                analytics.debugLog {
+                    "Playback cache purged entries=${result.entries} bytes=${result.bytes}" +
+                        result.largest.joinToString(separator = "") { entry ->
+                            "\n  key=${entry.key} cached=${entry.cachedBytes} " +
+                                "length=${entry.contentLength} spans=${entry.spans} " +
+                                "range=${entry.fromPosition}..${entry.toPosition}"
+                        }
+                }
+            }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                analytics.debugLog { "Playback cache purge failed error=$error" }
+            }
     }
 
     private fun scheduleRetryAttempt() {
