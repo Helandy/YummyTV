@@ -46,6 +46,16 @@ internal fun SettingsMobileStorageContent(
                 },
             )
             SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_video_download_wifi_only_label),
+                hint = if (state.videoDownloadWifiOnly) {
+                    stringResource(R.string.settings_video_download_wifi_only_enabled)
+                } else {
+                    stringResource(R.string.settings_disabled)
+                },
+                enabled = state.videoDownloadWifiOnly,
+                onClick = { onEvent(SettingsState.Event.VideoDownloadWifiOnlyToggled) },
+            )
+            SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_video_export_auto_label),
                 hint = if (state.videoExportAutoEnabled) {
                     stringResource(R.string.settings_video_export_auto_enabled)

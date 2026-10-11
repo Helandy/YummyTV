@@ -44,8 +44,15 @@ VideoDownloadWorker (foreground, до 2 одновременно)
 `VideoDownloadWorker` — `@HiltWorker` `CoroutineWorker`.
 
 - Уникальная работа по id записи. Ограничение `NetworkType.CONNECTED`: без сети воркер сжёг бы все
-  ретраи на transient-ошибках и ушёл в `Failed`. Backoff линейный, 10 с
+  ретраи на transient-ошибках и ушёл в `Failed`. Если включена настройка «Скачивать только по Wi-Fi»
+  (`VideoDownloadSettingsStore.videoDownloadWifiOnly`), ограничение — `UNMETERED`: запись остаётся
+  `Queued`, пока нет безлимитной сети (Wi-Fi, Ethernet). Констрейнт фиксируется при постановке,
+  поэтому `SetVideoDownloadWifiOnlyUseCase` пересоздаёт все незавершённые работы (`REPLACE`, статус
+  `Queued`): идущая загрузка останавливается, а прогресс остаётся в кэше. Backoff линейный, 10 с
   (`DOWNLOAD_RETRY_BACKOFF_MS`).
+- «Приостановить все» / «Продолжить все» (`PauseAllVideoDownloadsUseCase`,
+  `ResumeAllVideoDownloadsUseCase`) идут по видимым записям: пауза — для `Queued`/`Downloading`,
+  возобновление — для `Paused` в порядке постановки.
 - Параллельно качаются не более двух (`MAX_PARALLEL_DOWNLOADS = 2`, `Semaphore` на процесс). Слот
   ждут уже в foreground, иначе WorkManager остановил бы фоновую работу через 10 минут.
 - Перед стартом поток перезапрашивается (`shouldRefreshBeforeStart`), если был прогресс, это не
@@ -156,8 +163,8 @@ HLS-загрузки нельзя привязать к записи, удали
 Плеер получает офлайн-признаки в `PlayerDestination` (`downloadId`, `localFileUri`) и берёт ветку
 «офлайн-загрузка» в `DefaultPlayerPlaybackConfig.dataSourceFactory()`:
 `CacheDataSource` на кэше загрузок, фабрика ключей из `VideoDownloadPlaybackCache`,
-`FLAG_BLOCK_ON_CACHE`. Сетевые ретраи и резолв source-graph в этом
-режиме отключены, см. [player-architecture.md](player-architecture.md).
+`FLAG_BLOCK_ON_CACHE`. Сетевые ретраи и резолв source-graph в этом режиме отключены,
+см. [player-architecture.md](player-architecture.md).
 
 ## Экспорт
 

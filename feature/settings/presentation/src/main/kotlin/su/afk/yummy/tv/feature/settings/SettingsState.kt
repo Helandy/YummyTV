@@ -75,6 +75,7 @@ class SettingsState {
         /** Сжатие динамического диапазона (DynamicsProcessing) доступно только с Android 9 (API 28). */
         val volumeStabilizationSupported: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P,
         val videoExportAutoEnabled: Boolean = false,
+        val videoDownloadWifiOnly: Boolean = false,
         val yaniApplicationToken: String = "",
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
@@ -259,6 +260,7 @@ class SettingsState {
 
         /** Пользователь переключил автоматическую выгрузку серии после скачивания. */
         data object VideoExportAutoToggled : Event
+        data object VideoDownloadWifiOnlyToggled : Event
         data class VideoExportDirectoryGranted(val uri: String) : Event
 
         /** Пользователь запросил пересчёт размеров папок кэша. */

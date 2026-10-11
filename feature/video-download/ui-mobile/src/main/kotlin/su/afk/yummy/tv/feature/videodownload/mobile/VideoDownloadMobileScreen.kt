@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -90,6 +92,28 @@ fun VideoDownloadMobileScreen(
                 title = stringResource(R.string.video_download_mobile_title),
                 onBack = { onEvent(VideoDownloadState.Event.BackSelected) },
                 actions = {
+                    if (state.canPauseAll) {
+                        IconButton(onClick = { onEvent(VideoDownloadState.Event.PauseAllSelected) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Pause,
+                                contentDescription = stringResource(R.string.video_download_pause_all),
+                            )
+                        }
+                    }
+                    if (state.canResumeAll) {
+                        IconButton(
+                            onClick = {
+                                notificationPermissionGate {
+                                    onEvent(VideoDownloadState.Event.ResumeAllSelected)
+                                }
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = stringResource(R.string.video_download_resume_all),
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { onEvent(VideoDownloadState.Event.ExportAllSelected) },
                         enabled = state.items.any { item ->
@@ -132,6 +156,7 @@ fun VideoDownloadMobileScreen(
                 items(state.items, key = { it.id }) { item ->
                     VideoDownloadMobileCard(
                         item = item,
+                        waitingForWifi = state.waitingForWifi,
                         onClick = { onEvent(VideoDownloadState.Event.ItemSelected(item.id)) },
                         onDetailsClick = { onEvent(VideoDownloadState.Event.DetailsSelected(item.animeId)) },
                         onDelete = { onEvent(VideoDownloadState.Event.DeleteSelected(item.id)) },

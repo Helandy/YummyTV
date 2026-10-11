@@ -50,6 +50,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showOpen
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.showTopTitleYearKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoDownloadWifiOnlyKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoExportAutoEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchNextEnabledKey
@@ -58,6 +59,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniCont
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniNicknameKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniUnreadNotificationsCountKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppearanceSettingsStore.Companion.defaultPosterQuality
@@ -77,6 +79,7 @@ internal class DataStoreSettingsStore @Inject constructor(
     yaniAccount: YaniAccountSettingsStore,
     cache: CacheSettingsStore,
     videoExport: VideoExportSettingsStore,
+    videoDownload: VideoDownloadSettingsStore,
     appLifecycle: AppLifecycleSettingsStore,
     search: SearchSettingsStore,
 ) : SettingsStore,
@@ -85,6 +88,7 @@ internal class DataStoreSettingsStore @Inject constructor(
     YaniAccountSettingsStore by yaniAccount,
     CacheSettingsStore by cache,
     VideoExportSettingsStore by videoExport,
+    VideoDownloadSettingsStore by videoDownload,
     AppLifecycleSettingsStore by appLifecycle,
     SearchSettingsStore by search {
 
@@ -138,6 +142,7 @@ internal class DataStoreSettingsStore @Inject constructor(
                 BrowserUserAgentProfile.DEFAULT,
             ),
             videoExportAutoEnabled = prefs[videoExportAutoEnabledKey] ?: false,
+            videoDownloadWifiOnly = prefs[videoDownloadWifiOnlyKey] ?: false,
             yaniApplicationToken = prefs.yaniApplicationToken(),
             contentLanguage = YaniContentLanguage.fromPreferenceValue(prefs[yaniContentLanguageKey])
                 ?: store.resolveSystemContentLanguage(),

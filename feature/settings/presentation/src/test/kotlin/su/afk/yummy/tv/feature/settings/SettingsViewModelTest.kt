@@ -48,8 +48,10 @@ import su.afk.yummy.tv.domain.update.repository.UpdateRepository
 import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportDestination
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadExportRepository
+import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.SetVideoDownloadWifiOnlyUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.SettingsState.Effect
 import su.afk.yummy.tv.feature.settings.SettingsState.Event
@@ -81,6 +83,7 @@ class SettingsViewModelTest : BaseUnitTest() {
     private val betaUpdates = MutableStateFlow(false)
     private val storageMode = MutableStateFlow(TokenStorageMode.entries.first())
     private val exportDestination = MutableStateFlow<VideoExportDestination?>(null)
+    private val downloadRepository: VideoDownloadRepository = mockk(relaxed = true)
 
     @Before
     fun setUp() {
@@ -111,6 +114,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         analytics = analytics,
         observeVideoExportDestination = ObserveVideoExportDestinationUseCase(exportRepository),
         selectVideoExportDestination = SelectVideoExportDestinationUseCase(exportRepository),
+        setVideoDownloadWifiOnly = SetVideoDownloadWifiOnlyUseCase(downloadRepository),
         cacheStorageInspector = cacheStorageInspector,
         appLogExporter = appLogExporter,
         getAppReleaseHistory = GetAppReleaseHistoryUseCase(updateRepository),

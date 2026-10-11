@@ -12,6 +12,9 @@ interface VideoDownloadRepository {
     suspend fun getDownload(id: Long): VideoDownloadItem?
     suspend fun enqueue(request: VideoDownloadRequest): VideoDownloadItem
     suspend fun pause(id: Long)
+    suspend fun pauseAll()
+    suspend fun resumeAll()
+    suspend fun setWifiOnly(enabled: Boolean)
     suspend fun cancelOrDelete(id: Long)
     suspend fun restart(id: Long, stream: VideoDownloadRestartStream? = null)
     suspend fun updatePreparedStream(id: Long, stream: VideoDownloadRestartStream)

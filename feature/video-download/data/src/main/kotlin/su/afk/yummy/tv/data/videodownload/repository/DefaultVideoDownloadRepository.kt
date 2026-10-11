@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadStorage
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.data.videodownload.R
@@ -49,6 +50,7 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
     private val notificationService: VideoDownloadNotificationService,
     private val analytics: VideoDownloadAnalytics,
     private val strategyResolver: DownloadPlayerStrategyResolver,
+    private val settings: VideoDownloadSettingsStore,
 ) : VideoDownloadRepository {
     private val orphanReconciliationMutex = Mutex()
     private val enqueueMutex = Mutex()
@@ -138,6 +140,26 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
             )
         )
         store.getById(id)?.toDomain()?.let(notificationService::showPaused)
+    }
+
+    override suspend fun pauseAll() {
+        visibleDownloads()
+            .filter { it.status == VideoDownloadStatus.Queued || it.status == VideoDownloadStatus.Downloading }
+            .forEach { pause(it.id) }
+    }
+
+    override suspend fun resumeAll() {
+        // Старые записи первыми: очередь возобновляется в порядке постановки
+        visibleDownloads()
+            .filter { it.status == VideoDownloadStatus.Paused }
+            .sortedBy { it.createdAt }
+            .forEach { restart(it.id) }
+    }
+
+    override suspend fun setWifiOnly(enabled: Boolean) {
+        if (settings.videoDownloadWifiOnly.first() == enabled) return
+        settings.setVideoDownloadWifiOnly(enabled)
+        reapplyNetworkConstraint()
     }
 
     override suspend fun cancelOrDelete(id: Long) {
@@ -256,11 +278,40 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
         streamUrl = quality.url,
     )
 
-    private fun scheduleWorker(
+    private suspend fun visibleDownloads(): List<VideoDownloadItem> =
+        store.observeDownloads().first().map { it.toDomain() }.visibleAfterLatestEpisodeDeletion()
+
+    /**
+     * Переносит незавершённые загрузки под актуальное сетевое ограничение: констрейнт воркера
+     * фиксируется при постановке, поэтому уже стоящие в очереди и идущие загрузки пересоздаются.
+     * Прогресс не теряется: сегменты лежат в кэше, а остановка воркера статус не меняет.
+     */
+    private suspend fun reapplyNetworkConstraint() = enqueueMutex.withLock {
+        store.getUnfinishedDownloads().forEach { entry ->
+            scheduleWorker(entry.id, policy = ExistingWorkPolicy.REPLACE)
+            if (entry.status != VideoDownloadStatus.Queued.storageName()) {
+                store.getById(entry.id)?.let { latest ->
+                    store.update(
+                        latest.copy(
+                            status = VideoDownloadStatus.Queued.storageName(),
+                            updatedAt = System.currentTimeMillis(),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun scheduleWorker(
         id: Long,
         policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
         forceStreamRefresh: Boolean = false,
     ) {
+        val networkType = if (settings.videoDownloadWifiOnly.first()) {
+            NetworkType.UNMETERED
+        } else {
+            NetworkType.CONNECTED
+        }
         val request = OneTimeWorkRequestBuilder<VideoDownloadWorker>()
             .setInputData(
                 workDataOf(
@@ -268,8 +319,9 @@ class DefaultVideoDownloadRepository @Inject internal constructor(
                     VideoDownloadWorker.KEY_FORCE_STREAM_REFRESH to forceStreamRefresh,
                 )
             )
-            // Без сети воркер сжёг бы все ретраи на transient-ошибках и ушёл в Failed
-            .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
+            // Без сети воркер сжёг бы все ретраи на transient-ошибках и ушёл в Failed;
+            // UNMETERED (режим «только Wi-Fi») держит загрузку в очереди, пока нет безлимитной сети
+            .setConstraints(Constraints(requiredNetworkType = networkType))
             .setBackoffCriteria(
                 BackoffPolicy.LINEAR,
                 DOWNLOAD_RETRY_BACKOFF_MS,

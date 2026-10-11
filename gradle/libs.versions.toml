@@ -6,7 +6,7 @@ agp = "9.4.1"
 desugar-jdk-libs = "2.1.5"
 
 # Kotlin
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 kotlin-metadata-jvm = "2.4.0"
 kotlinx-collections-immutable = "0.5.2"
 stability-analyzer = "0.15.0"

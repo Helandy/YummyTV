@@ -16,7 +16,9 @@ import org.junit.Test
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.core.testing.collectEmissions
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadCacheKeyScheme
@@ -32,8 +34,10 @@ import su.afk.yummy.tv.domain.videodownload.usecase.CheckExportedFileExistsUseCa
 import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoExportUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.PauseAllVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PauseVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.RestartVideoDownloadUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.ResumeAllVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -47,6 +51,8 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
     private val nav: INavigationManager = mockk(relaxed = true)
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore = mockk(relaxed = true)
     private val downloadRepository: VideoDownloadRepository = mockk(relaxed = true)
+    private val videoDownloadSettingsStore: VideoDownloadSettingsStore = mockk(relaxed = true)
+    private val networkConnectivityMonitor: NetworkConnectivityMonitor = mockk(relaxed = true)
     private val exportRepository: VideoDownloadExportRepository = mockk(relaxed = true)
     private val playerNavigator: IPlayerNavigator = mockk()
     private val detailsNavigator: IDetailsNavigator = mockk()
@@ -58,6 +64,8 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
     @Before
     fun setUp() {
         every { downloadRepository.observeDownloads() } returns items
+        every { videoDownloadSettingsStore.videoDownloadWifiOnly } returns MutableStateFlow(false)
+        every { networkConnectivityMonitor.isUnmetered } returns MutableStateFlow(true)
         every { exportRepository.observeDestination() } returns destination
         every { appLifecycleSettingsStore.notificationPermissionRequested } returns permissionRequested
         every { playerNavigator.getDownloadedPlayerDest(any()) } returns navKey
@@ -72,6 +80,10 @@ class VideoDownloadViewModelTest : BaseUnitTest() {
         observeVideoDownloads = ObserveVideoDownloadsUseCase(downloadRepository),
         cancelOrDeleteVideoDownload = CancelOrDeleteVideoDownloadUseCase(downloadRepository),
         pauseVideoDownload = PauseVideoDownloadUseCase(downloadRepository),
+        pauseAllVideoDownloads = PauseAllVideoDownloadsUseCase(downloadRepository),
+        resumeAllVideoDownloads = ResumeAllVideoDownloadsUseCase(downloadRepository),
+        videoDownloadSettingsStore = videoDownloadSettingsStore,
+        networkConnectivityMonitor = networkConnectivityMonitor,
         restartVideoDownload = RestartVideoDownloadUseCase(downloadRepository),
         observeExportDestination = ObserveVideoExportDestinationUseCase(exportRepository),
         selectExportDestination = SelectVideoExportDestinationUseCase(exportRepository),

@@ -12,6 +12,9 @@
     <string name="video_download_open_details">Открыть деталку</string>
     <string name="video_download_pause">Поставить на паузу</string>
     <string name="video_download_resume">Продолжить скачивание</string>
+    <string name="video_download_pause_all">Приостановить все загрузки</string>
+    <string name="video_download_resume_all">Продолжить все загрузки</string>
+    <string name="video_download_item_waiting_wifi">Ждёт Wi-Fi · %1$d%%</string>
     <string name="video_download_restart">Перезапустить скачивание</string>
     <string name="video_download_delete">Удалить скачивание</string>
     <string name="video_download_delete_confirm_title">Удалить серию %1$s?</string>

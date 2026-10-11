@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.VideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreAppLifecycleSettingsStore
@@ -26,6 +27,7 @@ import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreEpisodePushS
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStorePlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoDownloadSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreVideoExportSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.datastore.DataStoreYaniAccountSettingsStore
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
@@ -67,6 +69,12 @@ internal interface PreferencesModule {
     @Binds
     @Singleton
     fun bindVideoExportSettingsStore(impl: DataStoreVideoExportSettingsStore): VideoExportSettingsStore
+
+    @Binds
+    @Singleton
+    fun bindVideoDownloadSettingsStore(
+        impl: DataStoreVideoDownloadSettingsStore,
+    ): VideoDownloadSettingsStore
 
     @Binds
     @Singleton

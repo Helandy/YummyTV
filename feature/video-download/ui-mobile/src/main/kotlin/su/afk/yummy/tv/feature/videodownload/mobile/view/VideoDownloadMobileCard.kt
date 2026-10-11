@@ -66,9 +66,10 @@ internal fun VideoDownloadMobileCard(
     onExport: () -> Unit,
     onCancelExport: () -> Unit,
     modifier: Modifier = Modifier,
+    waitingForWifi: Boolean = false,
 ) {
     val imageUrl = item.screenshotUrl.ifBlank { item.posterUrl }
-    val statusText = item.statusText()
+    val statusText = item.statusText(waitingForWifi)
     val diskSizeText = item.diskSizeText()
     val statusColor = when {
         item.status == VideoDownloadStatus.Failed ||

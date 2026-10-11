@@ -89,6 +89,7 @@ internal object SettingsPreferenceKeys {
     val videoExportDirectoryUriKey = stringPreferencesKey("video_export_directory_uri")
     val videoExportDirectoryNameKey = stringPreferencesKey("video_export_directory_name")
     val videoExportAutoEnabledKey = booleanPreferencesKey("video_export_auto_enabled")
+    val videoDownloadWifiOnlyKey = booleanPreferencesKey("video_download_wifi_only")
     val saveLastSearchEnabledKey = booleanPreferencesKey("save_last_search_enabled")
     val lastSearchQueryKey = stringPreferencesKey("last_search_query")
     val lastSearchGenresKey = stringSetPreferencesKey("last_search_genres")

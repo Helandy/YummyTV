@@ -273,6 +273,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь включил или выключил режим «загружать только по Wi-Fi». */
+    fun eventVideoDownloadWifiOnlyToggled(enabled: Boolean) {
+        tracker.track(
+            EVENT_VIDEO_DOWNLOAD_WIFI_ONLY_TOGGLED,
+            analyticsParamsOf(PARAM_TARGET_STATE to enabled),
+        )
+    }
+
     /** Пользователь включил или выключил перехват кнопок громкости в ТВ-плеере. */
     fun eventTvPlayerVolumeKeysToggled(enabled: Boolean) {
         tracker.track(
@@ -499,6 +507,7 @@ internal class SettingsAnalytics @Inject constructor(
         const val EVENT_PLAYER_ORIENTATION_MODE_SELECTED =
             "settings_player_orientation_mode_selected"
         const val EVENT_VIDEO_EXPORT_AUTO_TOGGLED = "settings_video_export_auto_toggled"
+        const val EVENT_VIDEO_DOWNLOAD_WIFI_ONLY_TOGGLED = "settings_video_download_wifi_only_toggled"
         const val EVENT_TV_PLAYER_VOLUME_KEYS_TOGGLED =
             "settings_tv_player_volume_keys_toggled"
         const val EVENT_ADVANCED_PLAYER_VOLUME_TOGGLED =

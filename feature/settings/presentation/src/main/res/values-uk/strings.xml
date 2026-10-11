@@ -205,6 +205,8 @@
     <string name="settings_video_export_directory">Тека експорту MP4</string>
     <string name="settings_video_export_directory_not_selected">Не вибрана</string>
     <string name="settings_video_export_directory_hint">Внутрішня пам\'ять, MicroSD, USB або сумісний провайдер документів</string>
+    <string name="settings_video_download_wifi_only_label">Завантажувати лише через Wi-Fi</string>
+    <string name="settings_video_download_wifi_only_enabled">Без Wi-Fi чи іншої безлімітної мережі завантаження чекають у черзі</string>
     <string name="settings_video_export_auto_label">Вивантажувати після завантаження</string>
     <string name="settings_video_export_auto_enabled">Копіювати серію до вибраної теки одразу після завантаження</string>
     <string name="settings_video_export_directory_error">Не вдалося отримати доступ на запис до вибраної теки</string>

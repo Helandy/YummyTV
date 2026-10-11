@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.utils.system.CacheStorageInspector
 import su.afk.yummy.tv.domain.update.usecase.GetAppReleaseHistoryUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.SetVideoDownloadWifiOnlyUseCase
 import su.afk.yummy.tv.feature.account.IAccountNavigator
 import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
@@ -48,6 +49,7 @@ class SettingsViewModel @Inject internal constructor(
     private val analytics: SettingsAnalytics,
     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
+    private val setVideoDownloadWifiOnly: SetVideoDownloadWifiOnlyUseCase,
     private val cacheStorageInspector: CacheStorageInspector,
     private val appLogExporter: AppLogExporter,
     private val getAppReleaseHistory: GetAppReleaseHistoryUseCase,
@@ -99,6 +101,7 @@ class SettingsViewModel @Inject internal constructor(
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
                         videoExportAutoEnabled = snapshot.videoExportAutoEnabled,
+                        videoDownloadWifiOnly = snapshot.videoDownloadWifiOnly,
                         yaniApplicationToken = snapshot.yaniApplicationToken,
                         contentLanguage = snapshot.contentLanguage,
                         detailsButtonOrder = snapshot.detailsButtonOrder.toImmutableList(),
@@ -442,6 +445,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.videoExportAutoEnabled
                 analytics.eventVideoExportAutoToggled(enabled)
                 settingsStore.setVideoExportAutoEnabled(enabled)
+            }
+
+            SettingsState.Event.VideoDownloadWifiOnlyToggled -> viewModelScope.launch {
+                val enabled = !currentState.videoDownloadWifiOnly
+                analytics.eventVideoDownloadWifiOnlyToggled(enabled)
+                setVideoDownloadWifiOnly(enabled)
             }
 
             is SettingsState.Event.VideoExportDirectoryGranted -> viewModelScope.launch {

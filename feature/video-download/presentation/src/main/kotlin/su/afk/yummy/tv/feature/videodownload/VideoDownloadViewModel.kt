@@ -9,7 +9,9 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+import su.afk.yummy.tv.core.preferences.settings.VideoDownloadSettingsStore
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -20,8 +22,10 @@ import su.afk.yummy.tv.domain.videodownload.usecase.CheckExportedFileExistsUseCa
 import su.afk.yummy.tv.domain.videodownload.usecase.EnqueueVideoExportUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoExportDestinationUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.PauseAllVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.PauseVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.RestartVideoDownloadUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.ResumeAllVideoDownloadsUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.SelectVideoExportDestinationUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
@@ -37,6 +41,10 @@ class VideoDownloadViewModel @Inject constructor(
     private val observeVideoDownloads: ObserveVideoDownloadsUseCase,
     private val cancelOrDeleteVideoDownload: CancelOrDeleteVideoDownloadUseCase,
     private val pauseVideoDownload: PauseVideoDownloadUseCase,
+    private val pauseAllVideoDownloads: PauseAllVideoDownloadsUseCase,
+    private val resumeAllVideoDownloads: ResumeAllVideoDownloadsUseCase,
+    private val videoDownloadSettingsStore: VideoDownloadSettingsStore,
+    private val networkConnectivityMonitor: NetworkConnectivityMonitor,
     private val restartVideoDownload: RestartVideoDownloadUseCase,
     private val observeExportDestination: ObserveVideoExportDestinationUseCase,
     private val selectExportDestination: SelectVideoExportDestinationUseCase,
@@ -51,6 +59,12 @@ class VideoDownloadViewModel @Inject constructor(
     init {
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
+        videoDownloadSettingsStore.videoDownloadWifiOnly
+            .onEach { wifiOnly -> setState { copy(wifiOnly = wifiOnly) } }
+            .launchIn(viewModelScope)
+        networkConnectivityMonitor.isUnmetered
+            .onEach { unmetered -> setState { copy(unmeteredNetwork = unmetered) } }
             .launchIn(viewModelScope)
         observeVideoDownloads()
             .onEach { items ->
@@ -102,6 +116,14 @@ class VideoDownloadViewModel @Inject constructor(
                 viewModelScope.launch {
                     pauseVideoDownload(event.id)
                 }
+            }
+
+            VideoDownloadState.Event.PauseAllSelected -> {
+                viewModelScope.launch { pauseAllVideoDownloads() }
+            }
+
+            VideoDownloadState.Event.ResumeAllSelected -> {
+                viewModelScope.launch { resumeAllVideoDownloads() }
             }
 
             is VideoDownloadState.Event.ResumeSelected -> {

@@ -34,6 +34,7 @@ data class SettingsSnapshot(
     val playerBufferProfile: PlayerBufferProfile,
     val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
     val videoExportAutoEnabled: Boolean,
+    val videoDownloadWifiOnly: Boolean = false,
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val detailsButtonOrder: List<DetailsButtonAction>,

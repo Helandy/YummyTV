@@ -24,8 +24,11 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val validatedNetworks = mutableSetOf<Network>()
+    private val unmeteredNetworks = mutableSetOf<Network>()
 
     override val isOnline = MutableStateFlow(connectivityManager.hasValidatedNetwork())
+
+    override val isUnmetered = MutableStateFlow(connectivityManager.hasValidatedUnmeteredNetwork())
 
     init {
         val request = NetworkRequest.Builder()
@@ -43,12 +46,20 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
                     } else {
                         validatedNetworks.remove(network)
                     }
+                    if (capabilities.isValidatedUnmetered()) {
+                        unmeteredNetworks.add(network)
+                    } else {
+                        unmeteredNetworks.remove(network)
+                    }
                     isOnline.value = validatedNetworks.isNotEmpty()
+                    isUnmetered.value = unmeteredNetworks.isNotEmpty()
                 }
 
                 override fun onLost(network: Network) {
                     validatedNetworks.remove(network)
+                    unmeteredNetworks.remove(network)
                     isOnline.value = validatedNetworks.isNotEmpty()
+                    isUnmetered.value = unmeteredNetworks.isNotEmpty()
                 }
             })
     }
@@ -57,4 +68,13 @@ class AndroidNetworkConnectivityMonitor @Inject constructor(
         val capabilities = getNetworkCapabilities(activeNetwork) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
+
+    private fun ConnectivityManager.hasValidatedUnmeteredNetwork(): Boolean {
+        val capabilities = getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.isValidatedUnmetered()
+    }
+
+    private fun NetworkCapabilities.isValidatedUnmetered(): Boolean =
+        hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+            hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
 }

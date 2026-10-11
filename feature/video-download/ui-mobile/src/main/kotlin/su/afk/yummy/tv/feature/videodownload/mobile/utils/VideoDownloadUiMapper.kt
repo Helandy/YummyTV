@@ -1,8 +1,8 @@
 package su.afk.yummy.tv.feature.videodownload.mobile.utils
 
-import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.utils.player.playerDisplayName
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoExportStatus
@@ -10,7 +10,7 @@ import su.afk.yummy.tv.feature.videodownload.presentation.R
 import kotlin.math.roundToInt
 
 @Composable
-internal fun VideoDownloadItem.statusText(): String? =
+internal fun VideoDownloadItem.statusText(waitingForWifi: Boolean = false): String? =
     when {
         status == VideoDownloadStatus.Downloaded && exportStatus == VideoExportStatus.Queued ->
             stringResource(R.string.video_export_status_queued)
@@ -35,8 +35,16 @@ internal fun VideoDownloadItem.statusText(): String? =
                 ?: stringResource(R.string.video_export_status_failed)
 
         else -> when (status) {
+            VideoDownloadStatus.Queued -> {
+                val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
+                if (waitingForWifi) {
+                    stringResource(R.string.video_download_item_waiting_wifi, percent)
+                } else {
+                    stringResource(R.string.video_download_item_progress, percent)
+                }
+            }
+
             VideoDownloadStatus.Resolving,
-            VideoDownloadStatus.Queued,
             VideoDownloadStatus.Downloading -> {
                 val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
                 stringResource(R.string.video_download_item_progress, percent)
@@ -69,19 +77,19 @@ internal fun String.balancerLabel(): String = playerDisplayName()
 
 internal val VideoDownloadItem.hasProgressIndicator: Boolean
     get() = status == VideoDownloadStatus.Resolving ||
-            status == VideoDownloadStatus.Queued ||
-            status == VideoDownloadStatus.Downloading ||
-            status == VideoDownloadStatus.Paused ||
-            exportStatus.isActive
+        status == VideoDownloadStatus.Queued ||
+        status == VideoDownloadStatus.Downloading ||
+        status == VideoDownloadStatus.Paused ||
+        exportStatus.isActive
 
 internal val VideoDownloadItem.visibleProgress: Float
     get() = if (exportStatus.isActive) exportProgress else progress
 
 internal val VideoExportStatus.isActive: Boolean
     get() = this == VideoExportStatus.Queued ||
-            this == VideoExportStatus.Preparing ||
-            this == VideoExportStatus.Copying
+        this == VideoExportStatus.Preparing ||
+        this == VideoExportStatus.Copying
 
 internal val VideoDownloadStatus.canPause: Boolean
     get() = this == VideoDownloadStatus.Queued ||
-            this == VideoDownloadStatus.Downloading
+        this == VideoDownloadStatus.Downloading
