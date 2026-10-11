@@ -290,8 +290,17 @@ private fun downloadStatusText(
         resolving -> stringResource(R.string.details_download_resolving_quality)
         awaitingQualitySelection -> stringResource(R.string.details_mobile_download_quality_prompt)
 
-        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued ||
-            uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloading -> {
+        // Нет слота загрузки: «0%» означало бы, что серия уже качается.
+        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Queued -> {
+            val percent = (status.progress.coerceIn(0f, 1f) * 100).roundToInt()
+            if (percent == 0) {
+                stringResource(R.string.details_mobile_episode_download_queued)
+            } else {
+                stringResource(R.string.details_mobile_episode_download_queued_progress, percent)
+            }
+        }
+
+        uiStatus == EpisodesState.EpisodeDownloadUiStatus.Downloading -> {
             val percent = (status.progress.coerceIn(0f, 1f) * 100).roundToInt()
             stringResource(R.string.details_mobile_episode_download_progress, percent)
         }

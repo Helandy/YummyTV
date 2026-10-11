@@ -37,10 +37,14 @@ internal fun VideoDownloadItem.statusText(waitingForWifi: Boolean = false): Stri
         else -> when (status) {
             VideoDownloadStatus.Queued -> {
                 val percent = (progress.coerceIn(0f, 1f) * 100).roundToInt()
-                if (waitingForWifi) {
-                    stringResource(R.string.video_download_item_waiting_wifi, percent)
-                } else {
-                    stringResource(R.string.video_download_item_progress, percent)
+                when {
+                    waitingForWifi ->
+                        stringResource(R.string.video_download_item_waiting_wifi, percent)
+
+                    // Нет слота загрузки: 0% означало бы, что серия уже качается.
+                    percent == 0 -> stringResource(R.string.video_download_item_queued)
+
+                    else -> stringResource(R.string.video_download_item_queued_progress, percent)
                 }
             }
 

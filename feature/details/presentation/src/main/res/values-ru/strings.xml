@@ -111,13 +111,15 @@
     <string name="details_mobile_play_downloaded_episode">Воспроизвести из кэша</string>
     <string name="details_mobile_downloaded_episode_player_quality">%1$s • %2$s</string>
     <string name="details_mobile_downloaded_episode_disk_size">На диске: %1$s</string>
-    <string name="details_mobile_redownload_dubbing">Перекачать озвучку</string>
+    <string name="details_mobile_redownload_dubbing">Перекачать серию</string>
     <string name="details_mobile_download_other_dubbing_empty">Других озвучек нет</string>
     <string name="details_mobile_delete_downloaded_episode">Удалить скачанную серию</string>
     <string name="details_mobile_delete_downloaded_episode_title">Удалить серию %1$s?</string>
     <string name="details_mobile_delete_downloaded_episode_message">Локальный файл серии будет удалён с устройства.</string>
         <string name="details_mobile_episode_download_restart_action">Перезапустить скачивание</string>
         <string name="details_mobile_episode_download_progress">Идет загрузка %1$d%%</string>
+    <string name="details_mobile_episode_download_queued">Ожидание очереди</string>
+    <string name="details_mobile_episode_download_queued_progress">Ожидание очереди · %1$d%%</string>
     <string name="details_mobile_episode_download_paused">На паузе %1$d%%</string>
     <string name="details_mobile_episode_download_error">Ошибка загрузки: %1$s</string>
     <string name="details_mobile_episode_download_error_unknown">Ошибка загрузки</string>

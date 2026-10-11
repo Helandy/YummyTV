@@ -12,17 +12,20 @@ internal fun VideoDownloadItem.toUiState(): EpisodesState.EpisodeDownloadUiState
         qualityLabel = qualityLabel,
         bytesDownloaded = bytesDownloaded,
         status = when (status) {
-            VideoDownloadStatus.Queued,
-            VideoDownloadStatus.Resolving -> EpisodesState.EpisodeDownloadUiStatus.Queued
+            VideoDownloadStatus.Queued -> EpisodesState.EpisodeDownloadUiStatus.Queued
 
+            // Resolving идёт уже в занятом слоте (обновление ссылки), это не ожидание очереди.
+            VideoDownloadStatus.Resolving,
             VideoDownloadStatus.Downloading,
-            VideoDownloadStatus.Deleting -> EpisodesState.EpisodeDownloadUiStatus.Downloading
+            VideoDownloadStatus.Deleting,
+            -> EpisodesState.EpisodeDownloadUiStatus.Downloading
 
             VideoDownloadStatus.Paused -> EpisodesState.EpisodeDownloadUiStatus.Paused
             VideoDownloadStatus.Downloaded -> EpisodesState.EpisodeDownloadUiStatus.Downloaded
             VideoDownloadStatus.Failed -> EpisodesState.EpisodeDownloadUiStatus.Failed
             VideoDownloadStatus.Idle,
-            VideoDownloadStatus.Deleted -> EpisodesState.EpisodeDownloadUiStatus.Failed
+            VideoDownloadStatus.Deleted,
+            -> EpisodesState.EpisodeDownloadUiStatus.Failed
         },
         progress = progress.coerceIn(0f, 1f),
         errorMessage = errorMessage?.takeIf { it.isNotBlank() },

@@ -31,7 +31,10 @@ internal fun EpisodeDownloadStatusIcon(
 
         status.isDownloadBusy() -> {
             val modifier = Modifier.size(StatusIconSize)
-            if (status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued) {
+            // Без прогресса (очередь, получение ссылки) процент ещё нечему показывать.
+            val indeterminate = status?.status == EpisodesState.EpisodeDownloadUiStatus.Queued ||
+                (status?.progress ?: 0f) <= 0f
+            if (indeterminate) {
                 CircularProgressIndicator(strokeWidth = 2.dp, modifier = modifier)
             } else {
                 CircularProgressIndicator(
