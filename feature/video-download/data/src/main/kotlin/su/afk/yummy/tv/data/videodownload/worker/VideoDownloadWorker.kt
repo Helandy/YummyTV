@@ -26,6 +26,7 @@ import su.afk.yummy.tv.data.videodownload.worker.utils.isForbiddenHttpResponse
 import su.afk.yummy.tv.data.videodownload.worker.utils.isOkCdnNodeRefusal
 import su.afk.yummy.tv.data.videodownload.worker.utils.isTransientDownloadFailure
 import su.afk.yummy.tv.data.videodownload.worker.utils.nextRetryAttempt
+import su.afk.yummy.tv.data.videodownload.worker.utils.setForegroundIfAllowed
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -56,9 +57,14 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             ?: return Result.failure()
         val item = repository.getDownload(id) ?: return Result.failure()
         // Ждём слот уже в foreground: иначе WorkManager остановит фоновую работу через 10 минут
-        setForeground(notificationService.createForegroundInfo(item, queued = true))
+        setForegroundIfAllowed(notificationService.createForegroundInfo(item, queued = true))
         return downloadSlots.withPermit {
-            setForeground(notificationService.createForegroundInfo(item))
+            val foreground = setForegroundIfAllowed(notificationService.createForegroundInfo(item))
+            if (!foreground) {
+                analyticsTracker.logDownloadInfo {
+                    "Download id=$id runs without foreground: system denied foreground start"
+                }
+            }
             downloadWithRetries(id, item)
         }
     }

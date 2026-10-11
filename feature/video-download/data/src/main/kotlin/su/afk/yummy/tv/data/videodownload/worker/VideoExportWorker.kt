@@ -45,6 +45,7 @@ import su.afk.yummy.tv.data.videodownload.utils.toSafeSafName
 import su.afk.yummy.tv.data.videodownload.utils.treeDocumentUri
 import su.afk.yummy.tv.data.videodownload.utils.truncateToUtf8Bytes
 import su.afk.yummy.tv.data.videodownload.utils.utf8Size
+import su.afk.yummy.tv.data.videodownload.worker.utils.setForegroundIfAllowed
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
@@ -77,7 +78,7 @@ class VideoExportWorker @AssistedInject internal constructor(
         if (item.status != VideoDownloadStatus.Downloaded || destinationUri.isBlank()) {
             return Result.failure()
         }
-        setForeground(notificationService.createForegroundInfo(item, 0))
+        setForegroundIfAllowed(notificationService.createForegroundInfo(item, 0))
         return try {
             exportMutex.withLock { export(downloadId, destinationUri, item) }
         } finally {
@@ -382,7 +383,7 @@ class VideoExportWorker @AssistedInject internal constructor(
             status = status,
             progress = progress,
         )
-        setForeground(
+        setForegroundIfAllowed(
             notificationService.createForegroundInfo(
                 item,
                 (progress.coerceIn(0f, 1f) * 100).roundToInt(),

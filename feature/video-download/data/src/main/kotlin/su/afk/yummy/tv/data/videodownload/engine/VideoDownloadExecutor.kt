@@ -85,21 +85,35 @@ internal class VideoDownloadExecutor @Inject constructor(
         }
         val sessionRefreshTimer = liveSession?.let { session ->
             launch {
+                // Срок, для которого refresh() уже вызван, и момент вызова. Пока expiresAtMs не сдвинулся,
+                // повторный refresh() раньше ALLOHA_SESSION_REFRESH_RETRY_MS не нужен: он асинхронный,
+                // а без этой паузы цикл крутился без остановки (delay(0) не отдаёт поток) и сотни раз в
+                // миллисекунду перезапускал WebView-сессию, поэтому загрузка не двигалась.
+                var refreshedFor: Long? = null
+                var refreshedAt = 0L
                 while (true) {
                     val expiresAt = session.expiresAtMs()
                     if (expiresAt == null) {
                         delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
                         continue
                     }
-                    delay(
-                        (expiresAt - System.currentTimeMillis() - ALLOHA_SESSION_REFRESH_LEAD_MS).coerceAtLeast(
-                            0L,
-                        ),
-                    )
-                    if (session.expiresAtMs() == expiresAt) {
-                        analyticsTracker.logDownloadInfo { "Refreshing live ${strategy.playerLabel} session id=$id before TTL expiry" }
-                        session.refresh()
+                    val now = System.currentTimeMillis()
+                    val untilRefresh = expiresAt - now - ALLOHA_SESSION_REFRESH_LEAD_MS
+                    if (untilRefresh > 0L) {
+                        delay(untilRefresh)
+                        continue
                     }
+                    val alreadyRequested = expiresAt == refreshedFor &&
+                        now - refreshedAt < ALLOHA_SESSION_REFRESH_RETRY_MS
+                    if (alreadyRequested) {
+                        delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
+                        continue
+                    }
+                    analyticsTracker.logDownloadInfo { "Refreshing live ${strategy.playerLabel} session id=$id before TTL expiry" }
+                    refreshedFor = expiresAt
+                    refreshedAt = now
+                    session.refresh()
+                    delay(ALLOHA_SESSION_EXPIRY_POLL_MS)
                 }
             }
         }
@@ -276,6 +290,7 @@ internal class VideoDownloadExecutor @Inject constructor(
         const val PROGRESS_LOG_STEP = 10
         const val ALLOHA_SESSION_REFRESH_LEAD_MS = 20_000L
         const val ALLOHA_SESSION_EXPIRY_POLL_MS = 500L
+        const val ALLOHA_SESSION_REFRESH_RETRY_MS = 10_000L
     }
 }
 
