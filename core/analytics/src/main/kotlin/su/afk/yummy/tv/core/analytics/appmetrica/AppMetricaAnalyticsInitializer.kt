@@ -8,7 +8,9 @@ import io.appmetrica.analytics.PredefinedDeviceTypes
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
 import javax.inject.Inject
 
-internal class AppMetricaAnalyticsInitializer @Inject constructor() : AnalyticsInitializer {
+internal class AppMetricaAnalyticsInitializer @Inject constructor(
+    private val activationState: AppMetricaActivationState,
+) : AnalyticsInitializer {
 
     override fun initialize(context: Context, apiKey: String) {
         val trimmedApiKey = apiKey.trim()
@@ -18,6 +20,7 @@ internal class AppMetricaAnalyticsInitializer @Inject constructor() : AnalyticsI
             .withAdvIdentifiersTracking(false)
             .build()
         AppMetrica.activate(context, config)
+        activationState.markActivated()
     }
 }
 

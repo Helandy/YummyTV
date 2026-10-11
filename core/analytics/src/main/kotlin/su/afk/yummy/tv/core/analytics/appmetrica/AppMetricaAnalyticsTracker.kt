@@ -9,11 +9,13 @@ import javax.inject.Inject
 
 internal class AppMetricaAnalyticsTracker @Inject constructor(
     private val diagnosticLogSink: DiagnosticLogSink,
+    private val activationState: AppMetricaActivationState,
 ) : AnalyticsTracker {
 
     override fun track(eventName: String, params: Map<String, String>) {
         val eventName = eventName.trim()
         if (eventName.isEmpty()) return
+        if (!activationState.isActivated) return
         if (params.isEmpty()) {
             AppMetrica.reportEvent(eventName)
         } else {
@@ -29,6 +31,7 @@ internal class AppMetricaAnalyticsTracker @Inject constructor(
         val message = message.trim()
         if (message.isEmpty()) return
         if (!throwable.isReportableError()) return
+        if (!activationState.isActivated) return
         val groupIdentifier = groupIdentifier?.trim().orEmpty()
         if (groupIdentifier.isEmpty()) {
             AppMetrica.reportError(message, throwable)

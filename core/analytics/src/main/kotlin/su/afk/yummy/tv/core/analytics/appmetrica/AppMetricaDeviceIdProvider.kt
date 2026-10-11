@@ -12,15 +12,19 @@ import kotlin.coroutines.resume
 
 internal class AppMetricaDeviceIdProvider @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val activationState: AppMetricaActivationState,
 ) : AnalyticsDeviceIdProvider {
 
-    override suspend fun deviceId(): String? = try {
-        requestDeviceIdHash() ?: AppMetrica.getDeviceId(context)?.takeIf { it.isNotBlank() }
-    } catch (e: CancellationException) {
-        throw e
-    } catch (_: Throwable) {
-        // AppMetrica не активирована (пустой ключ) — ID не существует.
-        null
+    override suspend fun deviceId(): String? {
+        // Пустой ключ — AppMetrica не активирована, ID не существует.
+        if (!activationState.isActivated) return null
+        return try {
+            requestDeviceIdHash() ?: AppMetrica.getDeviceId(context)?.takeIf { it.isNotBlank() }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     /** Десятичный хэш DeviceID — именно он показывается в интерфейсе AppMetrica. */
