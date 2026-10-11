@@ -24,6 +24,7 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
     override suspend fun refresh(
         item: VideoDownloadItem,
         autoQualityLabel: String,
+        forceRefresh: Boolean,
     ): VideoDownloadStreamRefreshResult {
         val normalizedAutoLabel = autoQualityLabel.ifBlank { DEFAULT_AUTO_QUALITY_LABEL }
         val resolveQualityLabel = item.qualityLabel
@@ -42,6 +43,7 @@ class DefaultVideoDownloadStreamRefresher @Inject internal constructor(
                 PlayerStreamRequest(
                     iframeUrl = refreshedItem.iframeUrl,
                     autoQualityLabel = resolveQualityLabel,
+                    forceRefresh = forceRefresh,
                 )
             )) {
                 is PlayerStreamResolveResult.Stream -> result.toRefreshResult(

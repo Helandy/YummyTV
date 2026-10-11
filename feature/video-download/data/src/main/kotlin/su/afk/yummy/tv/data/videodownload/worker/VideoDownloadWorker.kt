@@ -16,13 +16,17 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
+import su.afk.yummy.tv.data.videodownload.engine.DownloadIntegrityVerifier
 import su.afk.yummy.tv.data.videodownload.engine.VideoDownloadExecutor
 import su.afk.yummy.tv.data.videodownload.notification.VideoDownloadNotificationService
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategy
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategyResolver
+import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.isForbiddenHttpResponse
+import su.afk.yummy.tv.data.videodownload.worker.utils.isOkCdnNodeRefusal
 import su.afk.yummy.tv.data.videodownload.worker.utils.isTransientDownloadFailure
 import su.afk.yummy.tv.data.videodownload.worker.utils.nextRetryAttempt
+import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStreamRefreshResult
@@ -42,6 +46,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
     private val strategyResolver: DownloadPlayerStrategyResolver,
     private val cacheProvider: VideoDownloadCacheProvider,
     private val executor: VideoDownloadExecutor,
+    private val integrityVerifier: DownloadIntegrityVerifier,
     private val notificationService: VideoDownloadNotificationService,
     private val analytics: VideoDownloadAnalytics,
     private val analyticsTracker: AnalyticsTracker,
@@ -109,6 +114,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     retriedAfterForbidden = retriedAfterForbidden,
                     onProgressPercent = { percent -> publishProgress(item, percent) },
                 )
+                ensureDownloadIntegrity(id, item, strategy, retriedAfterForbidden)
                 repository.updateStatus(
                     id = id,
                     status = VideoDownloadStatus.Downloaded,
@@ -186,6 +192,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                     throwable.isTransientDownloadFailure()
                 ) {
                     transientRetryCount += 1
+                    val nodeRefused = throwable.isOkCdnNodeRefusal()
                     analyticsTracker.logDownloadWarning(throwable) {
                         "Download id=$id got transient ${strategy.playerLabel} failure; " +
                                 "refreshing iframe and stream before retry. " +
@@ -198,6 +205,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
                             item = item,
                             strategy = strategy,
                             reason = DownloadRestartReason.TransientFailure,
+                            forceRefresh = nodeRefused,
                         )
                     ) {
                         is DownloadStreamRefresh.Success -> {
@@ -252,6 +260,71 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         }
     }
 
+    /**
+     * Проверяет скачанный прогрессивный mp4 и перекачивает повреждённое. Докачка по кэшу не
+     * заметила бы порчу: записанные байты считаются готовыми.
+     *
+     * Первый ремонт выбрасывает куски кэша вокруг места остановки экстрактора и докачивает только
+     * их; второй — весь файл. Если и после этого файл не разбирается, источник отдаёт битый файл
+     * сам, и загрузка падает с понятной причиной, а не отдаёт пользователю неиграющую серию.
+     */
+    private suspend fun ensureDownloadIntegrity(
+        id: Long,
+        item: VideoDownloadItem,
+        strategy: DownloadPlayerStrategy,
+        retriedAfterForbidden: Boolean,
+    ) {
+        if (item.streamUrl.streamKind() != StreamKind.Progressive) return
+        var repairs = 0
+        while (true) {
+            when (val result = integrityVerifier.verify(item)) {
+                DownloadIntegrityVerifier.Result.Valid -> {
+                    if (repairs > 0) {
+                        analyticsTracker.logDownloadInfo {
+                            "Download id=$id passed integrity check after repairs=$repairs"
+                        }
+                    }
+                    return
+                }
+
+                is DownloadIntegrityVerifier.Result.Skipped -> {
+                    analyticsTracker.logDownloadInfo {
+                        "Download id=$id integrity check skipped: ${result.reason}"
+                    }
+                    return
+                }
+
+                is DownloadIntegrityVerifier.Result.Corrupt -> {
+                    analyticsTracker.logDownloadWarning(null) {
+                        "Download id=$id is corrupt at byte=${result.position} " +
+                            "detail=${result.detail} repairs=$repairs"
+                    }
+                    if (repairs >= MAX_INTEGRITY_REPAIRS) {
+                        throw DownloadIntegrityException(
+                            "Downloaded file is corrupt at byte ${result.position}: ${result.detail}",
+                        )
+                    }
+                    val wholeFile = repairs > 0
+                    repairs += 1
+                    val evicted = integrityVerifier.evict(
+                        item = item,
+                        position = if (wholeFile) null else result.position,
+                    )
+                    analyticsTracker.logDownloadInfo {
+                        "Download id=$id evicted bytes=$evicted wholeFile=$wholeFile; re-downloading"
+                    }
+                    executor.download(
+                        id = id,
+                        item = item,
+                        strategy = strategy,
+                        retriedAfterForbidden = retriedAfterForbidden,
+                        onProgressPercent = { percent -> publishProgress(item, percent) },
+                    )
+                }
+            }
+        }
+    }
+
     private fun shouldRefreshBeforeStart(item: VideoDownloadItem): Boolean =
         inputData.getBoolean(KEY_FORCE_STREAM_REFRESH, false) ||
                 item.progress > 0f ||
@@ -297,6 +370,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         item: VideoDownloadItem,
         strategy: DownloadPlayerStrategy,
         reason: DownloadRestartReason,
+        forceRefresh: Boolean = false,
     ): DownloadStreamRefresh {
         repository.updateStatus(
             id = id,
@@ -312,6 +386,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             val refreshResult = streamRefresher.refresh(
                 item = item,
                 autoQualityLabel = DEFAULT_AUTO_QUALITY_LABEL,
+                forceRefresh = forceRefresh,
             )
         ) {
             is VideoDownloadStreamRefreshResult.Success -> {
@@ -364,6 +439,9 @@ class VideoDownloadWorker @AssistedInject internal constructor(
             .take(FINGERPRINT_BYTES)
             .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
 
+    /** Файл скачан целиком, но не разбирается как mp4 даже после перекачки. */
+    private class DownloadIntegrityException(message: String) : java.io.IOException(message)
+
     private sealed interface DownloadStreamRefresh {
         data class Success(val item: VideoDownloadItem) : DownloadStreamRefresh
         data class Failure(val message: String) : DownloadStreamRefresh
@@ -383,6 +461,7 @@ class VideoDownloadWorker @AssistedInject internal constructor(
         private const val DEFAULT_AUTO_QUALITY_LABEL = "Auto"
         private const val MAX_STREAM_REFRESH_WORK_RETRIES = 3
         private const val MAX_TRANSIENT_DOWNLOAD_RETRIES = 3
+        private const val MAX_INTEGRITY_REPAIRS = 2
         private const val TRANSIENT_RETRY_DELAY_MS = 3_000L
         private const val FINGERPRINT_BYTES = 4
         private const val MAX_PARALLEL_DOWNLOADS = 2
