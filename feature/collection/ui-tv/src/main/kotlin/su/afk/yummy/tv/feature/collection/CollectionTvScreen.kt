@@ -16,6 +16,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -60,7 +61,7 @@ private fun CollectionTvScreenErrorPreview() = ScreenPreviewTheme {
     CollectionTvScreen(
         CollectionState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить коллекцию")
+            error = UiText.Failure(IOException())
         ), emptyFlow()
     ) {}
 }

@@ -49,7 +49,7 @@ private fun RatingMobileScreenLoadingPreview() = ScreenPreviewTheme {
 @Composable
 private fun RatingMobileScreenErrorPreview() = ScreenPreviewTheme {
     RatingMobileScreen(
-        RatingState.State(isLoading = false, error = UiText.Plain("Не удалось загрузить рейтинг")),
+        RatingState.State(isLoading = false, error = UiText.Res(R.string.details_load_error)),
         emptyFlow()
     ) {}
 }

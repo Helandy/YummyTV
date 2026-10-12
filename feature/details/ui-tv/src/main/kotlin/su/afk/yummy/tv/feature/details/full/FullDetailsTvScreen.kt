@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.error.asString
@@ -49,7 +50,7 @@ private fun FullDetailsTvScreenErrorPreview() = ScreenPreviewTheme {
     FullDetailsTvScreen(
         FullDetailsState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить описание")
+            error = UiText.Failure(IOException())
         ), emptyFlow()
     ) {}
 }

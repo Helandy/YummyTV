@@ -59,7 +59,7 @@ private fun ViewingOrderTvScreenErrorPreview() = ScreenPreviewTheme {
     ViewingOrderTvScreen(
         ViewingOrderState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить порядок просмотра")
+            error = UiText.Res(R.string.details_load_error)
         ), emptyFlow()
     ) {}
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
@@ -81,7 +82,7 @@ private fun HomeTvScreenErrorPreview() = ScreenPreviewTheme {
         HomeState.State(
             isLoading = false,
             isContinueWatchingLoaded = true,
-            error = UiText.Plain("Не удалось загрузить главную")
+            error = UiText.Failure(IOException())
         ), emptyFlow()
     ) {}
 }

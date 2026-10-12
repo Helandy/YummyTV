@@ -50,7 +50,7 @@ private fun EpisodeDubbingsMobileScreenErrorPreview() = ScreenPreviewTheme {
     EpisodeDubbingsMobileScreen(
         EpisodeDubbingsState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить озвучки")
+            error = UiText.Res(R.string.details_load_error)
         ), emptyFlow()
     ) {}
 }

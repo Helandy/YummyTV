@@ -45,7 +45,7 @@ private fun ScreenshotsMobileScreenErrorPreview() = ScreenPreviewTheme {
     ScreenshotsMobileScreen(
         ScreenshotsState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить скриншоты")
+            error = UiText.Res(R.string.details_load_error)
         ), emptyFlow()
     ) {}
 }

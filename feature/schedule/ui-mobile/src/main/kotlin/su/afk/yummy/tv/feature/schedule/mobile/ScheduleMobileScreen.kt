@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
@@ -54,7 +55,7 @@ private fun ScheduleMobileScreenErrorPreview() = ScreenPreviewTheme {
     ScheduleMobileScreen(
         ScheduleState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить расписание"),
+            error = UiText.Failure(IOException()),
         ),
         emptyFlow(),
     ) {}

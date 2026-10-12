@@ -48,7 +48,7 @@ private fun FullDetailsMobileScreenErrorPreview() = ScreenPreviewTheme {
     FullDetailsMobileScreen(
         FullDetailsState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить описание")
+            error = UiText.Res(R.string.details_load_error)
         ), emptyFlow()
     ) {}
 }

@@ -60,7 +60,7 @@ private fun CollectionMobileScreenErrorPreview() = ScreenPreviewTheme {
     CollectionMobileScreen(
         CollectionState.State(
             isLoading = false,
-            error = UiText.Plain("Не удалось загрузить коллекцию"),
+            error = UiText.Res(R.string.collection_load_error),
         ),
         emptyFlow(),
     ) {}

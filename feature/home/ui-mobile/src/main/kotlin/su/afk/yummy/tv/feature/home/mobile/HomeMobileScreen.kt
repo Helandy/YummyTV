@@ -92,7 +92,7 @@ private fun HomeMobileScreenErrorPreview() = ScreenPreviewTheme {
         HomeState.State(
             isLoading = false,
             isContinueWatchingLoaded = true,
-            error = UiText.Plain("Не удалось загрузить главную"),
+            error = UiText.Res(R.string.home_load_error),
         ),
         emptyFlow(),
     ) {}
