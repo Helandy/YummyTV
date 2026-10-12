@@ -13,8 +13,13 @@
 - заголовки на хост `api.yani.tv`: `X-Application`, `Lang`, `Authorization: Bearer <refresh-токен>`
   (если вызов не задал `Authorization` сам); значения из `YaniRequestHeaderCache`;
 - таймауты: соединение 20 с, запрос 40 с, сокет 40 с;
+- `expectSuccess = true`: любой не-2xx ответ бросает `ResponseException`, чтобы 401/5xx не
+  декодировались в «пустой успех» DTO с дефолтами и не затирали кэш. Запросы, которые сами разбирают
+  статус и тело ошибки (`login`, `register`, `requestPasswordReset`, `YummyEpisodesApi`), отключают
+  проверку точечно: `expectSuccess = false`;
 - `HttpRequestRetry`: два повтора, пауза `500 мс × номер повтора`, только для `GET` (на 5xx и
-  исключения, кроме `CancellationException`). Комментарий в коде: мутации могут быть неидемпотентны;
+  исключения, кроме `CancellationException`, `ClientRequestException` (4xx) и
+  `HttpRequestTimeoutException`). Комментарий в коде: мутации могут быть неидемпотентны;
 - `ContentNegotiation` с `YaniApiJson`, `ContentEncoding` (gzip, deflate).
 
 `YaniApiJson`:

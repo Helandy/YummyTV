@@ -2,6 +2,7 @@ package su.afk.yummy.tv.data.account.network
 
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -98,6 +99,7 @@ class YaniAccountApi(
         val response = try {
             analyticsTracker.log(TAG) { "POST /profile/login" }
             clientProvider.get().post("$YANI_BASE_URL/profile/login") {
+                expectSuccess = false // статус и тело ошибки разбираются ниже
                 contentType(ContentType.Application.Json)
                 setBody(
                     YaniLoginBodyDto(
@@ -130,6 +132,7 @@ class YaniAccountApi(
         val response = try {
             analyticsTracker.log(TAG) { "POST /users" }
             clientProvider.get().post("$YANI_BASE_URL/users") {
+                expectSuccess = false // статус и тело ошибки разбираются ниже
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
@@ -278,6 +281,7 @@ class YaniAccountApi(
     suspend fun requestPasswordReset(email: String, captchaResponse: String?) {
         val response = try {
             clientProvider.get().post("$YANI_BASE_URL/profile/reset-password") {
+                expectSuccess = false // статус и тело ошибки разбираются ниже
                 contentType(ContentType.Application.Json)
                 setBody(YaniPasswordResetBodyDto(email, captchaResponse))
             }

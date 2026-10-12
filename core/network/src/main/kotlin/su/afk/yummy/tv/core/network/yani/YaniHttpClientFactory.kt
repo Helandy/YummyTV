@@ -2,7 +2,9 @@ package su.afk.yummy.tv.core.network.yani
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.compression.ContentEncoding
@@ -14,6 +16,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
@@ -34,6 +37,10 @@ fun buildYaniHttpClient(
     val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, scope)
 
     return HttpClient(OkHttp) {
+        // Без этого 401/5xx с JSON-телом декодируются в «пустой успех» (DTO с дефолтами) и затирают
+        // кэш. Запросы, которые сами разбирают статус/тело ошибки (логин, регистрация, сброс пароля,
+        // YummyTV API), отключают проверку точечно: `expectSuccess = false`.
+        expectSuccess = true
         engine {
             preconfigured = okHttpClient
         }
@@ -49,7 +56,11 @@ fun buildYaniHttpClient(
                 request.method == HttpMethod.Get && response.status.value in 500..599
             }
             retryOnExceptionIf { request, cause ->
-                request.method == HttpMethod.Get && cause !is kotlinx.coroutines.CancellationException
+                request.method == HttpMethod.Get &&
+                    cause !is CancellationException &&
+                    // 4xx и таймаут запроса повторять бессмысленно: ответ не изменится, а спиннер вырастет.
+                    cause !is ClientRequestException &&
+                    cause !is HttpRequestTimeoutException
             }
             delayMillis { retry -> 500L * retry }
         }
@@ -60,40 +71,42 @@ fun buildYaniHttpClient(
             gzip()
             deflate()
         }
-        install(createClientPlugin("YaniApplicationHeader") {
-            onRequest { request, _ ->
-                if (request.url.host == YANI_API_HOST) {
-                    val headers = headerCache.current()
-                    if (headers.applicationToken.isNotBlank()) {
-                        request.headers.remove(YANI_APPLICATION_HEADER)
-                        request.headers.append(YANI_APPLICATION_HEADER, headers.applicationToken)
-                    }
-                    if (headers.contentLanguageCode.isNotBlank()) {
-                        request.headers.remove(YANI_LANGUAGE_HEADER)
-                        request.headers.append(YANI_LANGUAGE_HEADER, headers.contentLanguageCode)
-                    }
-                    if (
-                        headers.refreshToken.isNotBlank() &&
-                        request.headers[HttpHeaders.Authorization].isNullOrBlank()
-                    ) {
-                        request.headers.remove(HttpHeaders.Authorization)
-                        request.headers.append(
-                            HttpHeaders.Authorization,
-                            YANI_AUTHORIZATION_PREFIX + headers.refreshToken,
-                        )
+        install(
+            createClientPlugin("YaniApplicationHeader") {
+                onRequest { request, _ ->
+                    if (request.url.host == YANI_API_HOST) {
+                        val headers = headerCache.current()
+                        if (headers.applicationToken.isNotBlank()) {
+                            request.headers.remove(YANI_APPLICATION_HEADER)
+                            request.headers.append(YANI_APPLICATION_HEADER, headers.applicationToken)
+                        }
+                        if (headers.contentLanguageCode.isNotBlank()) {
+                            request.headers.remove(YANI_LANGUAGE_HEADER)
+                            request.headers.append(YANI_LANGUAGE_HEADER, headers.contentLanguageCode)
+                        }
+                        if (
+                            headers.refreshToken.isNotBlank() &&
+                            request.headers[HttpHeaders.Authorization].isNullOrBlank()
+                        ) {
+                            request.headers.remove(HttpHeaders.Authorization)
+                            request.headers.append(
+                                HttpHeaders.Authorization,
+                                YANI_AUTHORIZATION_PREFIX + headers.refreshToken,
+                            )
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
         if (BuildConfig.DEBUG) {
             install(Logging) {
                 logger = SensitiveDataMaskingLogger(Logger.ANDROID)
                 level = LogLevel.BODY
                 sanitizeHeader { header ->
                     header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
-                            header.equals(HttpHeaders.Cookie, ignoreCase = true) ||
-                            header.equals(HttpHeaders.SetCookie, ignoreCase = true) ||
-                            header.equals(YANI_APPLICATION_HEADER, ignoreCase = true)
+                        header.equals(HttpHeaders.Cookie, ignoreCase = true) ||
+                        header.equals(HttpHeaders.SetCookie, ignoreCase = true) ||
+                        header.equals(YANI_APPLICATION_HEADER, ignoreCase = true)
                 }
             }
         }

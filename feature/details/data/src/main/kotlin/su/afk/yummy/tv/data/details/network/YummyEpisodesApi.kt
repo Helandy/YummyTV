@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.details.network
 
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -18,7 +19,10 @@ class YummyEpisodesApi(
 ) {
     /** 404 (нет маппинга MAL→TMDB) — валидный ответ «серий нет», а не ошибка. */
     suspend fun getEpisodes(malId: Int): YummyEpisodesDto {
-        val response = clientProvider.get().get("$YUMMY_TV_API_BASE_URL/anime/mal/$malId")
+        val response = clientProvider.get().get("$YUMMY_TV_API_BASE_URL/anime/mal/$malId") {
+            // Статус разбирается ниже: 404 — «серий нет», а не ошибка.
+            expectSuccess = false
+        }
         return when {
             response.status.isSuccess() -> response.body()
             response.status == HttpStatusCode.NotFound -> YummyEpisodesDto(malId = malId)
