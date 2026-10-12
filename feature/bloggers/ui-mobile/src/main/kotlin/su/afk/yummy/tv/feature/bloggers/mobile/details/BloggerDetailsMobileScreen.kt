@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
@@ -48,7 +49,7 @@ fun BloggerDetailsMobileScreen(
 ) {
     val context = LocalContext.current
     val blogger = state.blogger
-    val error = state.error
+    val error = state.error?.asString()
     LaunchedEffect(Unit) {
         effect.collect {
             if (it is BloggerDetailsState.Effect.ShowToast) {

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
@@ -23,6 +24,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.schedule.ScheduleState
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileDateChips
 import su.afk.yummy.tv.feature.schedule.mobile.view.ScheduleMobileReleaseCard
@@ -52,7 +54,7 @@ private fun ScheduleMobileScreenErrorPreview() = ScreenPreviewTheme {
     ScheduleMobileScreen(
         ScheduleState.State(
             isLoading = false,
-            error = "Не удалось загрузить расписание",
+            error = UiText.Plain("Не удалось загрузить расписание"),
         ),
         emptyFlow(),
     ) {}
@@ -90,10 +92,10 @@ fun ScheduleMobileScreen(
             )
         },
         isLoading = state.isLoading,
-        error = state.error?.let { ErrorItem(title = it, message = it) },
+        error = state.error?.asString()?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(ScheduleState.Event.RetrySelected) },
         isEmpty = schedule.dayGroups.isEmpty(),
-        errorContent = state.error?.let { message ->
+        errorContent = state.error?.asString()?.let { message ->
             { _, retry ->
                 MobileMessage(
                     title = message,

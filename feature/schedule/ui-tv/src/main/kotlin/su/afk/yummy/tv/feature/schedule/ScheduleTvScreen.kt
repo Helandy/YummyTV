@@ -15,12 +15,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.schedule.presentation.R
 import su.afk.yummy.tv.feature.schedule.view.ScheduleLoadingState
 import su.afk.yummy.tv.feature.schedule.view.ScheduleTimeline
@@ -58,7 +60,7 @@ private fun ScheduleTvScreenErrorPreview() = ScreenPreviewTheme {
     ScheduleTvScreen(
         ScheduleState.State(
             isLoading = false,
-            error = "Не удалось загрузить расписание"
+            error = UiText.Plain("Не удалось загрузить расписание")
         ), emptyFlow()
     ) {}
 }
@@ -90,7 +92,7 @@ fun ScheduleTvScreen(
             )
 
             state.error != null -> TvStateMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 modifier = Modifier.tvStateFocusTracking(focusHandoff, TvStatePlaceholder.Error),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(ScheduleState.Event.RetrySelected) },

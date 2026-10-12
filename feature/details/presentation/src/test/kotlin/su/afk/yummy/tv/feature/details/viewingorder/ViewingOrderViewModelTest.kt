@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.model.anime.AnimeViewingOrderItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -75,14 +76,14 @@ class ViewingOrderViewModelTest : BaseUnitTest() {
         val state = createViewModel().currentState
 
         assertFalse(state.isLoading)
-        assertEquals("parsed message\nUnable to resolve host", state.error)
+        assertEquals("Unable to resolve host", (state.error as UiText.Failure).cause.message)
     }
 
     @Test
     fun `other failure shows the exception message`() {
         coEvery { repository.getAnimeDetails(ANIME_ID) } throws IllegalStateException("boom")
 
-        assertEquals("boom", createViewModel().currentState.error)
+        assertEquals("boom", (createViewModel().currentState.error as UiText.Failure).cause.message)
     }
 
     @Test

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.viewingorder
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -14,7 +15,7 @@ class ViewingOrderState {
         val isLoading: Boolean = true,
         val currentAnimeId: Int = 0,
         val items: ImmutableList<AnimeViewingOrderItem> = persistentListOf(),
-        val error: String? = null,
+        val error: UiText? = null,
     ) : UiState
 
     /** Пользовательские действия на экране порядка просмотра. */

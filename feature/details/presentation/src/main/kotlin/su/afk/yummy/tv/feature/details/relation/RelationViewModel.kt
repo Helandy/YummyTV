@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -80,7 +81,7 @@ class RelationViewModel @AssistedInject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = errorHandler.parse(error).message,
+                            error = UiText.Failure(error),
                         )
                     }
                 },

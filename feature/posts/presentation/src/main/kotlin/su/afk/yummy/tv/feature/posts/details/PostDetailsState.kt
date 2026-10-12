@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.posts.details
 
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -11,7 +12,7 @@ class PostDetailsState {
         val loading: Boolean = true,
         val details: PostDetails? = null,
         val currentUserId: Int = 0,
-        val error: String? = null,
+        val error: UiText? = null,
         val voting: Boolean = false,
     ) : UiState
 

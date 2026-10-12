@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.episodes.dubbings
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -14,7 +15,7 @@ class EpisodeDubbingsState {
     data class State(
         val episode: String = "",
         val isLoading: Boolean = true,
-        val error: String? = null,
+        val error: UiText? = null,
         val dubbings: ImmutableList<DubbingItem> = persistentListOf(),
         val pendingBalancerSelection: BalancerPickerState? = null,
     ) : UiState

@@ -12,6 +12,7 @@ import org.junit.Test
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -77,7 +78,7 @@ class SubscriptionsViewModelTest : BaseUnitTest() {
         coEvery { subscriptionHandler.loadScreenSubscriptionBase(ANIME_ID) } returns
             ScreenSubscriptionBaseResult.Failure("offline", IllegalStateException("offline"))
         val vm = createViewModel()
-        assertEquals("offline", vm.currentState.error)
+        assertEquals("offline", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { subscriptionHandler.loadScreenSubscriptionBase(ANIME_ID) } returns content(option("a"))
 
         vm.setEvent(Event.RetrySelected)

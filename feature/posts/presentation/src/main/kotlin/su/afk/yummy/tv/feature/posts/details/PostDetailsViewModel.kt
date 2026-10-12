@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
@@ -100,7 +101,7 @@ class PostDetailsViewModel @AssistedInject constructor(
                 setState {
                     copy(
                         loading = false,
-                        error = errorHandler.parse(it).message
+                        error = UiText.Failure(it)
                     )
                 }
             },

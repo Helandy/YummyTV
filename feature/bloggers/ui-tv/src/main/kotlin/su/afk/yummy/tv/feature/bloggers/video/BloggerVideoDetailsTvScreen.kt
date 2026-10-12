@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
@@ -58,7 +59,7 @@ fun BloggerVideoDetailsTvScreen(
 ) {
     val context = LocalContext.current
     val video = state.video
-    val error = state.error
+    val error = state.error?.asString()
     LaunchedEffect(Unit) {
         effect.collect {
             when (it) {

@@ -24,6 +24,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -508,7 +509,7 @@ class HomeViewModel @Inject internal constructor(
                         copy(
                             isLoading = false,
                             error = if (feed == null) {
-                                e.userMessage(stringProvider.get(R.string.home_load_error))
+                                e.userText(UiText.Res(R.string.home_load_error))
                             } else {
                                 error
                             },
@@ -536,7 +537,7 @@ class HomeViewModel @Inject internal constructor(
                     setState {
                         copy(
                             isBloggerVideosLoading = false,
-                            bloggerVideosError = error.userMessage(stringProvider.get(R.string.home_blogger_videos_load_error)),
+                            bloggerVideosError = error.userText(UiText.Res(R.string.home_blogger_videos_load_error)),
                         )
                     }
                 },
@@ -561,7 +562,7 @@ class HomeViewModel @Inject internal constructor(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = e.userMessage(stringProvider.get(R.string.home_load_error)),
+                                error = e.userText(UiText.Res(R.string.home_load_error)),
                             )
                         }
                     } else if (showInitialLoading) {

@@ -9,8 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.full.view.FullDetailsBody
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 
@@ -47,7 +49,7 @@ private fun FullDetailsTvScreenErrorPreview() = ScreenPreviewTheme {
     FullDetailsTvScreen(
         FullDetailsState.State(
             isLoading = false,
-            error = "Не удалось загрузить описание"
+            error = UiText.Plain("Не удалось загрузить описание")
         ), emptyFlow()
     ) {}
 }
@@ -62,7 +64,7 @@ fun FullDetailsTvScreen(
 
     ) {
     val details = state.details
-    val error = state.error
+    val error = state.error?.asString()
     BackHandler { onEvent(FullDetailsState.Event.BackSelected) }
     Box(modifier = Modifier.fillMaxSize()) {
         when {

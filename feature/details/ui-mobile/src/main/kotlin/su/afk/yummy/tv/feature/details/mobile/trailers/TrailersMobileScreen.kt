@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
@@ -50,7 +51,7 @@ fun TrailersMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             onRetry = { onEvent(TrailersState.Event.RetrySelected) },
             empty = state.trailers.isEmpty()
         ) {

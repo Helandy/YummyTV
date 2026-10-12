@@ -16,11 +16,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.MobileMetaRow
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.full.FullDetailsState
 import su.afk.yummy.tv.feature.details.mobile.full.utils.formatAiredCount
 import su.afk.yummy.tv.feature.details.mobile.full.utils.formatNextEpisode
@@ -46,7 +48,7 @@ private fun FullDetailsMobileScreenErrorPreview() = ScreenPreviewTheme {
     FullDetailsMobileScreen(
         FullDetailsState.State(
             isLoading = false,
-            error = "Не удалось загрузить описание"
+            error = UiText.Plain("Не удалось загрузить описание")
         ), emptyFlow()
     ) {}
 }
@@ -69,7 +71,7 @@ fun FullDetailsMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             onRetry = { onEvent(FullDetailsState.Event.RetrySelected) },
             empty = state.details == null,
         ) {

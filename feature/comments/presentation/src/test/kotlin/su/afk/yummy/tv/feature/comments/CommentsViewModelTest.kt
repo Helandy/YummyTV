@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -394,7 +395,7 @@ class CommentsViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.ChildrenToggleSelected(1))
 
         val ui = vm.currentState.commentOverlays[1]!!
-        assertEquals("boom", ui.childrenError)
+        assertEquals("boom", (ui.childrenError as UiText.Failure).cause.message)
         assertFalse(ui.childrenLoading)
     }
 

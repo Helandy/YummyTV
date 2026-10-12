@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
@@ -48,7 +49,7 @@ fun PostDetailsMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.loading,
-            error = state.error?.takeIf { it.isNotBlank() }
+            error = state.error?.asString()?.takeIf { it.isNotBlank() }
                 ?: if (state.error != null) stringResource(R.string.posts_error) else null,
             onRetry = { onEvent(PostDetailsState.Event.RetrySelected) },
             empty = !state.loading && state.error == null && state.details == null,

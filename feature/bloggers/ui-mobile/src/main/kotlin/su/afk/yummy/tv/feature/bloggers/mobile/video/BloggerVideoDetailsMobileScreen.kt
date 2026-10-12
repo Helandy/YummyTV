@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileSectionLoading
@@ -55,7 +56,7 @@ fun BloggerVideoDetailsMobileScreen(
 ) {
     val context = LocalContext.current
     val video = state.video
-    val error = state.error
+    val error = state.error?.asString()
     LaunchedEffect(Unit) {
         effect.collect {
             when (it) {

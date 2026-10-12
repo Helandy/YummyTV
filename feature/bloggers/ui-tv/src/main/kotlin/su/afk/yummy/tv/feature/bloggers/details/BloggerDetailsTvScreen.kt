@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
@@ -45,7 +46,7 @@ fun BloggerDetailsTvScreen(
 ) {
     val context = LocalContext.current
     val blogger = state.blogger
-    val error = state.error
+    val error = state.error?.asString()
     LaunchedEffect(Unit) {
         effect.collect {
             if (it is BloggerDetailsState.Effect.ShowToast) Toast.makeText(

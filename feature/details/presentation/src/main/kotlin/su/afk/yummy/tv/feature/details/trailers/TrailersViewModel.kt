@@ -8,6 +8,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -49,7 +50,7 @@ class TrailersViewModel @AssistedInject internal constructor(
             onSuccess = { trailers ->
                 setState { copy(isLoading = false, trailers = trailers.toImmutableList()) }
             },
-            onFailure = { setState { copy(isLoading = false, error = it.userMessage()) } },
+            onFailure = { setState { copy(isLoading = false, error = it.userText()) } },
         )
     }
 }

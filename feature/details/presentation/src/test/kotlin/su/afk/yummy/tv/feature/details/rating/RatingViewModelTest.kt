@@ -17,6 +17,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -98,7 +99,7 @@ class RatingViewModelTest : BaseUnitTest() {
             userRating = Result.failure(IllegalStateException("y")),
         )
         val vm = createViewModel()
-        assertEquals("boom", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { ratingMutationHandler.load(ANIME_ID) } returns RatingLoadResult(
             Result.success(summary),
             Result.success(AnimeListStats()),

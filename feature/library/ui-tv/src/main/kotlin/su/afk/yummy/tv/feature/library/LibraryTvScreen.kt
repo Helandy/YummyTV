@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
@@ -146,7 +147,7 @@ fun LibraryTvScreen(
 
         state.remoteError?.let { error ->
             LibraryRemoteErrorBanner(
-                message = error,
+                message = error.asString(),
                 isLoading = state.isRemoteLoading,
                 onRetry = { onEvent(LibraryState.Event.RetrySelected) },
             )

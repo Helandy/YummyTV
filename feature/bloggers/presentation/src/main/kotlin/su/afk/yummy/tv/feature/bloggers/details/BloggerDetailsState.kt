@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.bloggers.details
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -17,7 +18,7 @@ class BloggerDetailsState {
         val currentUserId: Int = 0,
         val loading: Boolean = true,
         val subscribing: Boolean = false,
-        val error: String? = null,
+        val error: UiText? = null,
     ) : UiState
 
     sealed interface Event : UiEvent {

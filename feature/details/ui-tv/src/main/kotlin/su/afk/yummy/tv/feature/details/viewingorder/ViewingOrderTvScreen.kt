@@ -18,9 +18,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.viewingorder.view.ViewingOrderRow
 
@@ -57,7 +59,7 @@ private fun ViewingOrderTvScreenErrorPreview() = ScreenPreviewTheme {
     ViewingOrderTvScreen(
         ViewingOrderState.State(
             isLoading = false,
-            error = "Не удалось загрузить порядок просмотра"
+            error = UiText.Plain("Не удалось загрузить порядок просмотра")
         ), emptyFlow()
     ) {}
 }
@@ -80,7 +82,7 @@ fun ViewingOrderTvScreen(
             state.isLoading -> TvLoadingScreen()
 
             state.error != null -> TvStateMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(ViewingOrderState.Event.RetrySelected) },
             )

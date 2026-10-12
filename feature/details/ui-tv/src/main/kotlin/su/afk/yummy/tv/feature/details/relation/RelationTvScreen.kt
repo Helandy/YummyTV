@@ -45,6 +45,7 @@ import su.afk.yummy.tv.core.designsystem.components.RatingBadge
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
 import su.afk.yummy.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
@@ -116,7 +117,7 @@ fun RelationTvScreen(
         when {
             state.isLoading && state.relation == null -> TvLoadingScreen()
             state.relation == null -> DetailsError(
-                message = state.error.orEmpty(),
+                message = state.error?.asString().orEmpty(),
                 onRetry = { onEvent(RelationState.Event.RetrySelected) },
             )
 

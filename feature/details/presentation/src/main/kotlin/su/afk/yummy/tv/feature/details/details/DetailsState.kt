@@ -7,6 +7,7 @@ import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.anime.AnimeDetails
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -24,7 +25,7 @@ class DetailsState {
         val isLoading: Boolean = true,
         val details: AnimeDetails? = null,
         val videosState: VideosUiState = VideosUiState.NotLoaded,
-        val error: String? = null,
+        val error: UiText? = null,
         val isInLibrary: Boolean = false,
         val isFavorite: Boolean = false,
         val libraryList: UserAnimeList? = null,

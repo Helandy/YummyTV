@@ -6,6 +6,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -66,8 +67,10 @@ class RatingViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = error?.message
-                            ?: stringProvider.get(R.string.details_load_error),
+                        error = UiText.Failure(
+                            cause = error ?: IllegalStateException(),
+                            fallback = UiText.Res(R.string.details_load_error),
+                        ),
                     )
                 }
                 return@launch

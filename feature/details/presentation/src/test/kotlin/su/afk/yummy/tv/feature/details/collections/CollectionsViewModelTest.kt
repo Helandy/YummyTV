@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.AnimeCollectionSummary
@@ -75,7 +76,7 @@ class CollectionsViewModelTest : BaseUnitTest() {
         val state = createViewModel().currentState
 
         assertFalse(state.isLoading)
-        assertEquals("boom", state.error)
+        assertEquals("boom", (state.error as UiText.Failure).cause.message)
         assertTrue(state.collections.isEmpty())
     }
 

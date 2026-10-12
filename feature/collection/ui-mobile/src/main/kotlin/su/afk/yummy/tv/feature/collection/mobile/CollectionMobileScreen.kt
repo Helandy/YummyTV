@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
@@ -29,6 +30,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.collection.CollectionState
 import su.afk.yummy.tv.feature.collection.mobile.view.CollectionEngagementPanel
@@ -58,7 +60,7 @@ private fun CollectionMobileScreenErrorPreview() = ScreenPreviewTheme {
     CollectionMobileScreen(
         CollectionState.State(
             isLoading = false,
-            error = "Не удалось загрузить коллекцию",
+            error = UiText.Plain("Не удалось загрузить коллекцию"),
         ),
         emptyFlow(),
     ) {}
@@ -113,10 +115,10 @@ fun CollectionMobileScreen(
             )
         },
         isLoading = state.isLoading,
-        error = state.error?.let { ErrorItem(title = it, message = it) },
+        error = state.error?.asString()?.let { ErrorItem(title = it, message = it) },
         onRetry = { onEvent(CollectionState.Event.RetrySelected) },
         isEmpty = collection?.animes.orEmpty().isEmpty() && !state.isLoading,
-        errorContent = state.error?.let { message ->
+        errorContent = state.error?.asString()?.let { message ->
             { _, retry ->
                 MobileMessage(
                     title = message,

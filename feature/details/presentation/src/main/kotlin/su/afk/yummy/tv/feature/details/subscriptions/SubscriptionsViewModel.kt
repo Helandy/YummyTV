@@ -9,6 +9,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.details.DetailsAnalytics
@@ -74,7 +75,7 @@ class SubscriptionsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = result.message,
+                        error = UiText.Failure(result.error),
                         subscriptions = persistentListOf(),
                     )
                 }

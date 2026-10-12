@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.core.utils.formatting.formatRelativeDateTime
 import su.afk.yummy.tv.domain.comments.model.CommentVote
@@ -224,7 +225,7 @@ internal fun CommentCard(
                     }
                     item.childrenError?.let { error ->
                         Text(
-                            text = error,
+                            text = error.asString(),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium,
                         )

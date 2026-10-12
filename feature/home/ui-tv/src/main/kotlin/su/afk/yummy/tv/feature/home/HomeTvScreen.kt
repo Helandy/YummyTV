@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.TvStatePlaceholder
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvStateFocusHandoff
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusablePlaceholder
@@ -31,6 +32,7 @@ import su.afk.yummy.tv.core.designsystem.focus.tvStateFocusTracking
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
@@ -79,7 +81,7 @@ private fun HomeTvScreenErrorPreview() = ScreenPreviewTheme {
         HomeState.State(
             isLoading = false,
             isContinueWatchingLoaded = true,
-            error = "Не удалось загрузить главную"
+            error = UiText.Plain("Не удалось загрузить главную")
         ), emptyFlow()
     ) {}
 }
@@ -133,7 +135,7 @@ fun HomeTvScreen(
 
     ReportDrawnWhen { state.isFirstScreenSettled() }
 
-    val error = state.error
+    val error = state.error?.asString()
     val feed = state.feed
     val focusHandoff = rememberTvStateFocusHandoff(
         placeholder = when {

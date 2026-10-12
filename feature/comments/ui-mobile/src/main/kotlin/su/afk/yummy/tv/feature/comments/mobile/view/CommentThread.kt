@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.comments.model.CommentVote
 import su.afk.yummy.tv.feature.comments.CommentsState
@@ -88,7 +89,7 @@ internal fun CommentThread(
                 }
                 item.childrenError?.let { error ->
                     Text(
-                        text = error,
+                        text = error.asString(),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(vertical = 8.dp),

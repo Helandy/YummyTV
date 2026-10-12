@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.collection
 
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -12,7 +13,7 @@ class CollectionState {
         val isVoteLoading: Boolean = false,
         val currentUserId: Int = 0,
         val collection: CollectionDetail? = null,
-        val error: String? = null,
+        val error: UiText? = null,
         val firstVisibleItemIndex: Int = 0,
         val firstVisibleItemScrollOffset: Int = 0,
         val isEditDialogVisible: Boolean = false,

@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
@@ -258,7 +259,7 @@ class CollectionViewModel @AssistedInject internal constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            error = e.userMessage(stringProvider.get(R.string.collection_load_error))
+                            error = e.userText(UiText.Res(R.string.collection_load_error))
                         )
                     }
                 },

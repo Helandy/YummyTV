@@ -20,9 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
 import su.afk.yummy.tv.core.designsystem.tv.TvStateMessage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsGrid
 import su.afk.yummy.tv.feature.details.collections.view.CollectionsMessage
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -60,7 +62,7 @@ private fun CollectionsTvScreenErrorPreview() = ScreenPreviewTheme {
     CollectionsTvScreen(
         CollectionsState.State(
             isLoading = false,
-            error = "Не удалось загрузить коллекции"
+            error = UiText.Plain("Не удалось загрузить коллекции")
         ), emptyFlow()
     ) {}
 }
@@ -79,7 +81,7 @@ fun CollectionsTvScreen(
     }
 
     BackHandler { handleBack() }
-    val error = state.error
+    val error = state.error?.asString()
 
     Box(
         modifier = Modifier

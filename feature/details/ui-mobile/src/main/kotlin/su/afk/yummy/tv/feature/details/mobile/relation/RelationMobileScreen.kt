@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
@@ -87,7 +88,7 @@ fun RelationMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             onRetry = { onEvent(RelationState.Event.RetrySelected) },
             empty = state.relation == null,
         ) {

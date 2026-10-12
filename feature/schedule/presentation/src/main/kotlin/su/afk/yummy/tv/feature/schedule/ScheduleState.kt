@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.schedule
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -15,7 +16,7 @@ class ScheduleState {
         val isLoading: Boolean = true,
         val days: ImmutableList<AnimeScheduleDay> = persistentListOf(),
         val tvSchedule: ScheduleTimelineUi = ScheduleTimelineUi(),
-        val error: String? = null,
+        val error: UiText? = null,
     ) : UiState
 
     /** Пользовательские действия на экране расписания. */

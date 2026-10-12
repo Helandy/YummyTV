@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -34,7 +35,7 @@ class LibraryState {
         val historyLocalProgress: ImmutableMap<String, AnimeWatchProgress> = persistentMapOf(),
         val isSignedIn: Boolean = false,
         val isRemoteLoading: Boolean = false,
-        val remoteError: String? = null,
+        val remoteError: UiText? = null,
         /** Вкладки в порядке, выбранном пользователем в настройках. */
         val tabs: ImmutableList<LibraryTab> = LibraryTab.entries.toImmutableList(),
         val selectedTab: LibraryTab = LibraryTab.CONTINUE_WATCHING,

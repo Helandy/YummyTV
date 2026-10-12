@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.episodes.dubbings.EpisodeDubbingsState
 import su.afk.yummy.tv.feature.details.mobile.details.view.BalancerDialog
 import su.afk.yummy.tv.feature.details.mobile.episodes.dubbings.view.EpisodeDubbingMobileRow
@@ -48,7 +50,7 @@ private fun EpisodeDubbingsMobileScreenErrorPreview() = ScreenPreviewTheme {
     EpisodeDubbingsMobileScreen(
         EpisodeDubbingsState.State(
             isLoading = false,
-            error = "Не удалось загрузить озвучки"
+            error = UiText.Plain("Не удалось загрузить озвучки")
         ), emptyFlow()
     ) {}
 }
@@ -78,7 +80,7 @@ fun EpisodeDubbingsMobileScreen(
             }
 
             state.error != null -> MobileMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 icon = Icons.Filled.Warning,
                 actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(EpisodeDubbingsState.Event.RetrySelected) },

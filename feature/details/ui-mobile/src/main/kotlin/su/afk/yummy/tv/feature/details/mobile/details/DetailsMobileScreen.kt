@@ -28,11 +28,13 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.DetailsState
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
@@ -59,7 +61,7 @@ private fun DetailsMobileScreenErrorPreview() = ScreenPreviewTheme {
     DetailsMobileScreen(
         DetailsState.State(
             isLoading = false,
-            error = "Не удалось загрузить детали"
+            error = UiText.Plain("Не удалось загрузить детали")
         ), emptyFlow()
     ) {}
 }
@@ -73,7 +75,7 @@ fun DetailsMobileScreen(
 ) {
     val details = state.details
     val emptyText = stringResource(R.string.details_mobile_empty)
-    val error = state.error.takeIf { details == null }
+    val error = state.error?.asString().takeIf { details == null }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     BaseScreen(
@@ -166,7 +168,7 @@ fun DetailsMobileScreen(
             state.error?.let { error ->
                 item(key = "soft_error") {
                     MobileMessage(
-                        title = error,
+                        title = error.asString(),
                         actionLabel = stringResource(CoreR.string.common_retry),
                         onAction = { onEvent(DetailsState.Event.RetrySelected) },
                     )

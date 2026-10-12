@@ -15,10 +15,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterGrid
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.lazylist.lazyKey
 import su.afk.yummy.tv.feature.details.mobile.viewingorder.view.ViewingOrderMobileCard
 import su.afk.yummy.tv.feature.details.presentation.R
@@ -43,7 +45,7 @@ private fun ViewingOrderMobileScreenErrorPreview() = ScreenPreviewTheme {
     ViewingOrderMobileScreen(
         ViewingOrderState.State(
             isLoading = false,
-            error = "Не удалось загрузить порядок просмотра"
+            error = UiText.Plain("Не удалось загрузить порядок просмотра")
         ), emptyFlow()
     ) {}
 }
@@ -71,7 +73,7 @@ fun ViewingOrderMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             empty = state.items.isEmpty() && !state.isLoading,
         ) {
             MobilePosterGrid(contentPadding = PaddingValues(0.dp)) {

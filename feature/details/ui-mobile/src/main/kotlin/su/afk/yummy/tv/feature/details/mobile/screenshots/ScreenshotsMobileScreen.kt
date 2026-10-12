@@ -15,10 +15,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.screenshots.utils.screenshotLazyKey
 import su.afk.yummy.tv.feature.details.mobile.screenshots.view.ScreenshotMobileCard
@@ -43,7 +45,7 @@ private fun ScreenshotsMobileScreenErrorPreview() = ScreenPreviewTheme {
     ScreenshotsMobileScreen(
         ScreenshotsState.State(
             isLoading = false,
-            error = "Не удалось загрузить скриншоты"
+            error = UiText.Plain("Не удалось загрузить скриншоты")
         ), emptyFlow()
     ) {}
 }
@@ -66,7 +68,7 @@ fun ScreenshotsMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             empty = state.screenshots.isEmpty() && !state.isLoading,
         ) {
             LazyColumn(

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.core.model.anime.AnimeScreenshot
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -14,7 +15,7 @@ class ScreenshotsState {
         val isLoading: Boolean = true,
         val title: String = "",
         val screenshots: ImmutableList<AnimeScreenshot> = persistentListOf(),
-        val error: String? = null,
+        val error: UiText? = null,
     ) : UiState
 
     /** Пользовательские действия на экране скриншотов. */

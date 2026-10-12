@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleUpdateObserver
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
 import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -207,7 +208,7 @@ class HomeViewModelTest : BaseUnitTest() {
     fun `failed load without a feed shows the error and retry recovers`() {
         coEvery { getHomeFeed() } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals("boom", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         assertFalse(vm.currentState.isLoading)
         coEvery { getHomeFeed() } returns feed()
 
@@ -270,7 +271,7 @@ class HomeViewModelTest : BaseUnitTest() {
         coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } throws IllegalStateException("boom")
         vm.setEvent(Event.BloggerVideosRetrySelected)
 
-        assertEquals("boom", vm.currentState.bloggerVideosError)
+        assertEquals("boom", (vm.currentState.bloggerVideosError as UiText.Failure).cause.message)
     }
 
     @Test

@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -78,7 +79,7 @@ class ScheduleViewModelTest : BaseUnitTest() {
         val state = createViewModel().currentState
 
         assertFalse(state.isLoading)
-        assertEquals("parsed message", state.error)
+        assertEquals("boom", (state.error as UiText.Failure).cause.message)
     }
 
     @Test

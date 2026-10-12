@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.relation
 
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -11,7 +12,7 @@ class RelationState {
         val relationType: RelationType,
         val isLoading: Boolean = true,
         val relation: AnimeRelation? = null,
-        val error: String? = null,
+        val error: UiText? = null,
     ) : UiState
 
     sealed interface Event : UiEvent {

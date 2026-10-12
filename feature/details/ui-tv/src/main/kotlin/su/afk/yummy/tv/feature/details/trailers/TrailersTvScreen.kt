@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvCardSpacing
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvGridStartExtent
 import su.afk.yummy.tv.core.designsystem.focus.rememberTvTopAnchoredGridBringIntoViewSpec
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
@@ -76,7 +77,7 @@ fun TrailersTvScreen(
             state.isLoading -> TvLoadingScreen()
 
             state.error != null -> TvStateMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(TrailersState.Event.RetrySelected) },
             )

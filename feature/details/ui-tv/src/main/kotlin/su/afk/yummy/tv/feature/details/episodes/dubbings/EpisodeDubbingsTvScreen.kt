@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusRestorer
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
@@ -104,7 +105,7 @@ fun EpisodeDubbingsTvScreen(
             state.isLoading -> TvLoadingScreen()
 
             state.error != null -> TvStateMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 onRetry = { onEvent(EpisodeDubbingsState.Event.RetrySelected) },
             )
 

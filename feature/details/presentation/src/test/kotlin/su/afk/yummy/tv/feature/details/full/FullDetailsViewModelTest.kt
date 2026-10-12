@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.anime.repository.AnimeRepository
@@ -66,7 +67,7 @@ class FullDetailsViewModelTest : BaseUnitTest() {
     fun `failed load shows the exception message and retry recovers`() {
         coEvery { repository.getAnimeDetails(ANIME_ID) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals("boom", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { repository.getAnimeDetails(ANIME_ID) } returns animeDetails(id = ANIME_ID)
 
         vm.setEvent(Event.RetrySelected)

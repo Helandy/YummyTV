@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.search
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -16,7 +17,7 @@ class SearchState {
         val query: String = "",
         val results: Flow<PagingData<SearchItem>> = flowOf(PagingData.empty()),
         val isSearchActive: Boolean = false,
-        val error: String? = null,
+        val error: UiText? = null,
         val filters: SearchFilters = SearchFilters.EMPTY,
         val draftFilters: SearchFilters = SearchFilters.EMPTY,
         val filterOptions: SearchFilterOptions = SearchFilterOptions(),

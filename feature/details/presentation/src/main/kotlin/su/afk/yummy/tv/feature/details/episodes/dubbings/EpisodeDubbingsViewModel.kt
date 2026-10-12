@@ -13,6 +13,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -89,7 +90,7 @@ class EpisodeDubbingsViewModel @AssistedInject internal constructor(
                 val dubbings = videos.episodeDubbingItems(episode)
                 setState { copy(isLoading = false, dubbings = dubbings.toImmutableList()) }
             },
-            onFailure = { e -> setState { copy(isLoading = false, error = e.userMessage()) } },
+            onFailure = { e -> setState { copy(isLoading = false, error = e.userText()) } },
         )
     }
 

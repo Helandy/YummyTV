@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.model.error.isNetworkError
 
 /**
@@ -73,4 +74,11 @@ abstract class BaseViewModel<S : UiState, E : UiEvent, F : UiEffect> : Coroutine
 
         else -> message ?: fallback ?: errorHandler.parse(this).message
     }
+
+    /**
+     * Причина ошибки для inline-состояния экрана в виде [UiText]: текст локализуется при отрисовке,
+     * а не фиксируется на языке момента ошибки. [fallback] показывается, когда у исключения нет
+     * собственного сообщения.
+     */
+    protected fun Throwable.userText(fallback: UiText? = null): UiText = UiText.Failure(this, fallback)
 }

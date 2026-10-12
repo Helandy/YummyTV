@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.account.model.AccountSession
@@ -167,7 +168,7 @@ class DetailsViewModelTest : BaseUnitTest() {
     fun `failed load shows the message and retry recovers`() {
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.failure(IllegalStateException("boom"))
         val vm = createViewModel()
-        assertEquals("boom", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { screenDataHandler.loadDetails(ANIME_ID) } returns Result.success(animeDetails(id = ANIME_ID))
 
         vm.setEvent(Event.RetrySelected)

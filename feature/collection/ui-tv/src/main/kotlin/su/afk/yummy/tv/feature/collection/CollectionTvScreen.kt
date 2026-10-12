@@ -18,8 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.domain.collection.model.CollectionVote
 import su.afk.yummy.tv.feature.collection.view.CollectionGridPane
 import su.afk.yummy.tv.feature.collection.view.TvCollectionEditDialog
@@ -58,7 +60,7 @@ private fun CollectionTvScreenErrorPreview() = ScreenPreviewTheme {
     CollectionTvScreen(
         CollectionState.State(
             isLoading = false,
-            error = "Не удалось загрузить коллекцию"
+            error = UiText.Plain("Не удалось загрузить коллекцию")
         ), emptyFlow()
     ) {}
 }
@@ -163,7 +165,7 @@ fun CollectionTvScreen(
         isVoteLoading = state.isVoteLoading,
         isOwner = state.isOwner,
         isMutationLoading = state.isUpdating || state.isDeleting,
-        error = state.error,
+        error = state.error?.asString(),
         firstVisibleItemIndex = state.firstVisibleItemIndex,
         firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
         onAnimeSelected = onAnimeSelected,

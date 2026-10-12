@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
@@ -281,7 +282,7 @@ class LibraryViewModel @Inject internal constructor(
                     result.pushErrors.forEach { analytics.eventLoadError(it) }
                     setState {
                         copy(
-                            remoteError = result.pushErrors.firstOrNull()?.userMessage(),
+                            remoteError = result.pushErrors.firstOrNull()?.userText(),
                             isRemoteLoading = false,
                         )
                     }
@@ -291,7 +292,7 @@ class LibraryViewModel @Inject internal constructor(
                     analytics.eventLoadError(result.error)
                     setState {
                         copy(
-                            remoteError = result.error.userMessage(),
+                            remoteError = result.error.userText(),
                             isRemoteLoading = false,
                         )
                     }
@@ -320,7 +321,7 @@ class LibraryViewModel @Inject internal constructor(
                     .onSuccess { removeLocalEntry(event) }
                     .onFailure { error ->
                         analytics.eventRemoveError(event.target, error)
-                        setState { copy(remoteError = error.userMessage()) }
+                        setState { copy(remoteError = error.userText()) }
                     }
             } else {
                 removeLocalEntry(event)

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
@@ -209,7 +210,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                 analytics.eventLoadError(target, sort, error)
                 setState {
                     copy(
-                        error = error.userMessage(stringProvider.get(R.string.comments_load_error)),
+                        error = error.userText(UiText.Res(R.string.comments_load_error)),
                     )
                 }
                 throw error
@@ -470,7 +471,7 @@ class CommentsViewModel @AssistedInject internal constructor(
                             commentOverlays = commentOverlays + (
                                 commentId to current.copy(
                                     childrenLoading = false,
-                                    childrenError = error.userMessage(stringProvider.get(R.string.comments_load_error)),
+                                    childrenError = error.userText(UiText.Res(R.string.comments_load_error)),
                                 )
                                 ),
                         )

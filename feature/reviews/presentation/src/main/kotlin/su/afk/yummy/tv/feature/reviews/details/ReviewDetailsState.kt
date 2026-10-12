@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.reviews.details
 
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -11,7 +12,7 @@ class ReviewDetailsState {
         val loading: Boolean = true,
         val details: AnimeReviewDetails? = null,
         val currentUserId: Int = 0,
-        val error: String? = null,
+        val error: UiText? = null,
         val deleting: Boolean = false,
     ) : UiState {
         val isOwner get() = currentUserId > 0 && details?.review?.author?.id == currentUserId

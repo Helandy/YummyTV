@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
@@ -83,7 +84,7 @@ class BloggerVideoDetailsViewModel @AssistedInject constructor(
                 setState {
                     copy(
                         loading = false,
-                        error = errorHandler.parse(error, navigate = false).message,
+                        error = UiText.Failure(error),
                     )
                 }
             },

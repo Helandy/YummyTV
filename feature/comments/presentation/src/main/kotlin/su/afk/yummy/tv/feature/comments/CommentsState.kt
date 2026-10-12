@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -21,7 +22,7 @@ import su.afk.yummy.tv.domain.comments.model.CommentVote
 class CommentsState {
     @Immutable
     data class State(
-        val error: String? = null,
+        val error: UiText? = null,
         val comments: Flow<PagingData<CommentUi>> = flowOf(PagingData.empty()),
         val prependedComments: ImmutableList<CommentUi> = persistentListOf(),
         val commentOverlays: PersistentMap<Int, CommentUi> = persistentMapOf(),
@@ -44,7 +45,7 @@ class CommentsState {
         val children: ImmutableList<CommentUi> = persistentListOf(),
         val childrenVisible: Boolean = false,
         val childrenLoading: Boolean = false,
-        val childrenError: String? = null,
+        val childrenError: UiText? = null,
         val childrenHasMore: Boolean = false,
     )
 

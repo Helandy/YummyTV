@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileTitleListCard
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
@@ -60,7 +61,7 @@ internal fun LibraryMobilePage(
             cardSize = state.continueWatchingCardSize,
             showRemoteLoader = showRemoteLoader,
             isEmpty = isEmpty,
-            remoteError = state.remoteError.takeIf { tab == state.selectedTab },
+            remoteError = state.remoteError?.asString().takeIf { tab == state.selectedTab },
             isRemoteLoading = state.isRemoteLoading,
             onRetry = { onEvent(LibraryState.Event.RetrySelected) },
             onEntrySelected = { onEvent(LibraryState.Event.ContinueWatchingSelected(it)) },
@@ -165,7 +166,7 @@ internal fun LibraryMobilePage(
         if (tab == state.selectedTab && state.remoteError != null) {
             item(key = "remote_error") {
                 LibraryMobileRemoteError(
-                    message = state.remoteError.orEmpty(),
+                    message = state.remoteError?.asString().orEmpty(),
                     isLoading = state.isRemoteLoading,
                     onRetry = { onEvent(LibraryState.Event.RetrySelected) },
                 )

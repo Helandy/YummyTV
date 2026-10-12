@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -21,7 +22,7 @@ class HomeState {
         val feed: HomeFeed? = null,
         /** Есть ли секция расписания в исходной ленте (до фильтрации из [feed]). */
         val hasSchedule: Boolean = false,
-        val error: String? = null,
+        val error: UiText? = null,
         val continueWatching: ImmutableList<HomeContinueWatchingItem> = persistentListOf(),
         val isContinueWatchingLoaded: Boolean = false,
         /** Тайтл, для которого сейчас резолвится запуск плеера из «Продолжить просмотр». */
@@ -30,7 +31,7 @@ class HomeState {
         val announcement: HomeAnnouncement? = null,
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
         val isBloggerVideosLoading: Boolean = true,
-        val bloggerVideosError: String? = null,
+        val bloggerVideosError: UiText? = null,
         /** Тайтлы, скрытые из блока рекомендаций в текущей сессии. */
         val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
         /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */

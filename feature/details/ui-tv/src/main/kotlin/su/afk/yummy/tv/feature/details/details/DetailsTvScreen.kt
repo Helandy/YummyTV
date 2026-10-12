@@ -16,8 +16,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
@@ -58,7 +60,7 @@ private fun DetailsTvScreenLoadingPreview() = ScreenPreviewTheme {
 @Composable
 private fun DetailsTvScreenErrorPreview() = ScreenPreviewTheme {
     DetailsTvScreen(
-        DetailsState.State(isLoading = false, error = "Не удалось загрузить детали"),
+        DetailsState.State(isLoading = false, error = UiText.Plain("Не удалось загрузить детали")),
         emptyFlow()
     ) {}
 }
@@ -92,7 +94,7 @@ fun DetailsTvScreen(
         restoreButtonFocus()
     }
 
-    val error = state.error
+    val error = state.error?.asString()
     val details = state.details
     val screenState = when {
         details != null -> DetailsScreenState.Content

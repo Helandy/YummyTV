@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.details.rating
 
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -9,7 +10,7 @@ import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
 class RatingState {
     data class State(
         val isLoading: Boolean = true,
-        val error: String? = null,
+        val error: UiText? = null,
         val ratingSummary: AnimeRatingSummary = AnimeRatingSummary(),
         val listStats: AnimeListStats = AnimeListStats(),
         val selectedUserRating: Int? = null,

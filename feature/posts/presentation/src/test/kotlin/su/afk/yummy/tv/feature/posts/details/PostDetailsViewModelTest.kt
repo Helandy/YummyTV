@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.ErrorItem
 import su.afk.yummy.tv.core.model.comments.CommentTargetType
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -110,7 +111,7 @@ class PostDetailsViewModelTest : BaseUnitTest() {
     fun `failed load shows the message and retry recovers`() {
         coEvery { repository.details(POST_ID) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals("parsed message", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { repository.details(POST_ID) } returns details()
 
         vm.setEvent(Event.RetrySelected)

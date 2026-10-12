@@ -23,6 +23,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.LibrarySort
 import su.afk.yummy.tv.core.model.settings.LibrarySortDirection
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -198,7 +199,7 @@ class LibraryViewModelTest : BaseUnitTest() {
         coEvery { remoteLibrarySyncHandler.loadRemoteLists(any(), any()) } returns
             RemoteLibrarySyncResult.Failure(IllegalStateException("offline"))
         val vm = createViewModel()
-        assertEquals("offline", vm.currentState.remoteError)
+        assertEquals("offline", (vm.currentState.remoteError as UiText.Failure).cause.message)
         coEvery { remoteLibrarySyncHandler.loadRemoteLists(any(), any()) } returns RemoteLibrarySyncResult.Success()
 
         vm.setEvent(Event.RetrySelected)
@@ -242,7 +243,7 @@ class LibraryViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.RemoveEntry(7, LibraryRemoveTarget.LIST))
 
         coVerify(exactly = 0) { removeLibraryItem(any()) }
-        assertEquals("denied", vm.currentState.remoteError)
+        assertEquals("denied", (vm.currentState.remoteError as UiText.Failure).cause.message)
         assertTrue(effects.isEmpty())
     }
 

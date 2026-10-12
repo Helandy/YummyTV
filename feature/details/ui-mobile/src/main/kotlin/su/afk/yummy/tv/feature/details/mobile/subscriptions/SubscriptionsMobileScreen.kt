@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.mobile.subscriptions.view.SubscriptionMobileRow
 import su.afk.yummy.tv.feature.details.presentation.R
 import su.afk.yummy.tv.feature.details.subscriptions.SubscriptionsState
@@ -47,7 +49,7 @@ private fun SubscriptionsMobileScreenErrorPreview() = ScreenPreviewTheme {
     SubscriptionsMobileScreen(
         SubscriptionsState.State(
             isLoading = false,
-            error = "Не удалось загрузить подписки"
+            error = UiText.Plain("Не удалось загрузить подписки")
         ), emptyFlow()
     ) {}
 }
@@ -74,7 +76,7 @@ fun SubscriptionsMobileScreen(
             }
 
             state.error != null && state.subscriptions.isEmpty() -> MobileMessage(
-                title = state.error.orEmpty(),
+                title = state.error?.asString().orEmpty(),
                 icon = Icons.Filled.Warning,
                 actionLabel = stringResource(CoreR.string.common_retry),
                 onAction = { onEvent(SubscriptionsState.Event.RetrySelected) },

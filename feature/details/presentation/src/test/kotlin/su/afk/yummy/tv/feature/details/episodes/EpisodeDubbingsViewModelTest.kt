@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.testing.BaseUnitTest
@@ -98,7 +99,7 @@ class EpisodeDubbingsViewModelTest : BaseUnitTest() {
     fun `failed load shows the message and retry recovers`() {
         coEvery { repository.getAnimeVideos(ANIME_ID) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals("boom", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { repository.getAnimeVideos(ANIME_ID) } returns listOf(video(1, "Anidub", "1"))
 
         vm.setEvent(Event.RetrySelected)

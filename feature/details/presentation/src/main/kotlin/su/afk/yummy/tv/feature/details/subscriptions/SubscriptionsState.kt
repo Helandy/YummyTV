@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.details.subscriptions
 import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
@@ -12,7 +13,7 @@ class SubscriptionsState {
     @Immutable
     data class State(
         val isLoading: Boolean = true,
-        val error: String? = null,
+        val error: UiText? = null,
         val subscriptions: ImmutableList<SubscriptionOption> = persistentListOf(),
     ) : UiState
 

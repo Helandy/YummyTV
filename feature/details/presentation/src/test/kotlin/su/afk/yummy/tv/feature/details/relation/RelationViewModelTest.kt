@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.anime.model.AnimeRelation
@@ -83,7 +84,7 @@ class RelationViewModelTest : BaseUnitTest() {
     fun `failed load shows the parsed error and retry recovers`() {
         coEvery { repository.getAnimeRelation(any()) } throws IllegalStateException("boom")
         val vm = createViewModel()
-        assertEquals("parsed message", vm.currentState.error)
+        assertEquals("boom", (vm.currentState.error as UiText.Failure).cause.message)
         coEvery { repository.getAnimeRelation(any()) } returns relation
 
         vm.setEvent(Event.RetrySelected)

@@ -19,6 +19,7 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
@@ -405,7 +406,7 @@ class DetailsViewModel @AssistedInject internal constructor(
                 setState {
                     copy(
                         isLoading = false,
-                        error = e.userMessage(stringProvider.get(R.string.details_load_error)),
+                        error = e.userText(UiText.Res(R.string.details_load_error)),
                     )
                 }
             },

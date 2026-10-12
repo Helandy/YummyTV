@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.components.CachedAsyncImage
 import su.afk.yummy.tv.core.designsystem.dimensions.TvScreenPadding
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.core.designsystem.locals.LocalMainMenuFocusRequester
@@ -94,7 +95,7 @@ fun PostDetailsTvScreen(
 
         state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             TvStateMessage(
-                title = state.error?.takeIf { it.isNotBlank() }
+                title = state.error?.asString()?.takeIf { it.isNotBlank() }
                     ?: stringResource(R.string.posts_error),
                 icon = Icons.Filled.Warning,
                 onRetry = { onEvent(PostDetailsState.Event.RetrySelected) },

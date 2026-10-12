@@ -12,8 +12,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.tv.TvLoadingScreen
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.rating.view.RatingBody
 import su.afk.yummy.tv.feature.details.view.common.DetailsError
 
@@ -48,7 +50,7 @@ private fun RatingTvScreenLoadingPreview() = ScreenPreviewTheme {
 @Composable
 private fun RatingTvScreenErrorPreview() = ScreenPreviewTheme {
     RatingTvScreen(
-        RatingState.State(isLoading = false, error = "Не удалось загрузить рейтинг"),
+        RatingState.State(isLoading = false, error = UiText.Plain("Не удалось загрузить рейтинг")),
         emptyFlow()
     ) {}
 }
@@ -60,7 +62,7 @@ fun RatingTvScreen(
     effect: Flow<RatingState.Effect>,
     onEvent: (RatingState.Event) -> Unit,
 ) {
-    val error = state.error
+    val error = state.error?.asString()
     val context = LocalContext.current
     BackHandler { onEvent(RatingState.Event.BackSelected) }
 

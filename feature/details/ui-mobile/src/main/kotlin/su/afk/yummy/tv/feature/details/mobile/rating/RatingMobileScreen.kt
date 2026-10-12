@@ -19,10 +19,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileStateContent
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileListStats
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileRatingDistribution
 import su.afk.yummy.tv.feature.details.mobile.rating.view.MobileRatingOverview
@@ -47,7 +49,7 @@ private fun RatingMobileScreenLoadingPreview() = ScreenPreviewTheme {
 @Composable
 private fun RatingMobileScreenErrorPreview() = ScreenPreviewTheme {
     RatingMobileScreen(
-        RatingState.State(isLoading = false, error = "Не удалось загрузить рейтинг"),
+        RatingState.State(isLoading = false, error = UiText.Plain("Не удалось загрузить рейтинг")),
         emptyFlow()
     ) {}
 }
@@ -81,7 +83,7 @@ fun RatingMobileScreen(
     ) {
         MobileStateContent(
             isLoading = state.isLoading,
-            error = state.error,
+            error = state.error?.asString(),
             onRetry = { onEvent(RatingState.Event.RetrySelected) },
         ) {
             LazyColumn(

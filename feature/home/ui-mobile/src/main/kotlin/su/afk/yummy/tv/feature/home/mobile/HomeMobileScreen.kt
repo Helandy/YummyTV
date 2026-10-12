@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
+import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSectionHeader
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
@@ -48,6 +49,7 @@ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.ErrorItem
+import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.utils.system.openExternalUri
 import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
@@ -90,7 +92,7 @@ private fun HomeMobileScreenErrorPreview() = ScreenPreviewTheme {
         HomeState.State(
             isLoading = false,
             isContinueWatchingLoaded = true,
-            error = "Не удалось загрузить главную",
+            error = UiText.Plain("Не удалось загрузить главную"),
         ),
         emptyFlow(),
     ) {}
@@ -159,9 +161,9 @@ fun HomeMobileScreen(
         BaseScreen(
             isScroll = false,
             isLoading = !state.hasInitialContent(),
-            error = state.error?.let { ErrorItem(title = it, message = it) },
+            error = state.error?.asString()?.let { ErrorItem(title = it, message = it) },
             onRetry = { onEvent(HomeState.Event.RetrySelected) },
-            errorContent = state.error?.let { message ->
+            errorContent = state.error?.asString()?.let { message ->
                 { _, retry ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         MobileMessage(
@@ -286,7 +288,7 @@ fun HomeMobileScreen(
                 state.bloggerVideosError?.let { message ->
                     item(key = "blogger_videos_error") {
                         MobileMessage(
-                            title = message,
+                            title = message.asString(),
                             actionLabel = stringResource(CoreR.string.common_retry),
                             onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
                         )
