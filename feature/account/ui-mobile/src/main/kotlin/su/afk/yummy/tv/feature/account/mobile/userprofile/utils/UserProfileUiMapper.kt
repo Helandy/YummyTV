@@ -6,6 +6,7 @@ import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun FriendshipStatus.friendshipActionLabel(): String = stringResource(

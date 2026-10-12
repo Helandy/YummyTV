@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun ProfilePasswordSection(

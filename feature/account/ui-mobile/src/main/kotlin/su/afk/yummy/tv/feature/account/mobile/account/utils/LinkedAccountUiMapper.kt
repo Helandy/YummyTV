@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.domain.account.model.LinkedAccountProvider
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun LinkedAccountProvider.label(): String = stringResource(

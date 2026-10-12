@@ -27,6 +27,7 @@ import su.afk.yummy.tv.feature.account.account.model.AccountUiError
 import su.afk.yummy.tv.feature.account.account.model.PendingNotificationDeleteFocus
 import su.afk.yummy.tv.feature.account.account.model.PendingNotificationOpenRequest
 import su.afk.yummy.tv.feature.account.account.model.PendingNotificationReadFocus
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 /**
  * Item order the [NotificationsTab] LazyColumn is built in: header=0, tabs+badges+actions=1,

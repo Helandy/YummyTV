@@ -54,6 +54,7 @@ import su.afk.yummy.tv.feature.account.mobile.view.AccountMobileHCaptcha
 import su.afk.yummy.tv.feature.account.presentation.R
 import su.afk.yummy.tv.feature.account.registration.RegistrationState
 import su.afk.yummy.tv.feature.account.utils.YANI_HCAPTCHA_SITE_KEY
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 private const val YANI_SITE_URL = "https://ru.yummyani.me"
 

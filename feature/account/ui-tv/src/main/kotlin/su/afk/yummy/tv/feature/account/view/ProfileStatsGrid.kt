@@ -37,11 +37,11 @@ import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsValueType
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.utils.averageRatingLabel
 import su.afk.yummy.tv.feature.account.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.utils.watchStatSlices
+import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
 
 @Composable
 internal fun ProfileStatsGrid(

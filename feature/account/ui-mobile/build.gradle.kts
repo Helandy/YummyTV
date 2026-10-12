@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":feature:account:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:account:presentation"))
+    implementation(project(":feature:account:ui-common"))
 
     implementation(libs.bundles.compose.screen)
     implementation(libs.bundles.navigation.serialization)

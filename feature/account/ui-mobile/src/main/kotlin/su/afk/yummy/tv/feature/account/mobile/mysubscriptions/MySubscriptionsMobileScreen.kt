@@ -29,6 +29,7 @@ import su.afk.yummy.tv.feature.account.mobile.mysubscriptions.view.MySubscriptio
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsState
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -15,6 +15,7 @@ import su.afk.yummy.tv.feature.account.navigator.AccountDestination
 import su.afk.yummy.tv.feature.account.navigator.MySubscriptionsDestination
 import su.afk.yummy.tv.feature.account.utils.LocalAccountTvActiveDestination
 import javax.inject.Inject
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 class AccountNavRegistrar @Inject constructor() : ITvAccountEntry {
     override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =

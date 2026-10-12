@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSex
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

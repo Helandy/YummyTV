@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.feature.account.account.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 internal data class ProfileStatsPageModel(
     val title: String,

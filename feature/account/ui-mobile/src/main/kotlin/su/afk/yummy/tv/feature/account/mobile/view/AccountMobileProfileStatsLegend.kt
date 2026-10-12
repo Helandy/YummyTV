@@ -18,13 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.PersistentList
-import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatSlice
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
 import su.afk.yummy.tv.feature.account.mobile.account.utils.valueLabel
+import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 @Composable
 internal fun AccountMobileProfileStatsLegend(
-    slices: PersistentList<AccountMobileProfileStatSlice>,
+    slices: PersistentList<ProfileStatSlice>,
     valueType: AccountMobileProfileStatsValueType,
     columns: Int,
     modifier: Modifier = Modifier,
@@ -52,7 +52,7 @@ internal fun AccountMobileProfileStatsLegend(
 
 @Composable
 private fun AccountMobileProfileStatsLegendItem(
-    slice: AccountMobileProfileStatSlice,
+    slice: ProfileStatSlice,
     valueType: AccountMobileProfileStatsValueType,
     modifier: Modifier = Modifier,
 ) {

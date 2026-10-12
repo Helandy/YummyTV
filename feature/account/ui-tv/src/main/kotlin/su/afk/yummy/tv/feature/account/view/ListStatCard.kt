@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserListWatchStat
-import su.afk.yummy.tv.feature.account.utils.toDurationLabel
+import su.afk.yummy.tv.feature.account.common.utils.toDurationLabel
 
 @Composable
 internal fun ListStatCard(stat: UserListWatchStat) {

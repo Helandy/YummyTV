@@ -29,12 +29,12 @@ import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
-import su.afk.yummy.tv.feature.account.mobile.account.utils.averageRatingLabel
 import su.afk.yummy.tv.feature.account.mobile.account.utils.genreCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.listDurationSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.ratingCountSlices
 import su.afk.yummy.tv.feature.account.mobile.account.utils.watchStatSlices
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.averageRatingLabel
 
 @Composable
 internal fun AccountMobileProfileStatsPager(

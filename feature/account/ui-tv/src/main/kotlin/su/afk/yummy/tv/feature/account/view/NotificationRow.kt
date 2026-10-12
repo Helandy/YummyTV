@@ -36,8 +36,9 @@ import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.focus.tvFocusableClick
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.utils.formatDate
 import su.afk.yummy.tv.feature.account.utils.notificationTypeIcon
+import su.afk.yummy.tv.feature.account.common.utils.formatDate
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun NotificationRow(

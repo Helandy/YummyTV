@@ -20,9 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsPageModel
-import su.afk.yummy.tv.feature.account.mobile.account.utils.positiveValueSum
 import su.afk.yummy.tv.feature.account.mobile.account.utils.totalLabel
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
+import su.afk.yummy.tv.feature.account.common.utils.positiveValueSum
 
 @Composable
 internal fun AccountMobileProfileStatsPage(

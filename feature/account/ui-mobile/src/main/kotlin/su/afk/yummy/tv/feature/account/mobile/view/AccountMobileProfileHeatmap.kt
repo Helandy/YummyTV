@@ -14,6 +14,7 @@ import su.afk.yummy.tv.core.designsystem.theme.YummySemanticColors
 import su.afk.yummy.tv.domain.account.model.UserWatchHistoryDay
 import kotlin.math.ceil
 import kotlin.math.min
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
 
 @Composable
 internal fun AccountMobileProfileHeatmap(

@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.domain.account.model.ProfileNotification
-import su.afk.yummy.tv.feature.account.mobile.account.utils.formatDate
 import su.afk.yummy.tv.feature.account.mobile.account.utils.notificationTypeIcon
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.formatDate
 
 @Composable
 internal fun AccountMobileNotificationRow(

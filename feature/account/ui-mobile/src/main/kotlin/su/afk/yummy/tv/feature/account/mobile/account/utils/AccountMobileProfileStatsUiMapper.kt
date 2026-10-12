@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.account.mobile.account.utils
 
 import androidx.compose.runtime.Composable
 import su.afk.yummy.tv.feature.account.mobile.account.model.AccountMobileProfileStatsValueType
+import su.afk.yummy.tv.feature.account.common.utils.toProfileHoursLabel
 
 @Composable
 internal fun AccountMobileProfileStatsValueType.totalLabel(value: Long): String =

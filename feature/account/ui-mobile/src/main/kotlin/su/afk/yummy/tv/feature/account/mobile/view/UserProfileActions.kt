@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.FriendshipStatus
 import su.afk.yummy.tv.feature.account.mobile.account.utils.actionIcon
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun UserProfileActions(

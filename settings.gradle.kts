@@ -181,6 +181,7 @@ include(":feature:account:domain")
 include(":feature:account:data")
 include(":feature:account:api")
 include(":feature:account:presentation")
+include(":feature:account:ui-common")
 include(":feature:account:ui-tv")
 include(":feature:account:ui-mobile")
 

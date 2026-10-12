@@ -23,8 +23,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsPageModel
 import su.afk.yummy.tv.feature.account.presentation.R
-import su.afk.yummy.tv.feature.account.utils.positiveValueSum
 import su.afk.yummy.tv.feature.account.utils.totalLabel
+import su.afk.yummy.tv.feature.account.common.utils.positiveValueSum
 
 @Composable
 internal fun ProfileStatsCard(

@@ -20,6 +20,7 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.count
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.label
 import su.afk.yummy.tv.feature.account.mobile.userprofile.utils.tabCountLabel
 import su.afk.yummy.tv.feature.account.userprofile.UserProfileState
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

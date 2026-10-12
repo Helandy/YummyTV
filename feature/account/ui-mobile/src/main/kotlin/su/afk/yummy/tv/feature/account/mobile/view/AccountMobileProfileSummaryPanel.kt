@@ -22,6 +22,7 @@ import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.feature.account.mobile.account.utils.hasAny
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.hasAny
 
 @Composable
 internal fun AccountMobileProfileSummaryPanel(

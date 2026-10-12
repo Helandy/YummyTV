@@ -1,8 +1,8 @@
-package su.afk.yummy.tv.feature.account.account.model
+package su.afk.yummy.tv.feature.account.common.model
 
 import androidx.compose.ui.graphics.Color
 
-internal data class ProfileStatSlice(
+data class ProfileStatSlice(
     val title: String,
     val value: Long,
     val color: Color,

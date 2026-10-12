@@ -20,8 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.account.model.ProfileStatSlice
-import su.afk.yummy.tv.feature.account.utils.positiveValueSum
+import su.afk.yummy.tv.feature.account.common.utils.positiveValueSum
+import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 @Composable
 internal fun ProfileStatsDonutChart(

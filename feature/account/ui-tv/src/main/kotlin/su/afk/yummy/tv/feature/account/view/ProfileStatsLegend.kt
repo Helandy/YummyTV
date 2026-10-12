@@ -19,9 +19,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.feature.account.account.model.ProfileStatSlice
 import su.afk.yummy.tv.feature.account.account.model.ProfileStatsValueType
 import su.afk.yummy.tv.feature.account.utils.valueLabel
+import su.afk.yummy.tv.feature.account.common.model.ProfileStatSlice
 
 @Composable
 internal fun ProfileStatsLegend(

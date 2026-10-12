@@ -25,9 +25,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.feature.account.account.AccountState
-import su.afk.yummy.tv.feature.account.mobile.account.utils.formatProfileDate
 import su.afk.yummy.tv.feature.account.mobile.account.utils.label
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.formatProfileDate
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun AccountMobileHeader(

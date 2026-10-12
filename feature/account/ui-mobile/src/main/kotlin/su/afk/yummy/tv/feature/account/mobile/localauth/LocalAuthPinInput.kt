@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.domain.account.model.LocalAuthCode
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthState
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 /**
  * Ввод кода с ТВ: ячейки с акцентом темы вместо обычного поля.

@@ -16,8 +16,9 @@ import su.afk.yummy.tv.domain.account.model.UserProfileSummary
 import su.afk.yummy.tv.domain.account.model.UserStats
 import su.afk.yummy.tv.domain.account.model.ratingsByValue
 import su.afk.yummy.tv.domain.account.model.topGenres
-import su.afk.yummy.tv.feature.account.mobile.account.utils.isEmpty
 import su.afk.yummy.tv.feature.account.presentation.R
+import su.afk.yummy.tv.feature.account.common.utils.isEmpty
+import su.afk.yummy.tv.feature.account.common.utils.label
 
 @Composable
 internal fun AccountMobileStatsContent(
