@@ -137,7 +137,7 @@ fun SearchMobileScreen(
             modifier = Modifier.imePadding(),
             state = gridState,
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = "query_field") {
                 OutlinedTextField(
                     shape = MaterialTheme.shapes.large,
                     value = state.query,
@@ -163,7 +163,7 @@ fun SearchMobileScreen(
                     },
                 )
             }
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = "submit_button") {
                 Button(
                     onClick = {
                         keyboardController?.hide()
@@ -184,7 +184,7 @@ fun SearchMobileScreen(
                 }
             }
             if (hasActiveSearch && refreshState !is LoadState.Loading) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "results_count") {
                     Text(
                         text = stringResource(
                             R.string.search_results_count,
@@ -196,7 +196,7 @@ fun SearchMobileScreen(
                 }
             }
             if (hasActiveSearch && refreshState is LoadState.NotLoading && results.itemCount == 0) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "empty_state") {
                     Text(
                         text = stringResource(R.string.search_empty),
                         style = MaterialTheme.typography.titleMedium,
@@ -210,7 +210,7 @@ fun SearchMobileScreen(
             }
             val error = (appendState as? LoadState.Error)?.error
             if (error != null && results.itemCount > 0) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_error") {
                     MobileAppendError(
                         message = error.uiMessage(),
                         onRetry = { results.retry() },
@@ -220,6 +220,7 @@ fun SearchMobileScreen(
             items(
                 count = results.itemCount,
                 key = results.itemKey { it.id },
+                contentType = { "poster" },
             ) { index ->
                 results[index]?.let { item ->
                     MobilePosterCard(
@@ -249,7 +250,7 @@ fun SearchMobileScreen(
                 }
             }
             if (appendState is LoadState.Loading && results.itemCount > 0) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = "append_loader") {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,

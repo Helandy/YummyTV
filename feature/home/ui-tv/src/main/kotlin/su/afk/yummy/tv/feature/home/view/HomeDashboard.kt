@@ -77,7 +77,9 @@ internal fun HomeDashboard(
     val pinnedSectionIndex =
         feed.sections.indexOfFirst { it.type == HomeFeedSectionType.MY_NEW_EPISODES }
     val hasPinnedSection = pinnedSectionIndex >= 0
-    val restSections = feed.sections.withIndex().filter { it.index != pinnedSectionIndex }
+    val restSections = remember(feed.sections, pinnedSectionIndex) {
+        feed.sections.withIndex().filter { it.index != pinnedSectionIndex }
+    }
 
     // LazyColumn item indices used for row-level focus restoration.
     val pinnedLazyIdx = if (hasContinueWatching) 1 else 0

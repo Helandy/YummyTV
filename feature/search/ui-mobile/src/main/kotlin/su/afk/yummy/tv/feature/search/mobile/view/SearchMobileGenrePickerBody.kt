@@ -60,8 +60,10 @@ internal fun ColumnScope.SearchMobileGenrePickerBody(
             }
         }
 
-        val ungroupedGenres = filterOptions.genres
-            .filter { genre -> filterOptions.genreGroups.none { it.id == genre.groupId } }
+        val ungroupedGenres = remember(filterOptions.genres, filterOptions.genreGroups) {
+            val groupIds = filterOptions.genreGroups.mapTo(HashSet()) { it.id }
+            filterOptions.genres.filter { genre -> genre.groupId !in groupIds }
+        }
         if (ungroupedGenres.isNotEmpty()) {
             SearchMobileGenreGroup(
                 title = stringResource(R.string.search_filter_genre_screen_title),
