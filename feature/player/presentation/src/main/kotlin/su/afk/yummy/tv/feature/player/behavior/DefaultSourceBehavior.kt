@@ -2,7 +2,10 @@ package su.afk.yummy.tv.feature.player.behavior
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.domain.player.usecase.PurgePlayerPlaybackCacheUseCase
 import su.afk.yummy.tv.feature.player.PlayerAnalytics
 import su.afk.yummy.tv.feature.player.PlayerState
@@ -27,6 +30,7 @@ internal class DefaultSourceBehavior @Inject constructor(
     private val retry: PlayerPlaybackRetryHandler,
     private val analytics: PlayerAnalytics,
     private val purgePlaybackCache: PurgePlayerPlaybackCacheUseCase,
+    private val connectivity: NetworkConnectivityMonitor,
 ) : PlayerSourceBehavior {
 
     private lateinit var host: PlayerSourceHost
@@ -224,8 +228,10 @@ internal class DefaultSourceBehavior @Inject constructor(
             "Silent playback retry attempt=$attempt/${PlayerPlaybackRetryHandler.MAX_ATTEMPTS}"
         }
         retryJob = host.scope.launch {
-            // Re-resolve starts immediately (no artificial delay) so the visible stall is bounded
-            // by the resolve+rebuild time only, not padded by a fixed wait before it even begins.
+            // Без сети повтор лишь сожжёт бюджет попыток и ударит по балансеру: ждём сеть (ограниченно).
+            // При живой сети ожидания нет — re-resolve стартует сразу, без искусственной задержки,
+            // чтобы видимый простой складывался только из resolve+rebuild.
+            awaitConnectivity()
             if (
                 activeIframeUrl(host.state) == iframeUrl &&
                 !host.state.isOfflinePlayback
@@ -244,8 +250,17 @@ internal class DefaultSourceBehavior @Inject constructor(
         }
     }
 
+    private suspend fun awaitConnectivity() {
+        if (connectivity.isOnline.value) return
+        analytics.debugLog { "Silent retry waits for network" }
+        withTimeoutOrNull(NETWORK_WAIT_TIMEOUT_MS) { connectivity.isOnline.first { it } }
+    }
+
     private companion object {
         private const val RECOVERY_HINT_DELAY_MS = 10_000L
+
+        // Дольше не ждём: монитор может ошибаться (VPN, captive portal), а повтор всё равно честно упадёт.
+        private const val NETWORK_WAIT_TIMEOUT_MS = 30_000L
 
         // Повреждённый контейнер/манифест: тот же URL заведомо отдаст то же самое.
         private val MALFORMED_STREAM_CODES = setOf(

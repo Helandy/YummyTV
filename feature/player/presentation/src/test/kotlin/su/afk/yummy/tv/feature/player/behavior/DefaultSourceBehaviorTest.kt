@@ -1,7 +1,9 @@
 package su.afk.yummy.tv.feature.player.behavior
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -23,6 +25,7 @@ class DefaultSourceBehaviorTest : BaseUnitTest() {
             retry = PlayerPlaybackRetryHandler(),
             analytics = PlayerAnalytics(mockk(relaxed = true)),
             purgePlaybackCache = mockk(relaxed = true),
+            connectivity = mockk { every { isOnline } returns MutableStateFlow(true) },
         )
         behavior.attach(harness.host)
         return behavior to harness

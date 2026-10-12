@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core:deeplink:api"))
     implementation(project(":core:error:api"))
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
     api(project(":core:mvi"))
     implementation(project(":core:navigation"))
     implementation(project(":core:utils"))
