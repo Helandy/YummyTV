@@ -112,9 +112,17 @@ internal class AllohaStreamProxy(
     init {
         analytics.log(LOG_TAG) { "Proxy started port=${server.localPort} ${streamStateProvider().summary()}" }
         scope.launch {
-            while (isActive) {
-                runCatching { server.accept() }.getOrNull()
-                    ?.let { socket -> launch { runSuspendCatching { handle(socket) } } }
+            while (isActive && !server.isClosed) {
+                val socket = runCatching { server.accept() }.getOrNull()
+                if (socket == null) {
+                    // Постоянный сбой accept() иначе крутил бы цикл вхолостую на потоке IO.
+                    delay(ACCEPT_RETRY_DELAY_MS)
+                    continue
+                }
+                // Таймаут только на чтение запроса: клиент, открывший сокет и молчащий, не должен
+                // занимать поток IO бесконечно. Запись ответа таймаутом не ограничивается.
+                runCatching { socket.soTimeout = REQUEST_READ_TIMEOUT_MS }
+                launch { runSuspendCatching { handle(socket) } }
             }
         }
     }
@@ -185,10 +193,10 @@ internal class AllohaStreamProxy(
     private suspend fun handle(socket: Socket) {
         socket.use {
             val reader = it.getInputStream().bufferedReader()
-            val requestLine = reader.readLine() ?: return
+            val requestLine = reader.readLineBounded(MAX_REQUEST_LINE_CHARS) ?: return
             val requestHeaders = buildMap {
                 while (true) {
-                    val line = reader.readLine() ?: break
+                    val line = reader.readLineBounded(MAX_REQUEST_LINE_CHARS) ?: break
                     if (line.isBlank()) break
                     val separator = line.indexOf(':')
                     if (separator > 0) put(
@@ -774,6 +782,9 @@ internal class AllohaStreamProxy(
         // read timeout so the held loopback request itself never trips a client-side timeout.
         const val SEGMENT_HOLD_FOR_REFRESH_MS = 14_000L
         const val CACHE_CAPACITY = 4
+        const val REQUEST_READ_TIMEOUT_MS = 15_000
+        const val ACCEPT_RETRY_DELAY_MS = 250L
+        const val MAX_REQUEST_LINE_CHARS = 32 * 1024
         const val PREFETCH_COUNT = 2
         const val MIN_SEGMENT_BYTES_HINT = 1000
         val SUCCESS_CODES = setOf(200, 206)
