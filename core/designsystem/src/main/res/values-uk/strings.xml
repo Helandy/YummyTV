@@ -21,6 +21,7 @@
     <string name="error_msg_no_connection">Перевір інтернет і спробуй знову.</string>
     <string name="error_msg_timeout">Схоже, сервер гальмує. Спробуй ще раз.</string>
     <string name="error_msg_generic">Щось пішло не так. Спробуй ще раз.</string>
+    <string name="error_msg_http">Помилка сервера (%1$d). Повторіть спробу пізніше.</string>
     <string name="common_back">Назад</string>
     <string name="common_retry">Повторити</string>
     <string name="common_loading">Завантаження...</string>

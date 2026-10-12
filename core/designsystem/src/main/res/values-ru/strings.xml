@@ -21,6 +21,7 @@
     <string name="error_msg_no_connection">Проверь интернет и попробуй снова.</string>
     <string name="error_msg_timeout">Похоже, сервер тормозит. Попробуй ещё раз.</string>
     <string name="error_msg_generic">Что-то пошло не так. Попробуй ещё раз.</string>
+    <string name="error_msg_http">Ошибка сервера (%1$d). Повторите попытку позже.</string>
     <string name="common_back">Назад</string>
     <string name="common_retry">Повторить</string>
     <string name="common_loading">Загрузка...</string>

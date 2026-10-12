@@ -21,6 +21,7 @@
     <string name="error_msg_no_connection">Check your internet connection and try again.</string>
     <string name="error_msg_timeout">The server is taking too long to respond. Please try again.</string>
     <string name="error_msg_generic">Something went wrong. Please try again.</string>
+    <string name="error_msg_http">Server error (%1$d). Please try again later.</string>
     <string name="common_back">Back</string>
     <string name="common_retry">Retry</string>
     <string name="common_loading">Loading...</string>

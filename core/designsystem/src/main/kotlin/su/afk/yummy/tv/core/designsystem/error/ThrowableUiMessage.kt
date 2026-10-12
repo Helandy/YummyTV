@@ -2,6 +2,7 @@ package su.afk.yummy.tv.core.designsystem.error
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import io.ktor.client.plugins.ResponseException
 import su.afk.yummy.tv.core.designsystem.R
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -15,6 +16,8 @@ import java.net.SocketTimeoutException
 fun Throwable.uiMessage(): String = when (this) {
     is SocketTimeoutException -> withCause(stringResource(R.string.error_msg_timeout))
     is IOException -> withCause(stringResource(R.string.error_msg_no_connection))
+    // message у ResponseException — техническая строка Ktor с URL и телом ответа
+    is ResponseException -> stringResource(R.string.error_msg_http, response.status.value)
     else -> message?.takeIf { it.isNotBlank() } ?: stringResource(R.string.error_msg_generic)
 }
 

@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.core.mvi
 
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -58,13 +59,18 @@ abstract class BaseViewModel<S : UiState, E : UiEvent, F : UiEffect> : Coroutine
     /**
      * Текст ошибки для inline-состояния экрана. Сетевые сбои — локализованным сообщением из
      * [ErrorHandler], а исходный текст (`Unable to resolve host ...`) второй строкой;
-     * остальное — как раньше: текст исключения, иначе [fallback].
+     * HTTP-ответ с ошибкой — локализованным сообщением по коду (у `ResponseException` в `message`
+     * техническая строка Ktor с URL и телом ответа); остальное — как раньше: текст исключения,
+     * иначе [fallback].
      */
-    protected fun Throwable.userMessage(fallback: String? = null): String =
-        if (isNetworkError()) {
+    protected fun Throwable.userMessage(fallback: String? = null): String = when {
+        isNetworkError() -> {
             val text = errorHandler.parse(this).message
             message?.takeIf { it.isNotBlank() }?.let { "$text\n$it" } ?: text
-        } else {
-            message ?: fallback ?: errorHandler.parse(this).message
         }
+
+        this is ResponseException -> errorHandler.parse(this).message
+
+        else -> message ?: fallback ?: errorHandler.parse(this).message
+    }
 }
