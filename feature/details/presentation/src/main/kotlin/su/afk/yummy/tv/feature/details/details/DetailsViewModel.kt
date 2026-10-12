@@ -95,6 +95,13 @@ class DetailsViewModel @AssistedInject internal constructor(
     )
     private var libraryMutationVersion = 0
     private var favoriteMutationVersion = 0
+
+    /**
+     * Значение избранного, выставленное пользователем, пока локальная библиотека его не подтвердила.
+     * Пока оно задано, эмиссии библиотеки с прежним значением считаются устаревшими: иначе правило
+     * `library.isFavorite || (isSignedIn && isFavorite)` возвращает `true`, и снять его уже нельзя.
+     */
+    private var pendingFavorite: Boolean? = null
     private var localWatchProgress: List<AnimeWatchProgress> = emptyList()
 
     init {
@@ -102,10 +109,17 @@ class DetailsViewModel @AssistedInject internal constructor(
         load()
         screenDataHandler.observeLibraryState(animeId)
             .onEach { library ->
+                val pending = pendingFavorite
+                val staleFavorite = pending != null && library.isFavorite != pending
+                if (pending != null && !staleFavorite) pendingFavorite = null
                 setState {
                     copy(
                         isInLibrary = library.isInLibrary || (isSignedIn && libraryList != null),
-                        isFavorite = library.isFavorite || (isSignedIn && isFavorite),
+                        isFavorite = if (staleFavorite) {
+                            isFavorite
+                        } else {
+                            library.isFavorite || (isSignedIn && isFavorite)
+                        },
                     )
                 }
             }
@@ -326,6 +340,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         val nextFavorite = !wasFavorite
         val wasSignedIn = currentState.isSignedIn
         favoriteMutationVersion++
+        pendingFavorite = nextFavorite
         setState { copy(isFavorite = nextFavorite) }
         when (
             val result = libraryHandler.setFavorite(
@@ -339,6 +354,7 @@ class DetailsViewModel @AssistedInject internal constructor(
             DetailsLibraryMutationResult.Success -> Unit
             is DetailsLibraryMutationResult.RollbackLibrary -> Unit
             is DetailsLibraryMutationResult.RollbackFavorite -> {
+                pendingFavorite = null
                 setState { copy(isFavorite = result.isFavorite) }
             }
         }
